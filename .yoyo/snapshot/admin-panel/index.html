@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOCK_VERIFY - Admin Control Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-cog"></i> STOCK_VERIFY Admin Panel</h1>
+                    <span class="status-indicator" id="globalStatus">
+                        <i class="fas fa-circle"></i> Checking...
+                    </span>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshBtn" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button id="toggleSidebar" class="btn btn-secondary">
+                        <i class="fas fa-qrcode"></i> QR Code
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <div class="dashboard-layout">
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Live Terminal Views Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-terminal"></i> Live Terminal Views
+                        </h2>
+                        <div class="view-controls">
+                            <button class="btn btn-small" onclick="toggleTerminalView('frontend')" id="frontendTerminalBtn">
+                                <i class="fas fa-mobile-alt"></i> Frontend
+                            </button>
+                            <button class="btn btn-small" onclick="toggleTerminalView('backend')" id="backendTerminalBtn">
+                                <i class="fas fa-server"></i> Backend
+                            </button>
+                            <button class="btn btn-small active" onclick="toggleTerminalView('both')" id="bothTerminalBtn">
+                                <i class="fas fa-th"></i> Both
+                            </button>
+                            <button class="btn btn-small" onclick="clearTerminals()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button class="btn btn-small" onclick="copyTerminalOutput('frontend')" title="Copy frontend output">
+                                <i class="fas fa-copy"></i> FE Logs
+                            </button>
+                            <button class="btn btn-small" onclick="copyTerminalOutput('backend')" title="Copy backend output">
+                                <i class="fas fa-copy"></i> BE Logs
+                            </button>
+                            <button class="btn btn-small" onclick="copyAllTerminalOutputs()" title="Copy both terminal outputs">
+                                <i class="fas fa-copy"></i> Copy Both
+                            </button>
+                        </div>
+                    </div>
+                    <div class="terminal-views-container">
+                        <div class="terminal-panel active" id="frontendTerminalPanel">
+                            <div class="terminal-header">
+                                <div class="terminal-title">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>Frontend Terminal</span>
+                                    <span class="terminal-status" id="frontendTerminalStatus">
+                                        <i class="fas fa-circle"></i> Running
+                                    </span>
+                                </div>
+                                <div class="terminal-actions">
+                                    <button class="btn btn-icon" onclick="toggleTerminalAutoScroll('frontend')" id="frontendAutoScrollBtn" title="Auto-scroll">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="copyTerminalOutput('frontend')" title="Copy output">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="toggleTerminalView('frontend')" title="Close">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="terminal-content" id="frontendTerminalContent">
+                                <div class="terminal-line">
+                                    <span class="terminal-prompt">frontend@expo:~$</span>
+                                    <span class="terminal-text">Starting Expo development server...</span>
+                                </div>
+                            </div>
+                            <div class="terminal-input-container">
+                                <span class="terminal-prompt">frontend@expo:~$</span>
+                                <input type="text" class="terminal-input" id="frontendTerminalInput" 
+                                       placeholder="Enter command..." 
+                                       onkeypress="handleTerminalKeyPress(event, 'frontend')">
+                                <button class="btn btn-icon btn-terminal-send" onclick="executeTerminalCommand('frontend')" title="Execute command" aria-label="Execute frontend command">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="terminal-panel active" id="backendTerminalPanel">
+                            <div class="terminal-header">
+                                <div class="terminal-title">
+                                    <i class="fas fa-server"></i>
+                                    <span>Backend Terminal</span>
+                                    <span class="terminal-status" id="backendTerminalStatus">
+                                        <i class="fas fa-circle"></i> Running
+                                    </span>
+                                </div>
+                                <div class="terminal-actions">
+                                    <button class="btn btn-icon" onclick="toggleTerminalAutoScroll('backend')" id="backendAutoScrollBtn" title="Auto-scroll">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="copyTerminalOutput('backend')" title="Copy output">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="toggleTerminalView('backend')" title="Close">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="terminal-content" id="backendTerminalContent">
+                                <div class="terminal-line">
+                                    <span class="terminal-prompt">backend@fastapi:~$</span>
+                                    <span class="terminal-text">Starting FastAPI server...</span>
+                                </div>
+                            </div>
+                            <div class="terminal-input-container">
+                                <span class="terminal-prompt">backend@fastapi:~$</span>
+                                <input type="text" class="terminal-input" id="backendTerminalInput" 
+                                       placeholder="Enter command..." 
+                                       onkeypress="handleTerminalKeyPress(event, 'backend')">
+                                <button class="btn btn-icon btn-terminal-send" onclick="executeTerminalCommand('backend')" title="Execute command" aria-label="Execute backend command">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Live Views Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-desktop"></i> Live Views
+                        </h2>
+                        <div class="view-controls">
+                            <button class="btn btn-small" onclick="toggleLiveView('frontend')" id="frontendViewBtn">
+                                <i class="fas fa-mobile-alt"></i> Frontend
+                            </button>
+                            <button class="btn btn-small" onclick="toggleLiveView('backend')" id="backendViewBtn">
+                                <i class="fas fa-server"></i> Backend
+                            </button>
+                            <button class="btn btn-small" onclick="toggleLiveView('all')" id="allViewBtn">
+                                <i class="fas fa-th"></i> Both
+                            </button>
+                        </div>
+                    </div>
+                    <div class="live-views-container">
+                        <div class="live-view-panel" id="frontendViewPanel">
+                            <div class="live-view-header">
+                                <h3><i class="fas fa-mobile-alt"></i> Frontend Live View</h3>
+                                <div class="live-view-actions">
+                                    <span class="live-status" id="frontendLiveStatus">
+                                        <i class="fas fa-circle"></i> Loading...
+                                    </span>
+                                    <button class="btn btn-icon" onclick="refreshLiveView('frontend')" title="Refresh">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="openFullscreen('frontend')" title="Fullscreen">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="toggleLiveView('frontend')" title="Close">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="live-view-content">
+                                <iframe id="frontendFrame" src="http://localhost:8081" frameborder="0" title="Frontend live preview"></iframe>
+                                <div class="live-view-overlay" id="frontendOverlay">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading Frontend...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="live-view-panel" id="backendViewPanel">
+                            <div class="live-view-header">
+                                <h3><i class="fas fa-server"></i> Backend API Docs</h3>
+                                <div class="live-view-actions">
+                                    <span class="live-status" id="backendLiveStatus">
+                                        <i class="fas fa-circle"></i> Loading...
+                                    </span>
+                                    <button class="btn btn-icon" onclick="refreshLiveView('backend')" title="Refresh">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="openFullscreen('backend')" title="Fullscreen">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                    <button class="btn btn-icon" onclick="toggleLiveView('backend')" title="Close">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="live-view-content">
+                                <iframe id="backendFrame" src="http://localhost:8000/docs" frameborder="0" title="Backend API documentation view"></iframe>
+                                <div class="live-view-overlay" id="backendOverlay">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading Backend...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Service Status Cards -->
+                <section class="section">
+                    <h2 class="section-title">
+                        <i class="fas fa-server"></i> Service Status
+                    </h2>
+                    <div class="services-grid">
+                        <!-- MongoDB Card -->
+                        <div class="service-card" id="mongodbCard">
+                            <div class="service-header">
+                                <div class="service-icon mongodb">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="service-title">
+                                    <h3>MongoDB</h3>
+                                    <span class="status-badge" id="mongodbStatus">Checking...</span>
+                                </div>
+                            </div>
+                            <div class="service-info">
+                                <div class="info-item">
+                                    <i class="fas fa-hashtag"></i>
+                                    <span>PID: <strong id="mongodbPid">-</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-network-wired"></i>
+                                    <span>Port: <strong>27017</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-plug"></i>
+                                    <span>Connection: <strong id="mongodbConnection">-</strong></span>
+                                </div>
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn btn-icon btn-start" id="mongodbStartBtn" onclick="startService('mongodb')" title="Start MongoDB">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="btn btn-icon btn-stop" id="mongodbStopBtn" onclick="stopService('mongodb')" title="Stop MongoDB">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                                <button class="btn btn-icon" onclick="viewLogs('mongodb')" title="View Logs">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                <button class="btn btn-icon" onclick="viewErrors('mongodb')" title="View Errors">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Backend Card -->
+                        <div class="service-card" id="backendCard">
+                            <div class="service-header">
+                                <div class="service-icon backend">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div class="service-title">
+                                    <h3>Backend API</h3>
+                                    <span class="status-badge" id="backendStatus">Checking...</span>
+                                </div>
+                            </div>
+                            <div class="service-info">
+                                <div class="info-item">
+                                    <i class="fas fa-hashtag"></i>
+                                    <span>PID: <strong id="backendPid">-</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-network-wired"></i>
+                                    <span>Port: <strong id="backendPort">8000</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-link"></i>
+                                    <a href="http://localhost:8000" target="_blank" rel="noopener noreferrer">http://localhost:8000</a>
+                                </div>
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn btn-icon btn-start" id="backendStartBtn" onclick="startService('backend')" title="Start Backend">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="btn btn-icon btn-stop" id="backendStopBtn" onclick="stopService('backend')" title="Stop Backend">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                                <button class="btn btn-icon" onclick="viewLogs('backend')" title="View Logs">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                <button class="btn btn-icon" onclick="viewErrors('backend')" title="View Errors">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>
+                                <button class="btn btn-icon" onclick="window.open('http://localhost:8000/docs', '_blank')" title="API Docs">
+                                    <i class="fas fa-book"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Frontend Card -->
+                        <div class="service-card" id="frontendCard">
+                            <div class="service-header">
+                                <div class="service-icon frontend">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="service-title">
+                                    <h3>Frontend (Expo)</h3>
+                                    <span class="status-badge" id="frontendStatus">Checking...</span>
+                                </div>
+                            </div>
+                            <div class="service-info">
+                                <div class="info-item">
+                                    <i class="fas fa-hashtag"></i>
+                                    <span>PID: <strong id="frontendPid">-</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-network-wired"></i>
+                                    <span>Port: <strong id="frontendPort">8081</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-link"></i>
+                                    <a href="http://localhost:8081" target="_blank" rel="noopener noreferrer">http://localhost:8081</a>
+                                </div>
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn btn-icon btn-start" id="frontendStartBtn" onclick="startService('frontend')" title="Start Frontend">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="btn btn-icon btn-stop" id="frontendStopBtn" onclick="stopService('frontend')" title="Stop Frontend">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                                <button class="btn btn-icon" onclick="viewLogs('frontend')" title="View Logs">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                <button class="btn btn-icon" onclick="viewErrors('frontend')" title="View Errors">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Error Dashboard -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-exclamation-circle"></i> Error Dashboard
+                        </h2>
+                        <div class="error-filters">
+                            <select id="errorServiceFilter" onchange="filterErrors()" title="Filter errors by service">
+                                <option value="all">All Services</option>
+                                <option value="backend">Backend</option>
+                                <option value="frontend">Frontend</option>
+                                <option value="mongodb">MongoDB</option>
+                            </select>
+                            <select id="errorLevelFilter" onchange="filterErrors()" title="Filter errors by level">
+                                <option value="all">All Levels</option>
+                                <option value="error">Errors</option>
+                                <option value="warning">Warnings</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                            <button class="btn btn-small" onclick="copyAllErrors()">
+                                <i class="fas fa-copy"></i> Copy All
+                            </button>
+                            <button class="btn btn-small" onclick="exportErrors()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn btn-small" onclick="clearErrors()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="error-dashboard" id="errorDashboard">
+                        <div class="error-stats">
+                            <div class="stat-card error">
+                                <i class="fas fa-times-circle"></i>
+                                <div>
+                                    <span class="stat-value" id="errorCount">0</span>
+                                    <span class="stat-label">Errors</span>
+                                </div>
+                            </div>
+                            <div class="stat-card warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div>
+                                    <span class="stat-value" id="warningCount">0</span>
+                                    <span class="stat-label">Warnings</span>
+                                </div>
+                            </div>
+                            <div class="stat-card critical">
+                                <i class="fas fa-skull"></i>
+                                <div>
+                                    <span class="stat-value" id="criticalCount">0</span>
+                                    <span class="stat-label">Critical</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="error-list" id="errorList">
+                            <p class="empty-state">No errors detected</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Logs Panel -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-terminal"></i> Service Logs
+                        </h2>
+                        <div class="logs-controls">
+                            <select id="logServiceSelect" onchange="refreshLogs()" title="Select service to view logs">
+                                <option value="backend">Backend</option>
+                                <option value="frontend">Frontend</option>
+                                <option value="mongodb">MongoDB</option>
+                                <option value="all">All Services</option>
+                            </select>
+                            <select id="logLevelFilter" onchange="refreshLogs()" title="Filter logs by level">
+                                <option value="all">All Levels</option>
+                                <option value="error">Errors Only</option>
+                                <option value="warning">Warnings Only</option>
+                                <option value="info">Info Only</option>
+                            </select>
+                            <button class="btn btn-small" onclick="clearLogs()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button class="btn btn-small" id="autoScrollBtn" onclick="toggleAutoScroll()">
+                                <i class="fas fa-arrow-down"></i> Auto-scroll
+                            </button>
+                            <button class="btn btn-small" onclick="exportLogs()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="logs-content" id="logsContent">
+                        <p class="empty-state">Select a service to view logs...</p>
+                    </div>
+                </section>
+
+                <!-- Live Users & Verifications -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-users"></i> Live Activity
+                        </h2>
+                        <button class="btn btn-small" onclick="refreshLiveActivity()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="live-activity-grid">
+                        <!-- Live Users Widget -->
+                        <div class="activity-widget">
+                            <div class="widget-header">
+                                <h3><i class="fas fa-user-friends"></i> Active Users</h3>
+                                <span class="widget-badge" id="liveUsersCount">0</span>
+                            </div>
+                            <div class="widget-content" id="liveUsersList">
+                                <div class="loading-placeholder">Loading users...</div>
+                            </div>
+                        </div>
+                        <!-- Live Verifications Widget -->
+                        <div class="activity-widget">
+                            <div class="widget-header">
+                                <h3><i class="fas fa-check-circle"></i> Recent Verifications</h3>
+                                <span class="widget-badge" id="liveVerificationsCount">0</span>
+                            </div>
+                            <div class="widget-content" id="liveVerificationsList">
+                                <div class="loading-placeholder">Loading verifications...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Actions -->
+                <section class="section">
+                    <h2 class="section-title">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h2>
+                    <div class="actions-grid">
+                        <button class="action-btn" onclick="startAllServices()">
+                            <i class="fas fa-play"></i>
+                            <span>Start All</span>
+                        </button>
+                        <button class="action-btn" onclick="stopAllServices()">
+                            <i class="fas fa-stop"></i>
+                            <span>Stop All</span>
+                        </button>
+                        <button class="action-btn" onclick="restartAllServices()">
+                            <i class="fas fa-redo"></i>
+                            <span>Restart All</span>
+                        </button>
+                        <button class="action-btn" onclick="openFrontend()">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>Open Frontend</span>
+                        </button>
+                        <button class="action-btn" onclick="openBackendDocs()">
+                            <i class="fas fa-book"></i>
+                            <span>API Docs</span>
+                        </button>
+                        <button class="action-btn" onclick="exportAllLogs()">
+                            <i class="fas fa-download"></i>
+                            <span>Export All Logs</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sidebar - QR Code & Info -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-qrcode"></i> Expo Go Connection</h3>
+                    <button class="btn btn-icon btn-close" onclick="toggleSidebar()" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="qr-section">
+                    <div id="qrCodeContainer" class="qr-container">
+                        <div class="qr-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Generating QR code...</p>
+                        </div>
+                    </div>
+                    <div class="qr-info">
+                        <div class="info-box">
+                            <h4><i class="fas fa-info-circle"></i> Connection Info</h4>
+                            <div class="info-item">
+                                <strong>URL:</strong>
+                                <code id="expoUrl">http://localhost:8081</code>
+                            </div>
+                            <div class="info-item">
+                                <strong>Status:</strong>
+                                <span id="expoStatus" class="status-badge">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="qr-instructions">
+                        <h4><i class="fas fa-mobile-alt"></i> How to Connect</h4>
+                        <ol>
+                            <li>Install <strong>Expo Go</strong> app on your phone</li>
+                            <li>Open Expo Go and tap <strong>"Scan QR Code"</strong></li>
+                            <li>Point your camera at the QR code</li>
+                            <li>Wait for the app to load</li>
+                        </ol>
+                        <div class="warning-box">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p><strong>Note:</strong> Make sure your phone and computer are on the same network.</p>
+                        </div>
+                    </div>
+                    <div class="qr-actions">
+                        <button class="btn btn-primary" onclick="refreshQRCode()">
+                            <i class="fas fa-sync-alt"></i> Refresh QR
+                        </button>
+                        <button class="btn btn-secondary" onclick="copyExpoUrl()">
+                            <i class="fas fa-copy"></i> Copy URL
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Error Notification Panel -->
+    <div id="errorNotificationPanel" class="error-notification-panel">
+        <div class="error-notification-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> New Errors</h3>
+            <button class="btn btn-icon" onclick="closeErrorNotifications()" title="Close error notifications" aria-label="Close error notifications">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="errorNotificationList" class="error-notification-list"></div>
+    </div>
+
+    <!-- Fullscreen Modal -->
+    <div id="fullscreenModal" class="fullscreen-modal">
+        <div class="fullscreen-header">
+            <h3 id="fullscreenTitle"></h3>
+            <button class="btn btn-icon" onclick="closeFullscreen()" title="Close fullscreen view" aria-label="Close fullscreen view">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="fullscreen-content">
+            <iframe id="fullscreenFrame" frameborder="0" title="Fullscreen live view"></iframe>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="app.js"></script>
+    <script src="benchmark.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+diff --git a/node_modules/expo-asset/build/Asset.js b/node_modules/expo-asset/build/Asset.js
+index 491b0b4..1c7dc09 100644
+--- a/node_modules/expo-asset/build/Asset.js
++++ b/node_modules/expo-asset/build/Asset.js
+@@ -140,7 +140,22 @@ export class Asset {
+         // because resolveAssetSource depends on it
+         if (!IS_ENV_WITH_LOCAL_ASSETS) {
+             // null-check is performed above with `getAssetByID`.
+-            const { uri } = resolveAssetSource(virtualAssetModule);
++            const { uri } = resolveAssetSource(virtualAssetModule) ?? {};
++            if (!uri) {
++                // This is the legacy asset format, just use the module id.
++                // This is seemingly used in the Expo Go server.
++                const { uri: legacyUri } = resolveAssetSource(virtualAssetModule);
++                const asset = new Asset({
++                    name: meta.name,
++                    type: meta.type,
++                    hash: meta.hash,
++                    uri: legacyUri,
++                    width: meta.width,
++                    height: meta.height,
++                });
++                Asset.byHash[meta.hash] = asset;
++                return asset;
++            }
+             const asset = new Asset({
+                 name: meta.name,
+                 type: meta.type,

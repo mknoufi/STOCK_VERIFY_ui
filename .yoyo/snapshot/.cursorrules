@@ -1,0 +1,173 @@
+# Cursor AI Development Rules for ERPNext Custom App Development
+Version: 2025.1
+Date: August 03, 2025
+Scope: Applies to all developers, contractors, and IT teams using Cursor IDE for any ERPNext/Frappe development activity.
+
+# CRITICAL: TESTING & VERIFICATION RULES (NEW - 2025-11-12)
+## CAI-T01: Never Modify Code Without Testing
+- ALWAYS test code changes before and after implementation
+- NEVER commit untested code
+- ALWAYS verify existing functionality isn't broken
+- ALWAYS test error cases, not just happy paths
+
+## CAI-T02: Pre-Change Verification
+- Read and understand current code thoroughly
+- Test current functionality to establish baseline
+- Identify all affected files and dependencies
+- Document current behavior before changes
+
+## CAI-T03: Post-Change Verification
+- Test the specific change immediately
+- Test related features for regressions
+- Test error handling and edge cases
+- Verify integration with full stack
+- Check logs for errors
+- Verify no performance degradation
+
+## CAI-T04: Testing Checklist (MANDATORY)
+Before considering any change complete:
+- [ ] Code compiles without errors
+- [ ] All syntax/type checks pass
+- [ ] Backend starts without errors
+- [ ] Frontend builds without errors
+- [ ] Specific feature tested
+- [ ] Related features tested
+- [ ] Error cases tested
+- [ ] Integration tested
+- [ ] No regressions found
+- [ ] Logs show no errors
+
+## CAI-T05: Rollback Plan
+- Always have a way to revert changes
+- Document what to revert if issues occur
+- Keep mental note of working state
+- Test rollback procedure if critical
+
+1. Governance & Usage Policy
+•	CAI-R01: Cursor AI is to be used only on local development environments. No direct editing or suggestion application on production servers.
+•	CAI-R02: All AI-generated logic must be reviewed by a qualified developer before commit. Cursor suggestions are assistive, not authoritative.
+•	CAI-R03: Cursor AI should not be permitted to auto-refactor core Frappe or ERPNext app folders (`apps/frappe`, `apps/erpnext`). Use for reading and referencing only.
+•	CAI-R04: Developers must commit and tag any AI-generated file separately using Git commit message tag [auto-ai] for audit purposes.
+
+2. Code Structure & Context Management
+•	CAI-R10: Cursor AI's context must be configured via cursor.json to include only your custom app folders (`apps/your_app_name`).
+•	CAI-R11: Developer must define context.paths in Cursor to avoid model confusion or hallucination from unrelated files.
+•	CAI-R12: Avoid asking Cursor for suggestions on patches, migrations, or bench CLI unless you understand backend implications.
+
+3. AI Prompting Rules
+•	CAI-R20: Prompts must be structured with sufficient context, including Doctype names, DocField types, and purpose.
+•	CAI-R21: Never ask Cursor to generate raw SQL queries without validating schema, especially those involving DELETE, UPDATE, or TRUNCATE.
+•	CAI-R22: Avoid prompting for business logic decisions unless mapped clearly via user story or BPMN diagram. Cursor should assist code, not design policy.
+•	CAI-R23: Use 'Explain Code' to audit legacy logic or scripts copied from forums (especially frappe.call(), frappe.db.get_value(), etc.).
+
+4. Testing & AI Error Use
+•	CAI-R30: Cursor must not suppress linting or syntax errors. All .py, .js, .json files must conform to project-level formatting rules (Black, ESLint).
+•	CAI-R31: If Cursor suggests code with try/except, developers must still implement fallback logic and logging using frappe.logger().
+•	CAI-R32: If an AI suggestion causes failure after commit, roll back immediately and annotate the commit for internal review.
+•	CAI-R33: Use Cursor to generate unit tests, but execute using `bench run-tests --app your_app_name` to validate.
+
+5. Secure AI Practices
+•	CAI-R40: Never enter customer-sensitive data, credentials, or tokens in prompts. Cursor AI shares some telemetry with its backend.
+•	CAI-R41: AI code that touches financial transactions, user sessions, or authorization must undergo mandatory peer review.
+•	CAI-R42: Disable auto-save or 'AI auto-apply' features. Developer must confirm every suggestion before it modifies code.
+
+6. Workflow Compliance
+•	CAI-R50: All changes from Cursor must follow Git flow: feature branch → QA branch → PR → staging → production.
+•	CAI-R51: If Cursor is used to scaffold a module (e.g., Cashier Collection), document it in the module README with [Generated via Cursor AI].
+•	CAI-R52: Do not use Cursor AI to modify .json exported DocTypes manually unless the developer has reviewed schema impact in ERPNext UI.
+
+7. Logging & Audit Trail
+•	CAI-R60: All AI-assisted commits must include metadata in commit message: [auto-ai] Added script for x_doctype - needs review
+•	CAI-R61: Large Cursor-generated modules (100+ LOC) must be backed by a corresponding documentation file in /docs/ with purpose, logic, and fields used.
+•	CAI-R62: Maintain a shared change log across your custom apps to track Cursor-related iterations for future audit.
+
+8. Maintenance & Support
+•	CAI-R70: All Cursor-powered development features must be tested on Frappe Cloud or Docker bench clone before merging into production.
+•	CAI-R71: Disable Cursor's telemetry if working under NDA or within regulated environments (option available in settings).
+•	CAI-R72: Re-train internal developers quarterly to adapt to Cursor AI upgrades and emerging Frappe framework changes.
+
+# ADDITIONAL RULES FOR THIS PROJECT (STOCK_VERIFY)
+
+## Testing & Verification (MANDATORY)
+•	TEST-01: Before making ANY code change, read and understand the current code
+•	TEST-02: Test current functionality to establish baseline
+•	TEST-03: After making changes, test immediately:
+  - Syntax/type checks
+  - Backend startup
+  - Frontend build
+  - Specific feature
+  - Related features
+  - Error handling
+  - Integration
+•	TEST-04: Verify no regressions in existing functionality
+•	TEST-05: Check logs for errors after changes
+•	TEST-06: Never commit untested code
+
+## Code Quality
+•	QUAL-01: Make minimal, focused changes
+•	QUAL-02: Keep changes isolated
+•	QUAL-03: Avoid breaking existing functionality
+•	QUAL-04: Test error cases, not just happy paths
+•	QUAL-05: Document changes and test results
+
+## Priority Order
+1. Stability (don't break existing functionality)
+2. Testing (verify before and after)
+3. Features (add new functionality)
+4. Performance (optimize if needed)
+5. Optimization (nice-to-have improvements)
+
+Final Note
+•	Cursor AI can accelerate ERPNext development, but it must be treated like a junior developer with no domain expertise. Code quality, security, and business logic governance remain the responsibility of your engineering leadership.
+•	NEVER modify code without testing. Always verify changes don't negatively impact existing functionality.
+
+# CURSOR GUARDRAILS v2 (Operational Hardening)
+
+## Command Allow-List (STRICT)
+- Operate only inside current feature branch. Never run git push/pull/rebase/force.
+- Allowed commands ONLY:
+  - `npm run ci | npm run test | npm run typecheck | npm run lint | npm run fix`
+  - `make ci | make test | make typecheck | make lint | make fix`
+  - `pre-commit run -a`
+  - `bench run-tests --app stock_verify`
+  - `pytest tests/`
+  - `black --check .`
+  - `ruff check .`
+  - `mypy backend/`
+- FORBIDDEN commands:
+  - `git push --force` or any force operations
+  - `git rebase` without explicit instruction
+  - Docker destructive operations (rm, prune without explicit instruction)
+  - Database migrations without explicit instruction
+  - `npm install` or `pip install` unless task explicitly says "upgrade deps"
+
+## File Scope Restrictions
+- Feature folders only: `backend/`, `frontend/`, `tests/`
+- NEVER touch:
+  - `.env*`, `*.pem`, `*.key` (secrets)
+  - `/migrations/**` without explicit instruction
+  - Core Frappe/ERPNext: `apps/frappe`, `apps/erpnext` (read-only)
+  - Lockfiles (`package-lock.json`, `poetry.lock`) unless task says "upgrade deps"
+
+## Fail-Fast Policy
+- Max 2 CI iterations per task
+- After 2 red CI cycles, STOP and summarize blockers
+- Never continue in a loop of failures
+
+## Code Quality Gates
+- Always write/adjust tests FIRST for any change
+- Keep diffs ≤ 400 LoC per PR; split work if larger
+- Run `pre-commit run -a` before any commit
+- Commit format: `<type>(scope): <summary>` with rationale in body
+- For UI changes: ensure `aria-*` accessibility and responsive layout
+
+## ERPNext-Specific Guardrails
+- Ledger operations: require idempotent posting tests (no duplicate journal entries)
+- Financial transactions: mandatory peer review flag
+- Discount/pricing logic: pure functions, no DB in business logic
+- Timezone handling: always use +05:30 for India, validate in tests
+
+## Telemetry & Audit
+- Tag AI-authored commits: `Co-authored-by: cursor-agent`
+- Use commit message tag: `[auto-ai]` for audit purposes
+- Document large changes (100+ LoC) in `/docs/`

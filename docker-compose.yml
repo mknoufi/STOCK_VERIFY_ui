@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: stock_verify
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - ./backend/.env.docker
+    environment:
+      # Default fallback if env file not provided
+      MONGODB_URI: mongodb://mongo:27017/stock_verify
+      PORT: 8001
+    depends_on:
+      - mongo
+    ports:
+      - "8001:8001"
+
+  backup:
+    build:
+      context: .
+      dockerfile: backend/backup.Dockerfile
+    depends_on:
+      - mongo
+    volumes:
+      - ./backups:/backups
+    environment:
+      MONGO_HOST: mongo
+      BACKUP_CRON_SCHEDULE: "0 2 * * *" # Daily at 2 AM
+      BACKUP_RETENTION_DAYS: 30
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://localhost:8001}
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  mongo-data:

@@ -1,0 +1,90 @@
+# STOCK_VERIFY_2.1 Cursor Rules
+
+**Version:** 2.1  
+**Last Updated:** 2025-11-30  
+**Scope:** Backend (FastAPI) • Frontend (React Native + Expo) • Admin Panel (Web)  
+**Deployment Mode:** Local Network Only  
+
+---
+
+## 🧠 Purpose
+
+Defines **governance and operational rules** for STOCK_VERIFY_2.1 development, ensuring all AI-assisted or manual changes are safe, verified, and fully tested.
+
+---
+
+## 🔒 Core Principles
+
+1. **Stability First** — No feature regressions or unverified changes.
+2. **Verification Mandatory** — 100% test pass required before merge.
+3. **SQL Server is Read-Only** — All writes occur in MongoDB only.
+4. **No AI Guessing** — Only use documented, verified APIs.
+5. **All Docs Unified** — No duplicates across versions.
+
+---
+
+## 🧱 Architecture Overview
+
+**Flow:**  
+`SQL Server (read-only)` → `MongoDB (primary)` → `Frontend (React Native)`  
+
+- MongoDB stores: counts, discrepancies, enrichments, audit trails  
+- SQL Server used only for source data fetching (ERPNext tables)
+- No data written back to SQL Server
+
+---
+
+## ⚙️ Backend Stack
+
+- **FastAPI:** 0.115.6  
+- **Python:** 3.10+  
+- **Databases:** MongoDB (Motor), SQL Server (PyODBC)  
+- **Auth:** JWT (Authlib)  
+- **Server:** Uvicorn (ASGI)
+
+---
+
+## 🧩 Frontend Stack
+
+- **Framework:** React Native 0.81.5 + Expo 54 (Stable)  
+- **Language:** TypeScript 6.x  
+- **Styling:** NativeWind (Tailwind CSS)  
+- **State:** Zustand  
+- **Routing:** Expo Router  
+- **Offline:** AsyncStorage + Offline Queue  
+- **Drag/Resize:** React Native Reanimated + Gesture Handler
+
+---
+
+## 🧪 Testing Matrix
+
+| Layer | Tool | Requirement |
+|--------|------|-------------|
+| Backend | pytest | ≥ 90% coverage |
+| Frontend | Jest / Detox | All tests passing |
+| Integration | Dockerized | SQL→Mongo→App flow tested |
+| Load | k6 / Locust | 20 concurrent users stable |
+
+---
+
+## 🧰 Commit Standards
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) + AI tag:
+
+```
+
+[auto-ai] feat(scanner): add barcode scanning improvements
+fix(sync): resolve Mongo sync timestamp mismatch
+
+```
+
+---
+
+## 🧾 Governance Summary
+
+- Never duplicate documentation files.  
+- Archive old versions under `/docs/archive/old_docs/`.  
+- All schema, dependency, or config updates must also update `codebase_memory_v2.1.md`.  
+- Major changes → update `CHANGELOG.md`.
+
+---

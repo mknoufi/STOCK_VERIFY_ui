@@ -1,0 +1,13 @@
+{
+  "name": "Sentry",
+  "description": "Error tracking and performance monitoring.",
+  "transport": [
+    "sse"
+  ],
+  "domains": ["sentry.io"],
+  "icon": "./icon.svg",
+  "oauth": true,
+  "config": {
+    "url": "https://mcp.sentry.dev/mcp"
+  }
+}

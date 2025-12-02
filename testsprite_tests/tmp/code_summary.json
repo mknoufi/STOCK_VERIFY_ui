@@ -1,0 +1,317 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "React Native",
+    "Expo",
+    "FastAPI",
+    "Python",
+    "MongoDB",
+    "SQL Server",
+    "Zustand",
+    "React Query",
+    "Expo Router",
+    "Axios",
+    "AsyncStorage",
+    "JWT",
+    "Barcode Scanner",
+    "Camera API"
+  ],
+  "features": [
+    {
+      "name": "Authentication System",
+      "description": "JWT-based authentication with refresh tokens, remember me functionality, and role-based access control",
+      "files": [
+        "frontend/app/login.tsx",
+        "frontend/store/authStore.ts",
+        "backend/auth/jwt_provider.py",
+        "backend/auth/permissions.py",
+        "backend/auth/dependencies.py"
+      ]
+    },
+    {
+      "name": "Barcode Scanning",
+      "description": "Native barcode scanner using Expo Camera with support for multiple formats (EAN-13, UPC-A, Code 128, QR Code)",
+      "files": [
+        "frontend/app/staff/scan.tsx",
+        "frontend/services/itemVerificationApi.ts"
+      ]
+    },
+    {
+      "name": "Stock Verification Sessions",
+      "description": "Create and manage counting sessions with count lines, quantity tracking, and discrepancy detection",
+      "files": [
+        "frontend/app/staff/home.tsx",
+        "frontend/app/staff/scan.tsx",
+        "frontend/app/staff/history.tsx",
+        "frontend/services/api.ts",
+        "backend/api/item_verification_api.py"
+      ]
+    },
+    {
+      "name": "Supervisor Dashboard",
+      "description": "Dashboard for supervisors to monitor sessions, approve/reject count lines, and view analytics",
+      "files": [
+        "frontend/app/supervisor/dashboard.tsx",
+        "frontend/app/supervisor/session-detail.tsx",
+        "frontend/app/supervisor/settings.tsx"
+      ]
+    },
+    {
+      "name": "Admin Control Panel",
+      "description": "Admin interface for user management, system configuration, health monitoring, and service control",
+      "files": [
+        "frontend/app/admin/control-panel.tsx",
+        "frontend/app/admin/permissions.tsx",
+        "frontend/app/admin/metrics.tsx",
+        "backend/api/admin_control_api.py"
+      ]
+    },
+    {
+      "name": "ERPNext Integration",
+      "description": "Read-only integration with ERPNext SQL Server for item data synchronization and conflict resolution",
+      "files": [
+        "backend/services/erp_sync_service.py",
+        "backend/services/advanced_erp_sync.py",
+        "backend/services/sync_conflicts_service.py",
+        "backend/api/sync_management_api.py",
+        "backend/api/sync_conflicts_api.py"
+      ]
+    },
+    {
+      "name": "Dynamic Fields & Reports",
+      "description": "Configurable dynamic fields and custom report generation with filtering and export capabilities",
+      "files": [
+        "backend/services/dynamic_fields_service.py",
+        "backend/services/dynamic_report_service.py",
+        "backend/api/dynamic_fields_api.py",
+        "backend/api/dynamic_reports_api.py"
+      ]
+    },
+    {
+      "name": "Offline Queue",
+      "description": "Queue operations when offline and automatically sync when connection is restored",
+      "files": [
+        "frontend/services/offlineQueue.ts",
+        "frontend/services/offlineStorage.ts",
+        "frontend/app/supervisor/offline-queue.tsx"
+      ]
+    },
+    {
+      "name": "Network Status",
+      "description": "Monitor network connectivity and display status indicators",
+      "files": [
+        "frontend/services/networkService.ts",
+        "frontend/components/NetworkStatusBanner.tsx",
+        "frontend/components/OnlineStatus.tsx"
+      ]
+    },
+    {
+      "name": "Error Handling & Recovery",
+      "description": "Comprehensive error handling with auto-recovery, error logging, and user-friendly error messages",
+      "files": [
+        "frontend/services/errorHandler.ts",
+        "frontend/services/errorRecovery.ts",
+        "frontend/services/autoRecovery.ts",
+        "frontend/components/ErrorBoundary.tsx",
+        "backend/services/auto_recovery.py",
+        "backend/services/error_log.py"
+      ]
+    },
+    {
+      "name": "Data Export",
+      "description": "Export count lines and sessions to Excel/CSV formats with scheduled export capabilities",
+      "files": [
+        "frontend/services/exportService.ts",
+        "backend/api/exports_api.py",
+        "backend/services/scheduled_export_service.py",
+        "frontend/app/supervisor/export-results.tsx",
+        "frontend/app/supervisor/export-schedules.tsx"
+      ]
+    },
+    {
+      "name": "Activity & Error Logs",
+      "description": "Track user activities and system errors with filtering and search capabilities",
+      "files": [
+        "backend/services/activity_log.py",
+        "backend/services/error_log.py",
+        "backend/api/service_logs_api.py",
+        "frontend/app/supervisor/activity-logs.tsx",
+        "frontend/app/supervisor/error-logs.tsx"
+      ]
+    },
+    {
+      "name": "Search & Filtering",
+      "description": "Advanced search functionality for items with autocomplete, fuzzy search, and filtering",
+      "files": [
+        "frontend/services/enhancedSearchService.ts",
+        "frontend/components/SearchAutocomplete.tsx",
+        "frontend/hooks/useSearchItemsQuery.ts",
+        "frontend/hooks/useItemByBarcodeQuery.ts"
+      ]
+    },
+    {
+      "name": "State Management",
+      "description": "Global state management using Zustand stores for auth, settings, and application state",
+      "files": [
+        "frontend/store/authStore.ts",
+        "frontend/store/settingsStore.ts",
+        "frontend/services/queryClient.ts"
+      ]
+    },
+    {
+      "name": "Theme & Styling",
+      "description": "Theme system with dark mode support, premium styling, and responsive design",
+      "files": [
+        "frontend/services/themeService.ts",
+        "frontend/hooks/useTheme.ts",
+        "frontend/theme/designSystem.ts",
+        "frontend/styles/globalStyles.ts"
+      ]
+    },
+    {
+      "name": "Form Validation",
+      "description": "Form validation hooks and utilities with error handling and user feedback",
+      "files": [
+        "frontend/hooks/useFormValidation.ts",
+        "frontend/services/validationService.ts",
+        "frontend/components/forms/EnhancedTextInput.tsx",
+        "frontend/components/forms/EnhancedButton.tsx"
+      ]
+    },
+    {
+      "name": "Performance Optimization",
+      "description": "Performance monitoring, power saving mode, code splitting, and optimization utilities",
+      "files": [
+        "frontend/services/performanceService.ts",
+        "frontend/hooks/usePowerSaving.ts",
+        "frontend/components/PowerSavingIndicator.tsx",
+        "backend/services/database_optimizer.py"
+      ]
+    },
+    {
+      "name": "Database Management",
+      "description": "Multi-database connection management with MongoDB and SQL Server, connection pooling, and health monitoring",
+      "files": [
+        "backend/services/database_manager.py",
+        "backend/services/connection_pool.py",
+        "backend/services/database_health.py",
+        "backend/db/",
+        "backend/sql_server_connector.py"
+      ]
+    },
+    {
+      "name": "API Client Services",
+      "description": "Centralized API client with interceptors, error handling, and request/response transformation",
+      "files": [
+        "frontend/services/api.ts",
+        "frontend/services/httpClient.ts",
+        "frontend/services/enhancedApi.ts",
+        "frontend/services/enhancedDatabaseApi.ts"
+      ]
+    },
+    {
+      "name": "UI Components",
+      "description": "Reusable UI components including buttons, cards, modals, tables, loading states, and navigation",
+      "files": [
+        "frontend/components/Button.tsx",
+        "frontend/components/Card.tsx",
+        "frontend/components/DataTable.tsx",
+        "frontend/components/ui/Modal.tsx",
+        "frontend/components/LoadingSpinner.tsx",
+        "frontend/components/LoadingSkeleton.tsx",
+        "frontend/components/navigation/",
+        "frontend/components/layout/"
+      ]
+    },
+    {
+      "name": "Custom Hooks",
+      "description": "Custom React hooks for common functionality like permissions, debouncing, form validation, and queries",
+      "files": [
+        "frontend/hooks/usePermissions.ts",
+        "frontend/hooks/useDebouncedCallback.ts",
+        "frontend/hooks/useFormValidation.ts",
+        "frontend/hooks/useSessionsQuery.ts",
+        "frontend/hooks/useKeyboardShortcuts.ts",
+        "frontend/hooks/useAutoLogout.ts"
+      ]
+    },
+    {
+      "name": "Monitoring & Diagnostics",
+      "description": "System health monitoring, auto-diagnosis, metrics collection, and diagnostic tools",
+      "files": [
+        "backend/services/monitoring_service.py",
+        "backend/services/auto_diagnosis.py",
+        "backend/api/self_diagnosis_api.py",
+        "backend/api/metrics_api.py",
+        "frontend/components/DebugPanel.tsx",
+        "frontend/components/LoginDiagnosticsPanel.tsx"
+      ]
+    },
+    {
+      "name": "Security & Permissions",
+      "description": "Role-based access control, permission management, security settings, and audit logging",
+      "files": [
+        "backend/auth/permissions.py",
+        "backend/api/permissions_api.py",
+        "backend/api/security_api.py",
+        "frontend/app/admin/permissions.tsx",
+        "frontend/app/admin/security.tsx"
+      ]
+    },
+    {
+      "name": "Sync Management",
+      "description": "ERPNext synchronization with conflict detection, resolution, and status monitoring",
+      "files": [
+        "backend/services/auto_sync_manager.py",
+        "backend/services/change_detection_sync.py",
+        "backend/api/sync_status_api.py",
+        "frontend/services/syncService.ts",
+        "frontend/components/SyncStatusBar.tsx",
+        "frontend/components/DatabaseSyncStatus.tsx"
+      ]
+    },
+    {
+      "name": "Batch Operations",
+      "description": "Batch processing for count lines, bulk updates, and efficient data operations",
+      "files": [
+        "backend/services/batch_operations.py",
+        "frontend/services/batchOperationsService.ts"
+      ]
+    },
+    {
+      "name": "Caching & Storage",
+      "description": "Caching services, local storage management with AsyncStorage and MMKV for performance",
+      "files": [
+        "backend/services/cache_service.py",
+        "frontend/services/asyncStorageService.ts",
+        "frontend/services/mmkvStorage.ts",
+        "frontend/services/backupService.ts"
+      ]
+    },
+    {
+      "name": "Notifications & Toast",
+      "description": "Toast notifications, notification service, and user feedback systems",
+      "files": [
+        "frontend/services/toastService.ts",
+        "frontend/services/notificationService.ts",
+        "frontend/components/Toast.tsx",
+        "frontend/components/ToastProvider.tsx"
+      ]
+    },
+    {
+      "name": "Help & Documentation",
+      "description": "Help screen with FAQs, user guides, and documentation",
+      "files": [
+        "frontend/app/help.tsx"
+      ]
+    },
+    {
+      "name": "Welcome & Onboarding",
+      "description": "Welcome screen and user onboarding flow",
+      "files": [
+        "frontend/app/welcome.tsx",
+        "frontend/app/index.tsx"
+      ]
+    }
+  ]
+}

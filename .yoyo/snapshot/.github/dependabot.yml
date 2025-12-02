@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 5
+    # Allow automerging for patch/minor updates after CI passes
+    allow:
+      - dependency-type: "all"
+    # Optionally set reviewers or labels
+    labels:
+      - "dependencies"
+      - "automated-pr"

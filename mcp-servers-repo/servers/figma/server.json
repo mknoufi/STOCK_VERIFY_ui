@@ -1,0 +1,11 @@
+{
+  "name": "Figma",
+  "description": "Design and collaboration platform for teams.",
+  "transport": [
+    "sse"
+  ],
+  "icon": "./icon.svg",
+  "config": {
+    "url": "https://mcp.figma.com/mcp"
+  }
+}

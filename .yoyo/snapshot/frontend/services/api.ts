@@ -1,0 +1,1648 @@
+/**
+ * API service layer: network-aware endpoints with offline fallbacks and caching.
+ * Most functions prefer online calls and transparently fall back to cache.
+ */
+import { useNetworkStore } from './networkService';
+import api from './httpClient';
+import { retryWithBackoff } from '../utils/retry';
+import { validateBarcode, normalizeBarcode } from '../utils/validation';
+import {
+  addToOfflineQueue,
+  cacheItem,
+  searchItemsInCache,
+  cacheSession,
+  getSessionsCache,
+  getSessionFromCache,
+  cacheCountLine,
+  getCountLinesBySessionFromCache,
+} from './offlineStorage';
+
+// Check if online - simplified logic for better reliability
+export const isOnline = () => {
+  const state = useNetworkStore.getState();
+  const online = state.isOnline && state.isInternetReachable !== false;
+
+  // Debug logging
+  console.log('🌐 Network Status Check:', {
+    isOnline: state.isOnline,
+    isInternetReachable: state.isInternetReachable,
+    connectionType: state.connectionType,
+    result: online
+  });
+
+  // If network state is unknown or null, assume online (fail-safe for API calls)
+  if (state.isOnline === undefined || state.isOnline === null) {
+    console.log('🌐 Network state unknown, assuming ONLINE for API calls');
+    return true;
+  }
+
+  return online;
+};
+
+// Create session (with offline support)
+export const createSession = async (warehouse: string) => {
+  try {
+    if (!isOnline()) {
+      // Create offline session
+      const offlineSession = {
+        session_id: `offline_${Date.now()}`,
+        warehouse,
+        status: 'active',
+        created_by: 'offline_user',
+        created_at: new Date().toISOString(),
+      };
+
+      await cacheSession(offlineSession);
+      await addToOfflineQueue('session', offlineSession);
+
+      return offlineSession;
+    }
+
+    const response = await api.post('/sessions', { warehouse });
+    await cacheSession(response.data);
+    return response.data;
+  } catch (error) {
+    // Use warn instead of error to avoid blocking the UI with LogBox since we have a fallback
+    console.warn('Error creating session (switching to offline mode):', error);
+
+    // Fallback to offline mode
+    const offlineSession = {
+      session_id: `offline_${Date.now()}`,
+      warehouse,
+      status: 'active',
+      created_by: 'offline_user',
+      created_at: new Date().toISOString(),
+    };
+
+    await cacheSession(offlineSession);
+    await addToOfflineQueue('session', offlineSession);
+
+    return offlineSession;
+  }
+};
+
+// Get sessions (with offline support and pagination)
+/**
+ * Get sessions with pagination. Falls back to local cache when offline or on errors.
+ * @param page Page number (1-based)
+ * @param pageSize Page size (1-100)
+ */
+export const getSessions = async (page: number = 1, pageSize: number = 20) => {
+  try {
+    if (!isOnline()) {
+      // Return cached sessions
+      const cache = await getSessionsCache();
+      const allSessions = Object.values(cache);
+
+      // Apply pagination to cached data
+      const skip = (page - 1) * pageSize;
+      const paginatedSessions = allSessions.slice(skip, skip + pageSize);
+
+      return {
+        items: paginatedSessions,
+        pagination: {
+          page,
+          page_size: pageSize,
+          total: allSessions.length,
+          total_pages: Math.ceil(allSessions.length / pageSize),
+          has_next: skip + pageSize < allSessions.length,
+          has_prev: page > 1,
+        },
+      };
+    }
+
+    // Ensure page and pageSize are valid numbers (convert to integers explicitly)
+    const validPage = Math.max(1, Math.floor(Number(page)) || 1);
+    const validPageSize = Math.max(1, Math.min(100, Math.floor(Number(pageSize)) || 20));
+
+    const response = await api.get('/sessions', {
+      params: {
+        page: validPage,
+        page_size: validPageSize,
+      },
+    });
+
+    // Handle both old format (array) and new format (object with items)
+    const sessions = response.data.items || response.data;
+    const pagination = response.data.pagination || {
+      page,
+      page_size: pageSize,
+      total: sessions.length,
+      total_pages: 1,
+      has_next: false,
+      has_prev: false,
+    };
+
+    // Cache sessions
+    if (Array.isArray(sessions)) {
+      for (const session of sessions) {
+        await cacheSession(session);
+      }
+    }
+
+    return {
+      items: sessions,
+      pagination,
+    };
+  } catch (error) {
+    console.error('Error getting sessions:', error);
+
+    // Fallback to cache
+    const cache = await getSessionsCache();
+    const allSessions = Object.values(cache);
+    const skip = (page - 1) * pageSize;
+    const paginatedSessions = allSessions.slice(skip, skip + pageSize);
+
+    return {
+      items: paginatedSessions,
+      pagination: {
+        page,
+        page_size: pageSize,
+        total: allSessions.length,
+        total_pages: Math.ceil(allSessions.length / pageSize),
+        has_next: skip + pageSize < allSessions.length,
+        has_prev: page > 1,
+      },
+    };
+  }
+};
+
+// Get session by ID (with offline support)
+/**
+ * Get a single session by id. Uses cache offline.
+ * @param sessionId Session identifier
+ */
+export const getSession = async (sessionId: string) => {
+  try {
+    if (!isOnline()) {
+      // Return cached session
+      return await getSessionFromCache(sessionId);
+    }
+
+    const response = await api.get(`/sessions/${sessionId}`);
+    await cacheSession(response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting session:', error);
+
+    // Fallback to cache
+    return await getSessionFromCache(sessionId);
+  }
+};
+
+// Bulk close sessions
+export const bulkCloseSessions = async (sessionIds: string[]) => {
+  try {
+    const response = await api.post('/sessions/bulk/close', sessionIds);
+    return response.data;
+  } catch (error: any) {
+    console.error('Bulk close sessions error:', error);
+    throw error;
+  }
+};
+
+// Bulk reconcile sessions
+export const bulkReconcileSessions = async (sessionIds: string[]) => {
+  try {
+    const response = await api.post('/sessions/bulk/reconcile', sessionIds);
+    return response.data;
+  } catch (error: any) {
+    console.error('Bulk reconcile sessions error:', error);
+    throw error;
+  }
+};
+
+// Bulk export sessions
+export const bulkExportSessions = async (sessionIds: string[], format: string = 'excel') => {
+  try {
+    const response = await api.post('/sessions/bulk/export', sessionIds, {
+      params: { format }
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Bulk export sessions error:', error);
+    throw error;
+  }
+};
+
+// Get sessions analytics (aggregated server-side)
+export const getSessionsAnalytics = async () => {
+  try {
+    const response = await api.get('/sessions/analytics');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get sessions analytics error:', error);
+    throw error;
+  }
+};
+
+// Get item by barcode (with offline support, retry, and auto recovery)
+/**
+ * Lookup an item by barcode with validation, retry and cache fallback.
+ * @param barcode Barcode string scanned/entered
+ * @param retryCount Number of retries for transient failures
+ */
+export const getItemByBarcode = async (barcode: string, retryCount: number = 3) => {
+  // Validate and normalize barcode before making API call
+  const validation = validateBarcode(barcode);
+  if (!validation.valid || !validation.value) {
+    throw new Error(validation.error || 'Invalid barcode format');
+  }
+
+  // Use normalized barcode if available (6-digit format for numeric barcodes)
+  const trimmedBarcode = validation.value;
+
+  console.log(`🔍 Looking up barcode: ${trimmedBarcode} (original: ${barcode})`);
+
+  // Check if offline first - only use cache if truly offline
+  if (!isOnline()) {
+    console.log('📱 Offline mode - searching cache');
+    try {
+      const items = await searchItemsInCache(trimmedBarcode);
+      if (items.length > 0) {
+        console.log('✅ Found in cache:', items[0]?.item_code);
+        return items[0];
+      }
+      throw new Error('Item not found in offline cache. Connect to internet to search server.');
+    } catch {
+      throw new Error('Offline: Item not found in cache. Connect to internet to search server.');
+    }
+  }
+
+  // Online - try API first, then cache as fallback
+  try {
+    console.log('🌐 Online mode - calling API');
+
+    // Direct API call with retry
+    const response = await retryWithBackoff(() => api.get(`/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}`), {
+      retries: retryCount,
+      backoffMs: 1000,
+    });
+
+    console.log('✅ Found via API:', response.data.item_code);
+
+    // Cache the item for future offline use
+    try {
+      await cacheItem({
+        item_code: response.data.item_code,
+        barcode: response.data.barcode,
+        item_name: response.data.item_name,
+        description: response.data.description,
+        uom: response.data.uom,
+        current_stock: response.data.current_stock,
+      });
+    } catch (cacheError) {
+      console.warn('Failed to cache item:', cacheError);
+      // Don't fail the whole operation for cache errors
+    }
+
+    return response.data;
+
+  } catch (apiError: any) {
+    console.error('❌ API call failed:', apiError.message);
+
+    // Only fallback to cache if API fails
+    console.log('🔄 API failed, trying cache fallback');
+    try {
+      const items = await searchItemsInCache(trimmedBarcode);
+      if (items.length > 0) {
+        console.log('✅ Found in cache fallback:', items[0]?.item_code);
+        return items[0];
+      }
+
+      // Cache is empty too
+      throw new Error('Item not found in cache');
+    } catch (cacheError) {
+      console.error('❌ Cache fallback also failed:', cacheError);
+
+      // Provide helpful error message
+      if (apiError.response?.status === 404) {
+        throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
+      } else if (apiError.code === 'ECONNABORTED' || apiError.message?.includes('timeout')) {
+        throw new Error('Connection timeout. Check your internet connection.');
+      } else if (apiError.code === 'ECONNREFUSED' || !apiError.response) {
+        throw new Error('Cannot connect to server. Check if backend is running.');
+      } else {
+        throw new Error(`Barcode lookup failed: ${apiError.message || 'Unknown error'}`);
+      }
+    }
+  }
+};
+
+// Search items (with offline support)
+export const searchItems = async (query: string) => {
+  try {
+    if (!isOnline()) {
+      // Search in cache
+      return await searchItemsInCache(query);
+    }
+
+    const response = await api.get(`/erp/items?search=${encodeURIComponent(query)}`);
+
+    // Handle paginated response format
+    const items = Array.isArray(response.data)
+      ? response.data
+      : (response.data.items || []);
+
+    // Cache the items
+    for (const item of items) {
+      await cacheItem({
+        item_code: item.item_code,
+        barcode: item.barcode,
+        item_name: item.item_name,
+        description: item.description,
+        uom: item.uom,
+        current_stock: item.current_stock,
+      });
+    }
+
+    return items;
+  } catch (error) {
+    console.error('Error searching items:', error);
+
+    // Fallback to cache
+    try {
+      return await searchItemsInCache(query);
+    } catch (fallbackError) {
+      console.error('Cache fallback error:', fallbackError);
+      return [];
+    }
+  }
+};
+
+// Create count line (with offline support)
+export const createCountLine = async (countData: any) => {
+  try {
+    if (!isOnline()) {
+      // Create offline count line
+      const offlineCountLine = {
+        _id: `offline_${Date.now()}`,
+        ...countData,
+        counted_at: new Date().toISOString(),
+      };
+
+      await cacheCountLine(offlineCountLine);
+      await addToOfflineQueue('count_line', offlineCountLine);
+
+      return offlineCountLine;
+    }
+
+    const response = await api.post('/count-lines', countData);
+    await cacheCountLine(response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating count line:', error);
+
+    // Fallback to offline mode
+    const offlineCountLine = {
+      _id: `offline_${Date.now()}`,
+      ...countData,
+      counted_at: new Date().toISOString(),
+    };
+
+    await cacheCountLine(offlineCountLine);
+    await addToOfflineQueue('count_line', offlineCountLine);
+
+    return offlineCountLine;
+  }
+};
+
+// Get count lines by session (with offline support)
+export const getCountLines = async (
+  sessionId: string,
+  page: number = 1,
+  pageSize: number = 50,
+  verified?: boolean
+) => {
+  try {
+    if (!isOnline()) {
+      // Return cached count lines
+      const cachedLines = await getCountLinesBySessionFromCache(sessionId);
+      // Filter by verified status if provided
+      if (verified !== undefined) {
+        const filtered = cachedLines.filter((line: any) => line.verified === verified);
+        return {
+          items: filtered,
+          pagination: {
+            page: 1,
+            page_size: filtered.length,
+            total: filtered.length,
+            total_pages: 1,
+            has_next: false,
+            has_prev: false,
+          }
+        };
+      }
+      return {
+        items: cachedLines,
+        pagination: {
+          page: 1,
+          page_size: cachedLines.length,
+          total: cachedLines.length,
+          total_pages: 1,
+          has_next: false,
+          has_prev: false,
+        }
+      };
+    }
+
+    let url = `/count-lines/session/${sessionId}?page=${page}&page_size=${pageSize}`;
+    if (verified !== undefined) {
+      url += `&verified=${verified}`;
+    }
+
+    const response = await api.get(url);
+
+    // Cache count lines
+    if (response.data?.items && Array.isArray(response.data.items)) {
+      for (const countLine of response.data.items) {
+        await cacheCountLine(countLine);
+      }
+    } else if (Array.isArray(response.data)) {
+      // Handle legacy format
+      for (const countLine of response.data) {
+        await cacheCountLine(countLine);
+      }
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error getting count lines:', error);
+
+    // Fallback to cache
+    const cachedLines = await getCountLinesBySessionFromCache(sessionId);
+    if (verified !== undefined) {
+      const filtered = cachedLines.filter((line: any) => line.verified === verified);
+      return {
+        items: filtered,
+        pagination: {
+          page: 1,
+          page_size: filtered.length,
+          total: filtered.length,
+          total_pages: 1,
+          has_next: false,
+          has_prev: false,
+        }
+      };
+    }
+    return {
+      items: cachedLines,
+      pagination: {
+        page: 1,
+        page_size: cachedLines.length,
+        total: cachedLines.length,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      }
+    };
+  }
+};
+
+// Check if item already counted
+export const checkItemCounted = async (sessionId: string, itemCode: string) => {
+  try {
+    if (!isOnline()) {
+      // Check in cached count lines
+      const cachedLines = await getCountLinesBySessionFromCache(sessionId);
+      const itemLines = cachedLines.filter((line) => line.item_code === itemCode);
+      return { already_counted: itemLines.length > 0, count_lines: itemLines };
+    }
+
+    const response = await api.get(`/count-lines/check/${sessionId}/${itemCode}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error checking item counted:', error);
+
+    // Fallback to cache
+    const cachedLines = await getCountLinesBySessionFromCache(sessionId);
+    const itemLines = cachedLines.filter((line) => line.item_code === itemCode);
+    return { already_counted: itemLines.length > 0, count_lines: itemLines };
+  }
+};
+
+// Add quantity to existing count line
+export const addQuantityToCountLine = async (lineId: string, additionalQty: number) => {
+  try {
+    const response = await api.patch(`/count-lines/${lineId}/add-quantity?additional_qty=${additionalQty}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error adding quantity to count line:', error);
+    throw error;
+  }
+};
+
+// Get variance reasons
+export const getVarianceReasons = async () => {
+  const response = await api.get('/variance-reasons');
+  // Handle wrapped response format
+  if (response.data && response.data.reasons && Array.isArray(response.data.reasons)) {
+    return response.data.reasons.map((r: any) => ({
+      ...r,
+      code: r.id || r.code,
+      label: r.label || r.name
+    }));
+  }
+  return response.data;
+};
+
+// Approve count line
+export const approveCountLine = async (lineId: string) => {
+  const response = await api.put(`/count-lines/${lineId}/approve`);
+  return response.data;
+};
+
+// Reject count line
+export const rejectCountLine = async (lineId: string) => {
+  const response = await api.put(`/count-lines/${lineId}/reject`);
+  return response.data;
+};
+
+// Update session status
+export const updateSessionStatus = async (sessionId: string, status: string) => {
+  const response = await api.put(`/sessions/${sessionId}/status?status=${status}`);
+  return response.data;
+};
+
+// Create unknown item (with offline support)
+export const createUnknownItem = async (itemData: any) => {
+  try {
+    if (!isOnline()) {
+      await addToOfflineQueue('unknown_item', itemData);
+      return { success: true, offline: true };
+    }
+
+    const response = await api.post('/unknown-items', itemData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating unknown item:', error);
+    await addToOfflineQueue('unknown_item', itemData);
+    return { success: true, offline: true };
+  }
+};
+
+// Register user
+export const registerUser = async (userData: {
+  username: string;
+  password: string;
+  full_name: string;
+  employee_id?: string;
+  phone?: string;
+}) => {
+  const response = await api.post('/auth/register', userData);
+  return response.data;
+};
+
+// Refresh item stock from ERP
+export const refreshItemStock = async (itemCode: string) => {
+  try {
+    const response = await api.post(`/erp/items/${encodeURIComponent(itemCode)}/refresh-stock`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Refresh stock error:', error);
+    throw error;
+  }
+};
+
+// Database Mapping API
+export const getAvailableTables = async (host: string, port: number, database: string, user?: string, password?: string, schema: string = 'dbo') => {
+  try {
+    const params = new URLSearchParams({
+      host,
+      port: port.toString(),
+      database,
+      schema,
+    });
+    if (user) params.append('user', user);
+    if (password) params.append('password', password);
+
+    const response = await api.get(`/mapping/tables?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get tables error:', error);
+    throw error;
+  }
+};
+
+export const getTableColumns = async (host: string, port: number, database: string, tableName: string, user?: string, password?: string, schema: string = 'dbo') => {
+  try {
+    const params = new URLSearchParams({
+      host,
+      port: port.toString(),
+      database,
+      table_name: tableName,
+      schema,
+    });
+    if (user) params.append('user', user);
+    if (password) params.append('password', password);
+
+    const response = await api.get(`/mapping/columns?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get columns error:', error);
+    throw error;
+  }
+};
+
+export const getCurrentMapping = async () => {
+  try {
+    const response = await api.get('/mapping/current');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get current mapping error:', error);
+    throw error;
+  }
+};
+
+export const testMapping = async (config: any, host: string, port: number, database: string, user?: string, password?: string) => {
+  try {
+    const params = new URLSearchParams({
+      host,
+      port: port.toString(),
+      database,
+    });
+    if (user) params.append('user', user);
+    if (password) params.append('password', password);
+
+    const response = await api.post(`/mapping/test?${params.toString()}`, config);
+    return response.data;
+  } catch (error: any) {
+    console.error('Test mapping error:', error);
+    throw error;
+  }
+};
+
+export const saveMapping = async (config: any) => {
+  try {
+    const response = await api.post('/mapping/save', config);
+    return response.data;
+  } catch (error: any) {
+    console.error('Save mapping error:', error);
+    throw error;
+  }
+};
+
+// Sync offline queue (enhanced version in syncService.ts)
+export const syncOfflineQueue = async (options?: any) => {
+  // Import sync service dynamically
+  const syncService = await import('./syncService');
+  return await syncService.syncOfflineQueue(options);
+};
+
+// Activity Log API
+export const getActivityLogs = async (
+  page: number = 1,
+  pageSize: number = 50,
+  user?: string,
+  action?: string,
+  status?: string,
+  startDate?: string,
+  endDate?: string
+) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      page_size: pageSize.toString(),
+    });
+    if (user) params.append('user', user);
+    if (action) params.append('action', action);
+    if (status) params.append('status_filter', status);
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+
+    console.log('🔍 [Activity Logs] Fetching activity logs:', {
+      page,
+      pageSize,
+      filters: { user, action, status, startDate, endDate },
+      url: `/activity-logs?${params.toString()}`
+    });
+
+    const response = await api.get(`/activity-logs?${params.toString()}`);
+
+    console.log('✅ [Activity Logs] Success:', {
+      totalActivities: response.data?.pagination?.total || 0,
+      page: response.data?.pagination?.page || page,
+      activitiesReturned: response.data?.activities?.length || 0
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ [Activity Logs] Error fetching activity logs:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data,
+      filters: { page, pageSize, user, action, status, startDate, endDate }
+    });
+    throw error;
+  }
+};
+
+export const getActivityStats = async (startDate?: string, endDate?: string) => {
+  try {
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+
+    console.log('📊 [Activity Stats] Fetching statistics:', {
+      filters: { startDate, endDate },
+      url: `/activity-logs/stats?${params.toString()}`
+    });
+
+    const response = await api.get(`/activity-logs/stats?${params.toString()}`);
+
+    console.log('✅ [Activity Stats] Success:', {
+      total: response.data?.total || 0,
+      successCount: response.data?.by_status?.success || 0,
+      errorCount: response.data?.by_status?.error || 0,
+      warningCount: response.data?.by_status?.warning || 0
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ [Activity Stats] Error fetching statistics:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data,
+      filters: { startDate, endDate }
+    });
+    throw error;
+  }
+};
+
+// Error Log API
+export const getErrorLogs = async (
+  page: number = 1,
+  pageSize: number = 50,
+  severity?: string,
+  errorType?: string,
+  endpoint?: string,
+  resolved?: boolean,
+  startDate?: string,
+  endDate?: string
+) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      page_size: pageSize.toString(),
+    });
+    if (severity) params.append('severity', severity);
+    if (errorType) params.append('error_type', errorType);
+    if (endpoint) params.append('endpoint', endpoint);
+    if (resolved !== undefined) params.append('resolved', resolved.toString());
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+
+    console.log('🔍 [Error Logs] Fetching error logs:', {
+      page,
+      pageSize,
+      filters: { severity, errorType, endpoint, resolved, startDate, endDate },
+      url: `/error-logs?${params.toString()}`
+    });
+
+    const response = await api.get(`/error-logs?${params.toString()}`);
+
+    console.log('✅ [Error Logs] Success:', {
+      totalErrors: response.data?.pagination?.total || 0,
+      page: response.data?.pagination?.page || page,
+      errorsReturned: response.data?.errors?.length || 0
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ [Error Logs] Error fetching error logs:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data,
+      filters: { page, pageSize, severity, errorType, endpoint, resolved, startDate, endDate }
+    });
+    throw error;
+  }
+};
+
+export const getErrorStats = async (startDate?: string, endDate?: string) => {
+  try {
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+
+    console.log('📊 [Error Stats] Fetching statistics:', {
+      filters: { startDate, endDate },
+      url: `/error-logs/stats?${params.toString()}`
+    });
+
+    const response = await api.get(`/error-logs/stats?${params.toString()}`);
+
+    console.log('✅ [Error Stats] Success:', {
+      total: response.data?.total || 0,
+      criticalCount: response.data?.by_severity?.critical || 0,
+      errorCount: response.data?.by_severity?.error || 0,
+      warningCount: response.data?.by_severity?.warning || 0
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ [Error Stats] Error fetching statistics:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data,
+      filters: { startDate, endDate }
+    });
+    throw error;
+  }
+};
+
+export const getErrorDetail = async (errorId: string) => {
+  try {
+    console.log('🔍 [Error Detail] Fetching error details:', { errorId });
+
+    const response = await api.get(`/error-logs/${errorId}`);
+
+    console.log('✅ [Error Detail] Success:', {
+      errorId,
+      severity: response.data?.severity,
+      errorType: response.data?.error_type,
+      timestamp: response.data?.timestamp
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ [Error Detail] Error fetching error details:', {
+      errorId,
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data
+    });
+    throw error;
+  }
+};
+
+export const resolveError = async (errorId: string, resolutionNote?: string) => {
+  try {
+    const response = await api.put(`/error-logs/${errorId}/resolve`, {
+      resolution_note: resolutionNote,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Resolve error error:', error);
+    throw error;
+  }
+};
+
+// ERP Configuration
+export const getERPConfig = async () => {
+  try {
+    const response = await api.get('/erp/config');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get ERP config error:', error);
+    throw error;
+  }
+};
+
+// Stock Verification
+export const verifyStock = async (countLineId: string) => {
+  try {
+    const response = await api.put(`/count-lines/${countLineId}/verify`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Verify stock error:', error);
+    throw error;
+  }
+};
+
+export const unverifyStock = async (countLineId: string) => {
+  try {
+    const response = await api.put(`/count-lines/${countLineId}/unverify`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Unverify stock error:', error);
+    throw error;
+  }
+};
+
+// ==========================================
+// PERMISSIONS API
+// ==========================================
+
+export const getAvailablePermissions = async () => {
+  try {
+    const response = await api.get('/permissions/available');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get available permissions error:', error);
+    throw error;
+  }
+};
+
+export const getRolePermissions = async (role: string) => {
+  try {
+    const response = await api.get(`/permissions/roles/${role}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get role permissions error:', error);
+    throw error;
+  }
+};
+
+export const getUserPermissions = async (username: string) => {
+  try {
+    const response = await api.get(`/permissions/users/${username}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get user permissions error:', error);
+    throw error;
+  }
+};
+
+export const addUserPermissions = async (username: string, permissions: string[]) => {
+  try {
+    const response = await api.post(`/permissions/users/${username}/add`, { permissions });
+    return response.data;
+  } catch (error: any) {
+    console.error('Add user permissions error:', error);
+    throw error;
+  }
+};
+
+export const removeUserPermissions = async (username: string, permissions: string[]) => {
+  try {
+    const response = await api.post(`/permissions/users/${username}/remove`, { permissions });
+    return response.data;
+  } catch (error: any) {
+    console.error('Remove user permissions error:', error);
+    throw error;
+  }
+};
+
+// ==========================================
+// EXPORT SCHEDULES API
+// ==========================================
+
+export const getExportSchedules = async (enabled?: boolean) => {
+  try {
+    const params = new URLSearchParams();
+    if (enabled !== undefined) params.append('enabled', enabled.toString());
+
+    const response = await api.get(`/exports/schedules?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get export schedules error:', error);
+    throw error;
+  }
+};
+
+export const getExportSchedule = async (scheduleId: string) => {
+  try {
+    const response = await api.get(`/exports/schedules/${scheduleId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get export schedule error:', error);
+    throw error;
+  }
+};
+
+export const createExportSchedule = async (scheduleData: any) => {
+  try {
+    const response = await api.post('/exports/schedules', scheduleData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Create export schedule error:', error);
+    throw error;
+  }
+};
+
+export const updateExportSchedule = async (scheduleId: string, scheduleData: any) => {
+  try {
+    const response = await api.put(`/exports/schedules/${scheduleId}`, scheduleData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update export schedule error:', error);
+    throw error;
+  }
+};
+
+export const deleteExportSchedule = async (scheduleId: string) => {
+  try {
+    const response = await api.delete(`/exports/schedules/${scheduleId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Delete export schedule error:', error);
+    throw error;
+  }
+};
+
+export const triggerExportSchedule = async (scheduleId: string) => {
+  try {
+    const response = await api.post(`/exports/schedules/${scheduleId}/trigger`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Trigger export schedule error:', error);
+    throw error;
+  }
+};
+
+export const getExportResults = async (scheduleId?: string, status?: string, page: number = 1, pageSize: number = 50) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      page_size: pageSize.toString(),
+    });
+    if (scheduleId) params.append('schedule_id', scheduleId);
+    if (status) params.append('status', status);
+
+    const response = await api.get(`/exports/results?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get export results error:', error);
+    throw error;
+  }
+};
+
+export const downloadExportResult = async (resultId: string) => {
+  try {
+    const response = await api.get(`/exports/results/${resultId}/download`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Download export result error:', error);
+    throw error;
+  }
+};
+
+// ==========================================
+// SYNC CONFLICTS API
+// ==========================================
+
+export const getSyncConflicts = async (status?: string, sessionId?: string, page: number = 1, pageSize: number = 50) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      page_size: pageSize.toString(),
+    });
+    if (status) params.append('status', status);
+    if (sessionId) params.append('session_id', sessionId);
+
+    const response = await api.get(`/sync/conflicts?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get sync conflicts error:', error);
+    throw error;
+  }
+};
+
+export const getSyncConflictDetail = async (conflictId: string) => {
+  try {
+    const response = await api.get(`/sync/conflicts/${conflictId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get sync conflict detail error:', error);
+    throw error;
+  }
+};
+
+export const resolveSyncConflict = async (conflictId: string, resolution: string, resolutionNote?: string) => {
+  try {
+    const response = await api.post(`/sync/conflicts/${conflictId}/resolve`, {
+      resolution,
+      resolution_note: resolutionNote,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Resolve sync conflict error:', error);
+    throw error;
+  }
+};
+
+export const batchResolveSyncConflicts = async (conflictIds: string[], resolution: string, resolutionNote?: string) => {
+  try {
+    const response = await api.post('/sync/conflicts/batch-resolve', {
+      conflict_ids: conflictIds,
+      resolution,
+      resolution_note: resolutionNote,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Batch resolve sync conflicts error:', error);
+    throw error;
+  }
+};
+
+export const getSyncConflictStats = async () => {
+  try {
+    const response = await api.get('/sync/conflicts/stats');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get sync conflict stats error:', error);
+    throw error;
+  }
+};
+
+// ==========================================
+// METRICS API
+// ==========================================
+
+export const getMetrics = async () => {
+  try {
+    const response = await api.get('/metrics');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get metrics error:', error);
+    throw error;
+  }
+};
+
+export const getMetricsHealth = async () => {
+  try {
+    const response = await api.get('/metrics/health');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get metrics health error:', error);
+    throw error;
+  }
+};
+
+export const getMetricsStats = async () => {
+  try {
+    const response = await api.get('/metrics/stats');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get metrics stats error:', error);
+    throw error;
+  }
+};
+
+// Sync Status API
+export const getSyncStatus = async () => {
+  try {
+    const response = await api.get('/sync/status');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get sync status error:', error);
+    throw error;
+  }
+};
+
+export const getSyncStats = async () => {
+  try {
+    const response = await api.get('/sync/stats');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get sync stats error:', error);
+    throw error;
+  }
+};
+
+export const triggerManualSync = async () => {
+  try {
+    const response = await api.post('/sync/trigger');
+    return response.data;
+  } catch (error: any) {
+    console.error('Trigger manual sync error:', error);
+    throw error;
+  }
+};
+
+// Admin Control Panel API
+export const getServicesStatus = async () => {
+  try {
+    const response = await api.get('/admin/control/services/status');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get services status error:', error);
+    throw error;
+  }
+};
+
+export const startService = async (service: string) => {
+  try {
+    const response = await api.post(`/admin/control/services/${service}/start`);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Start ${service} error:`, error);
+    throw error;
+  }
+};
+
+export const stopService = async (service: string) => {
+  try {
+    const response = await api.post(`/admin/control/services/${service}/stop`);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Stop ${service} error:`, error);
+    throw error;
+  }
+};
+
+export const getSystemIssues = async () => {
+  try {
+    const response = await api.get('/admin/control/system/issues');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get system issues error:', error);
+    throw error;
+  }
+};
+
+export const getLoginDevices = async () => {
+  try {
+    const response = await api.get('/admin/control/devices');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get login devices error:', error);
+    throw error;
+  }
+};
+
+export const getAvailableReports = async () => {
+  try {
+    const response = await api.get('/admin/control/reports/available');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get available reports error:', error);
+    throw error;
+  }
+};
+
+export const generateReport = async (reportId: string, format: string = 'json', startDate?: string, endDate?: string) => {
+  try {
+    const response = await api.post('/admin/control/reports/generate', {
+      report_id: reportId,
+      format,
+      start_date: startDate,
+      end_date: endDate,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Generate report error:', error);
+    throw error;
+  }
+};
+
+export const getServiceLogs = async (service: string, lines: number = 100, level?: string) => {
+  try {
+    const params = new URLSearchParams({ lines: lines.toString() });
+    if (level) params.append('level', level);
+    const response = await api.get(`/admin/control/logs/${service}?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get service logs error:', error);
+    throw error;
+  }
+};
+
+export const getSqlServerConfig = async () => {
+  try {
+    const response = await api.get('/admin/control/sql-server/config');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get SQL Server config error:', error);
+    throw error;
+  }
+};
+
+export const updateSqlServerConfig = async (config: any) => {
+  try {
+    const response = await api.post('/admin/control/sql-server/config', config);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update SQL Server config error:', error);
+    throw error;
+  }
+};
+
+export const testSqlServerConnection = async (config?: any) => {
+  try {
+    const response = await api.post('/admin/control/sql-server/test', config || {});
+    return response.data;
+  } catch (error: any) {
+    console.error('Test SQL Server connection error:', error);
+    throw error;
+  }
+};
+
+export const getSystemHealthScore = async () => {
+  try {
+    const response = await api.get('/admin/control/system/health-score');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get system health score error:', error);
+    throw error;
+  }
+};
+
+export const getSystemStats = async () => {
+  try {
+    const response = await api.get('/admin/control/system/stats');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get system stats error:', error);
+    throw error;
+  }
+};
+
+// Security Dashboard API
+export const getSecuritySummary = async () => {
+  try {
+    const response = await api.get('/admin/security/summary');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get security summary error:', error);
+    throw error;
+  }
+};
+
+export const getFailedLogins = async (limit: number = 100, hours: number = 24, username?: string, ipAddress?: string) => {
+  try {
+    const params = new URLSearchParams({ limit: limit.toString(), hours: hours.toString() });
+    if (username) params.append('username', username);
+    if (ipAddress) params.append('ip_address', ipAddress);
+    const response = await api.get(`/admin/security/failed-logins?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get failed logins error:', error);
+    throw error;
+  }
+};
+
+export const getSuspiciousActivity = async (hours: number = 24) => {
+  try {
+    const response = await api.get(`/admin/security/suspicious-activity?hours=${hours}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get suspicious activity error:', error);
+    throw error;
+  }
+};
+
+export const getSecuritySessions = async (limit: number = 100, activeOnly: boolean = false) => {
+  try {
+    const response = await api.get(`/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get security sessions error:', error);
+    throw error;
+  }
+};
+
+export const getSecurityAuditLog = async (limit: number = 100, hours: number = 24, action?: string, user?: string) => {
+  try {
+    const params = new URLSearchParams({ limit: limit.toString(), hours: hours.toString() });
+    if (action) params.append('action', action);
+    if (user) params.append('user', user);
+    const response = await api.get(`/admin/security/audit-log?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get security audit log error:', error);
+    throw error;
+  }
+};
+
+export const getIpTracking = async (hours: number = 24) => {
+  try {
+    const response = await api.get(`/admin/security/ip-tracking?hours=${hours}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get IP tracking error:', error);
+    throw error;
+  }
+};
+
+export const clearServiceLogs = async (service: string) => {
+  try {
+    const response = await api.post('/admin/logs/clear', null, { params: { service } });
+    return response.data;
+  } catch (error: any) {
+    console.error(`Clear ${service} logs error:`, error);
+    throw error;
+  }
+};
+
+// SQL Server Connection API
+export const getSQLStatus = async () => {
+  try {
+    const response = await api.get('/admin/sql/status');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get SQL status error:', error);
+    throw error;
+  }
+};
+
+export const testSQLConnection = async (config: any) => {
+  try {
+    const response = await api.post('/admin/sql/test', config);
+    return response.data;
+  } catch (error: any) {
+    console.error('Test SQL connection error:', error);
+    throw error;
+  }
+};
+
+export const configureSQLConnection = async (config: any) => {
+  try {
+    const response = await api.post('/admin/sql/configure', config);
+    return response.data;
+  } catch (error: any) {
+    console.error('Configure SQL connection error:', error);
+    throw error;
+  }
+};
+
+export const getSQLConnectionHistory = async () => {
+  try {
+    const response = await api.get('/admin/sql/history');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get SQL connection history error:', error);
+    throw error;
+  }
+};
+
+// Master Settings API
+export const getSystemParameters = async () => {
+  try {
+    const response = await api.get('/admin/settings/parameters');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get system parameters error:', error);
+    throw error;
+  }
+};
+
+export const updateSystemParameters = async (parameters: any) => {
+  try {
+    const response = await api.put('/admin/settings/parameters', parameters);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update system parameters error:', error);
+    throw error;
+  }
+};
+
+export const getSettingsCategories = async () => {
+  try {
+    const response = await api.get('/admin/settings/categories');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get settings categories error:', error);
+    throw error;
+  }
+};
+
+export const resetSettingsToDefaults = async (category?: string) => {
+  try {
+    const params = category ? { category } : {};
+    const response = await api.post('/admin/settings/reset', null, { params });
+    return response.data;
+  } catch (error: any) {
+    console.error('Reset settings error:', error);
+    throw error;
+  }
+};
+
+// Settings API
+export const getSystemSettings = async () => {
+  try {
+    const response = await api.get('/admin/settings/parameters');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get system settings error:', error);
+    throw error;
+  }
+};
+
+export const updateSystemSettings = async (settings: any) => {
+  try {
+    const response = await api.put('/admin/settings/parameters', settings);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update system settings error:', error);
+    throw error;
+  }
+};
+
+// --- Modern grouped exports for logical access patterns ---
+export const sessionsApi = {
+  createSession,
+  getSessions,
+  getSession,
+  bulkCloseSessions,
+  bulkReconcileSessions,
+  bulkExportSessions,
+  getSessionsAnalytics,
+  updateSessionStatus,
+};
+
+export const countLineApi = {
+  createCountLine,
+  getCountLines,
+  checkItemCounted,
+  addQuantityToCountLine,
+  getVarianceReasons,
+  approveCountLine,
+  rejectCountLine,
+  verifyStock,
+  unverifyStock,
+};
+
+export const itemsApi = {
+  getItemByBarcode,
+  searchItems,
+  createUnknownItem,
+  refreshItemStock,
+};
+
+export const mappingApi = {
+  getAvailableTables,
+  getTableColumns,
+  getCurrentMapping,
+  testMapping,
+  saveMapping,
+};
+
+export const exportsApi = {
+  getExportSchedules,
+  getExportSchedule,
+  createExportSchedule,
+  updateExportSchedule,
+  deleteExportSchedule,
+  triggerExportSchedule,
+  getExportResults,
+  downloadExportResult,
+};
+
+export const syncApi = {
+  syncOfflineQueue,
+  getSyncConflicts,
+  getSyncConflictDetail,
+  resolveSyncConflict,
+  batchResolveSyncConflicts,
+  getSyncConflictStats,
+  getSyncStatus,
+  getSyncStats,
+  triggerManualSync,
+};
+
+export const metricsApi = {
+  getMetrics,
+  getMetricsHealth,
+  getMetricsStats,
+  getSystemHealthScore,
+  getSystemStats,
+};
+
+export const adminControlApi = {
+  getServicesStatus,
+  startService,
+  stopService,
+  getSystemIssues,
+  getLoginDevices,
+  getServiceLogs,
+  clearServiceLogs,
+};
+
+export const reportsApi = {
+  getAvailableReports,
+  generateReport,
+};
+
+export const sqlServerApi = {
+  getSqlServerConfig,
+  updateSqlServerConfig,
+  testSqlServerConnection,
+  getSQLStatus,
+  testSQLConnection,
+  configureSQLConnection,
+  getSQLConnectionHistory,
+};
+
+export const securityApi = {
+  getSecuritySummary,
+  getFailedLogins,
+  getSuspiciousActivity,
+  getSecuritySessions,
+  getSecurityAuditLog,
+  getIpTracking,
+};
+
+export const settingsApi = {
+  getSystemParameters,
+  updateSystemParameters,
+  getSettingsCategories,
+  resetSettingsToDefaults,
+  getSystemSettings,
+  updateSystemSettings,
+};
+
+export default api;

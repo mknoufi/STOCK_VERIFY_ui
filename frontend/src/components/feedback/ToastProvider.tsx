@@ -70,8 +70,9 @@ const styles = StyleSheet.create({
 });
 export const useToast = () => {
   return {
-    show: (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', _duration?: number) => {
-      toastService.show(message, { type });
+    show: (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', duration?: number) => {
+      const durationOption: 'short' | 'long' | undefined = duration ? (duration > 3000 ? 'long' : 'short') : undefined;
+      toastService.show(message, { type, duration: durationOption });
     },
     hide: (id: string) => {
       toastService.hide(id);

@@ -93,7 +93,7 @@ class TestSessionWorkflow:
         assert response_data["warehouse"] == session_data["warehouse"]
         # assert response_data["notes"] == session_data["notes"]  # notes is not in Session model
 
-        logger.info(f"✓ Session creation successful and response validated")
+        logger.info("✓ Session creation successful and response validated")
 
 
 class TestCountLineWorkflow:

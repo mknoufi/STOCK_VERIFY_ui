@@ -6,7 +6,7 @@ CRITICAL: Preserves all enriched data (serial numbers, MRP, HSN codes, etc.)
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 

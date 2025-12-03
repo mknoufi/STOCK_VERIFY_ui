@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from backend.api.schemas import CountLineCreate
 from backend.auth.dependencies import get_current_user

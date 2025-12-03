@@ -6,7 +6,7 @@ Systematically scans and reports code quality issues
 import ast
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Set
+from typing import List, Dict, Any
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -193,7 +193,6 @@ class CodebaseUpgradeChecker:
 
 
 if __name__ == "__main__":
-    import sys
     import json
 
     project_root = Path(__file__).parent.parent.parent

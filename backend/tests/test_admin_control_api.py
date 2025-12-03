@@ -45,25 +45,27 @@ def mock_service_manager():
         yield mock
 
 
-def test_get_services_status(mock_psutil, mock_port_detector, mock_sql_connector, mock_service_manager):
+def test_get_services_status(
+    mock_psutil, mock_port_detector, mock_sql_connector, mock_service_manager
+):
     # Setup mocks
     mock_service_manager.is_port_in_use.return_value = True
     mock_service_manager.get_process_using_port.return_value = 1234
-    
+
     process_mock = MagicMock()
     process_mock.cmdline.return_value = ["python", "server.py"]
     process_mock.create_time.return_value = 1000000000
     mock_psutil.Process.return_value = process_mock
-    
+
     mock_port_detector.get_mongo_status.return_value = {
         "is_running": True,
         "port": 27017,
         "url": "mongodb://localhost:27017",
-        "status": "connected"
+        "status": "connected",
     }
-    
+
     mock_sql_connector.test_connection.return_value = True
-    
+
     response = client.get("/api/admin/control/services/status")
     assert response.status_code == 200
     data = response.json()
@@ -76,9 +78,13 @@ def test_get_services_status(mock_psutil, mock_port_detector, mock_sql_connector
 
 
 def test_get_service_logs_backend():
-    with patch("backend.api.admin_control_api.Path.exists", return_value=True), \
-         patch("builtins.open", mock_open(read_data="2023-10-27 10:00:00 - logger - INFO - Test log message\n")):
-        
+    with (
+        patch("backend.api.admin_control_api.Path.exists", return_value=True),
+        patch(
+            "builtins.open",
+            mock_open(read_data="2023-10-27 10:00:00 - logger - INFO - Test log message\n"),
+        ),
+    ):
         response = client.get("/api/admin/control/logs/backend")
         assert response.status_code == 200
         data = response.json()
@@ -92,7 +98,7 @@ def test_get_system_issues(mock_port_detector, mock_sql_connector, mock_service_
     mock_port_detector.get_mongo_status.return_value = {"is_running": False}
     mock_service_manager.is_port_in_use.return_value = False  # Backend down
     mock_sql_connector.test_connection.return_value = False
-    
+
     response = client.get("/api/admin/control/system/issues")
     assert response.status_code == 200
     data = response.json()
@@ -119,13 +125,15 @@ def test_update_sql_server_config(mock_sql_connector):
         "port": 1433,
         "database": "new_db",
         "user": "new_user",
-        "password": "new_password"
+        "password": "new_password",
     }
-    
+
     response = client.post("/api/admin/control/sql-server/config", json=new_config)
     assert response.status_code == 200
     assert mock_sql_connector.connect.called
-    mock_sql_connector.connect.assert_called_with("new_host", 1433, "new_db", "new_user", "new_password")
+    mock_sql_connector.connect.assert_called_with(
+        "new_host", 1433, "new_db", "new_user", "new_password"
+    )
 
 
 def test_test_sql_server_connection(mock_sql_connector):
@@ -133,13 +141,9 @@ def test_test_sql_server_connection(mock_sql_connector):
     response = client.post("/api/admin/control/sql-server/test")
     assert response.status_code == 200
     assert response.json()["success"] is True
-    
+
     # Test with config
-    config = {
-        "host": "test_host",
-        "port": 1433,
-        "database": "test_db"
-    }
+    config = {"host": "test_host", "port": 1433, "database": "test_db"}
     response = client.post("/api/admin/control/sql-server/test", json=config)
     assert response.status_code == 200
     assert mock_sql_connector.connect.called

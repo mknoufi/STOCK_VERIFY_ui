@@ -6,8 +6,8 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { useTheme } from '../hooks/useTheme';
-import { flags } from '../constants/flags';
+import { useTheme } from '../../hooks/useTheme';
+import { flags } from '../../constants/flags';
 
 interface LoadingSpinnerProps {
   message?: string;

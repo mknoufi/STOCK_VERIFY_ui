@@ -6,7 +6,7 @@ CRITICAL: Preserves all enriched data (serial numbers, MRP, HSN codes, etc.)
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -275,7 +275,7 @@ class SQLSyncService:
                     },
                 )
 
-                logger.info(f"Real-time qty update for {item_code}: " f"{mongo_qty} → {sql_qty}")
+                logger.info(f"Real-time qty update for {item_code}: {mongo_qty} → {sql_qty}")
 
                 return {
                     "item_code": item_code,
@@ -344,7 +344,7 @@ class SQLSyncService:
         else:
             logger.info(
                 f"SQL sync service started "
-                f"(interval: {self.sync_interval}s = {self.sync_interval/60:.1f} min)"
+                f"(interval: {self.sync_interval}s = {self.sync_interval / 60:.1f} min)"
             )
 
         self._running = True
@@ -379,7 +379,7 @@ class SQLSyncService:
     def set_interval(self, interval: int):
         """Update sync interval"""
         self.sync_interval = interval
-        logger.info(f"Sync interval updated to {interval}s ({interval/60:.1f} min)")
+        logger.info(f"Sync interval updated to {interval}s ({interval / 60:.1f} min)")
 
     def enable(self):
         """Enable sync service"""

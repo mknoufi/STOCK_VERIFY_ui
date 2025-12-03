@@ -151,7 +151,7 @@ class TestSQLSyncService:
         assert "serial_number" not in update_doc
         assert "hsn_code" not in update_doc
         # location is now synced from SQL, so it might be updated if changed
-        # assert "location" not in update_doc 
+        # assert "location" not in update_doc
         assert "condition" not in update_doc
 
     @pytest.mark.asyncio

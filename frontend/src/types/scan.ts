@@ -10,11 +10,17 @@ export interface Item {
   uom_name?: string;
   item_group?: string;
   location?: string;
+  mrp_variants?: unknown[];
+  mrp_history?: unknown[];
+  item_type?: string;
+  quantity?: number;
+  sales_price?: number;
+  item_name?: string;
 }
 
 export type ScannerMode = 'item' | 'serial';
 
-export type PhotoProofType = 'ITEM' | 'SERIAL' | 'LOCATION' | 'DAMAGE';
+export type PhotoProofType = 'ITEM' | 'SERIAL' | 'LOCATION' | 'DAMAGE' | 'SHELF';
 
 export interface ScanFormData {
   countedQty: string;
@@ -59,31 +65,45 @@ export interface ApiErrorResponse {
 
 // Additional missing types
 export interface NormalizedMrpVariant {
-  mrp: number;
-  effective_date: string;
-  source: string;
+  value: number;
+  id?: string;
+  barcode?: string;
+  label?: string;
+  source?: string;
+  item_condition?: string;
 }
 
 export interface VarianceReason {
   code: string;
   description: string;
+  label?: string;
   requires_approval: boolean;
 }
 
 export interface PhotoProofDraft {
+  id?: string;
   type: PhotoProofType;
   uri: string;
+  previewUri?: string;
   base64: string;
   capturedAt: string;
 }
 
 export interface SerialInput {
+  id?: string;
   serial_number: string;
+  value?: string;
+  label?: string;
   condition: 'good' | 'damaged';
 }
 
 export interface WorkflowState {
+  step?: string;
   currentStep: string;
   data: Record<string, any>;
   errors: string[];
+  serialCaptureEnabled?: boolean;
+  serialInputs?: SerialInput[];
+  expectedSerialCount?: number;
+  showSerialEntry?: boolean;
 }

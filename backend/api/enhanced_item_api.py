@@ -52,9 +52,7 @@ class ItemResponse:
 async def get_item_by_barcode_enhanced(
     barcode: str,
     request: Request,
-    force_source: Optional[str] = Query(
-        None, description="Force data source: mongodb, or cache"
-    ),
+    force_source: Optional[str] = Query(None, description="Force data source: mongodb, or cache"),
     include_metadata: bool = Query(True, description="Include response metadata"),
     current_user: dict = Depends(get_current_user),
 ):
@@ -427,7 +425,7 @@ async def get_item_api_performance(current_user: dict = Depends(get_current_user
 
         # Initialize SQL connector
         sql_connector = SQLServerConnector()
-        
+
         db_manager = DatabaseManager(
             mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
         )
@@ -501,9 +499,7 @@ async def optimize_database_performance(current_user: dict = Depends(get_current
     try:
         from backend.services.database_manager import DatabaseManager
 
-        db_manager = DatabaseManager(
-            mongo_client=db.client, mongo_db=db
-        )
+        db_manager = DatabaseManager(mongo_client=db.client, mongo_db=db)
 
         optimization_results = await db_manager.optimize_database_performance()
 

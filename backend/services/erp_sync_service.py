@@ -73,10 +73,7 @@ class SQLSyncService:
             max_concurrent_batches = 5  # Process up to 5 batches in parallel
 
             # Create batches
-            batches = [
-                sql_items[i : i + batch_size]
-                for i in range(0, len(sql_items), batch_size)
-            ]
+            batches = [sql_items[i : i + batch_size] for i in range(0, len(sql_items), batch_size)]
 
             # Process batches with controlled concurrency
             semaphore = asyncio.Semaphore(max_concurrent_batches)
@@ -138,12 +135,16 @@ class SQLSyncService:
             await self._create_new_item(item_code, sql_item, sql_qty, stats)
 
     async def _update_existing_item(
-        self, item_code: str, existing_item: Dict[str, Any], sql_item: Dict[str, Any], stats: Dict[str, Any]
+        self,
+        item_code: str,
+        existing_item: Dict[str, Any],
+        sql_item: Dict[str, Any],
+        stats: Dict[str, Any],
     ) -> None:
         """Update existing item quantity and location, preserving other enrichment data"""
         sql_qty = float(sql_item.get("stock_qty", 0.0))
         old_qty = existing_item.get("sql_server_qty", existing_item.get("stock_qty", 0.0))
-        
+
         # Check for location change
         new_location = sql_item.get("location")
         old_location = existing_item.get("location")
@@ -158,11 +159,11 @@ class SQLSyncService:
                     "last_synced": datetime.utcnow(),
                 }
             }
-            
+
             if abs(sql_qty - old_qty) > 0.001:
                 update_doc["$set"]["qty_changed"] = True
                 update_doc["$set"]["qty_change_detected_at"] = datetime.utcnow()
-                
+
             if location_changed:
                 update_doc["$set"]["location"] = new_location
 
@@ -173,7 +174,9 @@ class SQLSyncService:
 
             if result.modified_count > 0:
                 stats["items_updated"] += 1
-                logger.debug(f"Updated item {item_code}: qty {old_qty}->{sql_qty}, loc {old_location}->{new_location}")
+                logger.debug(
+                    f"Updated item {item_code}: qty {old_qty}->{sql_qty}, loc {old_location}->{new_location}"
+                )
         else:
             stats["items_unchanged"] += 1
 
@@ -243,10 +246,14 @@ class SQLSyncService:
                     logger.warning(
                         "SQL Server connection not available, skipping sync. Will retry later."
                     )
-                    self._sync_stats["failed_syncs"] = int(self._sync_stats.get("failed_syncs", 0)) + 1
+                    self._sync_stats["failed_syncs"] = (
+                        int(self._sync_stats.get("failed_syncs", 0)) + 1
+                    )
                 else:
                     await self.sync_items()
-                    self._sync_stats["total_syncs"] = int(self._sync_stats.get("total_syncs", 0)) + 1
+                    self._sync_stats["total_syncs"] = (
+                        int(self._sync_stats.get("total_syncs", 0)) + 1
+                    )
             except Exception as e:
                 logger.error(f"Sync loop error: {str(e)}")
                 self._sync_stats["failed_syncs"] = int(self._sync_stats.get("failed_syncs", 0)) + 1

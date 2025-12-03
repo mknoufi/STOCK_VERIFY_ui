@@ -39,7 +39,7 @@ except ImportError:
     except ImportError:
         REDIS_AVAILABLE = False
         logger.warning("Redis not available, using in-memory cache")
-        
+
         # Define dummy RedisError for type safety when Redis is missing
         class RedisError(Exception):
             pass

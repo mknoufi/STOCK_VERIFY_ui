@@ -30,11 +30,7 @@ class EnrichmentService:
         self.required_fields = ["serial_number", "mrp", "hsn_code", "barcode"]
 
     async def record_enrichment(
-        self,
-        item_code: str,
-        enrichment_data: Dict[str, Any],
-        user_id: str,
-        username: str
+        self, item_code: str, enrichment_data: Dict[str, Any], user_id: str, username: str
     ) -> Dict[str, Any]:
         """
         Record data enrichment for an item
@@ -116,7 +112,7 @@ class EnrichmentService:
             }
 
             # Update item in MongoDB
-            result = await self.db.erp_items.update_one(
+            await self.db.erp_items.update_one(
                 {"item_code": item_code},
                 {"$set": update_fields, "$push": {"enrichment_history": history_entry}},
             )
@@ -135,7 +131,7 @@ class EnrichmentService:
             await self.db.enrichments.insert_one(enrichment_record)
 
             logger.info(
-                f"Item {item_code} enriched by {username}: " f"{len(corrections)} fields updated"
+                f"Item {item_code} enriched by {username}: {len(corrections)} fields updated"
             )
 
             return {
@@ -360,10 +356,7 @@ class EnrichmentService:
         }
 
     async def bulk_import_enrichments(
-        self,
-        enrichments: List[Dict[str, Any]],
-        user_id: str,
-        username: str
+        self, enrichments: List[Dict[str, Any]], user_id: str, username: str
     ) -> Dict[str, Any]:
         """
         Bulk import enrichment data (e.g., from Excel)
@@ -471,9 +464,7 @@ class EnrichmentService:
         ]
 
     async def get_items_needing_enrichment(
-        self,
-        category: Optional[str] = None,
-        limit: int = 100
+        self, category: Optional[str] = None, limit: int = 100
     ) -> List[Dict[str, Any]]:
         """
         Get items that need data enrichment (incomplete data)
@@ -506,7 +497,9 @@ class EnrichmentService:
                     "priority": (
                         "high"
                         if completeness["percentage"] < 25
-                        else "medium" if completeness["percentage"] < 75 else "low"
+                        else "medium"
+                        if completeness["percentage"] < 75
+                        else "low"
                     ),
                 }
             )

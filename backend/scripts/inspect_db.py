@@ -90,7 +90,9 @@ async def inspect_database():
             status_icon = (
                 "✅"
                 if line["status"] == "approved"
-                else "❌" if line["status"] == "rejected" else "⏳"
+                else "❌"
+                if line["status"] == "rejected"
+                else "⏳"
             )
             print(f"  {status_icon} {line['item_name']}")
             print(f"     Item Code: {line['item_code']}")

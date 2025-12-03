@@ -4,7 +4,7 @@ SQL Server Connection Management API
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -74,7 +74,10 @@ async def test_sql_connection(
     config: SQLConnectionConfig, current_user: dict = Depends(require_admin)
 ):
     """Test SQL Server connection with provided configuration"""
-    raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="SQL Server integration is disabled.")
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="SQL Server integration is disabled.",
+    )
 
 
 @sql_connection_router.post("/configure")
@@ -82,7 +85,10 @@ async def configure_sql_connection(
     config: SQLConnectionConfig, current_user: dict = Depends(require_admin)
 ):
     """Save SQL Server connection configuration"""
-    raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="SQL Server integration is disabled.")
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="SQL Server integration is disabled.",
+    )
 
 
 @sql_connection_router.get("/history")

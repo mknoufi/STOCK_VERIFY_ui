@@ -150,7 +150,7 @@ async def _get_mongodb_status() -> ServiceStatus:
                 "running": True,
                 "port": 27017,
                 "url": "mongodb://localhost:27017",
-                "status": "connected"
+                "status": "connected",
             }
     except Exception:
         pass
@@ -176,12 +176,12 @@ def _test_sql_connection() -> Optional[bool]:
 def _get_sql_server_status() -> ServiceStatus:
     is_connected = _test_sql_connection()
     config = sql_connector.config or {}
-    
+
     return {
         "running": is_connected,
         "port": config.get("port"),
         "status": "connected" if is_connected else "disconnected",
-        "url": f"{config.get('host')}:{config.get('port')}" if config.get("host") else None
+        "url": f"{config.get('host')}:{config.get('port')}" if config.get("host") else None,
     }
 
 
@@ -242,7 +242,7 @@ def _collect_system_issues() -> List[Dict[str, Any]]:
         issues.append(_format_issue("mongodb", "MongoDB is not running"))
     if not _is_any_port_in_use(BACKEND_PORTS):
         issues.append(_format_issue("backend", "Backend server is not running"))
-    
+
     # Add SQL Server check
     if not _test_sql_connection():
         issues.append(_format_issue("sql_server", "SQL Server is not connected", severity="medium"))
@@ -651,14 +651,16 @@ def _parse_log_line(line: str) -> Optional[Dict[str, str]]:
                 "timestamp": parts[0],
                 "logger": parts[1],
                 "level": parts[2],
-                "message": parts[3]
+                "message": parts[3],
             }
     except Exception:
         pass
     return None
 
 
-def _read_log_file(log_path: Path, lines: int, level: Optional[str], service: str) -> List[Dict[str, Any]]:
+def _read_log_file(
+    log_path: Path, lines: int, level: Optional[str], service: str
+) -> List[Dict[str, Any]]:
     """Read and parse log file"""
     logs = []
     if not log_path.exists():
@@ -667,28 +669,31 @@ def _read_log_file(log_path: Path, lines: int, level: Optional[str], service: st
     try:
         with open(log_path, "r", encoding="utf-8") as f:
             all_lines = f.readlines()
-            
+
             for line in reversed(all_lines):
                 if len(logs) >= lines:
                     break
-                
+
                 log_entry = _parse_log_line(line)
                 if not log_entry:
                     continue
-                    
+
                 # Filter by level
                 if level and log_entry["level"] != level.upper():
                     continue
-                    
+
                 # Filter for SQL Server if requested
                 if service == "sql_server":
-                    if "sql" not in log_entry["logger"].lower() and "sql" not in log_entry["message"].lower():
+                    if (
+                        "sql" not in log_entry["logger"].lower()
+                        and "sql" not in log_entry["message"].lower()
+                    ):
                         continue
-                        
+
                 logs.append(log_entry)
     except Exception as e:
         logger.error(f"Error reading log file: {e}")
-    
+
     return logs
 
 
@@ -757,11 +762,8 @@ async def clear_service_logs(
                 # Clear the file
                 with open(log_path, "w", encoding="utf-8") as f:
                     f.write("")
-                    
-        return {
-            "success": True,
-            "message": f"Logs for {service} cleared successfully"
-        }
+
+        return {"success": True, "message": f"Logs for {service} cleared successfully"}
     except Exception as e:
         logger.error(f"Error clearing logs: {e}")
         raise HTTPException(
@@ -776,7 +778,7 @@ async def get_sql_server_config(current_user: dict = Depends(require_admin)):
     config = sql_connector.config or {}
     # Don't return password
     safe_config = {k: v for k, v in config.items() if k != "password"}
-    
+
     # If not connected, return settings from env/config
     if not safe_config:
         safe_config = {
@@ -784,13 +786,10 @@ async def get_sql_server_config(current_user: dict = Depends(require_admin)):
             "port": settings.SQL_SERVER_PORT,
             "database": settings.SQL_SERVER_DATABASE,
             "user": settings.SQL_SERVER_USER,
-            "auth": "sql" if settings.SQL_SERVER_USER else "windows"
+            "auth": "sql" if settings.SQL_SERVER_USER else "windows",
         }
-        
-    return {
-        "success": True,
-        "data": safe_config
-    }
+
+    return {"success": True, "data": safe_config}
 
 
 @admin_control_router.post("/sql-server/config")
@@ -804,20 +803,20 @@ async def update_sql_server_config(
         database = config.get("database")
         user = config.get("user")
         password = config.get("password")
-        
+
         if not host or not database:
             raise HTTPException(status_code=400, detail="Host and database are required")
-            
+
         # Try to connect
         # connect() raises exception on failure
         sql_connector.connect(host, int(port), database, user, password)
-        
+
         return {
             "success": True,
             "message": "SQL Server configuration updated and connected successfully",
-            "data": {k: v for k, v in sql_connector.config.items() if k != "password"}
+            "data": {k: v for k, v in sql_connector.config.items() if k != "password"},
         }
-            
+
     except Exception as e:
         logger.error(f"Error updating SQL Server config: {e}")
         raise HTTPException(
@@ -838,28 +837,22 @@ async def test_sql_server_connection(
             database = config.get("database")
             user = config.get("user")
             password = config.get("password")
-            
+
             if not host or not database:
                 raise HTTPException(status_code=400, detail="Host and database are required")
-                
+
             # Try to connect
             sql_connector.connect(host, int(port), database, user, password)
-            return {
-                "success": True,
-                "message": "Connection successful"
-            }
+            return {"success": True, "message": "Connection successful"}
         else:
             # Test existing connection
             success = sql_connector.test_connection()
             return {
                 "success": success,
-                "message": "Connection is active" if success else "Connection is inactive"
+                "message": "Connection is active" if success else "Connection is inactive",
             }
     except Exception as e:
-        return {
-            "success": False,
-            "message": f"Connection failed: {str(e)}"
-        }
+        return {"success": False, "message": f"Connection failed: {str(e)}"}
 
 
 @admin_control_router.get("/system/health-score")

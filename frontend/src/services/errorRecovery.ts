@@ -8,3 +8,12 @@ export const handleErrorWithRecovery = async (operation: () => Promise<any>, opt
     throw error;
   }
 };
+
+export const errorReporter = {
+  report: (error: Error, context?: Record<string, any>) => {
+    console.error('Error reported:', error, context);
+  },
+  captureException: (error: Error, context?: Record<string, any>) => {
+    console.error('Exception captured:', error, context);
+  },
+};

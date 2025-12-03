@@ -1,4 +1,4 @@
-fastapi==0.115.8
+fastapi==0.123.5
 uvicorn[standard]==0.34.1
 gunicorn>=23.0.0
 requests-oauthlib>=2.0.0

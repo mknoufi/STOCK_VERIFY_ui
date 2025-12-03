@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import { modernColors, modernSpacing, modernTypography, modernBorderRadius } from '../styles/modernDesignSystem';
+import { modernColors, modernSpacing, modernTypography, modernBorderRadius } from '@/styles/modernDesignSystem';
 
 interface DateRangePickerProps {
   startDate: Date;

@@ -14,10 +14,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { storage } from '../services/asyncStorageService';
-import { useAuthStore } from '../store/authStore';
-import { registerUser } from '../services/api';
-import { AppLogo } from '../components/AppLogo';
+import { storage } from '@/services/asyncStorageService';
+import { useAuthStore } from '@/store/authStore';
+import { registerUser } from '@/services/api/api';
+import { AppLogo } from '@/components/AppLogo';
 
 export default function Register() {
   const [formData, setFormData] = React.useState({
@@ -61,18 +61,16 @@ export default function Register() {
         phone: formData.phone.trim() || undefined,
       });
 
-      // Save token and user data
-      await storage.set('token', response.token);
-      await storage.set('user', response.user);
-
-      // Update auth store
-      useAuthStore.setState({
-        token: response.token,
-        user: response.user,
-      });
+      // Save user data (the registration response should include user info)
+      if (response.user) {
+        await storage.set('user', JSON.stringify(response.user));
+        
+        // Update auth store using setUser method
+        useAuthStore.getState().setUser(response.user);
+      }
 
       // Navigate based on role
-      if (response.user.role === 'staff') {
+      if (response.user?.role === 'staff') {
         router.replace('/staff/home');
       } else {
         router.replace('/supervisor/dashboard');

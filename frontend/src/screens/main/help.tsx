@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Header } from '../components/Header';
-import { useTheme } from '../hooks/useTheme';
+import { Header } from '@/components/layout/Header';
+import { useTheme } from '@/hooks/useTheme';
 
 interface HelpSection {
   title: string;

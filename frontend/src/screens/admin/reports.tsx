@@ -214,13 +214,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' && {
-      position: 'sticky',
+    ...(Platform.OS === 'web' ? {
+      position: 'sticky' as const,
       top: 0,
       zIndex: 100,
       boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    }),
-  },
+    } : {}),
+  } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,
   },

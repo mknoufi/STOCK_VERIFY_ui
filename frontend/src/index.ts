@@ -9,6 +9,8 @@ export { useSettingsStore } from './store/settingsStore';
 // Re-export commonly used hooks
 export { useTheme } from './hooks/useTheme';
 
-// Re-export types
-export * from './types/scan';
-export * from './types/item';
+// Re-export types - use scan.ts Item as the primary one
+export { Item as ScanItem } from './types/scan';
+export { Item as ItemType } from './types/item';
+export type { ScannerMode, PhotoProofType, ScanFormData, CreateCountLinePayload, PhotoProofDraft, SerialInput, WorkflowState } from './types/scan';
+export type { SearchResult } from './types/item';

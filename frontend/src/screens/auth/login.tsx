@@ -14,7 +14,7 @@ import {
 import { useRouter, useSegments, Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SystemStatus } from '@/components/SystemStatus';
+import { SystemStatus } from '@/components/feedback/SystemStatus';
 import { StatusBar } from 'expo-status-bar';
 import { storage } from '@/services/asyncStorageService';
 import { AppLogo } from '@/components/AppLogo';

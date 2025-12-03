@@ -340,15 +340,13 @@ const styles = StyleSheet.create({
   container: {
     height: '100%',
     borderRightWidth: 1,
-    ...Platform.select({
-      web: {
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-      },
-    }),
-  },
+    ...(Platform.OS === 'web' ? {
+      position: 'fixed' as const,
+      left: 0,
+      top: 0,
+      bottom: 0,
+    } : {}),
+  } as any,
   scrollView: {
     flex: 1,
   },

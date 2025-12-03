@@ -18,7 +18,6 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Header } from '../../src/components/layout/Header';
 import { useTheme } from '../../src/hooks/useTheme';
-import { getVariances } from '../../src/services/api/api';
 import { useToast } from '../../src/components/feedback/ToastProvider';
 import { ItemVerificationAPI, VarianceItem } from '../../src/services/api/itemVerificationApi';
 import { ItemFilters, FilterValues } from '../../src/components/ItemFilters';

@@ -146,14 +146,12 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     borderBottomWidth: 1,
-    ...Platform.select({
-      web: {
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-      },
-    }),
-  },
+    ...(Platform.OS === 'web' ? {
+      position: 'sticky' as const,
+      top: 0,
+      zIndex: 100,
+    } : {}),
+  } as any,
   contentContainer: {
     flex: 1,
     flexDirection: 'row',

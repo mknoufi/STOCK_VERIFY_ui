@@ -1,7 +1,7 @@
 import React from 'react';
 import { Redirect } from 'expo-router';
 import { Platform } from 'react-native';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '@/store/authStore';
 
 // Direct users to the login screen; role-based redirects happen in _layout.
 // On web, if already logged in as admin, go directly to admin panel

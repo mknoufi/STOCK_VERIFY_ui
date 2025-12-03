@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
 });
 export const useToast = () => {
   return {
-    show: (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', duration?: number) => {
-      toastService.show(message, type, duration);
+    show: (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', _duration?: number) => {
+      toastService.show(message, { type });
     },
     hide: (id: string) => {
       toastService.hide(id);

@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 export default function AdminLogs() {
   const { service } = useLocalSearchParams();
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Admin Logs</Text>

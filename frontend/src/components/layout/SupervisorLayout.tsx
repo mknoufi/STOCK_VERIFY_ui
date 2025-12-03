@@ -48,21 +48,17 @@ export const SupervisorLayout: React.FC<SupervisorLayoutProps> = ({
       icon: 'log-out-outline' as const,
       label: 'Logout',
       onPress: () => {
-        Alert.alert(
-          'Confirm Logout',
-          'Are you sure you want to logout?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Logout',
-              style: 'destructive',
-              onPress: async () => {
-                await logout();
-                router.replace('/login');
-              },
+        Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: async () => {
+              await logout();
+              router.replace('/login');
             },
-          ]
-        );
+          },
+        ]);
       },
     },
   ];
@@ -71,12 +67,7 @@ export const SupervisorLayout: React.FC<SupervisorLayoutProps> = ({
 
   return (
     <View style={[styles.container, style]} testID={testID}>
-      <AppHeader
-        title={screenTitle}
-        showBack={showBack}
-        showUser={true}
-        actions={actions}
-      />
+      <AppHeader title={screenTitle} showBack={showBack} showUser={true} actions={actions} />
       <Screen variant={screenVariant} style={styles.screen} backgroundColor={backgroundColor}>
         {children}
       </Screen>

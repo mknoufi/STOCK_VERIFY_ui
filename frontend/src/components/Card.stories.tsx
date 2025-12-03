@@ -38,7 +38,8 @@ const meta: Meta<typeof Card> = {
   parameters: {
     docs: {
       description: {
-        component: 'Material Design card component with title, subtitle, and customizable elevation. Supports pressable cards.',
+        component:
+          'Material Design card component with title, subtitle, and customizable elevation. Supports pressable cards.',
       },
     },
   },
@@ -145,8 +146,8 @@ export const ComplexContent: Story = {
           This card contains complex content including buttons and multiple text elements.
         </Text>
         <View style={styles.buttonRow}>
-          <Button title="Edit" variant="outline" size="small" onPress={() => { }} />
-          <Button title="Delete" variant="danger" size="small" onPress={() => { }} />
+          <Button title="Edit" variant="outline" size="small" onPress={() => {}} />
+          <Button title="Delete" variant="danger" size="small" onPress={() => {}} />
         </View>
       </View>
     ),
@@ -172,5 +173,3 @@ export const AllElevations: Story = {
     </View>
   ),
 };
-
-

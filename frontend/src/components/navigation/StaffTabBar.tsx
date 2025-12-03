@@ -4,14 +4,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ViewStyle } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
@@ -63,10 +56,11 @@ export const StaffTabBar: React.FC<StaffTabBarProps> = ({ style, testID }) => {
 
   // Determine active tab based on current route
   const currentRoute = segments.join('/');
-  const activeTab = STAFF_TABS.find((tab) => {
-    const tabRoute = tab.route.replace(/^\//, ''); // Remove leading slash
-    return currentRoute === tabRoute || currentRoute.startsWith(tabRoute + '/');
-  })?.key || 'sessions';
+  const activeTab =
+    STAFF_TABS.find((tab) => {
+      const tabRoute = tab.route.replace(/^\//, ''); // Remove leading slash
+      return currentRoute === tabRoute || currentRoute.startsWith(tabRoute + '/');
+    })?.key || 'sessions';
 
   const handleTabPress = (tab: TabItem) => {
     if (activeTab !== tab.key) {
@@ -106,9 +100,7 @@ export const StaffTabBar: React.FC<StaffTabBarProps> = ({ style, testID }) => {
                 <Ionicons name={tab.icon} size={24} color={iconColor} />
                 {tab.badge !== undefined && tab.badge > 0 && (
                   <View style={[styles.badge, { backgroundColor: theme.colors.error }]}>
-                    <Text style={styles.badgeText}>
-                      {tab.badge > 99 ? '99+' : tab.badge}
-                    </Text>
+                    <Text style={styles.badgeText}>{tab.badge > 99 ? '99+' : tab.badge}</Text>
                   </View>
                 )}
               </View>

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet , ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { LottieAnimation } from './LottieAnimation';
 
@@ -46,14 +46,15 @@ export const LottieLoading: React.FC<LottieLoadingProps> = ({
         height={animationSize}
         fallback={
           <View style={styles.fallback}>
-            <ActivityIndicator size={size === 'medium' ? 'large' : size} color={theme.colors.primary} />
+            <ActivityIndicator
+              size={size === 'medium' ? 'large' : size}
+              color={theme.colors.primary}
+            />
           </View>
         }
       />
       {message && (
-        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>
-          {message}
-        </Text>
+        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>{message}</Text>
       )}
     </View>
   );

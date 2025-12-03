@@ -63,7 +63,7 @@ export class ErrorHandler {
             category = category || 'authentication';
             break;
           case 403:
-            message = message || 'You don\'t have permission to perform this action.';
+            message = message || "You don't have permission to perform this action.";
             code = code || 'AUTHZ_001';
             category = category || 'authorization';
             break;
@@ -135,7 +135,7 @@ export class ErrorHandler {
       category,
       statusCode,
       details,
-      context: errorContext
+      context: errorContext,
     };
   }
 
@@ -145,24 +145,14 @@ export class ErrorHandler {
   static showError(error: any, context?: string, title = 'Error') {
     const apiError = this.handleApiError(error, context);
 
-    Alert.alert(
-      title,
-      apiError.message,
-      [{ text: 'OK', style: 'default' }],
-      { cancelable: true }
-    );
+    Alert.alert(title, apiError.message, [{ text: 'OK', style: 'default' }], { cancelable: true });
   }
 
   /**
    * Show success message
    */
   static showSuccess(message: string, title = 'Success') {
-    Alert.alert(
-      title,
-      message,
-      [{ text: 'OK', style: 'default' }],
-      { cancelable: true }
-    );
+    Alert.alert(title, message, [{ text: 'OK', style: 'default' }], { cancelable: true });
   }
 
   /**
@@ -181,13 +171,13 @@ export class ErrorHandler {
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: onCancel
+          onPress: onCancel,
         },
         {
           text: 'Confirm',
           style: 'default',
-          onPress: onConfirm
-        }
+          onPress: onConfirm,
+        },
       ],
       { cancelable: true }
     );
@@ -196,7 +186,10 @@ export class ErrorHandler {
   /**
    * Validate required fields
    */
-  static validateRequired(fields: Record<string, any>, fieldNames: Record<string, string>): string | null {
+  static validateRequired(
+    fields: Record<string, any>,
+    fieldNames: Record<string, string>
+  ): string | null {
     for (const [key, label] of Object.entries(fieldNames)) {
       if (!fields[key] || fields[key].toString().trim() === '') {
         return `${label} is required`;
@@ -227,11 +220,12 @@ export class ErrorHandler {
    */
   static logError(context: string, error: any, additionalInfo?: any) {
     const timestamp = new Date().toISOString();
-    __DEV__ && console.error(`[${timestamp}] [${context}]`, {
-      error: error.message || error,
-      stack: error.stack,
-      ...additionalInfo
-    });
+    __DEV__ &&
+      console.error(`[${timestamp}] [${context}]`, {
+        error: error.message || error,
+        stack: error.stack,
+        ...additionalInfo,
+      });
   }
 }
 
@@ -244,7 +238,7 @@ export class NetworkMonitor {
       await fetch('https://www.google.com', {
         method: 'HEAD',
         mode: 'no-cors',
-        cache: 'no-cache'
+        cache: 'no-cache',
       });
       return true;
     } catch {
@@ -253,11 +247,9 @@ export class NetworkMonitor {
   }
 
   static showNoConnection() {
-    Alert.alert(
-      'No Internet Connection',
-      'Please check your internet connection and try again.',
-      [{ text: 'OK' }]
-    );
+    Alert.alert('No Internet Connection', 'Please check your internet connection and try again.', [
+      { text: 'OK' },
+    ]);
   }
 }
 
@@ -282,7 +274,7 @@ export class RetryHandler {
         __DEV__ && console.log(`Attempt ${attempt} failed, retrying...`);
 
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
         }
       }
     }
@@ -294,4 +286,3 @@ export class RetryHandler {
 /**
  * Enhanced error handling with context
  */
-

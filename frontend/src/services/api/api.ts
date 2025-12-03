@@ -23,12 +23,13 @@ export const isOnline = () => {
   const online = state.isOnline && state.isInternetReachable !== false;
 
   // Debug logging
-  __DEV__ && console.log('🌐 Network Status Check:', {
-    isOnline: state.isOnline,
-    isInternetReachable: state.isInternetReachable,
-    connectionType: state.connectionType,
-    result: online
-  });
+  __DEV__ &&
+    console.log('🌐 Network Status Check:', {
+      isOnline: state.isOnline,
+      isInternetReachable: state.isInternetReachable,
+      connectionType: state.connectionType,
+      result: online,
+    });
 
   // If network state is unknown or null, assume online (fail-safe for API calls)
   if (state.isOnline === undefined || state.isOnline === null) {
@@ -216,7 +217,7 @@ export const bulkReconcileSessions = async (sessionIds: string[]) => {
 export const bulkExportSessions = async (sessionIds: string[], format: string = 'excel') => {
   try {
     const response = await api.post('/sessions/bulk/export', sessionIds, {
-      params: { format }
+      params: { format },
     });
     return response.data;
   } catch (error: any) {
@@ -275,10 +276,13 @@ export const getItemByBarcode = async (barcode: string, retryCount: number = 3) 
 
     // Direct API call with retry
     // Use enhanced v2 endpoint for better performance and metadata
-    const response = await retryWithBackoff(() => api.get(`/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`), {
-      retries: retryCount,
-      backoffMs: 1000,
-    });
+    const response = await retryWithBackoff(
+      () => api.get(`/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`),
+      {
+        retries: retryCount,
+        backoffMs: 1000,
+      }
+    );
 
     // Handle v2 response format { item: ..., metadata: ... }
     const itemData = response.data.item || response.data;
@@ -309,7 +313,6 @@ export const getItemByBarcode = async (barcode: string, retryCount: number = 3) 
     }
 
     return itemData;
-
   } catch (apiError: any) {
     __DEV__ && console.error('❌ API call failed:', apiError.message);
 
@@ -350,7 +353,9 @@ export const searchItems = async (query: string) => {
     }
 
     // Use enhanced v2 search endpoint
-    const response = await api.get(`/v2/erp/items/search/advanced?query=${encodeURIComponent(query)}`);
+    const response = await api.get(
+      `/v2/erp/items/search/advanced?query=${encodeURIComponent(query)}`
+    );
 
     // Handle v2 response format
     const items = response.data.items || [];
@@ -453,7 +458,7 @@ export const getCountLines = async (
             total_pages: 1,
             has_next: false,
             has_prev: false,
-          }
+          },
         };
       }
       return {
@@ -465,7 +470,7 @@ export const getCountLines = async (
           total_pages: 1,
           has_next: false,
           has_prev: false,
-        }
+        },
       };
     }
 
@@ -505,7 +510,7 @@ export const getCountLines = async (
           total_pages: 1,
           has_next: false,
           has_prev: false,
-        }
+        },
       };
     }
     return {
@@ -517,7 +522,7 @@ export const getCountLines = async (
         total_pages: 1,
         has_next: false,
         has_prev: false,
-      }
+      },
     };
   }
 };
@@ -547,7 +552,9 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
 // Add quantity to existing count line
 export const addQuantityToCountLine = async (lineId: string, additionalQty: number) => {
   try {
-    const response = await api.patch(`/count-lines/${lineId}/add-quantity?additional_qty=${additionalQty}`);
+    const response = await api.patch(
+      `/count-lines/${lineId}/add-quantity?additional_qty=${additionalQty}`
+    );
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error('Error adding quantity to count line:', error);
@@ -563,7 +570,7 @@ export const getVarianceReasons = async () => {
     return response.data.reasons.map((r: any) => ({
       ...r,
       code: r.id || r.code,
-      label: r.label || r.name
+      label: r.label || r.name,
     }));
   }
   return response.data;
@@ -628,7 +635,14 @@ export const refreshItemStock = async (itemCode: string) => {
 };
 
 // Database Mapping API
-export const getAvailableTables = async (host: string, port: number, database: string, user?: string, password?: string, schema: string = 'dbo') => {
+export const getAvailableTables = async (
+  host: string,
+  port: number,
+  database: string,
+  user?: string,
+  password?: string,
+  schema: string = 'dbo'
+) => {
   try {
     const params = new URLSearchParams({
       host,
@@ -647,7 +661,15 @@ export const getAvailableTables = async (host: string, port: number, database: s
   }
 };
 
-export const getTableColumns = async (host: string, port: number, database: string, tableName: string, user?: string, password?: string, schema: string = 'dbo') => {
+export const getTableColumns = async (
+  host: string,
+  port: number,
+  database: string,
+  tableName: string,
+  user?: string,
+  password?: string,
+  schema: string = 'dbo'
+) => {
   try {
     const params = new URLSearchParams({
       host,
@@ -677,7 +699,14 @@ export const getCurrentMapping = async () => {
   }
 };
 
-export const testMapping = async (config: any, host: string, port: number, database: string, user?: string, password?: string) => {
+export const testMapping = async (
+  config: any,
+  host: string,
+  port: number,
+  database: string,
+  user?: string,
+  password?: string
+) => {
   try {
     const params = new URLSearchParams({
       host,
@@ -733,31 +762,34 @@ export const getActivityLogs = async (
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
 
-    __DEV__ && console.log('🔍 [Activity Logs] Fetching activity logs:', {
-      page,
-      pageSize,
-      filters: { user, action, status, startDate, endDate },
-      url: `/activity-logs?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log('🔍 [Activity Logs] Fetching activity logs:', {
+        page,
+        pageSize,
+        filters: { user, action, status, startDate, endDate },
+        url: `/activity-logs?${params.toString()}`,
+      });
 
     const response = await api.get(`/activity-logs?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Activity Logs] Success:', {
-      totalActivities: response.data?.pagination?.total || 0,
-      page: response.data?.pagination?.page || page,
-      activitiesReturned: response.data?.activities?.length || 0
-    });
+    __DEV__ &&
+      console.log('✅ [Activity Logs] Success:', {
+        totalActivities: response.data?.pagination?.total || 0,
+        page: response.data?.pagination?.page || page,
+        activitiesReturned: response.data?.activities?.length || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Activity Logs] Error fetching activity logs:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { page, pageSize, user, action, status, startDate, endDate }
-    });
+    __DEV__ &&
+      console.error('❌ [Activity Logs] Error fetching activity logs:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { page, pageSize, user, action, status, startDate, endDate },
+      });
     throw error;
   }
 };
@@ -768,30 +800,33 @@ export const getActivityStats = async (startDate?: string, endDate?: string) => 
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
 
-    __DEV__ && console.log('📊 [Activity Stats] Fetching statistics:', {
-      filters: { startDate, endDate },
-      url: `/activity-logs/stats?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log('📊 [Activity Stats] Fetching statistics:', {
+        filters: { startDate, endDate },
+        url: `/activity-logs/stats?${params.toString()}`,
+      });
 
     const response = await api.get(`/activity-logs/stats?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Activity Stats] Success:', {
-      total: response.data?.total || 0,
-      successCount: response.data?.by_status?.success || 0,
-      errorCount: response.data?.by_status?.error || 0,
-      warningCount: response.data?.by_status?.warning || 0
-    });
+    __DEV__ &&
+      console.log('✅ [Activity Stats] Success:', {
+        total: response.data?.total || 0,
+        successCount: response.data?.by_status?.success || 0,
+        errorCount: response.data?.by_status?.error || 0,
+        warningCount: response.data?.by_status?.warning || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Activity Stats] Error fetching statistics:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { startDate, endDate }
-    });
+    __DEV__ &&
+      console.error('❌ [Activity Stats] Error fetching statistics:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { startDate, endDate },
+      });
     throw error;
   }
 };
@@ -819,31 +854,34 @@ export const getErrorLogs = async (
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
 
-    __DEV__ && console.log('🔍 [Error Logs] Fetching error logs:', {
-      page,
-      pageSize,
-      filters: { severity, errorType, endpoint, resolved, startDate, endDate },
-      url: `/error-logs?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log('🔍 [Error Logs] Fetching error logs:', {
+        page,
+        pageSize,
+        filters: { severity, errorType, endpoint, resolved, startDate, endDate },
+        url: `/error-logs?${params.toString()}`,
+      });
 
     const response = await api.get(`/error-logs?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Error Logs] Success:', {
-      totalErrors: response.data?.pagination?.total || 0,
-      page: response.data?.pagination?.page || page,
-      errorsReturned: response.data?.errors?.length || 0
-    });
+    __DEV__ &&
+      console.log('✅ [Error Logs] Success:', {
+        totalErrors: response.data?.pagination?.total || 0,
+        page: response.data?.pagination?.page || page,
+        errorsReturned: response.data?.errors?.length || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Error Logs] Error fetching error logs:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { page, pageSize, severity, errorType, endpoint, resolved, startDate, endDate }
-    });
+    __DEV__ &&
+      console.error('❌ [Error Logs] Error fetching error logs:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { page, pageSize, severity, errorType, endpoint, resolved, startDate, endDate },
+      });
     throw error;
   }
 };
@@ -854,30 +892,33 @@ export const getErrorStats = async (startDate?: string, endDate?: string) => {
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
 
-    __DEV__ && console.log('📊 [Error Stats] Fetching statistics:', {
-      filters: { startDate, endDate },
-      url: `/error-logs/stats?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log('📊 [Error Stats] Fetching statistics:', {
+        filters: { startDate, endDate },
+        url: `/error-logs/stats?${params.toString()}`,
+      });
 
     const response = await api.get(`/error-logs/stats?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Error Stats] Success:', {
-      total: response.data?.total || 0,
-      criticalCount: response.data?.by_severity?.critical || 0,
-      errorCount: response.data?.by_severity?.error || 0,
-      warningCount: response.data?.by_severity?.warning || 0
-    });
+    __DEV__ &&
+      console.log('✅ [Error Stats] Success:', {
+        total: response.data?.total || 0,
+        criticalCount: response.data?.by_severity?.critical || 0,
+        errorCount: response.data?.by_severity?.error || 0,
+        warningCount: response.data?.by_severity?.warning || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Error Stats] Error fetching statistics:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { startDate, endDate }
-    });
+    __DEV__ &&
+      console.error('❌ [Error Stats] Error fetching statistics:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { startDate, endDate },
+      });
     throw error;
   }
 };
@@ -888,23 +929,25 @@ export const getErrorDetail = async (errorId: string) => {
 
     const response = await api.get(`/error-logs/${errorId}`);
 
-    __DEV__ && console.log('✅ [Error Detail] Success:', {
-      errorId,
-      severity: response.data?.severity,
-      errorType: response.data?.error_type,
-      timestamp: response.data?.timestamp
-    });
+    __DEV__ &&
+      console.log('✅ [Error Detail] Success:', {
+        errorId,
+        severity: response.data?.severity,
+        errorType: response.data?.error_type,
+        timestamp: response.data?.timestamp,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Error Detail] Error fetching error details:', {
-      errorId,
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data
-    });
+    __DEV__ &&
+      console.error('❌ [Error Detail] Error fetching error details:', {
+        errorId,
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+      });
     throw error;
   }
 };
@@ -1084,7 +1127,12 @@ export const triggerExportSchedule = async (scheduleId: string) => {
   }
 };
 
-export const getExportResults = async (scheduleId?: string, status?: string, page: number = 1, pageSize: number = 50) => {
+export const getExportResults = async (
+  scheduleId?: string,
+  status?: string,
+  page: number = 1,
+  pageSize: number = 50
+) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -1117,7 +1165,12 @@ export const downloadExportResult = async (resultId: string) => {
 // SYNC CONFLICTS API
 // ==========================================
 
-export const getSyncConflicts = async (status?: string, sessionId?: string, page: number = 1, pageSize: number = 50) => {
+export const getSyncConflicts = async (
+  status?: string,
+  sessionId?: string,
+  page: number = 1,
+  pageSize: number = 50
+) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -1144,7 +1197,11 @@ export const getSyncConflictDetail = async (conflictId: string) => {
   }
 };
 
-export const resolveSyncConflict = async (conflictId: string, resolution: string, resolutionNote?: string) => {
+export const resolveSyncConflict = async (
+  conflictId: string,
+  resolution: string,
+  resolutionNote?: string
+) => {
   try {
     const response = await api.post(`/sync/conflicts/${conflictId}/resolve`, {
       resolution,
@@ -1157,7 +1214,11 @@ export const resolveSyncConflict = async (conflictId: string, resolution: string
   }
 };
 
-export const batchResolveSyncConflicts = async (conflictIds: string[], resolution: string, resolutionNote?: string) => {
+export const batchResolveSyncConflicts = async (
+  conflictIds: string[],
+  resolution: string,
+  resolutionNote?: string
+) => {
   try {
     const response = await api.post('/sync/conflicts/batch-resolve', {
       conflict_ids: conflictIds,
@@ -1307,7 +1368,12 @@ export const getAvailableReports = async () => {
   }
 };
 
-export const generateReport = async (reportId: string, format: string = 'json', startDate?: string, endDate?: string) => {
+export const generateReport = async (
+  reportId: string,
+  format: string = 'json',
+  startDate?: string,
+  endDate?: string
+) => {
   try {
     const response = await api.post('/admin/control/reports/generate', {
       report_id: reportId,
@@ -1395,7 +1461,12 @@ export const getSecuritySummary = async () => {
   }
 };
 
-export const getFailedLogins = async (limit: number = 100, hours: number = 24, username?: string, ipAddress?: string) => {
+export const getFailedLogins = async (
+  limit: number = 100,
+  hours: number = 24,
+  username?: string,
+  ipAddress?: string
+) => {
   try {
     const params = new URLSearchParams({ limit: limit.toString(), hours: hours.toString() });
     if (username) params.append('username', username);
@@ -1420,7 +1491,9 @@ export const getSuspiciousActivity = async (hours: number = 24) => {
 
 export const getSecuritySessions = async (limit: number = 100, activeOnly: boolean = false) => {
   try {
-    const response = await api.get(`/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`);
+    const response = await api.get(
+      `/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`
+    );
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error('Get security sessions error:', error);
@@ -1428,7 +1501,12 @@ export const getSecuritySessions = async (limit: number = 100, activeOnly: boole
   }
 };
 
-export const getSecurityAuditLog = async (limit: number = 100, hours: number = 24, action?: string, user?: string) => {
+export const getSecurityAuditLog = async (
+  limit: number = 100,
+  hours: number = 24,
+  action?: string,
+  user?: string
+) => {
   try {
     const params = new URLSearchParams({ limit: limit.toString(), hours: hours.toString() });
     if (action) params.append('action', action);
@@ -1703,7 +1781,10 @@ export const getStaffPerformance = async (days: number = 30) => {
 // DYNAMIC FIELDS API
 // ==========================================
 
-export const getFieldDefinitions = async (enabledOnly: boolean = true, visibleOnly: boolean = false) => {
+export const getFieldDefinitions = async (
+  enabledOnly: boolean = true,
+  visibleOnly: boolean = false
+) => {
   try {
     const params = new URLSearchParams({
       enabled_only: enabledOnly.toString(),
@@ -1784,7 +1865,12 @@ export const getItemFieldValues = async (itemCode: string) => {
   }
 };
 
-export const getItemsWithFields = async (fieldName?: string, fieldValue?: string, limit: number = 100, skip: number = 0) => {
+export const getItemsWithFields = async (
+  fieldName?: string,
+  fieldValue?: string,
+  limit: number = 100,
+  skip: number = 0
+) => {
   try {
     const params = new URLSearchParams({
       limit: limit.toString(),
@@ -1810,6 +1896,5 @@ export const getFieldStatistics = async (fieldName: string) => {
     throw error;
   }
 };
-
 
 export default api;

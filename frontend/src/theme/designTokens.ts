@@ -8,17 +8,17 @@
 // SPACING SCALE (4px base unit)
 // ==========================================
 export const spacing = {
-  xs: 4,      // 0.25rem - Tight spacing
-  sm: 8,      // 0.5rem  - Small spacing
-  md: 12,     // 0.75rem - Medium spacing
-  base: 16,   // 1rem    - Base spacing
-  lg: 24,     // 1.5rem  - Large spacing
-  xl: 32,     // 2rem    - Extra large spacing
-  '2xl': 48,  // 3rem    - 2x extra large
-  '3xl': 64,  // 4rem    - 3x extra large
+  xs: 4, // 0.25rem - Tight spacing
+  sm: 8, // 0.5rem  - Small spacing
+  md: 12, // 0.75rem - Medium spacing
+  base: 16, // 1rem    - Base spacing
+  lg: 24, // 1.5rem  - Large spacing
+  xl: 32, // 2rem    - Extra large spacing
+  '2xl': 48, // 3rem    - 2x extra large
+  '3xl': 64, // 4rem    - 3x extra large
 } as const;
 
-export type Spacing = typeof spacing[keyof typeof spacing];
+export type Spacing = (typeof spacing)[keyof typeof spacing];
 
 // ==========================================
 // TYPOGRAPHY SCALE
@@ -26,15 +26,15 @@ export type Spacing = typeof spacing[keyof typeof spacing];
 export const typography = {
   // Font Sizes
   fontSize: {
-    xs: 10,      // Caption, labels
-    sm: 12,      // Small text
-    base: 14,    // Body text
-    md: 16,      // Default body
-    lg: 18,      // Large body
-    xl: 20,      // Subheading
-    '2xl': 24,   // Heading 3
-    '3xl': 32,   // Heading 2
-    '4xl': 48,   // Heading 1
+    xs: 10, // Caption, labels
+    sm: 12, // Small text
+    base: 14, // Body text
+    md: 16, // Default body
+    lg: 18, // Large body
+    xl: 20, // Subheading
+    '2xl': 24, // Heading 3
+    '3xl': 32, // Heading 2
+    '4xl': 48, // Heading 1
   },
 
   // Font Weights
@@ -80,7 +80,7 @@ export const borderRadius = {
   full: 9999,
 } as const;
 
-export type BorderRadius = typeof borderRadius[keyof typeof borderRadius];
+export type BorderRadius = (typeof borderRadius)[keyof typeof borderRadius];
 
 // ==========================================
 // SHADOW/ELEVATION SYSTEM
@@ -103,7 +103,7 @@ export const shadows = {
   2: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 1.41,
     elevation: 2,
   },
@@ -168,17 +168,17 @@ export const zIndex = {
   max: 9999,
 } as const;
 
-export type ZIndex = typeof zIndex[keyof typeof zIndex];
+export type ZIndex = (typeof zIndex)[keyof typeof zIndex];
 
 // ==========================================
 // BREAKPOINTS (for responsive design)
 // ==========================================
 export const breakpoints = {
-  xs: 0,      // Extra small devices (phones)
-  sm: 576,    // Small devices (phones, landscape)
-  md: 768,    // Medium devices (tablets)
-  lg: 992,    // Large devices (desktops)
-  xl: 1200,   // Extra large devices
+  xs: 0, // Extra small devices (phones)
+  sm: 576, // Small devices (phones, landscape)
+  md: 768, // Medium devices (tablets)
+  lg: 992, // Large devices (desktops)
+  xl: 1200, // Extra large devices
   '2xl': 1400, // 2x extra large devices
 } as const;
 
@@ -189,10 +189,10 @@ export type Breakpoint = keyof typeof breakpoints;
 // ==========================================
 export const animation = {
   duration: {
-    fast: 150,      // Quick interactions
-    normal: 300,    // Standard animations
-    slow: 500,      // Slow animations
-    slower: 700,    // Very slow animations
+    fast: 150, // Quick interactions
+    normal: 300, // Standard animations
+    slow: 500, // Slow animations
+    slower: 700, // Very slow animations
   },
   easing: {
     linear: 'linear',
@@ -206,12 +206,12 @@ export const animation = {
 // TOUCH TARGET SIZES (Accessibility)
 // ==========================================
 export const touchTargets = {
-  minimum: 44,  // WCAG minimum (iOS HIG: 44x44pt)
+  minimum: 44, // WCAG minimum (iOS HIG: 44x44pt)
   comfortable: 48, // More comfortable size
-  large: 56,   // Large touch target
+  large: 56, // Large touch target
 } as const;
 
-export type TouchTarget = typeof touchTargets[keyof typeof touchTargets];
+export type TouchTarget = (typeof touchTargets)[keyof typeof touchTargets];
 
 // ==========================================
 // EXPORT ALL TOKENS

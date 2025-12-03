@@ -6,7 +6,6 @@
 import api from '../httpClient';
 import { retryWithBackoff } from '../../utils/retry';
 
-
 /**
  * Standardized API response type
  */
@@ -208,10 +207,7 @@ class EnhancedApiClient {
   /**
    * DELETE request with retry logic
    */
-  async delete<T>(
-    endpoint: string,
-    retries: number = 3
-  ): Promise<StandardApiResponse<T>> {
+  async delete<T>(endpoint: string, retries: number = 3): Promise<StandardApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
@@ -245,30 +241,37 @@ class EnhancedApiClient {
   /**
    * Health check
    */
-  async healthCheck(): Promise<StandardApiResponse<{
-    status: string;
-    services: Record<string, {
+  async healthCheck(): Promise<
+    StandardApiResponse<{
       status: string;
-      details?: Record<string, unknown>;
-    }>;
-    timestamp: string;
-    version?: string;
-  }>> {
+      services: Record<
+        string,
+        {
+          status: string;
+          details?: Record<string, unknown>;
+        }
+      >;
+      timestamp: string;
+      version?: string;
+    }>
+  > {
     return this.get('/health');
   }
 
   /**
    * Connection pool status
    */
-  async getConnectionPoolStatus(): Promise<StandardApiResponse<{
-    status: string;
-    pool_size: number;
-    created: number;
-    available: number;
-    checked_out: number;
-    utilization: number;
-    metrics: Record<string, unknown>;
-  }>> {
+  async getConnectionPoolStatus(): Promise<
+    StandardApiResponse<{
+      status: string;
+      pool_size: number;
+      created: number;
+      available: number;
+      checked_out: number;
+      utilization: number;
+      metrics: Record<string, unknown>;
+    }>
+  > {
     return this.get('/connections/pool/status');
   }
 }

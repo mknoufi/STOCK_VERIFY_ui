@@ -15,7 +15,8 @@ const meta: Meta<typeof Input> = {
   parameters: {
     docs: {
       description: {
-        component: 'Enhanced text input component with label, error states, and icon support. Fully compatible with React Native and Web platforms.',
+        component:
+          'Enhanced text input component with label, error states, and icon support. Fully compatible with React Native and Web platforms.',
       },
     },
   },
@@ -161,7 +162,12 @@ export const AllStates: Story = {
       <Input label="With Value" placeholder="Enter text" defaultValue="Sample text" />
       <Input label="With Error" placeholder="Enter text" error="This field is required" />
       <Input label="Disabled" placeholder="Disabled input" editable={false} />
-      <Input label="With Icons" placeholder="Search..." leftIcon="search-outline" rightIcon="close-circle-outline" />
+      <Input
+        label="With Icons"
+        placeholder="Search..."
+        leftIcon="search-outline"
+        rightIcon="close-circle-outline"
+      />
     </View>
   ),
 };

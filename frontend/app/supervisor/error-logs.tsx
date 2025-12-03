@@ -18,7 +18,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Header } from '../../src/components/layout/Header';
 import { useTheme } from '../../src/hooks/useTheme';
-import { getErrorLogs, clearErrorLogs, getErrorStats, getErrorDetail, resolveError } from '../../src/services/api/api';
+import {
+  getErrorLogs,
+  clearErrorLogs,
+  getErrorStats,
+  getErrorDetail,
+  resolveError,
+} from '../../src/services/api/api';
 import { useToast } from '../../src/components/feedback/ToastProvider';
 
 interface ErrorLog {
@@ -64,32 +70,33 @@ export default function ErrorLogsScreen() {
     resolved: undefined as boolean | undefined,
   });
 
-
-
-  const loadErrors = React.useCallback(async (pageNum: number = 1) => {
-    try {
-      setLoading(pageNum === 1);
-      const response = await getErrorLogs(
-        pageNum,
-        50,
-        filters.severity || undefined,
-        undefined,
-        undefined,
-        filters.resolved
-      );
-      if (pageNum === 1) {
-        setErrors(response.errors || []);
-      } else {
-        setErrors(prevErrors => [...prevErrors, ...(response.errors || [])]);
+  const loadErrors = React.useCallback(
+    async (pageNum: number = 1) => {
+      try {
+        setLoading(pageNum === 1);
+        const response = await getErrorLogs(
+          pageNum,
+          50,
+          filters.severity || undefined,
+          undefined,
+          undefined,
+          filters.resolved
+        );
+        if (pageNum === 1) {
+          setErrors(response.errors || []);
+        } else {
+          setErrors((prevErrors) => [...prevErrors, ...(response.errors || [])]);
+        }
+        setHasMore(response.pagination?.has_next || false);
+      } catch (error: any) {
+        show('Failed to load error logs', 'error');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-      setHasMore(response.pagination?.has_next || false);
-    } catch (error: any) {
-      show('Failed to load error logs', 'error');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filters, show]);
+    },
+    [filters, show]
+  );
 
   const loadStats = React.useCallback(async () => {
     try {
@@ -205,24 +212,16 @@ export default function ErrorLogsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header
-        title="Error Monitoring"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
+      <Header title="Error Monitoring" leftIcon="arrow-back" onLeftPress={() => router.back()} />
 
       <ScrollView
         style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {/* Statistics */}
         {stats && (
           <View style={[styles.statsContainer, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>
-              Error Statistics
-            </Text>
+            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>Error Statistics</Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: theme.colors.primary }]}>
@@ -273,13 +272,11 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.severity === '' && styles.filterButtonActive
+                filters.severity === '' && styles.filterButtonActive,
               ]}
               onPress={() => setFilters({ ...filters, severity: '' })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-                All
-              </Text>
+              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>All</Text>
             </TouchableOpacity>
             {['critical', 'error', 'warning'].map((sev) => (
               <TouchableOpacity
@@ -287,7 +284,7 @@ export default function ErrorLogsScreen() {
                 style={[
                   styles.filterButton,
                   { backgroundColor: theme.colors.background },
-                  filters.severity === sev && styles.filterButtonActive
+                  filters.severity === sev && styles.filterButtonActive,
                 ]}
                 onPress={() => setFilters({ ...filters, severity: sev })}
               >
@@ -302,7 +299,7 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.resolved === undefined && styles.filterButtonActive
+                filters.resolved === undefined && styles.filterButtonActive,
               ]}
               onPress={() => setFilters({ ...filters, resolved: undefined })}
             >
@@ -314,7 +311,7 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.resolved === false && styles.filterButtonActive
+                filters.resolved === false && styles.filterButtonActive,
               ]}
               onPress={() => setFilters({ ...filters, resolved: false })}
             >
@@ -326,13 +323,11 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.resolved === true && styles.filterButtonActive
+                filters.resolved === true && styles.filterButtonActive,
               ]}
               onPress={() => setFilters({ ...filters, resolved: true })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-                Resolved
-              </Text>
+              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>Resolved</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -371,7 +366,10 @@ export default function ErrorLogsScreen() {
                       <Text style={[styles.errorType, { color: theme.colors.text }]}>
                         {error.error_type}
                       </Text>
-                      <Text style={[styles.errorMessage, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+                      <Text
+                        style={[styles.errorMessage, { color: theme.colors.textSecondary }]}
+                        numberOfLines={1}
+                      >
                         {error.error_message}
                       </Text>
                     </View>
@@ -383,10 +381,7 @@ export default function ErrorLogsScreen() {
                     ]}
                   >
                     <Text
-                      style={[
-                        styles.severityText,
-                        { color: getSeverityColor(error.severity) },
-                      ]}
+                      style={[styles.severityText, { color: getSeverityColor(error.severity) }]}
                     >
                       {error.severity}
                     </Text>
@@ -447,9 +442,7 @@ export default function ErrorLogsScreen() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Error Details
-              </Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Error Details</Text>
               <TouchableOpacity onPress={() => setShowDetailModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
@@ -577,9 +570,7 @@ export default function ErrorLogsScreen() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Resolve Error
-              </Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Resolve Error</Text>
               <TouchableOpacity onPress={() => setShowResolveModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
@@ -590,7 +581,10 @@ export default function ErrorLogsScreen() {
                 Resolution Note (Optional)
               </Text>
               <TextInput
-                style={[styles.textInput, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+                style={[
+                  styles.textInput,
+                  { backgroundColor: theme.colors.background, color: theme.colors.text },
+                ]}
                 value={resolutionNote}
                 onChangeText={setResolutionNote}
                 placeholder="Enter resolution notes..."

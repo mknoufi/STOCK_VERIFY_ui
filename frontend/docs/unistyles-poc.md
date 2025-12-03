@@ -26,20 +26,20 @@ This is an experimental integration of `react-native-unistyles` guarded by the `
 1. Set flag in `frontend/constants/flags.ts`:
 
    ```ts
-   enableUnistyles: true
+   enableUnistyles: true;
    ```
 
 1. Reload the app. Debug panel will show a "Toggle Contrast Theme" button.
 
 ## Evaluation Metrics
 
-| Metric | Target | How |
-| ------ | ------ | --- |
-| Theme switch latency | < 5ms | Profiler / timestamp around toggleHighContrast |
-| Re-render count | No extra screen re-renders | React DevTools profiler diff |
-| Bundle size delta | < +50kb gzipped | Compare `expo export` stats |
-| Memory overhead | Negligible | Flipper / Hermes profile after 10 theme flips |
-| Error resilience | No crashes when lib missing | Start with flag off |
+| Metric               | Target                      | How                                            |
+| -------------------- | --------------------------- | ---------------------------------------------- |
+| Theme switch latency | < 5ms                       | Profiler / timestamp around toggleHighContrast |
+| Re-render count      | No extra screen re-renders  | React DevTools profiler diff                   |
+| Bundle size delta    | < +50kb gzipped             | Compare `expo export` stats                    |
+| Memory overhead      | Negligible                  | Flipper / Hermes profile after 10 theme flips  |
+| Error resilience     | No crashes when lib missing | Start with flag off                            |
 
 ## Rollback
 

@@ -53,7 +53,10 @@ export const MRPVariantSelector: React.FC<MRPVariantSelectorProps> = ({
                 </Text>
                 {(variant.label || variant.source) && (
                   <Text
-                    style={[styles.mrpVariantChipMeta, isSelected && styles.mrpVariantChipMetaActive]}
+                    style={[
+                      styles.mrpVariantChipMeta,
+                      isSelected && styles.mrpVariantChipMetaActive,
+                    ]}
                     numberOfLines={1}
                   >
                     {variant.label ?? variant.source}
@@ -74,10 +77,20 @@ export const MRPVariantSelector: React.FC<MRPVariantSelectorProps> = ({
             <Text
               style={[
                 styles.mrpChangeValue,
-                mrpDifference > 0 ? styles.mrpIncrease : mrpDifference < 0 ? styles.mrpDecrease : styles.mrpNeutral,
+                mrpDifference > 0
+                  ? styles.mrpIncrease
+                  : mrpDifference < 0
+                  ? styles.mrpDecrease
+                  : styles.mrpNeutral,
               ]}
             >
-              {`₹${systemMrp.toFixed(2)} → ₹${parsedMrpValue.toFixed(2)} (${mrpDifference > 0 ? '+' : ''}${mrpDifference.toFixed(2)}${mrpChangePercent !== null ? ` • ${mrpChangePercent > 0 ? '+' : ''}${mrpChangePercent.toFixed(1)}%` : ''})`}
+              {`₹${systemMrp.toFixed(2)} → ₹${parsedMrpValue.toFixed(2)} (${
+                mrpDifference > 0 ? '+' : ''
+              }${mrpDifference.toFixed(2)}${
+                mrpChangePercent !== null
+                  ? ` • ${mrpChangePercent > 0 ? '+' : ''}${mrpChangePercent.toFixed(1)}%`
+                  : ''
+              })`}
             </Text>
             <Text style={styles.mrpChangeNotice}>
               MRP change will be submitted only when the value differs.

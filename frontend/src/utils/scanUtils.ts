@@ -9,13 +9,7 @@ export const toNumericMrp = (value: unknown): number | null => {
 
   if (typeof value === 'object' && value !== null) {
     const obj = value as Record<string, unknown>;
-    const candidate =
-      obj.value ??
-      obj.mrp ??
-      obj.amount ??
-      obj.price ??
-      obj.rate ??
-      null;
+    const candidate = obj.value ?? obj.mrp ?? obj.amount ?? obj.price ?? obj.rate ?? null;
 
     if (candidate !== null && candidate !== undefined) {
       return toNumericMrp(candidate);
@@ -52,9 +46,24 @@ export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null
     return {
       id: typeof obj.id === 'string' ? obj.id : undefined,
       value: roundedValue,
-      barcode: typeof obj.barcode === 'string' ? obj.barcode : typeof obj.variant_barcode === 'string' ? obj.variant_barcode : undefined,
-      label: typeof obj.label === 'string' ? obj.label : typeof obj.title === 'string' ? obj.title : undefined,
-      source: typeof obj.source === 'string' ? obj.source : typeof obj.mrp_source === 'string' ? obj.mrp_source : undefined,
+      barcode:
+        typeof obj.barcode === 'string'
+          ? obj.barcode
+          : typeof obj.variant_barcode === 'string'
+          ? obj.variant_barcode
+          : undefined,
+      label:
+        typeof obj.label === 'string'
+          ? obj.label
+          : typeof obj.title === 'string'
+          ? obj.title
+          : undefined,
+      source:
+        typeof obj.source === 'string'
+          ? obj.source
+          : typeof obj.mrp_source === 'string'
+          ? obj.mrp_source
+          : undefined,
       item_condition: typeof obj.item_condition === 'string' ? obj.item_condition : undefined,
     };
   }

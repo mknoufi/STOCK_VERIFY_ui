@@ -30,11 +30,9 @@ export default function PermissionsScreen() {
   // Check if user has admin permissions
   useEffect(() => {
     if (!hasRole('admin')) {
-      Alert.alert(
-        'Access Denied',
-        'You do not have permission to access this screen.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      Alert.alert('Access Denied', 'You do not have permission to access this screen.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
     }
   }, [hasRole, router]);
 
@@ -106,27 +104,21 @@ export default function PermissionsScreen() {
       ? categoryKeys.filter(
           (cat) =>
             cat.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            categories[cat].some((p: string) =>
-              p.toLowerCase().includes(searchQuery.toLowerCase())
-            )
+            categories[cat].some((p: string) => p.toLowerCase().includes(searchQuery.toLowerCase()))
         )
       : categoryKeys;
 
     return filteredCategories.map((category) => {
       const permissions = categories[category];
       const filteredPermissions = searchQuery
-        ? permissions.filter((p: string) =>
-            p.toLowerCase().includes(searchQuery.toLowerCase())
-          )
+        ? permissions.filter((p: string) => p.toLowerCase().includes(searchQuery.toLowerCase()))
         : permissions;
 
       if (filteredPermissions.length === 0) return null;
 
       return (
         <View key={category} style={styles.categoryContainer}>
-          <Text style={styles.categoryTitle}>
-            {category.toUpperCase().replace('_', ' ')}
-          </Text>
+          <Text style={styles.categoryTitle}>{category.toUpperCase().replace('_', ' ')}</Text>
           {filteredPermissions.map((permission: string) => {
             const hasPermission = userPermissions.includes(permission);
             return (
@@ -144,9 +136,7 @@ export default function PermissionsScreen() {
                         : handleAddUserPermission(permission)
                     }
                   >
-                    <Text style={styles.buttonText}>
-                      {hasPermission ? 'Remove' : 'Add'}
-                    </Text>
+                    <Text style={styles.buttonText}>{hasPermission ? 'Remove' : 'Add'}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -169,10 +159,7 @@ export default function PermissionsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Permission Management</Text>

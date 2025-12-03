@@ -25,11 +25,9 @@ export default function MasterSettingsScreen() {
 
   useEffect(() => {
     if (!hasRole('admin')) {
-      Alert.alert(
-        'Access Denied',
-        'You do not have permission to view master settings.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      Alert.alert('Access Denied', 'You do not have permission to view master settings.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
       return;
     }
     loadSettings();
@@ -84,7 +82,12 @@ export default function MasterSettingsScreen() {
     </View>
   );
 
-  const renderInput = (label: string, key: string, keyboardType: 'default' | 'numeric' = 'default', description?: string) => (
+  const renderInput = (
+    label: string,
+    key: string,
+    keyboardType: 'default' | 'numeric' = 'default',
+    description?: string
+  ) => (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TextInput
@@ -145,23 +148,48 @@ export default function MasterSettingsScreen() {
         {/* API Settings */}
         <View style={styles.section}>
           {renderSectionHeader('API Configuration', 'globe-outline')}
-          {renderInput('API Timeout (seconds)', 'api_timeout', 'numeric', 'Request timeout duration')}
-          {renderInput('Rate Limit (per minute)', 'api_rate_limit', 'numeric', 'Maximum requests per minute')}
+          {renderInput(
+            'API Timeout (seconds)',
+            'api_timeout',
+            'numeric',
+            'Request timeout duration'
+          )}
+          {renderInput(
+            'Rate Limit (per minute)',
+            'api_rate_limit',
+            'numeric',
+            'Maximum requests per minute'
+          )}
         </View>
 
         {/* Cache Settings */}
         <View style={styles.section}>
           {renderSectionHeader('Caching', 'hardware-chip-outline')}
           {renderSwitch('Enable Caching', 'cache_enabled')}
-          {renderInput('Cache TTL (seconds)', 'cache_ttl', 'numeric', 'Time to live for cached items')}
-          {renderInput('Max Cache Size', 'cache_max_size', 'numeric', 'Maximum number of items in cache')}
+          {renderInput(
+            'Cache TTL (seconds)',
+            'cache_ttl',
+            'numeric',
+            'Time to live for cached items'
+          )}
+          {renderInput(
+            'Max Cache Size',
+            'cache_max_size',
+            'numeric',
+            'Maximum number of items in cache'
+          )}
         </View>
 
         {/* Sync Settings */}
         <View style={styles.section}>
           {renderSectionHeader('Synchronization', 'sync-outline')}
           {renderSwitch('Auto Sync', 'auto_sync_enabled')}
-          {renderInput('Sync Interval (seconds)', 'sync_interval', 'numeric', 'Time between automatic syncs')}
+          {renderInput(
+            'Sync Interval (seconds)',
+            'sync_interval',
+            'numeric',
+            'Time between automatic syncs'
+          )}
           {renderInput('Batch Size', 'sync_batch_size', 'numeric', 'Items per sync batch')}
         </View>
 

@@ -64,7 +64,7 @@ export default function Register() {
       // Save user data (the registration response should include user info)
       if (response.user) {
         await storage.set('user', JSON.stringify(response.user));
-        
+
         // Update auth store using setUser method
         useAuthStore.getState().setUser(response.user);
       }
@@ -114,21 +114,21 @@ export default function Register() {
           onPress: () => {
             setFormData({ ...formData, username: '' });
             // Focus will be handled by component state
-          }
+          },
         };
       } else if (errorMessage.includes('timeout') || errorMessage.includes('ECONNABORTED')) {
         fixButton = {
           text: 'Retry Registration',
           onPress: () => {
             setTimeout(() => handleRegister(), 500);
-          }
+          },
         };
       } else if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Cannot connect')) {
         fixButton = {
           text: 'Check Connection & Retry',
           onPress: () => {
             setTimeout(() => handleRegister(), 1000);
-          }
+          },
         };
       } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
         fixButton = {
@@ -136,17 +136,14 @@ export default function Register() {
           onPress: () => {
             // Scroll to top or highlight required fields
             // Form validation will handle highlighting
-          }
+          },
         };
       }
 
       Alert.alert(
         'Registration Failed',
         errorMessage,
-        fixButton ? [
-          { text: 'Cancel', style: 'cancel' },
-          fixButton
-        ] : [{ text: 'OK' }]
+        fixButton ? [{ text: 'Cancel', style: 'cancel' }, fixButton] : [{ text: 'OK' }]
       );
       __DEV__ && console.error('Registration error details:', error);
     } finally {
@@ -160,16 +157,10 @@ export default function Register() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="light" />
-      <LinearGradient
-        colors={['#1a1a1a', '#0d0d0d', '#000000']}
-        style={StyleSheet.absoluteFill}
-      />
+      <LinearGradient colors={['#1a1a1a', '#0d0d0d', '#000000']} style={StyleSheet.absoluteFill} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <AppLogo size="medium" showText={true} variant="default" />
@@ -250,7 +241,12 @@ export default function Register() {
               Password <Text style={styles.required}>*</Text>
             </Text>
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color="#888"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={formData.password}
@@ -279,7 +275,12 @@ export default function Register() {
               Confirm Password <Text style={styles.required}>*</Text>
             </Text>
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color="#888"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={formData.confirmPassword}
@@ -333,23 +334,27 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    ...(Platform.OS === 'web' ? {
-      maxWidth: 500,
-      width: '100%',
-      alignSelf: 'center',
-      paddingTop: 40,
-      paddingBottom: 40,
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          maxWidth: 500,
+          width: '100%',
+          alignSelf: 'center',
+          paddingTop: 40,
+          paddingBottom: 40,
+        }
+      : {}),
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 24,
     paddingBottom: 32,
     backgroundColor: '#2a2a2a',
-    ...(Platform.OS === 'web' ? {
-      borderRadius: 12,
-      marginTop: 20,
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          borderRadius: 12,
+          marginTop: 20,
+        }
+      : {}),
   },
   backButton: {
     marginBottom: 16,

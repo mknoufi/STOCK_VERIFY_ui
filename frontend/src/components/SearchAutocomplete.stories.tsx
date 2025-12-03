@@ -15,7 +15,8 @@ const meta: Meta<typeof SearchAutocomplete> = {
   parameters: {
     docs: {
       description: {
-        component: 'Enhanced search component with dropdown suggestions, debounced search, and barcode scanning support. Shows results after minimum character threshold.',
+        component:
+          'Enhanced search component with dropdown suggestions, debounced search, and barcode scanning support. Shows results after minimum character threshold.',
       },
     },
   },
@@ -45,7 +46,6 @@ type Story = StoryObj<typeof SearchAutocomplete>;
 
 // Mock search results for stories
 
-
 // Wrapper component for interactive stories
 const SearchWrapper = (args: any) => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -64,7 +64,9 @@ const SearchWrapper = (args: any) => {
       />
       {selectedItem && (
         <View style={styles.result}>
-          <span>Selected: {selectedItem.item_name} ({selectedItem.item_code})</span>
+          <span>
+            Selected: {selectedItem.item_name} ({selectedItem.item_code})
+          </span>
         </View>
       )}
     </View>

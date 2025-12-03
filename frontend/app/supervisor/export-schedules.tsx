@@ -14,7 +14,13 @@ import { useRouter } from 'expo-router';
 import { usePermissions } from '../../src/hooks/usePermissions';
 import { Header } from '../../src/components/layout/Header';
 import { useTheme } from '../../src/hooks/useTheme';
-import { getExportSchedules, createExportSchedule, updateExportSchedule, deleteExportSchedule, triggerExportSchedule } from '../../src/services/api/api';
+import {
+  getExportSchedules,
+  createExportSchedule,
+  updateExportSchedule,
+  deleteExportSchedule,
+  triggerExportSchedule,
+} from '../../src/services/api/api';
 import { useToast } from '../../src/components/feedback/ToastProvider';
 
 interface ExportSchedule {
@@ -46,11 +52,9 @@ export default function ExportSchedulesScreen() {
 
   useEffect(() => {
     if (!hasPermission('export.schedule')) {
-      Alert.alert(
-        'Access Denied',
-        'You do not have permission to access export schedules.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      Alert.alert('Access Denied', 'You do not have permission to access export schedules.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
       return;
     }
     loadSchedules();
@@ -97,26 +101,22 @@ export default function ExportSchedulesScreen() {
   };
 
   const handleDeleteSchedule = async (scheduleId: string) => {
-    Alert.alert(
-      'Confirm Delete',
-      'Are you sure you want to delete this export schedule?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteExportSchedule(scheduleId);
-              Alert.alert('Success', 'Export schedule deleted successfully');
-              loadSchedules();
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to delete export schedule');
-            }
-          },
+    Alert.alert('Confirm Delete', 'Are you sure you want to delete this export schedule?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteExportSchedule(scheduleId);
+            Alert.alert('Success', 'Export schedule deleted successfully');
+            loadSchedules();
+          } catch (error: any) {
+            Alert.alert('Error', error.message || 'Failed to delete export schedule');
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleTriggerSchedule = async (scheduleId: string) => {
@@ -154,9 +154,7 @@ export default function ExportSchedulesScreen() {
         </View>
       </View>
 
-      {schedule.description && (
-        <Text style={styles.cardDescription}>{schedule.description}</Text>
-      )}
+      {schedule.description && <Text style={styles.cardDescription}>{schedule.description}</Text>}
 
       <View style={styles.cardDetails}>
         <Text style={styles.cardDetailText}>Frequency: {schedule.frequency}</Text>
@@ -314,9 +312,7 @@ export default function ExportSchedulesScreen() {
                 style={[styles.modalButton, styles.modalButtonPrimary]}
                 onPress={editingSchedule ? handleUpdateSchedule : handleCreateSchedule}
               >
-                <Text style={styles.modalButtonText}>
-                  {editingSchedule ? 'Update' : 'Create'}
-                </Text>
+                <Text style={styles.modalButtonText}>{editingSchedule ? 'Update' : 'Create'}</Text>
               </TouchableOpacity>
             </View>
           </View>

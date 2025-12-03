@@ -13,7 +13,7 @@ interface LogoutButtonProps {
 export const LogoutButton: React.FC<LogoutButtonProps> = ({
   showText = true,
   size = 'medium',
-  variant = 'both'
+  variant = 'both',
 }) => {
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const { logout, user } = useAuthStore();

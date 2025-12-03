@@ -35,10 +35,7 @@ export const VarianceReasonModal: React.FC<VarianceReasonModalProps> = ({
           {reasons.map((reason) => (
             <TouchableOpacity
               key={reason.code}
-              style={[
-                styles.reasonOption,
-                selectedReason === reason.code && styles.reasonSelected,
-              ]}
+              style={[styles.reasonOption, selectedReason === reason.code && styles.reasonSelected]}
               onPress={() => onReasonSelect(reason.code)}
             >
               <Text style={styles.reasonText}>{reason.label}</Text>

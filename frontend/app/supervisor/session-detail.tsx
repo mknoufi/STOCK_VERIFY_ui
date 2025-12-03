@@ -1,10 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Header } from '../../src/components/layout/Header';
 import { useTheme } from '../../src/hooks/useTheme';
-import { getSession, getCountLines, approveCountLine, rejectCountLine, updateSessionStatus, verifyStock, unverifyStock } from '../../src/services/api/api';
+import {
+  getSession,
+  getCountLines,
+  approveCountLine,
+  rejectCountLine,
+  updateSessionStatus,
+  verifyStock,
+  unverifyStock,
+} from '../../src/services/api/api';
 import { StatusBar } from 'expo-status-bar';
 import { useToast } from '../../src/components/feedback/ToastProvider';
 
@@ -19,15 +34,13 @@ export default function SessionDetail() {
   const [activeTab, setActiveTab] = React.useState<'toVerify' | 'verified'>('toVerify');
   const [verifying, setVerifying] = React.useState<string | null>(null);
 
-
-
   const loadData = React.useCallback(async () => {
     try {
       setLoading(true);
       const [sessionData, toVerifyData, verifiedData] = await Promise.all([
         getSession(sessionId as string),
         getCountLines(sessionId as string, 1, 100, false), // Not verified
-        getCountLines(sessionId as string, 1, 100, true),  // Verified
+        getCountLines(sessionId as string, 1, 100, true), // Verified
       ]);
       setSession(sessionData);
       setToVerifyLines(toVerifyData?.items || []);
@@ -182,10 +195,7 @@ export default function SessionDetail() {
         {/* Tab Selection */}
         <View style={styles.tabContainer}>
           <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'toVerify' && styles.tabActive
-            ]}
+            style={[styles.tab, activeTab === 'toVerify' && styles.tabActive]}
             onPress={() => setActiveTab('toVerify')}
           >
             <Ionicons
@@ -193,18 +203,12 @@ export default function SessionDetail() {
               size={20}
               color={activeTab === 'toVerify' ? '#fff' : '#888'}
             />
-            <Text style={[
-              styles.tabText,
-              activeTab === 'toVerify' && styles.tabTextActive
-            ]}>
+            <Text style={[styles.tabText, activeTab === 'toVerify' && styles.tabTextActive]}>
               To Verify ({toVerifyLines.length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'verified' && styles.tabActive
-            ]}
+            style={[styles.tab, activeTab === 'verified' && styles.tabActive]}
             onPress={() => setActiveTab('verified')}
           >
             <Ionicons
@@ -212,10 +216,7 @@ export default function SessionDetail() {
               size={20}
               color={activeTab === 'verified' ? '#fff' : '#888'}
             />
-            <Text style={[
-              styles.tabText,
-              activeTab === 'verified' && styles.tabTextActive
-            ]}>
+            <Text style={[styles.tabText, activeTab === 'verified' && styles.tabTextActive]}>
               Verified ({verifiedLines.length})
             </Text>
           </TouchableOpacity>
@@ -230,15 +231,18 @@ export default function SessionDetail() {
               color="#888"
             />
             <Text style={styles.emptyText}>
-              {activeTab === 'toVerify'
-                ? 'No items to verify'
-                : 'No verified items'}
+              {activeTab === 'toVerify' ? 'No items to verify' : 'No verified items'}
             </Text>
           </View>
         ) : (
           currentLines.map((line: any) => {
             const varianceColor = line.variance === 0 ? '#00E676' : '#FF5252';
-            const statusColor = line.status === 'approved' ? '#00E676' : line.status === 'rejected' ? '#FF5252' : '#FFC107';
+            const statusColor =
+              line.status === 'approved'
+                ? '#00E676'
+                : line.status === 'rejected'
+                ? '#FF5252'
+                : '#FFC107';
 
             return (
               <View key={line.id} style={styles.lineCard}>
@@ -270,9 +274,7 @@ export default function SessionDetail() {
                   </View>
                   <View style={styles.qtyItem}>
                     <Text style={styles.qtyLabel}>Variance</Text>
-                    <Text style={[styles.qtyValue, { color: varianceColor }]}>
-                      {line.variance}
-                    </Text>
+                    <Text style={[styles.qtyValue, { color: varianceColor }]}>{line.variance}</Text>
                   </View>
                 </View>
 
@@ -285,15 +287,14 @@ export default function SessionDetail() {
                   </View>
                 )}
 
-                {line.remark && (
-                  <Text style={styles.remark}>Remark: {line.remark}</Text>
-                )}
+                {line.remark && <Text style={styles.remark}>Remark: {line.remark}</Text>}
 
                 {line.verified && line.verified_by && (
                   <View style={styles.verifiedInfo}>
                     <Ionicons name="checkmark-circle" size={16} color="#00E676" />
                     <Text style={styles.verifiedInfoText}>
-                      Verified by {line.verified_by} on {new Date(line.verified_at).toLocaleString()}
+                      Verified by {line.verified_by} on{' '}
+                      {new Date(line.verified_at).toLocaleString()}
                     </Text>
                   </View>
                 )}
@@ -337,7 +338,10 @@ export default function SessionDetail() {
 
                   {activeTab === 'verified' && line.verified && (
                     <TouchableOpacity
-                      style={[styles.unverifyButton, verifying === line.id && styles.buttonDisabled]}
+                      style={[
+                        styles.unverifyButton,
+                        verifying === line.id && styles.buttonDisabled,
+                      ]}
                       onPress={() => handleUnverifyStock(line.id)}
                       disabled={verifying === line.id}
                     >

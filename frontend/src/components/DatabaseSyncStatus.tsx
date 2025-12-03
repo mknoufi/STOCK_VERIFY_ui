@@ -17,7 +17,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { Card } from './Card';
 import { Button } from './Button';
-import { getDatabaseSyncStatus, testDatabaseConnection, DatabaseStatus, SyncStatus, DatabaseSyncStatus as IDatabaseSyncStatus } from '../services/monitoring/databaseStatusService';
+import {
+  getDatabaseSyncStatus,
+  testDatabaseConnection,
+  DatabaseStatus,
+  SyncStatus,
+  DatabaseSyncStatus as IDatabaseSyncStatus,
+} from '../services/monitoring/databaseStatusService';
 import { useNetworkStore } from '../store/networkStore';
 
 // Types imported from databaseStatusService
@@ -143,9 +149,7 @@ export const DatabaseSyncStatus: React.FC<{
 
   return (
     <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
       <Card title="Database Sync Status" style={styles.card}>
         {/* Database Connection Status */}
@@ -212,9 +216,7 @@ export const DatabaseSyncStatus: React.FC<{
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="sync" size={20} color={theme.colors.primary} />
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Sync Status
-              </Text>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Sync Status</Text>
             </View>
 
             <View style={styles.infoContainer}>
@@ -225,12 +227,12 @@ export const DatabaseSyncStatus: React.FC<{
                 iconColor={syncStatus.isOnline ? theme.colors.success : theme.colors.error}
               />
               <InfoRow label="Queued Operations" value={syncStatus.queuedOperations.toString()} />
-              <InfoRow label="Cache Size" value={`${(syncStatus.cacheSize / 1024).toFixed(2)} KB`} />
+              <InfoRow
+                label="Cache Size"
+                value={`${(syncStatus.cacheSize / 1024).toFixed(2)} KB`}
+              />
               {syncStatus.lastSync && (
-                <InfoRow
-                  label="Last Sync"
-                  value={new Date(syncStatus.lastSync).toLocaleString()}
-                />
+                <InfoRow label="Last Sync" value={new Date(syncStatus.lastSync).toLocaleString()} />
               )}
             </View>
 

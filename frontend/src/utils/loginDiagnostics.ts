@@ -45,7 +45,8 @@ export class LoginDiagnostics {
       warn: '⚠️',
     }[status];
 
-    __DEV__ && console.log(`${emoji} [DIAG STEP ${this.currentStep}] ${name}: ${message}`, details || '');
+    __DEV__ &&
+      console.log(`${emoji} [DIAG STEP ${this.currentStep}] ${name}: ${message}`, details || '');
     return step;
   }
 
@@ -54,10 +55,12 @@ export class LoginDiagnostics {
   }
 
   getSummary() {
-    const passed = this.steps.filter(s => s.status === 'pass').length;
-    const failed = this.steps.filter(s => s.status === 'fail').length;
-    const warnings = this.steps.filter(s => s.status === 'warn').length;
-    const pending = this.steps.filter(s => s.status === 'pending' || s.status === 'checking').length;
+    const passed = this.steps.filter((s) => s.status === 'pass').length;
+    const failed = this.steps.filter((s) => s.status === 'fail').length;
+    const warnings = this.steps.filter((s) => s.status === 'warn').length;
+    const pending = this.steps.filter(
+      (s) => s.status === 'pending' || s.status === 'checking'
+    ).length;
 
     return {
       total: this.steps.length,
@@ -77,13 +80,16 @@ export class LoginDiagnostics {
     __DEV__ && console.log(`❌ Failed: ${summary.failed}`);
     __DEV__ && console.log(`⚠️  Warnings: ${summary.warnings}`);
     __DEV__ && console.log(`⏳ Pending: ${summary.pending}`);
-    __DEV__ && console.log(`Overall Status: ${summary.allPassed ? '✅ ALL CHECKS PASSED' : '❌ ISSUES DETECTED'}`);
+    __DEV__ &&
+      console.log(
+        `Overall Status: ${summary.allPassed ? '✅ ALL CHECKS PASSED' : '❌ ISSUES DETECTED'}`
+      );
     __DEV__ && console.log('==========================================\n');
   }
 
   printFullReport() {
     __DEV__ && console.log('\n📋 === FULL DIAGNOSTIC REPORT ===');
-    this.steps.forEach(step => {
+    this.steps.forEach((step) => {
       const emoji = {
         pending: '⏳',
         checking: '🔍',
@@ -119,12 +125,10 @@ export async function diagnoseComponentMount(platform: string) {
   // Check if we're in a browser environment
   if (platform === 'web') {
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-      loginDiagnostics.addStep(
-        'Browser Environment',
-        'pass',
-        'Browser environment detected',
-        { hasWindow: true, hasDocument: true }
-      );
+      loginDiagnostics.addStep('Browser Environment', 'pass', 'Browser environment detected', {
+        hasWindow: true,
+        hasDocument: true,
+      });
     } else {
       loginDiagnostics.addStep(
         'Browser Environment',
@@ -134,12 +138,9 @@ export async function diagnoseComponentMount(platform: string) {
       );
     }
   } else {
-    loginDiagnostics.addStep(
-      'Mobile Environment',
-      'pass',
-      'Mobile platform detected',
-      { platform }
-    );
+    loginDiagnostics.addStep('Mobile Environment', 'pass', 'Mobile platform detected', {
+      platform,
+    });
   }
 }
 
@@ -152,37 +153,21 @@ export function diagnoseFormValidation(values: any, errors: any, touched: any) {
   );
 
   if (values && typeof values === 'object') {
-    loginDiagnostics.addStep(
-      'Form Values',
-      'pass',
-      'Form values initialized',
-      { fields: Object.keys(values) }
-    );
+    loginDiagnostics.addStep('Form Values', 'pass', 'Form values initialized', {
+      fields: Object.keys(values),
+    });
   } else {
-    loginDiagnostics.addStep(
-      'Form Values',
-      'fail',
-      'Form values not initialized',
-      {}
-    );
+    loginDiagnostics.addStep('Form Values', 'fail', 'Form values not initialized', {});
   }
 
   if (errors && typeof errors === 'object') {
-    const errorCount = Object.keys(errors).filter(k => errors[k]).length;
+    const errorCount = Object.keys(errors).filter((k) => errors[k]).length;
     if (errorCount === 0) {
-      loginDiagnostics.addStep(
-        'Form Errors',
-        'pass',
-        'No validation errors',
-        {}
-      );
+      loginDiagnostics.addStep('Form Errors', 'pass', 'No validation errors', {});
     } else {
-      loginDiagnostics.addStep(
-        'Form Errors',
-        'warn',
-        `Found ${errorCount} validation error(s)`,
-        { errors }
-      );
+      loginDiagnostics.addStep('Form Errors', 'warn', `Found ${errorCount} validation error(s)`, {
+        errors,
+      });
     }
   }
 }
@@ -207,49 +192,33 @@ export function diagnoseInputFields(platform: string) {
 
   setTimeout(() => {
     if (typeof document !== 'undefined') {
-      const usernameInput = document.querySelector('input[placeholder*="Username" i], input[autocomplete="username"]');
-      const passwordInput = document.querySelector('input[type="password"], input[autocomplete="current-password"]');
+      const usernameInput = document.querySelector(
+        'input[placeholder*="Username" i], input[autocomplete="username"]'
+      );
+      const passwordInput = document.querySelector(
+        'input[type="password"], input[autocomplete="current-password"]'
+      );
 
       if (usernameInput) {
         const styles = window.getComputedStyle(usernameInput as Element);
-        loginDiagnostics.addStep(
-          'Username Input',
-          'pass',
-          'Username input found',
-          {
-            pointerEvents: styles.pointerEvents,
-            userSelect: styles.userSelect,
-            cursor: styles.cursor,
-          }
-        );
+        loginDiagnostics.addStep('Username Input', 'pass', 'Username input found', {
+          pointerEvents: styles.pointerEvents,
+          userSelect: styles.userSelect,
+          cursor: styles.cursor,
+        });
       } else {
-        loginDiagnostics.addStep(
-          'Username Input',
-          'fail',
-          'Username input not found in DOM',
-          {}
-        );
+        loginDiagnostics.addStep('Username Input', 'fail', 'Username input not found in DOM', {});
       }
 
       if (passwordInput) {
         const styles = window.getComputedStyle(passwordInput as Element);
-        loginDiagnostics.addStep(
-          'Password Input',
-          'pass',
-          'Password input found',
-          {
-            pointerEvents: styles.pointerEvents,
-            userSelect: styles.userSelect,
-            cursor: styles.cursor,
-          }
-        );
+        loginDiagnostics.addStep('Password Input', 'pass', 'Password input found', {
+          pointerEvents: styles.pointerEvents,
+          userSelect: styles.userSelect,
+          cursor: styles.cursor,
+        });
       } else {
-        loginDiagnostics.addStep(
-          'Password Input',
-          'fail',
-          'Password input not found in DOM',
-          {}
-        );
+        loginDiagnostics.addStep('Password Input', 'fail', 'Password input not found in DOM', {});
       }
     }
   }, 500);
@@ -260,31 +229,18 @@ export function diagnoseEventHandlers(platform: string) {
     return;
   }
 
-  loginDiagnostics.addStep(
-    'Event Handlers',
-    'checking',
-    'Checking web event handlers...',
-    {}
-  );
+  loginDiagnostics.addStep('Event Handlers', 'checking', 'Checking web event handlers...', {});
 
   if (typeof document !== 'undefined') {
     // Check if selectstart handler is registered
     // Note: We can't directly check event listeners, but we can verify the CSS is injected
     const styleElement = document.getElementById('login-web-styles');
     if (styleElement) {
-      loginDiagnostics.addStep(
-        'CSS Injection',
-        'pass',
-        'Web-specific CSS styles injected',
-        { styleId: 'login-web-styles' }
-      );
+      loginDiagnostics.addStep('CSS Injection', 'pass', 'Web-specific CSS styles injected', {
+        styleId: 'login-web-styles',
+      });
     } else {
-      loginDiagnostics.addStep(
-        'CSS Injection',
-        'fail',
-        'Web-specific CSS styles not found',
-        {}
-      );
+      loginDiagnostics.addStep('CSS Injection', 'fail', 'Web-specific CSS styles not found', {});
     }
   }
 }
@@ -310,12 +266,10 @@ export async function diagnoseNetworkConnectivity() {
 
     if (response.ok) {
       await response.json();
-      loginDiagnostics.addStep(
-        'Backend Health',
-        'pass',
-        'Backend is reachable and healthy',
-        { url: backendUrl, status: response.status }
-      );
+      loginDiagnostics.addStep('Backend Health', 'pass', 'Backend is reachable and healthy', {
+        url: backendUrl,
+        status: response.status,
+      });
     } else {
       loginDiagnostics.addStep(
         'Backend Health',
@@ -325,37 +279,23 @@ export async function diagnoseNetworkConnectivity() {
       );
     }
   } catch (error: any) {
-    loginDiagnostics.addStep(
-      'Backend Health',
-      'fail',
-      'Cannot connect to backend',
-      { error: error.message, type: error.name }
-    );
+    loginDiagnostics.addStep('Backend Health', 'fail', 'Cannot connect to backend', {
+      error: error.message,
+      type: error.name,
+    });
   }
 }
 
 export function diagnoseAuthState(user: any, isLoading: boolean) {
-  loginDiagnostics.addStep(
-    'Auth State',
-    'checking',
-    'Checking authentication state...',
-    { hasUser: !!user, isLoading }
-  );
+  loginDiagnostics.addStep('Auth State', 'checking', 'Checking authentication state...', {
+    hasUser: !!user,
+    isLoading,
+  });
 
   if (isLoading) {
-    loginDiagnostics.addStep(
-      'Auth Loading',
-      'checking',
-      'Authentication state is loading...',
-      {}
-    );
+    loginDiagnostics.addStep('Auth Loading', 'checking', 'Authentication state is loading...', {});
   } else {
-    loginDiagnostics.addStep(
-      'Auth Loading',
-      'pass',
-      'Authentication state loaded',
-      {}
-    );
+    loginDiagnostics.addStep('Auth Loading', 'pass', 'Authentication state loaded', {});
   }
 
   if (user) {
@@ -376,12 +316,11 @@ export function diagnoseAuthState(user: any, isLoading: boolean) {
 }
 
 export function diagnoseRedirectLogic(segments: string[], user: any, platform: string) {
-  loginDiagnostics.addStep(
-    'Redirect Logic',
-    'checking',
-    'Checking redirect logic...',
-    { segments, hasUser: !!user, platform }
-  );
+  loginDiagnostics.addStep('Redirect Logic', 'checking', 'Checking redirect logic...', {
+    segments,
+    hasUser: !!user,
+    platform,
+  });
 
   const currentRoute = segments[0];
   const isLoginPage = currentRoute === 'login';

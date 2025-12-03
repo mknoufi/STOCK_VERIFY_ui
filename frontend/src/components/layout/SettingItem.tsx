@@ -39,7 +39,7 @@ export const SettingItem: React.FC<SettingItemProps> = ({
 
     if (type === 'select' && options.length > 0) {
       // Show picker - simplified for now
-      const currentIndex = options.findIndex(opt => opt.value === value);
+      const currentIndex = options.findIndex((opt) => opt.value === value);
       const nextIndex = (currentIndex + 1) % options.length;
       const nextOption = options[nextIndex];
       if (nextOption) {
@@ -69,10 +69,7 @@ export const SettingItem: React.FC<SettingItemProps> = ({
           />
         )}
         <Text
-          style={[
-            styles.label,
-            { color: disabled ? theme.colors.disabled : theme.colors.text },
-          ]}
+          style={[styles.label, { color: disabled ? theme.colors.disabled : theme.colors.text }]}
         >
           {label}
         </Text>
@@ -95,13 +92,9 @@ export const SettingItem: React.FC<SettingItemProps> = ({
         {type === 'select' && (
           <View style={styles.selectContainer}>
             <Text style={[styles.value, { color: theme.colors.textSecondary }]}>
-              {options.find(opt => opt.value === value)?.label || String(value)}
+              {options.find((opt) => opt.value === value)?.label || String(value)}
             </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={theme.colors.placeholder}
-            />
+            <Ionicons name="chevron-forward" size={20} color={theme.colors.placeholder} />
           </View>
         )}
 
@@ -110,7 +103,8 @@ export const SettingItem: React.FC<SettingItemProps> = ({
             {String(value)}
             {type === 'slider' && min !== undefined && max !== undefined && (
               <Text style={styles.sliderHint}>
-                {' '}({min}-{max})
+                {' '}
+                ({min}-{max})
               </Text>
             )}
           </Text>

@@ -116,47 +116,47 @@ export const darkTheme: Theme = {
   dark: true,
   colors: {
     // Primary colors
-    primary: '#3B82F6',    // Blue 500
+    primary: '#3B82F6', // Blue 500
     primaryLight: '#60A5FA', // Blue 400
     primaryDark: '#2563EB', // Blue 600
-    secondary: '#10B981',  // Emerald 500
+    secondary: '#10B981', // Emerald 500
     secondaryLight: '#34D399', // Emerald 400
     secondaryDark: '#059669', // Emerald 600
 
     // Background colors
     background: '#0F172A', // Slate 900
-    surface: '#1E293B',    // Slate 800
+    surface: '#1E293B', // Slate 800
     surfaceDark: '#020617', // Slate 950
     surfaceLight: '#334155', // Slate 700
-    card: '#1E293B',       // Slate 800
+    card: '#1E293B', // Slate 800
 
     // Text colors
-    text: '#F8FAFC',       // Slate 50
+    text: '#F8FAFC', // Slate 50
     textSecondary: '#94A3B8', // Slate 400
-    textTertiary: '#64748B',  // Slate 500
+    textTertiary: '#64748B', // Slate 500
     textInverse: '#0F172A', // Slate 900
 
     // Border & divider
-    border: '#334155',     // Slate 700
-    divider: '#475569',     // Slate 600
+    border: '#334155', // Slate 700
+    divider: '#475569', // Slate 600
 
     // Semantic colors
-    error: '#EF4444',      // Red 500
+    error: '#EF4444', // Red 500
     errorLight: '#F87171', // Red 400
-    errorDark: '#DC2626',  // Red 600
-    warning: '#F59E0B',    // Amber 500
+    errorDark: '#DC2626', // Red 600
+    warning: '#F59E0B', // Amber 500
     warningLight: '#FBBF24', // Amber 400
     warningDark: '#D97706', // Amber 600
-    success: '#10B981',    // Emerald 500
+    success: '#10B981', // Emerald 500
     successLight: '#34D399', // Emerald 400
     successDark: '#059669', // Emerald 600
-    info: '#3B82F6',       // Blue 500
-    infoLight: '#60A5FA',  // Blue 400
-    infoDark: '#2563EB',   // Blue 600
+    info: '#3B82F6', // Blue 500
+    infoLight: '#60A5FA', // Blue 400
+    infoDark: '#2563EB', // Blue 600
 
     // Accent & special
-    accent: '#8B5CF6',     // Violet 500
-    disabled: '#475569',   // Slate 600
+    accent: '#8B5CF6', // Violet 500
+    disabled: '#475569', // Slate 600
     placeholder: '#64748B', // Slate 500
     overlayPrimary: 'rgba(59, 130, 246, 0.1)',
     overlay: 'rgba(15, 23, 42, 0.8)', // Slate 900 with opacity
@@ -248,16 +248,13 @@ export class ThemeService {
    * Notify listeners of theme change
    */
   private static notifyListeners(): void {
-    this.listeners.forEach(listener => listener(this.currentTheme));
+    this.listeners.forEach((listener) => listener(this.currentTheme));
   }
 
   /**
    * Create custom theme from base
    */
-  static createCustomTheme(
-    base: Theme,
-    overrides: Partial<ThemeColors>
-  ): Theme {
+  static createCustomTheme(base: Theme, overrides: Partial<ThemeColors>): Theme {
     return {
       ...base,
       colors: {

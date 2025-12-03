@@ -41,20 +41,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (response.data.success && response.data.data) {
         const { access_token, user } = response.data.data;
-        
+
         // Store token for subsequent requests
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         await storage.setItem(TOKEN_STORAGE_KEY, access_token);
         await storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-        
+
         set({
           user,
           isAuthenticated: true,
-          isLoading: false
+          isLoading: false,
         });
         return true;
       }
-      
+
       set({ isLoading: false });
       return false;
     } catch (error) {
@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user,
       isAuthenticated: true,
-      isLoading: false
+      isLoading: false,
     });
   },
 
@@ -80,7 +80,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user: null,
       isAuthenticated: false,
-      isLoading: false
+      isLoading: false,
     });
   },
 
@@ -91,14 +91,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const storedUser = await storage.getItem(AUTH_STORAGE_KEY);
       const storedToken = await storage.getItem(TOKEN_STORAGE_KEY);
-      
+
       if (storedUser && storedToken) {
         const user = JSON.parse(storedUser) as User;
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         set({
           user,
           isAuthenticated: true,
-          isLoading: false
+          isLoading: false,
         });
       } else {
         set({ isLoading: false });

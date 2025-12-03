@@ -95,9 +95,11 @@ export class NotificationService {
     try {
       await this.initialize();
 
-      const triggerValue = (trigger instanceof Date
-        ? { type: 'date', date: trigger }
-        : { type: 'timeInterval', seconds: trigger.seconds }) as NotificationTriggerInput;
+      const triggerValue = (
+        trigger instanceof Date
+          ? { type: 'date', date: trigger }
+          : { type: 'timeInterval', seconds: trigger.seconds }
+      ) as NotificationTriggerInput;
 
       await Notifications.scheduleNotificationAsync({
         content: {

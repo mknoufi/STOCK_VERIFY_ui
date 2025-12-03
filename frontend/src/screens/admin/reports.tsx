@@ -33,7 +33,7 @@ export default function ReportsScreen() {
   useEffect(() => {
     if (!hasRole('admin')) {
       Alert.alert('Access Denied', 'Admin access required', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => router.back() },
       ]);
       return;
     }
@@ -59,7 +59,10 @@ export default function ReportsScreen() {
       setGenerating(reportId);
       const response = await generateReport(reportId, 'json');
       if (response.success) {
-        Alert.alert('Success', `Report '${reportId}' generation started. Check back in a few moments.`);
+        Alert.alert(
+          'Success',
+          `Report '${reportId}' generation started. Check back in a few moments.`
+        );
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to generate report');
@@ -130,7 +133,8 @@ export default function ReportsScreen() {
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         <Text style={styles.description}>
-          Generate and download system reports. Reports are generated in the background and can be downloaded when ready.
+          Generate and download system reports. Reports are generated in the background and can be
+          downloaded when ready.
         </Text>
 
         {reports.length === 0 ? (
@@ -143,10 +147,12 @@ export default function ReportsScreen() {
             {reports.map((report) => (
               <View key={report.id} style={styles.reportCard}>
                 <View style={styles.reportHeader}>
-                  <View style={[
-                    styles.reportIconContainer,
-                    { backgroundColor: `${getCategoryColor(report.category)}20` }
-                  ]}>
+                  <View
+                    style={[
+                      styles.reportIconContainer,
+                      { backgroundColor: `${getCategoryColor(report.category)}20` },
+                    ]}
+                  >
                     <Ionicons
                       name={getCategoryIcon(report.category) as any}
                       size={24}
@@ -157,7 +163,12 @@ export default function ReportsScreen() {
                     <Text style={styles.reportName}>{report.name}</Text>
                     <Text style={styles.reportDescription}>{report.description}</Text>
                     <View style={styles.reportCategory}>
-                      <Text style={[styles.reportCategoryText, { color: getCategoryColor(report.category) }]}>
+                      <Text
+                        style={[
+                          styles.reportCategoryText,
+                          { color: getCategoryColor(report.category) },
+                        ]}
+                      >
                         {report.category.toUpperCase()}
                       </Text>
                     </View>
@@ -166,7 +177,7 @@ export default function ReportsScreen() {
                 <TouchableOpacity
                   style={[
                     styles.generateButton,
-                    generating === report.id && styles.generateButtonDisabled
+                    generating === report.id && styles.generateButtonDisabled,
                   ]}
                   onPress={() => handleGenerateReport(report.id)}
                   disabled={generating === report.id}
@@ -214,12 +225,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'sticky' as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,

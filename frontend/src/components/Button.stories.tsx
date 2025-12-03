@@ -14,7 +14,8 @@ const meta: Meta<typeof Button> = {
   parameters: {
     docs: {
       description: {
-        component: 'Enhanced button component with multiple variants, sizes, and states. Supports icons, loading states, and full-width layouts.',
+        component:
+          'Enhanced button component with multiple variants, sizes, and states. Supports icons, loading states, and full-width layouts.',
       },
     },
   },

@@ -28,7 +28,8 @@ export class EnhancedApiService {
       // Check cache first
       if (options.cache) {
         const cached = this.cache.get(operation);
-        if (cached && (Date.now() - cached.timestamp) < (cached.ttl || 300000)) { // 5 min default
+        if (cached && Date.now() - cached.timestamp < (cached.ttl || 300000)) {
+          // 5 min default
           this.loadingStates.set(operation, false);
           return cached.data;
         }
@@ -41,7 +42,7 @@ export class EnhancedApiService {
         this.cache.set(operation, {
           data: result,
           timestamp: Date.now(),
-          ttl: options.cacheTtl || 300000
+          ttl: options.cacheTtl || 300000,
         });
       }
 
@@ -96,7 +97,7 @@ export class EnhancedApiService {
   static getCacheStats(): { size: number; items: string[] } {
     return {
       size: this.cache.size,
-      items: Array.from(this.cache.keys())
+      items: Array.from(this.cache.keys()),
     };
   }
 }

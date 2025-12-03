@@ -47,8 +47,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         ? `Scan serial for ${serialLabel}`
         : 'Scan serial number'
       : continuousScanMode
-        ? 'Scanning continuously - point at barcodes'
-        : 'Point camera at barcode';
+      ? 'Scanning continuously - point at barcodes'
+      : 'Point camera at barcode';
 
   const scannerSubtext =
     scannerMode === 'serial'
@@ -89,7 +89,10 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             </TouchableOpacity>
             {scannerMode === 'item' ? (
               <TouchableOpacity
-                style={[styles.continuousModeButton, continuousScanMode && styles.continuousModeButtonActive]}
+                style={[
+                  styles.continuousModeButton,
+                  continuousScanMode && styles.continuousModeButtonActive,
+                ]}
                 onPress={onToggleContinuousMode}
               >
                 <Ionicons
@@ -97,14 +100,22 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                   size={24}
                   color={continuousScanMode ? '#3B82F6' : '#fff'}
                 />
-                <Text style={[styles.continuousModeText, continuousScanMode && styles.continuousModeActive]}>
+                <Text
+                  style={[
+                    styles.continuousModeText,
+                    continuousScanMode && styles.continuousModeActive,
+                  ]}
+                >
                   {continuousScanMode ? 'Continuous' : 'Single'}
                 </Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.serialOverlayRow}>
                 <TouchableOpacity
-                  style={[styles.continuousModeButton, continuousScanMode && styles.continuousModeButtonActive]}
+                  style={[
+                    styles.continuousModeButton,
+                    continuousScanMode && styles.continuousModeButtonActive,
+                  ]}
                   onPress={onToggleContinuousMode}
                 >
                   <Ionicons
@@ -112,7 +123,12 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                     size={22}
                     color={continuousScanMode ? '#3B82F6' : '#fff'}
                   />
-                  <Text style={[styles.continuousModeText, continuousScanMode && styles.continuousModeActive]}>
+                  <Text
+                    style={[
+                      styles.continuousModeText,
+                      continuousScanMode && styles.continuousModeActive,
+                    ]}
+                  >
                     {continuousScanMode ? 'Continuous' : 'Single'}
                   </Text>
                 </TouchableOpacity>

@@ -38,16 +38,16 @@ export default function SecurityScreen() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
   const [ipTracking, setIpTracking] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'summary' | 'failed' | 'suspicious' | 'sessions' | 'audit' | 'ips'>('summary');
+  const [activeTab, setActiveTab] = useState<
+    'summary' | 'failed' | 'suspicious' | 'sessions' | 'audit' | 'ips'
+  >('summary');
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
     if (!hasRole('admin')) {
-      Alert.alert(
-        'Access Denied',
-        'You do not have permission to view the security dashboard.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      Alert.alert('Access Denied', 'You do not have permission to view the security dashboard.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
       return;
     }
     loadData();
@@ -66,14 +66,15 @@ export default function SecurityScreen() {
         setLoading(true);
       }
 
-      const [summaryRes, failedRes, suspiciousRes, sessionsRes, auditRes, ipRes] = await Promise.all([
-        getSecuritySummary().catch(() => ({ success: false, data: null })),
-        getFailedLogins(50, 24).catch(() => ({ success: false, data: { failed_logins: [] } })),
-        getSuspiciousActivity(24).catch(() => ({ success: false, data: null })),
-        getSecuritySessions(50, false).catch(() => ({ success: false, data: { sessions: [] } })),
-        getSecurityAuditLog(50, 24).catch(() => ({ success: false, data: { audit_logs: [] } })),
-        getIpTracking(24).catch(() => ({ success: false, data: { ip_tracking: [] } })),
-      ]);
+      const [summaryRes, failedRes, suspiciousRes, sessionsRes, auditRes, ipRes] =
+        await Promise.all([
+          getSecuritySummary().catch(() => ({ success: false, data: null })),
+          getFailedLogins(50, 24).catch(() => ({ success: false, data: { failed_logins: [] } })),
+          getSuspiciousActivity(24).catch(() => ({ success: false, data: null })),
+          getSecuritySessions(50, false).catch(() => ({ success: false, data: { sessions: [] } })),
+          getSecurityAuditLog(50, 24).catch(() => ({ success: false, data: { audit_logs: [] } })),
+          getIpTracking(24).catch(() => ({ success: false, data: { ip_tracking: [] } })),
+        ]);
 
       if (summaryRes.success) setSummary(summaryRes.data);
       if (failedRes.success) setFailedLogins(failedRes.data?.failed_logins || []);
@@ -137,13 +138,21 @@ export default function SecurityScreen() {
             {summary.recent_events.map((event: any, index: number) => (
               <View key={index} style={styles.eventRow}>
                 <Ionicons
-                  name={event.action === 'login' ? 'log-in' : event.action === 'logout' ? 'log-out' : 'shield'}
+                  name={
+                    event.action === 'login'
+                      ? 'log-in'
+                      : event.action === 'logout'
+                      ? 'log-out'
+                      : 'shield'
+                  }
                   size={20}
                   color="#007AFF"
                 />
                 <View style={styles.eventInfo}>
                   <Text style={styles.eventAction}>{event.action}</Text>
-                  <Text style={styles.eventUser}>{event.user} • {new Date(event.timestamp).toLocaleString()}</Text>
+                  <Text style={styles.eventUser}>
+                    {event.user} • {new Date(event.timestamp).toLocaleString()}
+                  </Text>
                 </View>
               </View>
             ))}
@@ -169,7 +178,8 @@ export default function SecurityScreen() {
               <View style={styles.listItemContent}>
                 <Text style={styles.listItemTitle}>{login.username || 'Unknown'}</Text>
                 <Text style={styles.listItemSubtitle}>
-                  {login.ip_address} • {login.error || 'Login failed'} • {new Date(login.timestamp).toLocaleString()}
+                  {login.ip_address} • {login.error || 'Login failed'} •{' '}
+                  {new Date(login.timestamp).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -198,7 +208,8 @@ export default function SecurityScreen() {
                 <View style={styles.suspiciousContent}>
                   <Text style={styles.suspiciousTitle}>{item.ip_address}</Text>
                   <Text style={styles.suspiciousSubtitle}>
-                    {item.count} failed attempts • {item.usernames?.length || 0} users • Last: {new Date(item.last_attempt).toLocaleString()}
+                    {item.count} failed attempts • {item.usernames?.length || 0} users • Last:{' '}
+                    {new Date(item.last_attempt).toLocaleString()}
                   </Text>
                 </View>
               </View>
@@ -215,7 +226,8 @@ export default function SecurityScreen() {
                 <View style={styles.suspiciousContent}>
                   <Text style={styles.suspiciousTitle}>{item.username}</Text>
                   <Text style={styles.suspiciousSubtitle}>
-                    {item.count} failed attempts • {item.ips?.length || 0} IPs • Last: {new Date(item.last_attempt).toLocaleString()}
+                    {item.count} failed attempts • {item.ips?.length || 0} IPs • Last:{' '}
+                    {new Date(item.last_attempt).toLocaleString()}
                   </Text>
                 </View>
               </View>
@@ -240,7 +252,9 @@ export default function SecurityScreen() {
             <View key={index} style={styles.listItem}>
               <Ionicons name="person-circle" size={20} color="#007AFF" />
               <View style={styles.listItemContent}>
-                <Text style={styles.listItemTitle}>{session.username} ({session.role})</Text>
+                <Text style={styles.listItemTitle}>
+                  {session.username} ({session.role})
+                </Text>
                 <Text style={styles.listItemSubtitle}>
                   {session.ip_address} • Created: {new Date(session.created_at).toLocaleString()}
                 </Text>
@@ -294,10 +308,12 @@ export default function SecurityScreen() {
               <View style={styles.listItemContent}>
                 <Text style={styles.listItemTitle}>{ip.ip_address}</Text>
                 <Text style={styles.listItemSubtitle}>
-                  {ip.total_attempts} attempts ({ip.successful_logins} success, {ip.failed_logins} failed) • {ip.unique_user_count} users
+                  {ip.total_attempts} attempts ({ip.successful_logins} success, {ip.failed_logins}{' '}
+                  failed) • {ip.unique_user_count} users
                 </Text>
                 <Text style={styles.listItemSubtitle}>
-                  First seen: {new Date(ip.first_seen).toLocaleString()} • Last seen: {new Date(ip.last_seen).toLocaleString()}
+                  First seen: {new Date(ip.first_seen).toLocaleString()} • Last seen:{' '}
+                  {new Date(ip.last_seen).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -399,9 +415,7 @@ export default function SecurityScreen() {
           </View>
           <View style={styles.footerRow}>
             <Ionicons name="time" size={16} color="#666" />
-            <Text style={styles.footerText}>
-              Last updated: {lastUpdate.toLocaleTimeString()}
-            </Text>
+            <Text style={styles.footerText}>Last updated: {lastUpdate.toLocaleTimeString()}</Text>
           </View>
         </View>
       </ScrollView>
@@ -434,12 +448,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'sticky' as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,

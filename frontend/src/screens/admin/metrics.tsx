@@ -14,7 +14,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { usePermissions } from '../../hooks/usePermissions';
-import { getMetricsStats, getMetricsHealth, getSyncStatus, triggerManualSync } from '../../services/api';
+import {
+  getMetricsStats,
+  getMetricsHealth,
+  getSyncStatus,
+  triggerManualSync,
+} from '../../services/api';
 
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
@@ -33,11 +38,9 @@ export default function MetricsScreen() {
 
   useEffect(() => {
     if (!hasRole('admin')) {
-      Alert.alert(
-        'Access Denied',
-        'You do not have permission to view system metrics.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      Alert.alert('Access Denied', 'You do not have permission to view system metrics.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
       return;
     }
     loadMetrics();
@@ -200,36 +203,53 @@ export default function MetricsScreen() {
                 {health.mongodb && (
                   <View style={styles.healthDetailRow}>
                     <Ionicons
-                      name={health.mongodb.status === 'connected' ? 'checkmark-circle' : 'close-circle'}
+                      name={
+                        health.mongodb.status === 'connected' ? 'checkmark-circle' : 'close-circle'
+                      }
                       size={18}
                       color={health.mongodb.status === 'connected' ? '#4CAF50' : '#f44336'}
                     />
                     <Text style={styles.healthDetail}>
-                      MongoDB: {health.mongodb.status === 'connected' ? 'Connected' : 'Disconnected'}
+                      MongoDB:{' '}
+                      {health.mongodb.status === 'connected' ? 'Connected' : 'Disconnected'}
                     </Text>
                   </View>
                 )}
                 {health.dependencies?.sql_server && (
                   <View style={styles.healthDetailRow}>
                     <Ionicons
-                      name={health.dependencies.sql_server.status === 'healthy' ? 'checkmark-circle' : 'warning'}
+                      name={
+                        health.dependencies.sql_server.status === 'healthy'
+                          ? 'checkmark-circle'
+                          : 'warning'
+                      }
                       size={18}
-                      color={health.dependencies.sql_server.status === 'healthy' ? '#4CAF50' : '#ff9800'}
+                      color={
+                        health.dependencies.sql_server.status === 'healthy' ? '#4CAF50' : '#ff9800'
+                      }
                     />
-                    <Text style={[
-                      styles.healthDetail,
-                      { color: health.dependencies.sql_server.status === 'healthy' ? '#4CAF50' : '#ff9800' }
-                    ]}>
-                      SQL Server: {health.dependencies.sql_server.status === 'healthy' ? 'Connected' : 'Unavailable'}
+                    <Text
+                      style={[
+                        styles.healthDetail,
+                        {
+                          color:
+                            health.dependencies.sql_server.status === 'healthy'
+                              ? '#4CAF50'
+                              : '#ff9800',
+                        },
+                      ]}
+                    >
+                      SQL Server:{' '}
+                      {health.dependencies.sql_server.status === 'healthy'
+                        ? 'Connected'
+                        : 'Unavailable'}
                     </Text>
                   </View>
                 )}
                 {health.uptime && (
                   <View style={styles.healthDetailRow}>
                     <Ionicons name="time" size={18} color="#007AFF" />
-                    <Text style={styles.healthDetail}>
-                      Uptime: {formatUptime(health.uptime)}
-                    </Text>
+                    <Text style={styles.healthDetail}>Uptime: {formatUptime(health.uptime)}</Text>
                   </View>
                 )}
               </View>
@@ -237,7 +257,8 @@ export default function MetricsScreen() {
                 <View style={styles.notificationBanner}>
                   <Ionicons name="warning" size={20} color="#ff9800" />
                   <Text style={styles.notificationText}>
-                    SQL Server is unavailable. App is running in offline mode. ERP sync features are disabled.
+                    SQL Server is unavailable. App is running in offline mode. ERP sync features are
+                    disabled.
                   </Text>
                 </View>
               )}
@@ -257,10 +278,12 @@ export default function MetricsScreen() {
                   <Ionicons name="server" size={20} color="#aaa" />
                   <Text style={styles.syncStatusLabel}>SQL Server Connection</Text>
                 </View>
-                <View style={[
-                  styles.statusBadge,
-                  { backgroundColor: syncStatus.sql_available ? '#4CAF50' : '#ff9800' }
-                ]}>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: syncStatus.sql_available ? '#4CAF50' : '#ff9800' },
+                  ]}
+                >
                   <Ionicons
                     name={syncStatus.sql_available ? 'checkmark' : 'close'}
                     size={14}
@@ -356,9 +379,24 @@ export default function MetricsScreen() {
                 <Text style={styles.sectionTitle}>User Activity</Text>
               </View>
               <View style={styles.metricsGrid}>
-                {renderMetricCard('Active Users', stats.active_users || '0', '#007AFF', 'people-circle')}
-                {renderMetricCard('Total Sessions', stats.total_sessions || '0', '#fff', 'calendar')}
-                {renderMetricCard('Active Sessions', stats.active_sessions || '0', '#4CAF50', 'radio-button-on')}
+                {renderMetricCard(
+                  'Active Users',
+                  stats.active_users || '0',
+                  '#007AFF',
+                  'people-circle'
+                )}
+                {renderMetricCard(
+                  'Total Sessions',
+                  stats.total_sessions || '0',
+                  '#fff',
+                  'calendar'
+                )}
+                {renderMetricCard(
+                  'Active Sessions',
+                  stats.active_sessions || '0',
+                  '#4CAF50',
+                  'radio-button-on'
+                )}
               </View>
             </View>
 
@@ -368,10 +406,30 @@ export default function MetricsScreen() {
                 <Text style={styles.sectionTitle}>Database Statistics</Text>
               </View>
               <View style={styles.metricsGrid}>
-                {renderMetricCard('Total Count Lines', stats.total_count_lines?.toLocaleString() || '0', '#fff', 'list')}
-                {renderMetricCard('Pending Approvals', stats.pending_approvals || '0', '#FF9800', 'time-outline')}
-                {renderMetricCard('Total Items', stats.total_items?.toLocaleString() || '0', '#fff', 'cube')}
-                {renderMetricCard('Unknown Items', stats.unknown_items || '0', '#f44336', 'help-circle')}
+                {renderMetricCard(
+                  'Total Count Lines',
+                  stats.total_count_lines?.toLocaleString() || '0',
+                  '#fff',
+                  'list'
+                )}
+                {renderMetricCard(
+                  'Pending Approvals',
+                  stats.pending_approvals || '0',
+                  '#FF9800',
+                  'time-outline'
+                )}
+                {renderMetricCard(
+                  'Total Items',
+                  stats.total_items?.toLocaleString() || '0',
+                  '#fff',
+                  'cube'
+                )}
+                {renderMetricCard(
+                  'Unknown Items',
+                  stats.unknown_items || '0',
+                  '#f44336',
+                  'help-circle'
+                )}
               </View>
             </View>
 
@@ -427,9 +485,7 @@ export default function MetricsScreen() {
           </View>
           <View style={styles.footerRow}>
             <Ionicons name="time" size={16} color="#666" />
-            <Text style={styles.footerText}>
-              Last updated: {lastUpdate.toLocaleTimeString()}
-            </Text>
+            <Text style={styles.footerText}>Last updated: {lastUpdate.toLocaleTimeString()}</Text>
           </View>
         </View>
       </ScrollView>
@@ -462,12 +518,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'sticky' as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,
@@ -611,9 +669,11 @@ const styles = StyleSheet.create({
     }),
   },
   metricCardWeb: {
-    ...(Platform.OS === 'web' ? {
-      cursor: 'default' as const,
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          cursor: 'default' as const,
+        }
+      : {}),
   } as any,
   metricIconContainer: {
     marginBottom: 12,

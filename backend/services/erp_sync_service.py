@@ -6,10 +6,12 @@ CRITICAL: Only syncs quantity changes, preserves all enrichment data
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from backend.sql_server_connector import SQLServerConnector
+
 from backend.exceptions import SQLServerConnectionError, SyncError
+from backend.sql_server_connector import SQLServerConnector
 
 logger = logging.getLogger(__name__)
 

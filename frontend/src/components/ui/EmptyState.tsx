@@ -30,17 +30,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      <Ionicons
-        name={icon}
-        size={64}
-        color={theme.colors.textSecondary}
-        style={styles.icon}
-      />
+      <Ionicons name={icon} size={64} color={theme.colors.textSecondary} style={styles.icon} />
       <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
       {message && (
-        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>
-          {message}
-        </Text>
+        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>{message}</Text>
       )}
       {actionLabel && onAction && (
         <View style={styles.actionContainer}>

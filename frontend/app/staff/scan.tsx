@@ -1,13 +1,21 @@
 // cspell:words pricetag barcodes prioritise
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { createCountLine, getSession, getItemByBarcode } from '../../src/services/api/api';
 import { StatusBar } from 'expo-status-bar';
-import { StaffLayout } from "../../src/components/layout";
+import { StaffLayout } from '../../src/components/layout';
 import { useAuthStore } from '../../src/store/authStore';
 
 export default function ScanScreen() {
@@ -31,7 +39,7 @@ export default function ScanScreen() {
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Logout', onPress: logout }
+      { text: 'Logout', onPress: logout },
     ]);
   };
 
@@ -57,8 +65,12 @@ export default function ScanScreen() {
   }
 
   const headerActions = [
-    { icon: "list" as const, label: "History", onPress: () => router.push(`/staff/history?sessionId=${sessionId}`) },
-    { icon: "log-out-outline" as const, label: "Logout", onPress: handleLogout }
+    {
+      icon: 'list' as const,
+      label: 'History',
+      onPress: () => router.push(`/staff/history?sessionId=${sessionId}`),
+    },
+    { icon: 'log-out-outline' as const, label: 'Logout', onPress: handleLogout },
   ];
 
   return (

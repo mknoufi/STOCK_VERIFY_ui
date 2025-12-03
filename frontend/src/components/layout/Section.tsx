@@ -39,11 +39,7 @@ export const Section: React.FC<SectionProps> = ({
       {(title || subtitle || action) && (
         <View style={styles.header}>
           <View style={styles.headerText}>
-            {title && (
-              <Text style={[styles.title, { color: theme.colors.text }]}>
-                {title}
-              </Text>
-            )}
+            {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
             {subtitle && (
               <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
                 {subtitle}

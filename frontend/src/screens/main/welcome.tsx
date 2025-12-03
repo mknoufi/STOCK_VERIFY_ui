@@ -1,24 +1,32 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-import Animated, {
-  FadeInDown,
-  FadeInUp
-} from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { colors, spacing, gradients, layout } from '@/styles/globalStyles';
 import { useAuthStore } from '@/store/authStore';
 
-
-const FeatureCard = ({ icon, title, delay }: { icon: keyof typeof Ionicons.glyphMap; title: string; delay: number }) => (
-  <Animated.View
-    entering={FadeInDown.delay(delay).springify()}
-    style={styles.featureWrapper}
-  >
+const FeatureCard = ({
+  icon,
+  title,
+  delay,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  delay: number;
+}) => (
+  <Animated.View entering={FadeInDown.delay(delay).springify()} style={styles.featureWrapper}>
     <BlurView intensity={20} tint="light" style={styles.featureCard}>
       <View style={styles.iconCircle}>
         <Ionicons name={icon} size={24} color={colors.primary} />
@@ -37,7 +45,8 @@ export default function WelcomeScreen() {
   // Redirect if user is already logged in
   React.useEffect(() => {
     if (!isLoading && user) {
-      __DEV__ && console.log('🔄 [WELCOME] User already logged in, redirecting:', { role: user.role });
+      __DEV__ &&
+        console.log('🔄 [WELCOME] User already logged in, redirecting:', { role: user.role });
       if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin')) {
         router.replace('/admin/metrics' as any);
       } else if (user.role === 'supervisor' || user.role === 'admin') {
@@ -56,10 +65,7 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient
-        colors={['#121212', '#0A0A0A', '#000000']}
-        style={StyleSheet.absoluteFill}
-      />
+      <LinearGradient colors={['#121212', '#0A0A0A', '#000000']} style={StyleSheet.absoluteFill} />
 
       {/* Decorative Background Elements */}
       <View style={styles.decorativeCircle1} />

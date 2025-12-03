@@ -4,13 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  ViewStyle,
-  TouchableOpacity,
-} from 'react-native';
+import { View, StyleSheet, Dimensions, ViewStyle, TouchableOpacity } from 'react-native';
 import { useSegments } from 'expo-router';
 import { Screen } from './Screen';
 import { AppHeader } from '../navigation/AppHeader';
@@ -50,12 +44,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     ((segments[1] as string | undefined) === 'control-panel'
       ? 'Control Panel'
       : (segments[1] as string | undefined) === 'metrics'
-        ? 'Metrics'
-        : (segments[1] as string | undefined) === 'permissions'
-          ? 'Permissions'
-          : (segments[1] as string | undefined) === 'security'
-            ? 'Security'
-            : 'Admin');
+      ? 'Metrics'
+      : (segments[1] as string | undefined) === 'permissions'
+      ? 'Permissions'
+      : (segments[1] as string | undefined) === 'security'
+      ? 'Security'
+      : 'Admin');
 
   // On mobile, sidebar becomes a drawer
   if (isMobile) {

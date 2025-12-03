@@ -12,5 +12,13 @@ export { useTheme } from './hooks/useTheme';
 // Re-export types - use scan.ts Item as the primary one
 export { Item as ScanItem } from './types/scan';
 export { Item as ItemType } from './types/item';
-export type { ScannerMode, PhotoProofType, ScanFormData, CreateCountLinePayload, PhotoProofDraft, SerialInput, WorkflowState } from './types/scan';
+export type {
+  ScannerMode,
+  PhotoProofType,
+  ScanFormData,
+  CreateCountLinePayload,
+  PhotoProofDraft,
+  SerialInput,
+  WorkflowState,
+} from './types/scan';
 export type { SearchResult } from './types/item';

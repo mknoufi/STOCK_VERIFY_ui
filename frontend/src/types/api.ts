@@ -37,10 +37,13 @@ export interface PaginatedResponse<T> {
  */
 export interface HealthCheckResponse {
   status: 'healthy' | 'degraded' | 'unhealthy';
-  services: Record<string, {
-    status: string;
-    details?: Record<string, unknown>;
-  }>;
+  services: Record<
+    string,
+    {
+      status: string;
+      details?: Record<string, unknown>;
+    }
+  >;
   timestamp: string;
   version?: string;
 }

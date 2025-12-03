@@ -15,9 +15,9 @@ const mockApiResponses = {
       user: {
         id: '1',
         username: 'testuser',
-        role: 'admin'
-      }
-    }
+        role: 'admin',
+      },
+    },
   },
   items: {
     success: true,
@@ -28,7 +28,7 @@ const mockApiResponses = {
         name: 'Test Item 1',
         category: 'Electronics',
         quantity: 10,
-        location: 'Warehouse A'
+        location: 'Warehouse A',
       },
       {
         id: '2',
@@ -36,10 +36,10 @@ const mockApiResponses = {
         name: 'Test Item 2',
         category: 'Furniture',
         quantity: 5,
-        location: 'Warehouse B'
-      }
-    ]
-  }
+        location: 'Warehouse B',
+      },
+    ],
+  },
 };
 
 // Mock API Service
@@ -53,7 +53,7 @@ class MockApiService {
 
   async login(username: string, password: string) {
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     if (username === 'testuser' && password === 'testpass') {
       return mockApiResponses.login;
@@ -66,7 +66,7 @@ class MockApiService {
       throw new Error('Authentication required');
     }
 
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
     return mockApiResponses.items;
   }
 
@@ -75,7 +75,7 @@ class MockApiService {
       throw new Error('Authentication required');
     }
 
-    const item = mockApiResponses.items.data.find(item => item.barcode === barcode);
+    const item = mockApiResponses.items.data.find((item) => item.barcode === barcode);
     if (!item) {
       throw new Error('Item not found');
     }
@@ -90,7 +90,7 @@ class MockApiService {
 
     const newItem = {
       id: Date.now().toString(),
-      ...itemData
+      ...itemData,
     };
 
     return { success: true, data: newItem };
@@ -101,7 +101,7 @@ class MockApiService {
       throw new Error('Authentication required');
     }
 
-    const item = mockApiResponses.items.data.find(item => item.id === id);
+    const item = mockApiResponses.items.data.find((item) => item.id === id);
     if (!item) {
       throw new Error('Item not found');
     }
@@ -200,10 +200,11 @@ class MockItemStore {
   }
 
   async searchItems(query: string) {
-    const filteredItems = this.items.filter(item =>
-      item.name.toLowerCase().includes(query.toLowerCase()) ||
-      item.barcode.includes(query) ||
-      item.category.toLowerCase().includes(query.toLowerCase())
+    const filteredItems = this.items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query.toLowerCase()) ||
+        item.barcode.includes(query) ||
+        item.category.toLowerCase().includes(query.toLowerCase())
     );
 
     return filteredItems;
@@ -249,15 +250,13 @@ describe('API Service Tests', () => {
     });
 
     test('failed login throws error', async () => {
-      await expect(
-        apiService.login('invalid', 'credentials')
-      ).rejects.toThrow('Invalid credentials');
+      await expect(apiService.login('invalid', 'credentials')).rejects.toThrow(
+        'Invalid credentials'
+      );
     });
 
     test('protected endpoints require authentication', async () => {
-      await expect(
-        apiService.getItems()
-      ).rejects.toThrow('Authentication required');
+      await expect(apiService.getItems()).rejects.toThrow('Authentication required');
     });
   });
 
@@ -282,9 +281,7 @@ describe('API Service Tests', () => {
     });
 
     test('get non-existent item throws error', async () => {
-      await expect(
-        apiService.getItemByBarcode('NONEXISTENT')
-      ).rejects.toThrow('Item not found');
+      await expect(apiService.getItemByBarcode('NONEXISTENT')).rejects.toThrow('Item not found');
     });
 
     test('create item returns new item with ID', async () => {
@@ -292,7 +289,7 @@ describe('API Service Tests', () => {
         barcode: 'NEW001',
         name: 'New Item',
         category: 'Test',
-        quantity: 1
+        quantity: 1,
       };
 
       const response = await apiService.createItem(itemData);
@@ -414,7 +411,7 @@ describe('Item Store Tests', () => {
     const newItem = {
       barcode: 'ADDED001',
       name: 'Added Item',
-      category: 'Test'
+      category: 'Test',
     };
 
     await itemStore.addItem(newItem);
@@ -447,7 +444,7 @@ describe('Utility Functions Tests', () => {
       const validItem = {
         barcode: 'TEST001',
         name: 'Test Item',
-        quantity: 10
+        quantity: 10,
       };
 
       const errors = validateItem(validItem);
@@ -456,7 +453,7 @@ describe('Utility Functions Tests', () => {
 
     test('catches missing required fields', () => {
       const invalidItem = {
-        quantity: 5
+        quantity: 5,
       };
 
       const errors = validateItem(invalidItem);
@@ -468,7 +465,7 @@ describe('Utility Functions Tests', () => {
       const invalidItem = {
         barcode: 'TEST001',
         name: 'Test Item',
-        quantity: -5
+        quantity: -5,
       };
 
       const errors = validateItem(invalidItem);
@@ -480,7 +477,7 @@ describe('Utility Functions Tests', () => {
     const formatCurrency = (amount: number) => {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'USD',
       }).format(amount);
     };
 
@@ -488,7 +485,7 @@ describe('Utility Functions Tests', () => {
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     };
 
@@ -511,21 +508,21 @@ describe('Utility Functions Tests', () => {
         return {
           type: 'server_error',
           message: error.response.data?.message || 'Server error occurred',
-          status: error.response.status
+          status: error.response.status,
         };
       } else if (error.request) {
         // Network error
         return {
           type: 'network_error',
           message: 'Network connection failed',
-          status: null
+          status: null,
         };
       } else {
         // Other error
         return {
           type: 'unknown_error',
           message: error.message || 'An unexpected error occurred',
-          status: null
+          status: null,
         };
       }
     };
@@ -534,8 +531,8 @@ describe('Utility Functions Tests', () => {
       const serverError = {
         response: {
           status: 500,
-          data: { message: 'Internal server error' }
-        }
+          data: { message: 'Internal server error' },
+        },
       };
 
       const handled = handleApiError(serverError);
@@ -547,7 +544,7 @@ describe('Utility Functions Tests', () => {
 
     test('handles network errors', () => {
       const networkError = {
-        request: {}
+        request: {},
       };
 
       const handled = handleApiError(networkError);
@@ -558,7 +555,7 @@ describe('Utility Functions Tests', () => {
 
     test('handles unknown errors', () => {
       const unknownError = {
-        message: 'Something went wrong'
+        message: 'Something went wrong',
       };
 
       const handled = handleApiError(unknownError);
@@ -576,11 +573,11 @@ describe('Performance Tests', () => {
       id: i.toString(),
       barcode: `ITEM${i.toString().padStart(4, '0')}`,
       name: `Item ${i}`,
-      category: i % 2 === 0 ? 'Electronics' : 'Furniture'
+      category: i % 2 === 0 ? 'Electronics' : 'Furniture',
     }));
 
     const mockStore = new MockItemStore();
-    mockStore['items'] = largeItemList;  // Direct assignment for test
+    mockStore['items'] = largeItemList; // Direct assignment for test
 
     const startTime = performance.now();
     const results = await mockStore.searchItems('Item 1');
@@ -606,7 +603,7 @@ describe('Performance Tests', () => {
     const endTime = performance.now();
 
     expect(results).toHaveLength(10);
-    expect(results.every(r => r.success)).toBe(true);
+    expect(results.every((r) => r.success)).toBe(true);
     expect(endTime - startTime).toBeLessThan(1000); // Should handle concurrency efficiently
   });
 });

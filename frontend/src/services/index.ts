@@ -12,21 +12,14 @@ export {
   rejectCountLine,
   updateSessionStatus,
   verifyStock,
-  unverifyStock
+  unverifyStock,
 } from './api';
 
 // Auth services
-export {
-  useAuthStore
-} from './authStore';
+export { useAuthStore } from './authStore';
 
 // Toast service
-export {
-  showToast,
-  showSuccessToast,
-  showErrorToast,
-  showInfoToast
-} from './toastService';
+export { showToast, showSuccessToast, showErrorToast, showInfoToast } from './toastService';
 
 // Notes API
 export { NotesAPI } from './notesApi';

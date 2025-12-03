@@ -94,7 +94,7 @@ const getLuminance = (color: string): number => {
   const b = parseInt(hex.substring(4, 6), 16) / 255;
 
   // Apply gamma correction
-  const [rLinear = 0, gLinear = 0, bLinear = 0] = [r, g, b].map(val => {
+  const [rLinear = 0, gLinear = 0, bLinear = 0] = [r, g, b].map((val) => {
     return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
   });
 
@@ -104,7 +104,11 @@ const getLuminance = (color: string): number => {
 /**
  * Check if color meets WCAG AA contrast requirements
  */
-export const meetsWCAGAA = (foreground: string, background: string, isLargeText = false): boolean => {
+export const meetsWCAGAA = (
+  foreground: string,
+  background: string,
+  isLargeText = false
+): boolean => {
   const ratio = getContrastRatio(foreground, background);
   return isLargeText ? ratio >= 3 : ratio >= 4.5;
 };
@@ -112,7 +116,11 @@ export const meetsWCAGAA = (foreground: string, background: string, isLargeText 
 /**
  * Check if color meets WCAG AAA contrast requirements
  */
-export const meetsWCAGAAA = (foreground: string, background: string, isLargeText = false): boolean => {
+export const meetsWCAGAAA = (
+  foreground: string,
+  background: string,
+  isLargeText = false
+): boolean => {
   const ratio = getContrastRatio(foreground, background);
   return isLargeText ? ratio >= 4.5 : ratio >= 7;
 };
@@ -123,7 +131,7 @@ export const meetsWCAGAAA = (foreground: string, background: string, isLargeText
 export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors => {
   // Helper to safely get color with fallback
   const getColor = (key: string, fallback: string): string => baseColors[key] ?? fallback;
-  
+
   const primary = getColor('primary', '#007bff');
   const secondary = getColor('secondary', '#6c757d');
   const success = getColor('success', '#28a745');

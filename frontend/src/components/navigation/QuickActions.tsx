@@ -55,17 +55,12 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               />
               {action.badge !== undefined && action.badge > 0 && (
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
-                    {action.badge > 99 ? '99+' : action.badge}
-                  </Text>
+                  <Text style={styles.badgeText}>{action.badge > 99 ? '99+' : action.badge}</Text>
                 </View>
               )}
             </View>
             <Text
-              style={[
-                styles.actionLabel,
-                compact && styles.actionLabelCompact,
-              ]}
+              style={[styles.actionLabel, compact && styles.actionLabelCompact]}
               numberOfLines={1}
             >
               {action.label}

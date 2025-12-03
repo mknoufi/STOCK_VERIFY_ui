@@ -26,37 +26,24 @@ export const enrichItem = async (
   enrichmentData: EnrichmentData
 ): Promise<EnrichmentResponse> => {
   try {
-    const response = await apiClient.post(
-      `/enrichment/items/${itemCode}`,
-      enrichmentData
-    );
+    const response = await apiClient.post(`/enrichment/items/${itemCode}`, enrichmentData);
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Enrichment failed:', error);
-    throw new Error(
-      error.response?.data?.detail?.message ||
-      'Failed to enrich item data'
-    );
+    throw new Error(error.response?.data?.detail?.message || 'Failed to enrich item data');
   }
 };
 
 /**
  * Get missing fields for an item
  */
-export const getMissingFields = async (
-  itemCode: string
-): Promise<MissingFieldsInfo> => {
+export const getMissingFields = async (itemCode: string): Promise<MissingFieldsInfo> => {
   try {
-    const response = await apiClient.get(
-      `/enrichment/items/${itemCode}/missing-fields`
-    );
+    const response = await apiClient.get(`/enrichment/items/${itemCode}/missing-fields`);
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Failed to get missing fields:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Failed to get missing fields'
-    );
+    throw new Error(error.response?.data?.detail || 'Failed to get missing fields');
   }
 };
 
@@ -68,17 +55,13 @@ export const getEnrichmentHistory = async (
   limit: number = 10
 ): Promise<EnrichmentHistoryEntry[]> => {
   try {
-    const response = await apiClient.get(
-      `/enrichment/items/${itemCode}/history`,
-      { params: { limit } }
-    );
+    const response = await apiClient.get(`/enrichment/items/${itemCode}/history`, {
+      params: { limit },
+    });
     return response.data.data.history;
   } catch (error: any) {
     __DEV__ && console.error('Failed to get enrichment history:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Failed to get enrichment history'
-    );
+    throw new Error(error.response?.data?.detail || 'Failed to get enrichment history');
   }
 };
 
@@ -89,17 +72,11 @@ export const validateEnrichmentData = async (
   enrichmentData: EnrichmentData
 ): Promise<EnrichmentValidation> => {
   try {
-    const response = await apiClient.post(
-      '/enrichment/validate',
-      enrichmentData
-    );
+    const response = await apiClient.post('/enrichment/validate', enrichmentData);
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Validation failed:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Validation failed'
-    );
+    throw new Error(error.response?.data?.detail || 'Validation failed');
   }
 };
 
@@ -113,15 +90,12 @@ export const getIncompleteItems = async (
 ): Promise<IncompleteItemsResponse> => {
   try {
     const response = await apiClient.get('/enrichment/incomplete-items', {
-      params: { limit, skip, category }
+      params: { limit, skip, category },
     });
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Failed to get incomplete items:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Failed to get incomplete items'
-    );
+    throw new Error(error.response?.data?.detail || 'Failed to get incomplete items');
   }
 };
 
@@ -134,15 +108,12 @@ export const getEnrichmentStats = async (
 ): Promise<EnrichmentStats> => {
   try {
     const response = await apiClient.get('/enrichment/stats', {
-      params: { date_from: dateFrom, date_to: dateTo }
+      params: { date_from: dateFrom, date_to: dateTo },
     });
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Failed to get enrichment stats:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Failed to get enrichment stats'
-    );
+    throw new Error(error.response?.data?.detail || 'Failed to get enrichment stats');
   }
 };
 
@@ -154,15 +125,12 @@ export const bulkImportEnrichments = async (
 ): Promise<BulkImportResult> => {
   try {
     const response = await apiClient.post('/enrichment/bulk-import', {
-      enrichments
+      enrichments,
     });
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Bulk import failed:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Bulk import failed'
-    );
+    throw new Error(error.response?.data?.detail || 'Bulk import failed');
   }
 };
 
@@ -170,20 +138,13 @@ export const bulkImportEnrichments = async (
  * Check real-time quantity from SQL Server
  * Call this when staff selects an item for counting
  */
-export const checkItemQtyRealtime = async (
-  itemCode: string
-): Promise<QtyCheckResult> => {
+export const checkItemQtyRealtime = async (itemCode: string): Promise<QtyCheckResult> => {
   try {
-    const response = await apiClient.get(
-      `/enrichment/items/${itemCode}/check-qty`
-    );
+    const response = await apiClient.get(`/enrichment/items/${itemCode}/check-qty`);
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Real-time qty check failed:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Failed to check quantity'
-    );
+    throw new Error(error.response?.data?.detail || 'Failed to check quantity');
   }
 };
 
@@ -196,10 +157,6 @@ export const recalculateCompleteness = async (): Promise<{ items_updated: number
     return response.data.data;
   } catch (error: any) {
     __DEV__ && console.error('Recalculation failed:', error);
-    throw new Error(
-      error.response?.data?.detail ||
-      'Failed to recalculate completeness'
-    );
+    throw new Error(error.response?.data?.detail || 'Failed to recalculate completeness');
   }
 };
-

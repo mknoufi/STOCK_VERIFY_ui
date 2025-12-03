@@ -135,7 +135,9 @@ export default function RootLayout() {
           cleanupRef.current.push(() => {
             networkUnsubscribe();
             syncService.cleanup();
-            try { stopOfflineQueue(); } catch { }
+            try {
+              stopOfflineQueue();
+            } catch {}
           });
         }
 
@@ -153,12 +155,17 @@ export default function RootLayout() {
           console.error('❌ Initialization error:', err);
         } else {
           // Production: log only essential error info via Sentry
-          import('../src/services/sentry').then(({ captureException }) => {
-            captureException(err as Error, { context: 'App initialization', message: errorMessage });
-          }).catch(() => {
-            // Fallback if Sentry not available
-            console.error('App initialization failed:', errorMessage);
-          });
+          import('../src/services/sentry')
+            .then(({ captureException }) => {
+              captureException(err as Error, {
+                context: 'App initialization',
+                message: errorMessage,
+              });
+            })
+            .catch(() => {
+              // Fallback if Sentry not available
+              console.error('App initialization failed:', errorMessage);
+            });
         }
         setInitError(errorMessage);
         // Always set initialized to true to prevent infinite loading
@@ -200,81 +207,97 @@ export default function RootLayout() {
       console.log('🚀 [NAV] Starting navigation logic:', {
         user: user ? { role: user.role, username: user.username } : null,
         currentRoute: segments[0],
-        platform: Platform.OS
+        platform: Platform.OS,
       });
     }
 
     // Small delay to prevent redirect loops on web
-    const timer = setTimeout(() => {
-      const currentRoute = segments[0] as string | undefined;
-      const inStaffGroup = currentRoute === 'staff';
-      const inSupervisorGroup = currentRoute === 'supervisor';
-      const inAdminGroup = currentRoute === 'admin';
-      const isRegisterPage = currentRoute === 'register';
-      const isLoginPage = currentRoute === 'login';
-      const isWelcomePage = currentRoute === 'welcome';
-      const isIndexPage = !currentRoute || currentRoute === 'index';
+    const timer = setTimeout(
+      () => {
+        const currentRoute = segments[0] as string | undefined;
+        const inStaffGroup = currentRoute === 'staff';
+        const inSupervisorGroup = currentRoute === 'supervisor';
+        const inAdminGroup = currentRoute === 'admin';
+        const isRegisterPage = currentRoute === 'register';
+        const isLoginPage = currentRoute === 'login';
+        const isWelcomePage = currentRoute === 'welcome';
+        const isIndexPage = !currentRoute || currentRoute === 'index';
 
-      // If no user, redirect to login/register/welcome only
-      if (!user) {
-        if (__DEV__) {
-          console.log('👤 [NAV] No user, checking route:', { isIndexPage, isRegisterPage, isLoginPage, isWelcomePage });
-        }
-        if (!isIndexPage && !isRegisterPage && !isLoginPage && !isWelcomePage) {
+        // If no user, redirect to login/register/welcome only
+        if (!user) {
           if (__DEV__) {
-            console.log('🔄 [NAV] Redirecting to /welcome (no user)');
+            console.log('👤 [NAV] No user, checking route:', {
+              isIndexPage,
+              isRegisterPage,
+              isLoginPage,
+              isWelcomePage,
+            });
           }
-          router.replace('/welcome');
+          if (!isIndexPage && !isRegisterPage && !isLoginPage && !isWelcomePage) {
+            if (__DEV__) {
+              console.log('🔄 [NAV] Redirecting to /welcome (no user)');
+            }
+            router.replace('/welcome');
+          }
+          return;
         }
-        return;
-      }
 
-      // If user exists and is on auth pages, redirect to their dashboard
-      if (isLoginPage || isRegisterPage || isIndexPage || isWelcomePage) {
-        let targetRoute: string;
-        // On web, always redirect admin/supervisor to admin panel
-        if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin')) {
-          targetRoute = '/admin/metrics';
-        } else if (user.role === 'supervisor' || user.role === 'admin') {
-          targetRoute = '/supervisor/dashboard';
+        // If user exists and is on auth pages, redirect to their dashboard
+        if (isLoginPage || isRegisterPage || isIndexPage || isWelcomePage) {
+          let targetRoute: string;
+          // On web, always redirect admin/supervisor to admin panel
+          if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin')) {
+            targetRoute = '/admin/metrics';
+          } else if (user.role === 'supervisor' || user.role === 'admin') {
+            targetRoute = '/supervisor/dashboard';
+          } else {
+            targetRoute = '/staff/home';
+          }
+
+          if (__DEV__) {
+            console.log('🔄 [NAV] User logged in on auth page, redirecting:', {
+              from: currentRoute,
+              to: targetRoute,
+              role: user.role,
+            });
+          }
+          router.replace(targetRoute as any);
+          return;
+        }
+
+        // Ensure users stay in their role-specific areas
+        // On web, admin/supervisor should go to admin control panel
+        if (
+          Platform.OS === 'web' &&
+          (user.role === 'supervisor' || user.role === 'admin') &&
+          !inAdminGroup
+        ) {
+          if (__DEV__) {
+            console.log('🔄 [NAV] Redirecting admin/supervisor to control panel');
+          }
+          router.replace('/admin/control-panel' as any);
+        } else if (
+          (user.role === 'supervisor' || user.role === 'admin') &&
+          !inSupervisorGroup &&
+          !inAdminGroup
+        ) {
+          if (__DEV__) {
+            console.log('🔄 [NAV] Redirecting supervisor/admin to dashboard');
+          }
+          router.replace('/supervisor/dashboard' as any);
+        } else if (user.role === 'staff' && !inStaffGroup) {
+          if (__DEV__) {
+            console.log('🔄 [NAV] Redirecting staff to home');
+          }
+          router.replace('/staff/home' as any);
         } else {
-          targetRoute = '/staff/home';
+          if (__DEV__) {
+            console.log('✅ [NAV] User is in correct area, no redirect needed');
+          }
         }
-
-        if (__DEV__) {
-          console.log('🔄 [NAV] User logged in on auth page, redirecting:', {
-            from: currentRoute,
-            to: targetRoute,
-            role: user.role
-          });
-        }
-        router.replace(targetRoute as any);
-        return;
-      }
-
-      // Ensure users stay in their role-specific areas
-      // On web, admin/supervisor should go to admin control panel
-      if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin') && !inAdminGroup) {
-        if (__DEV__) {
-          console.log('🔄 [NAV] Redirecting admin/supervisor to control panel');
-        }
-        router.replace('/admin/control-panel' as any);
-      } else if ((user.role === 'supervisor' || user.role === 'admin') && !inSupervisorGroup && !inAdminGroup) {
-        if (__DEV__) {
-          console.log('🔄 [NAV] Redirecting supervisor/admin to dashboard');
-        }
-        router.replace('/supervisor/dashboard' as any);
-      } else if (user.role === 'staff' && !inStaffGroup) {
-        if (__DEV__) {
-          console.log('🔄 [NAV] Redirecting staff to home');
-        }
-        router.replace('/staff/home' as any);
-      } else {
-        if (__DEV__) {
-          console.log('✅ [NAV] User is in correct area, no redirect needed');
-        }
-      }
-    }, Platform.OS === 'web' ? 200 : 100);
+      },
+      Platform.OS === 'web' ? 200 : 100
+    );
 
     return () => clearTimeout(timer);
   }, [isInitialized, isLoading, router, segments, user]);
@@ -282,14 +305,29 @@ export default function RootLayout() {
   // Show loading state to prevent blank screen (both web and mobile)
   if (!isInitialized || isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#121212',
+        }}
+      >
         <Text style={{ color: '#00E676', fontSize: 18, fontWeight: 'bold' }}>
           {Platform.OS === 'web' ? 'Loading Admin Panel...' : 'Loading...'}
         </Text>
         <Text style={{ color: '#888', fontSize: 14, marginTop: 10 }}>Please wait</Text>
         <ActivityIndicator color="#00E676" style={{ marginTop: 16 }} size="large" />
         {initError && (
-          <Text style={{ color: '#FF5252', fontSize: 12, marginTop: 20, padding: 10, textAlign: 'center' }}>
+          <Text
+            style={{
+              color: '#FF5252',
+              fontSize: 12,
+              marginTop: 20,
+              padding: 10,
+              textAlign: 'center',
+            }}
+          >
             Warning: {initError}
           </Text>
         )}
@@ -300,10 +338,24 @@ export default function RootLayout() {
   // Show error state if initialization failed
   if (isInitialized && initError && Platform.OS === 'web') {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212', padding: 20 }}>
-        <Text style={{ color: '#FF5252', fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>⚠️ Initialization Error</Text>
-        <Text style={{ color: '#888', fontSize: 14, marginBottom: 20, textAlign: 'center' }}>{initError}</Text>
-        <Text style={{ color: '#00E676', fontSize: 14, marginTop: 20 }}>Attempting to continue anyway...</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#121212',
+          padding: 20,
+        }}
+      >
+        <Text style={{ color: '#FF5252', fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>
+          ⚠️ Initialization Error
+        </Text>
+        <Text style={{ color: '#888', fontSize: 14, marginBottom: 20, textAlign: 'center' }}>
+          {initError}
+        </Text>
+        <Text style={{ color: '#00E676', fontSize: 14, marginTop: 20 }}>
+          Attempting to continue anyway...
+        </Text>
       </View>
     );
   }
@@ -318,7 +370,7 @@ export default function RootLayout() {
             <Stack
               screenOptions={{
                 headerShown: false,
-                contentStyle: { backgroundColor: '#121212' }
+                contentStyle: { backgroundColor: '#121212' },
               }}
             >
               <Stack.Screen name="index" options={{ headerShown: false }} />

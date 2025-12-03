@@ -45,7 +45,11 @@ export default function LogsScreen() {
   const loadLogs = async () => {
     try {
       setRefreshing(true);
-      const response = await getServiceLogs(service, 200, filterLevel === 'ALL' ? undefined : filterLevel);
+      const response = await getServiceLogs(
+        service,
+        200,
+        filterLevel === 'ALL' ? undefined : filterLevel
+      );
       if (response.success && response.data) {
         setLogs(response.data.logs || []);
       }
@@ -74,7 +78,7 @@ export default function LogsScreen() {
     }
   };
 
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = logs.filter((log) => {
     if (searchQuery) {
       return log.message?.toLowerCase().includes(searchQuery.toLowerCase());
     }
@@ -96,11 +100,7 @@ export default function LogsScreen() {
           <Text style={styles.title}>{service.toUpperCase()} Logs</Text>
         </View>
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.refreshButton}
-            onPress={loadLogs}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.refreshButton} onPress={loadLogs} activeOpacity={0.7}>
             <Ionicons name="refresh" size={24} color="#007AFF" />
           </TouchableOpacity>
         </View>
@@ -122,10 +122,7 @@ export default function LogsScreen() {
           {['ALL', 'ERROR', 'WARN', 'INFO', 'DEBUG'].map((level) => (
             <TouchableOpacity
               key={level}
-              style={[
-                styles.levelFilter,
-                filterLevel === level && styles.levelFilterActive,
-              ]}
+              style={[styles.levelFilter, filterLevel === level && styles.levelFilterActive]}
               onPress={() => setFilterLevel(level)}
             >
               <Text
@@ -205,12 +202,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'sticky' as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,

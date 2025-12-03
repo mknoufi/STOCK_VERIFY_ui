@@ -11,7 +11,7 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
-  Platform
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,7 +65,7 @@ export default function SupervisorDashboard() {
     positiveVariance: 0,
     negativeVariance: 0,
     avgVariancePerSession: 0,
-    highRiskSessions: 0
+    highRiskSessions: 0,
   });
 
   // Modal States
@@ -130,40 +130,41 @@ export default function SupervisorDashboard() {
       setSessions(filteredSessions);
 
       // Calculate stats
-      const newStats = filteredSessions.reduce((acc: DashboardStats, session: Session) => {
-        acc.totalSessions++;
-        if (session.status === 'OPEN') acc.openSessions++;
-        if (session.status === 'CLOSED') acc.closedSessions++;
-        if (session.status === 'RECONCILE') acc.reconciledSessions++;
+      const newStats = filteredSessions.reduce(
+        (acc: DashboardStats, session: Session) => {
+          acc.totalSessions++;
+          if (session.status === 'OPEN') acc.openSessions++;
+          if (session.status === 'CLOSED') acc.closedSessions++;
+          if (session.status === 'RECONCILE') acc.reconciledSessions++;
 
-        acc.totalItems += session.total_items || 0;
-        acc.totalVariance += session.total_variance || 0;
+          acc.totalItems += session.total_items || 0;
+          acc.totalVariance += session.total_variance || 0;
 
-        if ((session.total_variance || 0) > 0) acc.positiveVariance += session.total_variance;
-        if ((session.total_variance || 0) < 0) acc.negativeVariance += session.total_variance;
+          if ((session.total_variance || 0) > 0) acc.positiveVariance += session.total_variance;
+          if ((session.total_variance || 0) < 0) acc.negativeVariance += session.total_variance;
 
-        if (Math.abs(session.total_variance) > 1000) acc.highRiskSessions++; // Example threshold
+          if (Math.abs(session.total_variance) > 1000) acc.highRiskSessions++; // Example threshold
 
-        return acc;
-      }, {
-        totalSessions: 0,
-        openSessions: 0,
-        closedSessions: 0,
-        reconciledSessions: 0,
-        totalItems: 0,
-        totalVariance: 0,
-        positiveVariance: 0,
-        negativeVariance: 0,
-        avgVariancePerSession: 0,
-        highRiskSessions: 0
-      });
+          return acc;
+        },
+        {
+          totalSessions: 0,
+          openSessions: 0,
+          closedSessions: 0,
+          reconciledSessions: 0,
+          totalItems: 0,
+          totalVariance: 0,
+          positiveVariance: 0,
+          negativeVariance: 0,
+          avgVariancePerSession: 0,
+          highRiskSessions: 0,
+        }
+      );
 
-      newStats.avgVariancePerSession = newStats.totalSessions > 0
-        ? newStats.totalVariance / newStats.totalSessions
-        : 0;
+      newStats.avgVariancePerSession =
+        newStats.totalSessions > 0 ? newStats.totalVariance / newStats.totalSessions : 0;
 
       setStats(newStats);
-
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       Alert.alert('Error', 'Failed to load dashboard data');
@@ -199,7 +200,7 @@ export default function SupervisorDashboard() {
       setIsMRPUpdating(true);
       await api.post('/supervisor/update-mrp', {
         item_code: selectedItemForMRP.item_code,
-        new_mrp: parseFloat(newMRP)
+        new_mrp: parseFloat(newMRP),
       });
 
       Alert.alert('Success', 'MRP updated successfully');
@@ -234,7 +235,7 @@ export default function SupervisorDashboard() {
           const date = new Date(s.started_at).toLocaleDateString();
           acc[date] = (acc[date] || 0) + 1;
           return acc;
-        }, {})
+        }, {}),
       };
       setAnalyticsData(analytics);
     } catch (error) {
@@ -262,7 +263,7 @@ export default function SupervisorDashboard() {
   };
 
   const selectAllSessions = () => {
-    const allIds = sessions.map(s => s.id);
+    const allIds = sessions.map((s) => s.id);
     setSelectedSessions(new Set(allIds));
   };
 
@@ -285,7 +286,7 @@ export default function SupervisorDashboard() {
               setLoading(true);
               await api.post('/supervisor/bulk-operation', {
                 operation,
-                session_ids: Array.from(selectedSessions)
+                session_ids: Array.from(selectedSessions),
               });
               Alert.alert('Success', `Bulk ${operation} completed successfully`);
               setShowBulkModal(false);
@@ -296,8 +297,8 @@ export default function SupervisorDashboard() {
             } finally {
               setLoading(false);
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -309,20 +310,18 @@ export default function SupervisorDashboard() {
         <View style={styles.onlineStatusContainer}>
           <OnlineStatus />
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickActionsScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.quickActionsScroll}
+        >
           <View style={styles.quickActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => setShowMRPModal(true)}
-            >
+            <TouchableOpacity style={styles.actionButton} onPress={() => setShowMRPModal(true)}>
               <Ionicons name="pricetag-outline" size={24} color="#4CAF50" />
               <Text style={styles.actionButtonText}>Update MRP</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => setShowFilterModal(true)}
-            >
+            <TouchableOpacity style={styles.actionButton} onPress={() => setShowFilterModal(true)}>
               <Ionicons name="filter-outline" size={24} color="#2196F3" />
               <Text style={styles.actionButtonText}>Filter</Text>
               {filterStatus !== 'ALL' && (
@@ -340,10 +339,7 @@ export default function SupervisorDashboard() {
               <Text style={styles.actionButtonText}>Analytics</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => setShowBulkModal(true)}
-            >
+            <TouchableOpacity style={styles.actionButton} onPress={() => setShowBulkModal(true)}>
               <Ionicons name="layers-outline" size={24} color="#9C27B0" />
               <Text style={styles.actionButtonText}>Bulk Ops</Text>
               {selectedSessions.size > 0 && (
@@ -411,7 +407,7 @@ export default function SupervisorDashboard() {
                 style={[
                   styles.sessionCard,
                   selectedSessions.has(session.id) && styles.sessionCardSelected,
-                  Math.abs(session.total_variance) > 1000 && styles.sessionCardHighRisk
+                  Math.abs(session.total_variance) > 1000 && styles.sessionCardHighRisk,
                 ]}
                 onPress={() => router.push(`/supervisor/session/${session.id}`)}
                 onLongPress={() => toggleSessionSelection(session.id)}
@@ -420,9 +416,9 @@ export default function SupervisorDashboard() {
                   {selectedSessions.size > 0 && (
                     <View style={styles.sessionCheckbox}>
                       <Ionicons
-                        name={selectedSessions.has(session.id) ? "checkbox" : "square-outline"}
+                        name={selectedSessions.has(session.id) ? 'checkbox' : 'square-outline'}
                         size={24}
-                        color={selectedSessions.has(session.id) ? "#4CAF50" : "#888"}
+                        color={selectedSessions.has(session.id) ? '#4CAF50' : '#888'}
                       />
                     </View>
                   )}
@@ -430,16 +426,23 @@ export default function SupervisorDashboard() {
                     <View style={styles.sessionHeader}>
                       <View>
                         <Text style={styles.sessionWarehouse}>{session.warehouse}</Text>
-                        <Text style={styles.sessionStaff}>Staff: {session.staff_name || 'Unknown'}</Text>
+                        <Text style={styles.sessionStaff}>
+                          Staff: {session.staff_name || 'Unknown'}
+                        </Text>
                       </View>
-                      <View style={[
-                        styles.statusBadge,
-                        {
-                          backgroundColor:
-                            session.status === 'OPEN' ? '#FF9800' :
-                              session.status === 'CLOSED' ? '#4CAF50' : '#2196F3'
-                        }
-                      ]}>
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          {
+                            backgroundColor:
+                              session.status === 'OPEN'
+                                ? '#FF9800'
+                                : session.status === 'CLOSED'
+                                ? '#4CAF50'
+                                : '#2196F3',
+                          },
+                        ]}
+                      >
                         <Text style={styles.statusText}>{session.status}</Text>
                       </View>
                     </View>
@@ -455,7 +458,12 @@ export default function SupervisorDashboard() {
                       </View>
                       <View style={styles.statItem}>
                         <Ionicons name="analytics-outline" size={16} color="#888" />
-                        <Text style={[styles.statText, Math.abs(session.total_variance) > 0 && styles.varianceText]}>
+                        <Text
+                          style={[
+                            styles.statText,
+                            Math.abs(session.total_variance) > 0 && styles.varianceText,
+                          ]}
+                        >
                           Var: {session.total_variance}
                         </Text>
                       </View>
@@ -533,7 +541,9 @@ export default function SupervisorDashboard() {
                       <Text style={styles.selectedItemName}>{selectedItemForMRP.item_name}</Text>
                       <Text style={styles.selectedItemCode}>{selectedItemForMRP.item_code}</Text>
                       <Text style={styles.selectedItemBarcode}>{selectedItemForMRP.barcode}</Text>
-                      <Text style={styles.selectedItemCurrentMRP}>Current MRP: ₹{selectedItemForMRP.mrp}</Text>
+                      <Text style={styles.selectedItemCurrentMRP}>
+                        Current MRP: ₹{selectedItemForMRP.mrp}
+                      </Text>
                     </View>
 
                     <Text style={styles.mrpInputLabel}>New MRP</Text>
@@ -554,7 +564,10 @@ export default function SupervisorDashboard() {
                         <Text style={styles.mrpCancelButtonText}>Cancel</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={[styles.mrpUpdateButton, isMRPUpdating && styles.mrpUpdateButtonDisabled]}
+                        style={[
+                          styles.mrpUpdateButton,
+                          isMRPUpdating && styles.mrpUpdateButtonDisabled,
+                        ]}
                         onPress={updateItemMRP}
                         disabled={isMRPUpdating}
                       >
@@ -596,16 +609,15 @@ export default function SupervisorDashboard() {
                 {['ALL', 'OPEN', 'CLOSED', 'RECONCILE'].map((status) => (
                   <TouchableOpacity
                     key={status}
-                    style={[
-                      styles.filterChip,
-                      filterStatus === status && styles.filterChipActive
-                    ]}
+                    style={[styles.filterChip, filterStatus === status && styles.filterChipActive]}
                     onPress={() => setFilterStatus(status as any)}
                   >
-                    <Text style={[
-                      styles.filterChipText,
-                      filterStatus === status && styles.filterChipTextActive
-                    ]}>
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        filterStatus === status && styles.filterChipTextActive,
+                      ]}
+                    >
                       {status}
                     </Text>
                   </TouchableOpacity>
@@ -618,14 +630,11 @@ export default function SupervisorDashboard() {
                 {[
                   { key: 'date', label: 'Date', icon: 'calendar-outline' },
                   { key: 'variance', label: 'Variance', icon: 'analytics-outline' },
-                  { key: 'items', label: 'Items', icon: 'cube-outline' }
+                  { key: 'items', label: 'Items', icon: 'cube-outline' },
                 ].map((option) => (
                   <TouchableOpacity
                     key={option.key}
-                    style={[
-                      styles.filterChip,
-                      sortBy === option.key && styles.filterChipActive
-                    ]}
+                    style={[styles.filterChip, sortBy === option.key && styles.filterChipActive]}
                     onPress={() => setSortBy(option.key as any)}
                   >
                     <Ionicons
@@ -633,10 +642,12 @@ export default function SupervisorDashboard() {
                       size={16}
                       color={sortBy === option.key ? '#fff' : '#888'}
                     />
-                    <Text style={[
-                      styles.filterChipText,
-                      sortBy === option.key && styles.filterChipTextActive
-                    ]}>
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        sortBy === option.key && styles.filterChipTextActive,
+                      ]}
+                    >
                       {option.label}
                     </Text>
                   </TouchableOpacity>
@@ -646,20 +657,44 @@ export default function SupervisorDashboard() {
               {/* Sort Order */}
               <View style={styles.sortOrderContainer}>
                 <TouchableOpacity
-                  style={[styles.sortOrderButton, sortOrder === 'asc' && styles.sortOrderButtonActive]}
+                  style={[
+                    styles.sortOrderButton,
+                    sortOrder === 'asc' && styles.sortOrderButtonActive,
+                  ]}
                   onPress={() => setSortOrder('asc')}
                 >
-                  <Ionicons name="arrow-up" size={20} color={sortOrder === 'asc' ? '#fff' : '#888'} />
-                  <Text style={[styles.sortOrderText, sortOrder === 'asc' && styles.sortOrderTextActive]}>
+                  <Ionicons
+                    name="arrow-up"
+                    size={20}
+                    color={sortOrder === 'asc' ? '#fff' : '#888'}
+                  />
+                  <Text
+                    style={[
+                      styles.sortOrderText,
+                      sortOrder === 'asc' && styles.sortOrderTextActive,
+                    ]}
+                  >
                     Ascending
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.sortOrderButton, sortOrder === 'desc' && styles.sortOrderButtonActive]}
+                  style={[
+                    styles.sortOrderButton,
+                    sortOrder === 'desc' && styles.sortOrderButtonActive,
+                  ]}
                   onPress={() => setSortOrder('desc')}
                 >
-                  <Ionicons name="arrow-down" size={20} color={sortOrder === 'desc' ? '#fff' : '#888'} />
-                  <Text style={[styles.sortOrderText, sortOrder === 'desc' && styles.sortOrderTextActive]}>
+                  <Ionicons
+                    name="arrow-down"
+                    size={20}
+                    color={sortOrder === 'desc' ? '#fff' : '#888'}
+                  />
+                  <Text
+                    style={[
+                      styles.sortOrderText,
+                      sortOrder === 'desc' && styles.sortOrderTextActive,
+                    ]}
+                  >
                     Descending
                   </Text>
                 </TouchableOpacity>
@@ -766,7 +801,9 @@ export default function SupervisorDashboard() {
                   </View>
                   <View style={styles.analyticsCard}>
                     <Ionicons name="calculator-outline" size={24} color="#FFC107" />
-                    <Text style={styles.analyticsValue}>{stats.avgVariancePerSession.toFixed(1)}</Text>
+                    <Text style={styles.analyticsValue}>
+                      {stats.avgVariancePerSession.toFixed(1)}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Avg. Variance</Text>
                   </View>
                   <View style={styles.analyticsCard}>
@@ -779,45 +816,56 @@ export default function SupervisorDashboard() {
                 {/* Variance by Warehouse */}
                 <Text style={styles.analyticsSectionTitle}>Variance by Warehouse</Text>
                 <View style={styles.analyticsListContainer}>
-                  {Object.entries(analyticsData.varianceByWarehouse || {}).map(([warehouse, variance]: [string, any]) => (
-                    <View key={warehouse} style={styles.analyticsListItem}>
-                      <View style={styles.analyticsListLeft}>
-                        <Ionicons name="business-outline" size={20} color="#4CAF50" />
-                        <Text style={styles.analyticsListText}>{warehouse}</Text>
+                  {Object.entries(analyticsData.varianceByWarehouse || {}).map(
+                    ([warehouse, variance]: [string, any]) => (
+                      <View key={warehouse} style={styles.analyticsListItem}>
+                        <View style={styles.analyticsListLeft}>
+                          <Ionicons name="business-outline" size={20} color="#4CAF50" />
+                          <Text style={styles.analyticsListText}>{warehouse}</Text>
+                        </View>
+                        <Text
+                          style={[
+                            styles.analyticsListValue,
+                            variance > 100 && styles.analyticsListValueHigh,
+                          ]}
+                        >
+                          {variance.toFixed(0)}
+                        </Text>
                       </View>
-                      <Text style={[styles.analyticsListValue, variance > 100 && styles.analyticsListValueHigh]}>
-                        {variance.toFixed(0)}
-                      </Text>
-                    </View>
-                  ))}
+                    )
+                  )}
                 </View>
 
                 {/* Items by Staff */}
                 <Text style={styles.analyticsSectionTitle}>Items Counted by Staff</Text>
                 <View style={styles.analyticsListContainer}>
-                  {Object.entries(analyticsData.itemsByStaff || {}).map(([staff, items]: [string, any]) => (
-                    <View key={staff} style={styles.analyticsListItem}>
-                      <View style={styles.analyticsListLeft}>
-                        <Ionicons name="person-outline" size={20} color="#2196F3" />
-                        <Text style={styles.analyticsListText}>{staff}</Text>
+                  {Object.entries(analyticsData.itemsByStaff || {}).map(
+                    ([staff, items]: [string, any]) => (
+                      <View key={staff} style={styles.analyticsListItem}>
+                        <View style={styles.analyticsListLeft}>
+                          <Ionicons name="person-outline" size={20} color="#2196F3" />
+                          <Text style={styles.analyticsListText}>{staff}</Text>
+                        </View>
+                        <Text style={styles.analyticsListValue}>{items}</Text>
                       </View>
-                      <Text style={styles.analyticsListValue}>{items}</Text>
-                    </View>
-                  ))}
+                    )
+                  )}
                 </View>
 
                 {/* Sessions by Date */}
                 <Text style={styles.analyticsSectionTitle}>Sessions by Date</Text>
                 <View style={styles.analyticsListContainer}>
-                  {Object.entries(analyticsData.sessionsByDate || {}).slice(0, 10).map(([date, count]: [string, any]) => (
-                    <View key={date} style={styles.analyticsListItem}>
-                      <View style={styles.analyticsListLeft}>
-                        <Ionicons name="calendar-outline" size={20} color="#FFC107" />
-                        <Text style={styles.analyticsListText}>{date}</Text>
+                  {Object.entries(analyticsData.sessionsByDate || {})
+                    .slice(0, 10)
+                    .map(([date, count]: [string, any]) => (
+                      <View key={date} style={styles.analyticsListItem}>
+                        <View style={styles.analyticsListLeft}>
+                          <Ionicons name="calendar-outline" size={20} color="#FFC107" />
+                          <Text style={styles.analyticsListText}>{date}</Text>
+                        </View>
+                        <Text style={styles.analyticsListValue}>{count}</Text>
                       </View>
-                      <Text style={styles.analyticsListValue}>{count}</Text>
-                    </View>
-                  ))}
+                    ))}
                 </View>
               </ScrollView>
             ) : null}
@@ -842,21 +890,13 @@ export default function SupervisorDashboard() {
             </View>
 
             <View style={styles.bulkStatsContainer}>
-              <Text style={styles.bulkStatsText}>
-                {selectedSessions.size} session(s) selected
-              </Text>
+              <Text style={styles.bulkStatsText}>{selectedSessions.size} session(s) selected</Text>
               <View style={styles.bulkQuickActions}>
-                <TouchableOpacity
-                  style={styles.bulkQuickButton}
-                  onPress={selectAllSessions}
-                >
+                <TouchableOpacity style={styles.bulkQuickButton} onPress={selectAllSessions}>
                   <Ionicons name="checkbox-outline" size={20} color="#4CAF50" />
                   <Text style={styles.bulkQuickButtonText}>Select All</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.bulkQuickButton}
-                  onPress={clearSelection}
-                >
+                <TouchableOpacity style={styles.bulkQuickButton} onPress={clearSelection}>
                   <Ionicons name="close-outline" size={20} color="#FF5252" />
                   <Text style={styles.bulkQuickButtonText}>Clear All</Text>
                 </TouchableOpacity>
@@ -923,7 +963,9 @@ export default function SupervisorDashboard() {
                 <View style={styles.bulkEmptyContainer}>
                   <Ionicons name="checkbox-outline" size={48} color="#555" />
                   <Text style={styles.bulkEmptyText}>No sessions selected</Text>
-                  <Text style={styles.bulkEmptySubtext}>Select sessions from the list to perform bulk operations</Text>
+                  <Text style={styles.bulkEmptySubtext}>
+                    Select sessions from the list to perform bulk operations
+                  </Text>
                 </View>
               ) : (
                 <View style={styles.bulkSelectedList}>
@@ -933,9 +975,14 @@ export default function SupervisorDashboard() {
                     return (
                       <View key={sessionId} style={styles.bulkSelectedItem}>
                         <View style={styles.bulkSelectedItemContent}>
-                          <Text style={styles.bulkSelectedItemTitle}>{session.warehouse || 'N/A'}</Text>
+                          <Text style={styles.bulkSelectedItemTitle}>
+                            {session.warehouse || 'N/A'}
+                          </Text>
                           <Text style={styles.bulkSelectedItemSubtitle}>
-                            {session.started_at ? new Date(session.started_at).toLocaleDateString() : 'N/A'} • {session.status || 'N/A'}
+                            {session.started_at
+                              ? new Date(session.started_at).toLocaleDateString()
+                              : 'N/A'}{' '}
+                            • {session.status || 'N/A'}
                           </Text>
                         </View>
                         <TouchableOpacity onPress={() => toggleSessionSelection(sessionId)}>

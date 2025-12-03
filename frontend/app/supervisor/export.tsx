@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Header } from '../../src/components/layout/Header';
 import { useTheme } from '../../src/hooks/useTheme';
@@ -38,17 +46,12 @@ export default function ExportReports() {
       console.log('✅ [Export] Exporting', sessions.length, 'sessions');
       await ExportService.exportSessions(sessions);
 
-      Alert.alert(
-        'Export Successful',
-        `Exported ${sessions.length} sessions to Excel file`,
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Export Successful', `Exported ${sessions.length} sessions to Excel file`, [
+        { text: 'OK' },
+      ]);
     } catch (error: any) {
       console.error('❌ [Export] Session export failed:', error);
-      Alert.alert(
-        'Export Failed',
-        error.message || 'Failed to export sessions. Please try again.'
-      );
+      Alert.alert('Export Failed', error.message || 'Failed to export sessions. Please try again.');
     } finally {
       setLoading(false);
       setExportType(null);
@@ -64,7 +67,14 @@ export default function ExportReports() {
         'Export Session Details',
         'This will export detailed count lines for all sessions. Continue?',
         [
-          { text: 'Cancel', style: 'cancel', onPress: () => { setLoading(false); setExportType(null); } },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              setLoading(false);
+              setExportType(null);
+            },
+          },
           {
             text: 'Export',
             onPress: async () => {
@@ -94,8 +104,8 @@ export default function ExportReports() {
                 setLoading(false);
                 setExportType(null);
               }
-            }
-          }
+            },
+          },
         ]
       );
     } catch (error: any) {
@@ -120,9 +130,7 @@ export default function ExportReports() {
       }
 
       // Filter sessions with variance
-      const varianceSessions = sessions.filter((s: any) =>
-        Math.abs(s.total_variance || 0) > 0
-      );
+      const varianceSessions = sessions.filter((s: any) => Math.abs(s.total_variance || 0) > 0);
 
       if (varianceSessions.length === 0) {
         Alert.alert('No Variance', 'No sessions with variance found');
@@ -163,11 +171,9 @@ export default function ExportReports() {
       console.log('✅ [Export] Exporting summary report for', sessions.length, 'sessions');
       await ExportService.exportSummaryReport(sessions);
 
-      Alert.alert(
-        'Export Successful',
-        `Exported summary report with ${sessions.length} sessions`,
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Export Successful', `Exported summary report with ${sessions.length} sessions`, [
+        { text: 'OK' },
+      ]);
     } catch (error: any) {
       console.error('❌ [Export] Summary report failed:', error);
       Alert.alert('Export Failed', error.message || 'Failed to export summary report');
@@ -275,7 +281,9 @@ export default function ExportReports() {
           <View style={styles.infoContent}>
             <Text style={styles.infoTitle}>Export Information</Text>
             <Text style={styles.infoText}>• Reports are generated in Excel format (.xlsx)</Text>
-            <Text style={styles.infoText}>• Files are saved to your device&apos;s Downloads folder</Text>
+            <Text style={styles.infoText}>
+              • Files are saved to your device&apos;s Downloads folder
+            </Text>
             <Text style={styles.infoText}>• Large exports may take a few moments to generate</Text>
             <Text style={styles.infoText}>• Check your file manager after export completes</Text>
           </View>

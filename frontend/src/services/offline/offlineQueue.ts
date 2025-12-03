@@ -70,7 +70,9 @@ export async function enqueueMutation(config: AxiosRequestConfig): Promise<Queue
 
 let flushing = false;
 
-export async function flushOfflineQueue(client: AxiosInstance): Promise<{ processed: number; remaining: number; }> {
+export async function flushOfflineQueue(
+  client: AxiosInstance
+): Promise<{ processed: number; remaining: number }> {
   if (!flags.enableOfflineQueue) return { processed: 0, remaining: 0 };
   if (flushing) return { processed: 0, remaining: (await loadQueue()).length };
 
@@ -138,14 +140,21 @@ export function startOfflineQueue(client: AxiosInstance): void {
       const online = state.isOnline && (state.isInternetReachable ?? true);
       onlineManager.setOnline(online);
       if (online && !flushing) {
-        flushOfflineQueue(client).then((res) => {
-          if (__DEV__ && (res.processed > 0 || res.remaining >= 0)) {
-            __DEV__ && console.log(`OfflineQueue: flushed processed=${res.processed} remaining=${res.remaining}`);
-          }
-          if (res.processed > 0) {
-            try { toastService.showSuccess(`Synced ${res.processed} queued change(s)`); } catch { }
-          }
-        }).catch(() => { });
+        flushOfflineQueue(client)
+          .then((res) => {
+            if (__DEV__ && (res.processed > 0 || res.remaining >= 0)) {
+              __DEV__ &&
+                console.log(
+                  `OfflineQueue: flushed processed=${res.processed} remaining=${res.remaining}`
+                );
+            }
+            if (res.processed > 0) {
+              try {
+                toastService.showSuccess(`Synced ${res.processed} queued change(s)`);
+              } catch {}
+            }
+          })
+          .catch(() => {});
       }
     });
   }
@@ -157,12 +166,14 @@ export function startOfflineQueue(client: AxiosInstance): void {
   }
 
   // Try initial flush
-  flushOfflineQueue(client).catch(() => { });
+  flushOfflineQueue(client).catch(() => {});
 }
 
 export function stopOfflineQueue(): void {
   if (unsubscribeNetwork) {
-    try { unsubscribeNetwork(); } catch { }
+    try {
+      unsubscribeNetwork();
+    } catch {}
     unsubscribeNetwork = null;
   }
 }
@@ -189,18 +200,23 @@ export function attachOfflineQueueInterceptors(client: AxiosInstance): void {
       if (!online || isNetworkError) {
         const item = await enqueueMutation(cfg);
         if (__DEV__) {
-          __DEV__ && console.warn('OfflineQueue: queued mutation', { id: item.id, method: item.method, url: item.url });
+          __DEV__ &&
+            console.warn('OfflineQueue: queued mutation', {
+              id: item.id,
+              method: item.method,
+              url: item.url,
+            });
         }
         try {
           toastService.showInfo('Saved offline. Will sync when online.');
-        } catch { }
+        } catch {}
         // Resolve with a synthetic response to unblock UI if desired, otherwise reject
         // Here we reject so callers can decide how to reflect queued state
         return Promise.reject(error);
       }
 
       return Promise.reject(error);
-    },
+    }
   );
 }
 

@@ -72,10 +72,7 @@ export const getSyncStatusData = async (): Promise<SyncStatus> => {
  * Get complete database sync status
  */
 export const getDatabaseSyncStatus = async (): Promise<DatabaseSyncStatus> => {
-  const [database, sync] = await Promise.all([
-    getDatabaseStatus(),
-    getSyncStatusData(),
-  ]);
+  const [database, sync] = await Promise.all([getDatabaseStatus(), getSyncStatusData()]);
 
   return {
     database,

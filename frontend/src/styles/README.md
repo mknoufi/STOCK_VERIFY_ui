@@ -5,7 +5,9 @@ This directory contains global styles and design tokens for the Stock Verificati
 ## Files
 
 ### `globalStyles.ts`
+
 Global design system including:
+
 - **Color palette**: Consistent colors across the app
 - **Typography**: Font sizes and weights
 - **Spacing**: Standardized margins and padding
@@ -36,6 +38,7 @@ style={commonStyles.button}
 ## Design Tokens
 
 ### Colors
+
 - Primary: #4CAF50 (Green)
 - Background Dark: #1a1a1a
 - Background Light: #2a2a2a
@@ -43,6 +46,7 @@ style={commonStyles.button}
 - Text Secondary: #cccccc
 
 ### Spacing Scale
+
 - xs: 4px
 - sm: 8px
 - md: 16px
@@ -51,6 +55,7 @@ style={commonStyles.button}
 - xxl: 48px
 
 ### Typography Scale
+
 - h1: 32px bold
 - h2: 28px bold
 - h3: 24px semibold

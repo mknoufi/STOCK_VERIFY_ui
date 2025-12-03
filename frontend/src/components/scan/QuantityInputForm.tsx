@@ -3,14 +3,21 @@
  * Form for entering counted quantity, damage quantities, MRP, and remarks
  */
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Platform, Switch, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Platform,
+  Switch,
+  TouchableOpacity,
+} from 'react-native';
 import { Controller, Control, FieldErrors } from 'react-hook-form';
 import { ScanFormData, NormalizedMrpVariant, WorkflowState } from '@/types/scan';
 import { MRPVariantSelector } from './MRPVariantSelector';
 import { formatMrpValue } from '@/utils/scanUtils';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
 
 interface QuantityInputFormProps {
   control: Control<ScanFormData>;
@@ -39,320 +46,325 @@ interface QuantityInputFormProps {
   onToggleSerialCapture: (enabled: boolean) => void;
 }
 
-export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(({
-  control,
-  errors,
-  setValue,
-  mrpVariants,
-  parsedMrpValue,
-  systemMrp,
-  mrpDifference,
-  mrpChangePercent,
-  onActivityReset,
-  onItemConditionChange,
-  onVariantSelect,
-  currentItemCondition = 'good',
-  workflowState,
-  updateWorkflowState,
+export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
+  ({
+    control,
+    errors,
+    setValue,
+    mrpVariants,
+    parsedMrpValue,
+    systemMrp,
+    mrpDifference,
+    mrpChangePercent,
+    onActivityReset,
+    onItemConditionChange,
+    onVariantSelect,
+    currentItemCondition = 'good',
+    workflowState,
+    updateWorkflowState,
 
-  markLocation,
-  onMarkLocationChange,
-  manufacturingDate,
-  onManufacturingDateChange,
-  remark,
-  onRemarkChange,
-  serialCaptureEnabled,
-  onToggleSerialCapture,
-}) => {
-  const [showMrpChange, setShowMrpChange] = useState(false);
-  const [showDamage, setShowDamage] = useState(false);
-  const [showSerial, setShowSerial] = useState(serialCaptureEnabled);
-  const [showMfgDate, setShowMfgDate] = useState(!!manufacturingDate);
-  const [showAdditionalDetail, setShowAdditionalDetail] = useState(!!remark || !!markLocation);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+    markLocation,
+    onMarkLocationChange,
+    manufacturingDate,
+    onManufacturingDateChange,
+    remark,
+    onRemarkChange,
+    serialCaptureEnabled,
+    onToggleSerialCapture,
+  }) => {
+    const [showMrpChange, setShowMrpChange] = useState(false);
+    const [showDamage, setShowDamage] = useState(false);
+    const [showSerial, setShowSerial] = useState(serialCaptureEnabled);
+    const [showMfgDate, setShowMfgDate] = useState(!!manufacturingDate);
+    const [showAdditionalDetail, setShowAdditionalDetail] = useState(!!remark || !!markLocation);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Sync local state with props if needed (optional, but good for initial load)
-  // useEffect(() => { setShowSerial(serialCaptureEnabled); }, [serialCaptureEnabled]);
+    // Sync local state with props if needed (optional, but good for initial load)
+    // useEffect(() => { setShowSerial(serialCaptureEnabled); }, [serialCaptureEnabled]);
 
-  const handleDamageChange = (text: string, field: 'returnableDamageQty' | 'nonReturnableDamageQty') => {
-    onActivityReset?.();
-    if (text && currentItemCondition === 'good' && onItemConditionChange) {
-      onItemConditionChange('damaged');
-    }
-  };
+    const handleDamageChange = (
+      text: string,
+      field: 'returnableDamageQty' | 'nonReturnableDamageQty'
+    ) => {
+      onActivityReset?.();
+      if (text && currentItemCondition === 'good' && onItemConditionChange) {
+        onItemConditionChange('damaged');
+      }
+    };
 
-  const toggleSwitch = (setter: React.Dispatch<React.SetStateAction<boolean>>, value: boolean) => {
-    onActivityReset?.();
-    setter(value);
-  };
+    const toggleSwitch = (
+      setter: React.Dispatch<React.SetStateAction<boolean>>,
+      value: boolean
+    ) => {
+      onActivityReset?.();
+      setter(value);
+    };
 
-  const handleSerialToggle = (value: boolean) => {
-    toggleSwitch(setShowSerial, value);
-    onToggleSerialCapture(value);
-  };
+    const handleSerialToggle = (value: boolean) => {
+      toggleSwitch(setShowSerial, value);
+      onToggleSerialCapture(value);
+    };
 
-  return (
-    <View style={styles.countingSection}>
-      <Text style={styles.sectionTitle}>Enter Count</Text>
+    return (
+      <View style={styles.countingSection}>
+        <Text style={styles.sectionTitle}>Enter Count</Text>
 
-      {/* Physical Quantity */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.fieldLabel}>Physical Quantity</Text>
-        <Controller
-          control={control}
-          name="countedQty"
-          rules={{ required: 'Physical quantity is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.countInput}
-              placeholder="Enter physical quantity"
-              placeholderTextColor="#94A3B8"
-              onBlur={onBlur}
-              onChangeText={(text) => {
-                onActivityReset?.();
-                onChange(text);
-              }}
-              value={value}
-              keyboardType="numeric"
-            />
-          )}
-        />
-        {errors.countedQty && (
-          <Text style={styles.errorText}>{errors.countedQty.message}</Text>
-        )}
-      </View>
+        {/* Physical Quantity */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.fieldLabel}>Physical Quantity</Text>
+          <Controller
+            control={control}
+            name="countedQty"
+            rules={{ required: 'Physical quantity is required' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.countInput}
+                placeholder="Enter physical quantity"
+                placeholderTextColor="#94A3B8"
+                onBlur={onBlur}
+                onChangeText={(text) => {
+                  onActivityReset?.();
+                  onChange(text);
+                }}
+                value={value}
+                keyboardType="numeric"
+              />
+            )}
+          />
+          {errors.countedQty && <Text style={styles.errorText}>{errors.countedQty.message}</Text>}
+        </View>
 
-      {/* Change MRP Toggle */}
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>Change MRP</Text>
-        <Switch
-          value={showMrpChange}
-          onValueChange={(val) => toggleSwitch(setShowMrpChange, val)}
-          trackColor={{ false: '#334155', true: '#3B82F6' }}
-          thumbColor={showMrpChange ? '#fff' : '#94A3B8'}
-        />
-      </View>
+        {/* Change MRP Toggle */}
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Change MRP</Text>
+          <Switch
+            value={showMrpChange}
+            onValueChange={(val) => toggleSwitch(setShowMrpChange, val)}
+            trackColor={{ false: '#334155', true: '#3B82F6' }}
+            thumbColor={showMrpChange ? '#fff' : '#94A3B8'}
+          />
+        </View>
 
-      {showMrpChange && (
-        <View style={styles.mrpContainer}>
-          <View style={styles.mrpColumn}>
-            <Text style={styles.fieldLabel}>New MRP</Text>
-            <Controller
-              control={control}
-              name="mrp"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={[styles.countInput, styles.mrpInput]}
-                  placeholder="New MRP"
-                  placeholderTextColor="#94A3B8"
-                  onBlur={onBlur}
-                  onChangeText={(text) => {
-                    onActivityReset?.();
-                    onChange(text);
-                  }}
-                  value={value}
-                  keyboardType={Platform.OS === 'ios' ? 'decimal-pad' : 'numeric'}
-                  returnKeyType="done"
-                />
-              )}
-            />
-          </View>
-          <View style={styles.mrpColumn}>
-            <Text style={styles.fieldLabel}>Current MRP</Text>
-            <View style={[styles.countInput, styles.readOnlyInput]}>
-              <Text style={styles.readOnlyText}>
-                {systemMrp !== null ? formatMrpValue(systemMrp) : 'N/A'}
-              </Text>
+        {showMrpChange && (
+          <View style={styles.mrpContainer}>
+            <View style={styles.mrpColumn}>
+              <Text style={styles.fieldLabel}>New MRP</Text>
+              <Controller
+                control={control}
+                name="mrp"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={[styles.countInput, styles.mrpInput]}
+                    placeholder="New MRP"
+                    placeholderTextColor="#94A3B8"
+                    onBlur={onBlur}
+                    onChangeText={(text) => {
+                      onActivityReset?.();
+                      onChange(text);
+                    }}
+                    value={value}
+                    keyboardType={Platform.OS === 'ios' ? 'decimal-pad' : 'numeric'}
+                    returnKeyType="done"
+                  />
+                )}
+              />
+            </View>
+            <View style={styles.mrpColumn}>
+              <Text style={styles.fieldLabel}>Current MRP</Text>
+              <View style={[styles.countInput, styles.readOnlyInput]}>
+                <Text style={styles.readOnlyText}>
+                  {systemMrp !== null ? formatMrpValue(systemMrp) : 'N/A'}
+                </Text>
+              </View>
             </View>
           </View>
+        )}
+
+        {/* MRP Variant Selector */}
+        {showMrpChange && mrpVariants.length > 0 && onVariantSelect && (
+          <MRPVariantSelector
+            variants={mrpVariants}
+            currentMrp={parsedMrpValue}
+            parsedMrpValue={parsedMrpValue}
+            onVariantSelect={(variant) => {
+              setValue('mrp', formatMrpValue(variant.value));
+              onVariantSelect(variant);
+            }}
+            mrpDifference={mrpDifference}
+            mrpChangePercent={mrpChangePercent}
+            systemMrp={systemMrp}
+          />
+        )}
+
+        {/* Damage Quantity Toggle */}
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Damage Quantity</Text>
+          <Switch
+            value={showDamage}
+            onValueChange={(val) => toggleSwitch(setShowDamage, val)}
+            trackColor={{ false: '#334155', true: '#3B82F6' }}
+            thumbColor={showDamage ? '#fff' : '#94A3B8'}
+          />
         </View>
-      )}
 
-      {/* MRP Variant Selector */}
-      {showMrpChange && mrpVariants.length > 0 && onVariantSelect && (
-        <MRPVariantSelector
-          variants={mrpVariants}
-          currentMrp={parsedMrpValue}
-          parsedMrpValue={parsedMrpValue}
-          onVariantSelect={(variant) => {
-            setValue('mrp', formatMrpValue(variant.value));
-            onVariantSelect(variant);
-          }}
-          mrpDifference={mrpDifference}
-          mrpChangePercent={mrpChangePercent}
-          systemMrp={systemMrp}
-        />
-      )}
+        {showDamage && (
+          <View style={styles.damageContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Returnable Damage Qty</Text>
+              <Controller
+                control={control}
+                name="returnableDamageQty"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={[styles.countInput, { borderColor: value ? '#FF9800' : '#334155' }]}
+                    placeholder="0"
+                    placeholderTextColor="#94A3B8"
+                    onBlur={onBlur}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      handleDamageChange(text, 'returnableDamageQty');
+                    }}
+                    value={value}
+                    keyboardType="numeric"
+                  />
+                )}
+              />
+            </View>
 
-      {/* Damage Quantity Toggle */}
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>Damage Quantity</Text>
-        <Switch
-          value={showDamage}
-          onValueChange={(val) => toggleSwitch(setShowDamage, val)}
-          trackColor={{ false: '#334155', true: '#3B82F6' }}
-          thumbColor={showDamage ? '#fff' : '#94A3B8'}
-        />
-      </View>
-
-      {showDamage && (
-        <View style={styles.damageContainer}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.fieldLabel}>Returnable Damage Qty</Text>
-            <Controller
-              control={control}
-              name="returnableDamageQty"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={[styles.countInput, { borderColor: value ? '#FF9800' : '#334155' }]}
-                  placeholder="0"
-                  placeholderTextColor="#94A3B8"
-                  onBlur={onBlur}
-                  onChangeText={(text) => {
-                    onChange(text);
-                    handleDamageChange(text, 'returnableDamageQty');
-                  }}
-                  value={value}
-                  keyboardType="numeric"
-                />
-              )}
-            />
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Non-Returnable Damage Qty</Text>
+              <Controller
+                control={control}
+                name="nonReturnableDamageQty"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={[styles.countInput, { borderColor: value ? '#EF4444' : '#334155' }]}
+                    placeholder="0"
+                    placeholderTextColor="#94A3B8"
+                    onBlur={onBlur}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      handleDamageChange(text, 'nonReturnableDamageQty');
+                    }}
+                    value={value}
+                    keyboardType="numeric"
+                  />
+                )}
+              />
+            </View>
           </View>
+        )}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.fieldLabel}>Non-Returnable Damage Qty</Text>
-            <Controller
-              control={control}
-              name="nonReturnableDamageQty"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={[styles.countInput, { borderColor: value ? '#EF4444' : '#334155' }]}
-                  placeholder="0"
-                  placeholderTextColor="#94A3B8"
-                  onBlur={onBlur}
-                  onChangeText={(text) => {
-                    onChange(text);
-                    handleDamageChange(text, 'nonReturnableDamageQty');
-                  }}
-                  value={value}
-                  keyboardType="numeric"
-                />
-              )}
-            />
-          </View>
+        {/* Capture Serial Toggle */}
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Capture Serial</Text>
+          <Switch
+            value={showSerial}
+            onValueChange={handleSerialToggle}
+            trackColor={{ false: '#334155', true: '#3B82F6' }}
+            thumbColor={showSerial ? '#fff' : '#94A3B8'}
+          />
         </View>
-      )}
+        {/* Serial input logic is handled by SerialNumberEntry component in parent, but toggle is here */}
 
-      {/* Capture Serial Toggle */}
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>Capture Serial</Text>
-        <Switch
-          value={showSerial}
-          onValueChange={handleSerialToggle}
-          trackColor={{ false: '#334155', true: '#3B82F6' }}
-          thumbColor={showSerial ? '#fff' : '#94A3B8'}
-        />
-      </View>
-      {/* Serial input logic is handled by SerialNumberEntry component in parent, but toggle is here */}
-
-      {/* Mfg Date Toggle */}
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>Mfg Date</Text>
-        <Switch
-          value={showMfgDate}
-          onValueChange={(val) => toggleSwitch(setShowMfgDate, val)}
-          trackColor={{ false: '#334155', true: '#3B82F6' }}
-          thumbColor={showMfgDate ? '#fff' : '#94A3B8'}
-        />
-      </View>
-
-      {showMfgDate && (
-        <View style={styles.inputGroup}>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text style={[styles.dateButtonText, !manufacturingDate && styles.placeholderText]}>
-              {manufacturingDate || 'Select Manufacturing Date'}
-            </Text>
-            <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
-          </TouchableOpacity>
+        {/* Mfg Date Toggle */}
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Mfg Date</Text>
+          <Switch
+            value={showMfgDate}
+            onValueChange={(val) => toggleSwitch(setShowMfgDate, val)}
+            trackColor={{ false: '#334155', true: '#3B82F6' }}
+            thumbColor={showMfgDate ? '#fff' : '#94A3B8'}
+          />
         </View>
-      )}
 
-      {/* Date Picker Modal */}
-      {showDatePicker && (
-        <DateTimePicker
-          mode="date"
-          value={manufacturingDate ? new Date(manufacturingDate) : new Date()}
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) {
-              onManufacturingDateChange(selectedDate.toISOString().split('T')[0] ?? '');
-            }
-          }}
-        />
-      )}
-
-      {/* Additional Detail Toggle */}
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>Additional Detail</Text>
-        <Switch
-          value={showAdditionalDetail}
-          onValueChange={(val) => toggleSwitch(setShowAdditionalDetail, val)}
-          trackColor={{ false: '#334155', true: '#3B82F6' }}
-          thumbColor={showAdditionalDetail ? '#fff' : '#94A3B8'}
-        />
-      </View>
-
-      {showAdditionalDetail && (
-        <View style={styles.additionalDetailContainer}>
+        {showMfgDate && (
           <View style={styles.inputGroup}>
-            <Text style={styles.fieldLabel}>Mark Location</Text>
-            <TextInput
-              style={styles.countInput}
-              value={markLocation}
-              onChangeText={(text) => {
-                onActivityReset?.();
-                onMarkLocationChange(text);
-              }}
-              placeholder="Specific location marker"
-              placeholderTextColor="#94A3B8"
-            />
+            <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+              <Text style={[styles.dateButtonText, !manufacturingDate && styles.placeholderText]}>
+                {manufacturingDate || 'Select Manufacturing Date'}
+              </Text>
+              <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
+            </TouchableOpacity>
           </View>
+        )}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.fieldLabel}>Remark</Text>
-            <TextInput
-              style={[styles.countInput, styles.remarkInput]}
-              value={remark}
-              onChangeText={(text) => {
-                onActivityReset?.();
-                onRemarkChange(text);
-              }}
-              placeholder="Add a remark"
-              placeholderTextColor="#94A3B8"
-              multiline
-            />
-          </View>
+        {/* Date Picker Modal */}
+        {showDatePicker && (
+          <DateTimePicker
+            mode="date"
+            value={manufacturingDate ? new Date(manufacturingDate) : new Date()}
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) {
+                onManufacturingDateChange(selectedDate.toISOString().split('T')[0] ?? '');
+              }
+            }}
+          />
+        )}
+
+        {/* Additional Detail Toggle */}
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Additional Detail</Text>
+          <Switch
+            value={showAdditionalDetail}
+            onValueChange={(val) => toggleSwitch(setShowAdditionalDetail, val)}
+            trackColor={{ false: '#334155', true: '#3B82F6' }}
+            thumbColor={showAdditionalDetail ? '#fff' : '#94A3B8'}
+          />
         </View>
-      )}
-    </View>
-  );
-}, (prevProps, nextProps) => {
-  return (
-    prevProps.parsedMrpValue === nextProps.parsedMrpValue &&
-    prevProps.systemMrp === nextProps.systemMrp &&
-    prevProps.mrpDifference === nextProps.mrpDifference &&
-    prevProps.currentItemCondition === nextProps.currentItemCondition &&
-    prevProps.mrpVariants.length === nextProps.mrpVariants.length &&
-    prevProps.workflowState.serialCaptureEnabled === nextProps.workflowState.serialCaptureEnabled &&
-    JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
-    prevProps.markLocation === nextProps.markLocation &&
-    prevProps.manufacturingDate === nextProps.manufacturingDate &&
-    prevProps.remark === nextProps.remark
-  );
-});
+
+        {showAdditionalDetail && (
+          <View style={styles.additionalDetailContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Mark Location</Text>
+              <TextInput
+                style={styles.countInput}
+                value={markLocation}
+                onChangeText={(text) => {
+                  onActivityReset?.();
+                  onMarkLocationChange(text);
+                }}
+                placeholder="Specific location marker"
+                placeholderTextColor="#94A3B8"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Remark</Text>
+              <TextInput
+                style={[styles.countInput, styles.remarkInput]}
+                value={remark}
+                onChangeText={(text) => {
+                  onActivityReset?.();
+                  onRemarkChange(text);
+                }}
+                placeholder="Add a remark"
+                placeholderTextColor="#94A3B8"
+                multiline
+              />
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.parsedMrpValue === nextProps.parsedMrpValue &&
+      prevProps.systemMrp === nextProps.systemMrp &&
+      prevProps.mrpDifference === nextProps.mrpDifference &&
+      prevProps.currentItemCondition === nextProps.currentItemCondition &&
+      prevProps.mrpVariants.length === nextProps.mrpVariants.length &&
+      prevProps.workflowState.serialCaptureEnabled ===
+        nextProps.workflowState.serialCaptureEnabled &&
+      JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
+      prevProps.markLocation === nextProps.markLocation &&
+      prevProps.manufacturingDate === nextProps.manufacturingDate &&
+      prevProps.remark === nextProps.remark
+    );
+  }
+);
 
 QuantityInputForm.displayName = 'QuantityInputForm';
 

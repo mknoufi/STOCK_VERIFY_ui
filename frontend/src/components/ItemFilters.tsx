@@ -80,14 +80,10 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
             color={theme.colors.primary}
             style={styles.filterIcon}
           />
-          <Text style={[styles.headerText, { color: theme.colors.text }]}>
-            Filters
-          </Text>
+          <Text style={[styles.headerText, { color: theme.colors.text }]}>Filters</Text>
           {hasActiveFilters && (
             <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-              <Text style={styles.badgeText}>
-                {Object.keys(filters).length}
-              </Text>
+              <Text style={styles.badgeText}>{Object.keys(filters).length}</Text>
             </View>
           )}
         </View>
@@ -102,9 +98,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
         <ScrollView style={styles.filtersContainer} showsVerticalScrollIndicator={false}>
           {showSearch && (
             <View style={styles.filterGroup}>
-              <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
-                Search
-              </Text>
+              <Text style={[styles.filterLabel, { color: theme.colors.text }]}>Search</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -123,9 +117,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
           )}
 
           <View style={styles.filterGroup}>
-            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
-              Category
-            </Text>
+            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>Category</Text>
             <TextInput
               style={[
                 styles.input,
@@ -143,9 +135,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
           </View>
 
           <View style={styles.filterGroup}>
-            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
-              Subcategory
-            </Text>
+            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>Subcategory</Text>
             <TextInput
               style={[
                 styles.input,
@@ -164,9 +154,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
 
           <View style={styles.filterRow}>
             <View style={[styles.filterGroup, styles.filterGroupHalf]}>
-              <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
-                Floor
-              </Text>
+              <Text style={[styles.filterLabel, { color: theme.colors.text }]}>Floor</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -184,9 +172,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
             </View>
 
             <View style={[styles.filterGroup, styles.filterGroupHalf]}>
-              <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
-                Rack
-              </Text>
+              <Text style={[styles.filterLabel, { color: theme.colors.text }]}>Rack</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -205,9 +191,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
           </View>
 
           <View style={styles.filterGroup}>
-            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
-              Warehouse
-            </Text>
+            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>Warehouse</Text>
             <TextInput
               style={[
                 styles.input,
@@ -225,9 +209,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
           </View>
 
           <View style={styles.filterGroup}>
-            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
-              UOM Code
-            </Text>
+            <Text style={[styles.filterLabel, { color: theme.colors.text }]}>UOM Code</Text>
             <TextInput
               style={[
                 styles.input,
@@ -258,9 +240,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                   ]}
                   onPress={() => updateFilter('verified', undefined)}
                 >
-                  <Text style={[styles.radioText, { color: theme.colors.text }]}>
-                    All
-                  </Text>
+                  <Text style={[styles.radioText, { color: theme.colors.text }]}>All</Text>
                   {filters.verified === undefined && (
                     <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
                   )}
@@ -273,9 +253,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                   ]}
                   onPress={() => updateFilter('verified', true)}
                 >
-                  <Text style={[styles.radioText, { color: theme.colors.text }]}>
-                    Verified
-                  </Text>
+                  <Text style={[styles.radioText, { color: theme.colors.text }]}>Verified</Text>
                   {filters.verified === true && (
                     <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
                   )}
@@ -288,9 +266,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                   ]}
                   onPress={() => updateFilter('verified', false)}
                 >
-                  <Text style={[styles.radioText, { color: theme.colors.text }]}>
-                    Unverified
-                  </Text>
+                  <Text style={[styles.radioText, { color: theme.colors.text }]}>Unverified</Text>
                   {filters.verified === false && (
                     <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
                   )}

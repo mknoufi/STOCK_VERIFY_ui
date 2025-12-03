@@ -122,15 +122,16 @@ class BatchOperationsService:
 
         # Default update operation
         if update_operation is None:
+
             async def default_update(batch):
                 operations = [
-                    UpdateOne(item.get("filter", {}), item.get("update", {}))
-                    for item in batch
+                    UpdateOne(item.get("filter", {}), item.get("update", {})) for item in batch
                 ]
                 if not operations:
                     return 0
                 result = await self.db[collection].bulk_write(operations, ordered=False)
                 return result.modified_count
+
             update_operation = default_update
 
         batches = [updates[i : i + self.batch_size] for i in range(0, total, self.batch_size)]
@@ -141,7 +142,7 @@ class BatchOperationsService:
                 try:
                     # Execute batch updates
                     batch_updated = await update_operation(batch)
-                    
+
                     nonlocal total_updated
                     total_updated += batch_updated
                     logger.debug(f"Updated batch {batch_num}: {batch_updated} documents")

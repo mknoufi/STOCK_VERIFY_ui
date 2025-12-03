@@ -101,7 +101,7 @@ async def health_check_v2() -> ApiResponse[HealthCheckResponse]:
 
 @router.get("/detailed", response_model=ApiResponse[Dict[str, Any]])
 async def detailed_health_check(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> ApiResponse[Dict[str, Any]]:
     """
     Detailed health check (requires authentication)

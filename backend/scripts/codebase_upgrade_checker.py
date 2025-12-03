@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CodeIssue:
     """Represents a code quality issue"""
+
     file_path: str
     line_number: int
     issue_type: str
@@ -38,7 +39,8 @@ class CodebaseUpgradeChecker:
 
         python_files = list(self.project_root.glob("**/*.py"))
         python_files = [
-            f for f in python_files
+            f
+            for f in python_files
             if not any(skip in str(f) for skip in ["__pycache__", ".pyc", "venv", "env", "tests"])
         ]
 
@@ -69,14 +71,16 @@ class CodebaseUpgradeChecker:
         try:
             tree = ast.parse(content)
         except SyntaxError as e:
-            self.issues.append(CodeIssue(
-                file_path=str(file_path),
-                line_number=e.lineno or 0,
-                issue_type="syntax_error",
-                severity="critical",
-                message=f"Syntax error: {e.msg}",
-                suggestion=f"Fix syntax error at line {e.lineno}"
-            ))
+            self.issues.append(
+                CodeIssue(
+                    file_path=str(file_path),
+                    line_number=e.lineno or 0,
+                    issue_type="syntax_error",
+                    severity="critical",
+                    message=f"Syntax error: {e.msg}",
+                    suggestion=f"Fix syntax error at line {e.lineno}",
+                )
+            )
             return
 
         # Analyze AST
@@ -103,24 +107,28 @@ class CodebaseUpgradeChecker:
         """Check exception handling patterns"""
         for handler in node.handlers:
             if handler.type is None:
-                self.issues.append(CodeIssue(
-                    file_path=str(file_path),
-                    line_number=handler.lineno,
-                    issue_type="bare_except",
-                    severity="warning",
-                    message="Bare except clause found",
-                    suggestion="Use specific exception types or 'except Exception as e:'"
-                ))
+                self.issues.append(
+                    CodeIssue(
+                        file_path=str(file_path),
+                        line_number=handler.lineno,
+                        issue_type="bare_except",
+                        severity="warning",
+                        message="Bare except clause found",
+                        suggestion="Use specific exception types or 'except Exception as e:'",
+                    )
+                )
             elif isinstance(handler.type, ast.Name) and handler.type.id == "Exception":
                 # Check if it's a generic Exception handler
-                self.issues.append(CodeIssue(
-                    file_path=str(file_path),
-                    line_number=handler.lineno,
-                    issue_type="generic_exception",
-                    severity="info",
-                    message="Generic Exception handler found",
-                    suggestion="Consider using specific exception types from backend.exceptions"
-                ))
+                self.issues.append(
+                    CodeIssue(
+                        file_path=str(file_path),
+                        line_number=handler.lineno,
+                        issue_type="generic_exception",
+                        severity="info",
+                        message="Generic Exception handler found",
+                        suggestion="Consider using specific exception types from backend.exceptions",
+                    )
+                )
 
     def _check_type_hints(self, node: ast.FunctionDef, file_path: Path, lines: List[str]):
         """Check for missing type hints"""
@@ -133,38 +141,44 @@ class CodebaseUpgradeChecker:
             # Check if function has return statements
             has_return = any(isinstance(n, ast.Return) for n in ast.walk(node))
             if has_return:
-                self.issues.append(CodeIssue(
-                    file_path=str(file_path),
-                    line_number=node.lineno,
-                    issue_type="missing_return_type",
-                    severity="info",
-                    message=f"Function '{node.name}' missing return type hint",
-                    suggestion="Add return type annotation"
-                ))
+                self.issues.append(
+                    CodeIssue(
+                        file_path=str(file_path),
+                        line_number=node.lineno,
+                        issue_type="missing_return_type",
+                        severity="info",
+                        message=f"Function '{node.name}' missing return type hint",
+                        suggestion="Add return type annotation",
+                    )
+                )
 
         # Check arguments
         for arg in node.args.args:
             if arg.annotation is None and arg.arg != "self" and arg.arg != "cls":
-                self.issues.append(CodeIssue(
-                    file_path=str(file_path),
-                    line_number=node.lineno,
-                    issue_type="missing_arg_type",
-                    severity="info",
-                    message=f"Argument '{arg.arg}' missing type hint",
-                    suggestion="Add type annotation for argument"
-                ))
+                self.issues.append(
+                    CodeIssue(
+                        file_path=str(file_path),
+                        line_number=node.lineno,
+                        issue_type="missing_arg_type",
+                        severity="info",
+                        message=f"Argument '{arg.arg}' missing type hint",
+                        suggestion="Add type annotation for argument",
+                    )
+                )
 
     def _check_bare_except(self, node: ast.ExceptHandler, file_path: Path, lines: List[str]):
         """Check for bare except clauses"""
         if node.type is None:
-            self.issues.append(CodeIssue(
-                file_path=str(file_path),
-                line_number=node.lineno,
-                issue_type="bare_except",
-                severity="warning",
-                message="Bare except clause",
-                suggestion="Use 'except Exception as e:' or specific exception type"
-            ))
+            self.issues.append(
+                CodeIssue(
+                    file_path=str(file_path),
+                    line_number=node.lineno,
+                    issue_type="bare_except",
+                    severity="warning",
+                    message="Bare except clause",
+                    suggestion="Use 'except Exception as e:' or specific exception type",
+                )
+            )
 
     def _group_issues_by_type(self) -> Dict[str, int]:
         """Group issues by type"""
@@ -200,4 +214,3 @@ if __name__ == "__main__":
     results = checker.scan_codebase()
 
     print(json.dumps(results, indent=2))
-

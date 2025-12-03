@@ -7,9 +7,10 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from backend.api.schemas import Session, SessionCreate
 from backend.auth.dependencies import get_current_user
-
-print(f"DEBUG: session_api imported get_current_user: {get_current_user}")
 from backend.services.activity_log import ActivityLogService
+
+# Debug: uncomment to verify import
+# print(f"DEBUG: session_api imported get_current_user: {get_current_user}")
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

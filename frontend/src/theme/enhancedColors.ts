@@ -121,59 +121,74 @@ export const meetsWCAGAAA = (foreground: string, background: string, isLargeText
  * Generate semantic colors from base theme
  */
 export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors => {
+  // Helper to safely get color with fallback
+  const getColor = (key: string, fallback: string): string => baseColors[key] ?? fallback;
+  
+  const primary = getColor('primary', '#007bff');
+  const secondary = getColor('secondary', '#6c757d');
+  const success = getColor('success', '#28a745');
+  const error = getColor('error', '#dc3545');
+  const warning = getColor('warning', '#ffc107');
+  const info = getColor('info', '#17a2b8');
+  const background = getColor('background', '#ffffff');
+  const surface = getColor('surface', '#f8f9fa');
+  const text = getColor('text', '#212529');
+  const textSecondary = getColor('textSecondary', '#6c757d');
+  const border = getColor('border', '#dee2e6');
+
   return {
     // Primary
-    primary: baseColors.primary,
-    primaryHover: adjustBrightness(baseColors.primary, -10),
-    primaryActive: adjustBrightness(baseColors.primary, -20),
-    primaryDisabled: adjustOpacity(baseColors.primary, 0.5),
+    primary: primary,
+    primaryHover: adjustBrightness(primary, -10),
+    primaryActive: adjustBrightness(primary, -20),
+    primaryDisabled: adjustOpacity(primary, 0.5),
 
     // Secondary
-    secondary: baseColors.secondary,
-    secondaryHover: adjustBrightness(baseColors.secondary, -10),
-    secondaryActive: adjustBrightness(baseColors.secondary, -20),
+    secondary: secondary,
+    secondaryHover: adjustBrightness(secondary, -10),
+    secondaryActive: adjustBrightness(secondary, -20),
 
     // Success
-    success: baseColors.success,
-    successLight: adjustBrightness(baseColors.success, 20),
-    successDark: adjustBrightness(baseColors.success, -20),
+    success: success,
+    successLight: adjustBrightness(success, 20),
+    successDark: adjustBrightness(success, -20),
 
     // Error
-    error: baseColors.error,
-    errorLight: adjustBrightness(baseColors.error, 20),
-    errorDark: adjustBrightness(baseColors.error, -20),
+    error: error,
+    errorLight: adjustBrightness(error, 20),
+    errorDark: adjustBrightness(error, -20),
 
     // Warning
-    warning: baseColors.warning,
-    warningLight: adjustBrightness(baseColors.warning, 20),
-    warningDark: adjustBrightness(baseColors.warning, -20),
+    warning: warning,
+    warningLight: adjustBrightness(warning, 20),
+    warningDark: adjustBrightness(warning, -20),
 
     // Info
-    info: baseColors.info,
-    infoLight: adjustBrightness(baseColors.info, 20),
-    infoDark: adjustBrightness(baseColors.info, -20),
+    info: info,
+    infoLight: adjustBrightness(info, 20),
+    infoDark: adjustBrightness(info, -20),
 
     // Background & Surface
-    background: baseColors.background,
-    surface: baseColors.surface,
-    surfaceVariant: baseColors.surfaceDark || baseColors.surface,
+    background: background,
+    surface: surface,
+    surfaceVariant: getColor('surfaceDark', surface),
 
     // Text
-    text: baseColors.text,
-    textSecondary: baseColors.textSecondary,
-    textTertiary: baseColors.textTertiary || baseColors.textSecondary,
-    textDisabled: adjustOpacity(baseColors.text, 0.38),
-    textInverse: baseColors.background,
+    text: text,
+    textSecondary: textSecondary,
+    textTertiary: getColor('textTertiary', textSecondary),
+    textDisabled: adjustOpacity(text, 0.38),
+    textInverse: background,
 
     // Border
-    border: baseColors.border,
-    borderLight: adjustOpacity(baseColors.border, 0.5),
-    borderDark: adjustBrightness(baseColors.border, -20),
+    border: border,
+    borderLight: adjustOpacity(border, 0.5),
+    borderDark: adjustBrightness(border, -20),
 
     // Overlay
-    overlay: baseColors.overlayPrimary || adjustOpacity(baseColors.primary, 0.1),
-    overlayLight: adjustOpacity(baseColors.primary, 0.05),
-    overlayDark: adjustOpacity(baseColors.primary, 0.2),
+    overlay: getColor('overlayPrimary', adjustOpacity(primary, 0.1)),
+    overlayLight: adjustOpacity(primary, 0.05),
+    overlayDark: adjustOpacity(primary, 0.2),
   };
 };
 
@@ -204,5 +219,5 @@ const adjustOpacity = (color: string, opacity: number): string => {
 // EXPORT ENHANCED COLORS
 // ==========================================
 
-export const lightSemanticColors = generateSemanticColors(lightTheme.colors);
-export const darkSemanticColors = generateSemanticColors(darkTheme.colors);
+export const lightSemanticColors = generateSemanticColors(lightTheme);
+export const darkSemanticColors = generateSemanticColors(darkTheme);

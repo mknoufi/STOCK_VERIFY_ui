@@ -274,7 +274,7 @@ class SyncConflictsService:
                 if local_ts > server_ts
                 else ConflictResolution.ACCEPT_SERVER
             )
-        
+
         return ConflictResolution.ACCEPT_SERVER
 
     async def get_conflict_stats(self) -> Dict[str, Any]:

@@ -107,6 +107,7 @@ class JWTValidator:
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             from backend.error_messages import get_error_message
+
             error = get_error_message("AUTH_TOKEN_INVALID")
             raise HTTPException(
                 status_code=401,
@@ -127,6 +128,7 @@ class JWTValidator:
             username = payload.get("sub")
             if username is None:
                 from backend.error_messages import get_error_message
+
                 error = get_error_message("AUTH_TOKEN_INVALID")
                 raise HTTPException(
                     status_code=error["status_code"],
@@ -135,6 +137,7 @@ class JWTValidator:
             return payload
         except jwt.ExpiredSignatureError:
             from backend.error_messages import get_error_message
+
             error = get_error_message("AUTH_TOKEN_EXPIRED")
             raise HTTPException(
                 status_code=error["status_code"],
@@ -142,6 +145,7 @@ class JWTValidator:
             )
         except jwt.InvalidTokenError:
             from backend.error_messages import get_error_message
+
             error = get_error_message("AUTH_TOKEN_INVALID")
             raise HTTPException(
                 status_code=error["status_code"],
@@ -177,6 +181,7 @@ async def get_current_user(
 
         if user is None:
             from backend.error_messages import get_error_message
+
             error = get_error_message("AUTH_USER_NOT_FOUND", {"username": username})
             raise HTTPException(
                 status_code=error["status_code"],
@@ -192,6 +197,7 @@ async def get_current_user(
         # Catch any unexpected errors and convert to auth error
         logger.error(f"Unexpected error in get_current_user: {e}")
         from backend.error_messages import get_error_message
+
         error = get_error_message("AUTH_TOKEN_INVALID")
         raise HTTPException(
             status_code=error["status_code"],

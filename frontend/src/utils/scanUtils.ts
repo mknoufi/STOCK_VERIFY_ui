@@ -113,7 +113,7 @@ export const getDefaultMrpForItem = (item: Item | null | undefined): string => {
 
   if (Array.isArray(item?.mrp_history) && item.mrp_history.length > 0) {
     const latestEntry = item.mrp_history[item.mrp_history.length - 1];
-    const latestValue = toNumericMrp(latestEntry?.value);
+    const latestValue = toNumericMrp(latestEntry);
     if (latestValue !== null) {
       return formatMrpValue(latestValue);
     }

@@ -101,14 +101,14 @@ jobs:
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             install_deps
             EXIT_CODE=$?
-            
+
             if [ $EXIT_CODE -eq 0 ]; then
               echo "npm install succeeded on attempt $((RETRY_COUNT + 1))"
               exit 0
             fi
-            
+
             RETRY_COUNT=$((RETRY_COUNT + 1))
-            
+
             if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
               echo "Install failed. Retrying in ${BACKOFF} seconds..."
               sleep $BACKOFF

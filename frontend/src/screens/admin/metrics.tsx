@@ -162,7 +162,7 @@ export default function MetricsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.controlPanelButton}
-            onPress={() => router.push('/admin/control-panel')}
+            onPress={() => router.push('/admin/control-panel' as any)}
             activeOpacity={0.7}
           >
             <Ionicons name="settings" size={24} color="#007AFF" />

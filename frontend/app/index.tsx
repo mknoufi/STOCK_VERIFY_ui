@@ -23,15 +23,15 @@ export default function IndexScreen() {
           return;
         }
         if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin')) {
-          router.replace('/admin/metrics');
+          router.replace('/admin/metrics' as any);
         } else if (user.role === 'supervisor' || user.role === 'admin') {
-          router.replace('/supervisor/dashboard');
+          router.replace('/supervisor/dashboard' as any);
         } else {
-          router.replace('/staff/home');
+          router.replace('/staff/home' as any);
         }
       }, Platform.OS === 'web' ? 200 : 100);
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, router]);
 
   return (

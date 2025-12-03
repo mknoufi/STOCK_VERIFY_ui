@@ -39,11 +39,11 @@ export default function WelcomeScreen() {
     if (!isLoading && user) {
       __DEV__ && console.log('🔄 [WELCOME] User already logged in, redirecting:', { role: user.role });
       if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin')) {
-        router.replace('/admin/metrics');
+        router.replace('/admin/metrics' as any);
       } else if (user.role === 'supervisor' || user.role === 'admin') {
-        router.replace('/supervisor/dashboard');
+        router.replace('/supervisor/dashboard' as any);
       } else {
-        router.replace('/staff/home');
+        router.replace('/staff/home' as any);
       }
     }
   }, [user, isLoading, router]);

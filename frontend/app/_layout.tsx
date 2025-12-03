@@ -258,17 +258,17 @@ export default function RootLayout() {
         if (__DEV__) {
           console.log('🔄 [NAV] Redirecting admin/supervisor to control panel');
         }
-        router.replace('/admin/control-panel');
+        router.replace('/admin/control-panel' as any);
       } else if ((user.role === 'supervisor' || user.role === 'admin') && !inSupervisorGroup && !inAdminGroup) {
         if (__DEV__) {
           console.log('🔄 [NAV] Redirecting supervisor/admin to dashboard');
         }
-        router.replace('/supervisor/dashboard');
+        router.replace('/supervisor/dashboard' as any);
       } else if (user.role === 'staff' && !inStaffGroup) {
         if (__DEV__) {
           console.log('🔄 [NAV] Redirecting staff to home');
         }
-        router.replace('/staff/home');
+        router.replace('/staff/home' as any);
       } else {
         if (__DEV__) {
           console.log('✅ [NAV] User is in correct area, no redirect needed');

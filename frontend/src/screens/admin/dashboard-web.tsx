@@ -195,7 +195,7 @@ export default function AdminDashboardWeb() {
 
   useEffect(() => {
     if (!hasRole('admin')) {
-      router.replace('/admin/control-panel');
+      router.replace('/admin/control-panel' as any);
       return;
     }
     loadDashboardData();

@@ -22,7 +22,7 @@ export default function Index() {
   // On web, if admin/supervisor is logged in, go to admin control panel
   if (Platform.OS === 'web' && user && (user.role === 'admin' || user.role === 'supervisor')) {
     __DEV__ && console.log('🔄 [INDEX] Redirecting to /admin/control-panel');
-    return <Redirect href="/admin/control-panel" />;
+    return <Redirect href={"/admin/control-panel" as any} />;
   }
 
   // For mobile, if user is logged in, let _layout handle the redirect

@@ -27,6 +27,9 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -83,4 +86,3 @@ jobs:
             k8s/configmap.yaml
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          kubectl-version: latest

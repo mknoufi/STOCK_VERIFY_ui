@@ -32,17 +32,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y unixodbc-dev freetds-dev
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install black ruff mypy pytest pytest-cov
-
       - name: Validate requirements
         run: |
           python -c "import fastapi, motor, pydantic; print('Core dependencies OK')"
-
       - name: Run Black (format check)
         run: black --check --line-length=100 .
 
@@ -86,9 +83,52 @@ jobs:
           cache: "npm"
           cache-dependency-path: ./frontend/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies with retry
+        id: npm-install
+        run: |
+          # Disable automatic exit on error to handle retries manually
+          set +e
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          BACKOFF=10
 
+          install_deps() {
+            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES: Running npm ci --legacy-peer-deps"
+            npm ci --legacy-peer-deps
+            return $?
+          }
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            install_deps
+            EXIT_CODE=$?
+            
+            if [ $EXIT_CODE -eq 0 ]; then
+              echo "npm install succeeded on attempt $((RETRY_COUNT + 1))"
+              exit 0
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Install failed. Retrying in ${BACKOFF} seconds..."
+              sleep $BACKOFF
+              BACKOFF=$((BACKOFF * 2))
+              # Clear npm cache before retry to ensure clean state
+              npm cache clean --force 2>/dev/null || true
+            fi
+          done
+
+          echo "All retry attempts with --legacy-peer-deps failed. Attempting with --force as fallback..."
+          npm ci --force
+          EXIT_CODE=$?
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "npm install succeeded with --force flag"
+            exit 0
+          fi
+
+          echo "All installation attempts failed"
+          exit 1
       - name: Run ESLint
         run: npm run lint
 

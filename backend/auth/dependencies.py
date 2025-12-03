@@ -24,7 +24,7 @@ class AuthDependencies:
         self._secret_key: Optional[str] = None
         self._algorithm: Optional[str] = None
         # auto_error=True to force 403 if missing (for debugging)
-        self._security = HTTPBearer(auto_error=True)
+        self._security = HTTPBearer(auto_error=False)
         self._initialized = False
 
     def initialize(self, db: AsyncIOMotorDatabase, secret_key: str, algorithm: str):

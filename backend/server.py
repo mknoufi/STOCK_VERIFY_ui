@@ -1,29 +1,25 @@
 # ruff: noqa: E402
 
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import logging
+import os
+import re
+import sys
+import time
+import uuid
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, Generic, List, Optional, TypeVar
+
+import jwt
+from bson import ObjectId
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from motor.motor_asyncio import AsyncIOMotorClient
+from passlib.context import CryptContext
+from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import sys
-
-
-import logging
-from pathlib import Path
-
-
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any, TypeVar, Generic
-import uuid
-from datetime import datetime, timedelta
-import time
-import jwt
-from passlib.context import CryptContext
-from contextlib import asynccontextmanager
-
-from bson import ObjectId
-import re
 
 # Add project root to path for direct execution (debugging)
 # This allows the file to be run directly for testing/debugging
@@ -31,72 +27,74 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from backend.utils.result import Result, Ok, Fail  # noqa: E402
-from backend.services.errors import (  # noqa: E402
-    DatabaseError,
-    ValidationError,
-    AuthenticationError,
-    AuthorizationError,
-    NotFoundError,
-    RateLimitExceededError,
-)
-from backend.utils.logging_config import setup_logging  # noqa: E402
-from backend.config import settings  # noqa: E402
 from backend.api.admin_control_api import admin_control_router  # noqa: E402
-
-# Production services
-from backend.services.connection_pool import SQLServerConnectionPool  # noqa: E402
-from backend.services.cache_service import CacheService  # noqa: E402
-from backend.services.rate_limiter import RateLimiter, ConcurrentRequestHandler  # noqa: E402
-from backend.services.monitoring_service import MonitoringService  # noqa: E402
-from backend.services.database_health import DatabaseHealthService  # noqa: E402
-from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
-from backend.db.migrations import MigrationManager  # noqa: E402
-from backend.sql_server_connector import SQLServerConnector  # noqa: E402
-from backend.error_messages import get_error_message  # noqa: E402
-from backend.services.refresh_token import RefreshTokenService  # noqa: E402
-from backend.services.batch_operations import BatchOperationsService  # noqa: E402
-from backend.services.activity_log import ActivityLogService  # noqa: E402
-from backend.services.error_log import ErrorLogService  # noqa: E402
-from backend.db.runtime import set_db, set_client  # noqa: E402
-from backend.services.runtime import set_cache_service, set_refresh_token_service  # noqa: E402
-from backend.api_mapping import router as mapping_router  # noqa: E402
-from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
-from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
+from backend.api.auth import router as auth_router  # noqa: E402
+from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
+from backend.api.enhanced_item_api import enhanced_item_router as items_router  # noqa: E402
+from backend.api.enhanced_item_api import init_enhanced_api
+from backend.api.erp_api import init_erp_api
+from backend.api.erp_api import router as erp_router  # noqa: E402
+from backend.api.exports_api import exports_router  # noqa: E402
 from backend.api.health import health_router  # noqa: E402
 from backend.api.item_verification_api import (  # noqa: E402
     init_verification_api,
     verification_router,
-)  # noqa: E402
+)
+from backend.api.metrics_api import metrics_router, set_monitoring_service  # noqa: E402
 
 # New feature API routers
 from backend.api.permissions_api import permissions_router  # noqa: E402
-from backend.api.exports_api import exports_router  # noqa: E402
-from backend.api.metrics_api import metrics_router, set_monitoring_service  # noqa: E402
-from backend.api.sync_status_api import sync_router, set_auto_sync_manager  # noqa: E402
-from backend.api.sync_management_api import (  # noqa: E402
-    sync_management_router,
-    set_change_detection_service,
-)
 from backend.api.security_api import security_router  # noqa: E402
-from backend.api.variance_api import router as variance_router  # noqa: E402
-from backend.api.erp_api import router as erp_router, init_erp_api  # noqa: E402
-from backend.api.auth import router as auth_router  # noqa: E402
-from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
-from backend.api.enhanced_item_api import enhanced_item_router as items_router, init_enhanced_api  # noqa: E402
+from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
 
 # New feature services
 from backend.api.sync_conflicts_api import sync_conflicts_router  # noqa: E402
+from backend.api.sync_management_api import (  # noqa: E402
+    set_change_detection_service,
+    sync_management_router,
+)
+from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
+from backend.api.variance_api import router as variance_router  # noqa: E402
+from backend.api_mapping import router as mapping_router  # noqa: E402
+from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
+from backend.config import settings  # noqa: E402
+from backend.db.migrations import MigrationManager  # noqa: E402
+from backend.db.runtime import set_client, set_db  # noqa: E402
+from backend.error_messages import get_error_message  # noqa: E402
+from backend.services.activity_log import ActivityLogService  # noqa: E402
+from backend.services.batch_operations import BatchOperationsService  # noqa: E402
+from backend.services.cache_service import CacheService  # noqa: E402
+
+# Production services
+from backend.services.connection_pool import SQLServerConnectionPool  # noqa: E402
+from backend.services.database_health import DatabaseHealthService  # noqa: E402
+from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
+from backend.services.error_log import ErrorLogService  # noqa: E402
+from backend.services.errors import (  # noqa: E402
+    AuthenticationError,
+    AuthorizationError,
+    DatabaseError,
+    NotFoundError,
+    RateLimitExceededError,
+    ValidationError,
+)
+from backend.services.monitoring_service import MonitoringService  # noqa: E402
+from backend.services.rate_limiter import ConcurrentRequestHandler, RateLimiter  # noqa: E402
+from backend.services.refresh_token import RefreshTokenService  # noqa: E402
+from backend.services.runtime import set_cache_service, set_refresh_token_service  # noqa: E402
 from backend.services.scheduled_export_service import ScheduledExportService  # noqa: E402
 from backend.services.sync_conflicts_service import SyncConflictsService  # noqa: E402
+from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
 from backend.utils.api_utils import result_to_response  # noqa: E402
+from backend.utils.logging_config import setup_logging  # noqa: E402
+from backend.utils.result import Fail, Ok, Result  # noqa: E402
 
 # Import optional services
 try:
+    from backend.api.enrichment_api import enrichment_router, init_enrichment_api
     from backend.services.enrichment_service import EnrichmentService
-    from backend.api.enrichment_api import init_enrichment_api, enrichment_router
 except ImportError:
     EnrichmentService = None  # type: ignore
     init_enrichment_api = None  # type: ignore
@@ -2336,10 +2334,11 @@ app.include_router(
 
 # Run the server if executed directly
 if __name__ == "__main__":
-    import uvicorn
     import json
     from datetime import datetime
     from pathlib import Path
+
+    import uvicorn
 
     # Get port from environment or settings
     port = int(getattr(settings, "PORT", os.getenv("PORT", 8001)))

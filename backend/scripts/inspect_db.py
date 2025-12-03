@@ -87,13 +87,12 @@ async def inspect_database():
     if count_lines:
         for line in count_lines:
             variance_sign = "📈" if line["variance"] > 0 else "📉" if line["variance"] < 0 else "✅"
-            status_icon = (
-                "✅"
-                if line["status"] == "approved"
-                else "❌"
-                if line["status"] == "rejected"
-                else "⏳"
-            )
+            if line["status"] == "approved":
+                status_icon = "✅"
+            elif line["status"] == "rejected":
+                status_icon = "❌"
+            else:
+                status_icon = "⏳"
             print(f"  {status_icon} {line['item_name']}")
             print(f"     Item Code: {line['item_code']}")
             print(

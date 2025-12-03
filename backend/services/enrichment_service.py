@@ -487,6 +487,12 @@ class EnrichmentService:
         result = []
         for item in items:
             completeness = await self.calculate_completeness(item["item_code"], item)
+            priority = "low"
+            if completeness["percentage"] < 25:
+                priority = "high"
+            elif completeness["percentage"] < 75:
+                priority = "medium"
+
             result.append(
                 {
                     "item_code": item["item_code"],
@@ -494,13 +500,7 @@ class EnrichmentService:
                     "category": item.get("category", ""),
                     "missing_fields": completeness["missing_fields"],
                     "completion_percentage": completeness["percentage"],
-                    "priority": (
-                        "high"
-                        if completeness["percentage"] < 25
-                        else "medium"
-                        if completeness["percentage"] < 75
-                        else "low"
-                    ),
+                    "priority": priority,
                 }
             )
 

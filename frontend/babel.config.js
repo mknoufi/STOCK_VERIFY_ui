@@ -20,7 +20,9 @@ module.exports = function (api) {
         {
           root: ['./'],
           alias: {
-            '@': './',
+            // Map '@/...' to the frontend src directory so imports like
+            // '@/theme/Provider' resolve to 'frontend/src/theme/Provider.tsx'
+            '@': './src',
           },
           extensions: [
             '.ios.ts',

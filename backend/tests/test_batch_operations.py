@@ -149,16 +149,22 @@ class TestBatchUpdate:
             {"filter": {"_id": 2}, "update": {"$set": {"status": "inactive"}}},
         ]
 
-        # Mock update_many result
+        # Mock bulk_write result
+
         update_result = Mock()
-        update_result.modified_count = 1
-        mock_db.test_collection.update_many.return_value = update_result
+
+        update_result.modified_count = 2
+
+        mock_db.test_collection.bulk_write.return_value = update_result
 
         result = await batch_service.batch_update("test_collection", updates)
 
         assert result["updated_count"] == 2
+
         assert result["total"] == 2
+
         assert result["errors"] == []
+
         assert result["success"] is True
 
     @pytest.mark.asyncio
@@ -169,8 +175,8 @@ class TestBatchUpdate:
         async def custom_update(update_data):
             # Custom update logic
             result = Mock()
-            result.modified_count = 1
-            return 1
+            result.modified_count = len(update_data)
+            return len(update_data)
 
         result = await batch_service.batch_update(
             "test_collection", updates, update_operation=custom_update
@@ -188,7 +194,7 @@ class TestBatchUpdate:
         ]
 
         # Mock update to raise error
-        mock_db.test_collection.update_many.side_effect = Exception("Update error")
+        mock_db.test_collection.bulk_write.side_effect = Exception("Update error")
 
         result = await batch_service.batch_update("test_collection", updates)
 

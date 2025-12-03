@@ -8,25 +8,25 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
-import { useAuthStore } from '../store/authStore';
-import { initializeNetworkListener } from '../services/networkService';
-import { initializeSyncService } from '../services/syncService';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ThemeService } from '../services/themeService';
-import { useSettingsStore } from '../store/settingsStore';
-import { useTheme } from '../hooks/useTheme';
-import { useSystemTheme } from '../hooks/useSystemTheme';
-import { ToastProvider } from '../components/ToastProvider';
-import { initializeBackendURL } from '../utils/backendUrl';
+import { useAuthStore } from '../src/store/authStore';
+import { initializeNetworkListener } from '../src/services/networkService';
+import { initializeSyncService } from '../src/services/syncService';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { ThemeService } from '../src/services/themeService';
+import { useSettingsStore } from '../src/store/settingsStore';
+import { useTheme } from '../src/hooks/useTheme';
+import { useSystemTheme } from '../src/hooks/useSystemTheme';
+import { ToastProvider } from '../src/components/ToastProvider';
+import { initializeBackendURL } from '../src/utils/backendUrl';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '../services/queryClient';
+import { queryClient } from '../src/services/queryClient';
 
 // import DebugPanel from '../components/DebugPanel';
-import { UnistylesThemeProvider } from '../theme/Provider';
-import { initReactotron } from '../services/devtools/reactotron';
-import { startOfflineQueue, stopOfflineQueue } from '../services/offlineQueue';
-import apiClient from '../services/httpClient';
-import { initSentry } from '../services/sentry';
+import { UnistylesThemeProvider } from '@/theme/Provider';
+import { initReactotron } from '../src/services/devtools/reactotron';
+import { startOfflineQueue, stopOfflineQueue } from '../src/services/offlineQueue';
+import apiClient from '../src/services/httpClient';
+import { initSentry } from '../src/services/sentry';
 
 // keep the splash screen visible while complete fetching resources
 SplashScreen.preventAutoHideAsync();
@@ -153,7 +153,7 @@ export default function RootLayout() {
           console.error('❌ Initialization error:', err);
         } else {
           // Production: log only essential error info via Sentry
-          import('../services/sentry').then(({ captureException }) => {
+          import('../src/services/sentry').then(({ captureException }) => {
             captureException(err as Error, { context: 'App initialization', message: errorMessage });
           }).catch(() => {
             // Fallback if Sentry not available
@@ -313,7 +313,7 @@ export default function RootLayout() {
       <ErrorBoundary>
         <UnistylesThemeProvider>
           <ToastProvider>
-            <StatusBar style={theme.dark ? 'light' : 'dark'} />
+            <StatusBar style={theme.isDark ? 'light' : 'dark'} />
             {/* {__DEV__ && flags.enableDebugPanel && <DebugPanel />} */}
             <Stack
               screenOptions={{
@@ -331,6 +331,8 @@ export default function RootLayout() {
               <Stack.Screen name="supervisor/dashboard" />
               <Stack.Screen name="supervisor/session-detail" />
               <Stack.Screen name="supervisor/settings" />
+              <Stack.Screen name="supervisor/db-mapping" />
+              <Stack.Screen name="supervisor/dynamic-fields" />
               <Stack.Screen name="supervisor/activity-logs" />
               <Stack.Screen name="supervisor/error-logs" />
               <Stack.Screen name="supervisor/export-schedules" />

@@ -11,13 +11,16 @@ import {
   TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { usePermissions } from '../../hooks/usePermissions';
+import { usePermissions } from '../../src/hooks/usePermissions';
 import {
   getSyncConflicts,
   resolveSyncConflict,
   batchResolveSyncConflicts,
   getSyncConflictStats,
-} from '../../services/api';
+} from '../../src/services/api/api';
+import { Header } from '../../src/components/layout/Header';
+import { useTheme } from '../../src/hooks/useTheme';
+import { useToast } from '../../src/components/feedback/ToastProvider';
 
 interface SyncConflict {
   _id: string;

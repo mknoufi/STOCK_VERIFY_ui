@@ -13,11 +13,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useSettingsStore } from '../../store/settingsStore';
-import { useTheme } from '../../hooks/useTheme';
-import { SettingItem } from '../../components/SettingItem';
-import { SettingGroup } from '../../components/SettingGroup';
-import { Header } from '../../components/Header';
+import { useSettingsStore } from '../../src/store/settingsStore';
+import { Header } from '../../src/components/layout/Header';
+import { useTheme } from '../../src/hooks/useTheme';
+
+import { SettingGroup } from '../../src/components/layout/SettingGroup';
+import { SettingItem } from '../../src/components/layout/SettingItem';
 
 export default function SettingsScreen() {
   const router = useRouter();

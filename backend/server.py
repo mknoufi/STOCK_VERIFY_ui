@@ -82,6 +82,7 @@ from backend.api.security_api import security_router  # noqa: E402
 from backend.api.variance_api import router as variance_router  # noqa: E402
 from backend.api.erp_api import router as erp_router, init_erp_api  # noqa: E402
 from backend.api.auth import router as auth_router  # noqa: E402
+from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
 from backend.api.enhanced_item_api import enhanced_item_router as items_router, init_enhanced_api  # noqa: E402
 
 # New feature services
@@ -854,6 +855,7 @@ app.include_router(verification_router)
 app.include_router(erp_router, prefix="/api")  # ERP endpoints
 app.include_router(variance_router, prefix="/api")  # Variance reasons and trendspoints
 app.include_router(admin_control_router)  # Admin control endpoints
+app.include_router(dynamic_fields_router)  # Dynamic fields management
 
 
 @app.get("/api/mapping/test_direct")
@@ -1096,21 +1098,6 @@ async def get_current_user(
         # (Refresh tokens are UUIDs, not JWTs, so they won't decode successfully)
 
         username = payload.get("sub")
-        count = await db.users.count_documents({})
-
-        # Search manually
-        found_manual = False
-        async for u in db.users.find():
-            if u.get("username") == username:
-                found_manual = True
-                break
-            # if "session_user" in str(u.get("username")):
-            #      logger.error(f"DEBUG: Found similar user: {u.get("username")}")
-
-        if not found_manual:
-            pass
-
-        user_check = await db.users.find_one({"username": username})
 
         if username is None:
             error = get_error_message("AUTH_TOKEN_INVALID")
@@ -1554,16 +1541,6 @@ async def logout(
     except Exception as e:
         logger.error(f"Logout error: {str(e)}")
         raise HTTPException(status_code=500, detail="Logout failed")
-
-
-print("DEBUG: server.py module loaded")
-# raise RuntimeError("SERVER LOADED") # Commented out to avoid breaking everything immediately, but I will uncomment it if needed.
-# Actually, let's just use print and sys.stdout.flush()
-
-import sys
-
-print("DEBUG: server.py module loaded FLUSHED")
-sys.stdout.flush()
 
 
 # Session routes

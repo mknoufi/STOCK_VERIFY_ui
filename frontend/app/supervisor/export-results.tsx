@@ -10,8 +10,9 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { usePermissions } from '../../hooks/usePermissions';
-import { getExportResults, downloadExportResult } from '../../services/api';
+import { usePermissions } from '../../src/hooks/usePermissions';
+import { getExportResults, downloadExportResult } from '../../src/services/api/api';
+
 
 interface ExportResult {
   _id: string;

@@ -150,8 +150,48 @@ class TestSQLSyncService:
         # Verify enrichment fields are NOT in the update (preserved)
         assert "serial_number" not in update_doc
         assert "hsn_code" not in update_doc
-        assert "location" not in update_doc
+        # location is now synced from SQL, so it might be updated if changed
+        # assert "location" not in update_doc 
         assert "condition" not in update_doc
+
+    @pytest.mark.asyncio
+    async def test_sync_items_updates_location(
+        self, sync_service, mock_sql_connector, mock_mongo_db
+    ):
+        """Test that sync updates location when changed in SQL"""
+        # Mock existing item
+        existing_item = {
+            "item_code": "ITEM001",
+            "sql_server_qty": 100.0,
+            "stock_qty": 100.0,
+            "location": "Old-Loc",
+        }
+        mock_mongo_db.erp_items.find_one.return_value = existing_item
+
+        # Mock SQL item with new location
+        mock_sql_connector.get_all_items.return_value = [
+            {
+                "item_code": "ITEM001",
+                "stock_qty": 100.0,
+                "location": "New-Loc",
+            }
+        ]
+
+        update_result = Mock()
+        update_result.modified_count = 1
+        mock_mongo_db.erp_items.update_one.return_value = update_result
+
+        # Execute sync
+        await sync_service.sync_items()
+
+        # Verify update_one was called
+        assert mock_mongo_db.erp_items.update_one.called
+        call_args = mock_mongo_db.erp_items.update_one.call_args
+        update_doc = call_args.args[1]["$set"]
+
+        # Verify location is updated
+        assert "location" in update_doc
+        assert update_doc["location"] == "New-Loc"
 
     @pytest.mark.asyncio
     async def test_sync_items_unchanged_quantity(

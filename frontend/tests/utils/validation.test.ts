@@ -1,4 +1,4 @@
-import { normalizeBarcode, validateBarcode, validateMRP, validateQuantity, validateSessionName } from '@/utils/validation';
+import { normalizeBarcode, validateBarcode, validateMRP, validateQuantity, validateSessionName } from '../../src/utils/validation';
 
 describe('validation utils', () => {
   it('validates session names', () => {

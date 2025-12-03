@@ -10,10 +10,13 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
-import { ItemVerificationAPI } from '../../services/itemVerificationApi';
-import { Button } from '../../components/Button';
-import { spacing, typography, borderRadius, colors } from '../../styles/globalStyles';
+import { Header } from '../../src/components/layout/Header';
+import { useTheme } from '../../src/hooks/useTheme';
+import { verifyStock, unverifyStock } from '../../src/services/api/api';
+import { ItemVerificationAPI } from '../../src/services/api/itemVerificationApi';
+import { useToast } from '../../src/components/feedback/ToastProvider';
+import { spacing, typography, borderRadius, colors } from '../../src/styles/globalStyles';
+import { Button } from '../../src/components/Button';
 
 export default function VarianceDetailsScreen() {
   const { itemCode } = useLocalSearchParams();

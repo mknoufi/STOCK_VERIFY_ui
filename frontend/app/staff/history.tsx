@@ -3,15 +3,15 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from 'react
 import { FlashList } from '@shopify/flash-list';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getCountLines } from '../../services/api';
+import { getCountLines } from '../../src/services/api/api';
 import { StatusBar } from 'expo-status-bar';
-import { haptics } from '../../services/haptics';
-import { flags } from '../../constants/flags';
-import { PullToRefresh } from '../../components/PullToRefresh';
-import { BottomSheet } from '../../components/ui/BottomSheet';
-import { SkeletonList } from '../../components/LoadingSkeleton';
-import { SwipeableRow } from '../../components/SwipeableRow';
-import { StaffLayout } from '../../components/layout/StaffLayout';
+import { haptics } from '../../src/services/utils/haptics';
+import { flags } from '../../src/constants/flags';
+import { PullToRefresh } from '../../src/components/PullToRefresh';
+import { BottomSheet } from '../../src/components/ui/BottomSheet';
+import { SkeletonList } from '../../src/components/LoadingSkeleton';
+import { SwipeableRow } from '../../src/components/SwipeableRow';
+import { StaffLayout } from '../../src/components/layout/StaffLayout';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 export default function HistoryScreen() {

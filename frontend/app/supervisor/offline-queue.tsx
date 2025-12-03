@@ -1,10 +1,20 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { flags } from '../../constants/flags';
-import { listQueue, getConflicts, resolveConflict, flushOfflineQueue } from '../../services/offlineQueue';
+import { Header } from '../../src/components/layout/Header';
+import { useTheme } from '../../src/hooks/useTheme';
+import { OfflineDebugPanel } from '../../src/components/OfflineDebugPanel';
+import { useNetworkStore } from '../../src/store/networkStore';
+import { flags } from '../../src/constants/flags';
+import {
+  flushOfflineQueue,
+  getConflicts,
+  resolveConflict,
+  listQueue,
+  QueuedMutation,
+} from '../../src/services/offline/offlineQueue';
 
-import api from '../../services/httpClient';
+import api from '../../src/services/httpClient';
 
 export default function OfflineQueueScreen() {
   const router = useRouter();

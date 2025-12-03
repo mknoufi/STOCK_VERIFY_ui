@@ -15,11 +15,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../../store/authStore';
-import { useAutoLogout } from '../../hooks/useAutoLogout';
-import api from '../../services/api';
-import { SupervisorLayout } from '../../components/layout/SupervisorLayout';
-import OnlineStatus from '../../components/ui/OnlineStatus';
+import { useAuthStore } from '../../src/store/authStore';
+import { useAutoLogout } from '../../src/hooks/useAutoLogout';
+import api from '../../src/services/api/api';
+import { SupervisorLayout } from '../../src/components/layout/SupervisorLayout';
+import OnlineStatus from '../../src/components/ui/OnlineStatus';
 
 // Types
 interface Session {

@@ -2,14 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getSession, getCountLines, approveCountLine, rejectCountLine, updateSessionStatus, verifyStock, unverifyStock } from '../../services/api';
+import { Header } from '../../src/components/layout/Header';
+import { useTheme } from '../../src/hooks/useTheme';
+import { getSession, getCountLines, approveCountLine, rejectCountLine, updateSessionStatus, verifyStock, unverifyStock } from '../../src/services/api/api';
 import { StatusBar } from 'expo-status-bar';
-import { useToast } from '../../services/toastService';
+import { useToast } from '../../src/components/feedback/ToastProvider';
 
 export default function SessionDetail() {
   const { sessionId } = useLocalSearchParams();
   const router = useRouter();
-  const { showToast } = useToast();
+  const { show } = useToast();
   const [session, setSession] = React.useState<any>(null);
   const [toVerifyLines, setToVerifyLines] = React.useState<any[]>([]);
   const [verifiedLines, setVerifiedLines] = React.useState<any[]>([]);
@@ -19,85 +21,105 @@ export default function SessionDetail() {
 
 
 
-const loadData = React.useCallback(async () => {
-  try {
-    setLoading(true);
-    const [sessionData, toVerifyData, verifiedData] = await Promise.all([
-      getSession(sessionId as string),
-      getCountLines(sessionId as string, 1, 100, false), // Not verified
-      getCountLines(sessionId as string, 1, 100, true),  // Verified
-    ]);
-    setSession(sessionData);
-    setToVerifyLines(toVerifyData?.items || []);
-    setVerifiedLines(verifiedData?.items || []);
-  } catch {
-    showToast('Failed to load session data', 'error');
-  } finally {
-    setLoading(false);
-  }
-}, [sessionId, showToast]);
+  const loadData = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const [sessionData, toVerifyData, verifiedData] = await Promise.all([
+        getSession(sessionId as string),
+        getCountLines(sessionId as string, 1, 100, false), // Not verified
+        getCountLines(sessionId as string, 1, 100, true),  // Verified
+      ]);
+      setSession(sessionData);
+      setToVerifyLines(toVerifyData?.items || []);
+      setVerifiedLines(verifiedData?.items || []);
+    } catch {
+      show('Failed to load session data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionId, show]);
 
   React.useEffect(() => {
     loadData();
   }, [loadData]);
 
-const handleApproveLine = async (lineId: string) => {
-  try {
-    await approveCountLine(lineId);
-    await loadData();
-    showToast('Count line approved', 'success');
-  } catch {
-    showToast('Failed to approve', 'error');
-  }
-};
+  const handleApproveLine = async (lineId: string) => {
+    try {
+      await approveCountLine(lineId);
+      await loadData();
+      show('Count line approved', 'success');
+    } catch {
+      show('Failed to approve', 'error');
+    }
+  };
 
-const handleRejectLine = async (lineId: string) => {
-  try {
-    await rejectCountLine(lineId);
-    await loadData();
-    showToast('Count line rejected', 'success');
-  } catch {
-    showToast('Failed to reject', 'error');
-  }
-};
+  const handleRejectLine = async (lineId: string) => {
+    try {
+      await rejectCountLine(lineId);
+      await loadData();
+      show('Count line rejected', 'success');
+    } catch {
+      show('Failed to reject', 'error');
+    }
+  };
 
-const handleVerifyStock = async (lineId: string) => {
-  try {
-    setVerifying(lineId);
-    await verifyStock(lineId);
-    await loadData();
-    showToast('Stock verified', 'success');
-  } catch {
-    showToast('Failed to verify stock', 'error');
-  } finally {
-    setVerifying(null);
-  }
-};
+  const handleVerifyStock = async (lineId: string) => {
+    try {
+      setVerifying(lineId);
+      await verifyStock(lineId);
+      await loadData();
+      show('Stock verified', 'success');
+    } catch {
+      show('Failed to verify stock', 'error');
+    } finally {
+      setVerifying(null);
+    }
+  };
 
-const handleUnverifyStock = async (lineId: string) => {
-  try {
-    setVerifying(lineId);
-    await unverifyStock(lineId);
-    await loadData();
-    showToast('Verification removed', 'success');
-  } catch {
-    showToast('Failed to remove verification', 'error');
-  } finally {
-    setVerifying(null);
-  }
-};
+  const handleUnverifyStock = async (lineId: string) => {
+    try {
+      setVerifying(lineId);
+      await unverifyStock(lineId);
+      await loadData();
+      show('Verification removed', 'success');
+    } catch {
+      show('Failed to remove verification', 'error');
+    } finally {
+      setVerifying(null);
+    }
+  };
 
-const handleUpdateStatus = async (newStatus: string) => {
-  try {
-    await updateSessionStatus(sessionId as string, newStatus);
-    await loadData();
-    showToast(`Session status updated to ${newStatus}`, 'success');
-  } catch {
-    showToast('Failed to update status', 'error');
-  }
-};
+  const handleUpdateStatus = async (newStatus: string) => {
+    try {
+      await updateSessionStatus(sessionId as string, newStatus);
+      await loadData();
+      show(`Session status updated to ${newStatus} `, 'success');
+    } catch {
+      show('Failed to update status', 'error');
+    }
+  };
 
-if (loading || !session) {
+  if (loading || !session) {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Session Details</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  const currentLines = activeTab === 'toVerify' ? toVerifyLines : verifiedLines;
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -108,255 +130,235 @@ if (loading || !session) {
         <Text style={styles.headerTitle}>Session Details</Text>
         <View style={{ width: 40 }} />
       </View>
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    </View>
-  );
-}
 
-const currentLines = activeTab === 'toVerify' ? toVerifyLines : verifiedLines;
+      <ScrollView style={styles.content}>
+        <View style={styles.sessionInfo}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Warehouse:</Text>
+            <Text style={styles.infoValue}>{session.warehouse}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Staff:</Text>
+            <Text style={styles.infoValue}>{session.staff_name}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Status:</Text>
+            <Text style={[styles.infoValue, styles.statusValue]}>{session.status}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Items:</Text>
+            <Text style={styles.infoValue}>{session.total_items}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Total Variance:</Text>
+            <Text style={[styles.infoValue, session.total_variance !== 0 && styles.varianceValue]}>
+              {session.total_variance.toFixed(2)}
+            </Text>
+          </View>
+        </View>
 
-return (
-  <View style={styles.container}>
-    <StatusBar style="light" />
-    <View style={styles.header}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#fff" />
-      </TouchableOpacity>
-      <Text style={styles.headerTitle}>Session Details</Text>
-      <View style={{ width: 40 }} />
-    </View>
+        {session.status === 'OPEN' && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.reconcileButton}
+              onPress={() => handleUpdateStatus('RECONCILE')}
+            >
+              <Text style={styles.buttonText}>Move to Reconcile</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-    <ScrollView style={styles.content}>
-      <View style={styles.sessionInfo}>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Warehouse:</Text>
-          <Text style={styles.infoValue}>{session.warehouse}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Staff:</Text>
-          <Text style={styles.infoValue}>{session.staff_name}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Status:</Text>
-          <Text style={[styles.infoValue, styles.statusValue]}>{session.status}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Items:</Text>
-          <Text style={styles.infoValue}>{session.total_items}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Total Variance:</Text>
-          <Text style={[styles.infoValue, session.total_variance !== 0 && styles.varianceValue]}>
-            {session.total_variance.toFixed(2)}
-          </Text>
-        </View>
-      </View>
+        {session.status === 'RECONCILE' && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => handleUpdateStatus('CLOSED')}
+            >
+              <Text style={styles.buttonText}>Close Session</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-      {session.status === 'OPEN' && (
-        <View style={styles.actionButtons}>
+        {/* Tab Selection */}
+        <View style={styles.tabContainer}>
           <TouchableOpacity
-            style={styles.reconcileButton}
-            onPress={() => handleUpdateStatus('RECONCILE')}
+            style={[
+              styles.tab,
+              activeTab === 'toVerify' && styles.tabActive
+            ]}
+            onPress={() => setActiveTab('toVerify')}
           >
-            <Text style={styles.buttonText}>Move to Reconcile</Text>
+            <Ionicons
+              name="list-outline"
+              size={20}
+              color={activeTab === 'toVerify' ? '#fff' : '#888'}
+            />
+            <Text style={[
+              styles.tabText,
+              activeTab === 'toVerify' && styles.tabTextActive
+            ]}>
+              To Verify ({toVerifyLines.length})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === 'verified' && styles.tabActive
+            ]}
+            onPress={() => setActiveTab('verified')}
+          >
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={20}
+              color={activeTab === 'verified' ? '#fff' : '#888'}
+            />
+            <Text style={[
+              styles.tabText,
+              activeTab === 'verified' && styles.tabTextActive
+            ]}>
+              Verified ({verifiedLines.length})
+            </Text>
           </TouchableOpacity>
         </View>
-      )}
 
-      {session.status === 'RECONCILE' && (
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => handleUpdateStatus('CLOSED')}
-          >
-            <Text style={styles.buttonText}>Close Session</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        {/* Count Lines List */}
+        {currentLines.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons
+              name={activeTab === 'toVerify' ? 'list-outline' : 'checkmark-circle'}
+              size={64}
+              color="#888"
+            />
+            <Text style={styles.emptyText}>
+              {activeTab === 'toVerify'
+                ? 'No items to verify'
+                : 'No verified items'}
+            </Text>
+          </View>
+        ) : (
+          currentLines.map((line: any) => {
+            const varianceColor = line.variance === 0 ? '#00E676' : '#FF5252';
+            const statusColor = line.status === 'approved' ? '#00E676' : line.status === 'rejected' ? '#FF5252' : '#FFC107';
 
-      {/* Tab Selection */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 'toVerify' && styles.tabActive
-          ]}
-          onPress={() => setActiveTab('toVerify')}
-        >
-          <Ionicons
-            name="list-outline"
-            size={20}
-            color={activeTab === 'toVerify' ? '#fff' : '#888'}
-          />
-          <Text style={[
-            styles.tabText,
-            activeTab === 'toVerify' && styles.tabTextActive
-          ]}>
-            To Verify ({toVerifyLines.length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 'verified' && styles.tabActive
-          ]}
-          onPress={() => setActiveTab('verified')}
-        >
-          <Ionicons
-            name="checkmark-circle-outline"
-            size={20}
-            color={activeTab === 'verified' ? '#fff' : '#888'}
-          />
-          <Text style={[
-            styles.tabText,
-            activeTab === 'verified' && styles.tabTextActive
-          ]}>
-            Verified ({verifiedLines.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Count Lines List */}
-      {currentLines.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons
-            name={activeTab === 'toVerify' ? 'list-outline' : 'checkmark-circle'}
-            size={64}
-            color="#888"
-          />
-          <Text style={styles.emptyText}>
-            {activeTab === 'toVerify'
-              ? 'No items to verify'
-              : 'No verified items'}
-          </Text>
-        </View>
-      ) : (
-        currentLines.map((line: any) => {
-          const varianceColor = line.variance === 0 ? '#00E676' : '#FF5252';
-          const statusColor = line.status === 'approved' ? '#00E676' : line.status === 'rejected' ? '#FF5252' : '#FFC107';
-
-          return (
-            <View key={line.id} style={styles.lineCard}>
-              <View style={styles.lineHeader}>
-                <Text style={styles.lineName}>{line.item_name}</Text>
-                <View style={styles.badgeContainer}>
-                  {line.verified && (
-                    <View style={[styles.verifiedBadge, { backgroundColor: '#00E676' }]}>
-                      <Ionicons name="checkmark-circle" size={14} color="#fff" />
-                      <Text style={styles.badgeText}>Verified</Text>
+            return (
+              <View key={line.id} style={styles.lineCard}>
+                <View style={styles.lineHeader}>
+                  <Text style={styles.lineName}>{line.item_name}</Text>
+                  <View style={styles.badgeContainer}>
+                    {line.verified && (
+                      <View style={[styles.verifiedBadge, { backgroundColor: '#00E676' }]}>
+                        <Ionicons name="checkmark-circle" size={14} color="#fff" />
+                        <Text style={styles.badgeText}>Verified</Text>
+                      </View>
+                    )}
+                    <View style={[styles.lineBadge, { backgroundColor: statusColor }]}>
+                      <Text style={styles.badgeText}>{line.status}</Text>
                     </View>
-                  )}
-                  <View style={[styles.lineBadge, { backgroundColor: statusColor }]}>
-                    <Text style={styles.badgeText}>{line.status}</Text>
                   </View>
                 </View>
-              </View>
 
-              <Text style={styles.lineCode}>Code: {line.item_code}</Text>
+                <Text style={styles.lineCode}>Code: {line.item_code}</Text>
 
-              <View style={styles.qtyRow}>
-                <View style={styles.qtyItem}>
-                  <Text style={styles.qtyLabel}>ERP</Text>
-                  <Text style={styles.qtyValue}>{line.erp_qty}</Text>
+                <View style={styles.qtyRow}>
+                  <View style={styles.qtyItem}>
+                    <Text style={styles.qtyLabel}>ERP</Text>
+                    <Text style={styles.qtyValue}>{line.erp_qty}</Text>
+                  </View>
+                  <View style={styles.qtyItem}>
+                    <Text style={styles.qtyLabel}>Counted</Text>
+                    <Text style={styles.qtyValue}>{line.counted_qty}</Text>
+                  </View>
+                  <View style={styles.qtyItem}>
+                    <Text style={styles.qtyLabel}>Variance</Text>
+                    <Text style={[styles.qtyValue, { color: varianceColor }]}>
+                      {line.variance}
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.qtyItem}>
-                  <Text style={styles.qtyLabel}>Counted</Text>
-                  <Text style={styles.qtyValue}>{line.counted_qty}</Text>
-                </View>
-                <View style={styles.qtyItem}>
-                  <Text style={styles.qtyLabel}>Variance</Text>
-                  <Text style={[styles.qtyValue, { color: varianceColor }]}>
-                    {line.variance}
-                  </Text>
-                </View>
-              </View>
 
-              {line.variance_reason && (
-                <View style={styles.reasonBox}>
-                  <Text style={styles.reasonLabel}>Reason: {line.variance_reason}</Text>
-                  {line.variance_note && (
-                    <Text style={styles.reasonNote}>{line.variance_note}</Text>
+                {line.variance_reason && (
+                  <View style={styles.reasonBox}>
+                    <Text style={styles.reasonLabel}>Reason: {line.variance_reason}</Text>
+                    {line.variance_note && (
+                      <Text style={styles.reasonNote}>{line.variance_note}</Text>
+                    )}
+                  </View>
+                )}
+
+                {line.remark && (
+                  <Text style={styles.remark}>Remark: {line.remark}</Text>
+                )}
+
+                {line.verified && line.verified_by && (
+                  <View style={styles.verifiedInfo}>
+                    <Ionicons name="checkmark-circle" size={16} color="#00E676" />
+                    <Text style={styles.verifiedInfoText}>
+                      Verified by {line.verified_by} on {new Date(line.verified_at).toLocaleString()}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.lineActions}>
+                  {line.status === 'pending' && (
+                    <>
+                      <TouchableOpacity
+                        style={styles.approveButton}
+                        onPress={() => handleApproveLine(line.id)}
+                      >
+                        <Ionicons name="checkmark" size={20} color="#fff" />
+                        <Text style={styles.actionButtonText}>Approve</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.rejectButton}
+                        onPress={() => handleRejectLine(line.id)}
+                      >
+                        <Ionicons name="close" size={20} color="#fff" />
+                        <Text style={styles.actionButtonText}>Reject</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {activeTab === 'toVerify' && !line.verified && (
+                    <TouchableOpacity
+                      style={[styles.verifyButton, verifying === line.id && styles.buttonDisabled]}
+                      onPress={() => handleVerifyStock(line.id)}
+                      disabled={verifying === line.id}
+                    >
+                      {verifying === line.id ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <>
+                          <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+                          <Text style={styles.actionButtonText}>Verify Stock</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+
+                  {activeTab === 'verified' && line.verified && (
+                    <TouchableOpacity
+                      style={[styles.unverifyButton, verifying === line.id && styles.buttonDisabled]}
+                      onPress={() => handleUnverifyStock(line.id)}
+                      disabled={verifying === line.id}
+                    >
+                      {verifying === line.id ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <>
+                          <Ionicons name="close-circle-outline" size={20} color="#fff" />
+                          <Text style={styles.actionButtonText}>Unverify</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
                   )}
                 </View>
-              )}
-
-              {line.remark && (
-                <Text style={styles.remark}>Remark: {line.remark}</Text>
-              )}
-
-              {line.verified && line.verified_by && (
-                <View style={styles.verifiedInfo}>
-                  <Ionicons name="checkmark-circle" size={16} color="#00E676" />
-                  <Text style={styles.verifiedInfoText}>
-                    Verified by {line.verified_by} on {new Date(line.verified_at).toLocaleString()}
-                  </Text>
-                </View>
-              )}
-
-              <View style={styles.lineActions}>
-                {line.status === 'pending' && (
-                  <>
-                    <TouchableOpacity
-                      style={styles.approveButton}
-                      onPress={() => handleApproveLine(line.id)}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#fff" />
-                      <Text style={styles.actionButtonText}>Approve</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.rejectButton}
-                      onPress={() => handleRejectLine(line.id)}
-                    >
-                      <Ionicons name="close" size={20} color="#fff" />
-                      <Text style={styles.actionButtonText}>Reject</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-
-                {activeTab === 'toVerify' && !line.verified && (
-                  <TouchableOpacity
-                    style={[styles.verifyButton, verifying === line.id && styles.buttonDisabled]}
-                    onPress={() => handleVerifyStock(line.id)}
-                    disabled={verifying === line.id}
-                  >
-                    {verifying === line.id ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <>
-                        <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-                        <Text style={styles.actionButtonText}>Verify Stock</Text>
-                      </>
-                    )}
-                  </TouchableOpacity>
-                )}
-
-                {activeTab === 'verified' && line.verified && (
-                  <TouchableOpacity
-                    style={[styles.unverifyButton, verifying === line.id && styles.buttonDisabled]}
-                    onPress={() => handleUnverifyStock(line.id)}
-                    disabled={verifying === line.id}
-                  >
-                    {verifying === line.id ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <>
-                        <Ionicons name="close-circle-outline" size={20} color="#fff" />
-                        <Text style={styles.actionButtonText}>Unverify</Text>
-                      </>
-                    )}
-                  </TouchableOpacity>
-                )}
               </View>
-            </View>
-          );
-        })
-      )}
-    </ScrollView>
-  </View>
-);
+            );
+          })
+        )}
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

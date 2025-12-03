@@ -18,8 +18,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Header } from '../../components/Header';
-import { useTheme } from '../../hooks/useTheme';
+import { Header } from '../../src/components/layout/Header';
+import { useTheme } from '../../src/hooks/useTheme';
 import {
   getAvailableTables,
   getTableColumns,
@@ -27,8 +27,8 @@ import {
   testMapping,
   saveMapping,
   getERPConfig,
-} from '../../services/api';
-import { useToast } from '../../services/toastService';
+} from '../../src/services/api/api';
+import { useToast } from '../../src/components/feedback/ToastProvider';
 
 interface Table {
   name: string;
@@ -65,7 +65,7 @@ const appFields = [
 export default function DatabaseMappingScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { showToast } = useToast();
+  const { show } = useToast();
 
   // Connection settings
   const [host, setHost] = useState('');
@@ -155,7 +155,7 @@ export default function DatabaseMappingScreen() {
         }
       }
     } catch (error: any) {
-      console.error('Failed to load current mapping:', error);
+      show('Failed to load current mapping', 'error');
     }
   }, [selectedTable]);
 
@@ -166,7 +166,7 @@ export default function DatabaseMappingScreen() {
 
   const handleLoadTables = async () => {
     if (!host || !database) {
-      showToast('Please enter host and database', 'error');
+      show('Please enter host and database', 'error');
       return;
     }
 
@@ -181,9 +181,9 @@ export default function DatabaseMappingScreen() {
         schema
       );
       setTables(response.tables.map((name: string) => ({ name, schema })));
-      showToast(`Found ${response.count} tables`, 'success');
+      show(`Found ${response.count} tables`, 'success');
     } catch (error: any) {
-      showToast(`Failed to load tables: ${error.response?.data?.detail || error.message}`, 'error');
+      show(`Failed to load tables: ${error.response?.data?.detail || error.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -191,7 +191,7 @@ export default function DatabaseMappingScreen() {
 
   const handleLoadColumns = async (tableName: string) => {
     if (!host || !database) {
-      showToast('Please enter host and database', 'error');
+      show('Please enter host and database', 'error');
       return;
     }
 
@@ -208,9 +208,9 @@ export default function DatabaseMappingScreen() {
         schema
       );
       setColumns(response.columns);
-      showToast(`Found ${response.count} columns`, 'success');
+      show(`Found ${response.count} columns`, 'success');
     } catch (error: any) {
-      showToast(`Failed to load columns: ${error.response?.data?.detail || error.message}`, 'error');
+      show(`Failed to load columns: ${error.response?.data?.detail || error.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -223,7 +223,7 @@ export default function DatabaseMappingScreen() {
 
   const handleMapColumn = (columnName: string) => {
     if (!selectedTable) {
-      showToast('Please select a table first', 'error');
+      show('Please select a table first', 'error');
       return;
     }
 
@@ -242,17 +242,17 @@ export default function DatabaseMappingScreen() {
 
     setShowColumnModal(false);
     setSelectedAppField('');
-    showToast(`Mapped ${appField} to ${columnName}`, 'success');
+    show(`Mapped ${appField} to ${columnName}`, 'success');
   };
 
   const handleTestMapping = async () => {
     if (!host || !database) {
-      showToast('Please enter host and database', 'error');
+      show('Please enter host and database', 'error');
       return;
     }
 
     if (Object.keys(mapping).length === 0) {
-      showToast('Please configure at least one mapping', 'error');
+      show('Please configure at least one mapping', 'error');
       return;
     }
 
@@ -294,7 +294,7 @@ export default function DatabaseMappingScreen() {
 
   const handleSaveMapping = async () => {
     if (Object.keys(mapping).length === 0) {
-      showToast('Please configure at least one mapping', 'error');
+      show('Please configure at least one mapping', 'error');
       return;
     }
 
@@ -302,7 +302,7 @@ export default function DatabaseMappingScreen() {
     const requiredFields = appFields.filter(f => f.required);
     const missingFields = requiredFields.filter(f => !mapping[f.key]);
     if (missingFields.length > 0) {
-      showToast(`Missing required fields: ${missingFields.map(f => f.label).join(', ')}`, 'error');
+      show(`Missing required fields: ${missingFields.map(f => f.label).join(', ')}`, 'error');
       return;
     }
 
@@ -326,11 +326,11 @@ export default function DatabaseMappingScreen() {
         if (password) await AsyncStorage.setItem('db_mapping_password', password);
         await AsyncStorage.setItem('db_mapping_schema', schema);
 
-        showToast('Mapping saved successfully', 'success');
+        show('Mapping saved successfully', 'success');
         router.back();
       }
     } catch (error: any) {
-      showToast(`Failed to save mapping: ${error.response?.data?.detail || error.message}`, 'error');
+      show(`Failed to save mapping: ${error.response?.data?.detail || error.message}`, 'error');
     } finally {
       setLoading(false);
     }

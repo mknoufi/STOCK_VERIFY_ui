@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,28 +15,29 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { useAuthStore } from '../../store/authStore';
-import { createSession } from '../../services/api';
-import { useSessionsQuery } from '../../hooks/useSessionsQuery';
-import { SESSION_PAGE_SIZE } from '../../constants/config';
-import { validateSessionName } from '../../utils/validation';
-import { colors, spacing, typography, borderRadius, shadows } from '../../styles/globalStyles';
-import EnhancedTextInput from '../../components/forms/EnhancedTextInput';
-import EnhancedButton from '../../components/forms/EnhancedButton';
+import { useAuthStore } from '../../src/store/authStore';
+import { createSession } from '../../src/services/api/api';
+import { useSessionsQuery } from '../../src/hooks/useSessionsQuery';
+import { SESSION_PAGE_SIZE } from '../../src/constants/config';
+import { validateSessionName } from '../../src/utils/validation';
+import EnhancedTextInput from '../../src/components/forms/EnhancedTextInput';
+import EnhancedButton from '../../src/components/forms/EnhancedButton';
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '../../src/hooks/useTheme';
 
 export default function StaffHome() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const { colors, spacing, typography, borderRadius } = useTheme();
 
   // State for new session
   const [floorName, setFloorName] = useState('');
   const [rackName, setRackName] = useState('');
+  const [currentPage] = useState(1); // Add missing currentPage state
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Sessions Query
-  const [currentPage, setCurrentPage] = useState(1);
   const { data: sessionsData, isLoading: isLoadingSessions, refetch } = useSessionsQuery({
     page: currentPage,
     pageSize: SESSION_PAGE_SIZE,
@@ -85,6 +86,149 @@ export default function StaffHome() {
   const handleResumeSession = (sessionId: string) => {
     router.push(`/staff/scan?sessionId=${sessionId}`);
   };
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#0F172A', // Hardcoded since it's a gradient background
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingTop: Platform.OS === 'ios' ? 60 : 40,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.md,
+    },
+    welcomeText: {
+      fontSize: typography.caption.fontSize,
+      fontWeight: typography.caption.fontWeight as any,
+      lineHeight: typography.caption.lineHeight,
+      color: colors.textSecondary,
+    },
+    userName: {
+      fontSize: typography.h3.fontSize,
+      fontWeight: typography.h3.fontWeight as any,
+      lineHeight: typography.h3.lineHeight,
+      color: colors.textPrimary,
+    },
+    logoutButton: {
+      padding: spacing.sm,
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      borderRadius: borderRadius.round,
+    },
+    content: {
+      padding: spacing.lg,
+      paddingBottom: 100,
+    },
+    section: {
+      marginBottom: spacing.xl,
+    },
+    card: {
+      padding: spacing.lg,
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      backgroundColor: 'rgba(30, 41, 59, 0.5)',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    sectionTitle: {
+      ...typography.h4,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    sectionSubtitle: {
+      ...typography.bodySmall,
+      color: colors.textSecondary,
+      marginBottom: spacing.lg,
+    },
+    inputRow: {
+      flexDirection: 'row',
+      gap: spacing.md,
+      marginBottom: spacing.lg,
+    },
+    inputWrapper: {
+      flex: 1,
+    },
+    label: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
+      marginLeft: spacing.xs,
+    },
+    startButton: {
+      marginTop: spacing.sm,
+    },
+    sectionHeader: {
+      ...typography.h5,
+      color: colors.textPrimary,
+      marginBottom: spacing.md,
+      marginLeft: spacing.xs,
+    },
+    listContent: {
+      gap: spacing.md,
+    },
+    sessionCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: spacing.md,
+      backgroundColor: colors.surface || '#1e293b',
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: colors.border || '#334155',
+    },
+    sessionInfo: {
+      flex: 1,
+    },
+    sessionTitle: {
+      ...typography.body,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    sessionDate: {
+      ...typography.caption,
+      color: colors.textSecondary || '#94a3b8',
+      marginBottom: 8,
+    },
+    statusBadge: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 4,
+    },
+    statusActive: {
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    },
+    statusClosed: {
+      backgroundColor: 'rgba(100, 116, 139, 0.1)',
+    },
+    statusText: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: colors.success || '#10b981',
+    },
+    resumeButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: spacing.sm,
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderRadius: borderRadius.md,
+      gap: 4,
+    },
+    resumeButtonText: {
+      ...typography.caption,
+      fontWeight: '600',
+      color: colors.primary,
+    },
+    emptyText: {
+      ...typography.body,
+      color: colors.textSecondary || '#94a3b8',
+      textAlign: 'center',
+      marginTop: spacing.xl,
+    },
+  }), [colors, spacing, typography, borderRadius]);
 
   const renderSessionItem = ({ item }: { item: any }) => (
     <View style={styles.sessionCard}>
@@ -198,142 +342,3 @@ export default function StaffHome() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.backgroundDark,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-  welcomeText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  userName: {
-    ...typography.h3,
-    color: colors.textPrimary,
-  },
-  logoutButton: {
-    padding: spacing.sm,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderRadius: borderRadius.round,
-  },
-  content: {
-    padding: spacing.lg,
-    paddingBottom: 100,
-  },
-  section: {
-    marginBottom: spacing.xl,
-  },
-  card: {
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  sectionTitle: {
-    ...typography.h4,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  sectionSubtitle: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    marginBottom: spacing.lg,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  inputWrapper: {
-    flex: 1,
-  },
-  label: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    marginLeft: spacing.xs,
-  },
-  startButton: {
-    marginTop: spacing.sm,
-  },
-  sectionHeader: {
-    ...typography.h5,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-    marginLeft: spacing.xs,
-  },
-  listContent: {
-    gap: spacing.md,
-  },
-  sessionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    backgroundColor: colors.surfaceDark,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  sessionInfo: {
-    flex: 1,
-  },
-  sessionTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  sessionDate: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    marginBottom: 8,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  statusActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-  },
-  statusClosed: {
-    backgroundColor: 'rgba(100, 116, 139, 0.1)',
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.success,
-  },
-  resumeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.sm,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    borderRadius: borderRadius.md,
-    gap: 4,
-  },
-  resumeButtonText: {
-    ...typography.caption,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    marginTop: spacing.xl,
-  },
-});

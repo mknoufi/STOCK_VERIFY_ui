@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { flags } from '../../constants/flags';
-import { listNotes, createNote, deleteNote, Note } from '../../services/notesApi';
-import { PullToRefresh } from '../../components/PullToRefresh';
+import { listNotes, createNote, deleteNote, Note } from '../../src/services/api/notesApi';
+import { flags } from '../../src/constants/flags';
+import { PullToRefresh } from '../../src/components/PullToRefresh';
 import { StatusBar } from 'expo-status-bar';
 
 export default function NotesScreen() {
   const router = useRouter();
-  const [notes, setNotes] = React.useState<Note[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [query, setQuery] = React.useState('');
@@ -102,7 +102,7 @@ export default function NotesScreen() {
               <Text style={styles.emptyText}>{loading ? 'Loading...' : 'No notes yet'}</Text>
             </View>
           )}
-          {notes.map((n) => (
+          {notes.map((n: Note) => (
             <View key={n.id || Math.random().toString(36)} style={styles.card}>
               <Text style={styles.cardBody}>{n.body}</Text>
               <View style={styles.cardRow}>

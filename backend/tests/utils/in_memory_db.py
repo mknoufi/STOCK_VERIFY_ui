@@ -195,6 +195,11 @@ class InMemoryCollection:
                 results.append(doc)
         return InMemoryCursor(results)
 
+    def aggregate(self, pipeline: List[Dict[str, Any]]) -> InMemoryCursor:
+        # For now, return empty cursor or basic aggregation if needed
+        # This is a mock, so we can just return empty list or implement basic logic
+        return InMemoryCursor([])
+
 
 class InMemoryDatabase:
     """Container that mimics the Motor database object used throughout the app."""
@@ -213,6 +218,8 @@ class InMemoryDatabase:
         self.erp_config = InMemoryCollection()
         self.verification_logs = InMemoryCollection()
         self.item_variances = InMemoryCollection()
+        self.items = InMemoryCollection()
+        self.variances = InMemoryCollection()
 
     async def command(self, *_args, **_kwargs):
         """Simulate db.command('ping')."""
@@ -272,6 +279,8 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     mock_health = MagicMock()
     mock_health.start = MagicMock()
     mock_health.stop = MagicMock()
+    mock_health.check_mongo_health = AsyncMock(return_value={"status": "healthy"})
+    mock_health.check_sql_server_health = AsyncMock(return_value={"status": "healthy"})
     # Patch the class
     monkeypatch.setattr(server_module, "DatabaseHealthService", MagicMock(return_value=mock_health))
     # Patch the existing instance if it exists
@@ -319,8 +328,12 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     from backend.api.count_lines_api import init_count_lines_api
 
     # Patch the server module's database and client
-    server_module.db = fake_db
-    server_module.client = fake_db.client
+    server_module.db = cast(AsyncIOMotorDatabase, fake_db)
+    server_module.client = cast(AsyncIOMotorClient, fake_db.client)
+
+    # Initialize APIs that depend on global db
+    init_session_api(cast(AsyncIOMotorDatabase, fake_db), server_module.activity_log_service)
+    init_count_lines_api(server_module.activity_log_service)
 
     # Patch server module's auth settings to match test env
     server_module.SECRET_KEY = os.getenv("JWT_SECRET", "test-jwt-secret-key-for-testing-only")

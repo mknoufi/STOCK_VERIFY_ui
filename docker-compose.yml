@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   mongo:
-    image: mongo:7
+    image: mongo:8.0
     restart: unless-stopped
     ports:
       - "27017:27017"
@@ -10,6 +10,7 @@ services:
       - mongo-data:/data/db
     environment:
       MONGO_INITDB_DATABASE: stock_verify
+    command: --bind_ip_all --replSet rs0
 
   backend:
     build:

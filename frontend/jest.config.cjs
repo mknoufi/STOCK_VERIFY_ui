@@ -14,7 +14,7 @@ module.exports = {
     ],
     moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '^@/(.*)$': '<rootDir>/$1'
+        '^@/(.*)$': '<rootDir>/src/$1'
     },
     testPathIgnorePatterns: [
         '/node_modules/',

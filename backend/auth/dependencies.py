@@ -94,6 +94,70 @@ def init_auth_dependencies(db: AsyncIOMotorDatabase, secret_key: str, algorithm:
     auth_deps.initialize(db, secret_key, algorithm)
 
 
+class JWTValidator:
+    """Handles JWT token validation and decoding"""
+
+    @staticmethod
+    def extract_token(request: Request, credentials: Optional[HTTPAuthorizationCredentials]) -> str:
+        """Extract JWT token from request credentials or headers"""
+        if credentials:
+            return credentials.credentials
+
+        # Fallback to manual header extraction
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            from backend.error_messages import get_error_message
+            error = get_error_message("AUTH_TOKEN_INVALID")
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "message": error["message"],
+                    "detail": "Authentication credentials were not provided",
+                    "code": error["code"],
+                    "category": error["category"],
+                },
+            )
+        return auth_header.split(" ")[1]
+
+    @staticmethod
+    def decode_token(token: str) -> dict:
+        """Decode and validate JWT token"""
+        try:
+            payload = jwt.decode(token, auth_deps.secret_key, algorithms=[auth_deps.algorithm])
+            username = payload.get("sub")
+            if username is None:
+                from backend.error_messages import get_error_message
+                error = get_error_message("AUTH_TOKEN_INVALID")
+                raise HTTPException(
+                    status_code=error["status_code"],
+                    detail=error,
+                )
+            return payload
+        except jwt.ExpiredSignatureError:
+            from backend.error_messages import get_error_message
+            error = get_error_message("AUTH_TOKEN_EXPIRED")
+            raise HTTPException(
+                status_code=error["status_code"],
+                detail=error,
+            )
+        except jwt.InvalidTokenError:
+            from backend.error_messages import get_error_message
+            error = get_error_message("AUTH_TOKEN_INVALID")
+            raise HTTPException(
+                status_code=error["status_code"],
+                detail=error,
+            )
+
+
+class UserRepository:
+    """Handles user database operations"""
+
+    @staticmethod
+    async def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
+        """Retrieve user from database by username"""
+        return await auth_deps.db.users.find_one({"username": username})
+
+
 async def get_current_user(
     request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(auth_deps.security),
@@ -102,107 +166,36 @@ async def get_current_user(
     Get current authenticated user from JWT token
     Can be used in any router without circular import
     """
-    logger.error("DEBUG: get_current_user START")
-    # Import at function level but verify it's available at startup
     try:
-        from backend.error_messages import get_error_message
-    except ImportError:
-        # Fallback for circular imports
-        def get_error_message(error_key: str, context: dict = None) -> dict:
-            return {
-                "status_code": 401,
-                "message": "Auth error",
-                "detail": str(error_key),
-                "code": error_key,
-                "category": "AUTH",
-            }
+        # Extract and validate token
+        token = JWTValidator.extract_token(request, credentials)
+        payload = JWTValidator.decode_token(token)
 
-    try:
-        # If credentials provided by HTTPBearer, use them
-        if credentials:
-            token = credentials.credentials
-        else:
-            # Fallback to manual header extraction (just in case)
-            auth_header = request.headers.get("Authorization")
-            logger.error(f"DEBUG: get_current_user auth_header: {auth_header}")
-            if not auth_header or not auth_header.startswith("Bearer "):
-                logger.error("get_current_user: No credentials provided or invalid format")
-                logger.error("DEBUG: get_current_user: No credentials provided or invalid format")
-                error = get_error_message("AUTH_TOKEN_INVALID")
-                raise HTTPException(
-                    status_code=401,
-                    detail={
-                        "message": error["message"],
-                        "detail": "Authentication credentials were not provided",
-                        "code": error["code"],
-                        "category": error["category"],
-                    },
-                )
-            token = auth_header.split(" ")[1]
-        logger.error(f"DEBUG: get_current_user token: {token}")
-        logger.error(f"DEBUG: get_current_user secret_key: {auth_deps.secret_key}")
-        logger.error(f"DEBUG: get_current_user algorithm: {auth_deps.algorithm}")
-        payload = jwt.decode(token, auth_deps.secret_key, algorithms=[auth_deps.algorithm])
-        logger.error(f"DEBUG: get_current_user payload: {payload}")
+        # Retrieve user from database
+        username = payload["sub"]
+        user = await UserRepository.get_user_by_username(username)
 
-        username = payload.get("sub")
-        if username is None:
-            logger.error("DEBUG: get_current_user: username is None in payload")
-            error = get_error_message("AUTH_TOKEN_INVALID")
-            raise HTTPException(
-                status_code=error["status_code"],
-                detail={
-                    "message": error["message"],
-                    "detail": error["detail"],
-                    "code": error["code"],
-                    "category": error["category"],
-                },
-            )
-
-        user = await auth_deps.db.users.find_one({"username": username})
         if user is None:
-            logger.error(
-                f"DEBUG: get_current_user: User {username} not found in db {id(auth_deps.db)}"
-            )
-            print(f"DEBUG: get_current_user: User {username} not found in db")
+            from backend.error_messages import get_error_message
             error = get_error_message("AUTH_USER_NOT_FOUND", {"username": username})
             raise HTTPException(
                 status_code=error["status_code"],
-                detail={
-                    "message": error["message"],
-                    "detail": error["detail"],
-                    "code": error["code"],
-                    "category": error["category"],
-                },
+                detail=error,
             )
 
-        return cast(Dict[str, Any], user)
+        return user
 
-    except jwt.ExpiredSignatureError:
-        logger.error("DEBUG: get_current_user: Token expired")
-        print("DEBUG: get_current_user: Token expired")
-        error = get_error_message("AUTH_TOKEN_EXPIRED")
-        raise HTTPException(
-            status_code=error["status_code"],
-            detail={
-                "message": error["message"],
-                "detail": error["detail"],
-                "code": error["code"],
-                "category": error["category"],
-            },
-        )
-    except jwt.InvalidTokenError as e:
-        logger.error(f"DEBUG: get_current_user: Invalid token: {e}")
-        print(f"DEBUG: get_current_user: Invalid token: {e}")
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        # Catch any unexpected errors and convert to auth error
+        logger.error(f"Unexpected error in get_current_user: {e}")
+        from backend.error_messages import get_error_message
         error = get_error_message("AUTH_TOKEN_INVALID")
         raise HTTPException(
             status_code=error["status_code"],
-            detail={
-                "message": error["message"],
-                "detail": error["detail"],
-                "code": error["code"],
-                "category": error["category"],
-            },
+            detail=error,
         )
 
 

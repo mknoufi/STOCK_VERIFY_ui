@@ -1,37 +1,42 @@
-import React from 'react';
-import { Redirect } from 'expo-router';
-import { Platform } from 'react-native';
-import { useAuthStore } from '../store/authStore';
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuthStore } from '../src/store/authStore';
 
-// Direct users to the login screen; role-based redirects happen in _layout.
-// On web, if already logged in as admin, go directly to admin panel
-export default function Index() {
-  const { user, isLoading } = useAuthStore();
+export default function IndexScreen() {
+  const router = useRouter();
+  const { user, isLoading, loadStoredAuth } = useAuthStore();
 
-  // TEST: Verify this file is being loaded
-  React.useEffect(() => {
-    console.log('🔵 [INDEX] index.tsx is loading...', { user: user ? { role: user.role } : null, isLoading });
-    console.log('🔵 [INDEX] About to redirect...');
-  }, [user, isLoading]);
+  useEffect(() => {
+    // Ensure auth state is loaded
+    (async () => {
+      try {
+        await loadStoredAuth();
+      } catch {
+        // ignore; user can login manually
+      }
 
-  // Wait for auth to load before redirecting
-  if (isLoading) {
-    return null; // Let _layout show loading screen
-  }
+      // Small delay to avoid redirect loops
+      setTimeout(() => {
+        if (!user) {
+          router.replace('/welcome');
+          return;
+        }
+        if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin')) {
+          router.replace('/admin/metrics');
+        } else if (user.role === 'supervisor' || user.role === 'admin') {
+          router.replace('/supervisor/dashboard');
+        } else {
+          router.replace('/staff/home');
+        }
+      }, Platform.OS === 'web' ? 200 : 100);
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, router]);
 
-  // On web, if admin/supervisor is logged in, go to admin control panel
-  if (Platform.OS === 'web' && user && (user.role === 'admin' || user.role === 'supervisor')) {
-    console.log('🔄 [INDEX] Redirecting to /admin/control-panel');
-    return <Redirect href="/admin/control-panel" />;
-  }
-
-  // For mobile, if user is logged in, let _layout handle the redirect
-  // Otherwise go to welcome
-  if (user) {
-    console.log('🔄 [INDEX] User logged in, redirecting to welcome (will be handled by _layout)');
-  } else {
-    console.log('🔄 [INDEX] No user, redirecting to /welcome');
-  }
-
-  return <Redirect href="/welcome" />;
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' }}>
+      <ActivityIndicator color="#00E676" size="large" />
+    </View>
+  );
 }

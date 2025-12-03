@@ -423,9 +423,13 @@ async def get_item_api_performance(current_user: dict = Depends(get_current_user
     try:
         # Get database manager instance
         from backend.services.database_manager import DatabaseManager
+        from backend.sql_server_connector import SQLServerConnector
 
+        # Initialize SQL connector
+        sql_connector = SQLServerConnector()
+        
         db_manager = DatabaseManager(
-            mongo_client=db.client, mongo_db=db
+            mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
         )
 
         # Comprehensive performance analysis
@@ -470,9 +474,13 @@ async def get_database_status(current_user: dict = Depends(get_current_user)):
     """
     try:
         from backend.services.database_manager import DatabaseManager
+        from backend.sql_server_connector import SQLServerConnector
+
+        # Initialize SQL connector
+        sql_connector = SQLServerConnector()
 
         db_manager = DatabaseManager(
-            mongo_client=db.client, mongo_db=db
+            mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
         )
 
         return await db_manager.check_database_health()

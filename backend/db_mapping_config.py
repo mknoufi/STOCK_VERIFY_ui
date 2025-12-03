@@ -64,7 +64,7 @@ SQL_TEMPLATES = {
         LEFT JOIN dbo.ProductBarcodes PBC ON PB.ProductBatchID = PBC.ProductBatchID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE PBC.Barcode = %s 
+        WHERE PBC.Barcode = %s
            OR PB.MannualBarcode = %s
            OR P.ProductCode = %s
            OR CAST(PB.AutoBarcode AS VARCHAR(50)) = %s
@@ -140,7 +140,7 @@ SQL_TEMPLATES = {
           AND P.IsActive = 1
     """,
     "get_item_batches": """
-        SELECT 
+        SELECT
             PB.ProductBatchID as batch_id,
             PB.BatchNo as batch_no,
             PB.MannualBarcode as barcode,

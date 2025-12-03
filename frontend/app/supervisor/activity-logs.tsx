@@ -14,10 +14,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Header } from '../../components/Header';
-import { useTheme } from '../../hooks/useTheme';
-import { getActivityLogs, getActivityStats } from '../../services/api';
-import { useToast } from '../../services/toastService';
+import { Header } from '../../src/components/layout/Header';
+import { useTheme } from '../../src/hooks/useTheme';
+import { getActivityLogs, getActivityStats } from '../../src/services/api/api';
+import { useToast } from '../../src/components/feedback/ToastProvider';
 
 interface ActivityLog {
   id: string;
@@ -35,7 +35,7 @@ interface ActivityLog {
 export default function ActivityLogsScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { showToast } = useToast();
+  const { show } = useToast();
 
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -62,14 +62,16 @@ export default function ActivityLogsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [showToast]);
+  }, [show]);
 
   const loadStats = React.useCallback(async () => {
     try {
       const statsData = await getActivityStats();
       setStats(statsData);
+      show('Logs refreshed', 'success');
     } catch (error: any) {
       console.error('Failed to load stats:', error);
+      show('Failed to fetch logs', 'error');
     }
   }, []);
 

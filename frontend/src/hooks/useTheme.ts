@@ -25,6 +25,8 @@ export const useTheme = () => {
       surfaceDark: isDark ? '#1e1e1e' : '#343a40',
       card: isDark ? '#1e1e1e' : '#ffffff',
       placeholder: isDark ? '#666666' : '#999999',
+      disabled: isDark ? '#555555' : '#cccccc',
+      overlayPrimary: isDark ? 'rgba(13, 110, 253, 0.1)' : 'rgba(0, 123, 255, 0.1)',
     },
     spacing: {
       xs: 4,

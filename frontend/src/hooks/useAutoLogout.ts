@@ -9,8 +9,8 @@ const WARNING_TIMEOUT = 28 * 60 * 1000; // 28 minutes (2 min warning)
 export const useAutoLogout = (enabled: boolean = true) => {
   const { logout, user } = useAuthStore();
   const router = useRouter();
-  const timeoutRef = useRef<number | null>(null);
-  const warningTimeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
 
   const resetTimer = () => {
@@ -42,15 +42,15 @@ export const useAutoLogout = (enabled: boolean = true) => {
     }, WARNING_TIMEOUT);
 
     // Set auto logout timer
-    timeoutRef.current = setTimeout(async () => {
+    timeoutRef.current = setTimeout(() => {
       Alert.alert(
         'Session Expired',
         'You have been logged out due to inactivity.',
         [
           {
             text: 'OK',
-            onPress: async () => {
-              await logout();
+            onPress: () => {
+              logout();
               router.replace('/');
             },
           },
@@ -72,7 +72,8 @@ export const useAutoLogout = (enabled: boolean = true) => {
         // Check if timeout exceeded while app was in background
         const elapsed = Date.now() - lastActivityRef.current;
         if (elapsed > INACTIVITY_TIMEOUT) {
-          logout().then(() => router.replace('/'));
+          logout();
+          router.replace('/');
         } else {
           resetTimer();
         }

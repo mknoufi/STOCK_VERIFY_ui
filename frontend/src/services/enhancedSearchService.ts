@@ -3,6 +3,7 @@ export interface SearchResult {
   id: string;
   item_code: string;
   name: string;
+  item_name?: string;
   barcode?: string;
   mrp?: number;
   stock_qty?: number;
@@ -12,6 +13,9 @@ export interface SearchResult {
   item_group?: string;
   warehouse?: string;
   location?: string;
+  matchType?: string;
+  floor?: string;
+  rack?: string;
 }
 
 export interface SearchFilters {
@@ -60,3 +64,6 @@ export const EnhancedSearchService = {
     return ['Main Warehouse', 'Secondary Warehouse'];
   },
 };
+
+// Export individual function for direct import
+export const searchItems = EnhancedSearchService.searchItems;

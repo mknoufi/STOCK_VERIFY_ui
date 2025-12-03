@@ -20,7 +20,7 @@ export interface Item {
 
 export type ScannerMode = 'item' | 'serial';
 
-export type PhotoProofType = 'ITEM' | 'SERIAL' | 'LOCATION' | 'DAMAGE';
+export type PhotoProofType = 'ITEM' | 'SERIAL' | 'LOCATION' | 'DAMAGE' | 'SHELF';
 
 export interface ScanFormData {
   countedQty: string;
@@ -104,4 +104,5 @@ export interface WorkflowState {
   errors: string[];
   serialCaptureEnabled?: boolean;
   serialInputs?: SerialInput[];
+  expectedSerialCount?: number;
 }

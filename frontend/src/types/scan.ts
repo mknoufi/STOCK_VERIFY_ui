@@ -105,4 +105,5 @@ export interface WorkflowState {
   serialCaptureEnabled?: boolean;
   serialInputs?: SerialInput[];
   expectedSerialCount?: number;
+  showSerialEntry?: boolean;
 }

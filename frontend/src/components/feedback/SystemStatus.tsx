@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import api from '@/services/api';
+import api from '@/services/httpClient';
 
 interface HealthStatus {
     status: 'healthy' | 'degraded' | 'down';

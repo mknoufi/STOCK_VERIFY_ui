@@ -57,7 +57,7 @@ export default function ActivityLogsScreen() {
       }
       setHasMore(response.pagination?.has_next || false);
     } catch (error: any) {
-      showToast(`Failed to load logs: ${error.message}`, 'error');
+      show(`Failed to load logs: ${error.message}`, 'error');
     } finally {
       setLoading(false);
       setRefreshing(false);

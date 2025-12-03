@@ -58,8 +58,8 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
     setShowDropdown(true);
 
     try {
-      const searchResults = await searchItems(searchQuery);
-      setResults(searchResults);
+      const response = await searchItems({ query: searchQuery });
+      setResults(response.items);
       setSelectedIndex(-1);
     } catch (error) {
       __DEV__ && console.error('Search error:', error);
@@ -174,7 +174,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
               </Text>
             </View>
 
-            {item.mrp > 0 && (
+            {(item.mrp ?? 0) > 0 && (
               <View style={styles.detailChip}>
                 <Ionicons name="pricetag-outline" size={14} color={theme.colors.success} />
                 <Text style={[styles.detailText, { color: theme.colors.text }]}>

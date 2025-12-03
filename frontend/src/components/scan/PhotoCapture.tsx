@@ -118,7 +118,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   <Text style={styles.photoPreviewLabel}>{photo.type}</Text>
                   <TouchableOpacity
                     style={styles.photoRemoveButton}
-                    onPress={() => onRemovePhoto(photo.id)}
+                    onPress={() => onRemovePhoto(photo.id ?? '')}
                   >
                     <Ionicons name="close" size={14} color="#fff" />
                   </TouchableOpacity>

@@ -313,7 +313,7 @@ export default function RootLayout() {
       <ErrorBoundary>
         <UnistylesThemeProvider>
           <ToastProvider>
-            <StatusBar style={theme.dark ? 'light' : 'dark'} />
+            <StatusBar style={theme.isDark ? 'light' : 'dark'} />
             {/* {__DEV__ && flags.enableDebugPanel && <DebugPanel />} */}
             <Stack
               screenOptions={{

@@ -10,8 +10,8 @@ import Animated, {
   FadeInDown,
   FadeInUp
 } from 'react-native-reanimated';
-import { colors, spacing, gradients, layout } from '../styles/globalStyles';
-import { useAuthStore } from '../store/authStore';
+import { colors, spacing, gradients, layout } from '@/styles/globalStyles';
+import { useAuthStore } from '@/store/authStore';
 
 
 const FeatureCard = ({ icon, title, delay }: { icon: keyof typeof Ionicons.glyphMap; title: string; delay: number }) => (

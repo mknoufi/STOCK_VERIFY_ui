@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies in builder stage
-COPY backend/requirements.txt .
+COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
@@ -35,7 +35,7 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* && \
     rm -rf /wheels
 
 # Copy application code
-COPY backend /app/backend
+COPY . /app/backend
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app

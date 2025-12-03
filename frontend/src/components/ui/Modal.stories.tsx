@@ -16,7 +16,8 @@ const meta: Meta<typeof Modal> = {
   parameters: {
     docs: {
       description: {
-        component: 'Modern modal dialog component with backdrop, animations, and customizable sizes. Supports web and native platforms.',
+        component:
+          'Modern modal dialog component with backdrop, animations, and customizable sizes. Supports web and native platforms.',
       },
     },
   },
@@ -60,16 +61,8 @@ const ModalWrapper = ({ children, ...props }: any) => {
 
   return (
     <View>
-      <Button
-        title="Open Modal"
-        onPress={() => setVisible(true)}
-        style={styles.openButton}
-      />
-      <Modal
-        {...props}
-        visible={visible}
-        onClose={() => setVisible(false)}
-      >
+      <Button title="Open Modal" onPress={() => setVisible(true)} style={styles.openButton} />
+      <Modal {...props} visible={visible} onClose={() => setVisible(false)}>
         {children}
       </Modal>
     </View>
@@ -142,18 +135,8 @@ export const ComplexContent: Story = {
           Are you sure you want to delete this item? This action cannot be undone.
         </Text>
         <View style={styles.buttonRow}>
-          <Button
-            title="Cancel"
-            variant="outline"
-            onPress={() => { }}
-            style={styles.button}
-          />
-          <Button
-            title="Delete"
-            variant="danger"
-            onPress={() => { }}
-            style={styles.button}
-          />
+          <Button title="Cancel" variant="outline" onPress={() => {}} style={styles.button} />
+          <Button title="Delete" variant="danger" onPress={() => {}} style={styles.button} />
         </View>
       </View>
     </ModalWrapper>
@@ -164,7 +147,9 @@ export const ComplexContent: Story = {
 export const WithoutCloseButton: Story = {
   render: () => (
     <ModalWrapper title="No Close Button" showCloseButton={false}>
-      <Text>This modal doesn&apos;t have a close button. Use backdrop press or custom action to close.</Text>
+      <Text>
+        This modal doesn&apos;t have a close button. Use backdrop press or custom action to close.
+      </Text>
     </ModalWrapper>
   ),
 };

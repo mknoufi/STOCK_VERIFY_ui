@@ -7,7 +7,6 @@ import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } fr
 import { Ionicons } from '@expo/vector-icons';
 import { SerialInput } from '@/types/scan';
 
-
 interface SerialNumberEntryProps {
   serialInputs: SerialInput[];
   requiredSerialCount: number;
@@ -61,14 +60,14 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
     if (requiredSerialCount > 0 && serialInputs.length <= requiredSerialCount) {
       Alert.alert(
         'Cannot Remove',
-        `At least ${requiredSerialCount} serial number${requiredSerialCount > 1 ? 's are' : ' is'} required.`
+        `At least ${requiredSerialCount} serial number${
+          requiredSerialCount > 1 ? 's are' : ' is'
+        } required.`
       );
       return;
     }
     onRemoveSerial(id);
   };
-
-
 
   return (
     <View style={styles.serialSection}>
@@ -89,12 +88,14 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
       <Text style={styles.serialRequirementText}>{serialRequirementMessage}</Text>
       {missingSerialCount > 0 && (
         <Text style={styles.serialHelperText}>
-          {missingSerialCount} more serial number{missingSerialCount > 1 ? 's' : ''} needed to match the counted quantity.
+          {missingSerialCount} more serial number{missingSerialCount > 1 ? 's' : ''} needed to match
+          the counted quantity.
         </Text>
       )}
       {extraSerialCount > 0 && (
         <Text style={styles.serialErrorText}>
-          Remove {extraSerialCount} extra serial number{extraSerialCount > 1 ? 's' : ''} to match the counted quantity.
+          Remove {extraSerialCount} extra serial number{extraSerialCount > 1 ? 's' : ''} to match
+          the counted quantity.
         </Text>
       )}
 

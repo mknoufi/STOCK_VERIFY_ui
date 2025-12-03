@@ -66,15 +66,10 @@ export const LoginDiagnosticsPanel: React.FC<LoginDiagnosticsPanelProps> = ({
       <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
         <View style={styles.headerLeft}>
           <Ionicons name="bug" size={24} color={theme.colors.primary} />
-          <Text style={[styles.title, { color: theme.colors.text }]}>
-            Login Page Diagnostics
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>Login Page Diagnostics</Text>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity
-            onPress={() => setAutoRefresh(!autoRefresh)}
-            style={styles.iconButton}
-          >
+          <TouchableOpacity onPress={() => setAutoRefresh(!autoRefresh)} style={styles.iconButton}>
             <Ionicons
               name={autoRefresh ? 'refresh' : 'refresh-outline'}
               size={20}
@@ -95,9 +90,7 @@ export const LoginDiagnosticsPanel: React.FC<LoginDiagnosticsPanelProps> = ({
           <Text style={[styles.summaryLabel, { color: theme.colors.textSecondary }]}>
             Total Steps:
           </Text>
-          <Text style={[styles.summaryValue, { color: theme.colors.text }]}>
-            {summary.total}
-          </Text>
+          <Text style={[styles.summaryValue, { color: theme.colors.text }]}>{summary.total}</Text>
         </View>
         <View style={styles.summaryRow}>
           <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
@@ -123,7 +116,11 @@ export const LoginDiagnosticsPanel: React.FC<LoginDiagnosticsPanelProps> = ({
       <ScrollView style={styles.stepsContainer}>
         {steps.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="information-circle-outline" size={48} color={theme.colors.placeholder} />
+            <Ionicons
+              name="information-circle-outline"
+              size={48}
+              color={theme.colors.placeholder}
+            />
             <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
               No diagnostic steps yet. Run diagnostics to see results.
             </Text>

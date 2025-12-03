@@ -8,8 +8,8 @@ const pkgPath = path.join(__dirname, '../package.json');
 const pkg = require(pkgPath);
 
 const expected = {
-  'react': '19.1.0',
-  'react-native': '0.81.5'
+  react: '19.1.0',
+  'react-native': '0.81.5',
 };
 
 let errors = 0;

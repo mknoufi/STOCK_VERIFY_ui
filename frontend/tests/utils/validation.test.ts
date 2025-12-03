@@ -1,12 +1,19 @@
-import { normalizeBarcode, validateBarcode, validateMRP, validateQuantity, validateSessionName } from '../../src/utils/validation';
+import {
+  normalizeBarcode,
+  validateBarcode,
+  validateMRP,
+  validateQuantity,
+  validateSessionName,
+} from '../../src/utils/validation';
 
 describe('validation utils', () => {
   it('validates session names', () => {
-    expect(validateSessionName('Floor 1', 'Rack A')).toMatchObject({ valid: true, value: 'Floor 1 - Rack A' });
+    expect(validateSessionName('Floor 1', 'Rack A')).toMatchObject({
+      valid: true,
+      value: 'Floor 1 - Rack A',
+    });
     expect(validateSessionName('', 'Rack A')).toMatchObject({ valid: false });
-    expect(
-      validateSessionName('F'.repeat(60), 'R'.repeat(60))
-    ).toMatchObject({ valid: false });
+    expect(validateSessionName('F'.repeat(60), 'R'.repeat(60))).toMatchObject({ valid: false });
     expect(validateSessionName(`O'Neil`, `Rack "A"`).value).toBe('ONeil - Rack A');
   });
 

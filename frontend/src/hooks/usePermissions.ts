@@ -24,7 +24,7 @@ export const usePermissions = () => {
    */
   const hasAnyPermission = (permissions: string[]): boolean => {
     if (!user || !user.permissions) return false;
-    return permissions.some(p => user.permissions.includes(p));
+    return permissions.some((p) => user.permissions.includes(p));
   };
 
   /**
@@ -34,7 +34,7 @@ export const usePermissions = () => {
    */
   const hasAllPermissions = (permissions: string[]): boolean => {
     if (!user || !user.permissions) return false;
-    return permissions.every(p => user.permissions.includes(p));
+    return permissions.every((p) => user.permissions.includes(p));
   };
 
   /**

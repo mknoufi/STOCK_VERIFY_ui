@@ -54,9 +54,7 @@ export function memoize<T extends (...args: any[]) => any>(
   const cache = new Map<string, ReturnType<T>>();
 
   return ((...args: Parameters<T>): ReturnType<T> => {
-    const key = keyGenerator
-      ? keyGenerator(...args)
-      : JSON.stringify(args);
+    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
 
     if (cache.has(key)) {
       return cache.get(key)!;
@@ -142,7 +140,7 @@ export class BatchProcessor<T> {
 
       // Delay between batches
       if (i + this.batchSize < items.length) {
-        await new Promise(resolve => setTimeout(resolve, this.delay));
+        await new Promise((resolve) => setTimeout(resolve, this.delay));
       }
     }
   }

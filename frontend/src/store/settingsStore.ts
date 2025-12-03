@@ -92,7 +92,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setSetting: (key, value) => {
     const newSettings = { ...get().settings, [key]: value };
     set({ settings: newSettings });
-    
+
     // Persist to storage
     mmkvStorage.setItem('app_settings', JSON.stringify(newSettings));
 
@@ -116,7 +116,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         // Merge with defaults to handle new keys
         const mergedSettings = { ...DEFAULT_SETTINGS, ...parsedSettings };
         set({ settings: mergedSettings });
-        
+
         // Apply theme
         ThemeService.setTheme(mergedSettings.theme);
       }

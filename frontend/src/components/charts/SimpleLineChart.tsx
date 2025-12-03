@@ -61,7 +61,7 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
   const scaleY = chartHeight / (yRange + yPadding * 2);
 
   const points = data.map((point, index) => {
-    const x = (index * scaleX);
+    const x = index * scaleX;
     const y = chartHeight - (point.y - minY + yPadding) * scaleY;
     return { x, y, value: point.y, label: point.label || String(point.x) };
   });

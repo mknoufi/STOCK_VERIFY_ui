@@ -18,13 +18,10 @@ const mockAuthStore = {
 
 // Mock components for testing
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <View testID="test-wrapper">
-    {children}
-  </View>
+  <View testID="test-wrapper">{children}</View>
 );
 
 describe('Authentication Components', () => {
-
   describe('LoginScreen', () => {
     // Mock the LoginScreen component
     const MockLoginScreen = () => {
@@ -101,7 +98,6 @@ describe('Authentication Components', () => {
 });
 
 describe('Item Management Components', () => {
-
   describe('ItemCard Component', () => {
     const mockItem = {
       id: '1',
@@ -110,7 +106,7 @@ describe('Item Management Components', () => {
       category: 'Electronics',
       quantity: 10,
       location: 'Warehouse A',
-      status: 'active'
+      status: 'active',
     };
 
     const MockItemCard = ({ item, onPress }: { item: any; onPress?: () => void }) => (
@@ -146,19 +142,19 @@ describe('Item Management Components', () => {
         id: '1',
         barcode: 'TEST001',
         name: 'Test Item 1',
-        quantity: 10
+        quantity: 10,
       },
       {
         id: '2',
         barcode: 'TEST002',
         name: 'Test Item 2',
-        quantity: 5
-      }
+        quantity: 5,
+      },
     ];
 
     const MockItemList = ({ items }: { items: any[] }) => (
       <View testID="item-list">
-        {items.map(item => (
+        {items.map((item) => (
           <View key={item.id} testID={`item-${item.id}`}>
             <Text>{item.name}</Text>
           </View>
@@ -180,7 +176,7 @@ describe('Item Management Components', () => {
           {items.length === 0 ? (
             <Text testID="empty-state">No items found</Text>
           ) : (
-            items.map(item => (
+            items.map((item) => (
               <View key={item.id} testID={`item-${item.id}`}>
                 <Text>{item.name}</Text>
               </View>
@@ -338,7 +334,13 @@ describe('Form Validation', () => {
 });
 
 describe('Error Handling', () => {
-  const MockErrorBoundary = ({ hasError, children }: { hasError: boolean; children: React.ReactNode }) => {
+  const MockErrorBoundary = ({
+    hasError,
+    children,
+  }: {
+    hasError: boolean;
+    children: React.ReactNode;
+  }) => {
     if (hasError) {
       return <Text testID="error-fallback">Something went wrong</Text>;
     }
@@ -348,7 +350,9 @@ describe('Error Handling', () => {
   test('displays error boundary when component crashes', () => {
     render(
       <MockErrorBoundary hasError={true}>
-        <View><Text>This won't render</Text></View>
+        <View>
+          <Text>This won't render</Text>
+        </View>
       </MockErrorBoundary>,
       { wrapper: TestWrapper }
     );
@@ -363,11 +367,7 @@ describe('Loading States', () => {
       return <Text testID="loading-spinner">Loading...</Text>;
     }
 
-    return (
-      <Text testID="content">
-        {data ? 'Data loaded' : 'No data'}
-      </Text>
-    );
+    return <Text testID="content">{data ? 'Data loaded' : 'No data'}</Text>;
   };
 
   test('shows loading spinner when loading', () => {
@@ -389,7 +389,7 @@ describe('Component Integration', () => {
     const mockItems = [
       { id: '1', name: 'Apple iPhone', category: 'Electronics' },
       { id: '2', name: 'Samsung Galaxy', category: 'Electronics' },
-      { id: '3', name: 'Apple Watch', category: 'Electronics' }
+      { id: '3', name: 'Apple Watch', category: 'Electronics' },
     ];
 
     const MockIntegratedComponent = () => {
@@ -400,9 +400,7 @@ describe('Component Integration', () => {
         setQuery(searchQuery);
         if (searchQuery) {
           setFilteredItems(
-            mockItems.filter(item =>
-              item.name.toLowerCase().includes(searchQuery.toLowerCase())
-            )
+            mockItems.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
           );
         } else {
           setFilteredItems(mockItems);
@@ -420,10 +418,8 @@ describe('Component Integration', () => {
           <TouchableOpacity testID="search-button" onPress={() => handleSearch(query)}>
             <Text>Search</Text>
           </TouchableOpacity>
-          <Text testID="results-count">
-            {filteredItems.length} items found
-          </Text>
-          {filteredItems.map(item => (
+          <Text testID="results-count">{filteredItems.length} items found</Text>
+          {filteredItems.map((item) => (
             <View key={item.id} testID={`result-${item.id}`}>
               <Text>{item.name}</Text>
             </View>

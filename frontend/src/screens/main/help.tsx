@@ -3,13 +3,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Header } from '@/components/layout/Header';
@@ -34,17 +28,20 @@ const helpSections: HelpSection[] = [
     items: [
       {
         question: 'How do I login?',
-        answer: 'Enter your username and password. If you enabled "Remember Me", your username will be saved for next time.',
+        answer:
+          'Enter your username and password. If you enabled "Remember Me", your username will be saved for next time.',
         icon: 'log-in',
       },
       {
         question: 'What are the user roles?',
-        answer: 'Staff: Can scan items and create count sessions. Supervisor: Can approve counts, view reports, and configure settings.',
+        answer:
+          'Staff: Can scan items and create count sessions. Supervisor: Can approve counts, view reports, and configure settings.',
         icon: 'people',
       },
       {
         question: 'How do I scan a barcode?',
-        answer: 'Navigate to the Scan screen, tap the barcode scanner icon, and point your camera at the barcode. You can also manually enter the barcode.',
+        answer:
+          'Navigate to the Scan screen, tap the barcode scanner icon, and point your camera at the barcode. You can also manually enter the barcode.',
         icon: 'barcode',
       },
     ],
@@ -55,22 +52,26 @@ const helpSections: HelpSection[] = [
     items: [
       {
         question: 'How do I create a counting session?',
-        answer: 'Go to Home screen, tap "New Session", select a warehouse, and start scanning items.',
+        answer:
+          'Go to Home screen, tap "New Session", select a warehouse, and start scanning items.',
         icon: 'add-circle',
       },
       {
         question: 'How do I enter quantity?',
-        answer: 'After scanning an item, tap the quantity field and enter the counted quantity. Tap "Save" to record.',
+        answer:
+          'After scanning an item, tap the quantity field and enter the counted quantity. Tap "Save" to record.',
         icon: 'calculator',
       },
       {
         question: 'What if an item is not found?',
-        answer: 'Tap "Item Not Found" button and enter the item details manually. It will be reported for review.',
+        answer:
+          'Tap "Item Not Found" button and enter the item details manually. It will be reported for review.',
         icon: 'alert-circle',
       },
       {
         question: 'How do I refresh stock from ERP?',
-        answer: 'Tap the refresh icon next to "ERP Stock" on the scan screen to fetch the latest stock quantity.',
+        answer:
+          'Tap the refresh icon next to "ERP Stock" on the scan screen to fetch the latest stock quantity.',
         icon: 'refresh',
       },
     ],
@@ -81,12 +82,14 @@ const helpSections: HelpSection[] = [
     items: [
       {
         question: 'How do I approve count lines?',
-        answer: 'Go to Dashboard, select a session, review count lines, and tap "Approve" for each line.',
+        answer:
+          'Go to Dashboard, select a session, review count lines, and tap "Approve" for each line.',
         icon: 'checkmark-circle',
       },
       {
         question: 'How do I configure database mapping?',
-        answer: 'Go to Settings > Database Mapping, enter connection details, select tables and columns, and save the mapping.',
+        answer:
+          'Go to Settings > Database Mapping, enter connection details, select tables and columns, and save the mapping.',
         icon: 'settings',
       },
       {
@@ -102,17 +105,20 @@ const helpSections: HelpSection[] = [
     items: [
       {
         question: 'Cannot connect to server',
-        answer: 'Check your internet connection and ensure the backend server is running. Verify the backend URL in settings.',
+        answer:
+          'Check your internet connection and ensure the backend server is running. Verify the backend URL in settings.',
         icon: 'wifi',
       },
       {
         question: 'Barcode not found',
-        answer: 'Check if the item exists in ERP. Verify database mapping configuration if you\'re a supervisor.',
+        answer:
+          "Check if the item exists in ERP. Verify database mapping configuration if you're a supervisor.",
         icon: 'search',
       },
       {
         question: 'Sync not working',
-        answer: 'Check ERP connection settings. Ensure SQL Server is accessible and credentials are correct.',
+        answer:
+          'Check ERP connection settings. Ensure SQL Server is accessible and credentials are correct.',
         icon: 'sync',
       },
       {
@@ -190,7 +196,9 @@ export default function HelpScreen() {
                   </TouchableOpacity>
 
                   {isExpanded && (
-                    <View style={[styles.answerContainer, { backgroundColor: theme.colors.background }]}>
+                    <View
+                      style={[styles.answerContainer, { backgroundColor: theme.colors.background }]}
+                    >
                       <Text style={[styles.answer, { color: theme.colors.textSecondary }]}>
                         {item.answer}
                       </Text>
@@ -205,9 +213,7 @@ export default function HelpScreen() {
         {/* Contact Support */}
         <View style={[styles.contactSection, { backgroundColor: theme.colors.card }]}>
           <Ionicons name="mail" size={32} color={theme.colors.primary} />
-          <Text style={[styles.contactTitle, { color: theme.colors.text }]}>
-            Need More Help?
-          </Text>
+          <Text style={[styles.contactTitle, { color: theme.colors.text }]}>Need More Help?</Text>
           <Text style={[styles.contactText, { color: theme.colors.textSecondary }]}>
             Contact your system administrator or IT support team for additional assistance.
           </Text>

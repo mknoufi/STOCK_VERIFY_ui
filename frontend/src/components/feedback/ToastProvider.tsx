@@ -4,16 +4,23 @@ import { Toast } from './Toast';
 import { toastService } from '../../services/utils/toastService';
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' | 'warning'; duration?: number }[]>([]);
+  const [toasts, setToasts] = useState<
+    {
+      id: string;
+      message: string;
+      type: 'success' | 'error' | 'info' | 'warning';
+      duration?: number;
+    }[]
+  >([]);
 
   useEffect(() => {
     const handleShow = (toast: any) => {
-      setToasts(prev => [...prev, toast]);
+      setToasts((prev) => [...prev, toast]);
     };
 
     const handleHide = (data: { id?: string }) => {
       if (data.id) {
-        setToasts(prev => prev.filter(t => t.id !== data.id));
+        setToasts((prev) => prev.filter((t) => t.id !== data.id));
       }
     };
 
@@ -70,8 +77,16 @@ const styles = StyleSheet.create({
 });
 export const useToast = () => {
   return {
-    show: (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', duration?: number) => {
-      const durationOption: 'short' | 'long' | undefined = duration ? (duration > 3000 ? 'long' : 'short') : undefined;
+    show: (
+      message: string,
+      type: 'success' | 'error' | 'info' | 'warning' = 'info',
+      duration?: number
+    ) => {
+      const durationOption: 'short' | 'long' | undefined = duration
+        ? duration > 3000
+          ? 'long'
+          : 'short'
+        : undefined;
       toastService.show(message, { type, duration: durationOption });
     },
     hide: (id: string) => {

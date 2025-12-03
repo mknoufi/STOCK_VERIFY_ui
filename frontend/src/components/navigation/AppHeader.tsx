@@ -4,14 +4,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ViewStyle,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -146,11 +139,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     borderBottomWidth: 1,
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'sticky' as const,
+          top: 0,
+          zIndex: 100,
+        }
+      : {}),
   } as any,
   contentContainer: {
     flex: 1,

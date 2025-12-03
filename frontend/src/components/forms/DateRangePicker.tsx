@@ -7,7 +7,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import { modernColors, modernSpacing, modernTypography, modernBorderRadius } from '@/styles/modernDesignSystem';
+import {
+  modernColors,
+  modernSpacing,
+  modernTypography,
+  modernBorderRadius,
+} from '@/styles/modernDesignSystem';
 
 interface DateRangePickerProps {
   startDate: Date;
@@ -39,10 +44,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.dateRow}>
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={() => setShowStartPicker(true)}
-        >
+        <TouchableOpacity style={styles.dateButton} onPress={() => setShowStartPicker(true)}>
           <Ionicons name="calendar" size={20} color={modernColors.primary[500]} />
           <View style={styles.dateContent}>
             <Text style={styles.dateLabel}>Start Date</Text>
@@ -52,10 +54,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
         <Ionicons name="arrow-forward" size={20} color={modernColors.text.secondary} />
 
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={() => setShowEndPicker(true)}
-        >
+        <TouchableOpacity style={styles.dateButton} onPress={() => setShowEndPicker(true)}>
           <Ionicons name="calendar" size={20} color={modernColors.primary[500]} />
           <View style={styles.dateContent}>
             <Text style={styles.dateLabel}>End Date</Text>

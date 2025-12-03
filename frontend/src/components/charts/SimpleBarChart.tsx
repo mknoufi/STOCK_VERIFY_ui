@@ -5,7 +5,12 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { modernColors, modernTypography, modernSpacing, modernBorderRadius } from '../../styles/modernDesignSystem';
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+  modernBorderRadius,
+} from '../../styles/modernDesignSystem';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;

@@ -13,7 +13,6 @@ import { useRouter } from 'expo-router';
 import { usePermissions } from '../../src/hooks/usePermissions';
 import { getExportResults, downloadExportResult } from '../../src/services/api/api';
 
-
 interface ExportResult {
   _id: string;
   schedule_id: string;
@@ -38,11 +37,9 @@ export default function ExportResultsScreen() {
 
   useEffect(() => {
     if (!hasPermission('export.view_all') && !hasPermission('export.view_own')) {
-      Alert.alert(
-        'Access Denied',
-        'You do not have permission to view export results.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      Alert.alert('Access Denied', 'You do not have permission to view export results.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
       return;
     }
     loadResults();
@@ -188,10 +185,7 @@ export default function ExportResultsScreen() {
         {['all', 'completed', 'failed', 'pending'].map((status) => (
           <TouchableOpacity
             key={status}
-            style={[
-              styles.filterButton,
-              filterStatus === status && styles.filterButtonActive,
-            ]}
+            style={[styles.filterButton, filterStatus === status && styles.filterButtonActive]}
             onPress={() => setFilterStatus(status)}
           >
             <Text

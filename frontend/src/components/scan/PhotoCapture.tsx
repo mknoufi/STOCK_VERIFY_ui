@@ -3,7 +3,16 @@
  * Handles photo proof capture, preview, and management
  */
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  ActivityIndicator,
+  StyleSheet,
+  Platform,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView } from 'expo-camera';

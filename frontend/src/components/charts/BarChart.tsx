@@ -115,14 +115,7 @@ export const BarChart: React.FC<BarChartProps> = ({
 
             return (
               <G key={index}>
-                <Rect
-                  x={x}
-                  y={y}
-                  width={barWidth}
-                  height={barHeight}
-                  fill={color}
-                  rx={4}
-                />
+                <Rect x={x} y={y} width={barWidth} height={barHeight} fill={color} rx={4} />
                 {showValues && (
                   <SvgText
                     x={x + barWidth / 2}

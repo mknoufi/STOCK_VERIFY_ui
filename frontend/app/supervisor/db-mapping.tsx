@@ -88,12 +88,8 @@ export default function DatabaseMappingScreen() {
 
   // Standard app fields that need mapping
 
-
-
-
   const loadDefaultConnectionParams = React.useCallback(async () => {
     try {
-
       // First, try to get ERP config from backend
       try {
         const config = await getERPConfig();
@@ -142,7 +138,7 @@ export default function DatabaseMappingScreen() {
               app_field: key,
               erp_column: value.erp_column || value,
               table_name: value.table_name || selectedTable,
-              is_required: appFields.find(f => f.key === key)?.required || false,
+              is_required: appFields.find((f) => f.key === key)?.required || false,
             };
           });
           setMapping(mappedColumns);
@@ -228,7 +224,7 @@ export default function DatabaseMappingScreen() {
     }
 
     const appField = selectedAppField;
-    const isRequired = appFields.find(f => f.key === appField)?.required || false;
+    const isRequired = appFields.find((f) => f.key === appField)?.required || false;
 
     setMapping({
       ...mapping,
@@ -278,15 +274,16 @@ export default function DatabaseMappingScreen() {
       if (response.success) {
         Alert.alert(
           'Mapping Test Successful',
-          `Query executed successfully.\n\nSample data: ${JSON.stringify(response.sample_data, null, 2)}`,
+          `Query executed successfully.\n\nSample data: ${JSON.stringify(
+            response.sample_data,
+            null,
+            2
+          )}`,
           [{ text: 'OK' }]
         );
       }
     } catch (error: any) {
-      Alert.alert(
-        'Mapping Test Failed',
-        error.response?.data?.detail || error.message
-      );
+      Alert.alert('Mapping Test Failed', error.response?.data?.detail || error.message);
     } finally {
       setLoading(false);
     }
@@ -299,10 +296,10 @@ export default function DatabaseMappingScreen() {
     }
 
     // Check required fields
-    const requiredFields = appFields.filter(f => f.required);
-    const missingFields = requiredFields.filter(f => !mapping[f.key]);
+    const requiredFields = appFields.filter((f) => f.required);
+    const missingFields = requiredFields.filter((f) => !mapping[f.key]);
     if (missingFields.length > 0) {
-      show(`Missing required fields: ${missingFields.map(f => f.label).join(', ')}`, 'error');
+      show(`Missing required fields: ${missingFields.map((f) => f.label).join(', ')}`, 'error');
       return;
     }
 
@@ -338,11 +335,7 @@ export default function DatabaseMappingScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header
-        title="Database Mapping"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
+      <Header title="Database Mapping" leftIcon="arrow-back" onLeftPress={() => router.back()} />
 
       <ScrollView style={styles.scrollView}>
         {/* Connection Settings */}
@@ -354,7 +347,10 @@ export default function DatabaseMappingScreen() {
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Host</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { backgroundColor: theme.colors.background, color: theme.colors.text },
+              ]}
               value={host}
               onChangeText={setHost}
               placeholder="SQL Server host"
@@ -365,7 +361,10 @@ export default function DatabaseMappingScreen() {
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Port</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { backgroundColor: theme.colors.background, color: theme.colors.text },
+              ]}
               value={port}
               onChangeText={setPort}
               placeholder="1433"
@@ -377,7 +376,10 @@ export default function DatabaseMappingScreen() {
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Database</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { backgroundColor: theme.colors.background, color: theme.colors.text },
+              ]}
               value={database}
               onChangeText={setDatabase}
               placeholder="Database name"
@@ -388,7 +390,10 @@ export default function DatabaseMappingScreen() {
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Schema</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { backgroundColor: theme.colors.background, color: theme.colors.text },
+              ]}
               value={schema}
               onChangeText={setSchema}
               placeholder="dbo"
@@ -399,7 +404,10 @@ export default function DatabaseMappingScreen() {
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>User (Optional)</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { backgroundColor: theme.colors.background, color: theme.colors.text },
+              ]}
               value={user}
               onChangeText={setUser}
               placeholder="Username"
@@ -410,7 +418,10 @@ export default function DatabaseMappingScreen() {
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Password (Optional)</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { backgroundColor: theme.colors.background, color: theme.colors.text },
+              ]}
               value={password}
               onChangeText={setPassword}
               placeholder="Password"
@@ -453,7 +464,9 @@ export default function DatabaseMappingScreen() {
                 <Ionicons
                   name={selectedTable === table.name ? 'checkbox' : 'square-outline'}
                   size={24}
-                  color={selectedTable === table.name ? theme.colors.primary : theme.colors.textSecondary}
+                  color={
+                    selectedTable === table.name ? theme.colors.primary : theme.colors.textSecondary
+                  }
                 />
                 <Text style={[styles.tableName, { color: theme.colors.text }]}>
                   {table.schema}.{table.name}
@@ -482,14 +495,20 @@ export default function DatabaseMappingScreen() {
                     <TouchableOpacity
                       style={[
                         styles.columnButton,
-                        { backgroundColor: mappedColumn ? theme.colors.success + '20' : theme.colors.background },
+                        {
+                          backgroundColor: mappedColumn
+                            ? theme.colors.success + '20'
+                            : theme.colors.background,
+                        },
                       ]}
                       onPress={() => handleSelectColumn(field.key)}
                     >
                       <Text
                         style={[
                           styles.columnButtonText,
-                          { color: mappedColumn ? theme.colors.success : theme.colors.textSecondary },
+                          {
+                            color: mappedColumn ? theme.colors.success : theme.colors.textSecondary,
+                          },
                         ]}
                       >
                         {mappedColumn ? mappedColumn.erp_column : 'Select column...'}
@@ -542,7 +561,7 @@ export default function DatabaseMappingScreen() {
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Select Column for {appFields.find(f => f.key === selectedAppField)?.label}
+                Select Column for {appFields.find((f) => f.key === selectedAppField)?.label}
               </Text>
               <TouchableOpacity onPress={() => setShowColumnModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
@@ -553,10 +572,7 @@ export default function DatabaseMappingScreen() {
               {columns.map((column) => (
                 <TouchableOpacity
                   key={column.name}
-                  style={[
-                    styles.columnItem,
-                    { backgroundColor: theme.colors.background },
-                  ]}
+                  style={[styles.columnItem, { backgroundColor: theme.colors.background }]}
                   onPress={() => handleMapColumn(column.name)}
                 >
                   <View>

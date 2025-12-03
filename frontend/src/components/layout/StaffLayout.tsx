@@ -51,30 +51,23 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({
     (segments[1] === 'home'
       ? 'Sessions'
       : segments[1] === 'scan'
-        ? 'Scan'
-        : segments[1] === 'history'
-          ? 'History'
-          : 'Staff');
+      ? 'Scan'
+      : segments[1] === 'history'
+      ? 'History'
+      : 'Staff');
 
   // Show back button if not on home screen
   const showBack = segments[1] !== 'home' && segments[1] !== undefined;
 
   return (
     <View style={[styles.container, style]} testID={testID}>
-      <AppHeader
-        title={screenTitle}
-        showBack={showBack}
-        showUser={true}
-        actions={headerActions}
-      />
+      <AppHeader title={screenTitle} showBack={showBack} showUser={true} actions={headerActions} />
       <Screen variant={screenVariant} style={styles.screen} backgroundColor={backgroundColor}>
         {children}
       </Screen>
       {isMobile && <StaffTabBar />}
       {showFAB && fabAction && (
-        <View style={styles.fabContainer}>
-          {/* FAB will be implemented separately */}
-        </View>
+        <View style={styles.fabContainer}>{/* FAB will be implemented separately */}</View>
       )}
     </View>
   );

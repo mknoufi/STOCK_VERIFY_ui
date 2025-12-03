@@ -32,8 +32,9 @@ async def get_variance_trend(
     current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """Get variance trend data for the last N days"""
-    from backend.server import db
     from datetime import datetime, timedelta
+
+    from backend.server import db
 
     # Calculate start date
     start_date = datetime.utcnow() - timedelta(days=days)

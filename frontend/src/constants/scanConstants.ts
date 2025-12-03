@@ -10,7 +10,11 @@ import { formatMrpValue } from '../utils/scanUtils';
 export const MRP_MATCH_TOLERANCE = 0.01;
 export { formatMrpValue };
 
-export const PHOTO_PROOF_TYPES: { value: PhotoProofType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+export const PHOTO_PROOF_TYPES: {
+  value: PhotoProofType;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
   { value: 'ITEM', label: 'Item', icon: 'cube-outline' },
   { value: 'SHELF', label: 'Shelf', icon: 'layers-outline' },
   { value: 'SERIAL', label: 'Serial', icon: 'pricetag-outline' },

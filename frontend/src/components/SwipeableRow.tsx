@@ -10,13 +10,27 @@ type Props = {
   onRightAction?: () => void;
 };
 
-const Action = ({ label, color, onPress }: { label: string; color: string; onPress?: () => void }) => (
+const Action = ({
+  label,
+  color,
+  onPress,
+}: {
+  label: string;
+  color: string;
+  onPress?: () => void;
+}) => (
   <TouchableOpacity style={[styles.action, { backgroundColor: color }]} onPress={onPress}>
     <Text style={styles.actionText}>{label}</Text>
   </TouchableOpacity>
 );
 
-export const SwipeableRow: React.FC<Props> = ({ children, leftLabel = 'Left', rightLabel = 'Right', onLeftAction, onRightAction }) => {
+export const SwipeableRow: React.FC<Props> = ({
+  children,
+  leftLabel = 'Left',
+  rightLabel = 'Right',
+  onLeftAction,
+  onRightAction,
+}) => {
   const renderLeft = () => (
     <View style={[styles.actionsContainer, { justifyContent: 'flex-start' }]}>
       <Action label={leftLabel} color="#4CAF50" onPress={onLeftAction} />
@@ -30,7 +44,12 @@ export const SwipeableRow: React.FC<Props> = ({ children, leftLabel = 'Left', ri
   );
 
   return (
-    <Swipeable renderLeftActions={renderLeft} renderRightActions={renderRight} overshootLeft={false} overshootRight={false}>
+    <Swipeable
+      renderLeftActions={renderLeft}
+      renderRightActions={renderRight}
+      overshootLeft={false}
+      overshootRight={false}
+    >
       {children}
     </Swipeable>
   );

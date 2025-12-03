@@ -1,6 +1,12 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, DimensionValue } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { useTheme } from '../../hooks/useTheme';
 import { flags } from '../../constants/flags';
 

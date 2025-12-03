@@ -17,7 +17,8 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 export default function HistoryScreen() {
   const params = useLocalSearchParams();
   const sessionId = params.sessionId as string | undefined;
-  const initialApproved = flags.enableDeepLinks && (params.approved === '1' || params.approved === 'true');
+  const initialApproved =
+    flags.enableDeepLinks && (params.approved === '1' || params.approved === 'true');
   const router = useRouter();
   interface CountLine {
     id: string;
@@ -92,11 +93,10 @@ export default function HistoryScreen() {
     return () => window.removeEventListener('keydown', onKey);
   }, [onRefresh]);
 
-
-
   const renderCountLine = ({ item, index }: { item: CountLine; index: number }) => {
     const varianceColor = item.variance === 0 ? '#4CAF50' : '#FF5252';
-    const statusColor = item.status === 'approved' ? '#4CAF50' : item.status === 'rejected' ? '#FF5252' : '#FF9800';
+    const statusColor =
+      item.status === 'approved' ? '#4CAF50' : item.status === 'rejected' ? '#FF5252' : '#FF9800';
 
     const CardContent = (
       <View style={styles.countCard}>
@@ -131,18 +131,18 @@ export default function HistoryScreen() {
           </View>
         )}
 
-        {item.remark && (
-          <Text style={styles.remark}>Remark: {item.remark}</Text>
-        )}
+        {item.remark && <Text style={styles.remark}>Remark: {item.remark}</Text>}
 
-        <Text style={styles.timestamp}>
-          {new Date(item.counted_at).toLocaleString()}
-        </Text>
+        <Text style={styles.timestamp}>{new Date(item.counted_at).toLocaleString()}</Text>
       </View>
     );
 
     const AnimatedCard = flags.enableAnimations ? (
-      <Animated.View entering={FadeInUp.delay(index * 50).springify().damping(12)}>
+      <Animated.View
+        entering={FadeInUp.delay(index * 50)
+          .springify()
+          .damping(12)}
+      >
         {CardContent}
       </Animated.View>
     ) : (
@@ -198,9 +198,7 @@ export default function HistoryScreen() {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="file-tray-outline" size={64} color="#888" />
-                <Text style={styles.emptyText}>
-                  {loading ? 'Loading...' : 'No counts yet'}
-                </Text>
+                <Text style={styles.emptyText}>{loading ? 'Loading...' : 'No counts yet'}</Text>
               </View>
             }
           />
@@ -216,16 +214,25 @@ export default function HistoryScreen() {
             setShowApprovedOnly(next);
             setFiltersOpen(false);
             if (flags.enableDeepLinks) {
-              router.replace({ pathname: '/staff/history', params: { sessionId, approved: next ? '1' : undefined } });
+              router.replace({
+                pathname: '/staff/history',
+                params: { sessionId, approved: next ? '1' : undefined },
+              });
             }
             loadCountLines();
           }}
         >
-          <Ionicons name="checkmark-done-outline" size={18} color={showApprovedOnly ? '#111' : '#ccc'} />
-          <Text style={[styles.filterChipText, showApprovedOnly && styles.filterChipTextActive]}>Approved Only</Text>
+          <Ionicons
+            name="checkmark-done-outline"
+            size={18}
+            color={showApprovedOnly ? '#111' : '#ccc'}
+          />
+          <Text style={[styles.filterChipText, showApprovedOnly && styles.filterChipTextActive]}>
+            Approved Only
+          </Text>
         </TouchableOpacity>
       </BottomSheet>
-    </StaffLayout >
+    </StaffLayout>
   );
 }
 
@@ -269,7 +276,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#444',
     backgroundColor: '#222',
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
   },
   filterChipActive: {
     backgroundColor: '#8BC34A',
@@ -277,10 +284,10 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     color: '#ddd',
-    fontWeight: '600'
+    fontWeight: '600',
   },
   filterChipTextActive: {
-    color: '#111'
+    color: '#111',
   },
   countCard: {
     backgroundColor: '#2a2a2a',

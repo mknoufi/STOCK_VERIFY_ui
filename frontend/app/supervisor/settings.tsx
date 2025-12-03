@@ -3,14 +3,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSettingsStore } from '../../src/store/settingsStore';
@@ -26,30 +19,22 @@ export default function SettingsScreen() {
   const theme = useTheme();
 
   const handleReset = () => {
-    Alert.alert(
-      'Reset Settings',
-      'Are you sure you want to reset all settings to default?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reset',
-          style: 'destructive',
-          onPress: async () => {
-            await resetSettings();
-            Alert.alert('Success', 'Settings reset to default');
-          },
+    Alert.alert('Reset Settings', 'Are you sure you want to reset all settings to default?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: async () => {
+          await resetSettings();
+          Alert.alert('Success', 'Settings reset to default');
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header
-        title="Settings"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
+      <Header title="Settings" leftIcon="arrow-back" onLeftPress={() => router.back()} />
 
       <ScrollView style={styles.scrollView}>
         {/* Theme Settings */}
@@ -327,9 +312,7 @@ export default function SettingsScreen() {
             onPress={handleReset}
           >
             <Ionicons name="refresh" size={20} color={theme.colors.error} />
-            <Text style={[styles.resetText, { color: theme.colors.error }]}>
-              Reset to Default
-            </Text>
+            <Text style={[styles.resetText, { color: theme.colors.error }]}>Reset to Default</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

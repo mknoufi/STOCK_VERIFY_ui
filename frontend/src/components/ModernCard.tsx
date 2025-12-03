@@ -10,13 +10,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Animated, {
@@ -164,29 +158,19 @@ export const ModernCard: React.FC<ModernCardProps> = ({
           <View style={styles.header}>
             {icon && (
               <View style={styles.iconContainer}>
-                <Ionicons
-                  name={icon}
-                  size={24}
-                  color={modernColors.primary[500]}
-                />
+                <Ionicons name={icon} size={24} color={modernColors.primary[500]} />
               </View>
             )}
             <View style={styles.headerText}>
-              {title && (
-                <Text style={styles.title}>{title}</Text>
-              )}
-              {subtitle && (
-                <Text style={styles.subtitle}>{subtitle}</Text>
-              )}
+              {title && <Text style={styles.title}>{title}</Text>}
+              {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
             </View>
           </View>
         )}
 
         <View style={styles.body}>{children}</View>
 
-        {footer && (
-          <View style={styles.footer}>{footer}</View>
-        )}
+        {footer && <View style={styles.footer}>{footer}</View>}
       </View>
     );
   };

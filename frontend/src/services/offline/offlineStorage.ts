@@ -350,7 +350,8 @@ export const getCacheStats = async () => {
         (JSON.stringify(itemsCache).length +
           JSON.stringify(offlineQueue).length +
           JSON.stringify(sessionsCache).length +
-          JSON.stringify(countLinesCache).length) / 1024
+          JSON.stringify(countLinesCache).length) /
+          1024
       ),
     };
   } catch (error) {

@@ -26,10 +26,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 const getLocalFileUri = (filename: string) => {
-  const baseDir =
-    FileSystem.Paths?.document?.uri ??
-    FileSystem.Paths?.cache?.uri ??
-    '';
+  const baseDir = FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? '';
   return `${baseDir}${filename}`;
 };
 
@@ -46,40 +43,41 @@ export default function VariancesScreen() {
     skip: 0,
   });
 
+  const loadVariances = React.useCallback(
+    async (reset = false) => {
+      try {
+        if (reset) {
+          setLoading(true);
+          setPagination((prev) => ({ ...prev, skip: 0 }));
+        }
 
+        const skip = reset ? 0 : pagination.skip;
+        const response = await ItemVerificationAPI.getVariances({
+          category: filters.category,
+          floor: filters.floor,
+          rack: filters.rack,
+          warehouse: filters.warehouse,
+          limit: pagination.limit,
+          skip,
+        });
 
-  const loadVariances = React.useCallback(async (reset = false) => {
-    try {
-      if (reset) {
-        setLoading(true);
-        setPagination((prev) => ({ ...prev, skip: 0 }));
+        if (reset) {
+          setVariances(response.variances);
+        } else {
+          setVariances((prev) => [...prev, ...response.variances]);
+        }
+
+        setPagination(response.pagination);
+      } catch (error: any) {
+        // Error logged via error handler
+        Alert.alert('Error', error.message || 'Failed to load variances');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      const skip = reset ? 0 : pagination.skip;
-      const response = await ItemVerificationAPI.getVariances({
-        category: filters.category,
-        floor: filters.floor,
-        rack: filters.rack,
-        warehouse: filters.warehouse,
-        limit: pagination.limit,
-        skip,
-      });
-
-      if (reset) {
-        setVariances(response.variances);
-      } else {
-        setVariances((prev) => [...prev, ...response.variances]);
-      }
-
-      setPagination(response.pagination);
-    } catch (error: any) {
-      // Error logged via error handler
-      Alert.alert('Error', error.message || 'Failed to load variances');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filters, pagination.limit, pagination.skip]);
+    },
+    [filters, pagination.limit, pagination.skip]
+  );
 
   useEffect(() => {
     loadVariances(true);
@@ -159,23 +157,22 @@ export default function VariancesScreen() {
             pathname: '/supervisor/variance-details',
             params: {
               itemCode: item.item_code,
-              sessionId: item.session_id || 'current'
-            }
+              sessionId: item.session_id || 'current',
+            },
           });
         }}
       >
         <View style={styles.varianceHeader}>
           <View style={styles.varianceHeaderLeft}>
-            <Text style={[styles.itemName, { color: theme.colors.text }]}>
-              {item.item_name}
-            </Text>
+            <Text style={[styles.itemName, { color: theme.colors.text }]}>{item.item_name}</Text>
             <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>
               {item.item_code}
             </Text>
           </View>
           <View style={[styles.varianceBadge, { backgroundColor: varianceColor }]}>
             <Text style={styles.varianceBadgeText}>
-              {varianceSign}{item.variance.toFixed(2)}
+              {varianceSign}
+              {item.variance.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -229,7 +226,9 @@ export default function VariancesScreen() {
 
   if (loading && variances.length === 0) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+      >
         <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
           Loading variances...
@@ -241,15 +240,10 @@ export default function VariancesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Item Variances
-        </Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Item Variances</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity
             style={styles.exportButton}
@@ -264,11 +258,7 @@ export default function VariancesScreen() {
         </View>
       </View>
 
-      <ItemFilters
-        onFilterChange={setFilters}
-        showVerifiedFilter={false}
-        showSearch={false}
-      />
+      <ItemFilters onFilterChange={setFilters} showVerifiedFilter={false} showSearch={false} />
 
       {variances.length === 0 ? (
         <View style={styles.centered}>
@@ -286,9 +276,7 @@ export default function VariancesScreen() {
           renderItem={renderVarianceItem}
           keyExtractor={(item, index) => `${item.item_code}-${item.verified_at}-${index}`}
           contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={

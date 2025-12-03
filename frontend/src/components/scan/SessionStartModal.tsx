@@ -31,12 +31,7 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={() => {}}
-    >
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={() => {}}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Start Session</Text>

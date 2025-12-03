@@ -24,7 +24,7 @@ export const DebugPanel: React.FC = () => {
           setQueued(q);
           setConflicts(c);
         }
-      } catch { }
+      } catch {}
     };
     update();
     const id = setInterval(update, 3000);
@@ -36,19 +36,28 @@ export const DebugPanel: React.FC = () => {
 
   return (
     <View style={styles.container} pointerEvents="box-none">
-      <Text style={styles.line}>ENV: {__DEV__ ? 'DEV' : 'PROD'} / {Platform.OS}</Text>
+      <Text style={styles.line}>
+        ENV: {__DEV__ ? 'DEV' : 'PROD'} / {Platform.OS}
+      </Text>
       <Text style={styles.line}>User: {user ? `${user.username} (${user.role})` : 'none'}</Text>
-      <Text style={styles.line}>Online: {String(net.isOnline)} / Reachable: {String(net.isInternetReachable)}</Text>
+      <Text style={styles.line}>
+        Online: {String(net.isOnline)} / Reachable: {String(net.isInternetReachable)}
+      </Text>
       <Text style={styles.line}>Backend: {getBackendURL()}</Text>
       {flags.enableOfflineQueue && (
         <>
-          <Text style={styles.line}>Queued: {queued}  |  Conflicts: {conflicts}</Text>
-          <Pressable style={styles.button} onPress={() => flushOfflineQueue(api).catch(() => { })} pointerEvents="auto">
+          <Text style={styles.line}>
+            Queued: {queued} | Conflicts: {conflicts}
+          </Text>
+          <Pressable
+            style={styles.button}
+            onPress={() => flushOfflineQueue(api).catch(() => {})}
+            pointerEvents="auto"
+          >
             <Text style={styles.buttonText}>Flush Offline Queue</Text>
           </Pressable>
         </>
       )}
-
     </View>
   );
 };

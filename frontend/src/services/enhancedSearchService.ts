@@ -28,7 +28,11 @@ export interface SearchFilters {
 }
 
 export const EnhancedSearchService = {
-  searchItems: async (filters: SearchFilters, page: number = 1, limit: number = 20): Promise<{
+  searchItems: async (
+    filters: SearchFilters,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
     items: SearchResult[];
     total: number;
     page: number;

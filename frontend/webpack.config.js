@@ -14,15 +14,15 @@ module.exports = async function (env, argv) {
   // Add Node.js polyfills for browser compatibility
   config.resolve.fallback = {
     ...config.resolve.fallback,
-    "fs": false,
-    "path": false,
-    "os": false,
-    "crypto": false,
-    "stream": false,
-    "http": false,
-    "https": false,
-    "zlib": false,
-    "url": false,
+    fs: false,
+    path: false,
+    os: false,
+    crypto: false,
+    stream: false,
+    http: false,
+    https: false,
+    zlib: false,
+    url: false,
   };
 
   // Ensure webpack also applies the rule to module files coming from node_modules.
@@ -72,9 +72,11 @@ module.exports = async function (env, argv) {
       (plugin) => plugin?.constructor?.name === 'ReactRefreshWebpackPlugin'
     );
     if (!hasReactRefreshPlugin) {
-      config.plugins.push(new ReactRefreshWebpackPlugin({
-        overlay: false, // Disable error overlay for cleaner experience
-      }));
+      config.plugins.push(
+        new ReactRefreshWebpackPlugin({
+          overlay: false, // Disable error overlay for cleaner experience
+        })
+      );
     }
 
     config.plugins.push(

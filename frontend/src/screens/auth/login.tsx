@@ -54,8 +54,6 @@ export default function LoginScreen() {
   const passwordInputRef = useRef<TextInput>(null);
   const isMounted = useRef(true);
 
-
-
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -131,7 +129,7 @@ export default function LoginScreen() {
                 user,
                 isLoading,
                 segments
-              ).catch(err => __DEV__ && console.error('Diagnostic error:', err));
+              ).catch((err) => __DEV__ && console.error('Diagnostic error:', err));
             }, 100);
           }
         }
@@ -146,7 +144,11 @@ export default function LoginScreen() {
       const handleSelectStart = (e: Event) => {
         const target = e.target as HTMLElement;
         // Only prevent selection on non-input, non-textarea elements
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+        if (
+          target.tagName !== 'INPUT' &&
+          target.tagName !== 'TEXTAREA' &&
+          !target.isContentEditable
+        ) {
           e.preventDefault();
         }
       };
@@ -154,7 +156,11 @@ export default function LoginScreen() {
       const handleMouseUp = (e: MouseEvent) => {
         // Clear any accidental text selection on mouse up (but only if it's not in an input)
         const target = e.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+        if (
+          target.tagName !== 'INPUT' &&
+          target.tagName !== 'TEXTAREA' &&
+          !target.isContentEditable
+        ) {
           const selection = window.getSelection();
           if (selection && selection.toString().length > 0 && e.detail === 2) {
             // Double-click detected, clear selection
@@ -313,59 +319,64 @@ export default function LoginScreen() {
 
       if (__DEV__) {
         __DEV__ && console.log('🌐 LoginScreen loaded on WEB platform');
-        __DEV__ && console.log('🌐 Window location:', typeof window !== 'undefined' ? window.location.href : 'N/A');
-        __DEV__ && console.log('🌐 Auth state:', { hasUser: !!user, isLoading, userRole: user?.role });
-        __DEV__ && console.log('🌐 Form state:', {
-          hasUsername: !!values.username,
-          hasPassword: !!values.password,
-          isSubmitting,
-          errors: Object.keys(errors).length > 0 ? errors : 'none'
-        });
+        __DEV__ &&
+          console.log(
+            '🌐 Window location:',
+            typeof window !== 'undefined' ? window.location.href : 'N/A'
+          );
+        __DEV__ &&
+          console.log('🌐 Auth state:', { hasUser: !!user, isLoading, userRole: user?.role });
+        __DEV__ &&
+          console.log('🌐 Form state:', {
+            hasUsername: !!values.username,
+            hasPassword: !!values.password,
+            isSubmitting,
+            errors: Object.keys(errors).length > 0 ? errors : 'none',
+          });
 
         // Run full diagnostics after a short delay to allow DOM to render
         setTimeout(() => {
-          runFullDiagnostics(
-            Platform.OS,
-            values,
-            errors,
-            touched,
-            user,
-            isLoading,
-            segments
-          ).catch(err => {
-            __DEV__ && console.error('❌ Diagnostic error:', err);
-          });
+          runFullDiagnostics(Platform.OS, values, errors, touched, user, isLoading, segments).catch(
+            (err) => {
+              __DEV__ && console.error('❌ Diagnostic error:', err);
+            }
+          );
         }, 1000);
 
         // Verify form is in DOM
         setTimeout(() => {
           if (typeof document !== 'undefined') {
-            const formElement = document.querySelector('[data-testid="login-form"]') ||
+            const formElement =
+              document.querySelector('[data-testid="login-form"]') ||
               document.querySelector('form') ||
               document.querySelector('[class*="form"]');
             if (__DEV__) {
               __DEV__ && console.log('🌐 Form element found:', !!formElement);
             }
-            const usernameInput = document.getElementById('username') ||
+            const usernameInput =
+              document.getElementById('username') ||
               document.querySelector('input[placeholder*="Username" i]');
-            const passwordInput = document.getElementById('password') ||
+            const passwordInput =
+              document.getElementById('password') ||
               document.querySelector('input[type="password"]');
             if (__DEV__) {
-              __DEV__ && console.log('🌐 Inputs found:', {
-                username: !!usernameInput,
-                password: !!passwordInput
-              });
+              __DEV__ &&
+                console.log('🌐 Inputs found:', {
+                  username: !!usernameInput,
+                  password: !!passwordInput,
+                });
             }
             // Check visibility
             if (formElement && __DEV__) {
               const styles = window.getComputedStyle(formElement as Element);
-              __DEV__ && console.log('🌐 Form visibility:', {
-                display: styles.display,
-                visibility: styles.visibility,
-                opacity: styles.opacity,
-                width: styles.width,
-                height: styles.height,
-              });
+              __DEV__ &&
+                console.log('🌐 Form visibility:', {
+                  display: styles.display,
+                  visibility: styles.visibility,
+                  opacity: styles.opacity,
+                  width: styles.width,
+                  height: styles.height,
+                });
             }
           }
         }, 500);
@@ -383,16 +394,18 @@ export default function LoginScreen() {
   useEffect(() => {
     if (user && !isLoading && Platform.OS === 'web') {
       // User is already logged in, redirect based on role
-      const targetRoute = (user.role === 'supervisor' || user.role === 'admin')
-        ? '/admin/control-panel'
-        : '/staff/home';
+      const targetRoute =
+        user.role === 'supervisor' || user.role === 'admin'
+          ? '/admin/control-panel'
+          : '/staff/home';
 
       if (__DEV__) {
-        __DEV__ && console.log('[LOGIN] User already logged in, redirecting', {
-          username: user.username,
-          role: user.role,
-          targetRoute
-        });
+        __DEV__ &&
+          console.log('[LOGIN] User already logged in, redirecting', {
+            username: user.username,
+            role: user.role,
+            targetRoute,
+          });
       }
 
       // Small delay to ensure state is ready
@@ -426,13 +439,9 @@ export default function LoginScreen() {
     isMounted.current = true;
     const loadSavedUsername = async () => {
       try {
-        const wasRemembered = await storage.get(
-          STORAGE_KEYS.REMEMBER_ME_ENABLED
-        );
+        const wasRemembered = await storage.get(STORAGE_KEYS.REMEMBER_ME_ENABLED);
         if (wasRemembered === 'true') {
-          const saved = await storage.get(
-            STORAGE_KEYS.REMEMBERED_USERNAME
-          );
+          const saved = await storage.get(STORAGE_KEYS.REMEMBERED_USERNAME);
           if (saved) {
             setValue('username', saved);
             setRememberMe(true);
@@ -450,30 +459,21 @@ export default function LoginScreen() {
     };
   }, [setValue]);
 
-  const persistUsernamePreference = useCallback(
-    async (save: boolean, value: string) => {
-      try {
-        if (save) {
-          await storage.set(
-            STORAGE_KEYS.REMEMBERED_USERNAME,
-            value
-          );
-          await storage.set(
-            STORAGE_KEYS.REMEMBER_ME_ENABLED,
-            'true'
-          );
-        } else {
-          await storage.remove(STORAGE_KEYS.REMEMBERED_USERNAME);
-          await storage.remove(STORAGE_KEYS.REMEMBER_ME_ENABLED);
-        }
-      } catch {
-        if (__DEV__) {
-          __DEV__ && console.warn('Failed to persist login preference.');
-        }
+  const persistUsernamePreference = useCallback(async (save: boolean, value: string) => {
+    try {
+      if (save) {
+        await storage.set(STORAGE_KEYS.REMEMBERED_USERNAME, value);
+        await storage.set(STORAGE_KEYS.REMEMBER_ME_ENABLED, 'true');
+      } else {
+        await storage.remove(STORAGE_KEYS.REMEMBERED_USERNAME);
+        await storage.remove(STORAGE_KEYS.REMEMBER_ME_ENABLED);
       }
-    },
-    []
-  );
+    } catch {
+      if (__DEV__) {
+        __DEV__ && console.warn('Failed to persist login preference.');
+      }
+    }
+  }, []);
 
   const handleLogin = useCallback(async () => {
     const loginStartTime = Date.now();
@@ -487,9 +487,11 @@ export default function LoginScreen() {
     stepLog(1, '🔐 Login handler called');
 
     const sanitizedUsername = values.username.trim();
-    stepLog(4, 'Starting login', { username: sanitizedUsername, passwordLength: values.password.length, rememberMe });
-
-
+    stepLog(4, 'Starting login', {
+      username: sanitizedUsername,
+      passwordLength: values.password.length,
+      rememberMe,
+    });
 
     try {
       stepLog(5, 'Calling authStore.login()');
@@ -514,7 +516,7 @@ export default function LoginScreen() {
         stepLog(7.3, 'Waiting for state/AsyncStorage sync');
         // On web, wait a bit longer for state to propagate
         const waitTime = Platform.OS === 'web' ? 500 : 100;
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
         stepLog(7.4, 'Wait completed');
 
         // Get the user from store to determine redirect target
@@ -522,7 +524,7 @@ export default function LoginScreen() {
         let currentUser = useAuthStore.getState().user;
         let attempts = 0;
         while (!currentUser && attempts < 5) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
           currentUser = useAuthStore.getState().user;
           attempts++;
         }
@@ -531,13 +533,16 @@ export default function LoginScreen() {
           hasUser: !!currentUser,
           role: currentUser?.role,
           username: currentUser?.username,
-          attempts
+          attempts,
         });
 
         if (currentUser) {
           // Determine target route based on role
           let targetRoute: string;
-          if (Platform.OS === 'web' && (currentUser.role === 'supervisor' || currentUser.role === 'admin')) {
+          if (
+            Platform.OS === 'web' &&
+            (currentUser.role === 'supervisor' || currentUser.role === 'admin')
+          ) {
             targetRoute = '/admin/control-panel';
           } else if (currentUser.role === 'supervisor' || currentUser.role === 'admin') {
             targetRoute = '/supervisor/dashboard';
@@ -549,7 +554,7 @@ export default function LoginScreen() {
             platform: Platform.OS,
             role: currentUser.role,
             targetRoute,
-            username: currentUser.username
+            username: currentUser.username,
           });
 
           // On web, use window.location for more reliable redirect
@@ -559,7 +564,8 @@ export default function LoginScreen() {
               if (__DEV__) {
                 __DEV__ && console.log('[LOGIN] 🚀 Redirecting to:', targetRoute);
                 __DEV__ && console.log('[LOGIN] Current URL:', window.location.href);
-                __DEV__ && console.log('[LOGIN] Target URL will be:', window.location.origin + targetRoute);
+                __DEV__ &&
+                  console.log('[LOGIN] Target URL will be:', window.location.origin + targetRoute);
               }
               // Use a small delay to ensure state is fully updated
               setTimeout(() => {
@@ -585,17 +591,19 @@ export default function LoginScreen() {
     } catch (err: unknown) {
       stepLog(10, '❌ Exception caught in login handler');
       const fallback = 'Login failed. Please try again.';
-      const axiosError = err as { 
-        message?: string; 
-        response?: { 
-          data?: { 
-            detail?: { 
-              message?: string;
-              error?: { message?: string };
-            } | string; 
-            message?: string 
-          } 
-        } 
+      const axiosError = err as {
+        message?: string;
+        response?: {
+          data?: {
+            detail?:
+              | {
+                  message?: string;
+                  error?: { message?: string };
+                }
+              | string;
+            message?: string;
+          };
+        };
       };
       let msg = 'Login failed. Please try again.';
 
@@ -641,30 +649,30 @@ export default function LoginScreen() {
   return Platform.OS === 'web' ? (
     <View style={[styles.container, styles.containerWeb]}>
       <StatusBar style="light" />
-      <LinearGradient
-        colors={['#121212', '#0A0A0A', '#000000']}
-        style={StyleSheet.absoluteFill}
-      />
-
-
+      <LinearGradient colors={['#121212', '#0A0A0A', '#000000']} style={StyleSheet.absoluteFill} />
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, Platform.OS === 'web' && styles.scrollContentWeb]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          Platform.OS === 'web' && styles.scrollContentWeb,
+        ]}
         keyboardShouldPersistTaps="handled"
         style={Platform.OS === 'web' ? styles.scrollViewWeb : undefined}
         scrollEventThrottle={16}
-        {...(Platform.OS === 'web' ? {
-          pointerEvents: 'auto' as const,
-          onMouseUp: (e: React.MouseEvent) => {
-            // Clear selection on double-click, but don't prevent the click
-            if (e.detail === 2 && window.getSelection) {
-              const selection = window.getSelection();
-              if (selection && selection.toString().length > 0) {
-                selection.removeAllRanges();
-              }
+        {...(Platform.OS === 'web'
+          ? {
+              pointerEvents: 'auto' as const,
+              onMouseUp: (e: React.MouseEvent) => {
+                // Clear selection on double-click, but don't prevent the click
+                if (e.detail === 2 && window.getSelection) {
+                  const selection = window.getSelection();
+                  if (selection && selection.toString().length > 0) {
+                    selection.removeAllRanges();
+                  }
+                }
+              },
             }
-          },
-        } : {})}
+          : {})}
       >
         {/* Back Button */}
         <TouchableOpacity
@@ -673,11 +681,13 @@ export default function LoginScreen() {
             router.back();
           }}
           accessibilityLabel="Go back"
-          {...(Platform.OS === 'web' ? {
-            onSelectStart: (e: React.SyntheticEvent) => {
-              e.preventDefault();
-            },
-          } : {})}
+          {...(Platform.OS === 'web'
+            ? {
+                onSelectStart: (e: React.SyntheticEvent) => {
+                  e.preventDefault();
+                },
+              }
+            : {})}
         >
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
@@ -694,8 +704,6 @@ export default function LoginScreen() {
           <AppLogo size="large" showText={true} variant="default" />
         </Animated.View>
 
-
-
         {/* Web: Wrap in proper HTML form element for password manager support */}
         {Platform.OS === 'web' ? (
           <View style={styles.formWrapper}>
@@ -711,9 +719,9 @@ export default function LoginScreen() {
                 data-testid="login-form"
                 {...(Platform.OS !== 'web'
                   ? {
-                    onStartShouldSetResponder: () => true,
-                    onResponderTerminationRequest: () => false,
-                  }
+                      onStartShouldSetResponder: () => true,
+                      onResponderTerminationRequest: () => false,
+                    }
                   : {})}
               >
                 {/* Display form-level errors */}
@@ -771,11 +779,13 @@ export default function LoginScreen() {
                   disabled={isSubmitting || isLoading}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: rememberMe }}
-                  {...(Platform.OS === 'web' ? {
-                    onSelectStart: (e: React.SyntheticEvent) => {
-                      e.preventDefault();
-                    },
-                  } : {})}
+                  {...(Platform.OS === 'web'
+                    ? {
+                        onSelectStart: (e: React.SyntheticEvent) => {
+                          e.preventDefault();
+                        },
+                      }
+                    : {})}
                 >
                   <Ionicons
                     name={rememberMe ? 'checkbox' : 'square-outline'}
@@ -804,11 +814,13 @@ export default function LoginScreen() {
                       }
                     }}
                     disabled={isSubmitting || isLoading}
-                    {...(Platform.OS === 'web' ? {
-                      onSelectStart: (e: any) => {
-                        e.preventDefault();
-                      },
-                    } : {})}
+                    {...(Platform.OS === 'web'
+                      ? {
+                          onSelectStart: (e: any) => {
+                            e.preventDefault();
+                          },
+                        }
+                      : {})}
                   >
                     <Text style={styles.registerLinkText}>
                       {"Don't have an account? "}
@@ -821,9 +833,7 @@ export default function LoginScreen() {
                 <View style={styles.infoBox}>
                   <Text style={styles.infoText}>Demo Accounts:</Text>
                   <Text style={styles.infoText}>Staff: staff1 / staff123</Text>
-                  <Text style={styles.infoText}>
-                    Supervisor: supervisor / super123
-                  </Text>
+                  <Text style={styles.infoText}>Supervisor: supervisor / super123</Text>
                   <Text style={styles.infoText}>Admin: admin / admin123</Text>
                 </View>
               </View>
@@ -923,9 +933,7 @@ export default function LoginScreen() {
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>Demo Accounts:</Text>
               <Text style={styles.infoText}>Staff: staff1 / staff123</Text>
-              <Text style={styles.infoText}>
-                Supervisor: supervisor / super123
-              </Text>
+              <Text style={styles.infoText}>Supervisor: supervisor / super123</Text>
               <Text style={styles.infoText}>Admin: admin / admin123</Text>
             </View>
           </View>
@@ -949,12 +957,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="light" />
-      <LinearGradient
-        colors={['#1a1a1a', '#0d0d0d', '#000000']}
-        style={StyleSheet.absoluteFill}
-      />
-
-
+      <LinearGradient colors={['#1a1a1a', '#0d0d0d', '#000000']} style={StyleSheet.absoluteFill} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -983,8 +986,6 @@ export default function LoginScreen() {
         >
           <AppLogo size="large" showText={true} variant="default" />
         </Animated.View>
-
-
 
         {/* Mobile: Direct View without form wrapper */}
         <View style={styles.form}>
@@ -1079,9 +1080,7 @@ export default function LoginScreen() {
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>Demo Accounts:</Text>
               <Text style={styles.infoText}>Staff: staff1 / staff123</Text>
-              <Text style={styles.infoText}>
-                Supervisor: supervisor / super123
-              </Text>
+              <Text style={styles.infoText}>Supervisor: supervisor / super123</Text>
               <Text style={styles.infoText}>Admin: admin / admin123</Text>
             </View>
           </View>
@@ -1136,17 +1135,21 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
-    ...(Platform.OS === 'web' ? {
-      maxWidth: '100%',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          maxWidth: '100%',
+        }
+      : {}),
   } as any,
   webFormContainer: {
-    ...(Platform.OS === 'web' ? {
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      pointerEvents: 'auto',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          pointerEvents: 'auto',
+        }
+      : {}),
   } as any,
   errorContainer: {
     flexDirection: 'row',

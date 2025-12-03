@@ -1,5 +1,10 @@
 import { QueryClient } from '@tanstack/react-query';
-import { API_MAX_RETRIES, API_RETRY_BACKOFF_MS, QUERY_CACHE_TIME_MS, QUERY_STALE_TIME_MS } from '../../constants/config';
+import {
+  API_MAX_RETRIES,
+  API_RETRY_BACKOFF_MS,
+  QUERY_CACHE_TIME_MS,
+  QUERY_STALE_TIME_MS,
+} from '../../constants/config';
 
 export const queryClient = new QueryClient({
   defaultOptions: {

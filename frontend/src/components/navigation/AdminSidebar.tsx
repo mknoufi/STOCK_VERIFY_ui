@@ -271,7 +271,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   {group.items.map((item) => {
                     const active = isActive(item.route);
                     const iconColor = active ? theme.colors.primary : theme.colors.textSecondary;
-                    const bgColor = active ? (theme.colors.overlayPrimary || 'rgba(76, 175, 80, 0.1)') : 'transparent';
+                    const bgColor = active
+                      ? theme.colors.overlayPrimary || 'rgba(76, 175, 80, 0.1)'
+                      : 'transparent';
 
                     return (
                       <TouchableOpacity
@@ -340,12 +342,14 @@ const styles = StyleSheet.create({
   container: {
     height: '100%',
     borderRightWidth: 1,
-    ...(Platform.OS === 'web' ? {
-      position: 'fixed' as const,
-      left: 0,
-      top: 0,
-      bottom: 0,
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'fixed' as const,
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }
+      : {}),
   } as any,
   scrollView: {
     flex: 1,

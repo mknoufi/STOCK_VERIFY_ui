@@ -3,7 +3,14 @@
  * Displays item information, stock quantity, MRP, and verification status
  */
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Item } from '@/types/scan';
 import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
@@ -16,135 +23,146 @@ interface ItemDisplayProps {
   onRefreshStock?: () => void;
 }
 
-export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(({
-  item,
-  refreshingStock = false,
-  onRefreshStock,
-}) => {
-  const Container = flags.enableAnimations ? Animated.View : View;
-  const animatedProps = flags.enableAnimations ? {
-    entering: FadeInUp.delay(100).springify().damping(12),
-    layout: Layout.springify().damping(12),
-  } : {};
+export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
+  ({ item, refreshingStock = false, onRefreshStock }) => {
+    const Container = flags.enableAnimations ? Animated.View : View;
+    const animatedProps = flags.enableAnimations
+      ? {
+          entering: FadeInUp.delay(100).springify().damping(12),
+          layout: Layout.springify().damping(12),
+        }
+      : {};
 
-  return (
-    <Container style={[styles.itemCard, styles.shadow]} {...animatedProps}>
-      <LinearGradient
-        colors={['#1E293B', '#0F172A']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
+    return (
+      <Container style={[styles.itemCard, styles.shadow]} {...animatedProps}>
+        <LinearGradient
+          colors={['#1E293B', '#0F172A']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
 
-      <View style={styles.contentContainer}>
-        <Text style={styles.itemName}>{item.name}</Text>
-        {item.item_code && <Text style={styles.itemCode}>Code: {item.item_code}</Text>}
-        {item.barcode && <Text style={styles.itemBarcode}>Barcode: {item.barcode}</Text>}
+        <View style={styles.contentContainer}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          {item.item_code && <Text style={styles.itemCode}>Code: {item.item_code}</Text>}
+          {item.barcode && <Text style={styles.itemBarcode}>Barcode: {item.barcode}</Text>}
 
-        {/* Additional Item Information */}
-        <View style={styles.itemInfoGrid}>
-          {item.category && (
-            <View style={styles.itemInfoItem}>
-              <Ionicons name="pricetag" size={14} color="#94A3B8" />
-              <Text style={styles.itemInfoText}>
-                {item.category}
-                {item.subcategory && ` • ${item.subcategory}`}
+          {/* Additional Item Information */}
+          <View style={styles.itemInfoGrid}>
+            {item.category && (
+              <View style={styles.itemInfoItem}>
+                <Ionicons name="pricetag" size={14} color="#94A3B8" />
+                <Text style={styles.itemInfoText}>
+                  {item.category}
+                  {item.subcategory && ` • ${item.subcategory}`}
+                </Text>
+              </View>
+            )}
+            {item.item_type && (
+              <View style={styles.itemInfoItem}>
+                <Ionicons name="layers" size={14} color="#94A3B8" />
+                <Text style={styles.itemInfoText}>Type: {item.item_type}</Text>
+              </View>
+            )}
+            {item.item_group && (
+              <View style={styles.itemInfoItem}>
+                <Ionicons name="albums" size={14} color="#94A3B8" />
+                <Text style={styles.itemInfoText}>Group: {item.item_group}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Location Display */}
+          {(item.location || (item as any).floor || (item as any).rack) && (
+            <View style={styles.locationRow}>
+              <Ionicons name="location" size={16} color="#38BDF8" />
+              <Text style={styles.locationText}>
+                {[(item as any).floor, (item as any).rack, item.location]
+                  .filter(Boolean)
+                  .join(' / ')}
               </Text>
             </View>
           )}
-          {item.item_type && (
-            <View style={styles.itemInfoItem}>
-              <Ionicons name="layers" size={14} color="#94A3B8" />
-              <Text style={styles.itemInfoText}>Type: {item.item_type}</Text>
-            </View>
-          )}
-          {item.item_group && (
-            <View style={styles.itemInfoItem}>
-              <Ionicons name="albums" size={14} color="#94A3B8" />
-              <Text style={styles.itemInfoText}>Group: {item.item_group}</Text>
-            </View>
-          )}
-        </View>
 
-        {/* Location Display */}
-        {(item.location || (item as any).floor || (item as any).rack) && (
-          <View style={styles.locationRow}>
-            <Ionicons name="location" size={16} color="#38BDF8" />
-            <Text style={styles.locationText}>
-              {[(item as any).floor, (item as any).rack, item.location].filter(Boolean).join(' / ')}
-            </Text>
-          </View>
-        )}
-
-        {/* Verification Badge */}
-        {(item as any).verified && (
-          <View style={styles.verificationBadge}>
-            <Ionicons name="checkmark-circle" size={16} color="#4ADE80" />
-            <Text style={styles.verificationText}>
-              Verified by {(item as any).verified_by || 'Unknown'}
-              {(item as any).verified_at && (
-                <Text style={styles.verificationTime}>
-                  {' '}• {new Date((item as any).verified_at).toLocaleString()}
-                </Text>
-              )}
-            </Text>
-          </View>
-        )}
-
-        {/* Stock, Sales Price, and MRP Rows */}
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          {/* Left Column: ERP Stock */}
-          <View style={{ flex: 1 }}>
-            <View style={[styles.qtyBox, { height: '100%', justifyContent: 'center' }]}>
-              <View style={styles.qtyHeader}>
-                <Text style={styles.qtyLabel}>ERP Stock</Text>
-                {onRefreshStock && (
-                  <TouchableOpacity
-                    style={[styles.refreshButton, refreshingStock && styles.refreshButtonDisabled]}
-                    onPress={onRefreshStock}
-                    disabled={refreshingStock}
-                  >
-                    {refreshingStock ? (
-                      <ActivityIndicator size="small" color="#38BDF8" />
-                    ) : (
-                      <Ionicons name="refresh" size={18} color="#38BDF8" />
-                    )}
-                  </TouchableOpacity>
+          {/* Verification Badge */}
+          {(item as any).verified && (
+            <View style={styles.verificationBadge}>
+              <Ionicons name="checkmark-circle" size={16} color="#4ADE80" />
+              <Text style={styles.verificationText}>
+                Verified by {(item as any).verified_by || 'Unknown'}
+                {(item as any).verified_at && (
+                  <Text style={styles.verificationTime}>
+                    {' '}
+                    • {new Date((item as any).verified_at).toLocaleString()}
+                  </Text>
                 )}
-              </View>
-              <View style={{ alignItems: 'center', gap: 0 }}>
-                <Text style={[styles.qtyValue, { fontSize: 32 }]}>{item.stock_qty ?? item.quantity ?? 0}</Text>
-                {item.uom_name && <Text style={[styles.uomText, { marginTop: 0 }]}>{item.uom_name}</Text>}
+              </Text>
+            </View>
+          )}
+
+          {/* Stock, Sales Price, and MRP Rows */}
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {/* Left Column: ERP Stock */}
+            <View style={{ flex: 1 }}>
+              <View style={[styles.qtyBox, { height: '100%', justifyContent: 'center' }]}>
+                <View style={styles.qtyHeader}>
+                  <Text style={styles.qtyLabel}>ERP Stock</Text>
+                  {onRefreshStock && (
+                    <TouchableOpacity
+                      style={[
+                        styles.refreshButton,
+                        refreshingStock && styles.refreshButtonDisabled,
+                      ]}
+                      onPress={onRefreshStock}
+                      disabled={refreshingStock}
+                    >
+                      {refreshingStock ? (
+                        <ActivityIndicator size="small" color="#38BDF8" />
+                      ) : (
+                        <Ionicons name="refresh" size={18} color="#38BDF8" />
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View style={{ alignItems: 'center', gap: 0 }}>
+                  <Text style={[styles.qtyValue, { fontSize: 32 }]}>
+                    {item.stock_qty ?? item.quantity ?? 0}
+                  </Text>
+                  {item.uom_name && (
+                    <Text style={[styles.uomText, { marginTop: 0 }]}>{item.uom_name}</Text>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* Right Column: Sales Price & MRP */}
-          <View style={{ flex: 1, gap: 12 }}>
-            <View style={styles.qtyBox}>
-              <Text style={styles.qtyLabel}>Sales Price</Text>
-              <Text style={styles.qtyValueSmall}>₹{item.sales_price ?? '0.00'}</Text>
-            </View>
+            {/* Right Column: Sales Price & MRP */}
+            <View style={{ flex: 1, gap: 12 }}>
+              <View style={styles.qtyBox}>
+                <Text style={styles.qtyLabel}>Sales Price</Text>
+                <Text style={styles.qtyValueSmall}>₹{item.sales_price ?? '0.00'}</Text>
+              </View>
 
-            <View style={styles.qtyBox}>
-              <Text style={styles.qtyLabel}>MRP</Text>
-              <Text style={styles.qtyValueSmall}>₹{item.mrp ?? '0.00'}</Text>
+              <View style={styles.qtyBox}>
+                <Text style={styles.qtyLabel}>MRP</Text>
+                <Text style={styles.qtyValueSmall}>₹{item.mrp ?? '0.00'}</Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Container>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison function for React.memo
-  return (
-    prevProps.item.id === nextProps.item.id &&
-    prevProps.item.stock_qty === nextProps.item.stock_qty &&
-    prevProps.item.mrp === nextProps.item.mrp &&
-    prevProps.item.sales_price === nextProps.item.sales_price &&
-    prevProps.refreshingStock === nextProps.refreshingStock
-  );
-});
+      </Container>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison function for React.memo
+    return (
+      prevProps.item.id === nextProps.item.id &&
+      prevProps.item.stock_qty === nextProps.item.stock_qty &&
+      prevProps.item.mrp === nextProps.item.mrp &&
+      prevProps.item.sales_price === nextProps.item.sales_price &&
+      prevProps.refreshingStock === nextProps.refreshingStock
+    );
+  }
+);
 
 ItemDisplay.displayName = 'ItemDisplay';
 

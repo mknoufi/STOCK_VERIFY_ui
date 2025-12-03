@@ -17,10 +17,7 @@ export class ExportService {
   /**
    * Export data to CSV format
    */
-  static async exportToCSV(
-    data: any[],
-    options: ExportOptions = {}
-  ): Promise<void> {
+  static async exportToCSV(data: any[], options: ExportOptions = {}): Promise<void> {
     try {
       if (!data || data.length === 0) {
         throw new Error('No data to export');
@@ -40,7 +37,11 @@ export class ExportService {
             return '';
           }
           const stringValue = String(value).replace(/"/g, '""');
-          if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+          if (
+            stringValue.includes(',') ||
+            stringValue.includes('\n') ||
+            stringValue.includes('"')
+          ) {
             return `"${stringValue}"`;
           }
           return stringValue;
@@ -59,10 +60,7 @@ export class ExportService {
   /**
    * Export data to JSON format
    */
-  static async exportToJSON(
-    data: any[],
-    options: ExportOptions = {}
-  ): Promise<void> {
+  static async exportToJSON(data: any[], options: ExportOptions = {}): Promise<void> {
     try {
       if (!data || data.length === 0) {
         throw new Error('No data to export');
@@ -82,10 +80,7 @@ export class ExportService {
   /**
    * Export data to text format
    */
-  static async exportToText(
-    data: any[],
-    options: ExportOptions = {}
-  ): Promise<void> {
+  static async exportToText(data: any[], options: ExportOptions = {}): Promise<void> {
     try {
       if (!data || data.length === 0) {
         throw new Error('No data to export');
@@ -116,7 +111,17 @@ export class ExportService {
    * Export sessions to CSV
    */
   static async exportSessions(sessions: any[]): Promise<void> {
-    const headers = ['id', 'warehouse', 'staff_user', 'staff_name', 'status', 'started_at', 'closed_at', 'total_items', 'total_variance'];
+    const headers = [
+      'id',
+      'warehouse',
+      'staff_user',
+      'staff_name',
+      'status',
+      'started_at',
+      'closed_at',
+      'total_items',
+      'total_variance',
+    ];
     await this.exportToCSV(sessions, {
       filename: `sessions_${Date.now()}.csv`,
       headers,
@@ -189,9 +194,10 @@ export class ExportService {
         total_items: session.total_items || 0,
         counted_items: session.counted_items || 0,
         total_variance: session.total_variance || 0,
-        variance_percentage: session.total_items > 0
-          ? ((Math.abs(session.total_variance || 0) / session.total_items) * 100).toFixed(2)
-          : '0',
+        variance_percentage:
+          session.total_items > 0
+            ? ((Math.abs(session.total_variance || 0) / session.total_items) * 100).toFixed(2)
+            : '0',
       }));
 
       const headers = [
@@ -231,7 +237,10 @@ export class ExportService {
       const closedSessions = sessions.filter((s: any) => s.status === 'CLOSED').length;
       const reconciledSessions = sessions.filter((s: any) => s.status === 'RECONCILE').length;
       const totalItems = sessions.reduce((sum: number, s: any) => sum + (s.total_items || 0), 0);
-      const totalVariance = sessions.reduce((sum: number, s: any) => sum + Math.abs(s.total_variance || 0), 0);
+      const totalVariance = sessions.reduce(
+        (sum: number, s: any) => sum + Math.abs(s.total_variance || 0),
+        0
+      );
 
       const summaryData = [
         { metric: 'Total Sessions', value: totalSessions },
@@ -240,7 +249,10 @@ export class ExportService {
         { metric: 'Reconciled Sessions', value: reconciledSessions },
         { metric: 'Total Items Counted', value: totalItems },
         { metric: 'Total Variance', value: totalVariance.toFixed(2) },
-        { metric: 'Average Variance per Session', value: (totalVariance / totalSessions || 0).toFixed(2) },
+        {
+          metric: 'Average Variance per Session',
+          value: (totalVariance / totalSessions || 0).toFixed(2),
+        },
       ];
 
       await this.exportToCSV(summaryData, {
@@ -329,11 +341,7 @@ export class ExportService {
         });
       } else {
         // Fallback: show alert with file location
-        Alert.alert(
-          'Export Complete',
-          `File saved to: ${file.uri}`,
-          [{ text: 'OK' }]
-        );
+        Alert.alert('Export Complete', `File saved to: ${file.uri}`, [{ text: 'OK' }]);
       }
     } catch (error: any) {
       __DEV__ && console.error('File save/share error:', error);

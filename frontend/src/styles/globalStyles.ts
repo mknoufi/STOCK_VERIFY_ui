@@ -9,48 +9,48 @@ import { StyleSheet, Platform } from 'react-native';
 // Color palette - Enhanced with semantic roles
 export const colors = {
   // Primary colors
-  primary: '#3B82F6',    // Blue 500
+  primary: '#3B82F6', // Blue 500
   primaryDark: '#2563EB', // Blue 600
   primaryLight: '#60A5FA', // Blue 400
   primaryHover: '#3B82F6',
   primaryPressed: '#2563EB',
 
   // Secondary colors
-  secondary: '#10B981',  // Emerald 500
+  secondary: '#10B981', // Emerald 500
   secondaryDark: '#059669', // Emerald 600
   secondaryLight: '#34D399', // Emerald 400
 
   // Background colors
   backgroundDark: '#0F172A', // Slate 900
   backgroundLight: '#F8FAFC', // Slate 50
-  surfaceDark: '#1E293B',    // Slate 800
+  surfaceDark: '#1E293B', // Slate 800
   surfaceLight: '#FFFFFF',
   surfaceElevated: '#334155', // Slate 700
 
   // Text colors
-  textPrimary: '#F8FAFC',    // Slate 50
-  textSecondary: '#94A3B8',  // Slate 400
-  textTertiary: '#64748B',   // Slate 500
-  textDisabled: '#475569',   // Slate 600
-  textInverse: '#0F172A',    // Slate 900
+  textPrimary: '#F8FAFC', // Slate 50
+  textSecondary: '#94A3B8', // Slate 400
+  textTertiary: '#64748B', // Slate 500
+  textDisabled: '#475569', // Slate 600
+  textInverse: '#0F172A', // Slate 900
 
   // Border colors
-  borderLight: '#334155',    // Slate 700
-  borderMedium: '#475569',   // Slate 600
-  borderDark: '#64748B',     // Slate 500
-  borderFocus: '#3B82F6',    // Blue 500
+  borderLight: '#334155', // Slate 700
+  borderMedium: '#475569', // Slate 600
+  borderDark: '#64748B', // Slate 500
+  borderFocus: '#3B82F6', // Blue 500
 
   // Status colors with variants
-  success: '#10B981',    // Emerald 500
+  success: '#10B981', // Emerald 500
   successLight: '#34D399',
   successDark: '#059669',
-  error: '#EF4444',      // Red 500
+  error: '#EF4444', // Red 500
   errorLight: '#F87171',
   errorDark: '#DC2626',
-  warning: '#F59E0B',    // Amber 500
+  warning: '#F59E0B', // Amber 500
   warningLight: '#FBBF24',
   warningDark: '#D97706',
-  info: '#3B82F6',       // Blue 500
+  info: '#3B82F6', // Blue 500
   infoLight: '#60A5FA',
   infoDark: '#2563EB',
 
@@ -86,10 +86,10 @@ export const spacing = {
   xxl: 48,
   xxxl: 64,
   // Specific use-case spacing
-  sectionGap: 40,  // For consistent section spacing (xxl - 8)
-  actionGap: 12,   // For action button gaps (sm + 4)
+  sectionGap: 40, // For consistent section spacing (xxl - 8)
+  actionGap: 12, // For action button gaps (sm + 4)
   screenPadding: 24, // Default screen padding
-  cardPadding: 16,   // Default card padding
+  cardPadding: 16, // Default card padding
   inputPadding: 12, // Default input padding
 };
 

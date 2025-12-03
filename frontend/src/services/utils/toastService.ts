@@ -27,19 +27,21 @@ export class ToastService {
   off(event: string, handler: ToastEventHandler) {
     if (!this.events.has(event)) return;
     const handlers = this.events.get(event)!;
-    this.events.set(event, handlers.filter(h => h !== handler));
+    this.events.set(
+      event,
+      handlers.filter((h) => h !== handler)
+    );
   }
 
   private emit(event: string, data: ToastData) {
     if (!this.events.has(event)) return;
-    this.events.get(event)!.forEach(handler => handler(data));
+    this.events.get(event)!.forEach((handler) => handler(data));
   }
 
   show(message: string, options?: ToastOptions | string) {
     // Support both old string format and new object format
-    const opts: ToastOptions = typeof options === 'string'
-      ? { type: options as ToastData['type'] }
-      : (options || {});
+    const opts: ToastOptions =
+      typeof options === 'string' ? { type: options as ToastData['type'] } : options || {};
 
     const id = `toast_${++this.toastId}`;
     const duration = opts.duration === 'long' ? 5000 : 3000;

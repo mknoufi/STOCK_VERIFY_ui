@@ -6,7 +6,12 @@
 export interface CodeIssue {
   file_path: string;
   line_number: number;
-  issue_type: 'syntax_error' | 'broken_function' | 'missing_import' | 'runtime_error' | 'type_error';
+  issue_type:
+    | 'syntax_error'
+    | 'broken_function'
+    | 'missing_import'
+    | 'runtime_error'
+    | 'type_error';
   severity: 'critical' | 'warning' | 'info';
   message: string;
   suggestion?: string;
@@ -124,13 +129,12 @@ export class AutoErrorFinder {
     }
 
     const severity: BrokenFunction['severity'] =
-      issues.length > 2 ? 'critical' :
-        issues.length > 0 ? 'warning' : 'info';
+      issues.length > 2 ? 'critical' : issues.length > 0 ? 'warning' : 'info';
 
     let recoveryAction: string | undefined;
-    if (issues.some(i => i.includes('undefined'))) {
+    if (issues.some((i) => i.includes('undefined'))) {
       recoveryAction = 'Add null/undefined checks before accessing properties';
-    } else if (issues.some(i => i.includes('Type'))) {
+    } else if (issues.some((i) => i.includes('Type'))) {
       recoveryAction = 'Add type validation for function parameters';
     }
 
@@ -157,13 +161,7 @@ export class AutoErrorFinder {
       context?: string;
     } = {}
   ): Promise<{ result: T | null; success: boolean; error?: string; retryCount: number }> {
-    const {
-      maxRetries = 3,
-      retryDelay = 1000,
-      fallback,
-      defaultValue,
-      context,
-    } = options;
+    const { maxRetries = 3, retryDelay = 1000, fallback, defaultValue, context } = options;
 
     let lastError: any;
     let retryCount = 0;
@@ -193,7 +191,7 @@ export class AutoErrorFinder {
         // Wait before retry (exponential backoff)
         if (retryCount < maxRetries) {
           const delay = retryDelay * Math.pow(2, retryCount - 1);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }

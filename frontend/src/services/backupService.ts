@@ -5,8 +5,12 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Share } from 'react-native';
-import { getSessionsCache, getItemsCache, getCacheStats, clearAllCache } from './offline/offlineStorage';
-
+import {
+  getSessionsCache,
+  getItemsCache,
+  getCacheStats,
+  clearAllCache,
+} from './offline/offlineStorage';
 
 interface BackupItem {
   id: string;
@@ -157,7 +161,10 @@ export class BackupService {
       }
 
       if (backupData.cache.countLines) {
-        await AsyncStorage.setItem('count_lines_cache', JSON.stringify(backupData.cache.countLines));
+        await AsyncStorage.setItem(
+          'count_lines_cache',
+          JSON.stringify(backupData.cache.countLines)
+        );
       }
 
       if (backupData.settings.lastSync) {

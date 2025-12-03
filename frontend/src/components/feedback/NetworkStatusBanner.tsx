@@ -47,18 +47,10 @@ export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({ onSync
   }
 
   return (
-    <View
-      style={[
-        styles.banner,
-        isOnline ? styles.bannerOnlineWithQueue : styles.bannerOffline,
-      ]}
-    >
+    <View style={[styles.banner, isOnline ? styles.bannerOnlineWithQueue : styles.bannerOffline]}>
       <View style={styles.statusContainer}>
         <View
-          style={[
-            styles.indicator,
-            isOnline ? styles.indicatorOnline : styles.indicatorOffline,
-          ]}
+          style={[styles.indicator, isOnline ? styles.indicatorOnline : styles.indicatorOffline]}
         />
         <Text style={styles.statusText}>
           {isOnline
@@ -69,14 +61,8 @@ export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({ onSync
         </Text>
       </View>
       {isOnline && queueCount > 0 && (
-        <TouchableOpacity
-          style={styles.syncButton}
-          onPress={handleSync}
-          disabled={syncing}
-        >
-          <Text style={styles.syncButtonText}>
-            {syncing ? 'Syncing...' : 'Sync Now'}
-          </Text>
+        <TouchableOpacity style={styles.syncButton} onPress={handleSync} disabled={syncing}>
+          <Text style={styles.syncButtonText}>{syncing ? 'Syncing...' : 'Sync Now'}</Text>
         </TouchableOpacity>
       )}
     </View>

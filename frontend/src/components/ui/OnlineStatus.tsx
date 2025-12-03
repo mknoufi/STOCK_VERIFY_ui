@@ -7,7 +7,7 @@ export default function OnlineStatus() {
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
       setIsConnected(state.isConnected);
     });
 
@@ -20,14 +20,8 @@ export default function OnlineStatus() {
 
   return (
     <View style={[styles.container, isConnected ? styles.online : styles.offline]}>
-      <Ionicons 
-        name={isConnected ? "cloud-done" : "cloud-offline"} 
-        size={14} 
-        color="#fff" 
-      />
-      <Text style={styles.text}>
-        {isConnected ? "Online" : "Offline"}
-      </Text>
+      <Ionicons name={isConnected ? 'cloud-done' : 'cloud-offline'} size={14} color="#fff" />
+      <Text style={styles.text}>{isConnected ? 'Online' : 'Offline'}</Text>
     </View>
   );
 }
@@ -52,5 +46,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
-  }
+  },
 });

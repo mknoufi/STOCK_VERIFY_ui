@@ -166,16 +166,17 @@ export const Button: React.FC<ButtonProps> = ({
     return '#FFFFFF';
   };
 
-  const buttonStyle = Platform.OS === 'web'
-    ? {
-      ...getButtonStyle(),
-      ...style,
-      WebkitUserSelect: 'none',
-      userSelect: 'none',
-      WebkitTouchCallout: 'none',
-      cursor: disabled || loading ? 'not-allowed' : 'pointer',
-    } as any
-    : [getButtonStyle(), style];
+  const buttonStyle =
+    Platform.OS === 'web'
+      ? ({
+          ...getButtonStyle(),
+          ...style,
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
+          WebkitTouchCallout: 'none',
+          cursor: disabled || loading ? 'not-allowed' : 'pointer',
+        } as any)
+      : [getButtonStyle(), style];
 
   const buttonRef = useRef<any>(null);
 
@@ -219,32 +220,34 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || loading}
       activeOpacity={flags.enableAnimations ? 1 : 0.7}
       // Web-specific props as fallback
-      {...(Platform.OS === 'web' ? {
-        onClick: (e: any) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!disabled && !loading) {
-            onPress();
+      {...(Platform.OS === 'web'
+        ? {
+            onClick: (e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!disabled && !loading) {
+                onPress();
+              }
+            },
+            onMouseDown: (e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+            },
+            onDoubleClick: (e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.getSelection) {
+                window.getSelection()?.removeAllRanges();
+              }
+            },
+            onContextMenu: (e: any) => {
+              e.preventDefault();
+            },
+            onSelectStart: (e: any) => {
+              e.preventDefault();
+            },
           }
-        },
-        onMouseDown: (e: any) => {
-          e.preventDefault();
-          e.stopPropagation();
-        },
-        onDoubleClick: (e: any) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (window.getSelection) {
-            window.getSelection()?.removeAllRanges();
-          }
-        },
-        onContextMenu: (e: any) => {
-          e.preventDefault();
-        },
-        onSelectStart: (e: any) => {
-          e.preventDefault();
-        },
-      } : {})}
+        : {})}
     >
       {loading ? (
         <ActivityIndicator

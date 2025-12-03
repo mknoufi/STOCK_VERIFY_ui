@@ -73,7 +73,6 @@ export const LineChart: React.FC<LineChartProps> = ({
 
   // Generate polyline path
 
-
   // Generate grid lines
   const gridLines = [];
   const gridSteps = 5;
@@ -87,7 +86,7 @@ export const LineChart: React.FC<LineChartProps> = ({
   const xLabels = data
     .filter((_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1)
     .map((point, i) => ({
-      x: PADDING + (data.indexOf(point) * scaleX),
+      x: PADDING + data.indexOf(point) * scaleX,
       label: String(point.x),
     }));
 

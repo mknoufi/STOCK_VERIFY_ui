@@ -50,12 +50,13 @@ export class AutoRecovery {
       ErrorHandler.showError(error, context || 'Operation Failed');
     }
 
-    __DEV__ && console.error('Auto recovery failed:', {
-      context,
-      retryCount: recovery.retryCount,
-      error: recovery.error,
-      issue,
-    });
+    __DEV__ &&
+      console.error('Auto recovery failed:', {
+        context,
+        retryCount: recovery.retryCount,
+        error: recovery.error,
+        issue,
+      });
 
     throw error;
   }
@@ -92,11 +93,11 @@ export class AutoRecovery {
    * Auto-fix detected issues
    */
   static autoFix(issues: any[]) {
-    const results = issues.map(issue => AutoErrorFinder.autoFix(issue));
+    const results = issues.map((issue) => AutoErrorFinder.autoFix(issue));
     return {
       total: issues.length,
-      fixed: results.filter(r => r.success).length,
-      failed: results.filter(r => !r.success).length,
+      fixed: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
       results,
     };
   }

@@ -29,11 +29,25 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { modernColors, modernTypography, modernSpacing, modernBorderRadius, modernShadows, modernAnimations } from '../styles/modernDesignSystem';
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+  modernBorderRadius,
+  modernShadows,
+  modernAnimations,
+} from '../styles/modernDesignSystem';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'glass' | 'gradient';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'ghost'
+  | 'danger'
+  | 'glass'
+  | 'gradient';
 export type ButtonSize = 'small' | 'medium' | 'large';
 
 interface ModernButtonProps {
@@ -221,13 +235,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   const renderIcon = () => {
     if (!icon || loading) return null;
 
-    return (
-      <Ionicons
-        name={icon}
-        size={sizeConfig.iconSize}
-        color={getIconColor()}
-      />
-    );
+    return <Ionicons name={icon} size={sizeConfig.iconSize} color={getIconColor()} />;
   };
 
   // Render button content
@@ -236,7 +244,9 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       return (
         <ActivityIndicator
           size="small"
-          color={variant === 'outline' || variant === 'ghost' ? modernColors.primary[500] : '#FFFFFF'}
+          color={
+            variant === 'outline' || variant === 'ghost' ? modernColors.primary[500] : '#FFFFFF'
+          }
         />
       );
     }

@@ -8,5 +8,5 @@ import 'react-native-gesture-handler/jestSetup';
 
 // mock any native modules you depend on here
 jest.mock('@react-native-async-storage/async-storage', () =>
-    require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );

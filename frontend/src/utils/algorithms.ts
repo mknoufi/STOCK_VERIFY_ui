@@ -55,17 +55,12 @@ export const levenshteinDistance = (a: string, b: string): number => {
  * @param text2 - The second input string.
  * @returns The longest common subsequence as a string.
  */
-export const longestCommonSubsequence = (
-  text1: string,
-  text2: string
-): string => {
+export const longestCommonSubsequence = (text1: string, text2: string): string => {
   const m = text1.length;
   const n = text2.length;
 
   // Create a 2D array to store the lengths of LCS
-  const dp: number[][] = Array.from({ length: m + 1 }, () =>
-    Array(n + 1).fill(0)
-  );
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
 
   // Fill in the DP table
   for (let i = 1; i <= m; i++) {

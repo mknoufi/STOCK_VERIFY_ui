@@ -3,7 +3,15 @@
  * Search autocomplete for finding items by name or barcode
  */
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SearchResult } from '../../services/enhancedSearchService';
 
@@ -73,10 +81,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onSubmitEditing={onBarcodeSubmit}
           />
           {onScan && (
-            <TouchableOpacity
-              style={styles.scanButton}
-              onPress={onScan}
-            >
+            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
               <Ionicons name="scan-outline" size={20} color="#fff" />
             </TouchableOpacity>
           )}
@@ -148,7 +153,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           >
             {searchResults.map((item, index) => (
               <TouchableOpacity
-                key={`search-result-${index}-${item.item_code || 'no-code'}-${item.barcode || 'no-barcode'}`}
+                key={`search-result-${index}-${item.item_code || 'no-code'}-${
+                  item.barcode || 'no-barcode'
+                }`}
                 style={styles.searchResultItem}
                 onPress={() => onSearchResultSelect(item)}
               >

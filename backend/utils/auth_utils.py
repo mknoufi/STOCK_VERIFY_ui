@@ -1,9 +1,9 @@
 import logging
 from typing import Any, Dict
 
-from backend.auth.jwt_provider import jwt
 from passlib.context import CryptContext
 
+from backend.auth.jwt_provider import jwt
 from backend.config import settings
 
 logger = logging.getLogger(__name__)

@@ -17,36 +17,36 @@ export const haptics = {
     if (!canHaptic()) return;
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    } catch { }
+    } catch {}
   },
   error: async () => {
     if (!canHaptic()) return;
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    } catch { }
+    } catch {}
   },
   light: async () => {
     if (!canHaptic()) return;
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch { }
+    } catch {}
   },
   medium: async () => {
     if (!canHaptic()) return;
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } catch { }
+    } catch {}
   },
   heavy: async () => {
     if (!canHaptic()) return;
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    } catch { }
+    } catch {}
   },
   selection: async () => {
     if (!canHaptic()) return;
     try {
       await Haptics.selectionAsync();
-    } catch { }
+    } catch {}
   },
 };

@@ -13,7 +13,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { usePermissions } from '../../hooks/usePermissions';
-import { getSqlServerConfig, updateSqlServerConfig, testSqlServerConnection } from '../../services/api';
+import {
+  getSqlServerConfig,
+  updateSqlServerConfig,
+  testSqlServerConnection,
+} from '../../services/api';
 
 const isWeb = Platform.OS === 'web';
 
@@ -35,7 +39,7 @@ export default function SqlConfigScreen() {
   useEffect(() => {
     if (!hasRole('admin')) {
       Alert.alert('Access Denied', 'Admin access required', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => router.back() },
       ]);
       return;
     }
@@ -188,19 +192,23 @@ export default function SqlConfigScreen() {
         </View>
 
         {testResult && (
-          <View style={[
-            styles.testResult,
-            { backgroundColor: testResult.connected ? '#4CAF5020' : '#f4433620' }
-          ]}>
+          <View
+            style={[
+              styles.testResult,
+              { backgroundColor: testResult.connected ? '#4CAF5020' : '#f4433620' },
+            ]}
+          >
             <Ionicons
               name={testResult.connected ? 'checkmark-circle' : 'close-circle'}
               size={24}
               color={testResult.connected ? '#4CAF50' : '#f44336'}
             />
-            <Text style={[
-              styles.testResultText,
-              { color: testResult.connected ? '#4CAF50' : '#f44336' }
-            ]}>
+            <Text
+              style={[
+                styles.testResultText,
+                { color: testResult.connected ? '#4CAF50' : '#f44336' },
+              ]}
+            >
               {testResult.message}
             </Text>
           </View>
@@ -241,8 +249,8 @@ export default function SqlConfigScreen() {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={20} color="#007AFF" />
           <Text style={styles.infoText}>
-            SQL Server is optional. The app will work without it, but ERP sync features will be disabled.
-            Restart the backend server after saving configuration changes.
+            SQL Server is optional. The app will work without it, but ERP sync features will be
+            disabled. Restart the backend server after saving configuration changes.
           </Text>
         </View>
       </ScrollView>
@@ -275,12 +283,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'sticky' as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,

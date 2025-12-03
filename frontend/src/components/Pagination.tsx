@@ -67,7 +67,12 @@ export const Pagination: React.FC<PaginationProps> = ({
           onPress={handleFirst}
           disabled={currentPage === 1 || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === 1 || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === 1 || isLoading) && styles.buttonTextDisabled,
+            ]}
+          >
             ««
           </Text>
         </TouchableOpacity>
@@ -77,7 +82,12 @@ export const Pagination: React.FC<PaginationProps> = ({
           onPress={handlePrevious}
           disabled={currentPage === 1 || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === 1 || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === 1 || isLoading) && styles.buttonTextDisabled,
+            ]}
+          >
             «
           </Text>
         </TouchableOpacity>
@@ -89,21 +99,37 @@ export const Pagination: React.FC<PaginationProps> = ({
         </View>
 
         <TouchableOpacity
-          style={[styles.button, (currentPage === totalPages || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === totalPages || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handleNext}
           disabled={currentPage === totalPages || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === totalPages || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === totalPages || isLoading) && styles.buttonTextDisabled,
+            ]}
+          >
             »
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, (currentPage === totalPages || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === totalPages || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handleLast}
           disabled={currentPage === totalPages || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === totalPages || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === totalPages || isLoading) && styles.buttonTextDisabled,
+            ]}
+          >
             »»
           </Text>
         </TouchableOpacity>

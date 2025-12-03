@@ -13,11 +13,7 @@ interface SettingGroupProps {
   children: React.ReactNode;
 }
 
-export const SettingGroup: React.FC<SettingGroupProps> = ({
-  title,
-  icon,
-  children,
-}) => {
+export const SettingGroup: React.FC<SettingGroupProps> = ({ title, icon, children }) => {
   const theme = useTheme();
 
   return (
@@ -29,20 +25,11 @@ export const SettingGroup: React.FC<SettingGroupProps> = ({
     >
       <View style={styles.header}>
         {icon && (
-          <Ionicons
-            name={icon}
-            size={20}
-            color={theme.colors.primary}
-            style={styles.icon}
-          />
+          <Ionicons name={icon} size={20} color={theme.colors.primary} style={styles.icon} />
         )}
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          {title}
-        </Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
       </View>
-      <View style={[styles.content, { backgroundColor: theme.colors.background }]}>
-        {children}
-      </View>
+      <View style={[styles.content, { backgroundColor: theme.colors.background }]}>{children}</View>
     </View>
   );
 };

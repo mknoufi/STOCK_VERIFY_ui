@@ -44,25 +44,26 @@ export default function ActivityLogsScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-
-
-  const loadLogs = React.useCallback(async (pageNum: number = 1) => {
-    try {
-      setLoading(pageNum === 1);
-      const response = await getActivityLogs(pageNum, 50);
-      if (pageNum === 1) {
-        setLogs(response.activities || []);
-      } else {
-        setLogs(prevLogs => [...prevLogs, ...(response.activities || [])]);
+  const loadLogs = React.useCallback(
+    async (pageNum: number = 1) => {
+      try {
+        setLoading(pageNum === 1);
+        const response = await getActivityLogs(pageNum, 50);
+        if (pageNum === 1) {
+          setLogs(response.activities || []);
+        } else {
+          setLogs((prevLogs) => [...prevLogs, ...(response.activities || [])]);
+        }
+        setHasMore(response.pagination?.has_next || false);
+      } catch (error: any) {
+        show(`Failed to load logs: ${error.message}`, 'error');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-      setHasMore(response.pagination?.has_next || false);
-    } catch (error: any) {
-      show(`Failed to load logs: ${error.message}`, 'error');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [show]);
+    },
+    [show]
+  );
 
   const loadStats = React.useCallback(async () => {
     try {
@@ -129,24 +130,16 @@ export default function ActivityLogsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header
-        title="Activity Logs"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
+      <Header title="Activity Logs" leftIcon="arrow-back" onLeftPress={() => router.back()} />
 
       <ScrollView
         style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {/* Statistics */}
         {stats && (
           <View style={[styles.statsContainer, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>
-              Statistics
-            </Text>
+            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>Statistics</Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: theme.colors.primary }]}>
@@ -194,10 +187,7 @@ export default function ActivityLogsScreen() {
         ) : (
           <>
             {logs.map((log) => (
-              <View
-                key={log.id}
-                style={[styles.logItem, { backgroundColor: theme.colors.card }]}
-              >
+              <View key={log.id} style={[styles.logItem, { backgroundColor: theme.colors.card }]}>
                 <View style={styles.logHeader}>
                   <View style={styles.logHeaderLeft}>
                     <Ionicons
@@ -220,12 +210,7 @@ export default function ActivityLogsScreen() {
                       { backgroundColor: getStatusColor(log.status) + '20' },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.statusText,
-                        { color: getStatusColor(log.status) },
-                      ]}
-                    >
+                    <Text style={[styles.statusText, { color: getStatusColor(log.status) }]}>
                       {log.status}
                     </Text>
                   </View>

@@ -95,9 +95,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
           <ScrollView contentContainerStyle={styles.content}>
             <Ionicons name="warning-outline" size={64} color={theme.colors.error} />
-            <Text style={[styles.title, { color: theme.colors.text }]}>
-              Something went wrong
-            </Text>
+            <Text style={[styles.title, { color: theme.colors.text }]}>Something went wrong</Text>
             <Text style={[styles.message, { color: theme.colors.textSecondary }]}>
               {this.state.error?.message || 'An unexpected error occurred'}
             </Text>

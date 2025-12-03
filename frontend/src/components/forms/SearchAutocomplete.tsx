@@ -46,28 +46,31 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   const listRef = useRef<FlatList>(null);
 
   // Search function
-  const performSearch = React.useCallback(async (searchQuery: string) => {
-    if (!searchQuery || searchQuery.trim().length < minChars) {
-      setResults([]);
-      setShowDropdown(false);
-      setIsSearching(false);
-      return;
-    }
+  const performSearch = React.useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery || searchQuery.trim().length < minChars) {
+        setResults([]);
+        setShowDropdown(false);
+        setIsSearching(false);
+        return;
+      }
 
-    setIsSearching(true);
-    setShowDropdown(true);
+      setIsSearching(true);
+      setShowDropdown(true);
 
-    try {
-      const response = await searchItems({ query: searchQuery });
-      setResults(response.items);
-      setSelectedIndex(-1);
-    } catch (error) {
-      __DEV__ && console.error('Search error:', error);
-      setResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [minChars]);
+      try {
+        const response = await searchItems({ query: searchQuery });
+        setResults(response.items);
+        setSelectedIndex(-1);
+      } catch (error) {
+        __DEV__ && console.error('Search error:', error);
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [minChars]
+  );
 
   // Debounced search using stable hook
   const debouncedSearch = useStableDebouncedCallback(performSearch, 300);
@@ -133,19 +136,29 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
         <View style={styles.resultContent}>
           {/* Header: Name and Badge */}
           <View style={styles.resultHeader}>
-            <Text
-              style={[styles.resultName, { color: theme.colors.text }]}
-              numberOfLines={1}
-            >
+            <Text style={[styles.resultName, { color: theme.colors.text }]} numberOfLines={1}>
               {item.item_name}
             </Text>
             {matchType === 'exact' && (
-              <View style={[styles.matchBadge, { backgroundColor: theme.colors.success + '20', borderColor: theme.colors.success }]}>
+              <View
+                style={[
+                  styles.matchBadge,
+                  {
+                    backgroundColor: theme.colors.success + '20',
+                    borderColor: theme.colors.success,
+                  },
+                ]}
+              >
                 <Text style={[styles.matchBadgeText, { color: theme.colors.success }]}>Exact</Text>
               </View>
             )}
             {matchType === 'partial' && (
-              <View style={[styles.matchBadge, { backgroundColor: theme.colors.info + '20', borderColor: theme.colors.info }]}>
+              <View
+                style={[
+                  styles.matchBadge,
+                  { backgroundColor: theme.colors.info + '20', borderColor: theme.colors.info },
+                ]}
+              >
                 <Text style={[styles.matchBadgeText, { color: theme.colors.info }]}>Match</Text>
               </View>
             )}
@@ -153,7 +166,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
 
           {/* Primary Details: Location and Stock */}
           <View style={styles.primaryDetailsRow}>
-            {(item.floor || item.rack) ? (
+            {item.floor || item.rack ? (
               <View style={styles.detailChip}>
                 <Ionicons name="location-sharp" size={14} color={theme.colors.primary} />
                 <Text style={[styles.detailText, { color: theme.colors.text }]}>
@@ -163,7 +176,9 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             ) : (
               <View style={[styles.detailChip, { opacity: 0.5 }]}>
                 <Ionicons name="location-outline" size={14} color={theme.colors.textSecondary} />
-                <Text style={[styles.detailText, { color: theme.colors.textSecondary }]}>No Loc</Text>
+                <Text style={[styles.detailText, { color: theme.colors.textSecondary }]}>
+                  No Loc
+                </Text>
               </View>
             )}
 
@@ -177,9 +192,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             {(item.mrp ?? 0) > 0 && (
               <View style={styles.detailChip}>
                 <Ionicons name="pricetag-outline" size={14} color={theme.colors.success} />
-                <Text style={[styles.detailText, { color: theme.colors.text }]}>
-                  ₹{item.mrp}
-                </Text>
+                <Text style={[styles.detailText, { color: theme.colors.text }]}>₹{item.mrp}</Text>
               </View>
             )}
           </View>
@@ -203,7 +216,10 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             {item.category && (
               <>
                 <Text style={[styles.metaDivider, { color: theme.colors.border }]}>|</Text>
-                <Text style={[styles.metaText, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+                <Text
+                  style={[styles.metaText, { color: theme.colors.textSecondary }]}
+                  numberOfLines={1}
+                >
                   {item.category}
                 </Text>
               </>
@@ -257,19 +273,11 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
         />
 
         {isSearching && (
-          <ActivityIndicator
-            size="small"
-            color={theme.colors.primary}
-            style={styles.loadingIcon}
-          />
+          <ActivityIndicator size="small" color={theme.colors.primary} style={styles.loadingIcon} />
         )}
 
         {query.length > 0 && !isSearching && (
-          <TouchableOpacity
-            style={styles.clearButton}
-            onPress={handleClear}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.clearButton} onPress={handleClear} activeOpacity={0.7}>
             <Ionicons name="close-circle" size={20} color={theme.colors.placeholder} />
           </TouchableOpacity>
         )}
@@ -314,7 +322,9 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             </>
           ) : query.trim().length >= minChars ? (
             <View style={styles.noResultsContainer}>
-              <View style={[styles.noResultsIconCircle, { backgroundColor: theme.colors.background }]}>
+              <View
+                style={[styles.noResultsIconCircle, { backgroundColor: theme.colors.background }]}
+              >
                 <Ionicons name="search-outline" size={32} color={theme.colors.placeholder} />
               </View>
               <Text style={[styles.noResultsText, { color: theme.colors.text }]}>

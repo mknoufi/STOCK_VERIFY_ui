@@ -70,11 +70,9 @@ export default function ControlPanelScreen() {
 
   useEffect(() => {
     if (!hasRole('admin')) {
-      Alert.alert(
-        'Access Denied',
-        'You do not have permission to access the control panel.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      Alert.alert('Access Denied', 'You do not have permission to access the control panel.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
       return;
     }
 
@@ -111,7 +109,10 @@ export default function ControlPanelScreen() {
     try {
       setRefreshing(true);
 
-      const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = API_TIMEOUT_MS): Promise<T> => {
+      const withTimeout = <T,>(
+        promise: Promise<T>,
+        timeoutMs: number = API_TIMEOUT_MS
+      ): Promise<T> => {
         return Promise.race([
           promise,
           new Promise<T>((_, reject) =>
@@ -120,15 +121,48 @@ export default function ControlPanelScreen() {
         ]);
       };
 
-      const [servicesRes, issuesRes, devicesRes, healthRes, statsRes, metricsRes, sessionsRes, securityRes] = await Promise.allSettled([
-        withTimeout(getServicesStatus().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSystemIssues().catch(() => ({ data: { issues: [] } })), API_TIMEOUT_MS),
-        withTimeout(getLoginDevices().catch(() => ({ data: { devices: [] } })), API_TIMEOUT_MS),
-        withTimeout(getSystemHealthScore().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSystemStats().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getMetrics().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSessionsAnalytics().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSecuritySummary().catch(() => ({ data: null })), API_TIMEOUT_MS),
+      const [
+        servicesRes,
+        issuesRes,
+        devicesRes,
+        healthRes,
+        statsRes,
+        metricsRes,
+        sessionsRes,
+        securityRes,
+      ] = await Promise.allSettled([
+        withTimeout(
+          getServicesStatus().catch(() => ({ data: null })),
+          API_TIMEOUT_MS
+        ),
+        withTimeout(
+          getSystemIssues().catch(() => ({ data: { issues: [] } })),
+          API_TIMEOUT_MS
+        ),
+        withTimeout(
+          getLoginDevices().catch(() => ({ data: { devices: [] } })),
+          API_TIMEOUT_MS
+        ),
+        withTimeout(
+          getSystemHealthScore().catch(() => ({ data: null })),
+          API_TIMEOUT_MS
+        ),
+        withTimeout(
+          getSystemStats().catch(() => ({ data: null })),
+          API_TIMEOUT_MS
+        ),
+        withTimeout(
+          getMetrics().catch(() => ({ data: null })),
+          API_TIMEOUT_MS
+        ),
+        withTimeout(
+          getSessionsAnalytics().catch(() => ({ data: null })),
+          API_TIMEOUT_MS
+        ),
+        withTimeout(
+          getSecuritySummary().catch(() => ({ data: null })),
+          API_TIMEOUT_MS
+        ),
       ]);
 
       if (servicesRes.status === 'fulfilled' && servicesRes.value?.data) {
@@ -186,7 +220,10 @@ export default function ControlPanelScreen() {
         setTimeout(() => loadData(), 2000);
       }
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || error?.message || `Failed to ${action} ${service}`);
+      Alert.alert(
+        'Error',
+        error.response?.data?.detail || error?.message || `Failed to ${action} ${service}`
+      );
     }
   };
 
@@ -234,17 +271,13 @@ export default function ControlPanelScreen() {
           <Ionicons name={icon} size={24} color={color} />
           <Text style={styles.serviceTitle}>{title}</Text>
         </View>
-        <View style={[
-          styles.statusBadge,
-          { backgroundColor: service.running ? '#4CAF50' : '#f44336' }
-        ]}>
-          <View style={[
-            styles.statusDot,
-            { backgroundColor: service.running ? '#fff' : '#fff' }
-          ]} />
-          <Text style={styles.statusBadgeText}>
-            {service.running ? 'Running' : 'Stopped'}
-          </Text>
+        <View
+          style={[styles.statusBadge, { backgroundColor: service.running ? '#4CAF50' : '#f44336' }]}
+        >
+          <View
+            style={[styles.statusDot, { backgroundColor: service.running ? '#fff' : '#fff' }]}
+          />
+          <Text style={styles.statusBadgeText}>{service.running ? 'Running' : 'Stopped'}</Text>
         </View>
       </View>
 
@@ -275,8 +308,15 @@ export default function ControlPanelScreen() {
               activeOpacity={0.7}
             >
               <Ionicons name="link" size={16} color="#007AFF" />
-              <Text style={[styles.serviceDetailText, { color: '#007AFF' }] as any}>{service.url}</Text>
-              <Ionicons name="copy-outline" size={14} color="#007AFF" style={styles.copyIcon as any} />
+              <Text style={[styles.serviceDetailText, { color: '#007AFF' }] as any}>
+                {service.url}
+              </Text>
+              <Ionicons
+                name="copy-outline"
+                size={14}
+                color="#007AFF"
+                style={styles.copyIcon as any}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -296,18 +336,14 @@ export default function ControlPanelScreen() {
           style={[
             styles.actionButton,
             styles.startButton,
-            service.running && styles.actionButtonDisabled
+            service.running && styles.actionButtonDisabled,
           ]}
           onPress={() => {
             if (!service.running) {
-              Alert.alert(
-                'Start Service',
-                `Are you sure you want to start ${title}?`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Start', onPress: () => handleServiceAction(serviceKey, 'start') },
-                ]
-              );
+              Alert.alert('Start Service', `Are you sure you want to start ${title}?`, [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Start', onPress: () => handleServiceAction(serviceKey, 'start') },
+              ]);
             }
           }}
           disabled={service.running}
@@ -319,7 +355,7 @@ export default function ControlPanelScreen() {
           style={[
             styles.actionButton,
             styles.stopButton,
-            !service.running && styles.actionButtonDisabled
+            !service.running && styles.actionButtonDisabled,
           ]}
           onPress={() => {
             if (service.running) {
@@ -328,7 +364,11 @@ export default function ControlPanelScreen() {
                 `Are you sure you want to stop ${title}? This may affect system functionality.`,
                 [
                   { text: 'Cancel', style: 'cancel' },
-                  { text: 'Stop', style: 'destructive', onPress: () => handleServiceAction(serviceKey, 'stop') },
+                  {
+                    text: 'Stop',
+                    style: 'destructive',
+                    onPress: () => handleServiceAction(serviceKey, 'stop'),
+                  },
                 ]
               );
             }
@@ -366,11 +406,7 @@ export default function ControlPanelScreen() {
           <Ionicons name="settings" size={28} color="#fff" style={styles.titleIcon} />
           <Text style={styles.title}>Master Control Panel</Text>
         </View>
-        <TouchableOpacity
-          style={styles.refreshButton}
-          onPress={loadData}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.refreshButton} onPress={loadData} activeOpacity={0.7}>
           <Ionicons
             name="refresh"
             size={24}
@@ -392,7 +428,9 @@ export default function ControlPanelScreen() {
           <View style={styles.quickStatsSection}>
             <View style={styles.quickStatCard}>
               <Ionicons name="server" size={24} color="#007AFF" />
-              <Text style={styles.quickStatValue}>{systemStats.running_services}/{systemStats.total_services}</Text>
+              <Text style={styles.quickStatValue}>
+                {systemStats.running_services}/{systemStats.total_services}
+              </Text>
               <Text style={styles.quickStatLabel}>Services</Text>
             </View>
             {healthScore !== null && (
@@ -402,7 +440,15 @@ export default function ControlPanelScreen() {
                   size={24}
                   color={healthScore >= 80 ? '#4CAF50' : healthScore >= 50 ? '#FF9800' : '#f44336'}
                 />
-                <Text style={[styles.quickStatValue, { color: healthScore >= 80 ? '#4CAF50' : healthScore >= 50 ? '#FF9800' : '#f44336' }]}>
+                <Text
+                  style={[
+                    styles.quickStatValue,
+                    {
+                      color:
+                        healthScore >= 80 ? '#4CAF50' : healthScore >= 50 ? '#FF9800' : '#f44336',
+                    },
+                  ]}
+                >
                   {healthScore}%
                 </Text>
                 <Text style={styles.quickStatLabel}>Health</Text>
@@ -448,10 +494,28 @@ export default function ControlPanelScreen() {
               <Text style={styles.sectionTitle}>Services Management</Text>
             </View>
             <View style={styles.servicesGrid}>
-              {renderServiceCard('Backend Server', services.backend, 'backend', 'server', '#007AFF')}
-              {renderServiceCard('Frontend (Expo)', services.frontend, 'frontend', 'globe', '#4CAF50')}
+              {renderServiceCard(
+                'Backend Server',
+                services.backend,
+                'backend',
+                'server',
+                '#007AFF'
+              )}
+              {renderServiceCard(
+                'Frontend (Expo)',
+                services.frontend,
+                'frontend',
+                'globe',
+                '#4CAF50'
+              )}
               {renderServiceCard('MongoDB', services.mongodb, 'mongodb', 'cube', '#13AA52')}
-              {renderServiceCard('SQL Server', services.sql_server, 'sql_server', 'server', '#FF9800')}
+              {renderServiceCard(
+                'SQL Server',
+                services.sql_server,
+                'sql_server',
+                'server',
+                '#FF9800'
+              )}
             </View>
           </View>
         )}
@@ -490,10 +554,7 @@ export default function ControlPanelScreen() {
               <Ionicons name="document-text" size={32} color="#9C27B0" />
               <Text style={styles.quickActionText}>Reports</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={handleSqlConfig}
-            >
+            <TouchableOpacity style={styles.quickActionCard} onPress={handleSqlConfig}>
               <Ionicons name="server" size={32} color="#FF9800" />
               <Text style={styles.quickActionText}>SQL Config</Text>
             </TouchableOpacity>
@@ -535,7 +596,9 @@ export default function ControlPanelScreen() {
                     </Text>
                   </View>
                   <Text style={styles.deviceTime}>
-                    {device.last_activity ? new Date(device.last_activity).toLocaleTimeString() : 'N/A'}
+                    {device.last_activity
+                      ? new Date(device.last_activity).toLocaleTimeString()
+                      : 'N/A'}
                   </Text>
                 </View>
               ))}
@@ -546,11 +609,11 @@ export default function ControlPanelScreen() {
         <View style={styles.footer}>
           <View style={styles.footerRow}>
             <Ionicons name="time" size={16} color="#666" />
-            <Text style={styles.footerText}>
-              Last updated: {lastUpdate.toLocaleTimeString()}
-            </Text>
+            <Text style={styles.footerText}>Last updated: {lastUpdate.toLocaleTimeString()}</Text>
           </View>
-          <Text style={styles.footerText}>Auto-refresh every {AUTO_REFRESH_INTERVAL_MS / 1000} seconds</Text>
+          <Text style={styles.footerText}>
+            Auto-refresh every {AUTO_REFRESH_INTERVAL_MS / 1000} seconds
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -582,12 +645,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          position: 'sticky' as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,

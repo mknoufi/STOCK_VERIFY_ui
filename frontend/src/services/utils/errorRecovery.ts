@@ -34,12 +34,7 @@ export const retryWithBackoff = async <T>(
   operation: () => Promise<T>,
   options: ErrorRecoveryOptions = {}
 ): Promise<T> => {
-  const {
-    maxRetries = 3,
-    retryDelay = 1000,
-    onSuccess,
-    onFailure,
-  } = options;
+  const { maxRetries = 3, retryDelay = 1000, onSuccess, onFailure } = options;
 
   try {
     const result = await standardRetryWithBackoff(operation, {
@@ -205,13 +200,7 @@ export const handleErrorWithRecovery = async <T>(
     onError?: (error: any) => void;
   } = {}
 ): Promise<T> => {
-  const {
-    context = 'Operation',
-    recovery,
-    fallback,
-    showAlert = true,
-    onError,
-  } = options;
+  const { context = 'Operation', recovery, fallback, showAlert = true, onError } = options;
 
   try {
     if (recovery) {
@@ -256,29 +245,26 @@ export const handleNetworkError = async <T>(
 ): Promise<T> => {
   const { maxRetries = 3, showAlert = true } = options;
 
-  return await handleErrorWithRecovery(
-    operation,
-    {
-      context: 'Network Operation',
-      recovery: {
-        maxRetries,
-        retryDelay: 1000,
-        onRetry: (attempt) => {
-          __DEV__ && console.log(`Network retry attempt ${attempt}`);
-        },
+  return await handleErrorWithRecovery(operation, {
+    context: 'Network Operation',
+    recovery: {
+      maxRetries,
+      retryDelay: 1000,
+      onRetry: (attempt) => {
+        __DEV__ && console.log(`Network retry attempt ${attempt}`);
       },
-      showAlert,
-      onError: (error: any) => {
-        if (showAlert) {
-          Alert.alert(
-            'Network Error',
-            'Unable to connect to server. Please check your internet connection and try again.',
-            [{ text: 'OK' }]
-          );
-        }
-      },
-    }
-  );
+    },
+    showAlert,
+    onError: (error: any) => {
+      if (showAlert) {
+        Alert.alert(
+          'Network Error',
+          'Unable to connect to server. Please check your internet connection and try again.',
+          [{ text: 'OK' }]
+        );
+      }
+    },
+  });
 };
 
 /**
@@ -293,25 +279,22 @@ export const handleDatabaseError = async <T>(
 ): Promise<T> => {
   const { fallback, showAlert = true } = options;
 
-  return await handleErrorWithRecovery(
-    operation,
-    {
-      context: 'Database Operation',
-      recovery: {
-        maxRetries: 2,
-        retryDelay: 500,
-      },
-      fallback,
-      showAlert,
-      onError: (error: any) => {
-        if (showAlert) {
-          Alert.alert(
-            'Database Error',
-            'Unable to save data. Your changes have been queued and will be synced when connection is restored.',
-            [{ text: 'OK' }]
-          );
-        }
-      },
-    }
-  );
+  return await handleErrorWithRecovery(operation, {
+    context: 'Database Operation',
+    recovery: {
+      maxRetries: 2,
+      retryDelay: 500,
+    },
+    fallback,
+    showAlert,
+    onError: (error: any) => {
+      if (showAlert) {
+        Alert.alert(
+          'Database Error',
+          'Unable to save data. Your changes have been queued and will be synced when connection is restored.',
+          [{ text: 'OK' }]
+        );
+      }
+    },
+  });
 };

@@ -36,21 +36,24 @@ export function useSafeAsyncState<T>(initialValue: T) {
   const [loading, setLoading] = useSafeState(false);
   const [error, setError] = useSafeState<Error | null>(null);
 
-  const execute = useCallback(async (asyncFn: () => Promise<T>) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await asyncFn();
-      setState(result);
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      setError(error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [setState, setLoading, setError]);
+  const execute = useCallback(
+    async (asyncFn: () => Promise<T>) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await asyncFn();
+        setState(result);
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setState, setLoading, setError]
+  );
 
   return {
     state,

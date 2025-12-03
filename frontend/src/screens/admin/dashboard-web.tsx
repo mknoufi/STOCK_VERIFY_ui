@@ -168,13 +168,22 @@ export default function AdminDashboardWeb() {
       if (healthScoreRes.status === 'fulfilled' && healthScoreRes.value?.data) {
         setHealthScore(healthScoreRes.value.data.score);
       }
-      if (sessionsRes.status === 'fulfilled' && sessionsRes.value && 'data' in sessionsRes.value && sessionsRes.value.data) {
+      if (
+        sessionsRes.status === 'fulfilled' &&
+        sessionsRes.value &&
+        'data' in sessionsRes.value &&
+        sessionsRes.value.data
+      ) {
         setSessionsData(sessionsRes.value.data.sessions || []);
       }
       if (analyticsRes.status === 'fulfilled' && analyticsRes.value?.data) {
         setSessionsAnalytics(analyticsRes.value.data);
       }
-      if (syncStatsRes.status === 'fulfilled' && syncStatsRes.value?.success && syncStatsRes.value?.data) {
+      if (
+        syncStatsRes.status === 'fulfilled' &&
+        syncStatsRes.value?.success &&
+        syncStatsRes.value?.data
+      ) {
         setSyncStats(syncStatsRes.value.data);
       }
       if (varianceTrendRes.status === 'fulfilled' && varianceTrendRes.value?.data) {
@@ -342,7 +351,8 @@ export default function AdminDashboardWeb() {
         value: healthScore ? `${healthScore}%` : 'N/A',
         change: healthScore ? healthScore - 95 : 0,
         icon: 'heart',
-        color: healthScore && healthScore > 80 ? modernColors.success.main : modernColors.error.main,
+        color:
+          healthScore && healthScore > 80 ? modernColors.success.main : modernColors.error.main,
         trend: healthScore && healthScore > 80 ? 'up' : 'down',
       },
     ];
@@ -361,8 +371,8 @@ export default function AdminDashboardWeb() {
               healthScore > 80
                 ? modernColors.gradients.success
                 : healthScore > 60
-                  ? modernColors.gradients.warning
-                  : modernColors.gradients.error
+                ? modernColors.gradients.warning
+                : modernColors.gradients.error
             }
             style={styles.healthBanner as any}
           >
@@ -383,18 +393,10 @@ export default function AdminDashboardWeb() {
         {/* Metrics Grid */}
         <View style={styles.metricsGrid}>
           {overviewMetrics.map((metric, index) => (
-            <ModernCard
-              key={index}
-              variant="elevated"
-              elevation="md"
-              style={styles.metricCard}
-            >
+            <ModernCard key={index} variant="elevated" elevation="md" style={styles.metricCard}>
               <View style={styles.metricHeader}>
                 <View
-                  style={[
-                    styles.metricIconContainer,
-                    { backgroundColor: `${metric.color}20` },
-                  ]}
+                  style={[styles.metricIconContainer, { backgroundColor: `${metric.color}20` }]}
                 >
                   <Ionicons name={metric.icon} size={24} color={metric.color} />
                 </View>
@@ -407,8 +409,8 @@ export default function AdminDashboardWeb() {
                           metric.trend === 'up'
                             ? modernColors.success.light
                             : metric.trend === 'down'
-                              ? modernColors.error.light
-                              : modernColors.neutral[200],
+                            ? modernColors.error.light
+                            : modernColors.neutral[200],
                       },
                     ]}
                   >
@@ -416,9 +418,7 @@ export default function AdminDashboardWeb() {
                       name={metric.trend === 'up' ? 'arrow-up' : 'arrow-down'}
                       size={12}
                       color={
-                        metric.trend === 'up'
-                          ? modernColors.success.main
-                          : modernColors.error.main
+                        metric.trend === 'up' ? modernColors.success.main : modernColors.error.main
                       }
                     />
                     <Text
@@ -447,15 +447,11 @@ export default function AdminDashboardWeb() {
         <View style={styles.quickStatsRow}>
           <ModernCard variant="elevated" style={styles.quickStatCard}>
             <Text style={styles.quickStatLabel}>Active Sessions</Text>
-            <Text style={styles.quickStatValue}>
-              {metrics?.sessions?.active || 0}
-            </Text>
+            <Text style={styles.quickStatValue}>{metrics?.sessions?.active || 0}</Text>
           </ModernCard>
           <ModernCard variant="elevated" style={styles.quickStatCard}>
             <Text style={styles.quickStatLabel}>Pending Approvals</Text>
-            <Text style={styles.quickStatValue}>
-              {metrics?.sessions?.pending || 0}
-            </Text>
+            <Text style={styles.quickStatValue}>{metrics?.sessions?.pending || 0}</Text>
           </ModernCard>
           <ModernCard variant="elevated" style={styles.quickStatCard}>
             <Text style={styles.quickStatLabel}>Sync Errors</Text>
@@ -476,16 +472,16 @@ export default function AdminDashboardWeb() {
                       issue.severity === 'high'
                         ? 'alert-circle'
                         : issue.severity === 'medium'
-                          ? 'warning'
-                          : 'information-circle'
+                        ? 'warning'
+                        : 'information-circle'
                     }
                     size={20}
                     color={
                       issue.severity === 'high'
                         ? modernColors.error.main
                         : issue.severity === 'medium'
-                          ? modernColors.warning.main
-                          : modernColors.info.main
+                        ? modernColors.warning.main
+                        : modernColors.info.main
                     }
                   />
                   <View style={styles.issueContent}>
@@ -526,9 +522,7 @@ export default function AdminDashboardWeb() {
                     />
                   </View>
                   {service.uptime && (
-                    <Text style={styles.serviceUptime}>
-                      Uptime: {formatUptime(service.uptime)}
-                    </Text>
+                    <Text style={styles.serviceUptime}>Uptime: {formatUptime(service.uptime)}</Text>
                   )}
                   {service.url && (
                     <Text style={styles.serviceUrl} numberOfLines={1}>
@@ -546,27 +540,19 @@ export default function AdminDashboardWeb() {
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>CPU Usage</Text>
-                <Text style={styles.statValue}>
-                  {systemStats.cpu || 'N/A'}%
-                </Text>
+                <Text style={styles.statValue}>{systemStats.cpu || 'N/A'}%</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Memory Usage</Text>
-                <Text style={styles.statValue}>
-                  {systemStats.memory || 'N/A'}%
-                </Text>
+                <Text style={styles.statValue}>{systemStats.memory || 'N/A'}%</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Disk Usage</Text>
-                <Text style={styles.statValue}>
-                  {systemStats.disk || 'N/A'}%
-                </Text>
+                <Text style={styles.statValue}>{systemStats.disk || 'N/A'}%</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Network I/O</Text>
-                <Text style={styles.statValue}>
-                  {systemStats.network || 'N/A'}
-                </Text>
+                <Text style={styles.statValue}>{systemStats.network || 'N/A'}</Text>
               </View>
             </View>
           </ModernCard>
@@ -588,8 +574,8 @@ export default function AdminDashboardWeb() {
                           health.database > 80
                             ? modernColors.success.main
                             : health.database > 60
-                              ? modernColors.warning.main
-                              : modernColors.error.main,
+                            ? modernColors.warning.main
+                            : modernColors.error.main,
                       },
                     ]}
                   />
@@ -608,8 +594,8 @@ export default function AdminDashboardWeb() {
                           health.api > 80
                             ? modernColors.success.main
                             : health.api > 60
-                              ? modernColors.warning.main
-                              : modernColors.error.main,
+                            ? modernColors.warning.main
+                            : modernColors.error.main,
                       },
                     ]}
                   />
@@ -688,9 +674,7 @@ export default function AdminDashboardWeb() {
               </View>
               <ScrollView style={styles.modalBody}>
                 <Text style={styles.modalLabel}>Report Type</Text>
-                <Text style={styles.modalValue}>
-                  {selectedReport || 'Custom Report'}
-                </Text>
+                <Text style={styles.modalValue}>{selectedReport || 'Custom Report'}</Text>
                 <Text style={styles.modalLabel}>Date Range</Text>
                 <DateRangePicker
                   startDate={reportStartDate}
@@ -793,9 +777,7 @@ export default function AdminDashboardWeb() {
                       placeholder="Status (optional)"
                       placeholderTextColor={modernColors.text.tertiary}
                       value={reportFilters.status || ''}
-                      onChangeText={(text) =>
-                        setReportFilters({ ...reportFilters, status: text })
-                      }
+                      onChangeText={(text) => setReportFilters({ ...reportFilters, status: text })}
                     />
                   </>
                 )}
@@ -966,11 +948,7 @@ export default function AdminDashboardWeb() {
             style={styles.chartCard}
           >
             {staffPerformanceData.length > 0 ? (
-              <BarChart
-                data={staffPerformanceData}
-                showValues
-                title="Sessions per Staff"
-              />
+              <BarChart data={staffPerformanceData} showValues title="Sessions per Staff" />
             ) : (
               <View style={styles.emptyChart}>
                 <Text style={styles.emptyChartText}>No staff performance data</Text>
@@ -1000,7 +978,9 @@ export default function AdminDashboardWeb() {
                 <Text style={styles.summaryLabel}>Active Sessions</Text>
                 <Text style={styles.summaryValue}>
                   {sessionsAnalytics.active_sessions ||
-                    sessionsData.filter((s: any) => s.status === 'open' || s.status === 'in_progress').length}
+                    sessionsData.filter(
+                      (s: any) => s.status === 'open' || s.status === 'in_progress'
+                    ).length}
                 </Text>
               </View>
               <View style={styles.summaryItem}>
@@ -1022,16 +1002,12 @@ export default function AdminDashboardWeb() {
               <View style={styles.syncStatItem}>
                 <Text style={styles.syncStatLabel}>Last Sync</Text>
                 <Text style={styles.syncStatValue}>
-                  {syncStats.last_sync
-                    ? new Date(syncStats.last_sync).toLocaleString()
-                    : 'Never'}
+                  {syncStats.last_sync ? new Date(syncStats.last_sync).toLocaleString() : 'Never'}
                 </Text>
               </View>
               <View style={styles.syncStatItem}>
                 <Text style={styles.syncStatLabel}>Items Synced</Text>
-                <Text style={styles.syncStatValue}>
-                  {syncStats.items_synced || 0}
-                </Text>
+                <Text style={styles.syncStatValue}>{syncStats.items_synced || 0}</Text>
               </View>
               <View style={styles.syncStatItem}>
                 <Text style={styles.syncStatLabel}>Sync Status</Text>
@@ -1043,14 +1019,12 @@ export default function AdminDashboardWeb() {
                         syncStats.status === 'success'
                           ? modernColors.success.main
                           : syncStats.status === 'error'
-                            ? modernColors.error.main
-                            : modernColors.warning.main,
+                          ? modernColors.error.main
+                          : modernColors.warning.main,
                     },
                   ]}
                 >
-                  <Text style={styles.syncStatusText}>
-                    {syncStats.status || 'Unknown'}
-                  </Text>
+                  <Text style={styles.syncStatusText}>{syncStats.status || 'Unknown'}</Text>
                 </View>
               </View>
             </View>
@@ -1065,34 +1039,26 @@ export default function AdminDashboardWeb() {
                 <Ionicons name="time" size={24} color={modernColors.primary[500]} />
                 <Text style={styles.performanceLabel}>Avg Response Time</Text>
                 <Text style={styles.performanceValue}>
-                  {metrics.avg_response_time
-                    ? `${metrics.avg_response_time}ms`
-                    : 'N/A'}
+                  {metrics.avg_response_time ? `${metrics.avg_response_time}ms` : 'N/A'}
                 </Text>
               </View>
               <View style={styles.performanceItem}>
                 <Ionicons name="server" size={24} color={modernColors.secondary[500]} />
                 <Text style={styles.performanceLabel}>API Requests</Text>
-                <Text style={styles.performanceValue}>
-                  {metrics.total_requests || 0}
-                </Text>
+                <Text style={styles.performanceValue}>{metrics.total_requests || 0}</Text>
               </View>
               <View style={styles.performanceItem}>
                 <Ionicons name="checkmark-circle" size={24} color={modernColors.success.main} />
                 <Text style={styles.performanceLabel}>Success Rate</Text>
                 <Text style={styles.performanceValue}>
-                  {metrics.success_rate
-                    ? `${(metrics.success_rate * 100).toFixed(1)}%`
-                    : 'N/A'}
+                  {metrics.success_rate ? `${(metrics.success_rate * 100).toFixed(1)}%` : 'N/A'}
                 </Text>
               </View>
               <View style={styles.performanceItem}>
                 <Ionicons name="alert-circle" size={24} color={modernColors.error.main} />
                 <Text style={styles.performanceLabel}>Error Rate</Text>
                 <Text style={styles.performanceValue}>
-                  {metrics.error_rate
-                    ? `${(metrics.error_rate * 100).toFixed(1)}%`
-                    : 'N/A'}
+                  {metrics.error_rate ? `${(metrics.error_rate * 100).toFixed(1)}%` : 'N/A'}
                 </Text>
               </View>
             </View>
@@ -1127,9 +1093,7 @@ export default function AdminDashboardWeb() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Admin Dashboard</Text>
-          <Text style={styles.headerSubtitle}>
-            Last updated: {lastUpdate.toLocaleTimeString()}
-          </Text>
+          <Text style={styles.headerSubtitle}>Last updated: {lastUpdate.toLocaleTimeString()}</Text>
         </View>
         <ModernButton
           title="Refresh"
@@ -1158,18 +1122,9 @@ export default function AdminDashboardWeb() {
             <Ionicons
               name={tab.icon}
               size={20}
-              color={
-                activeTab === tab.id
-                  ? modernColors.primary[500]
-                  : modernColors.text.secondary
-              }
+              color={activeTab === tab.id ? modernColors.primary[500] : modernColors.text.secondary}
             />
-            <Text
-              style={[
-                styles.tabLabel,
-                activeTab === tab.id && styles.tabLabelActive,
-              ]}
-            >
+            <Text style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}>
               {tab.label}
             </Text>
           </TouchableOpacity>
@@ -1290,7 +1245,11 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.lg,
   },
   metricCard: {
-    flex: (isWeb && isTablet ? '0 0 calc(25% - 12px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet
+      ? '0 0 calc(25% - 12px)'
+      : isWeb
+      ? '0 0 calc(50% - 12px)'
+      : '0 0 100%') as any,
     minWidth: 200,
   },
   metricHeader: {
@@ -1371,7 +1330,11 @@ const styles = StyleSheet.create({
     gap: modernSpacing.md,
   },
   serviceCard: {
-    flex: (isWeb && isTablet ? '0 0 calc(25% - 12px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet
+      ? '0 0 calc(25% - 12px)'
+      : isWeb
+      ? '0 0 calc(50% - 12px)'
+      : '0 0 100%') as any,
     padding: modernSpacing.md,
     backgroundColor: modernColors.background.elevated,
     borderRadius: modernBorderRadius.md,
@@ -1461,7 +1424,11 @@ const styles = StyleSheet.create({
     gap: modernSpacing.md,
   },
   reportCard: {
-    flex: (isWeb && isTablet ? '0 0 calc(33.333% - 16px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet
+      ? '0 0 calc(33.333% - 16px)'
+      : isWeb
+      ? '0 0 calc(50% - 12px)'
+      : '0 0 100%') as any,
     minWidth: 300,
   },
   reportActions: {
@@ -1625,7 +1592,11 @@ const styles = StyleSheet.create({
     gap: modernSpacing.md,
   },
   performanceItem: {
-    flex: (isWeb && isTablet ? '0 0 calc(25% - 12px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet
+      ? '0 0 calc(25% - 12px)'
+      : isWeb
+      ? '0 0 calc(50% - 12px)'
+      : '0 0 100%') as any,
     alignItems: 'center',
     padding: modernSpacing.md,
     backgroundColor: modernColors.background.elevated,

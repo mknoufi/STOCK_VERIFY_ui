@@ -4,7 +4,7 @@ export const initializeSyncService = () => {
   return {
     cleanup: () => {
       console.log('Sync service cleanup');
-    }
+    },
   };
 };
 

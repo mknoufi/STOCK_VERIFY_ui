@@ -65,14 +65,15 @@ export class BatchOperationsService {
           typedBatch.map(async (item) => {
             try {
               await handleErrorWithRecovery(
-                () => createCountLine({
-                  session_id: operation.session_id,
-                  item_code: item.item_code,
-                  counted_qty: item.counted_qty,
-                  variance_reason: item.variance_reason || null,
-                  variance_note: item.variance_note || null,
-                  remark: item.remark || null,
-                }),
+                () =>
+                  createCountLine({
+                    session_id: operation.session_id,
+                    item_code: item.item_code,
+                    counted_qty: item.counted_qty,
+                    variance_reason: item.variance_reason || null,
+                    variance_note: item.variance_note || null,
+                    remark: item.remark || null,
+                  }),
                 {
                   context: 'Batch Count',
                   recovery: { maxRetries: 2 },
@@ -118,7 +119,7 @@ export class BatchOperationsService {
       onProgress?: (current: number, total: number) => void;
     } = {}
   ): Promise<BatchOperationResult> {
-    const items = itemCodes.map(itemCode => ({
+    const items = itemCodes.map((itemCode) => ({
       item_code: itemCode,
       counted_qty: quantity,
     }));
@@ -161,9 +162,10 @@ export class BatchOperationsService {
             try {
               const api = require('./api/api').default;
               await handleErrorWithRecovery(
-                () => api.put(`/count-lines/${update.line_id}`, {
-                  counted_qty: update.counted_qty,
-                }),
+                () =>
+                  api.put(`/count-lines/${update.line_id}`, {
+                    counted_qty: update.counted_qty,
+                  }),
                 {
                   context: 'Bulk Update',
                   recovery: { maxRetries: 2 },

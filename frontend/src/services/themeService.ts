@@ -55,13 +55,13 @@ export class ThemeService {
   static setTheme(theme: Theme) {
     this.currentTheme = theme;
     const themeObj = this.getTheme();
-    this.listeners.forEach(listener => listener(themeObj));
+    this.listeners.forEach((listener) => listener(themeObj));
   }
 
   static subscribe(listener: (theme: any) => void) {
     this.listeners.push(listener);
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 

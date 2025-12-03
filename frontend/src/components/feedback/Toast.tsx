@@ -55,12 +55,16 @@ export const Toast: React.FC<ToastProps> = ({
           duration: 300,
           easing: Easing.in(Easing.ease),
         });
-        scale.value = withTiming(0.8, {
-          duration: 300,
-          easing: Easing.in(Easing.ease),
-        }, () => {
-          runOnJS(onHide)();
-        });
+        scale.value = withTiming(
+          0.8,
+          {
+            duration: 300,
+            easing: Easing.in(Easing.ease),
+          },
+          () => {
+            runOnJS(onHide)();
+          }
+        );
       }, duration);
 
       return () => clearTimeout(timer);
@@ -76,10 +80,7 @@ export const Toast: React.FC<ToastProps> = ({
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-      transform: [
-        { translateY: translateY.value },
-        { scale: scale.value },
-      ],
+      transform: [{ translateY: translateY.value }, { scale: scale.value }],
     };
   });
 
@@ -87,19 +88,27 @@ export const Toast: React.FC<ToastProps> = ({
 
   const getIcon = () => {
     switch (type) {
-      case 'success': return 'checkmark-circle';
-      case 'error': return 'close-circle';
-      case 'warning': return 'warning';
-      default: return 'information-circle';
+      case 'success':
+        return 'checkmark-circle';
+      case 'error':
+        return 'close-circle';
+      case 'warning':
+        return 'warning';
+      default:
+        return 'information-circle';
     }
   };
 
   const getColor = () => {
     switch (type) {
-      case 'success': return '#4CAF50';
-      case 'error': return '#F44336';
-      case 'warning': return '#FF9800';
-      default: return '#2196F3';
+      case 'success':
+        return '#4CAF50';
+      case 'error':
+        return '#F44336';
+      case 'warning':
+        return '#FF9800';
+      default:
+        return '#2196F3';
     }
   };
 

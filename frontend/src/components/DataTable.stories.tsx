@@ -14,7 +14,8 @@ const meta: Meta<typeof DataTable> = {
   parameters: {
     docs: {
       description: {
-        component: 'High-performance table component with sorting, filtering, and pagination. Uses FlashList for optimal performance with large datasets.',
+        component:
+          'High-performance table component with sorting, filtering, and pagination. Uses FlashList for optimal performance with large datasets.',
       },
     },
   },
@@ -44,11 +45,46 @@ type Story = StoryObj<typeof DataTable>;
 
 // Sample data
 const sampleData: TableData[] = [
-  { id: '1', item_code: 'ITEM001', item_name: 'Product A', stock_qty: 150, mrp: 299.99, category: 'Electronics' },
-  { id: '2', item_code: 'ITEM002', item_name: 'Product B', stock_qty: 75, mrp: 499.99, category: 'Clothing' },
-  { id: '3', item_code: 'ITEM003', item_name: 'Product C', stock_qty: 200, mrp: 199.99, category: 'Electronics' },
-  { id: '4', item_code: 'ITEM004', item_name: 'Product D', stock_qty: 50, mrp: 899.99, category: 'Furniture' },
-  { id: '5', item_code: 'ITEM005', item_name: 'Product E', stock_qty: 300, mrp: 149.99, category: 'Clothing' },
+  {
+    id: '1',
+    item_code: 'ITEM001',
+    item_name: 'Product A',
+    stock_qty: 150,
+    mrp: 299.99,
+    category: 'Electronics',
+  },
+  {
+    id: '2',
+    item_code: 'ITEM002',
+    item_name: 'Product B',
+    stock_qty: 75,
+    mrp: 499.99,
+    category: 'Clothing',
+  },
+  {
+    id: '3',
+    item_code: 'ITEM003',
+    item_name: 'Product C',
+    stock_qty: 200,
+    mrp: 199.99,
+    category: 'Electronics',
+  },
+  {
+    id: '4',
+    item_code: 'ITEM004',
+    item_name: 'Product D',
+    stock_qty: 50,
+    mrp: 899.99,
+    category: 'Furniture',
+  },
+  {
+    id: '5',
+    item_code: 'ITEM005',
+    item_name: 'Product E',
+    stock_qty: 300,
+    mrp: 149.99,
+    category: 'Clothing',
+  },
 ];
 
 const columns: TableColumn[] = [
@@ -124,9 +160,7 @@ export const CustomRenderers: Story = {
         label: 'MRP',
         sortable: true,
         render: (value) => (
-          <span style={{ fontWeight: 'bold', color: '#2196F3' }}>
-            ₹{Number(value).toFixed(2)}
-          </span>
+          <span style={{ fontWeight: 'bold', color: '#2196F3' }}>₹{Number(value).toFixed(2)}</span>
         ),
       },
     ],

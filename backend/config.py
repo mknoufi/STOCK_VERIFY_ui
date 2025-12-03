@@ -290,7 +290,9 @@ except Exception as e:
             self.JWT_REFRESH_SECRET = jwt_refresh_secret
             self.JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
             self.LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-            self.LOG_FORMAT = os.getenv("LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            self.LOG_FORMAT = os.getenv(
+                "LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
             self.LOG_FILE = os.getenv("LOG_FILE", "app.log")
             self.USE_CONNECTION_POOL = os.getenv("USE_CONNECTION_POOL", "true").lower() == "true"
             self.POOL_SIZE = int(os.getenv("POOL_SIZE", 10))

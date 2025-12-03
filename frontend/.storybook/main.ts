@@ -1,7 +1,10 @@
 import type { StorybookConfig } from '@storybook/react';
 
 const config: StorybookConfig = {
-  stories: ['../components/**/*.stories.@(js|jsx|ts|tsx|mdx)', '../app/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
+  stories: [
+    '../components/**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    '../app/**/*.stories.@(js|jsx|ts|tsx|mdx)',
+  ],
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',

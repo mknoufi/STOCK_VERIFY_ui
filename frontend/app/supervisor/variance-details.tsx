@@ -26,8 +26,6 @@ export default function VarianceDetailsScreen() {
   const [itemDetails, setItemDetails] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
 
-
-
   const loadDetails = React.useCallback(async () => {
     try {
       setLoading(true);
@@ -40,7 +38,7 @@ export default function VarianceDetailsScreen() {
       // Better approach: Add getVarianceDetails to ItemVerificationAPI
       const response = await ItemVerificationAPI.getVariances({
         search: itemCode as string,
-        limit: 1
+        limit: 1,
       });
 
       if (response.variances && response.variances.length > 0) {
@@ -121,7 +119,9 @@ export default function VarianceDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+      >
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
@@ -129,7 +129,9 @@ export default function VarianceDetailsScreen() {
 
   if (!itemDetails) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+      >
         <Text style={{ color: theme.colors.text }}>Item not found</Text>
       </View>
     );
@@ -146,32 +148,58 @@ export default function VarianceDetailsScreen() {
 
       <ScrollView style={styles.content}>
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.itemName, { color: theme.colors.text }]}>{itemDetails.item_name}</Text>
-          <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>{itemDetails.item_code}</Text>
+          <Text style={[styles.itemName, { color: theme.colors.text }]}>
+            {itemDetails.item_name}
+          </Text>
+          <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>
+            {itemDetails.item_code}
+          </Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>System Qty</Text>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{itemDetails.system_qty}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                System Qty
+              </Text>
+              <Text style={[styles.statValue, { color: theme.colors.text }]}>
+                {itemDetails.system_qty}
+              </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Verified Qty</Text>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{itemDetails.verified_qty}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                Verified Qty
+              </Text>
+              <Text style={[styles.statValue, { color: theme.colors.text }]}>
+                {itemDetails.verified_qty}
+              </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Variance</Text>
-              <Text style={[styles.statValue, { color: itemDetails.variance !== 0 ? colors.error : colors.success }]}>
-                {itemDetails.variance > 0 ? '+' : ''}{itemDetails.variance}
+              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                Variance
+              </Text>
+              <Text
+                style={[
+                  styles.statValue,
+                  { color: itemDetails.variance !== 0 ? colors.error : colors.success },
+                ]}
+              >
+                {itemDetails.variance > 0 ? '+' : ''}
+                {itemDetails.variance}
               </Text>
             </View>
           </View>
         </View>
 
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Verification Details</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Verification Details
+          </Text>
           <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Verified By:</Text>
-            <Text style={[styles.detailValue, { color: theme.colors.text }]}>{itemDetails.verified_by}</Text>
+            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+              Verified By:
+            </Text>
+            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+              {itemDetails.verified_by}
+            </Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Time:</Text>
@@ -181,7 +209,9 @@ export default function VarianceDetailsScreen() {
           </View>
           {itemDetails.floor && (
             <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Location:</Text>
+              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                Location:
+              </Text>
               <Text style={[styles.detailValue, { color: theme.colors.text }]}>
                 {itemDetails.floor} {itemDetails.rack ? `/ ${itemDetails.rack}` : ''}
               </Text>

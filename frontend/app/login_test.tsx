@@ -37,11 +37,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <View
-      style={styles.gradient}
-    >
+    <View style={styles.gradient}>
       <StatusBar style="light" />
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
@@ -61,7 +59,7 @@ export default function LoginScreen() {
             leftIcon="person-outline"
             editable={!loading}
           />
-          
+
           <EnhancedTextInput
             label="Password"
             value={password}

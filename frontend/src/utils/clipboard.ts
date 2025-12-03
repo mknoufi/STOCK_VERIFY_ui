@@ -12,7 +12,10 @@ import { Platform } from 'react-native';
  * @param showAlert Whether to show success alert
  * @returns Promise<boolean>
  */
-export const copyToClipboard = async (text: string, showAlert: boolean = true): Promise<boolean> => {
+export const copyToClipboard = async (
+  text: string,
+  showAlert: boolean = true
+): Promise<boolean> => {
   try {
     await Clipboard.setStringAsync(text);
 

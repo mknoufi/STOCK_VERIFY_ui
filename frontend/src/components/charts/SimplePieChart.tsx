@@ -6,7 +6,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 
-import { modernColors, modernTypography, modernSpacing, modernBorderRadius } from '../../styles/modernDesignSystem';
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+  modernBorderRadius,
+} from '../../styles/modernDesignSystem';
 
 const CHART_SIZE = 200;
 const RADIUS = 80;
@@ -64,7 +69,8 @@ export const SimplePieChart: React.FC<SimplePieChartProps> = ({
       // Web: Use CSS conic-gradient
       const gradientStops = segments
         .map((seg, i) => {
-          const startPercent = i === 0 ? 0 : segments.slice(0, i).reduce((sum, s) => sum + s.percentage, 0);
+          const startPercent =
+            i === 0 ? 0 : segments.slice(0, i).reduce((sum, s) => sum + s.percentage, 0);
           return `${seg.color} ${startPercent}% ${startPercent + seg.percentage}%`;
         })
         .join(', ');
@@ -134,9 +140,7 @@ export const SimplePieChart: React.FC<SimplePieChartProps> = ({
           <View style={styles.legend}>
             {segments.map((item, index) => (
               <View key={index} style={styles.legendItem}>
-                <View
-                  style={[styles.legendColor, { backgroundColor: item.color }]}
-                />
+                <View style={[styles.legendColor, { backgroundColor: item.color }]} />
                 <View style={styles.legendContent}>
                   <Text style={styles.legendLabel}>{item.label}</Text>
                   <Text style={styles.legendValue}>

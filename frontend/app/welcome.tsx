@@ -12,10 +12,7 @@ export default function WelcomeScreen() {
   const { colors, spacing, typography, borderRadius } = useTheme();
 
   return (
-    <LinearGradient
-      colors={['#0F172A', '#1E293B', '#334155']}
-      style={styles.gradient}
-    >
+    <LinearGradient colors={['#0F172A', '#1E293B', '#334155']} style={styles.gradient}>
       <StatusBar style="light" />
       <View style={styles.container}>
         <View style={styles.content}>
@@ -24,7 +21,8 @@ export default function WelcomeScreen() {
           <Text style={styles.version}>v2.1</Text>
           <Text style={styles.subtitle}>Inventory Management System</Text>
           <Text style={styles.description}>
-            Streamline your stock counting and verification process with real-time sync and offline support
+            Streamline your stock counting and verification process with real-time sync and offline
+            support
           </Text>
         </View>
 
@@ -36,9 +34,9 @@ export default function WelcomeScreen() {
             iconPosition="left"
             style={styles.primaryButton}
           />
-          
-          <TouchableOpacity 
-            style={styles.secondaryButton} 
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
             onPress={() => router.push('/staff/home')}
           >
             <Ionicons name="flash-outline" size={20} color="#3B82F6" />

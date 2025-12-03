@@ -8,9 +8,7 @@ export default function RegisterScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Registration</Text>
-      <Text style={styles.message}>
-        Please contact your administrator to create an account.
-      </Text>
+      <Text style={styles.message}>Please contact your administrator to create an account.</Text>
     </View>
   );
 }

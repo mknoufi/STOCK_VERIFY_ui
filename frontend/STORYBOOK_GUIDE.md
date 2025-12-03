@@ -14,6 +14,7 @@ npm run storybook
 ```
 
 This will:
+
 - Start Storybook development server
 - Open browser at `http://localhost:6006`
 - Watch for changes in component stories
@@ -29,6 +30,7 @@ npm run build-storybook
 ### Components Documented:
 
 1. **Button** (`components/Button.stories.tsx`)
+
    - All variants (primary, secondary, outline, text, danger)
    - All sizes (small, medium, large)
    - States (disabled, loading)
@@ -36,6 +38,7 @@ npm run build-storybook
    - Full width option
 
 2. **Input** (`components/Input.stories.tsx`)
+
    - With/without label
    - Error states
    - With icons (left/right)
@@ -43,6 +46,7 @@ npm run build-storybook
    - Different input types (email, phone, numeric)
 
 3. **Card** (`components/Card.stories.tsx`)
+
    - With title and subtitle
    - Pressable cards
    - Different elevations

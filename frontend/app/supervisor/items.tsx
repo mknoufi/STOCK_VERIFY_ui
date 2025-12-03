@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
-  Platform
+  Platform,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
@@ -24,10 +24,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 const getLocalFileUri = (filename: string) => {
-  const baseDir =
-    FileSystem.Paths?.document?.uri ??
-    FileSystem.Paths?.cache?.uri ??
-    '';
+  const baseDir = FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? '';
   return `${baseDir}${filename}`;
 };
 
@@ -50,36 +47,39 @@ export default function ItemsScreen() {
     total_qty: 0,
   });
 
-  const loadItems = React.useCallback(async (reset = false) => {
-    try {
-      if (reset) {
-        setLoading(true);
-        setPagination((prev) => ({ ...prev, skip: 0 }));
+  const loadItems = React.useCallback(
+    async (reset = false) => {
+      try {
+        if (reset) {
+          setLoading(true);
+          setPagination((prev) => ({ ...prev, skip: 0 }));
+        }
+
+        const skip = reset ? 0 : pagination.skip;
+        const response = await ItemVerificationAPI.getFilteredItems({
+          ...filters,
+          limit: pagination.limit,
+          skip,
+        });
+
+        if (reset) {
+          setItems(response.items);
+        } else {
+          setItems((prev) => [...prev, ...response.items]);
+        }
+
+        setPagination(response.pagination);
+        setStatistics(response.statistics);
+      } catch (error: any) {
+        // Error logged via error handler
+        Alert.alert('Error', error.message || 'Failed to load items');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      const skip = reset ? 0 : pagination.skip;
-      const response = await ItemVerificationAPI.getFilteredItems({
-        ...filters,
-        limit: pagination.limit,
-        skip,
-      });
-
-      if (reset) {
-        setItems(response.items);
-      } else {
-        setItems((prev) => [...prev, ...response.items]);
-      }
-
-      setPagination(response.pagination);
-      setStatistics(response.statistics);
-    } catch (error: any) {
-      // Error logged via error handler
-      Alert.alert('Error', error.message || 'Failed to load items');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filters, pagination.limit, pagination.skip]);
+    },
+    [filters, pagination.limit, pagination.skip]
+  );
 
   useEffect(() => {
     loadItems(true);
@@ -152,9 +152,7 @@ export default function ItemsScreen() {
       >
         <View style={styles.itemHeader}>
           <View style={styles.itemHeaderLeft}>
-            <Text style={[styles.itemName, { color: theme.colors.text }]}>
-              {item.item_name}
-            </Text>
+            <Text style={[styles.itemName, { color: theme.colors.text }]}>{item.item_name}</Text>
             <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>
               {item.item_code}
             </Text>
@@ -168,17 +166,13 @@ export default function ItemsScreen() {
 
         <View style={styles.itemDetails}>
           <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
-              Stock:
-            </Text>
+            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Stock:</Text>
             <Text style={[styles.detailValue, { color: theme.colors.text }]}>
               {item.stock_qty?.toFixed(2) || '0.00'} {item.uom_name || ''}
             </Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
-              MRP:
-            </Text>
+            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>MRP:</Text>
             <Text style={[styles.detailValue, { color: theme.colors.text }]}>
               ₹{item.mrp?.toFixed(2) || '0.00'}
             </Text>
@@ -216,7 +210,9 @@ export default function ItemsScreen() {
 
   if (loading && items.length === 0) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+      >
         <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
           Loading items...
@@ -228,15 +224,10 @@ export default function ItemsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Items
-        </Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Items</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity
             style={styles.exportButton}
@@ -257,33 +248,21 @@ export default function ItemsScreen() {
           <Text style={[styles.statValue, { color: theme.colors.text }]}>
             {statistics.total_items}
           </Text>
-          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
-            Total Items
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Total Items</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.statValue, { color: '#4CAF50' }]}>
-            {statistics.verified_items}
-          </Text>
-          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
-            Verified
-          </Text>
+          <Text style={[styles.statValue, { color: '#4CAF50' }]}>{statistics.verified_items}</Text>
+          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Verified</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
           <Text style={[styles.statValue, { color: theme.colors.text }]}>
             {statistics.total_qty.toFixed(0)}
           </Text>
-          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
-            Total Qty
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Total Qty</Text>
         </View>
       </View>
 
-      <ItemFilters
-        onFilterChange={setFilters}
-        showVerifiedFilter={true}
-        showSearch={true}
-      />
+      <ItemFilters onFilterChange={setFilters} showVerifiedFilter={true} showSearch={true} />
 
       {items.length === 0 ? (
         <View style={styles.centered}>
@@ -301,9 +280,7 @@ export default function ItemsScreen() {
           renderItem={renderItem}
           keyExtractor={(item, index) => `${item.item_code}-${index}`}
           contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={

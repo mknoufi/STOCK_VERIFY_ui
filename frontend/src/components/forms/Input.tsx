@@ -25,83 +25,83 @@ interface InputProps extends TextInputProps {
   containerStyle?: object;
 }
 
-export const Input = React.forwardRef<TextInput, InputProps>(({
-  label,
-  error,
-  leftIcon,
-  rightIcon,
-  rightIconColor,
-  onRightIconPress,
-  containerStyle,
-  ...textInputProps
-}, ref) => {
-  const theme = useTheme();
+export const Input = React.forwardRef<TextInput, InputProps>(
+  (
+    {
+      label,
+      error,
+      leftIcon,
+      rightIcon,
+      rightIconColor,
+      onRightIconPress,
+      containerStyle,
+      ...textInputProps
+    },
+    ref
+  ) => {
+    const theme = useTheme();
 
-  return (
-    <View style={[styles.container, containerStyle]}>
-      {label && (
-        <Text style={[styles.label, { color: theme.colors.text }]}>
-          {label}
-        </Text>
-      )}
-      <View
-        style={[
-          styles.inputContainer,
-          {
-            borderColor: error ? theme.colors.error : theme.colors.border,
-            backgroundColor: theme.colors.surface,
-          },
-          textInputProps.multiline && styles.multilineContainer,
-        ]}
-      >
-        {leftIcon && (
-          <Ionicons
-            name={leftIcon}
-            size={20}
-            color={theme.colors.placeholder}
-            style={styles.leftIcon}
-          />
-        )}
-        <TextInput
-          ref={ref}
+    return (
+      <View style={[styles.container, containerStyle]}>
+        {label && <Text style={[styles.label, { color: theme.colors.text }]}>{label}</Text>}
+        <View
           style={[
-            styles.input,
+            styles.inputContainer,
             {
-              color: theme.colors.text,
+              borderColor: error ? theme.colors.error : theme.colors.border,
+              backgroundColor: theme.colors.surface,
             },
-            textInputProps.multiline && styles.multilineInput,
-            Platform.OS === 'web' && styles.inputWeb,
+            textInputProps.multiline && styles.multilineContainer,
           ]}
-          placeholderTextColor={theme.colors.placeholder}
-          {...(Platform.OS === 'web' ? {
-            // Web-specific props to ensure input works
-            autoComplete: textInputProps.autoComplete || 'off',
-            spellCheck: textInputProps.spellCheck !== undefined ? textInputProps.spellCheck : true,
-          } : {})}
-          {...textInputProps}
-        />
-        {rightIcon && (
-          <TouchableOpacity
-            onPress={onRightIconPress}
-            style={styles.rightIcon}
-            activeOpacity={0.7}
-          >
+        >
+          {leftIcon && (
             <Ionicons
-              name={rightIcon}
+              name={leftIcon}
               size={20}
-              color={rightIconColor || theme.colors.placeholder}
+              color={theme.colors.placeholder}
+              style={styles.leftIcon}
             />
-          </TouchableOpacity>
-        )}
+          )}
+          <TextInput
+            ref={ref}
+            style={[
+              styles.input,
+              {
+                color: theme.colors.text,
+              },
+              textInputProps.multiline && styles.multilineInput,
+              Platform.OS === 'web' && styles.inputWeb,
+            ]}
+            placeholderTextColor={theme.colors.placeholder}
+            {...(Platform.OS === 'web'
+              ? {
+                  // Web-specific props to ensure input works
+                  autoComplete: textInputProps.autoComplete || 'off',
+                  spellCheck:
+                    textInputProps.spellCheck !== undefined ? textInputProps.spellCheck : true,
+                }
+              : {})}
+            {...textInputProps}
+          />
+          {rightIcon && (
+            <TouchableOpacity
+              onPress={onRightIconPress}
+              style={styles.rightIcon}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={rightIcon}
+                size={20}
+                color={rightIconColor || theme.colors.placeholder}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+        {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
       </View>
-      {error && (
-        <Text style={[styles.error, { color: theme.colors.error }]}>
-          {error}
-        </Text>
-      )}
-    </View>
-  );
-});
+    );
+  }
+);
 
 Input.displayName = 'Input';
 

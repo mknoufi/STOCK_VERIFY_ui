@@ -106,31 +106,31 @@ export const modernColors = {
 
   // Background Colors (Dark Mode)
   background: {
-    default: '#0F172A',      // Slate 900
-    paper: '#1E293B',        // Slate 800
-    elevated: '#334155',     // Slate 700
+    default: '#0F172A', // Slate 900
+    paper: '#1E293B', // Slate 800
+    elevated: '#334155', // Slate 700
     overlay: 'rgba(15, 23, 42, 0.8)',
     glass: 'rgba(30, 41, 59, 0.7)', // Glassmorphism
   },
 
   // Text Colors
   text: {
-    primary: '#F8FAFC',      // Slate 50
-    secondary: '#94A3B8',    // Slate 400
-    tertiary: '#64748B',     // Slate 500
-    disabled: '#475569',     // Slate 600
-    inverse: '#0F172A',      // Slate 900
-    link: '#60A5FA',         // Blue 400
-    linkHover: '#93C5FD',    // Blue 300
+    primary: '#F8FAFC', // Slate 50
+    secondary: '#94A3B8', // Slate 400
+    tertiary: '#64748B', // Slate 500
+    disabled: '#475569', // Slate 600
+    inverse: '#0F172A', // Slate 900
+    link: '#60A5FA', // Blue 400
+    linkHover: '#93C5FD', // Blue 300
   },
 
   // Border Colors
   border: {
-    light: '#334155',        // Slate 700
-    medium: '#475569',       // Slate 600
-    dark: '#64748B',         // Slate 500
-    focus: '#3B82F6',        // Blue 500
-    error: '#EF4444',        // Red 500
+    light: '#334155', // Slate 700
+    medium: '#475569', // Slate 600
+    dark: '#64748B', // Slate 500
+    focus: '#3B82F6', // Blue 500
+    error: '#EF4444', // Red 500
   },
 
   // Gradient Definitions

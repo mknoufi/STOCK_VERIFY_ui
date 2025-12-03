@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-verify-backend
+  labels:
+    app: stock-verify-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stock-verify-backend
+  template:
+    metadata:
+      labels:
+        app: stock-verify-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/mknoufi/stock_verify_ui:latest
+          ports:
+            - containerPort: 8001
+          env:
+            - name: MONGODB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: mongodb-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: jwt-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-verify-frontend
+  labels:
+    app: stock-verify-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stock-verify-frontend
+  template:
+    metadata:
+      labels:
+        app: stock-verify-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/mknoufi/stock_verify_ui:latest-frontend
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"

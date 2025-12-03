@@ -259,7 +259,7 @@ export default function SettingsScreen() {
         <SettingGroup title="Help & Support" icon="help-circle">
           <TouchableOpacity
             style={styles.mappingButton}
-            onPress={() => router.push('/help')}
+            onPress={() => router.push('/help' as any)}
           >
             <Ionicons name="help-circle" size={20} color={theme.colors.primary} />
             <Text style={[styles.mappingButtonText, { color: theme.colors.primary }]}>

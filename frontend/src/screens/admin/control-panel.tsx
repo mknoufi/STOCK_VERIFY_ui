@@ -212,13 +212,13 @@ export default function ControlPanelScreen() {
 
   const handleViewLogs = (service: string) => {
     router.push({
-      pathname: '/admin/logs',
+      pathname: '/admin/logs' as any,
       params: { service },
     });
   };
 
   const handleSqlConfig = () => {
-    router.push('/admin/sql-config');
+    router.push('/admin/sql-config' as any);
   };
 
   const renderServiceCard = (
@@ -434,7 +434,7 @@ export default function ControlPanelScreen() {
             </View>
             <TouchableOpacity
               style={styles.viewIssuesButton}
-              onPress={() => router.push('/admin/control-panel')}
+              onPress={() => router.push('/admin/control-panel' as any)}
             >
               <Text style={styles.viewIssuesButtonText}>View All</Text>
             </TouchableOpacity>
@@ -464,28 +464,28 @@ export default function ControlPanelScreen() {
           <View style={styles.quickActionsGrid}>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/settings')}
+              onPress={() => router.push('/admin/settings' as any)}
             >
               <Ionicons name="settings" size={32} color="#007AFF" />
               <Text style={styles.quickActionText}>Settings</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/metrics')}
+              onPress={() => router.push('/admin/metrics' as any)}
             >
               <Ionicons name="stats-chart" size={32} color="#4CAF50" />
               <Text style={styles.quickActionText}>Metrics</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/permissions')}
+              onPress={() => router.push('/admin/permissions' as any)}
             >
               <Ionicons name="shield-checkmark" size={32} color="#FF9800" />
               <Text style={styles.quickActionText}>Permissions</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/reports')}
+              onPress={() => router.push('/admin/reports' as any)}
             >
               <Ionicons name="document-text" size={32} color="#9C27B0" />
               <Text style={styles.quickActionText}>Reports</Text>
@@ -499,14 +499,14 @@ export default function ControlPanelScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/security')}
+              onPress={() => router.push('/admin/security' as any)}
             >
               <Ionicons name="shield-checkmark" size={32} color="#4CAF50" />
               <Text style={styles.quickActionText}>Security</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/help')}
+              onPress={() => router.push('/help' as any)}
             >
               <Ionicons name="help-circle" size={32} color="#007AFF" />
               <Text style={styles.quickActionText}>Help</Text>
@@ -582,13 +582,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' && {
-      position: 'sticky',
+    ...(Platform.OS === 'web' ? {
+      position: 'sticky' as const,
       top: 0,
       zIndex: 100,
       boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    }),
-  },
+    } : {}),
+  } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,
   },

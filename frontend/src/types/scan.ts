@@ -99,11 +99,19 @@ export interface SerialInput {
 
 export interface WorkflowState {
   step?: string;
-  currentStep: string;
-  data: Record<string, any>;
-  errors: string[];
+  currentStep?: string;
+  data?: Record<string, any>;
+  errors?: string[];
   serialCaptureEnabled?: boolean;
   serialInputs?: SerialInput[];
   expectedSerialCount?: number;
   showSerialEntry?: boolean;
+  showPhotoCapture?: boolean;
+  autoIncrementEnabled?: boolean;
+  damageQtyEnabled?: boolean;
+  requiredSerialCount?: number;
+  serialInputTarget?: number;
+  existingCountLine?: any;
+  showAddQuantityModal?: boolean;
+  additionalQty?: string;
 }

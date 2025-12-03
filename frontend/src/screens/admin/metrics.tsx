@@ -162,7 +162,7 @@ export default function MetricsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.controlPanelButton}
-            onPress={() => router.push('/admin/control-panel')}
+            onPress={() => router.push('/admin/control-panel' as any)}
             activeOpacity={0.7}
           >
             <Ionicons name="settings" size={24} color="#007AFF" />
@@ -462,13 +462,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
-    ...(Platform.OS === 'web' && {
-      position: 'sticky',
+    ...(Platform.OS === 'web' ? {
+      position: 'sticky' as const,
       top: 0,
       zIndex: 100,
       boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    }),
-  },
+    } : {}),
+  } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,
   },
@@ -611,10 +611,10 @@ const styles = StyleSheet.create({
     }),
   },
   metricCardWeb: {
-    ...(Platform.OS === 'web' && {
-      cursor: 'default',
-    }),
-  },
+    ...(Platform.OS === 'web' ? {
+      cursor: 'default' as const,
+    } : {}),
+  } as any,
   metricIconContainer: {
     marginBottom: 12,
   },

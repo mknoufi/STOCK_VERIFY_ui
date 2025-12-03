@@ -55,7 +55,7 @@ import {
 import { SimpleLineChart as LineChart } from '../../components/charts/SimpleLineChart';
 import { SimpleBarChart as BarChart } from '../../components/charts/SimpleBarChart';
 import { SimplePieChart as PieChart } from '../../components/charts/SimplePieChart';
-import { DateRangePicker } from '../../components/DateRangePicker';
+import { DateRangePicker } from '../../components/forms/DateRangePicker';
 
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
@@ -195,7 +195,7 @@ export default function AdminDashboardWeb() {
 
   useEffect(() => {
     if (!hasRole('admin')) {
-      router.replace('/admin/control-panel');
+      router.replace('/admin/control-panel' as any);
       return;
     }
     loadDashboardData();
@@ -835,10 +835,10 @@ export default function AdminDashboardWeb() {
           <DateRangePicker
             startDate={analyticsDateRange.start}
             endDate={analyticsDateRange.end}
-            onStartDateChange={(date) =>
+            onStartDateChange={(date: Date) =>
               setAnalyticsDateRange({ ...analyticsDateRange, start: date })
             }
-            onEndDateChange={(date) =>
+            onEndDateChange={(date: Date) =>
               setAnalyticsDateRange({ ...analyticsDateRange, end: date })
             }
           />

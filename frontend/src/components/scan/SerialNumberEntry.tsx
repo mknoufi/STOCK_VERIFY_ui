@@ -115,14 +115,14 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                   <View style={styles.serialInputActions}>
                     <TouchableOpacity
                       style={styles.serialActionButton}
-                      onPress={() => onScanSerialSlot(entry.id)}
+                      onPress={() => onScanSerialSlot(entry.id ?? '')}
                     >
                       <Ionicons name="scan-outline" size={18} color="#3B82F6" />
                     </TouchableOpacity>
                     {(requiredSerialCount === 0 || serialInputs.length > requiredSerialCount) && (
                       <TouchableOpacity
                         style={styles.removeSerialButton}
-                        onPress={() => handleRemove(entry.id)}
+                        onPress={() => handleRemove(entry.id ?? '')}
                       >
                         <Ionicons name="trash" size={18} color="#EF4444" />
                       </TouchableOpacity>
@@ -134,7 +134,7 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                   placeholder="Scan or enter serial number"
                   placeholderTextColor="#94A3B8"
                   value={entry.value}
-                  onChangeText={(text) => handleSerialChange(entry.id, text)}
+                  onChangeText={(text) => handleSerialChange(entry.id ?? '', text)}
                   autoCapitalize="characters"
                 />
               </View>

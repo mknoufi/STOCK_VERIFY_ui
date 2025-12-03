@@ -921,6 +921,16 @@ export const resolveError = async (errorId: string, resolutionNote?: string) => 
   }
 };
 
+export const clearErrorLogs = async () => {
+  try {
+    const response = await api.delete('/error-logs');
+    return response.data;
+  } catch (error: any) {
+    __DEV__ && console.error('Clear error logs error:', error);
+    throw error;
+  }
+};
+
 // ERP Configuration
 export const getERPConfig = async () => {
   try {

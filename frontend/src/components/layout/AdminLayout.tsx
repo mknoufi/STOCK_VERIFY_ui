@@ -47,13 +47,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   // Auto-detect title from route if not provided
   const screenTitle =
     title ||
-    (segments[1] === 'control-panel'
+    ((segments[1] as string | undefined) === 'control-panel'
       ? 'Control Panel'
-      : segments[1] === 'metrics'
+      : (segments[1] as string | undefined) === 'metrics'
         ? 'Metrics'
-        : segments[1] === 'permissions'
+        : (segments[1] as string | undefined) === 'permissions'
           ? 'Permissions'
-          : segments[1] === 'security'
+          : (segments[1] as string | undefined) === 'security'
             ? 'Security'
             : 'Admin');
 

@@ -24,16 +24,22 @@ export const syncOfflineQueue = async (options?: any) => {
 };
 
 export interface SyncResult {
-  success: boolean;
-  processed: number;
-  errors: string[];
+  success: number;
+  failed: number;
+  total: number;
+  errors: { id: string; error: string }[];
 }
 
-export const forceSync = async (): Promise<SyncResult> => {
-  console.log('Force syncing...');
+export interface SyncOptions {
+  onProgress?: (current: number, total: number) => void;
+}
+
+export const forceSync = async (options?: SyncOptions): Promise<SyncResult> => {
+  console.log('Force syncing...', options);
   return {
-    success: true,
-    processed: 0,
+    success: 0,
+    failed: 0,
+    total: 0,
     errors: [],
   };
 };

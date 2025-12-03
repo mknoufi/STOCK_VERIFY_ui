@@ -4,7 +4,7 @@ requests-oauthlib>=2.0.0
 cryptography>=43.0.3
 python-dotenv>=1.0.1
 # Motor 3.7.0 supports pymongo 4.10+; updated compatibility
-pymongo>=4.10.0,<4.11
+pymongo>=4.10.0,<4.16
 pydantic==2.12.5
 pydantic-settings>=2.7.0
 email-validator>=2.2.0

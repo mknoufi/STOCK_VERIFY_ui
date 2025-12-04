@@ -55,11 +55,30 @@ class Settings(PydanticBaseSettings):
     # Application
     APP_NAME: str = "Stock Count Application"
     APP_VERSION: str = "1.0.0"
+    MIN_CLIENT_VERSION: str = Field(
+        default="1.0.0",
+        description="Minimum required client/app version for compatibility",
+    )
     DEBUG: bool = False
     ENVIRONMENT: str = Field(
         default="development",
         description="Environment: development, staging, production",
     )
+
+    @validator("MIN_CLIENT_VERSION")
+    def validate_min_client_version(cls, v):
+        """Validate MIN_CLIENT_VERSION is a valid semver-like string"""
+        import re
+
+        if v is None:
+            raise ValueError("MIN_CLIENT_VERSION cannot be None")
+        v_str = str(v).strip()
+        if not v_str:
+            raise ValueError("MIN_CLIENT_VERSION cannot be empty")
+        # Allow formats like '1', '1.2', '1.2.3', optionally with suffix '-beta' or '+meta'
+        if not re.match(r"^\d+(\.\d+){0,2}([-+][\w.]+)?$", v_str):
+            raise ValueError("MIN_CLIENT_VERSION must be a semantic version like '1.2.3'")
+        return v_str
 
     # MongoDB (with dynamic port detection)
     MONGO_URL: str = "mongodb://localhost:27017"
@@ -313,6 +332,8 @@ except Exception as e:
             self.CORS_ALLOW_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS")
             self.APP_NAME = os.getenv("APP_NAME", "Stock Count API")
             self.APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
+            # Normalize MIN_CLIENT_VERSION: use default when env var is missing or empty, and strip whitespace
+            self.MIN_CLIENT_VERSION = (os.getenv("MIN_CLIENT_VERSION") or "1.0.0").strip()
 
     settings = FallbackSettings()  # type: ignore[assignment]
 

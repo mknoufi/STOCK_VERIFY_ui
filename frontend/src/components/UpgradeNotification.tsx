@@ -38,13 +38,22 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
 }) => {
   const handleUpdate = async () => {
     if (onUpdate) {
-      onUpdate();
+      await onUpdate();
       return;
     }
 
     // Default behavior: open app store
     if (storeUrl) {
-      await Linking.openURL(storeUrl);
+      try {
+        const canOpen = await Linking.canOpenURL(storeUrl);
+        if (canOpen) {
+          await Linking.openURL(storeUrl);
+        } else {
+          __DEV__ && console.log('Cannot open store URL:', storeUrl);
+        }
+      } catch (err) {
+        __DEV__ && console.log('Failed to open store URL', err);
+      }
     } else {
       // Platform-specific store URLs could be configured here
       __DEV__ && console.log('No store URL configured for update');

@@ -330,7 +330,8 @@ except Exception as e:
             self.CORS_ALLOW_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS")
             self.APP_NAME = os.getenv("APP_NAME", "Stock Count API")
             self.APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
-            self.MIN_CLIENT_VERSION = os.getenv("MIN_CLIENT_VERSION", "1.0.0")
+            # Normalize MIN_CLIENT_VERSION: use default when env var is missing or empty, and strip whitespace
+            self.MIN_CLIENT_VERSION = (os.getenv("MIN_CLIENT_VERSION") or "1.0.0").strip()
 
     settings = FallbackSettings()  # type: ignore[assignment]
 

@@ -55,6 +55,10 @@ class Settings(PydanticBaseSettings):
     # Application
     APP_NAME: str = "Stock Count Application"
     APP_VERSION: str = "1.0.0"
+    MIN_CLIENT_VERSION: str = Field(
+        default="1.0.0",
+        description="Minimum required client/app version for compatibility",
+    )
     DEBUG: bool = False
     ENVIRONMENT: str = Field(
         default="development",
@@ -313,6 +317,7 @@ except Exception as e:
             self.CORS_ALLOW_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS")
             self.APP_NAME = os.getenv("APP_NAME", "Stock Count API")
             self.APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
+            self.MIN_CLIENT_VERSION = os.getenv("MIN_CLIENT_VERSION", "1.0.0")
 
     settings = FallbackSettings()  # type: ignore[assignment]
 

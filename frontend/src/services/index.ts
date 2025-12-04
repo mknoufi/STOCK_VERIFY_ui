@@ -33,3 +33,7 @@ export { NotesAPI } from './notesApi';
 
 // Haptics
 export { haptics } from './haptics';
+
+// Version Service
+export { checkVersion, getBackendVersion, versionApi } from './versionService';
+export type { VersionCheckResult } from './versionService';

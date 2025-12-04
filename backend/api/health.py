@@ -5,10 +5,11 @@ Provides health, readiness, and liveness checks for monitoring and Kubernetes
 
 import logging
 import os
+import re
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 logger = logging.getLogger(__name__)
 
@@ -408,3 +409,123 @@ async def detailed_health_check() -> Dict[str, Any]:
     _augment_sql_pool_stats(connection_pool, health_data["connection_pools"])
 
     return health_data
+
+
+def _parse_version(version_str: str) -> Tuple[int, int, int]:
+    """
+    Parse a version string into a tuple of (major, minor, patch).
+    Handles versions like '1.0.0', '1.2.3-beta', '2.0', '1'
+    """
+    if not version_str:
+        return (0, 0, 0)
+
+    # Remove any suffix like -beta, -rc, etc.
+    version_clean = re.split(r"[-+]", version_str)[0]
+
+    # Split into parts
+    parts = version_clean.split(".")
+
+    try:
+        major = int(parts[0]) if len(parts) > 0 else 0
+        minor = int(parts[1]) if len(parts) > 1 else 0
+        patch = int(parts[2]) if len(parts) > 2 else 0
+        return (major, minor, patch)
+    except ValueError:
+        return (0, 0, 0)
+
+
+def _compare_versions(
+    client_version: str, min_version: str, current_version: str
+) -> Dict[str, Any]:
+    """
+    Compare client version against minimum and current versions.
+    Returns compatibility status and update information.
+    """
+    client = _parse_version(client_version)
+    minimum = _parse_version(min_version)
+    current = _parse_version(current_version)
+
+    # Check if client meets minimum requirement
+    is_compatible = client >= minimum
+
+    # Check if client is outdated (not the latest)
+    is_latest = client >= current
+
+    # Determine update type if update is available
+    update_type: Optional[str] = None
+    if not is_latest:
+        if current[0] > client[0]:
+            update_type = "major"
+        elif current[1] > client[1]:
+            update_type = "minor"
+        elif current[2] > client[2]:
+            update_type = "patch"
+
+    return {
+        "is_compatible": is_compatible,
+        "is_latest": is_latest,
+        "update_available": not is_latest,
+        "update_type": update_type,
+        "client_version": client_version,
+        "minimum_version": min_version,
+        "current_version": current_version,
+        "force_update": not is_compatible,
+    }
+
+
+@info_router.get("/version/check", status_code=status.HTTP_200_OK)
+async def check_version(
+    client_version: str = Query(
+        ...,
+        description="Client/app version to check compatibility (e.g., '1.0.0')",
+        pattern=r"^\d+(\.\d+)*(-[\w.]+)?$",
+    ),
+) -> Dict[str, Any]:
+    """
+    Check client version compatibility and get update information.
+
+    Returns:
+    - is_compatible: Whether the client meets minimum version requirements
+    - is_latest: Whether the client has the latest version
+    - update_available: Whether an update is available
+    - update_type: Type of update available (major, minor, patch)
+    - force_update: Whether the client must update to continue using the app
+
+    Usage: App startup version check, update prompts
+    """
+    try:
+        from config import settings
+
+        from backend.server import app
+
+        current_version = getattr(
+            app, "version", getattr(settings, "APP_VERSION", "1.0.0")
+        )
+        min_version = getattr(settings, "MIN_CLIENT_VERSION", "1.0.0")
+
+        result = _compare_versions(client_version, min_version, current_version)
+
+        # Add timestamp and extra info
+        result["timestamp"] = datetime.utcnow().isoformat()
+        result["app_name"] = getattr(settings, "APP_NAME", "Stock Count")
+
+        # Add release notes URL or changelog info if available
+        result["release_notes_url"] = None
+        result["changelog"] = None
+
+        return result
+    except Exception as e:
+        logger.error(f"Error checking version: {e}")
+        # Return a safe default that doesn't force updates on error
+        return {
+            "is_compatible": True,
+            "is_latest": True,
+            "update_available": False,
+            "update_type": None,
+            "client_version": client_version,
+            "minimum_version": "1.0.0",
+            "current_version": "1.0.0",
+            "force_update": False,
+            "timestamp": datetime.utcnow().isoformat(),
+            "error": str(e),
+        }

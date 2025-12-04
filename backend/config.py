@@ -59,7 +59,20 @@ class Settings(PydanticBaseSettings):
         default="1.0.0",
         description="Minimum required client/app version for compatibility",
     )
-    DEBUG: bool = False
+
+    @validator("MIN_CLIENT_VERSION")
+    def validate_min_client_version(cls, v):
+        # Ensure value is present and normalized
+        if v is None:
+            raise ValueError("MIN_CLIENT_VERSION cannot be None")
+        v_str = str(v).strip()
+        if not v_str:
+            raise ValueError("MIN_CLIENT_VERSION cannot be empty")
+        # Allow formats like '1', '1.2', '1.2.3', optionally with suffix '-beta' or '+meta'
+        import re
+        if not re.match(r"^\d+(\.\d+){0,2}([\-+][\w\.]+)?$", v_str):
+            raise ValueError("MIN_CLIENT_VERSION must be a semantic version like '1.2.3'")
+        return v_str
     ENVIRONMENT: str = Field(
         default="development",
         description="Environment: development, staging, production",

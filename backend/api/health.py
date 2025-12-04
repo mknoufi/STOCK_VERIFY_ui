@@ -414,24 +414,23 @@ async def detailed_health_check() -> Dict[str, Any]:
 def _parse_version(version_str: str) -> Tuple[int, int, int]:
     """
     Parse a version string into a tuple of (major, minor, patch).
-    Handles versions like '1.0.0', '1.2.3-beta', '2.0', '1'
+    Handles versions like '1.0.0', '1.2.3-beta', '2.0', '1' and tolerates common variants.
     """
     if not version_str:
         return (0, 0, 0)
 
-    # Remove any suffix like -beta, -rc, etc.
-    version_clean = re.split(r"[-+]", version_str)[0]
+    # Remove any suffix like -beta, -rc, +build, etc., and strip whitespace
+    version_clean = re.split(r"[-+]", version_str)[0].strip()
 
-    # Split into parts
-    parts = version_clean.split(".")
-
-    try:
-        major = int(parts[0]) if len(parts) > 0 else 0
-        minor = int(parts[1]) if len(parts) > 1 else 0
-        patch = int(parts[2]) if len(parts) > 2 else 0
-        return (major, minor, patch)
-    except ValueError:
+    # Use a regex to reliably capture up to three numeric components
+    m = re.match(r"^(\d+)(?:\.(\d+))?(?:\.(\d+))?", version_clean)
+    if not m:
         return (0, 0, 0)
+
+    major = int(m.group(1))
+    minor = int(m.group(2)) if m.group(2) is not None else 0
+    patch = int(m.group(3)) if m.group(3) is not None else 0
+    return (major, minor, patch)
 
 
 def _compare_versions(

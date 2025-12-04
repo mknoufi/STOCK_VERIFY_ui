@@ -56,7 +56,10 @@ export const useVersionCheck = (
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
-
+  // Keep track of the last seen `current_version` in a ref so
+  // `checkForUpdates` doesn't have to depend on the `versionInfo` object
+  // (which may change reference even if the version string is identical).
+  const prevVersionRef = useRef<string | undefined>(undefined);
   const checkForUpdates = useCallback(async (): Promise<VersionCheckResult | null> => {
     if (!clientVersion || clientVersion === 'Unknown') {
       __DEV__ && console.log('Version check skipped: client version not available');

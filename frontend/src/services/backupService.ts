@@ -3,10 +3,14 @@
  * Handles backing up and restoring app data
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Share } from 'react-native';
-import { getSessionsCache, getItemsCache, getCacheStats, clearAllCache } from './offline/offlineStorage';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Share } from "react-native";
+import {
+  getSessionsCache,
+  getItemsCache,
+  getCacheStats,
+  clearAllCache,
+} from "./offline/offlineStorage";
 
 interface BackupItem {
   id: string;
@@ -50,16 +54,16 @@ export interface BackupData {
  * Backup Service
  */
 export class BackupService {
-  private static readonly BACKUP_VERSION = '1.0.0';
+  private static readonly BACKUP_VERSION = "1.0.0";
   private static readonly STORAGE_KEYS = [
-    'items_cache',
-    'sessions_cache',
-    'count_lines_cache',
-    'offline_queue',
-    'last_sync',
-    'analytics_data',
-    'favorite_items',
-    'recent_items',
+    "items_cache",
+    "sessions_cache",
+    "count_lines_cache",
+    "offline_queue",
+    "last_sync",
+    "analytics_data",
+    "favorite_items",
+    "recent_items",
   ];
 
   /**
@@ -87,15 +91,15 @@ export class BackupService {
         try {
           const data = await AsyncStorage.getItem(key);
           if (data) {
-            if (key === 'items_cache') {
+            if (key === "items_cache") {
               backup.cache.items = JSON.parse(data);
-            } else if (key === 'sessions_cache') {
+            } else if (key === "sessions_cache") {
               backup.cache.sessions = JSON.parse(data);
-            } else if (key === 'count_lines_cache') {
+            } else if (key === "count_lines_cache") {
               backup.cache.countLines = JSON.parse(data);
-            } else if (key === 'last_sync') {
+            } else if (key === "last_sync") {
               backup.settings.lastSync = data;
-            } else if (key === 'analytics_data') {
+            } else if (key === "analytics_data") {
               backup.analytics = JSON.parse(data);
             }
           }
@@ -106,7 +110,7 @@ export class BackupService {
 
       return backup;
     } catch (error) {
-      __DEV__ && console.error('Error creating backup:', error);
+      __DEV__ && console.error("Error creating backup:", error);
       throw error;
     }
   }
@@ -125,14 +129,14 @@ export class BackupService {
   static async shareBackup() {
     try {
       const backupJson = await this.exportBackup();
-      const filename = `stock_count_backup_${new Date().toISOString().split('T')[0]}.json`;
+      const filename = `stock_count_backup_${new Date().toISOString().split("T")[0]}.json`;
 
       await Share.share({
         message: backupJson,
         title: filename,
       });
     } catch (error) {
-      __DEV__ && console.error('Error sharing backup:', error);
+      __DEV__ && console.error("Error sharing backup:", error);
       throw error;
     }
   }
@@ -144,33 +148,45 @@ export class BackupService {
     try {
       // Validate backup version
       if (backupData.version !== this.BACKUP_VERSION) {
-        throw new Error('Backup version mismatch');
+        throw new Error("Backup version mismatch");
       }
 
       // Restore cache data
       if (backupData.cache.items) {
-        await AsyncStorage.setItem('items_cache', JSON.stringify(backupData.cache.items));
+        await AsyncStorage.setItem(
+          "items_cache",
+          JSON.stringify(backupData.cache.items),
+        );
       }
 
       if (backupData.cache.sessions) {
-        await AsyncStorage.setItem('sessions_cache', JSON.stringify(backupData.cache.sessions));
+        await AsyncStorage.setItem(
+          "sessions_cache",
+          JSON.stringify(backupData.cache.sessions),
+        );
       }
 
       if (backupData.cache.countLines) {
-        await AsyncStorage.setItem('count_lines_cache', JSON.stringify(backupData.cache.countLines));
+        await AsyncStorage.setItem(
+          "count_lines_cache",
+          JSON.stringify(backupData.cache.countLines),
+        );
       }
 
       if (backupData.settings.lastSync) {
-        await AsyncStorage.setItem('last_sync', backupData.settings.lastSync);
+        await AsyncStorage.setItem("last_sync", backupData.settings.lastSync);
       }
 
       if (backupData.analytics) {
-        await AsyncStorage.setItem('analytics_data', JSON.stringify(backupData.analytics));
+        await AsyncStorage.setItem(
+          "analytics_data",
+          JSON.stringify(backupData.analytics),
+        );
       }
 
-      __DEV__ && console.log('Backup restored successfully');
+      __DEV__ && console.log("Backup restored successfully");
     } catch (error) {
-      __DEV__ && console.error('Error restoring backup:', error);
+      __DEV__ && console.error("Error restoring backup:", error);
       throw error;
     }
   }
@@ -183,8 +199,8 @@ export class BackupService {
       const backupData: BackupData = JSON.parse(jsonString);
       await this.restoreBackup(backupData);
     } catch (error) {
-      __DEV__ && console.error('Error restoring from JSON:', error);
-      throw new Error('Invalid backup file format');
+      __DEV__ && console.error("Error restoring from JSON:", error);
+      throw new Error("Invalid backup file format");
     }
   }
 
@@ -209,7 +225,7 @@ export class BackupService {
         timestamp: backup.timestamp,
       };
     } catch (error) {
-      __DEV__ && console.error('Error getting backup info:', error);
+      __DEV__ && console.error("Error getting backup info:", error);
       return {
         size: 0,
         itemCount: 0,
@@ -231,9 +247,9 @@ export class BackupService {
         await AsyncStorage.removeItem(key);
       }
 
-      __DEV__ && console.log('All data cleared');
+      __DEV__ && console.log("All data cleared");
     } catch (error) {
-      __DEV__ && console.error('Error clearing data:', error);
+      __DEV__ && console.error("Error clearing data:", error);
       throw error;
     }
   }

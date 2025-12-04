@@ -3,13 +3,13 @@
  * Handles database connection status and sync status
  */
 
-import api from '../api/api';
-import { getSyncStatus } from '../syncService';
+import api from "../api/api";
+import { getSyncStatus } from "../syncService";
 
 export interface DatabaseStatus {
   configured: boolean;
   use_sql_server: boolean;
-  connection_status: 'connected' | 'disconnected' | 'error' | 'not_configured';
+  connection_status: "connected" | "disconnected" | "error" | "not_configured";
   host?: string;
   database?: string;
   auth_method?: string;
@@ -37,15 +37,18 @@ export interface DatabaseSyncStatus {
  */
 export const getDatabaseStatus = async (): Promise<DatabaseStatus> => {
   try {
-    const response = await api.get('/erp/config');
+    const response = await api.get("/erp/config");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Error fetching database status:', error);
+    __DEV__ && console.error("Error fetching database status:", error);
     return {
       configured: false,
       use_sql_server: false,
-      connection_status: 'error',
-      error: error.response?.data?.detail || error.message || 'Failed to fetch status',
+      connection_status: "error",
+      error:
+        error.response?.data?.detail ||
+        error.message ||
+        "Failed to fetch status",
     };
   }
 };
@@ -57,7 +60,7 @@ export const getSyncStatusData = async (): Promise<SyncStatus> => {
   try {
     return await getSyncStatus();
   } catch (error: any) {
-    __DEV__ && console.error('Error fetching sync status:', error);
+    __DEV__ && console.error("Error fetching sync status:", error);
     return {
       isOnline: false,
       queuedOperations: 0,
@@ -88,16 +91,19 @@ export const getDatabaseSyncStatus = async (): Promise<DatabaseSyncStatus> => {
  * Test database connection
  */
 export const testDatabaseConnection = async (): Promise<{
-  status: 'connected' | 'disconnected' | 'error';
+  status: "connected" | "disconnected" | "error";
   message: string;
 }> => {
   try {
-    const response = await api.post('/erp/test');
+    const response = await api.post("/erp/test");
     return response.data;
   } catch (error: any) {
     return {
-      status: 'error',
-      message: error.response?.data?.detail || error.message || 'Connection test failed',
+      status: "error",
+      message:
+        error.response?.data?.detail ||
+        error.message ||
+        "Connection test failed",
     };
   }
 };

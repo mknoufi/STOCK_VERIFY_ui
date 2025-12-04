@@ -1,4 +1,4 @@
-import { API_MAX_RETRIES, API_RETRY_BACKOFF_MS } from '../constants/config';
+import { API_MAX_RETRIES, API_RETRY_BACKOFF_MS } from "../constants/config";
 
 type AsyncFn<T> = () => Promise<T>;
 
@@ -10,13 +10,17 @@ interface RetryOptions {
 
 export const retryWithBackoff = async <T>(
   operation: AsyncFn<T>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<T> => {
   const {
     retries = API_MAX_RETRIES,
     backoffMs = API_RETRY_BACKOFF_MS,
     shouldRetry = (error: any) =>
-      !(error?.response && error.response.status >= 400 && error.response.status < 500),
+      !(
+        error?.response &&
+        error.response.status >= 400 &&
+        error.response.status < 500
+      ),
   } = options;
 
   let lastError: unknown;

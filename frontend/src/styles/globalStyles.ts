@@ -4,75 +4,75 @@
  * Enhanced with dual-theme support and semantic color system
  */
 
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform } from "react-native";
 
 // Color palette - Enhanced with semantic roles
 export const colors = {
   // Primary colors
-  primary: '#3B82F6',    // Blue 500
-  primaryDark: '#2563EB', // Blue 600
-  primaryLight: '#60A5FA', // Blue 400
-  primaryHover: '#3B82F6',
-  primaryPressed: '#2563EB',
+  primary: "#3B82F6", // Blue 500
+  primaryDark: "#2563EB", // Blue 600
+  primaryLight: "#60A5FA", // Blue 400
+  primaryHover: "#3B82F6",
+  primaryPressed: "#2563EB",
 
   // Secondary colors
-  secondary: '#10B981',  // Emerald 500
-  secondaryDark: '#059669', // Emerald 600
-  secondaryLight: '#34D399', // Emerald 400
+  secondary: "#10B981", // Emerald 500
+  secondaryDark: "#059669", // Emerald 600
+  secondaryLight: "#34D399", // Emerald 400
 
   // Background colors
-  backgroundDark: '#0F172A', // Slate 900
-  backgroundLight: '#F8FAFC', // Slate 50
-  surfaceDark: '#1E293B',    // Slate 800
-  surfaceLight: '#FFFFFF',
-  surfaceElevated: '#334155', // Slate 700
+  backgroundDark: "#0F172A", // Slate 900
+  backgroundLight: "#F8FAFC", // Slate 50
+  surfaceDark: "#1E293B", // Slate 800
+  surfaceLight: "#FFFFFF",
+  surfaceElevated: "#334155", // Slate 700
 
   // Text colors
-  textPrimary: '#F8FAFC',    // Slate 50
-  textSecondary: '#94A3B8',  // Slate 400
-  textTertiary: '#64748B',   // Slate 500
-  textDisabled: '#475569',   // Slate 600
-  textInverse: '#0F172A',    // Slate 900
+  textPrimary: "#F8FAFC", // Slate 50
+  textSecondary: "#94A3B8", // Slate 400
+  textTertiary: "#64748B", // Slate 500
+  textDisabled: "#475569", // Slate 600
+  textInverse: "#0F172A", // Slate 900
 
   // Border colors
-  borderLight: '#334155',    // Slate 700
-  borderMedium: '#475569',   // Slate 600
-  borderDark: '#64748B',     // Slate 500
-  borderFocus: '#3B82F6',    // Blue 500
+  borderLight: "#334155", // Slate 700
+  borderMedium: "#475569", // Slate 600
+  borderDark: "#64748B", // Slate 500
+  borderFocus: "#3B82F6", // Blue 500
 
   // Status colors with variants
-  success: '#10B981',    // Emerald 500
-  successLight: '#34D399',
-  successDark: '#059669',
-  error: '#EF4444',      // Red 500
-  errorLight: '#F87171',
-  errorDark: '#DC2626',
-  warning: '#F59E0B',    // Amber 500
-  warningLight: '#FBBF24',
-  warningDark: '#D97706',
-  info: '#3B82F6',       // Blue 500
-  infoLight: '#60A5FA',
-  infoDark: '#2563EB',
+  success: "#10B981", // Emerald 500
+  successLight: "#34D399",
+  successDark: "#059669",
+  error: "#EF4444", // Red 500
+  errorLight: "#F87171",
+  errorDark: "#DC2626",
+  warning: "#F59E0B", // Amber 500
+  warningLight: "#FBBF24",
+  warningDark: "#D97706",
+  info: "#3B82F6", // Blue 500
+  infoLight: "#60A5FA",
+  infoDark: "#2563EB",
 
   // Transparent overlays
-  overlay: 'rgba(15, 23, 42, 0.8)',
-  overlayLight: 'rgba(15, 23, 42, 0.5)',
-  overlayDark: 'rgba(15, 23, 42, 0.9)',
-  overlayPrimary: 'rgba(59, 130, 246, 0.1)',
+  overlay: "rgba(15, 23, 42, 0.8)",
+  overlayLight: "rgba(15, 23, 42, 0.5)",
+  overlayDark: "rgba(15, 23, 42, 0.9)",
+  overlayPrimary: "rgba(59, 130, 246, 0.1)",
 };
 
 // Gradients
 export const gradients = {
-  primary: ['#4CAF50', '#2E7D32'] as const,
-  secondary: ['#03DAC6', '#018786'] as const,
-  dark: ['#2a2a2a', '#1a1a1a'] as const,
-  surface: ['#3a3a3a', '#2a2a2a'] as const,
+  primary: ["#4CAF50", "#2E7D32"] as const,
+  secondary: ["#03DAC6", "#018786"] as const,
+  dark: ["#2a2a2a", "#1a1a1a"] as const,
+  surface: ["#3a3a3a", "#2a2a2a"] as const,
 };
 
 // Glassmorphism styles (helper for non-BlurView components)
 export const glassStyle = {
-  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  borderColor: 'rgba(255, 255, 255, 0.1)',
+  backgroundColor: "rgba(255, 255, 255, 0.05)",
+  borderColor: "rgba(255, 255, 255, 0.1)",
   borderWidth: 1,
 };
 
@@ -86,10 +86,10 @@ export const spacing = {
   xxl: 48,
   xxxl: 64,
   // Specific use-case spacing
-  sectionGap: 40,  // For consistent section spacing (xxl - 8)
-  actionGap: 12,   // For action button gaps (sm + 4)
+  sectionGap: 40, // For consistent section spacing (xxl - 8)
+  actionGap: 12, // For action button gaps (sm + 4)
   screenPadding: 24, // Default screen padding
-  cardPadding: 16,   // Default card padding
+  cardPadding: 16, // Default card padding
   inputPadding: 12, // Default input padding
 };
 
@@ -97,80 +97,80 @@ export const spacing = {
 export const typography = {
   hero: {
     fontSize: 36,
-    fontWeight: 'bold' as const,
+    fontWeight: "bold" as const,
     lineHeight: 44,
     letterSpacing: -0.5,
   },
   h1: {
     fontSize: 32,
-    fontWeight: 'bold' as const,
+    fontWeight: "bold" as const,
     lineHeight: 40,
     letterSpacing: -0.5,
   },
   h2: {
     fontSize: 28,
-    fontWeight: 'bold' as const,
+    fontWeight: "bold" as const,
     lineHeight: 36,
     letterSpacing: 0,
   },
   h3: {
     fontSize: 24,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 32,
     letterSpacing: 0,
   },
   h4: {
     fontSize: 20,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 28,
     letterSpacing: 0.15,
   },
   h5: {
     fontSize: 18,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 24,
     letterSpacing: 0.15,
   },
   body: {
     fontSize: 16,
-    fontWeight: 'normal' as const,
+    fontWeight: "normal" as const,
     lineHeight: 24,
     letterSpacing: 0.5,
   },
   bodyMedium: {
     fontSize: 15,
-    fontWeight: 'normal' as const,
+    fontWeight: "normal" as const,
     lineHeight: 22,
     letterSpacing: 0.25,
   },
   bodySmall: {
     fontSize: 14,
-    fontWeight: 'normal' as const,
+    fontWeight: "normal" as const,
     lineHeight: 20,
     letterSpacing: 0.25,
   },
   caption: {
     fontSize: 12,
-    fontWeight: 'normal' as const,
+    fontWeight: "normal" as const,
     lineHeight: 16,
     letterSpacing: 0.4,
   },
   overline: {
     fontSize: 10,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 14,
     letterSpacing: 1.5,
-    textTransform: 'uppercase' as const,
+    textTransform: "uppercase" as const,
   },
   button: {
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 20,
     letterSpacing: 0.5,
   },
   buttonLarge: {
     fontSize: 18,
-    fontWeight: 'bold' as const,
+    fontWeight: "bold" as const,
     lineHeight: 24,
     letterSpacing: 0.5,
   },
@@ -188,21 +188,21 @@ export const borderRadius = {
 // Shadows (for iOS)
 export const shadows = {
   small: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
   },
   medium: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
   },
   large: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -219,8 +219,8 @@ export const commonStyles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.backgroundDark,
   },
   scrollContent: {
@@ -255,8 +255,8 @@ export const commonStyles = StyleSheet.create({
     borderColor: colors.borderLight,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.backgroundLight,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md,
@@ -268,15 +268,15 @@ export const commonStyles = StyleSheet.create({
   button: {
     height: 56,
     borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: spacing.lg,
   },
   buttonPrimary: {
     backgroundColor: colors.primary,
   },
   buttonSecondary: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 2,
     borderColor: colors.primary,
   },
@@ -344,14 +344,14 @@ export const elevation = {
 
 // Layout tokens
 export const layout = {
-  safeAreaTop: Platform.OS === 'ios' ? 44 : 24,
-  safeAreaBottom: Platform.OS === 'ios' ? 34 : 0,
+  safeAreaTop: Platform.OS === "ios" ? 44 : 24,
+  safeAreaBottom: Platform.OS === "ios" ? 34 : 0,
   tabBarHeight: 60,
   sidebarWidth: 280,
   sidebarCollapsedWidth: 64,
   headerHeight: 56,
   containerMaxWidth: {
-    mobile: '100%',
+    mobile: "100%",
     tablet: 768,
     desktop: 1200,
   },
@@ -381,7 +381,7 @@ export const scanner = {
 // Offline/Queue tokens
 export const offline = {
   queueBarHeight: 48,
-  drawerMaxHeight: '60%',
+  drawerMaxHeight: "60%",
   statusColors: {
     pending: colors.warning,
     syncing: colors.info,

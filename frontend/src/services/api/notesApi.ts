@@ -1,5 +1,5 @@
-import axios from 'axios';
-import apiClient from '../httpClient';
+import axios from "axios";
+import apiClient from "../httpClient";
 
 export interface Note {
   id?: string;
@@ -10,13 +10,17 @@ export interface Note {
   body: string;
 }
 
-export async function listNotes(params?: { q?: string; page?: number; pageSize?: number }) {
-  const res = await apiClient.get('/api/notes', { params });
+export async function listNotes(params?: {
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}) {
+  const res = await apiClient.get("/api/notes", { params });
   return res.data;
 }
 
 export async function createNote(note: Note) {
-  const res = await apiClient.post('/api/notes', note);
+  const res = await apiClient.post("/api/notes", note);
   return res.data;
 }
 

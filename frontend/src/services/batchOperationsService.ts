@@ -3,9 +3,9 @@
  * Handles batch counting, bulk updates, and mass operations
  */
 
-import { createCountLine } from './api/api';
-import { BatchProcessor } from './monitoring/performanceService';
-import { handleErrorWithRecovery } from './utils/errorRecovery';
+import { createCountLine } from "./api/api";
+import { BatchProcessor } from "./monitoring/performanceService";
+import { handleErrorWithRecovery } from "./utils/errorRecovery";
 
 export interface BatchCountOperation {
   session_id: string;
@@ -37,7 +37,7 @@ export class BatchOperationsService {
     options: {
       onProgress?: (current: number, total: number) => void;
       onItemComplete?: (itemCode: string, success: boolean) => void;
-    } = {}
+    } = {},
   ): Promise<BatchOperationResult> {
     const { onProgress, onItemComplete } = options;
     const result: BatchOperationResult = {
@@ -65,19 +65,20 @@ export class BatchOperationsService {
           typedBatch.map(async (item) => {
             try {
               await handleErrorWithRecovery(
-                () => createCountLine({
-                  session_id: operation.session_id,
-                  item_code: item.item_code,
-                  counted_qty: item.counted_qty,
-                  variance_reason: item.variance_reason || null,
-                  variance_note: item.variance_note || null,
-                  remark: item.remark || null,
-                }),
+                () =>
+                  createCountLine({
+                    session_id: operation.session_id,
+                    item_code: item.item_code,
+                    counted_qty: item.counted_qty,
+                    variance_reason: item.variance_reason || null,
+                    variance_note: item.variance_note || null,
+                    remark: item.remark || null,
+                  }),
                 {
-                  context: 'Batch Count',
+                  context: "Batch Count",
                   recovery: { maxRetries: 2 },
                   showAlert: false,
-                }
+                },
               );
 
               result.success++;
@@ -88,20 +89,20 @@ export class BatchOperationsService {
               result.failed++;
               result.errors.push({
                 item_code: item.item_code,
-                error: error.message || 'Unknown error',
+                error: error.message || "Unknown error",
               });
               if (onItemComplete) {
                 onItemComplete(item.item_code, false);
               }
             }
-          })
+          }),
         );
 
         if (onProgress) {
           onProgress(result.success + result.failed, result.total);
         }
       },
-      onProgress
+      onProgress,
     );
 
     return result;
@@ -116,9 +117,9 @@ export class BatchOperationsService {
     quantity: number,
     options: {
       onProgress?: (current: number, total: number) => void;
-    } = {}
+    } = {},
   ): Promise<BatchOperationResult> {
-    const items = itemCodes.map(itemCode => ({
+    const items = itemCodes.map((itemCode) => ({
       item_code: itemCode,
       counted_qty: quantity,
     }));
@@ -128,7 +129,7 @@ export class BatchOperationsService {
         session_id: sessionId,
         items,
       },
-      options
+      options,
     );
   }
 
@@ -142,7 +143,7 @@ export class BatchOperationsService {
     }>,
     options: {
       onProgress?: (current: number, total: number) => void;
-    } = {}
+    } = {},
   ): Promise<BatchOperationResult> {
     const result: BatchOperationResult = {
       success: 0,
@@ -151,7 +152,10 @@ export class BatchOperationsService {
       errors: [],
     };
 
-    const processor = new BatchProcessor<{ line_id: string; counted_qty: number }>(10, 100);
+    const processor = new BatchProcessor<{
+      line_id: string;
+      counted_qty: number;
+    }>(10, 100);
 
     await processor.process(
       updates,
@@ -159,16 +163,17 @@ export class BatchOperationsService {
         await Promise.allSettled(
           batch.map(async (update) => {
             try {
-              const api = require('./api/api').default;
+              const api = require("./api/api").default;
               await handleErrorWithRecovery(
-                () => api.put(`/count-lines/${update.line_id}`, {
-                  counted_qty: update.counted_qty,
-                }),
+                () =>
+                  api.put(`/count-lines/${update.line_id}`, {
+                    counted_qty: update.counted_qty,
+                  }),
                 {
-                  context: 'Bulk Update',
+                  context: "Bulk Update",
                   recovery: { maxRetries: 2 },
                   showAlert: false,
-                }
+                },
               );
 
               result.success++;
@@ -176,17 +181,17 @@ export class BatchOperationsService {
               result.failed++;
               result.errors.push({
                 item_code: update.line_id,
-                error: error.message || 'Unknown error',
+                error: error.message || "Unknown error",
               });
             }
-          })
+          }),
         );
 
         if (options.onProgress) {
           options.onProgress(result.success + result.failed, result.total);
         }
       },
-      options.onProgress
+      options.onProgress,
     );
 
     return result;

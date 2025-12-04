@@ -1,8 +1,8 @@
 /* eslint-env node */
-const path = require('path');
-const webpack = require('webpack');
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const createExpoWebpackConfigAsync = require('@expo/webpack-config');
+const path = require("path");
+const webpack = require("webpack");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const createExpoWebpackConfigAsync = require("@expo/webpack-config");
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
@@ -14,15 +14,15 @@ module.exports = async function (env, argv) {
   // Add Node.js polyfills for browser compatibility
   config.resolve.fallback = {
     ...config.resolve.fallback,
-    "fs": false,
-    "path": false,
-    "os": false,
-    "crypto": false,
-    "stream": false,
-    "http": false,
-    "https": false,
-    "zlib": false,
-    "url": false,
+    fs: false,
+    path: false,
+    os: false,
+    crypto: false,
+    stream: false,
+    http: false,
+    https: false,
+    zlib: false,
+    url: false,
   };
 
   // Ensure webpack also applies the rule to module files coming from node_modules.
@@ -42,60 +42,66 @@ module.exports = async function (env, argv) {
   // Map the legacy export path to the CommonJS build so navigation packages keep working across SDK upgrades.
   config.resolve.alias = config.resolve.alias || {};
   const cwd = process.cwd();
-  config.resolve.alias['react-native-web/dist/exports/'] = path.resolve(
+  config.resolve.alias["react-native-web/dist/exports/"] = path.resolve(
     cwd,
-    'node_modules/react-native-web/dist/cjs/exports/'
+    "node_modules/react-native-web/dist/cjs/exports/",
   );
-  config.resolve.alias['react-native-web/dist/exports'] = path.resolve(
+  config.resolve.alias["react-native-web/dist/exports"] = path.resolve(
     cwd,
-    'node_modules/react-native-web/dist/cjs/exports'
+    "node_modules/react-native-web/dist/cjs/exports",
   );
-  config.resolve.alias['@react-native-async-storage/async-storage'] = path.resolve(
-    cwd,
-    'node_modules/@react-native-async-storage/async-storage/lib/commonjs/index.js'
-  );
+  config.resolve.alias["@react-native-async-storage/async-storage"] =
+    path.resolve(
+      cwd,
+      "node_modules/@react-native-async-storage/async-storage/lib/commonjs/index.js",
+    );
 
-  const isDevelopment = config.mode === 'development';
+  const isDevelopment = config.mode === "development";
   if (isDevelopment) {
-    const refreshPolyfillPath = path.resolve(cwd, 'refreshPolyfill.js');
+    const refreshPolyfillPath = path.resolve(cwd, "refreshPolyfill.js");
 
     config.plugins = config.plugins || [];
 
     // Add DefinePlugin to suppress warnings
     config.plugins.push(
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(config.mode || 'development'),
-      })
+        "process.env.NODE_ENV": JSON.stringify(config.mode || "development"),
+      }),
     );
 
     const hasReactRefreshPlugin = config.plugins.some(
-      (plugin) => plugin?.constructor?.name === 'ReactRefreshWebpackPlugin'
+      (plugin) => plugin?.constructor?.name === "ReactRefreshWebpackPlugin",
     );
     if (!hasReactRefreshPlugin) {
-      config.plugins.push(new ReactRefreshWebpackPlugin({
-        overlay: false, // Disable error overlay for cleaner experience
-      }));
+      config.plugins.push(
+        new ReactRefreshWebpackPlugin({
+          overlay: false, // Disable error overlay for cleaner experience
+        }),
+      );
     }
 
     config.plugins.push(
       new webpack.ProvidePlugin({
-        $RefreshReg$: [refreshPolyfillPath, 'register'],
-        $RefreshSig$: [refreshPolyfillPath, 'signature'],
-      })
+        $RefreshReg$: [refreshPolyfillPath, "register"],
+        $RefreshSig$: [refreshPolyfillPath, "signature"],
+      }),
     );
 
     if (Array.isArray(config.entry)) {
       if (!config.entry.includes(refreshPolyfillPath)) {
         config.entry = [refreshPolyfillPath, ...config.entry];
       }
-    } else if (typeof config.entry === 'string') {
+    } else if (typeof config.entry === "string") {
       config.entry = [refreshPolyfillPath, config.entry];
-    } else if (config.entry && typeof config.entry === 'object') {
+    } else if (config.entry && typeof config.entry === "object") {
       Object.keys(config.entry).forEach((key) => {
         const entryValue = config.entry[key];
-        if (Array.isArray(entryValue) && !entryValue.includes(refreshPolyfillPath)) {
+        if (
+          Array.isArray(entryValue) &&
+          !entryValue.includes(refreshPolyfillPath)
+        ) {
           config.entry[key] = [refreshPolyfillPath, ...entryValue];
-        } else if (typeof entryValue === 'string') {
+        } else if (typeof entryValue === "string") {
           config.entry[key] = [refreshPolyfillPath, entryValue];
         }
       });
@@ -106,8 +112,8 @@ module.exports = async function (env, argv) {
 
   // Optimization settings to reduce bundle warnings
   config.optimization = config.optimization || {};
-  config.optimization.moduleIds = 'deterministic';
-  config.optimization.runtimeChunk = 'single';
+  config.optimization.moduleIds = "deterministic";
+  config.optimization.runtimeChunk = "single";
 
   // Ignore specific warnings
   config.ignoreWarnings = [

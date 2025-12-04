@@ -1,13 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useNetworkStore } from '../services/networkService';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { useNetworkStore } from "../services/networkService";
 
 export const OnlineStatus: React.FC = () => {
   const { isOnline, isInternetReachable } = useNetworkStore();
 
-  const status = isOnline && isInternetReachable !== false ? 'online' : 'offline';
-  const statusColor = status === 'online' ? '#4CAF50' : '#FF9800';
-  const statusText = status === 'online' ? 'Online' : 'Offline';
+  const status =
+    isOnline && isInternetReachable !== false ? "online" : "offline";
+  const statusColor = status === "online" ? "#4CAF50" : "#FF9800";
+  const statusText = status === "online" ? "Online" : "Offline";
 
   return (
     <View style={[styles.container, { backgroundColor: `${statusColor}15` }]}>
@@ -19,8 +20,8 @@ export const OnlineStatus: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -33,6 +34,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

@@ -96,7 +96,6 @@ This roadmap clarifies the phases, flags, acceptance criteria, and rollout for t
 
 > Validate versions in `package.json` before running upgrades.
 
-
 1. Health checks
    - `yarn install`
    - `npx expo doctor`

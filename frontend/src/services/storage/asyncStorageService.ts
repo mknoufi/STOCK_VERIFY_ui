@@ -1,8 +1,8 @@
 /**
  * Centralized AsyncStorage service to eliminate duplicate storage logic
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 
 export interface StorageItem {
   key: string;
@@ -35,12 +35,16 @@ export class AsyncStorageService {
     }
 
     // Store error for debugging
-    this.setItem('lastStorageError', {
-      operation,
-      key,
-      error: error.message || String(error),
-      timestamp: Date.now()
-    }, { silent: true });
+    this.setItem(
+      "lastStorageError",
+      {
+        operation,
+        key,
+        error: error.message || String(error),
+        timestamp: Date.now(),
+      },
+      { silent: true },
+    );
   }
 
   /**
@@ -53,14 +57,14 @@ export class AsyncStorageService {
       expires?: number;
       silent?: boolean;
       showAlert?: boolean;
-    } = {}
+    } = {},
   ): Promise<boolean> {
     try {
       const item: StorageItem = {
         key,
         value,
         timestamp: Date.now(),
-        ...(options.expires && { expires: Date.now() + options.expires })
+        ...(options.expires && { expires: Date.now() + options.expires }),
       };
 
       const serialized = JSON.stringify(item);
@@ -72,10 +76,13 @@ export class AsyncStorageService {
 
       return true;
     } catch (error) {
-      this.handleStorageError('setItem', key, error);
+      this.handleStorageError("setItem", key, error);
 
       if (options.showAlert && !options.silent) {
-        Alert.alert('Storage Error', `Failed to save ${key}. Please try again.`);
+        Alert.alert(
+          "Storage Error",
+          `Failed to save ${key}. Please try again.`,
+        );
       }
 
       return false;
@@ -91,7 +98,7 @@ export class AsyncStorageService {
       defaultValue?: T;
       silent?: boolean;
       ignoreExpiration?: boolean;
-    } = {}
+    } = {},
   ): Promise<T | null> {
     try {
       const serialized = await AsyncStorage.getItem(key);
@@ -109,14 +116,21 @@ export class AsyncStorageService {
       } catch {
         // Fallback: If it's not JSON, treat it as a raw string value (legacy support)
         if (this.debugMode && !options.silent) {
-          __DEV__ && console.log(`⚠️ AsyncStorage: '${key}' is not JSON, treating as raw string`);
+          __DEV__ &&
+            console.log(
+              `⚠️ AsyncStorage: '${key}' is not JSON, treating as raw string`,
+            );
         }
         // Construct a wrapper for the raw value
         item = { key, value: serialized };
       }
 
       // Check expiration (only if it was a valid StorageItem with expires)
-      if (!options.ignoreExpiration && item.expires && Date.now() > item.expires) {
+      if (
+        !options.ignoreExpiration &&
+        item.expires &&
+        Date.now() > item.expires
+      ) {
         if (this.debugMode && !options.silent) {
           __DEV__ && console.log(`⏰ AsyncStorage: '${key}' expired, removing`);
         }
@@ -130,7 +144,7 @@ export class AsyncStorageService {
 
       return item.value;
     } catch (error) {
-      this.handleStorageError('getItem', key, error);
+      this.handleStorageError("getItem", key, error);
       return options.defaultValue ?? null;
     }
   }
@@ -138,7 +152,10 @@ export class AsyncStorageService {
   /**
    * Remove item with error handling
    */
-  async removeItem(key: string, options: { silent?: boolean } = {}): Promise<boolean> {
+  async removeItem(
+    key: string,
+    options: { silent?: boolean } = {},
+  ): Promise<boolean> {
     try {
       await AsyncStorage.removeItem(key);
 
@@ -148,7 +165,7 @@ export class AsyncStorageService {
 
       return true;
     } catch (error) {
-      this.handleStorageError('removeItem', key, error);
+      this.handleStorageError("removeItem", key, error);
       return false;
     }
   }
@@ -161,7 +178,7 @@ export class AsyncStorageService {
       const value = await AsyncStorage.getItem(key);
       return value !== null;
     } catch (error) {
-      this.handleStorageError('hasItem', key, error);
+      this.handleStorageError("hasItem", key, error);
       return false;
     }
   }
@@ -169,43 +186,50 @@ export class AsyncStorageService {
   /**
    * Clear all storage with confirmation
    */
-  async clearAll(options: { confirm?: boolean } = { confirm: true }): Promise<boolean> {
+  async clearAll(
+    options: { confirm?: boolean } = { confirm: true },
+  ): Promise<boolean> {
     try {
       if (options.confirm) {
         return new Promise((resolve) => {
           Alert.alert(
-            'Clear All Data',
-            'This will remove all stored data. Are you sure?',
+            "Clear All Data",
+            "This will remove all stored data. Are you sure?",
             [
-              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
               {
-                text: 'Clear All',
-                style: 'destructive',
+                text: "Cancel",
+                style: "cancel",
+                onPress: () => resolve(false),
+              },
+              {
+                text: "Clear All",
+                style: "destructive",
                 onPress: async () => {
                   try {
                     await AsyncStorage.clear();
                     if (this.debugMode) {
-                      __DEV__ && console.log('🧹 AsyncStorage: Cleared all data');
+                      __DEV__ &&
+                        console.log("🧹 AsyncStorage: Cleared all data");
                     }
                     resolve(true);
                   } catch (error) {
-                    this.handleStorageError('clearAll', 'ALL', error);
+                    this.handleStorageError("clearAll", "ALL", error);
                     resolve(false);
                   }
-                }
-              }
-            ]
+                },
+              },
+            ],
           );
         });
       } else {
         await AsyncStorage.clear();
         if (this.debugMode) {
-          __DEV__ && console.log('🧹 AsyncStorage: Cleared all data');
+          __DEV__ && console.log("🧹 AsyncStorage: Cleared all data");
         }
         return true;
       }
     } catch (error) {
-      this.handleStorageError('clearAll', 'ALL', error);
+      this.handleStorageError("clearAll", "ALL", error);
       return false;
     }
   }
@@ -218,12 +242,12 @@ export class AsyncStorageService {
       const keys = await AsyncStorage.getAllKeys();
 
       if (filter) {
-        return keys.filter(key => key.includes(filter));
+        return keys.filter((key) => key.includes(filter));
       }
 
       return [...keys]; // Convert readonly array to mutable array
     } catch (error) {
-      this.handleStorageError('getAllKeys', 'ALL', error);
+      this.handleStorageError("getAllKeys", "ALL", error);
       return [];
     }
   }
@@ -258,7 +282,7 @@ export class AsyncStorageService {
 
       return result;
     } catch (error) {
-      this.handleStorageError('getMultiple', keys.join(','), error);
+      this.handleStorageError("getMultiple", keys.join(","), error);
       return {};
     }
   }
@@ -272,7 +296,7 @@ export class AsyncStorageService {
         const item: StorageItem = {
           key,
           value,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
         return [key, JSON.stringify(item)] as [string, string];
       });
@@ -285,7 +309,7 @@ export class AsyncStorageService {
 
       return true;
     } catch (error) {
-      this.handleStorageError('setMultiple', `${items.length} items`, error);
+      this.handleStorageError("setMultiple", `${items.length} items`, error);
       return false;
     }
   }
@@ -316,13 +340,16 @@ export class AsyncStorageService {
         await AsyncStorage.multiRemove(expiredKeys);
 
         if (this.debugMode) {
-          __DEV__ && console.log(`🧹 AsyncStorage: Cleaned up ${expiredKeys.length} expired items`);
+          __DEV__ &&
+            console.log(
+              `🧹 AsyncStorage: Cleaned up ${expiredKeys.length} expired items`,
+            );
         }
       }
 
       return expiredKeys.length;
     } catch (error) {
-      this.handleStorageError('cleanupExpired', 'ALL', error);
+      this.handleStorageError("cleanupExpired", "ALL", error);
       return 0;
     }
   }
@@ -368,10 +395,10 @@ export class AsyncStorageService {
         totalKeys: keys.length,
         approximateSize: totalSize,
         oldestItem: oldestTimestamp,
-        newestItem: newestTimestamp
+        newestItem: newestTimestamp,
       };
     } catch (error) {
-      this.handleStorageError('getStorageInfo', 'INFO', error);
+      this.handleStorageError("getStorageInfo", "INFO", error);
       return { totalKeys: 0, approximateSize: 0 };
     }
   }
@@ -382,14 +409,18 @@ export const asyncStorageService = AsyncStorageService.getInstance();
 
 // Export convenience methods
 export const storage = {
-  set: (key: string, value: any, options?: any) => asyncStorageService.setItem(key, value, options),
-  get: <T = any>(key: string, options?: any) => asyncStorageService.getItem<T>(key, options),
-  remove: (key: string, options?: any) => asyncStorageService.removeItem(key, options),
+  set: (key: string, value: any, options?: any) =>
+    asyncStorageService.setItem(key, value, options),
+  get: <T = any>(key: string, options?: any) =>
+    asyncStorageService.getItem<T>(key, options),
+  remove: (key: string, options?: any) =>
+    asyncStorageService.removeItem(key, options),
   has: (key: string) => asyncStorageService.hasItem(key),
   clear: (options?: any) => asyncStorageService.clearAll(options),
   keys: (filter?: string) => asyncStorageService.getAllKeys(filter),
   getMultiple: (keys: string[]) => asyncStorageService.getMultiple(keys),
-  setMultiple: (items: [string, any][]) => asyncStorageService.setMultiple(items),
+  setMultiple: (items: [string, any][]) =>
+    asyncStorageService.setMultiple(items),
   cleanup: () => asyncStorageService.cleanupExpired(),
-  info: () => asyncStorageService.getStorageInfo()
+  info: () => asyncStorageService.getStorageInfo(),
 };

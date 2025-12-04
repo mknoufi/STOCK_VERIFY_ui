@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { getItemByBarcode } from '../services/api';
+import { useQuery } from "@tanstack/react-query";
+import { getItemByBarcode } from "../services/api";
 
 interface UseItemByBarcodeQueryOptions {
   barcode: string | null;
@@ -17,10 +17,10 @@ export const useItemByBarcodeQuery = ({
   retryCount = 3,
 }: UseItemByBarcodeQueryOptions) => {
   return useQuery({
-    queryKey: ['item', 'barcode', barcode],
+    queryKey: ["item", "barcode", barcode],
     queryFn: () => {
       if (!barcode) {
-        throw new Error('Barcode is required');
+        throw new Error("Barcode is required");
       }
       return getItemByBarcode(barcode, retryCount);
     },

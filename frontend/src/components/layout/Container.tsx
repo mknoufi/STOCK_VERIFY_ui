@@ -3,13 +3,13 @@
  * Centers content on large screens, full width on mobile
  */
 
-import React from 'react';
-import { View, StyleSheet, ViewStyle, Dimensions } from 'react-native';
-import { breakpoints, layout } from '../../styles/globalStyles';
+import React from "react";
+import { View, StyleSheet, ViewStyle, Dimensions } from "react-native";
+import { breakpoints, layout } from "../../styles/globalStyles";
 
 interface ContainerProps {
   children: React.ReactNode;
-  maxWidth?: 'mobile' | 'tablet' | 'desktop' | number;
+  maxWidth?: "mobile" | "tablet" | "desktop" | number;
   centered?: boolean;
   style?: ViewStyle;
   testID?: string;
@@ -17,29 +17,29 @@ interface ContainerProps {
 
 export const Container: React.FC<ContainerProps> = ({
   children,
-  maxWidth = 'desktop',
+  maxWidth = "desktop",
   centered = true,
   style,
   testID,
 }) => {
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
 
   // Determine max width
   let maxWidthValue: number;
-  if (typeof maxWidth === 'number') {
+  if (typeof maxWidth === "number") {
     maxWidthValue = maxWidth;
   } else {
     const maxWidthConfig = layout.containerMaxWidth[maxWidth];
-    maxWidthValue = typeof maxWidthConfig === 'number' ? maxWidthConfig : 1200;
+    maxWidthValue = typeof maxWidthConfig === "number" ? maxWidthConfig : 1200;
   }
 
   // On mobile, use full width
-  const shouldConstrain = width > breakpoints.tablet && maxWidth !== 'mobile';
+  const shouldConstrain = width > breakpoints.tablet && maxWidth !== "mobile";
 
   const containerStyle: ViewStyle = {
-    width: shouldConstrain ? maxWidthValue : '100%',
-    maxWidth: shouldConstrain ? maxWidthValue : '100%',
-    alignSelf: centered && shouldConstrain ? 'center' : 'stretch',
+    width: shouldConstrain ? maxWidthValue : "100%",
+    maxWidth: shouldConstrain ? maxWidthValue : "100%",
+    alignSelf: centered && shouldConstrain ? "center" : "stretch",
   };
 
   return (

@@ -37,13 +37,13 @@ This creates a static build of Storybook for deployment.
 Create a new `.stories.tsx` file next to your component:
 
 ```typescript
-import type { Meta, StoryObj } from '@storybook/react';
-import { YourComponent } from './YourComponent';
+import type { Meta, StoryObj } from "@storybook/react";
+import { YourComponent } from "./YourComponent";
 
 const meta: Meta<typeof YourComponent> = {
-  title: 'Components/YourComponent',
+  title: "Components/YourComponent",
   component: YourComponent,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;

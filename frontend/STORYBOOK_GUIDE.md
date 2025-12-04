@@ -14,6 +14,7 @@ npm run storybook
 ```
 
 This will:
+
 - Start Storybook development server
 - Open browser at `http://localhost:6006`
 - Watch for changes in component stories
@@ -67,13 +68,13 @@ Example:
 
 ```typescript
 // components/YourComponent.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react';
-import { YourComponent } from './YourComponent';
+import type { Meta, StoryObj } from "@storybook/react";
+import { YourComponent } from "./YourComponent";
 
 const meta: Meta<typeof YourComponent> = {
-  title: 'Components/YourComponent',
+  title: "Components/YourComponent",
   component: YourComponent,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;

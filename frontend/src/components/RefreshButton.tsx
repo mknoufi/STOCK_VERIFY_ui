@@ -1,6 +1,6 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface RefreshButtonProps {
   onRefresh: () => void;
@@ -13,7 +13,7 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
   onRefresh,
   loading = false,
   size = 24,
-  color = '#4CAF50',
+  color = "#4CAF50",
 }) => {
   return (
     <TouchableOpacity
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   button: {
     padding: 8,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

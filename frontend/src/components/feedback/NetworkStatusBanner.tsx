@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNetworkStore } from '../../store/networkStore';
-import { getOfflineQueue } from '../../services/offline/offlineStorage';
-import { syncOfflineQueue } from '../../services/api';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useNetworkStore } from "../../store/networkStore";
+import { getOfflineQueue } from "../../services/offline/offlineStorage";
+import { syncOfflineQueue } from "../../services/api";
 
 interface NetworkStatusBannerProps {
   onSyncPress?: () => void;
 }
 
-export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({ onSyncPress }) => {
+export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({
+  onSyncPress,
+}) => {
   const { isOnline, isInternetReachable } = useNetworkStore();
   const [queueCount, setQueueCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
@@ -34,9 +36,9 @@ export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({ onSync
         onSyncPress();
       }
 
-      __DEV__ && console.log('Sync completed:', results);
+      __DEV__ && console.log("Sync completed:", results);
     } catch (error) {
-      __DEV__ && console.error('Sync failed:', error);
+      __DEV__ && console.error("Sync failed:", error);
     } finally {
       setSyncing(false);
     }
@@ -64,8 +66,8 @@ export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({ onSync
           {isOnline
             ? queueCount > 0
               ? `${queueCount} pending items to sync`
-              : 'Online'
-            : 'Offline Mode - Data will sync when online'}
+              : "Online"
+            : "Offline Mode - Data will sync when online"}
         </Text>
       </View>
       {isOnline && queueCount > 0 && (
@@ -75,7 +77,7 @@ export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({ onSync
           disabled={syncing}
         >
           <Text style={styles.syncButtonText}>
-            {syncing ? 'Syncing...' : 'Sync Now'}
+            {syncing ? "Syncing..." : "Sync Now"}
           </Text>
         </TouchableOpacity>
       )}
@@ -85,21 +87,21 @@ export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({ onSync
 
 const styles = StyleSheet.create({
   banner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   bannerOffline: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: "#FF6B6B",
   },
   bannerOnlineWithQueue: {
-    backgroundColor: '#FFA500',
+    backgroundColor: "#FFA500",
   },
   statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   indicator: {
@@ -109,27 +111,27 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   indicatorOnline: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   indicatorOffline: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
   },
   statusText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     flex: 1,
   },
   syncButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 4,
   },
   syncButtonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

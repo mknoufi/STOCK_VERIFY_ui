@@ -2,10 +2,10 @@
  * Setting Group Component - Group of related settings
  */
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
 
 interface SettingGroupProps {
   title: string;
@@ -24,7 +24,10 @@ export const SettingGroup: React.FC<SettingGroupProps> = ({
     <View
       style={[
         styles.container,
-        { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
+        {
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border,
+        },
       ]}
     >
       <View style={styles.header}>
@@ -40,7 +43,9 @@ export const SettingGroup: React.FC<SettingGroupProps> = ({
           {title}
         </Text>
       </View>
-      <View style={[styles.content, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.content, { backgroundColor: theme.colors.background }]}
+      >
         {children}
       </View>
     </View>
@@ -53,11 +58,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
   },
   icon: {
@@ -65,10 +70,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: "#E0E0E0",
   },
 });

@@ -3,19 +3,19 @@
  * Includes AppHeader with user info and Screen wrapper
  */
 
-import React from 'react';
-import { View, StyleSheet, ViewStyle, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Screen, ScreenVariant } from './Screen';
-import { AppHeader } from '../navigation/AppHeader';
-import { useAuthStore } from '../../store/authStore';
+import React from "react";
+import { View, StyleSheet, ViewStyle, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import { Screen, ScreenVariant } from "./Screen";
+import { AppHeader } from "../navigation/AppHeader";
+import { useAuthStore } from "../../store/authStore";
 
 interface SupervisorLayoutProps {
   children: React.ReactNode;
   title?: string;
   showBack?: boolean;
   headerActions?: {
-    icon: keyof typeof import('@expo/vector-icons').Ionicons.glyphMap;
+    icon: keyof typeof import("@expo/vector-icons").Ionicons.glyphMap;
     label: string;
     onPress: () => void;
     badge?: number;
@@ -33,36 +33,32 @@ export const SupervisorLayout: React.FC<SupervisorLayoutProps> = ({
   headerActions = [],
   style,
   testID,
-  screenVariant = 'scrollable',
+  screenVariant = "scrollable",
   backgroundColor,
 }) => {
   const router = useRouter();
   const { logout } = useAuthStore();
 
   // Auto-detect title from route if not provided
-  const screenTitle = title || 'Supervisor Dashboard';
+  const screenTitle = title || "Supervisor Dashboard";
 
   // Default actions for supervisor (e.g., Logout)
   const defaultActions = [
     {
-      icon: 'log-out-outline' as const,
-      label: 'Logout',
+      icon: "log-out-outline" as const,
+      label: "Logout",
       onPress: () => {
-        Alert.alert(
-          'Confirm Logout',
-          'Are you sure you want to logout?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Logout',
-              style: 'destructive',
-              onPress: async () => {
-                await logout();
-                router.replace('/login');
-              },
+        Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Logout",
+            style: "destructive",
+            onPress: async () => {
+              await logout();
+              router.replace("/login");
             },
-          ]
-        );
+          },
+        ]);
       },
     },
   ];
@@ -77,7 +73,11 @@ export const SupervisorLayout: React.FC<SupervisorLayoutProps> = ({
         showUser={true}
         actions={actions}
       />
-      <Screen variant={screenVariant} style={styles.screen} backgroundColor={backgroundColor}>
+      <Screen
+        variant={screenVariant}
+        style={styles.screen}
+        backgroundColor={backgroundColor}
+      >
         {children}
       </Screen>
     </View>

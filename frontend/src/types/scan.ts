@@ -18,9 +18,14 @@ export interface Item {
   item_name?: string;
 }
 
-export type ScannerMode = 'item' | 'serial';
+export type ScannerMode = "item" | "serial";
 
-export type PhotoProofType = 'ITEM' | 'SERIAL' | 'LOCATION' | 'DAMAGE' | 'SHELF';
+export type PhotoProofType =
+  | "ITEM"
+  | "SERIAL"
+  | "LOCATION"
+  | "DAMAGE"
+  | "SHELF";
 
 export interface ScanFormData {
   countedQty: string;
@@ -94,7 +99,7 @@ export interface SerialInput {
   serial_number: string;
   value?: string;
   label?: string;
-  condition: 'good' | 'damaged';
+  condition: "good" | "damaged";
 }
 
 export interface WorkflowState {

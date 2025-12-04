@@ -1,5 +1,10 @@
-import { StyleSheet } from 'react-native';
-import { borderRadius, spacing, typography, colors } from '../../styles/globalStyles';
+import { StyleSheet } from "react-native";
+import {
+  borderRadius,
+  spacing,
+  typography,
+  colors,
+} from "../../styles/globalStyles";
 
 export const staffHomeStyles = StyleSheet.create({
   quickActions: {
@@ -17,9 +22,9 @@ export const staffHomeStyles = StyleSheet.create({
     borderColor: colors.borderLight,
   },
   sessionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 6,
   },
   sessionWarehouse: {
@@ -33,10 +38,10 @@ export const staffHomeStyles = StyleSheet.create({
     borderRadius: borderRadius.round,
   },
   statusText: {
-    color: '#fff',
+    color: "#fff",
     ...typography.caption,
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   sessionDate: {
     ...typography.bodySmall,
@@ -45,7 +50,7 @@ export const staffHomeStyles = StyleSheet.create({
     color: colors.textSecondary,
   },
   sessionStats: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   sessionStat: {
@@ -53,7 +58,7 @@ export const staffHomeStyles = StyleSheet.create({
     color: colors.textSecondary,
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.xl,
     ...typography.body,
     color: colors.textSecondary,
@@ -63,15 +68,15 @@ export const staffHomeStyles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     width: 320,
-    maxWidth: '90%',
+    maxWidth: "90%",
     backgroundColor: colors.surfaceDark,
   },
   modalTitle: {
@@ -95,18 +100,18 @@ export const staffHomeStyles = StyleSheet.create({
     color: colors.textPrimary,
   },
   modalButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.sm,
   },
   mrpModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   mrpModalContainer: {
-    width: '90%',
-    maxHeight: '80%',
+    width: "90%",
+    maxHeight: "80%",
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     borderWidth: 1,
@@ -114,9 +119,9 @@ export const staffHomeStyles = StyleSheet.create({
     borderColor: colors.borderLight,
   },
   mrpModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.lg,
   },
   mrpModalTitle: {
@@ -129,8 +134,8 @@ export const staffHomeStyles = StyleSheet.create({
     color: colors.textSecondary,
   },
   mrpSearchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: borderRadius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
@@ -149,9 +154,9 @@ export const staffHomeStyles = StyleSheet.create({
     maxHeight: 400,
   },
   mrpSearchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: spacing.md,
     borderRadius: borderRadius.sm,
     marginBottom: spacing.xs,
@@ -164,7 +169,7 @@ export const staffHomeStyles = StyleSheet.create({
   },
   mrpResultName: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
     color: colors.textPrimary,
   },
@@ -180,7 +185,7 @@ export const staffHomeStyles = StyleSheet.create({
   },
   mrpResultMRP: {
     ...typography.bodySmall,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 4,
     color: colors.warning,
   },
@@ -209,13 +214,13 @@ export const staffHomeStyles = StyleSheet.create({
   },
   selectedItemCurrentMRP: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: spacing.xs,
     color: colors.warning,
   },
   mrpInputLabel: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: spacing.xs,
     color: colors.textPrimary,
   },
@@ -231,7 +236,7 @@ export const staffHomeStyles = StyleSheet.create({
     color: colors.textPrimary,
   },
   mrpButtonContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.sm,
   },
 });

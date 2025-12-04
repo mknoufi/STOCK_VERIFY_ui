@@ -2,9 +2,15 @@
  * Card Component - Material Design card
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
-import { useTheme } from '../hooks/useTheme';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ViewStyle,
+} from "react-native";
+import { useTheme } from "../hooks/useTheme";
 
 interface CardProps {
   title?: string;
@@ -35,7 +41,7 @@ export const Card: React.FC<CardProps> = ({
     marginHorizontal: 16,
     ...(elevation > 0 && {
       elevation,
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: elevation },
       shadowOpacity: 0.25,
       shadowRadius: elevation * 2,
@@ -56,7 +62,9 @@ export const Card: React.FC<CardProps> = ({
             {title}
           </Text>
           {subtitle && (
-            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+            <Text
+              style={[styles.subtitle, { color: theme.colors.textSecondary }]}
+            >
               {subtitle}
             </Text>
           )}
@@ -73,7 +81,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   subtitle: {

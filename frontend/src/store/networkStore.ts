@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface NetworkState {
   isOnline: boolean;
@@ -11,9 +11,10 @@ interface NetworkState {
 
 export const useNetworkStore = create<NetworkState>((set) => ({
   isOnline: true,
-  connectionType: 'unknown',
+  connectionType: "unknown",
   isInternetReachable: null,
   setIsOnline: (isOnline: boolean) => set({ isOnline }),
   setConnectionType: (type: string) => set({ connectionType: type }),
-  setIsInternetReachable: (reachable: boolean | null) => set({ isInternetReachable: reachable }),
+  setIsInternetReachable: (reachable: boolean | null) =>
+    set({ isInternetReachable: reachable }),
 }));

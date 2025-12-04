@@ -3,11 +3,17 @@
  * Provides title, subtitle, and optional action button
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
-import { spacing, typography, layout } from '../../styles/globalStyles';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
+import { spacing, typography, layout } from "../../styles/globalStyles";
 
 interface SectionProps {
   children: React.ReactNode;
@@ -45,7 +51,9 @@ export const Section: React.FC<SectionProps> = ({
               </Text>
             )}
             {subtitle && (
-              <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.subtitle, { color: theme.colors.textSecondary }]}
+              >
                 {subtitle}
               </Text>
             )}
@@ -66,7 +74,9 @@ export const Section: React.FC<SectionProps> = ({
                   style={styles.actionIcon}
                 />
               )}
-              <Text style={[styles.actionLabel, { color: theme.colors.primary }]}>
+              <Text
+                style={[styles.actionLabel, { color: theme.colors.primary }]}
+              >
                 {action.label}
               </Text>
             </TouchableOpacity>
@@ -83,9 +93,9 @@ const styles = StyleSheet.create({
     marginBottom: layout.sectionGap,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: spacing.md,
   },
   headerText: {
@@ -100,8 +110,8 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
   },
   actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
   },

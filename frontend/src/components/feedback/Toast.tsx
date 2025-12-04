@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Text, StyleSheet } from 'react-native';
+import React, { useEffect } from "react";
+import { Text, StyleSheet } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,12 +7,12 @@ import Animated, {
   withSpring,
   Easing,
   runOnJS,
-} from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
 
 interface ToastProps {
   message: string;
-  type?: 'success' | 'error' | 'info' | 'warning';
+  type?: "success" | "error" | "info" | "warning";
   visible: boolean;
   onHide: () => void;
   duration?: number;
@@ -20,7 +20,7 @@ interface ToastProps {
 
 export const Toast: React.FC<ToastProps> = ({
   message,
-  type = 'info',
+  type = "info",
   visible,
   onHide,
   duration = 3000,
@@ -55,12 +55,16 @@ export const Toast: React.FC<ToastProps> = ({
           duration: 300,
           easing: Easing.in(Easing.ease),
         });
-        scale.value = withTiming(0.8, {
-          duration: 300,
-          easing: Easing.in(Easing.ease),
-        }, () => {
-          runOnJS(onHide)();
-        });
+        scale.value = withTiming(
+          0.8,
+          {
+            duration: 300,
+            easing: Easing.in(Easing.ease),
+          },
+          () => {
+            runOnJS(onHide)();
+          },
+        );
       }, duration);
 
       return () => clearTimeout(timer);
@@ -76,10 +80,7 @@ export const Toast: React.FC<ToastProps> = ({
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-      transform: [
-        { translateY: translateY.value },
-        { scale: scale.value },
-      ],
+      transform: [{ translateY: translateY.value }, { scale: scale.value }],
     };
   });
 
@@ -87,19 +88,27 @@ export const Toast: React.FC<ToastProps> = ({
 
   const getIcon = () => {
     switch (type) {
-      case 'success': return 'checkmark-circle';
-      case 'error': return 'close-circle';
-      case 'warning': return 'warning';
-      default: return 'information-circle';
+      case "success":
+        return "checkmark-circle";
+      case "error":
+        return "close-circle";
+      case "warning":
+        return "warning";
+      default:
+        return "information-circle";
     }
   };
 
   const getColor = () => {
     switch (type) {
-      case 'success': return '#4CAF50';
-      case 'error': return '#F44336';
-      case 'warning': return '#FF9800';
-      default: return '#2196F3';
+      case "success":
+        return "#4CAF50";
+      case "error":
+        return "#F44336";
+      case "warning":
+        return "#FF9800";
+      default:
+        return "#2196F3";
     }
   };
 
@@ -108,7 +117,7 @@ export const Toast: React.FC<ToastProps> = ({
       style={[
         styles.container,
         {
-          backgroundColor: getColor() + '15',
+          backgroundColor: getColor() + "15",
           borderLeftColor: getColor(),
         },
         animatedStyle,
@@ -122,18 +131,18 @@ export const Toast: React.FC<ToastProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: "absolute",
     top: 100,
     left: 20,
     right: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     padding: 16,
     borderRadius: 8,
     borderLeftWidth: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -143,6 +152,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

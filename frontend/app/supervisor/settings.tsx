@@ -2,7 +2,7 @@
  * Settings Screen - App settings and preferences
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -10,15 +10,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useSettingsStore } from '../../src/store/settingsStore';
-import { Header } from '../../src/components/layout/Header';
-import { useTheme } from '../../src/hooks/useTheme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useSettingsStore } from "../../src/store/settingsStore";
+import { Header } from "../../src/components/layout/Header";
+import { useTheme } from "../../src/hooks/useTheme";
 
-import { SettingGroup } from '../../src/components/layout/SettingGroup';
-import { SettingItem } from '../../src/components/layout/SettingItem';
+import { SettingGroup } from "../../src/components/layout/SettingGroup";
+import { SettingItem } from "../../src/components/layout/SettingItem";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -27,24 +27,26 @@ export default function SettingsScreen() {
 
   const handleReset = () => {
     Alert.alert(
-      'Reset Settings',
-      'Are you sure you want to reset all settings to default?',
+      "Reset Settings",
+      "Are you sure you want to reset all settings to default?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Reset',
-          style: 'destructive',
+          text: "Reset",
+          style: "destructive",
           onPress: async () => {
             await resetSettings();
-            Alert.alert('Success', 'Settings reset to default');
+            Alert.alert("Success", "Settings reset to default");
           },
         },
-      ]
+      ],
     );
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <Header
         title="Settings"
         leftIcon="arrow-back"
@@ -58,18 +60,18 @@ export default function SettingsScreen() {
             label="Dark Mode"
             value={settings.darkMode}
             type="switch"
-            onValueChange={(value) => setSetting('darkMode', value)}
+            onValueChange={(value) => setSetting("darkMode", value)}
           />
           <SettingItem
             label="Theme"
             value={settings.theme}
             type="select"
             options={[
-              { label: 'Light', value: 'light' },
-              { label: 'Dark', value: 'dark' },
-              { label: 'Auto', value: 'auto' },
+              { label: "Light", value: "light" },
+              { label: "Dark", value: "dark" },
+              { label: "Auto", value: "auto" },
             ]}
-            onValueChange={(value) => setSetting('theme', value)}
+            onValueChange={(value) => setSetting("theme", value)}
           />
         </SettingGroup>
 
@@ -79,21 +81,21 @@ export default function SettingsScreen() {
             label="Enable Notifications"
             value={settings.notificationsEnabled}
             type="switch"
-            onValueChange={(value) => setSetting('notificationsEnabled', value)}
+            onValueChange={(value) => setSetting("notificationsEnabled", value)}
           />
           <SettingItem
             label="Notification Sound"
             value={settings.notificationSound}
             type="switch"
             disabled={!settings.notificationsEnabled}
-            onValueChange={(value) => setSetting('notificationSound', value)}
+            onValueChange={(value) => setSetting("notificationSound", value)}
           />
           <SettingItem
             label="Badge Count"
             value={settings.notificationBadge}
             type="switch"
             disabled={!settings.notificationsEnabled}
-            onValueChange={(value) => setSetting('notificationBadge', value)}
+            onValueChange={(value) => setSetting("notificationBadge", value)}
           />
         </SettingGroup>
 
@@ -103,7 +105,7 @@ export default function SettingsScreen() {
             label="Auto Sync"
             value={settings.autoSyncEnabled}
             type="switch"
-            onValueChange={(value) => setSetting('autoSyncEnabled', value)}
+            onValueChange={(value) => setSetting("autoSyncEnabled", value)}
           />
           <SettingItem
             label="Sync Interval"
@@ -113,14 +115,14 @@ export default function SettingsScreen() {
             max={60}
             step={1}
             disabled={!settings.autoSyncEnabled}
-            onValueChange={(value) => setSetting('autoSyncInterval', value)}
+            onValueChange={(value) => setSetting("autoSyncInterval", value)}
           />
           <SettingItem
             label="Sync on Reconnect"
             value={settings.syncOnReconnect}
             type="switch"
             disabled={!settings.autoSyncEnabled}
-            onValueChange={(value) => setSetting('syncOnReconnect', value)}
+            onValueChange={(value) => setSetting("syncOnReconnect", value)}
           />
         </SettingGroup>
 
@@ -130,7 +132,7 @@ export default function SettingsScreen() {
             label="Offline Mode"
             value={settings.offlineMode}
             type="switch"
-            onValueChange={(value) => setSetting('offlineMode', value)}
+            onValueChange={(value) => setSetting("offlineMode", value)}
           />
           <SettingItem
             label="Cache Expiration"
@@ -140,14 +142,16 @@ export default function SettingsScreen() {
             max={168}
             step={1}
             disabled={!settings.offlineMode}
-            onValueChange={(value) => setSetting('cacheExpiration', value)}
+            onValueChange={(value) => setSetting("cacheExpiration", value)}
           />
           <SettingItem
             label="Max Queue Size"
             value={settings.maxQueueSize.toString()}
             type="number"
             disabled={!settings.offlineMode}
-            onValueChange={(value) => setSetting('maxQueueSize', parseInt(value))}
+            onValueChange={(value) =>
+              setSetting("maxQueueSize", parseInt(value))
+            }
           />
         </SettingGroup>
 
@@ -157,19 +161,19 @@ export default function SettingsScreen() {
             label="Vibration"
             value={settings.scannerVibration}
             type="switch"
-            onValueChange={(value) => setSetting('scannerVibration', value)}
+            onValueChange={(value) => setSetting("scannerVibration", value)}
           />
           <SettingItem
             label="Sound"
             value={settings.scannerSound}
             type="switch"
-            onValueChange={(value) => setSetting('scannerSound', value)}
+            onValueChange={(value) => setSetting("scannerSound", value)}
           />
           <SettingItem
             label="Auto Submit"
             value={settings.scannerAutoSubmit}
             type="switch"
-            onValueChange={(value) => setSetting('scannerAutoSubmit', value)}
+            onValueChange={(value) => setSetting("scannerAutoSubmit", value)}
           />
           <SettingItem
             label="Timeout"
@@ -178,7 +182,7 @@ export default function SettingsScreen() {
             min={5}
             max={60}
             step={5}
-            onValueChange={(value) => setSetting('scannerTimeout', value)}
+            onValueChange={(value) => setSetting("scannerTimeout", value)}
           />
         </SettingGroup>
 
@@ -189,29 +193,29 @@ export default function SettingsScreen() {
             value={settings.fontSize}
             type="select"
             options={[
-              { label: 'Small', value: 'small' },
-              { label: 'Medium', value: 'medium' },
-              { label: 'Large', value: 'large' },
+              { label: "Small", value: "small" },
+              { label: "Medium", value: "medium" },
+              { label: "Large", value: "large" },
             ]}
-            onValueChange={(value) => setSetting('fontSize', value)}
+            onValueChange={(value) => setSetting("fontSize", value)}
           />
           <SettingItem
             label="Show Item Images"
             value={settings.showItemImages}
             type="switch"
-            onValueChange={(value) => setSetting('showItemImages', value)}
+            onValueChange={(value) => setSetting("showItemImages", value)}
           />
           <SettingItem
             label="Show Prices"
             value={settings.showItemPrices}
             type="switch"
-            onValueChange={(value) => setSetting('showItemPrices', value)}
+            onValueChange={(value) => setSetting("showItemPrices", value)}
           />
           <SettingItem
             label="Show Stock"
             value={settings.showItemStock}
             type="switch"
-            onValueChange={(value) => setSetting('showItemStock', value)}
+            onValueChange={(value) => setSetting("showItemStock", value)}
           />
         </SettingGroup>
 
@@ -222,22 +226,22 @@ export default function SettingsScreen() {
             value={settings.exportFormat.toUpperCase()}
             type="select"
             options={[
-              { label: 'CSV', value: 'csv' },
-              { label: 'JSON', value: 'json' },
+              { label: "CSV", value: "csv" },
+              { label: "JSON", value: "json" },
             ]}
-            onValueChange={(value) => setSetting('exportFormat', value)}
+            onValueChange={(value) => setSetting("exportFormat", value)}
           />
           <SettingItem
             label="Backup Frequency"
             value={settings.backupFrequency}
             type="select"
             options={[
-              { label: 'Daily', value: 'daily' },
-              { label: 'Weekly', value: 'weekly' },
-              { label: 'Monthly', value: 'monthly' },
-              { label: 'Never', value: 'never' },
+              { label: "Daily", value: "daily" },
+              { label: "Weekly", value: "weekly" },
+              { label: "Monthly", value: "monthly" },
+              { label: "Never", value: "never" },
             ]}
-            onValueChange={(value) => setSetting('backupFrequency', value)}
+            onValueChange={(value) => setSetting("backupFrequency", value)}
           />
         </SettingGroup>
 
@@ -245,13 +249,22 @@ export default function SettingsScreen() {
         <SettingGroup title="Database Mapping" icon="swap-horizontal">
           <TouchableOpacity
             style={styles.mappingButton}
-            onPress={() => router.push('/supervisor/db-mapping')}
+            onPress={() => router.push("/supervisor/db-mapping")}
           >
             <Ionicons name="settings" size={20} color={theme.colors.primary} />
-            <Text style={[styles.mappingButtonText, { color: theme.colors.primary }]}>
+            <Text
+              style={[
+                styles.mappingButtonText,
+                { color: theme.colors.primary },
+              ]}
+            >
               Configure Table & Column Mapping
             </Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         </SettingGroup>
 
@@ -259,13 +272,26 @@ export default function SettingsScreen() {
         <SettingGroup title="Help & Support" icon="help-circle">
           <TouchableOpacity
             style={styles.mappingButton}
-            onPress={() => router.push('/help' as any)}
+            onPress={() => router.push("/help" as any)}
           >
-            <Ionicons name="help-circle" size={20} color={theme.colors.primary} />
-            <Text style={[styles.mappingButtonText, { color: theme.colors.primary }]}>
+            <Ionicons
+              name="help-circle"
+              size={20}
+              color={theme.colors.primary}
+            />
+            <Text
+              style={[
+                styles.mappingButtonText,
+                { color: theme.colors.primary },
+              ]}
+            >
               Help & Documentation
             </Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         </SettingGroup>
 
@@ -275,7 +301,7 @@ export default function SettingsScreen() {
             label="Require Authentication"
             value={settings.requireAuth}
             type="switch"
-            onValueChange={(value) => setSetting('requireAuth', value)}
+            onValueChange={(value) => setSetting("requireAuth", value)}
           />
           <SettingItem
             label="Session Timeout"
@@ -284,14 +310,14 @@ export default function SettingsScreen() {
             min={5}
             max={480}
             step={5}
-            onValueChange={(value) => setSetting('sessionTimeout', value)}
+            onValueChange={(value) => setSetting("sessionTimeout", value)}
           />
           <SettingItem
             label="Biometric Auth"
             value={settings.biometricAuth}
             type="switch"
             disabled={!settings.requireAuth}
-            onValueChange={(value) => setSetting('biometricAuth', value)}
+            onValueChange={(value) => setSetting("biometricAuth", value)}
           />
         </SettingGroup>
 
@@ -301,13 +327,13 @@ export default function SettingsScreen() {
             label="Image Cache"
             value={settings.imageCache}
             type="switch"
-            onValueChange={(value) => setSetting('imageCache', value)}
+            onValueChange={(value) => setSetting("imageCache", value)}
           />
           <SettingItem
             label="Lazy Loading"
             value={settings.lazyLoading}
             type="switch"
-            onValueChange={(value) => setSetting('lazyLoading', value)}
+            onValueChange={(value) => setSetting("lazyLoading", value)}
           />
           <SettingItem
             label="Debounce Delay"
@@ -316,7 +342,7 @@ export default function SettingsScreen() {
             min={100}
             max={1000}
             step={100}
-            onValueChange={(value) => setSetting('debounceDelay', value)}
+            onValueChange={(value) => setSetting("debounceDelay", value)}
           />
         </SettingGroup>
 
@@ -350,9 +376,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   resetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
@@ -360,20 +386,20 @@ const styles = StyleSheet.create({
   },
   resetText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   mappingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
     gap: 12,
   },
   mappingButtonText: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

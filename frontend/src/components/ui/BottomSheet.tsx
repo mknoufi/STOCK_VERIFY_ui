@@ -1,8 +1,13 @@
-
-import React from 'react';
-import { Modal, StyleSheet, Platform, TouchableOpacity } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, interpolate, runOnJS } from 'react-native-reanimated';
-import { flags } from '../../constants/flags';
+import React from "react";
+import { Modal, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolate,
+  runOnJS,
+} from "react-native-reanimated";
+import { flags } from "../../constants/flags";
 
 interface BottomSheetProps {
   visible: boolean;
@@ -11,7 +16,12 @@ interface BottomSheetProps {
   children: React.ReactNode;
 }
 
-export const BottomSheet: React.FC<BottomSheetProps> = ({ visible, onClose, height = 400, children }) => {
+export const BottomSheet: React.FC<BottomSheetProps> = ({
+  visible,
+  onClose,
+  height = 400,
+  children,
+}) => {
   const progress = useSharedValue(visible ? 1 : 0);
   const [render, setRender] = React.useState(visible);
 
@@ -52,11 +62,21 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ visible, onClose, heig
     <Modal
       transparent
       visible={render}
-      animationType={!flags.enableAnimations ? (Platform.OS === 'ios' ? 'slide' : 'fade') : undefined}
+      animationType={
+        !flags.enableAnimations
+          ? Platform.OS === "ios"
+            ? "slide"
+            : "fade"
+          : undefined
+      }
       onRequestClose={onClose}
     >
       <Animated.View style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          activeOpacity={1}
+          onPress={onClose}
+        />
       </Animated.View>
       <Animated.View style={[styles.sheet, { height }, sheetStyle]}>
         {children}
@@ -68,20 +88,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ visible, onClose, heig
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)'
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   sheet: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: "#1e1e1e",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#333'
-  }
+    borderColor: "#333",
+  },
 });
 
 export default BottomSheet;

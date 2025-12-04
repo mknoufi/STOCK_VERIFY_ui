@@ -1,20 +1,31 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import * as Haptics from 'expo-haptics';
-import Animated, {
-  FadeInDown,
-  FadeInUp
-} from 'react-native-reanimated';
-import { colors, spacing, gradients, layout } from '@/styles/globalStyles';
-import { useAuthStore } from '@/store/authStore';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  useWindowDimensions,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import { colors, spacing, gradients, layout } from "@/styles/globalStyles";
+import { useAuthStore } from "@/store/authStore";
 
-
-const FeatureCard = ({ icon, title, delay }: { icon: keyof typeof Ionicons.glyphMap; title: string; delay: number }) => (
+const FeatureCard = ({
+  icon,
+  title,
+  delay,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  delay: number;
+}) => (
   <Animated.View
     entering={FadeInDown.delay(delay).springify()}
     style={styles.featureWrapper}
@@ -37,13 +48,19 @@ export default function WelcomeScreen() {
   // Redirect if user is already logged in
   React.useEffect(() => {
     if (!isLoading && user) {
-      __DEV__ && console.log('🔄 [WELCOME] User already logged in, redirecting:', { role: user.role });
-      if (Platform.OS === 'web' && (user.role === 'supervisor' || user.role === 'admin')) {
-        router.replace('/admin/metrics' as any);
-      } else if (user.role === 'supervisor' || user.role === 'admin') {
-        router.replace('/supervisor/dashboard' as any);
+      __DEV__ &&
+        console.log("🔄 [WELCOME] User already logged in, redirecting:", {
+          role: user.role,
+        });
+      if (
+        Platform.OS === "web" &&
+        (user.role === "supervisor" || user.role === "admin")
+      ) {
+        router.replace("/admin/metrics" as any);
+      } else if (user.role === "supervisor" || user.role === "admin") {
+        router.replace("/supervisor/dashboard" as any);
       } else {
-        router.replace('/staff/home' as any);
+        router.replace("/staff/home" as any);
       }
     }
   }, [user, isLoading, router]);
@@ -57,7 +74,7 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#121212', '#0A0A0A', '#000000']}
+        colors={["#121212", "#0A0A0A", "#000000"]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -65,9 +82,12 @@ export default function WelcomeScreen() {
       <View style={styles.decorativeCircle1} />
       <View style={styles.decorativeCircle2} />
 
-      <View style={[styles.content, { maxWidth: isDesktop ? 600 : '100%' }]}>
+      <View style={[styles.content, { maxWidth: isDesktop ? 600 : "100%" }]}>
         {/* Header Section */}
-        <Animated.View entering={FadeInUp.duration(1000).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInUp.duration(1000).springify()}
+          style={styles.header}
+        >
           <View style={styles.logoContainer}>
             <LinearGradient
               colors={gradients.primary}
@@ -89,15 +109,26 @@ export default function WelcomeScreen() {
 
         {/* Features Grid */}
         <View style={styles.featuresContainer}>
-          <FeatureCard icon="barcode-outline" title="Smart Scanning" delay={400} />
+          <FeatureCard
+            icon="barcode-outline"
+            title="Smart Scanning"
+            delay={400}
+          />
           <FeatureCard icon="sync-outline" title="Live Sync" delay={600} />
-          <FeatureCard icon="stats-chart-outline" title="Analytics" delay={800} />
+          <FeatureCard
+            icon="stats-chart-outline"
+            title="Analytics"
+            delay={800}
+          />
         </View>
 
         {/* Action Buttons */}
-        <Animated.View entering={FadeInDown.delay(1000).springify()} style={styles.actions}>
+        <Animated.View
+          entering={FadeInDown.delay(1000).springify()}
+          style={styles.actions}
+        >
           <TouchableOpacity
-            onPress={() => handlePress('/login')}
+            onPress={() => handlePress("/login")}
             activeOpacity={0.9}
             style={styles.buttonShadow}
           >
@@ -113,7 +144,7 @@ export default function WelcomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => handlePress('/register')}
+            onPress={() => handlePress("/register")}
             activeOpacity={0.7}
             style={styles.registerButtonWrapper}
           >
@@ -136,19 +167,19 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
-    alignItems: 'center', // Center content horizontally
+    backgroundColor: "#000",
+    alignItems: "center", // Center content horizontally
   },
   content: {
     flex: 1,
-    justifyContent: 'space-between',
-    paddingVertical: Platform.OS === 'ios' ? 60 : 40,
+    justifyContent: "space-between",
+    paddingVertical: Platform.OS === "ios" ? 60 : 40,
     paddingHorizontal: spacing.lg,
     zIndex: 1,
-    width: '100%',
+    width: "100%",
   },
   decorativeCircle1: {
-    position: 'absolute',
+    position: "absolute",
     top: -100,
     left: -100,
     width: 300,
@@ -159,7 +190,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.5 }],
   },
   decorativeCircle2: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -50,
     right: -50,
     width: 200,
@@ -170,21 +201,21 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.5 }],
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: spacing.xl,
   },
   logoContainer: {
     marginBottom: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   logoBackground: {
     width: 120,
     height: 120,
     borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    transform: [{ rotate: '-5deg' }],
+    justifyContent: "center",
+    alignItems: "center",
+    transform: [{ rotate: "-5deg" }],
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -193,49 +224,49 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   logoGlow: {
-    position: 'absolute',
+    position: "absolute",
     width: 120,
     height: 120,
     borderRadius: 40,
     backgroundColor: colors.primary,
     opacity: 0.3,
-    transform: [{ scale: 1.2 }, { rotate: '-5deg' }],
+    transform: [{ scale: 1.2 }, { rotate: "-5deg" }],
     zIndex: 1,
   },
   title: {
     fontSize: 40,
-    fontWeight: '800',
-    color: '#fff',
+    fontWeight: "800",
+    color: "#fff",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: -1,
-    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 18,
-    color: 'rgba(255,255,255,0.7)',
+    color: "rgba(255,255,255,0.7)",
     marginBottom: 16,
-    textAlign: 'center',
-    fontWeight: '500',
+    textAlign: "center",
+    fontWeight: "500",
   },
   versionBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: "rgba(255,255,255,0.2)",
   },
   versionText: {
-    color: 'rgba(255,255,255,0.6)',
+    color: "rgba(255,255,255,0.6)",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   featuresContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 12,
     marginTop: spacing.xl,
   },
@@ -245,28 +276,28 @@ const styles = StyleSheet.create({
   featureCard: {
     padding: 16,
     borderRadius: 20,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    overflow: 'hidden',
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    overflow: "hidden",
     height: 110,
-    justifyContent: 'center',
+    justifyContent: "center",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: "rgba(255,255,255,0.1)",
   },
   iconCircle: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(76, 175, 80, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
   },
   featureText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   actions: {
     gap: 16,
@@ -282,43 +313,43 @@ const styles = StyleSheet.create({
   loginButton: {
     height: 60,
     borderRadius: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     gap: 12,
   },
   loginButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   registerButtonWrapper: {
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   registerButton: {
     height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: "rgba(255,255,255,0.1)",
   },
   registerButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   footer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: spacing.lg,
   },
   footerText: {
-    color: 'rgba(255,255,255,0.4)',
+    color: "rgba(255,255,255,0.4)",
     fontSize: 12,
   },
   footerSubtext: {
-    color: 'rgba(255,255,255,0.3)',
+    color: "rgba(255,255,255,0.3)",
     fontSize: 10,
     marginTop: 4,
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,18 +9,18 @@ import {
   Alert,
   Modal,
   TextInput,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { usePermissions } from '../../src/hooks/usePermissions';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { usePermissions } from "../../src/hooks/usePermissions";
 import {
   getSyncConflicts,
   resolveSyncConflict,
   batchResolveSyncConflicts,
   getSyncConflictStats,
-} from '../../src/services/api/api';
-import { Header } from '../../src/components/layout/Header';
-import { useTheme } from '../../src/hooks/useTheme';
-import { useToast } from '../../src/components/feedback/ToastProvider';
+} from "../../src/services/api/api";
+import { Header } from "../../src/components/layout/Header";
+import { useTheme } from "../../src/hooks/useTheme";
+import { useToast } from "../../src/components/feedback/ToastProvider";
 
 interface SyncConflict {
   _id: string;
@@ -42,18 +42,22 @@ export default function SyncConflictsScreen() {
   const [loading, setLoading] = useState(true);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [stats, setStats] = useState<any>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('pending');
-  const [selectedConflicts, setSelectedConflicts] = useState<Set<string>>(new Set());
+  const [filterStatus, setFilterStatus] = useState<string>("pending");
+  const [selectedConflicts, setSelectedConflicts] = useState<Set<string>>(
+    new Set(),
+  );
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedConflict, setSelectedConflict] = useState<SyncConflict | null>(null);
-  const [resolutionNote, setResolutionNote] = useState('');
+  const [selectedConflict, setSelectedConflict] = useState<SyncConflict | null>(
+    null,
+  );
+  const [resolutionNote, setResolutionNote] = useState("");
 
   useEffect(() => {
-    if (!hasPermission('sync.resolve_conflict')) {
+    if (!hasPermission("sync.resolve_conflict")) {
       Alert.alert(
-        'Access Denied',
-        'You do not have permission to resolve sync conflicts.',
-        [{ text: 'OK', onPress: () => router.back() }]
+        "Access Denied",
+        "You do not have permission to resolve sync conflicts.",
+        [{ text: "OK", onPress: () => router.back() }],
       );
       return;
     }
@@ -65,11 +69,11 @@ export default function SyncConflictsScreen() {
   const loadConflicts = async () => {
     try {
       setLoading(true);
-      const status = filterStatus === 'all' ? undefined : filterStatus;
+      const status = filterStatus === "all" ? undefined : filterStatus;
       const response = await getSyncConflicts(status);
       setConflicts(response.data?.conflicts || []);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load sync conflicts');
+      Alert.alert("Error", error.message || "Failed to load sync conflicts");
     } finally {
       setLoading(false);
     }
@@ -80,55 +84,58 @@ export default function SyncConflictsScreen() {
       const response = await getSyncConflictStats();
       setStats(response.data);
     } catch (error: any) {
-      console.error('Failed to load conflict stats:', error);
+      console.error("Failed to load conflict stats:", error);
     }
   };
 
   const handleResolve = async (conflictId: string, resolution: string) => {
     try {
       await resolveSyncConflict(conflictId, resolution, resolutionNote);
-      Alert.alert('Success', 'Conflict resolved successfully');
+      Alert.alert("Success", "Conflict resolved successfully");
       setModalVisible(false);
       setSelectedConflict(null);
-      setResolutionNote('');
+      setResolutionNote("");
       loadConflicts();
       loadStats();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to resolve conflict');
+      Alert.alert("Error", error.message || "Failed to resolve conflict");
     }
   };
 
   const handleBatchResolve = async (resolution: string) => {
     if (selectedConflicts.size === 0) {
-      Alert.alert('Error', 'Please select conflicts to resolve');
+      Alert.alert("Error", "Please select conflicts to resolve");
       return;
     }
 
     Alert.alert(
-      'Confirm Batch Resolution',
+      "Confirm Batch Resolution",
       `Resolve ${selectedConflicts.size} conflicts with "${resolution}"?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Resolve',
+          text: "Resolve",
           onPress: async () => {
             try {
               await batchResolveSyncConflicts(
                 Array.from(selectedConflicts),
                 resolution,
-                resolutionNote
+                resolutionNote,
               );
-              Alert.alert('Success', 'Conflicts resolved successfully');
+              Alert.alert("Success", "Conflicts resolved successfully");
               setSelectedConflicts(new Set());
-              setResolutionNote('');
+              setResolutionNote("");
               loadConflicts();
               loadStats();
             } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to resolve conflicts');
+              Alert.alert(
+                "Error",
+                error.message || "Failed to resolve conflicts",
+              );
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -184,7 +191,7 @@ export default function SyncConflictsScreen() {
           Detected: {new Date(conflict.detected_at).toLocaleString()}
         </Text>
 
-        {conflict.status !== 'pending' && (
+        {conflict.status !== "pending" && (
           <View style={styles.resolvedInfo}>
             <Text style={styles.resolvedText}>
               Resolved: {conflict.resolution} by {conflict.resolved_by}
@@ -207,7 +214,10 @@ export default function SyncConflictsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Sync Conflicts</Text>
@@ -223,13 +233,13 @@ export default function SyncConflictsScreen() {
             <Text style={styles.statLabel}>Total</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#FFC107' }]}>
+            <Text style={[styles.statValue, { color: "#FFC107" }]}>
               {stats.pending || 0}
             </Text>
             <Text style={styles.statLabel}>Pending</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#00E676' }]}>
+            <Text style={[styles.statValue, { color: "#00E676" }]}>
               {stats.resolved || 0}
             </Text>
             <Text style={styles.statLabel}>Resolved</Text>
@@ -238,7 +248,7 @@ export default function SyncConflictsScreen() {
       )}
 
       <View style={styles.filterBar}>
-        {['pending', 'resolved', 'all'].map((status) => (
+        {["pending", "resolved", "all"].map((status) => (
           <TouchableOpacity
             key={status}
             style={[
@@ -265,14 +275,14 @@ export default function SyncConflictsScreen() {
             {selectedConflicts.size} selected
           </Text>
           <TouchableOpacity
-            style={[styles.batchButton, { backgroundColor: '#00E676' }]}
-            onPress={() => handleBatchResolve('accept_server')}
+            style={[styles.batchButton, { backgroundColor: "#00E676" }]}
+            onPress={() => handleBatchResolve("accept_server")}
           >
             <Text style={styles.batchButtonText}>Accept Server</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.batchButton, { backgroundColor: '#007AFF' }]}
-            onPress={() => handleBatchResolve('accept_local')}
+            style={[styles.batchButton, { backgroundColor: "#007AFF" }]}
+            onPress={() => handleBatchResolve("accept_local")}
           >
             <Text style={styles.batchButtonText}>Accept Local</Text>
           </TouchableOpacity>
@@ -304,8 +314,12 @@ export default function SyncConflictsScreen() {
 
             {selectedConflict && (
               <>
-                <Text style={styles.modalLabel}>Item: {selectedConflict.item_code}</Text>
-                <Text style={styles.modalLabel}>Type: {selectedConflict.conflict_type}</Text>
+                <Text style={styles.modalLabel}>
+                  Item: {selectedConflict.item_code}
+                </Text>
+                <Text style={styles.modalLabel}>
+                  Type: {selectedConflict.conflict_type}
+                </Text>
 
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSectionTitle}>Local Value:</Text>
@@ -332,15 +346,19 @@ export default function SyncConflictsScreen() {
 
                 <View style={styles.modalActions}>
                   <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: '#00E676' }]}
-                    onPress={() => handleResolve(selectedConflict._id, 'accept_server')}
+                    style={[styles.modalButton, { backgroundColor: "#00E676" }]}
+                    onPress={() =>
+                      handleResolve(selectedConflict._id, "accept_server")
+                    }
                   >
                     <Text style={styles.modalButtonText}>Accept Server</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: '#007AFF' }]}
-                    onPress={() => handleResolve(selectedConflict._id, 'accept_local')}
+                    style={[styles.modalButton, { backgroundColor: "#007AFF" }]}
+                    onPress={() =>
+                      handleResolve(selectedConflict._id, "accept_local")
+                    }
                   >
                     <Text style={styles.modalButtonText}>Accept Local</Text>
                   </TouchableOpacity>
@@ -364,109 +382,109 @@ export default function SyncConflictsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: "#121212",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#121212',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
   },
   loadingText: {
     marginTop: 10,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   backButton: {
     marginRight: 16,
   },
   backButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 16,
   },
   title: {
     flex: 1,
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   refreshButton: {
     padding: 8,
   },
   refreshButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 24,
   },
   statsBar: {
-    flexDirection: 'row',
-    backgroundColor: '#1E1E1E',
+    flexDirection: "row",
+    backgroundColor: "#1E1E1E",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
     padding: 16,
   },
   statItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statValue: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
   },
   filterBar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
     gap: 8,
   },
   filterButton: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: '#252525',
+    alignItems: "center",
+    backgroundColor: "#252525",
   },
   filterButtonActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   filterButtonText: {
-    color: '#aaa',
+    color: "#aaa",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   filterButtonTextActive: {
-    color: '#fff',
+    color: "#fff",
   },
   batchActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
     gap: 8,
   },
   batchText: {
     flex: 1,
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   batchButton: {
     paddingHorizontal: 16,
@@ -474,42 +492,42 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   batchButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
     padding: 16,
   },
   emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 60,
   },
   emptyStateText: {
     fontSize: 18,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#444',
+    color: "#444",
   },
   card: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   cardSelected: {
-    borderColor: '#007AFF',
+    borderColor: "#007AFF",
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   checkbox: {
@@ -517,33 +535,33 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#666',
+    borderColor: "#666",
     marginRight: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxChecked: {
     width: 16,
     height: 16,
     borderRadius: 2,
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   itemCode: {
     flex: 1,
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   conflictType: {
     fontSize: 12,
-    color: '#FFC107',
-    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+    color: "#FFC107",
+    backgroundColor: "rgba(255, 193, 7, 0.1)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   conflictData: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginBottom: 12,
   },
@@ -552,53 +570,53 @@ const styles = StyleSheet.create({
   },
   dataLabel: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
     marginBottom: 4,
   },
   dataValue: {
     fontSize: 14,
-    color: '#fff',
-    backgroundColor: '#252525',
+    color: "#fff",
+    backgroundColor: "#252525",
     padding: 8,
     borderRadius: 4,
   },
   timestamp: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   resolvedInfo: {
     marginTop: 8,
     padding: 8,
-    backgroundColor: 'rgba(0, 230, 118, 0.1)',
+    backgroundColor: "rgba(0, 230, 118, 0.1)",
     borderRadius: 4,
   },
   resolvedText: {
     fontSize: 12,
-    color: '#00E676',
+    color: "#00E676",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderRadius: 12,
     padding: 24,
-    width: '100%',
+    width: "100%",
     maxWidth: 500,
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 20,
   },
   modalLabel: {
     fontSize: 16,
-    color: '#aaa',
+    color: "#aaa",
     marginBottom: 8,
   },
   modalSection: {
@@ -606,33 +624,33 @@ const styles = StyleSheet.create({
   },
   modalSectionTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 8,
   },
   modalValue: {
     fontSize: 14,
-    color: '#fff',
-    backgroundColor: '#252525',
+    color: "#fff",
+    backgroundColor: "#252525",
     padding: 12,
     borderRadius: 8,
   },
   modalInput: {
-    backgroundColor: '#252525',
-    color: '#fff',
+    backgroundColor: "#252525",
+    color: "#fff",
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   modalTextArea: {
     minHeight: 60,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   modalActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginBottom: 12,
   },
@@ -640,14 +658,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalButtonCancel: {
-    backgroundColor: '#666',
+    backgroundColor: "#666",
   },
   modalButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,17 @@ import {
   Alert,
   Platform,
   TextInput,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { usePermissions } from '../../hooks/usePermissions';
-import { getSqlServerConfig, updateSqlServerConfig, testSqlServerConnection } from '../../services/api';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { usePermissions } from "../../hooks/usePermissions";
+import {
+  getSqlServerConfig,
+  updateSqlServerConfig,
+  testSqlServerConnection,
+} from "../../services/api";
 
-const isWeb = Platform.OS === 'web';
+const isWeb = Platform.OS === "web";
 
 export default function SqlConfigScreen() {
   const router = useRouter();
@@ -24,18 +28,18 @@ export default function SqlConfigScreen() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [config, setConfig] = useState({
-    host: '',
+    host: "",
     port: 1433,
-    database: '',
-    username: '',
-    password: '',
+    database: "",
+    username: "",
+    password: "",
   });
   const [testResult, setTestResult] = useState<any>(null);
 
   useEffect(() => {
-    if (!hasRole('admin')) {
-      Alert.alert('Access Denied', 'Admin access required', [
-        { text: 'OK', onPress: () => router.back() }
+    if (!hasRole("admin")) {
+      Alert.alert("Access Denied", "Admin access required", [
+        { text: "OK", onPress: () => router.back() },
       ]);
       return;
     }
@@ -48,15 +52,15 @@ export default function SqlConfigScreen() {
       const response = await getSqlServerConfig();
       if (response.success && response.data) {
         setConfig({
-          host: response.data.host || '',
+          host: response.data.host || "",
           port: response.data.port || 1433,
-          database: response.data.database || '',
-          username: response.data.username || '',
-          password: '', // Never load password
+          database: response.data.database || "",
+          username: response.data.username || "",
+          password: "", // Never load password
         });
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load configuration');
+      Alert.alert("Error", error.message || "Failed to load configuration");
     } finally {
       setLoading(false);
     }
@@ -69,12 +73,15 @@ export default function SqlConfigScreen() {
       const response = await testSqlServerConnection(config);
       setTestResult(response.data);
       if (response.data.connected) {
-        Alert.alert('Success', 'Connection test successful!');
+        Alert.alert("Success", "Connection test successful!");
       } else {
-        Alert.alert('Failed', response.data.message || 'Connection test failed');
+        Alert.alert(
+          "Failed",
+          response.data.message || "Connection test failed",
+        );
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Connection test failed');
+      Alert.alert("Error", error.message || "Connection test failed");
     } finally {
       setTesting(false);
     }
@@ -85,11 +92,14 @@ export default function SqlConfigScreen() {
       setSaving(true);
       const response = await updateSqlServerConfig(config);
       if (response.success) {
-        Alert.alert('Success', 'Configuration saved. Restart backend to apply changes.');
+        Alert.alert(
+          "Success",
+          "Configuration saved. Restart backend to apply changes.",
+        );
         router.back();
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to save configuration');
+      Alert.alert("Error", error.message || "Failed to save configuration");
     } finally {
       setSaving(false);
     }
@@ -115,13 +125,21 @@ export default function SqlConfigScreen() {
           <Ionicons name="arrow-back" size={24} color="#007AFF" />
         </TouchableOpacity>
         <View style={styles.titleContainer}>
-          <Ionicons name="server" size={28} color="#fff" style={styles.titleIcon} />
+          <Ionicons
+            name="server"
+            size={28}
+            color="#fff"
+            style={styles.titleIcon}
+          />
           <Text style={styles.title}>SQL Server Configuration</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+      >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connection Settings</Text>
 
@@ -144,7 +162,9 @@ export default function SqlConfigScreen() {
               placeholder="1433"
               placeholderTextColor="#666"
               value={config.port.toString()}
-              onChangeText={(text) => setConfig({ ...config, port: parseInt(text) || 1433 })}
+              onChangeText={(text) =>
+                setConfig({ ...config, port: parseInt(text) || 1433 })
+              }
               keyboardType="numeric"
             />
           </View>
@@ -188,19 +208,27 @@ export default function SqlConfigScreen() {
         </View>
 
         {testResult && (
-          <View style={[
-            styles.testResult,
-            { backgroundColor: testResult.connected ? '#4CAF5020' : '#f4433620' }
-          ]}>
+          <View
+            style={[
+              styles.testResult,
+              {
+                backgroundColor: testResult.connected
+                  ? "#4CAF5020"
+                  : "#f4433620",
+              },
+            ]}
+          >
             <Ionicons
-              name={testResult.connected ? 'checkmark-circle' : 'close-circle'}
+              name={testResult.connected ? "checkmark-circle" : "close-circle"}
               size={24}
-              color={testResult.connected ? '#4CAF50' : '#f44336'}
+              color={testResult.connected ? "#4CAF50" : "#f44336"}
             />
-            <Text style={[
-              styles.testResultText,
-              { color: testResult.connected ? '#4CAF50' : '#f44336' }
-            ]}>
+            <Text
+              style={[
+                styles.testResultText,
+                { color: testResult.connected ? "#4CAF50" : "#f44336" },
+              ]}
+            >
               {testResult.message}
             </Text>
           </View>
@@ -241,8 +269,9 @@ export default function SqlConfigScreen() {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={20} color="#007AFF" />
           <Text style={styles.infoText}>
-            SQL Server is optional. The app will work without it, but ERP sync features will be disabled.
-            Restart the backend server after saving configuration changes.
+            SQL Server is optional. The app will work without it, but ERP sync
+            features will be disabled. Restart the backend server after saving
+            configuration changes.
           </Text>
         </View>
       </ScrollView>
@@ -253,34 +282,36 @@ export default function SqlConfigScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: "#0a0a0a",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0a0a0a",
   },
   loadingText: {
     marginTop: 10,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
-    paddingTop: Platform.OS === 'web' ? 20 : 16,
-    backgroundColor: '#1a1a1a',
+    paddingTop: Platform.OS === "web" ? 20 : 16,
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    borderBottomColor: "#333",
+    ...(Platform.OS === "web"
+      ? {
+          position: "sticky" as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,
@@ -292,16 +323,16 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   titleIcon: {
     marginRight: 12,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   content: {
     flex: 1,
@@ -315,8 +346,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 16,
   },
   inputGroup: {
@@ -324,22 +355,22 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#aaa',
+    fontWeight: "600",
+    color: "#aaa",
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
     borderRadius: 8,
     padding: 12,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   testResult: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 8,
     marginBottom: 16,
@@ -348,34 +379,34 @@ const styles = StyleSheet.create({
   testResultText: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   actions: {
     gap: 12,
     marginBottom: 24,
   },
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 14,
     borderRadius: 8,
     gap: 8,
   },
   testButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   infoBox: {
-    flexDirection: 'row',
-    backgroundColor: '#007AFF20',
+    flexDirection: "row",
+    backgroundColor: "#007AFF20",
     padding: 16,
     borderRadius: 8,
     gap: 12,
@@ -383,7 +414,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 13,
-    color: '#007AFF',
+    color: "#007AFF",
     lineHeight: 20,
   },
 });

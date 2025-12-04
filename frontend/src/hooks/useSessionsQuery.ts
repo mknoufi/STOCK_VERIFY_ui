@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { getSessions } from '../services/api';
-import { SESSION_PAGE_SIZE } from '../constants/config';
+import { useQuery } from "@tanstack/react-query";
+import { getSessions } from "../services/api";
+import { SESSION_PAGE_SIZE } from "../constants/config";
 
 interface UseSessionsQueryOptions {
   page?: number;
@@ -14,7 +14,7 @@ export const useSessionsQuery = ({
   enabled = true,
 }: UseSessionsQueryOptions = {}) => {
   return useQuery({
-    queryKey: ['sessions', page, pageSize],
+    queryKey: ["sessions", page, pageSize],
     queryFn: () => getSessions(page, pageSize),
     placeholderData: (previousData) => previousData,
     enabled,

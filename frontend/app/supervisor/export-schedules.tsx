@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,19 @@ import {
   Alert,
   Modal,
   TextInput,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { usePermissions } from '../../src/hooks/usePermissions';
-import { Header } from '../../src/components/layout/Header';
-import { useTheme } from '../../src/hooks/useTheme';
-import { getExportSchedules, createExportSchedule, updateExportSchedule, deleteExportSchedule, triggerExportSchedule } from '../../src/services/api/api';
-import { useToast } from '../../src/components/feedback/ToastProvider';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { usePermissions } from "../../src/hooks/usePermissions";
+import { Header } from "../../src/components/layout/Header";
+import { useTheme } from "../../src/hooks/useTheme";
+import {
+  getExportSchedules,
+  createExportSchedule,
+  updateExportSchedule,
+  deleteExportSchedule,
+  triggerExportSchedule,
+} from "../../src/services/api/api";
+import { useToast } from "../../src/components/feedback/ToastProvider";
 
 interface ExportSchedule {
   _id: string;
@@ -36,20 +42,22 @@ export default function ExportSchedulesScreen() {
   const [loading, setLoading] = useState(true);
   const [schedules, setSchedules] = useState<ExportSchedule[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<ExportSchedule | null>(null);
+  const [editingSchedule, setEditingSchedule] = useState<ExportSchedule | null>(
+    null,
+  );
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    frequency: 'daily',
-    format: 'excel',
+    name: "",
+    description: "",
+    frequency: "daily",
+    format: "excel",
   });
 
   useEffect(() => {
-    if (!hasPermission('export.schedule')) {
+    if (!hasPermission("export.schedule")) {
       Alert.alert(
-        'Access Denied',
-        'You do not have permission to access export schedules.',
-        [{ text: 'OK', onPress: () => router.back() }]
+        "Access Denied",
+        "You do not have permission to access export schedules.",
+        [{ text: "OK", onPress: () => router.back() }],
       );
       return;
     }
@@ -63,7 +71,7 @@ export default function ExportSchedulesScreen() {
       const response = await getExportSchedules();
       setSchedules(response.data?.schedules || []);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load export schedules');
+      Alert.alert("Error", error.message || "Failed to load export schedules");
     } finally {
       setLoading(false);
     }
@@ -72,12 +80,17 @@ export default function ExportSchedulesScreen() {
   const handleCreateSchedule = async () => {
     try {
       await createExportSchedule(formData);
-      Alert.alert('Success', 'Export schedule created successfully');
+      Alert.alert("Success", "Export schedule created successfully");
       setModalVisible(false);
-      setFormData({ name: '', description: '', frequency: 'daily', format: 'excel' });
+      setFormData({
+        name: "",
+        description: "",
+        frequency: "daily",
+        format: "excel",
+      });
       loadSchedules();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create export schedule');
+      Alert.alert("Error", error.message || "Failed to create export schedule");
     }
   };
 
@@ -86,51 +99,64 @@ export default function ExportSchedulesScreen() {
 
     try {
       await updateExportSchedule(editingSchedule._id, formData);
-      Alert.alert('Success', 'Export schedule updated successfully');
+      Alert.alert("Success", "Export schedule updated successfully");
       setModalVisible(false);
       setEditingSchedule(null);
-      setFormData({ name: '', description: '', frequency: 'daily', format: 'excel' });
+      setFormData({
+        name: "",
+        description: "",
+        frequency: "daily",
+        format: "excel",
+      });
       loadSchedules();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to update export schedule');
+      Alert.alert("Error", error.message || "Failed to update export schedule");
     }
   };
 
   const handleDeleteSchedule = async (scheduleId: string) => {
     Alert.alert(
-      'Confirm Delete',
-      'Are you sure you want to delete this export schedule?',
+      "Confirm Delete",
+      "Are you sure you want to delete this export schedule?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: async () => {
             try {
               await deleteExportSchedule(scheduleId);
-              Alert.alert('Success', 'Export schedule deleted successfully');
+              Alert.alert("Success", "Export schedule deleted successfully");
               loadSchedules();
             } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to delete export schedule');
+              Alert.alert(
+                "Error",
+                error.message || "Failed to delete export schedule",
+              );
             }
           },
         },
-      ]
+      ],
     );
   };
 
   const handleTriggerSchedule = async (scheduleId: string) => {
     try {
       await triggerExportSchedule(scheduleId);
-      Alert.alert('Success', 'Export triggered successfully');
+      Alert.alert("Success", "Export triggered successfully");
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to trigger export');
+      Alert.alert("Error", error.message || "Failed to trigger export");
     }
   };
 
   const openCreateModal = () => {
     setEditingSchedule(null);
-    setFormData({ name: '', description: '', frequency: 'daily', format: 'excel' });
+    setFormData({
+      name: "",
+      description: "",
+      frequency: "daily",
+      format: "excel",
+    });
     setModalVisible(true);
   };
 
@@ -138,7 +164,7 @@ export default function ExportSchedulesScreen() {
     setEditingSchedule(schedule);
     setFormData({
       name: schedule.name,
-      description: schedule.description || '',
+      description: schedule.description || "",
       frequency: schedule.frequency,
       format: schedule.format,
     });
@@ -149,8 +175,15 @@ export default function ExportSchedulesScreen() {
     <View key={schedule._id} style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>{schedule.name}</Text>
-        <View style={[styles.badge, schedule.enabled ? styles.badgeActive : styles.badgeInactive]}>
-          <Text style={styles.badgeText}>{schedule.enabled ? 'Enabled' : 'Disabled'}</Text>
+        <View
+          style={[
+            styles.badge,
+            schedule.enabled ? styles.badgeActive : styles.badgeInactive,
+          ]}
+        >
+          <Text style={styles.badgeText}>
+            {schedule.enabled ? "Enabled" : "Disabled"}
+          </Text>
         </View>
       </View>
 
@@ -159,7 +192,9 @@ export default function ExportSchedulesScreen() {
       )}
 
       <View style={styles.cardDetails}>
-        <Text style={styles.cardDetailText}>Frequency: {schedule.frequency}</Text>
+        <Text style={styles.cardDetailText}>
+          Frequency: {schedule.frequency}
+        </Text>
         <Text style={styles.cardDetailText}>Format: {schedule.format}</Text>
         {schedule.next_run && (
           <Text style={styles.cardDetailText}>
@@ -205,7 +240,10 @@ export default function ExportSchedulesScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Export Schedules</Text>
@@ -236,7 +274,7 @@ export default function ExportSchedulesScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {editingSchedule ? 'Edit Schedule' : 'Create Schedule'}
+              {editingSchedule ? "Edit Schedule" : "Create Schedule"}
             </Text>
 
             <TextInput
@@ -252,13 +290,15 @@ export default function ExportSchedulesScreen() {
               placeholder="Description (optional)"
               placeholderTextColor="#666"
               value={formData.description}
-              onChangeText={(text) => setFormData({ ...formData, description: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, description: text })
+              }
               multiline
             />
 
             <Text style={styles.modalLabel}>Frequency</Text>
             <View style={styles.optionGroup}>
-              {['daily', 'weekly', 'monthly'].map((freq) => (
+              {["daily", "weekly", "monthly"].map((freq) => (
                 <TouchableOpacity
                   key={freq}
                   style={[
@@ -270,7 +310,8 @@ export default function ExportSchedulesScreen() {
                   <Text
                     style={[
                       styles.optionButtonText,
-                      formData.frequency === freq && styles.optionButtonTextSelected,
+                      formData.frequency === freq &&
+                        styles.optionButtonTextSelected,
                     ]}
                   >
                     {freq.charAt(0).toUpperCase() + freq.slice(1)}
@@ -281,7 +322,7 @@ export default function ExportSchedulesScreen() {
 
             <Text style={styles.modalLabel}>Format</Text>
             <View style={styles.optionGroup}>
-              {['excel', 'csv', 'json'].map((fmt) => (
+              {["excel", "csv", "json"].map((fmt) => (
                 <TouchableOpacity
                   key={fmt}
                   style={[
@@ -293,7 +334,8 @@ export default function ExportSchedulesScreen() {
                   <Text
                     style={[
                       styles.optionButtonText,
-                      formData.format === fmt && styles.optionButtonTextSelected,
+                      formData.format === fmt &&
+                        styles.optionButtonTextSelected,
                     ]}
                   >
                     {fmt.toUpperCase()}
@@ -312,10 +354,12 @@ export default function ExportSchedulesScreen() {
 
               <TouchableOpacity
                 style={[styles.modalButton, styles.modalButtonPrimary]}
-                onPress={editingSchedule ? handleUpdateSchedule : handleCreateSchedule}
+                onPress={
+                  editingSchedule ? handleUpdateSchedule : handleCreateSchedule
+                }
               >
                 <Text style={styles.modalButtonText}>
-                  {editingSchedule ? 'Update' : 'Create'}
+                  {editingSchedule ? "Update" : "Create"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -329,88 +373,88 @@ export default function ExportSchedulesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: "#121212",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#121212',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
   },
   loadingText: {
     marginTop: 10,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   backButton: {
     marginRight: 16,
   },
   backButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 16,
   },
   title: {
     flex: 1,
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   createButton: {
-    backgroundColor: '#00E676',
+    backgroundColor: "#00E676",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   createButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
     padding: 16,
   },
   emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 60,
   },
   emptyStateText: {
     fontSize: 18,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#444',
+    color: "#444",
   },
   card: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     flex: 1,
   },
   badge: {
@@ -419,19 +463,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   badgeActive: {
-    backgroundColor: '#00E676',
+    backgroundColor: "#00E676",
   },
   badgeInactive: {
-    backgroundColor: '#666',
+    backgroundColor: "#666",
   },
   badgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   cardDescription: {
     fontSize: 14,
-    color: '#aaa',
+    color: "#aaa",
     marginBottom: 12,
   },
   cardDetails: {
@@ -439,75 +483,75 @@ const styles = StyleSheet.create({
   },
   cardDetailText: {
     fontSize: 14,
-    color: '#ccc',
+    color: "#ccc",
     marginBottom: 4,
   },
   cardActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   actionButton: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   triggerButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   editButton: {
-    backgroundColor: '#FFC107',
+    backgroundColor: "#FFC107",
   },
   deleteButton: {
-    backgroundColor: '#FF5252',
+    backgroundColor: "#FF5252",
   },
   actionButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderRadius: 12,
     padding: 24,
-    width: '100%',
+    width: "100%",
     maxWidth: 500,
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 20,
   },
   modalInput: {
-    backgroundColor: '#252525',
-    color: '#fff',
+    backgroundColor: "#252525",
+    color: "#fff",
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   modalTextArea: {
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   modalLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 8,
   },
   optionGroup: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     marginBottom: 16,
   },
@@ -515,25 +559,25 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: '#252525',
+    alignItems: "center",
+    backgroundColor: "#252525",
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   optionButtonSelected: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: "#007AFF",
+    borderColor: "#007AFF",
   },
   optionButtonText: {
-    color: '#aaa',
+    color: "#aaa",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   optionButtonTextSelected: {
-    color: '#fff',
+    color: "#fff",
   },
   modalActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 20,
   },
@@ -541,17 +585,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalButtonCancel: {
-    backgroundColor: '#666',
+    backgroundColor: "#666",
   },
   modalButtonPrimary: {
-    backgroundColor: '#00E676',
+    backgroundColor: "#00E676",
   },
   modalButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

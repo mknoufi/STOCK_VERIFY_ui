@@ -3,8 +3,8 @@
  * Provides port information for TestSprite and other testing tools
  */
 
-import { Platform } from 'react-native';
-import { getFrontendPortSync, getFrontendURLSync } from './portDetection';
+import { Platform } from "react-native";
+import { getFrontendPortSync, getFrontendURLSync } from "./portDetection";
 
 /**
  * Get port for TestSprite testing

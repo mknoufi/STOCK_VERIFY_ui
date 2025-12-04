@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const apiClient = axios.create({
   timeout: 10000,

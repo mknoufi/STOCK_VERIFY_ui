@@ -2,7 +2,7 @@
  * Item Filters Component
  * Reusable filter UI for filtering items by category, subcategory, floor, rack, UOM, etc.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,9 +11,9 @@ import {
   TextInput,
   StyleSheet,
   Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../hooks/useTheme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../hooks/useTheme";
 
 export interface FilterValues {
   category?: string;
@@ -52,7 +52,7 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
       const updated = { ...prev, [key]: value || undefined };
       // Remove empty strings
       Object.keys(updated).forEach((k) => {
-        if (updated[k as keyof FilterValues] === '') {
+        if (updated[k as keyof FilterValues] === "") {
           delete updated[k as keyof FilterValues];
         }
       });
@@ -84,7 +84,9 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
             Filters
           </Text>
           {hasActiveFilters && (
-            <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+            <View
+              style={[styles.badge, { backgroundColor: theme.colors.primary }]}
+            >
               <Text style={styles.badgeText}>
                 {Object.keys(filters).length}
               </Text>
@@ -92,14 +94,17 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
           )}
         </View>
         <Ionicons
-          name={isExpanded ? 'chevron-up' : 'chevron-down'}
+          name={isExpanded ? "chevron-up" : "chevron-down"}
           size={20}
           color={theme.colors.textSecondary}
         />
       </TouchableOpacity>
 
       {isExpanded && (
-        <ScrollView style={styles.filtersContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.filtersContainer}
+          showsVerticalScrollIndicator={false}
+        >
           {showSearch && (
             <View style={styles.filterGroup}>
               <Text style={[styles.filterLabel, { color: theme.colors.text }]}>
@@ -116,8 +121,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                 ]}
                 placeholder="Search items..."
                 placeholderTextColor={theme.colors.placeholder}
-                value={filters.search || ''}
-                onChangeText={(text) => updateFilter('search', text)}
+                value={filters.search || ""}
+                onChangeText={(text) => updateFilter("search", text)}
               />
             </View>
           )}
@@ -137,8 +142,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
               ]}
               placeholder="Category"
               placeholderTextColor={theme.colors.placeholder}
-              value={filters.category || ''}
-              onChangeText={(text) => updateFilter('category', text)}
+              value={filters.category || ""}
+              onChangeText={(text) => updateFilter("category", text)}
             />
           </View>
 
@@ -157,8 +162,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
               ]}
               placeholder="Subcategory"
               placeholderTextColor={theme.colors.placeholder}
-              value={filters.subcategory || ''}
-              onChangeText={(text) => updateFilter('subcategory', text)}
+              value={filters.subcategory || ""}
+              onChangeText={(text) => updateFilter("subcategory", text)}
             />
           </View>
 
@@ -178,8 +183,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                 ]}
                 placeholder="Floor"
                 placeholderTextColor={theme.colors.placeholder}
-                value={filters.floor || ''}
-                onChangeText={(text) => updateFilter('floor', text)}
+                value={filters.floor || ""}
+                onChangeText={(text) => updateFilter("floor", text)}
               />
             </View>
 
@@ -198,8 +203,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                 ]}
                 placeholder="Rack"
                 placeholderTextColor={theme.colors.placeholder}
-                value={filters.rack || ''}
-                onChangeText={(text) => updateFilter('rack', text)}
+                value={filters.rack || ""}
+                onChangeText={(text) => updateFilter("rack", text)}
               />
             </View>
           </View>
@@ -219,8 +224,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
               ]}
               placeholder="Warehouse"
               placeholderTextColor={theme.colors.placeholder}
-              value={filters.warehouse || ''}
-              onChangeText={(text) => updateFilter('warehouse', text)}
+              value={filters.warehouse || ""}
+              onChangeText={(text) => updateFilter("warehouse", text)}
             />
           </View>
 
@@ -239,8 +244,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
               ]}
               placeholder="UOM Code"
               placeholderTextColor={theme.colors.placeholder}
-              value={filters.uom_code || ''}
-              onChangeText={(text) => updateFilter('uom_code', text)}
+              value={filters.uom_code || ""}
+              onChangeText={(text) => updateFilter("uom_code", text)}
             />
           </View>
 
@@ -256,13 +261,19 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                     filters.verified === undefined && styles.radioOptionActive,
                     { borderColor: theme.colors.border },
                   ]}
-                  onPress={() => updateFilter('verified', undefined)}
+                  onPress={() => updateFilter("verified", undefined)}
                 >
-                  <Text style={[styles.radioText, { color: theme.colors.text }]}>
+                  <Text
+                    style={[styles.radioText, { color: theme.colors.text }]}
+                  >
                     All
                   </Text>
                   {filters.verified === undefined && (
-                    <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
+                    <Ionicons
+                      name="checkmark"
+                      size={16}
+                      color={theme.colors.primary}
+                    />
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -271,13 +282,19 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                     filters.verified === true && styles.radioOptionActive,
                     { borderColor: theme.colors.border },
                   ]}
-                  onPress={() => updateFilter('verified', true)}
+                  onPress={() => updateFilter("verified", true)}
                 >
-                  <Text style={[styles.radioText, { color: theme.colors.text }]}>
+                  <Text
+                    style={[styles.radioText, { color: theme.colors.text }]}
+                  >
                     Verified
                   </Text>
                   {filters.verified === true && (
-                    <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
+                    <Ionicons
+                      name="checkmark"
+                      size={16}
+                      color={theme.colors.primary}
+                    />
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -286,13 +303,19 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                     filters.verified === false && styles.radioOptionActive,
                     { borderColor: theme.colors.border },
                   ]}
-                  onPress={() => updateFilter('verified', false)}
+                  onPress={() => updateFilter("verified", false)}
                 >
-                  <Text style={[styles.radioText, { color: theme.colors.text }]}>
+                  <Text
+                    style={[styles.radioText, { color: theme.colors.text }]}
+                  >
                     Unverified
                   </Text>
                   {filters.verified === false && (
-                    <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
+                    <Ionicons
+                      name="checkmark"
+                      size={16}
+                      color={theme.colors.primary}
+                    />
                   )}
                 </TouchableOpacity>
               </View>
@@ -301,7 +324,10 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
 
           {hasActiveFilters && (
             <TouchableOpacity
-              style={[styles.clearButton, { backgroundColor: theme.colors.error }]}
+              style={[
+                styles.clearButton,
+                { backgroundColor: theme.colors.error },
+              ]}
               onPress={clearFilters}
             >
               <Ionicons name="close-circle" size={18} color="#fff" />
@@ -318,10 +344,10 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 12,
     marginBottom: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -332,14 +358,14 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
   },
   headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   filterIcon: {
@@ -347,7 +373,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   badge: {
     marginLeft: 8,
@@ -355,12 +381,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     minWidth: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   badgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   filtersContainer: {
     maxHeight: 400,
@@ -375,12 +401,12 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   filterRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   filterLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
   },
   input: {
@@ -390,14 +416,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   radioGroup: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   radioOption: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
@@ -409,17 +435,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
     gap: 8,
   },
   clearButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,11 +10,11 @@ import {
   Platform,
   Dimensions,
   RefreshControl,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
-import { usePermissions } from '../../hooks/usePermissions';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import * as Clipboard from "expo-clipboard";
+import { usePermissions } from "../../hooks/usePermissions";
 import {
   getServicesStatus,
   getSystemIssues,
@@ -26,10 +26,10 @@ import {
   getMetrics,
   getSessionsAnalytics,
   getSecuritySummary,
-} from '../../services/api';
+} from "../../services/api";
 
-const { width } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
+const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
 const isTablet = width > 768;
 
 // Constants to replace magic numbers
@@ -69,11 +69,11 @@ export default function ControlPanelScreen() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
-    if (!hasRole('admin')) {
+    if (!hasRole("admin")) {
       Alert.alert(
-        'Access Denied',
-        'You do not have permission to access the control panel.',
-        [{ text: 'OK', onPress: () => router.back() }]
+        "Access Denied",
+        "You do not have permission to access the control panel.",
+        [{ text: "OK", onPress: () => router.back() }],
       );
       return;
     }
@@ -82,14 +82,15 @@ export default function ControlPanelScreen() {
 
     const maxTimeout = setTimeout(() => {
       if (loading) {
-        __DEV__ && console.warn('Control panel loading timeout - forcing render');
+        __DEV__ &&
+          console.warn("Control panel loading timeout - forcing render");
         setLoading(false);
         if (!services) {
           setServices({
-            backend: { running: false, status: 'unknown' },
-            frontend: { running: false, status: 'unknown' },
-            mongodb: { running: false, status: 'unknown' },
-            sql_server: { running: false, status: 'unknown' },
+            backend: { running: false, status: "unknown" },
+            frontend: { running: false, status: "unknown" },
+            mongodb: { running: false, status: "unknown" },
+            sql_server: { running: false, status: "unknown" },
           });
         }
       }
@@ -111,60 +112,96 @@ export default function ControlPanelScreen() {
     try {
       setRefreshing(true);
 
-      const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = API_TIMEOUT_MS): Promise<T> => {
+      const withTimeout = <T,>(
+        promise: Promise<T>,
+        timeoutMs: number = API_TIMEOUT_MS,
+      ): Promise<T> => {
         return Promise.race([
           promise,
           new Promise<T>((_, reject) =>
-            setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+            setTimeout(() => reject(new Error("Request timeout")), timeoutMs),
           ),
         ]);
       };
 
-      const [servicesRes, issuesRes, devicesRes, healthRes, statsRes, metricsRes, sessionsRes, securityRes] = await Promise.allSettled([
-        withTimeout(getServicesStatus().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSystemIssues().catch(() => ({ data: { issues: [] } })), API_TIMEOUT_MS),
-        withTimeout(getLoginDevices().catch(() => ({ data: { devices: [] } })), API_TIMEOUT_MS),
-        withTimeout(getSystemHealthScore().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSystemStats().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getMetrics().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSessionsAnalytics().catch(() => ({ data: null })), API_TIMEOUT_MS),
-        withTimeout(getSecuritySummary().catch(() => ({ data: null })), API_TIMEOUT_MS),
+      const [
+        servicesRes,
+        issuesRes,
+        devicesRes,
+        healthRes,
+        statsRes,
+        metricsRes,
+        sessionsRes,
+        securityRes,
+      ] = await Promise.allSettled([
+        withTimeout(
+          getServicesStatus().catch(() => ({ data: null })),
+          API_TIMEOUT_MS,
+        ),
+        withTimeout(
+          getSystemIssues().catch(() => ({ data: { issues: [] } })),
+          API_TIMEOUT_MS,
+        ),
+        withTimeout(
+          getLoginDevices().catch(() => ({ data: { devices: [] } })),
+          API_TIMEOUT_MS,
+        ),
+        withTimeout(
+          getSystemHealthScore().catch(() => ({ data: null })),
+          API_TIMEOUT_MS,
+        ),
+        withTimeout(
+          getSystemStats().catch(() => ({ data: null })),
+          API_TIMEOUT_MS,
+        ),
+        withTimeout(
+          getMetrics().catch(() => ({ data: null })),
+          API_TIMEOUT_MS,
+        ),
+        withTimeout(
+          getSessionsAnalytics().catch(() => ({ data: null })),
+          API_TIMEOUT_MS,
+        ),
+        withTimeout(
+          getSecuritySummary().catch(() => ({ data: null })),
+          API_TIMEOUT_MS,
+        ),
       ]);
 
-      if (servicesRes.status === 'fulfilled' && servicesRes.value?.data) {
+      if (servicesRes.status === "fulfilled" && servicesRes.value?.data) {
         setServices(servicesRes.value.data);
       }
-      if (issuesRes.status === 'fulfilled' && issuesRes.value?.data) {
+      if (issuesRes.status === "fulfilled" && issuesRes.value?.data) {
         setIssues(issuesRes.value.data.issues || []);
       }
-      if (devicesRes.status === 'fulfilled' && devicesRes.value?.data) {
+      if (devicesRes.status === "fulfilled" && devicesRes.value?.data) {
         setDevices(devicesRes.value.data.devices || []);
       }
-      if (healthRes.status === 'fulfilled' && healthRes.value?.data) {
+      if (healthRes.status === "fulfilled" && healthRes.value?.data) {
         setHealthScore(healthRes.value.data.score);
       }
-      if (statsRes.status === 'fulfilled' && statsRes.value?.data) {
+      if (statsRes.status === "fulfilled" && statsRes.value?.data) {
         setSystemStats(statsRes.value.data);
       }
-      if (metricsRes.status === 'fulfilled' && metricsRes.value?.data) {
+      if (metricsRes.status === "fulfilled" && metricsRes.value?.data) {
         setMetrics(metricsRes.value.data);
       }
-      if (sessionsRes.status === 'fulfilled' && sessionsRes.value?.data) {
+      if (sessionsRes.status === "fulfilled" && sessionsRes.value?.data) {
         setSessionsAnalytics(sessionsRes.value.data);
       }
-      if (securityRes.status === 'fulfilled' && securityRes.value?.data) {
+      if (securityRes.status === "fulfilled" && securityRes.value?.data) {
         setSecuritySummary(securityRes.value.data);
       }
 
       setLastUpdate(new Date());
     } catch (error: any) {
-      __DEV__ && console.error('Control panel loadData error:', error);
+      __DEV__ && console.error("Control panel loadData error:", error);
       if (!services) {
         setServices({
-          backend: { running: false, status: 'unknown' },
-          frontend: { running: false, status: 'unknown' },
-          mongodb: { running: false, status: 'unknown' },
-          sql_server: { running: false, status: 'unknown' },
+          backend: { running: false, status: "unknown" },
+          frontend: { running: false, status: "unknown" },
+          mongodb: { running: false, status: "unknown" },
+          sql_server: { running: false, status: "unknown" },
         });
       }
     } finally {
@@ -173,25 +210,36 @@ export default function ControlPanelScreen() {
     }
   };
 
-  const handleServiceAction = async (service: string, action: 'start' | 'stop') => {
+  const handleServiceAction = async (
+    service: string,
+    action: "start" | "stop",
+  ) => {
     try {
       let response;
-      if (action === 'start') {
+      if (action === "start") {
         response = await startService(service);
       } else {
         response = await stopService(service);
       }
       if (response?.data || response) {
-        Alert.alert('Success', response?.message || `${service} ${action} command issued`);
+        Alert.alert(
+          "Success",
+          response?.message || `${service} ${action} command issued`,
+        );
         setTimeout(() => loadData(), 2000);
       }
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || error?.message || `Failed to ${action} ${service}`);
+      Alert.alert(
+        "Error",
+        error.response?.data?.detail ||
+          error?.message ||
+          `Failed to ${action} ${service}`,
+      );
     }
   };
 
   const formatUptime = (seconds?: number | undefined) => {
-    if (!seconds) return 'N/A';
+    if (!seconds) return "N/A";
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     if (hours > 24) {
@@ -204,21 +252,21 @@ export default function ControlPanelScreen() {
   const handleCopyUrl = async (url: string) => {
     try {
       await Clipboard.setStringAsync(url);
-      Alert.alert('Copied', 'URL copied to clipboard');
+      Alert.alert("Copied", "URL copied to clipboard");
     } catch {
-      Alert.alert('Error', 'Failed to copy URL');
+      Alert.alert("Error", "Failed to copy URL");
     }
   };
 
   const handleViewLogs = (service: string) => {
     router.push({
-      pathname: '/admin/logs' as any,
+      pathname: "/admin/logs" as any,
       params: { service },
     });
   };
 
   const handleSqlConfig = () => {
-    router.push('/admin/sql-config' as any);
+    router.push("/admin/sql-config" as any);
   };
 
   const renderServiceCard = (
@@ -226,7 +274,7 @@ export default function ControlPanelScreen() {
     service: ServiceStatus,
     serviceKey: string,
     icon: keyof typeof Ionicons.glyphMap,
-    color: string
+    color: string,
   ) => (
     <View style={[styles.serviceCard, isWeb && styles.serviceCardWeb] as any}>
       <View style={styles.serviceHeader}>
@@ -234,16 +282,20 @@ export default function ControlPanelScreen() {
           <Ionicons name={icon} size={24} color={color} />
           <Text style={styles.serviceTitle}>{title}</Text>
         </View>
-        <View style={[
-          styles.statusBadge,
-          { backgroundColor: service.running ? '#4CAF50' : '#f44336' }
-        ]}>
-          <View style={[
-            styles.statusDot,
-            { backgroundColor: service.running ? '#fff' : '#fff' }
-          ]} />
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: service.running ? "#4CAF50" : "#f44336" },
+          ]}
+        >
+          <View
+            style={[
+              styles.statusDot,
+              { backgroundColor: service.running ? "#fff" : "#fff" },
+            ]}
+          />
           <Text style={styles.statusBadgeText}>
-            {service.running ? 'Running' : 'Stopped'}
+            {service.running ? "Running" : "Stopped"}
           </Text>
         </View>
       </View>
@@ -265,7 +317,9 @@ export default function ControlPanelScreen() {
           {service.uptime && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="time" size={16} color="#aaa" />
-              <Text style={styles.serviceDetailText}>Uptime: {formatUptime(service.uptime)}</Text>
+              <Text style={styles.serviceDetailText}>
+                Uptime: {formatUptime(service.uptime)}
+              </Text>
             </View>
           )}
           {service.url && (
@@ -275,8 +329,17 @@ export default function ControlPanelScreen() {
               activeOpacity={0.7}
             >
               <Ionicons name="link" size={16} color="#007AFF" />
-              <Text style={[styles.serviceDetailText, { color: '#007AFF' }] as any}>{service.url}</Text>
-              <Ionicons name="copy-outline" size={14} color="#007AFF" style={styles.copyIcon as any} />
+              <Text
+                style={[styles.serviceDetailText, { color: "#007AFF" }] as any}
+              >
+                {service.url}
+              </Text>
+              <Ionicons
+                name="copy-outline"
+                size={14}
+                color="#007AFF"
+                style={styles.copyIcon as any}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -296,17 +359,20 @@ export default function ControlPanelScreen() {
           style={[
             styles.actionButton,
             styles.startButton,
-            service.running && styles.actionButtonDisabled
+            service.running && styles.actionButtonDisabled,
           ]}
           onPress={() => {
             if (!service.running) {
               Alert.alert(
-                'Start Service',
+                "Start Service",
                 `Are you sure you want to start ${title}?`,
                 [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Start', onPress: () => handleServiceAction(serviceKey, 'start') },
-                ]
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Start",
+                    onPress: () => handleServiceAction(serviceKey, "start"),
+                  },
+                ],
               );
             }
           }}
@@ -319,17 +385,21 @@ export default function ControlPanelScreen() {
           style={[
             styles.actionButton,
             styles.stopButton,
-            !service.running && styles.actionButtonDisabled
+            !service.running && styles.actionButtonDisabled,
           ]}
           onPress={() => {
             if (service.running) {
               Alert.alert(
-                'Stop Service',
+                "Stop Service",
                 `Are you sure you want to stop ${title}? This may affect system functionality.`,
                 [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Stop', style: 'destructive', onPress: () => handleServiceAction(serviceKey, 'stop') },
-                ]
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Stop",
+                    style: "destructive",
+                    onPress: () => handleServiceAction(serviceKey, "stop"),
+                  },
+                ],
               );
             }
           }}
@@ -363,7 +433,12 @@ export default function ControlPanelScreen() {
           {!isWeb && <Text style={styles.backButtonText}>Back</Text>}
         </TouchableOpacity>
         <View style={styles.titleContainer}>
-          <Ionicons name="settings" size={28} color="#fff" style={styles.titleIcon} />
+          <Ionicons
+            name="settings"
+            size={28}
+            color="#fff"
+            style={styles.titleIcon}
+          />
           <Text style={styles.title}>Master Control Panel</Text>
         </View>
         <TouchableOpacity
@@ -382,9 +457,16 @@ export default function ControlPanelScreen() {
 
       <ScrollView
         style={styles.content}
-        contentContainerStyle={[styles.contentContainer, isWeb && styles.contentContainerWeb]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          isWeb && styles.contentContainerWeb,
+        ]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={loadData} tintColor="#007AFF" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={loadData}
+            tintColor="#007AFF"
+          />
         }
         showsVerticalScrollIndicator={isWeb}
       >
@@ -392,7 +474,9 @@ export default function ControlPanelScreen() {
           <View style={styles.quickStatsSection}>
             <View style={styles.quickStatCard}>
               <Ionicons name="server" size={24} color="#007AFF" />
-              <Text style={styles.quickStatValue}>{systemStats.running_services}/{systemStats.total_services}</Text>
+              <Text style={styles.quickStatValue}>
+                {systemStats.running_services}/{systemStats.total_services}
+              </Text>
               <Text style={styles.quickStatLabel}>Services</Text>
             </View>
             {healthScore !== null && (
@@ -400,9 +484,27 @@ export default function ControlPanelScreen() {
                 <Ionicons
                   name="heart"
                   size={24}
-                  color={healthScore >= 80 ? '#4CAF50' : healthScore >= 50 ? '#FF9800' : '#f44336'}
+                  color={
+                    healthScore >= 80
+                      ? "#4CAF50"
+                      : healthScore >= 50
+                        ? "#FF9800"
+                        : "#f44336"
+                  }
                 />
-                <Text style={[styles.quickStatValue, { color: healthScore >= 80 ? '#4CAF50' : healthScore >= 50 ? '#FF9800' : '#f44336' }]}>
+                <Text
+                  style={[
+                    styles.quickStatValue,
+                    {
+                      color:
+                        healthScore >= 80
+                          ? "#4CAF50"
+                          : healthScore >= 50
+                            ? "#FF9800"
+                            : "#f44336",
+                    },
+                  ]}
+                >
                   {healthScore}%
                 </Text>
                 <Text style={styles.quickStatLabel}>Health</Text>
@@ -410,7 +512,9 @@ export default function ControlPanelScreen() {
             )}
             <View style={styles.quickStatCard}>
               <Ionicons name="people" size={24} color="#4CAF50" />
-              <Text style={styles.quickStatValue}>{systemStats.active_sessions || 0}</Text>
+              <Text style={styles.quickStatValue}>
+                {systemStats.active_sessions || 0}
+              </Text>
               <Text style={styles.quickStatLabel}>Active</Text>
             </View>
             <View style={styles.quickStatCard}>
@@ -426,15 +530,16 @@ export default function ControlPanelScreen() {
             <Ionicons name="warning" size={24} color="#ff9800" />
             <View style={styles.issuesContent}>
               <Text style={styles.issuesTitle}>
-                {issues.filter((i: any) => i.severity === 'critical').length} Critical Issue(s)
+                {issues.filter((i: any) => i.severity === "critical").length}{" "}
+                Critical Issue(s)
               </Text>
               <Text style={styles.issuesText}>
-                {issues[0]?.message || 'System issues detected'}
+                {issues[0]?.message || "System issues detected"}
               </Text>
             </View>
             <TouchableOpacity
               style={styles.viewIssuesButton}
-              onPress={() => router.push('/admin/control-panel' as any)}
+              onPress={() => router.push("/admin/control-panel" as any)}
             >
               <Text style={styles.viewIssuesButtonText}>View All</Text>
             </TouchableOpacity>
@@ -448,10 +553,34 @@ export default function ControlPanelScreen() {
               <Text style={styles.sectionTitle}>Services Management</Text>
             </View>
             <View style={styles.servicesGrid}>
-              {renderServiceCard('Backend Server', services.backend, 'backend', 'server', '#007AFF')}
-              {renderServiceCard('Frontend (Expo)', services.frontend, 'frontend', 'globe', '#4CAF50')}
-              {renderServiceCard('MongoDB', services.mongodb, 'mongodb', 'cube', '#13AA52')}
-              {renderServiceCard('SQL Server', services.sql_server, 'sql_server', 'server', '#FF9800')}
+              {renderServiceCard(
+                "Backend Server",
+                services.backend,
+                "backend",
+                "server",
+                "#007AFF",
+              )}
+              {renderServiceCard(
+                "Frontend (Expo)",
+                services.frontend,
+                "frontend",
+                "globe",
+                "#4CAF50",
+              )}
+              {renderServiceCard(
+                "MongoDB",
+                services.mongodb,
+                "mongodb",
+                "cube",
+                "#13AA52",
+              )}
+              {renderServiceCard(
+                "SQL Server",
+                services.sql_server,
+                "sql_server",
+                "server",
+                "#FF9800",
+              )}
             </View>
           </View>
         )}
@@ -464,28 +593,28 @@ export default function ControlPanelScreen() {
           <View style={styles.quickActionsGrid}>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/settings' as any)}
+              onPress={() => router.push("/admin/settings" as any)}
             >
               <Ionicons name="settings" size={32} color="#007AFF" />
               <Text style={styles.quickActionText}>Settings</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/metrics' as any)}
+              onPress={() => router.push("/admin/metrics" as any)}
             >
               <Ionicons name="stats-chart" size={32} color="#4CAF50" />
               <Text style={styles.quickActionText}>Metrics</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/permissions' as any)}
+              onPress={() => router.push("/admin/permissions" as any)}
             >
               <Ionicons name="shield-checkmark" size={32} color="#FF9800" />
               <Text style={styles.quickActionText}>Permissions</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/reports' as any)}
+              onPress={() => router.push("/admin/reports" as any)}
             >
               <Ionicons name="document-text" size={32} color="#9C27B0" />
               <Text style={styles.quickActionText}>Reports</Text>
@@ -499,14 +628,14 @@ export default function ControlPanelScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/admin/security' as any)}
+              onPress={() => router.push("/admin/security" as any)}
             >
               <Ionicons name="shield-checkmark" size={32} color="#4CAF50" />
               <Text style={styles.quickActionText}>Security</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quickActionCard}
-              onPress={() => router.push('/help' as any)}
+              onPress={() => router.push("/help" as any)}
             >
               <Ionicons name="help-circle" size={32} color="#007AFF" />
               <Text style={styles.quickActionText}>Help</Text>
@@ -518,24 +647,32 @@ export default function ControlPanelScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="phone-portrait" size={24} color="#4CAF50" />
-              <Text style={styles.sectionTitle}>Active Devices ({devices.length})</Text>
+              <Text style={styles.sectionTitle}>
+                Active Devices ({devices.length})
+              </Text>
             </View>
             <View style={styles.devicesList}>
               {devices.slice(0, 5).map((device: any, index: number) => (
                 <View key={index} style={styles.deviceCard}>
                   <Ionicons
-                    name={device.platform === 'web' ? 'globe' : 'phone-portrait'}
+                    name={
+                      device.platform === "web" ? "globe" : "phone-portrait"
+                    }
                     size={20}
                     color="#007AFF"
                   />
                   <View style={styles.deviceInfo}>
-                    <Text style={styles.deviceUser}>{device.user || 'Unknown'}</Text>
+                    <Text style={styles.deviceUser}>
+                      {device.user || "Unknown"}
+                    </Text>
                     <Text style={styles.deviceDetails}>
                       {device.platform} • {device.ip_address}
                     </Text>
                   </View>
                   <Text style={styles.deviceTime}>
-                    {device.last_activity ? new Date(device.last_activity).toLocaleTimeString() : 'N/A'}
+                    {device.last_activity
+                      ? new Date(device.last_activity).toLocaleTimeString()
+                      : "N/A"}
                   </Text>
                 </View>
               ))}
@@ -550,7 +687,9 @@ export default function ControlPanelScreen() {
               Last updated: {lastUpdate.toLocaleTimeString()}
             </Text>
           </View>
-          <Text style={styles.footerText}>Auto-refresh every {AUTO_REFRESH_INTERVAL_MS / 1000} seconds</Text>
+          <Text style={styles.footerText}>
+            Auto-refresh every {AUTO_REFRESH_INTERVAL_MS / 1000} seconds
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -560,62 +699,64 @@ export default function ControlPanelScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: "#0a0a0a",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0a0a0a",
   },
   loadingText: {
     marginTop: 10,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
-    paddingTop: Platform.OS === 'web' ? 20 : 16,
-    backgroundColor: '#1a1a1a',
+    paddingTop: Platform.OS === "web" ? 20 : 16,
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    borderBottomColor: "#333",
+    ...(Platform.OS === "web"
+      ? {
+          position: "sticky" as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 16,
     padding: 8,
     borderRadius: 8,
   },
   backButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 16,
     marginLeft: 8,
   },
   titleContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   titleIcon: {
     marginRight: 12,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   refreshButton: {
     padding: 8,
@@ -633,16 +774,16 @@ const styles = StyleSheet.create({
   },
   contentContainerWeb: {
     padding: isWeb ? 32 : 16,
-    maxWidth: isWeb ? 1400 : '100%',
-    alignSelf: 'center',
-    width: '100%',
+    maxWidth: isWeb ? 1400 : "100%",
+    alignSelf: "center",
+    width: "100%",
   },
   issuesBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ff980015',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ff980015",
     borderLeftWidth: 4,
-    borderLeftColor: '#ff9800',
+    borderLeftColor: "#ff9800",
     padding: 16,
     borderRadius: 12,
     marginBottom: 24,
@@ -653,72 +794,72 @@ const styles = StyleSheet.create({
   },
   issuesTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ff9800',
+    fontWeight: "bold",
+    color: "#ff9800",
     marginBottom: 4,
   },
   issuesText: {
     fontSize: 14,
-    color: '#ff9800',
+    color: "#ff9800",
     opacity: 0.9,
   },
   viewIssuesButton: {
-    backgroundColor: '#ff9800',
+    backgroundColor: "#ff9800",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   viewIssuesButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   section: {
     marginBottom: 24,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
     gap: 12,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   servicesGrid: {
     gap: 16,
   },
   serviceCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   } as const,
   serviceCardWeb: {
     // Web-specific styles handled via conditional rendering
   } as const,
   serviceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   serviceTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   serviceTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -730,115 +871,115 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statusBadgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   serviceDetails: {
     gap: 8,
     marginBottom: 16,
   },
   serviceDetailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   serviceDetailText: {
     fontSize: 14,
-    color: '#aaa',
+    color: "#aaa",
   },
   serviceActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   actionButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 12,
     borderRadius: 8,
     gap: 8,
   },
   startButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   stopButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: "#f44336",
   },
   actionButtonDisabled: {
     opacity: 0.5,
   },
   actionButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   logsButton: {
-    backgroundColor: '#9C27B0',
+    backgroundColor: "#9C27B0",
   },
   copyIcon: {
     marginLeft: 8,
   },
   quickStatsSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginBottom: 24,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   quickStatCard: {
     flex: 1,
-    minWidth: isWeb && isTablet ? '22%' : '45%',
-    backgroundColor: '#1a1a1a',
+    minWidth: isWeb && isTablet ? "22%" : "45%",
+    backgroundColor: "#1a1a1a",
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   } as any,
   quickStatValue: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginTop: 8,
   },
   quickStatLabel: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
     marginTop: 4,
   },
   quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12,
   },
   quickActionCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderRadius: 12,
     padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: isWeb && isTablet ? '22%' : '45%',
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: isWeb && isTablet ? "22%" : "45%",
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   } as any,
   quickActionText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 8,
   },
   devicesList: {
     gap: 8,
   },
   deviceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1a1a1a",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
     gap: 12,
   },
   deviceInfo: {
@@ -846,30 +987,30 @@ const styles = StyleSheet.create({
   },
   deviceUser: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 4,
   },
   deviceDetails: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
   },
   deviceTime: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   footer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 24,
     gap: 8,
   },
   footerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   footerText: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
 });

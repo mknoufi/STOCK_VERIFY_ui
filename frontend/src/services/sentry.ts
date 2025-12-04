@@ -1,7 +1,7 @@
 export const initSentry = () => {
   // Sentry initialization would go here
   if (__DEV__) {
-    console.log('Sentry initialized (stub)');
+    console.log("Sentry initialized (stub)");
   }
 };
 
@@ -12,5 +12,5 @@ export interface CaptureContext {
 }
 
 export const captureException = (error: Error, context?: CaptureContext) => {
-  console.error('Captured exception:', error, context);
+  console.error("Captured exception:", error, context);
 };

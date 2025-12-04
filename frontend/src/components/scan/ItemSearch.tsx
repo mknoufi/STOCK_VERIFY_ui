@@ -2,10 +2,18 @@
  * ItemSearch Component
  * Search autocomplete for finding items by name or barcode
  */
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { SearchResult } from '../../services/enhancedSearchService';
+import React from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { SearchResult } from "../../services/enhancedSearchService";
 
 interface ItemSearchProps {
   manualBarcode: string;
@@ -73,15 +81,15 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onSubmitEditing={onBarcodeSubmit}
           />
           {onScan && (
-            <TouchableOpacity
-              style={styles.scanButton}
-              onPress={onScan}
-            >
+            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
               <Ionicons name="scan-outline" size={20} color="#fff" />
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.searchButton, !manualBarcode && styles.searchButtonDisabled]}
+            style={[
+              styles.searchButton,
+              !manualBarcode && styles.searchButtonDisabled,
+            ]}
             onPress={() => {
               onActivityReset?.();
               onBarcodeSubmit();
@@ -99,11 +107,14 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           <Ionicons name="search-outline" size={20} color="#3B82F6" />
           <Text style={styles.inputLabel}>Search Item Name</Text>
           {onVoiceSearch && (
-            <TouchableOpacity style={styles.voiceButton} onPress={onVoiceSearch}>
+            <TouchableOpacity
+              style={styles.voiceButton}
+              onPress={onVoiceSearch}
+            >
               <Ionicons
-                name={isListening ? 'mic' : 'mic-outline'}
+                name={isListening ? "mic" : "mic-outline"}
                 size={20}
-                color={isListening ? '#FF5722' : '#3B82F6'}
+                color={isListening ? "#FF5722" : "#3B82F6"}
               />
             </TouchableOpacity>
           )}
@@ -125,7 +136,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onSubmitEditing={onItemNameSubmit}
           />
           <TouchableOpacity
-            style={[styles.searchButton, !manualItemName && styles.searchButtonDisabled]}
+            style={[
+              styles.searchButton,
+              !manualItemName && styles.searchButtonDisabled,
+            ]}
             onPress={() => {
               onActivityReset?.();
               onItemNameSubmit();
@@ -140,7 +154,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
       {/* Search Results */}
       {showSearchResults && searchResults.length > 0 && (
         <View style={styles.searchResultsContainer}>
-          <Text style={styles.searchResultsTitle}>Search Results ({searchResults.length})</Text>
+          <Text style={styles.searchResultsTitle}>
+            Search Results ({searchResults.length})
+          </Text>
           <ScrollView
             style={styles.searchResultsScrollView}
             nestedScrollEnabled={true}
@@ -148,17 +164,23 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           >
             {searchResults.map((item, index) => (
               <TouchableOpacity
-                key={`search-result-${index}-${item.item_code || 'no-code'}-${item.barcode || 'no-barcode'}`}
+                key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
                 style={styles.searchResultItem}
                 onPress={() => onSearchResultSelect(item)}
               >
                 <View style={styles.searchResultContent}>
                   <Text style={styles.searchResultName}>{item.item_name}</Text>
-                  <Text style={styles.searchResultCode}>Code: {item.item_code}</Text>
+                  <Text style={styles.searchResultCode}>
+                    Code: {item.item_code}
+                  </Text>
                   {item.barcode && (
-                    <Text style={styles.searchResultBarcode}>Barcode: {item.barcode}</Text>
+                    <Text style={styles.searchResultBarcode}>
+                      Barcode: {item.barcode}
+                    </Text>
                   )}
-                  <Text style={styles.searchResultStock}>Stock: {item.stock_qty || 0}</Text>
+                  <Text style={styles.searchResultStock}>
+                    Stock: {item.stock_qty || 0}
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
               </TouchableOpacity>
@@ -183,86 +205,86 @@ const styles = StyleSheet.create({
   },
   manualEntryTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 16,
   },
   inputGroup: {
     marginBottom: 16,
   },
   inputLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 8,
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#94A3B8',
+    fontWeight: "600",
+    color: "#94A3B8",
     flex: 1,
   },
   voiceButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 12,
     padding: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   combinedInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1E293B',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1E293B",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
   manualInput: {
     flex: 1,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     paddingVertical: 12,
     paddingRight: 8,
   },
   scanButton: {
     padding: 8,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
     borderRadius: 8,
     marginLeft: 4,
   },
   searchButton: {
     padding: 8,
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 8,
     marginLeft: 8,
   },
   searchButtonDisabled: {
     opacity: 0.5,
-    backgroundColor: '#334155',
+    backgroundColor: "#334155",
   },
   searchButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   inputDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 16,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#334155',
+    backgroundColor: "#334155",
   },
   orText: {
     marginHorizontal: 16,
-    color: '#94A3B8',
+    color: "#94A3B8",
     fontSize: 14,
   },
   searchResultsContainer: {
-    backgroundColor: '#1E293B',
+    backgroundColor: "#1E293B",
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
@@ -270,18 +292,18 @@ const styles = StyleSheet.create({
   },
   searchResultsTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 12,
   },
   searchResultsScrollView: {
     maxHeight: 250,
   },
   searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#252525',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#252525",
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
@@ -291,35 +313,35 @@ const styles = StyleSheet.create({
   },
   searchResultName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 4,
   },
   searchResultCode: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: "#94A3B8",
     marginBottom: 2,
   },
   searchResultBarcode: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: "#94A3B8",
     marginBottom: 2,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   searchResultStock: {
     fontSize: 12,
-    color: '#3B82F6',
+    color: "#3B82F6",
     marginTop: 4,
   },
   searchingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
     padding: 16,
   },
   searchingText: {
-    color: '#94A3B8',
+    color: "#94A3B8",
     fontSize: 14,
   },
 });

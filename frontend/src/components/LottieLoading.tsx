@@ -3,22 +3,22 @@
  * Pre-configured loading animation with Lottie
  */
 
-import React from 'react';
-import { View, Text, StyleSheet , ActivityIndicator } from 'react-native';
-import { useTheme } from '../hooks/useTheme';
-import { LottieAnimation } from './LottieAnimation';
+import React from "react";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { useTheme } from "../hooks/useTheme";
+import { LottieAnimation } from "./LottieAnimation";
 
 interface LottieLoadingProps {
   message?: string;
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   overlay?: boolean;
 }
 
 // You can download free Lottie animations from https://lottiefiles.com
 // For now, we'll use a fallback ActivityIndicator
 export const LottieLoading: React.FC<LottieLoadingProps> = ({
-  message = 'Loading...',
-  size = 'large',
+  message = "Loading...",
+  size = "large",
   overlay = false,
 }) => {
   const theme = useTheme();
@@ -46,7 +46,10 @@ export const LottieLoading: React.FC<LottieLoadingProps> = ({
         height={animationSize}
         fallback={
           <View style={styles.fallback}>
-            <ActivityIndicator size={size === 'medium' ? 'large' : size} color={theme.colors.primary} />
+            <ActivityIndicator
+              size={size === "medium" ? "large" : size}
+              color={theme.colors.primary}
+            />
           </View>
         }
       />
@@ -61,27 +64,27 @@ export const LottieLoading: React.FC<LottieLoadingProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
   },
   overlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     zIndex: 1000,
   },
   fallback: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   message: {
     marginTop: 16,
     fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
 });

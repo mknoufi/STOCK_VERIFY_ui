@@ -1,10 +1,10 @@
 export const initializeSyncService = () => {
   // Stub implementation
-  console.log('Sync service initialized');
+  console.log("Sync service initialized");
   return {
     cleanup: () => {
-      console.log('Sync service cleanup');
-    }
+      console.log("Sync service cleanup");
+    },
   };
 };
 
@@ -19,7 +19,7 @@ export const getSyncStatus = async () => {
 };
 
 export const syncOfflineQueue = async (options?: any) => {
-  console.log('Syncing offline queue...', options);
+  console.log("Syncing offline queue...", options);
   return { processed: 0, remaining: 0 };
 };
 
@@ -35,7 +35,7 @@ export interface SyncOptions {
 }
 
 export const forceSync = async (options?: SyncOptions): Promise<SyncResult> => {
-  console.log('Force syncing...', options);
+  console.log("Force syncing...", options);
   return {
     success: 0,
     failed: 0,

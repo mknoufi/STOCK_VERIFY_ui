@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, RefreshControl } from 'react-native';
+import React from "react";
+import { ScrollView, RefreshControl } from "react-native";
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void> | void;
@@ -21,7 +21,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#4CAF50']} // Android
+          colors={["#4CAF50"]} // Android
           tintColor="#4CAF50" // iOS
         />
       }

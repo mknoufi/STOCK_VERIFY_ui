@@ -1,11 +1,11 @@
-import type { Preview } from '@storybook/react';
-import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
-import { ThemeService } from '../services/themeService';
-import { UnistylesThemeProvider } from '../theme/Provider';
+import type { Preview } from "@storybook/react";
+import React from "react";
+import { View, StyleSheet, Platform } from "react-native";
+import { ThemeService } from "../services/themeService";
+import { UnistylesThemeProvider } from "../theme/Provider";
 
 // Initialize theme service
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   ThemeService.initialize().catch(() => {
     // Silently handle initialization errors in Storybook
   });
@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
 
 const preview: Preview = {
   parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
+    actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -21,26 +21,32 @@ const preview: Preview = {
       },
     },
     backgrounds: {
-      default: 'light',
+      default: "light",
       values: [
         {
-          name: 'light',
-          value: '#ffffff',
+          name: "light",
+          value: "#ffffff",
         },
         {
-          name: 'dark',
-          value: '#1a1a1a',
+          name: "dark",
+          value: "#1a1a1a",
         },
       ],
     },
-    layout: 'centered',
+    layout: "centered",
   },
   decorators: [
     (Story) => {
       // For web, use a simple div wrapper
-      if (Platform.OS === 'web') {
+      if (Platform.OS === "web") {
         return (
-          <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#ffffff' }}>
+          <div
+            style={{
+              padding: "20px",
+              minHeight: "100vh",
+              backgroundColor: "#ffffff",
+            }}
+          >
             <UnistylesThemeProvider>
               <Story />
             </UnistylesThemeProvider>
@@ -64,7 +70,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
 });
 

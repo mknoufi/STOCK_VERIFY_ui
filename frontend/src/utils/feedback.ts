@@ -3,11 +3,11 @@
  * Provides reusable feedback mechanisms for user interactions
  */
 
-export type FeedbackType = 'success' | 'error' | 'info' | 'warning';
+export type FeedbackType = "success" | "error" | "info" | "warning";
 
 interface FeedbackOptions {
-    duration?: number;
-    type?: FeedbackType;
+  duration?: number;
+  type?: FeedbackType;
 }
 
 /**
@@ -18,20 +18,20 @@ interface FeedbackOptions {
  * @returns Cleanup function
  */
 export const showFeedback = (
-    message: string,
-    updateFn: (feedback: string) => void,
-    options: FeedbackOptions = {}
+  message: string,
+  updateFn: (feedback: string) => void,
+  options: FeedbackOptions = {},
 ): (() => void) => {
-    const { duration = 2000 } = options;
+  const { duration = 2000 } = options;
 
-    updateFn(message);
+  updateFn(message);
 
-    const timer = setTimeout(() => {
-        updateFn('');
-    }, duration);
+  const timer = setTimeout(() => {
+    updateFn("");
+  }, duration);
 
-    // Return cleanup function
-    return () => clearTimeout(timer);
+  // Return cleanup function
+  return () => clearTimeout(timer);
 };
 
 /**
@@ -39,49 +39,49 @@ export const showFeedback = (
  * @param updateFn - State update function
  */
 export const createFeedbackManager = (updateFn: (feedback: string) => void) => {
-    let currentTimer: ReturnType<typeof setTimeout> | null = null;
+  let currentTimer: ReturnType<typeof setTimeout> | null = null;
 
-    return {
-        show: (message: string, duration = 2000) => {
-            // Clear existing timer
-            if (currentTimer) {
-                clearTimeout(currentTimer);
-            }
+  return {
+    show: (message: string, duration = 2000) => {
+      // Clear existing timer
+      if (currentTimer) {
+        clearTimeout(currentTimer);
+      }
 
-            updateFn(message);
+      updateFn(message);
 
-            currentTimer = setTimeout(() => {
-                updateFn('');
-                currentTimer = null;
-            }, duration);
-        },
+      currentTimer = setTimeout(() => {
+        updateFn("");
+        currentTimer = null;
+      }, duration);
+    },
 
-        clear: () => {
-            if (currentTimer) {
-                clearTimeout(currentTimer);
-                currentTimer = null;
-            }
-            updateFn('');
-        },
+    clear: () => {
+      if (currentTimer) {
+        clearTimeout(currentTimer);
+        currentTimer = null;
+      }
+      updateFn("");
+    },
 
-        cleanup: () => {
-            if (currentTimer) {
-                clearTimeout(currentTimer);
-            }
-        }
-    };
+    cleanup: () => {
+      if (currentTimer) {
+        clearTimeout(currentTimer);
+      }
+    },
+  };
 };
 
 /**
  * Format feedback message with emoji
  */
 export const formatFeedback = (message: string, type: FeedbackType): string => {
-    const icons = {
-        success: '✅',
-        error: '❌',
-        info: 'ℹ️',
-        warning: '⚠️'
-    };
+  const icons = {
+    success: "✅",
+    error: "❌",
+    info: "ℹ️",
+    warning: "⚠️",
+  };
 
-    return `${icons[type]} ${message}`;
+  return `${icons[type]} ${message}`;
 };

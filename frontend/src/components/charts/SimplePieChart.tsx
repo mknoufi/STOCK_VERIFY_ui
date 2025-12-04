@@ -3,10 +3,15 @@
  * Fully functional pie chart using React Native Views with conic gradients simulation
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, Platform } from "react-native";
 
-import { modernColors, modernTypography, modernSpacing, modernBorderRadius } from '../../styles/modernDesignSystem';
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+  modernBorderRadius,
+} from "../../styles/modernDesignSystem";
 
 const CHART_SIZE = 200;
 const RADIUS = 80;
@@ -60,14 +65,17 @@ export const SimplePieChart: React.FC<SimplePieChartProps> = ({
 
   // For web, we can use CSS conic-gradient, for native we'll use a different approach
   const renderPieChart = () => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       // Web: Use CSS conic-gradient
       const gradientStops = segments
         .map((seg, i) => {
-          const startPercent = i === 0 ? 0 : segments.slice(0, i).reduce((sum, s) => sum + s.percentage, 0);
+          const startPercent =
+            i === 0
+              ? 0
+              : segments.slice(0, i).reduce((sum, s) => sum + s.percentage, 0);
           return `${seg.color} ${startPercent}% ${startPercent + seg.percentage}%`;
         })
-        .join(', ');
+        .join(", ");
 
       return (
         <View
@@ -162,18 +170,18 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.sm,
   },
   chartWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    flexWrap: "wrap",
     gap: modernSpacing.lg,
   },
   pieContainer: {
     width: CHART_SIZE,
     height: CHART_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
   pieChart: {
     width: RADIUS * 2,
@@ -184,28 +192,28 @@ const styles = StyleSheet.create({
     width: RADIUS * 2,
     height: RADIUS * 2,
     borderRadius: RADIUS,
-    overflow: 'hidden',
-    position: 'relative',
+    overflow: "hidden",
+    position: "relative",
   },
   pieSegment: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: RADIUS,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   segmentMask: {
-    width: '50%',
-    height: '100%',
-    backgroundColor: 'transparent',
+    width: "50%",
+    height: "100%",
+    backgroundColor: "transparent",
   },
   centerLabel: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
   },
   centerValue: {
     ...modernTypography.h3,
     color: modernColors.text.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   centerText: {
     ...modernTypography.body.small,
@@ -216,8 +224,8 @@ const styles = StyleSheet.create({
     minWidth: 200,
   },
   legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: modernSpacing.sm,
   },
   legendColor: {
@@ -231,7 +239,7 @@ const styles = StyleSheet.create({
   legendLabel: {
     ...modernTypography.body.small,
     color: modernColors.text.primary,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   legendValue: {
     ...modernTypography.body.small,
@@ -240,8 +248,8 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     height: CHART_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.elevated,
     borderRadius: 8,
   },

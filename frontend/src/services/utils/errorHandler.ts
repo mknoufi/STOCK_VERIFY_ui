@@ -3,7 +3,7 @@
  * Provides professional error handling for the entire application
  */
 
-import { Alert } from 'react-native';
+import { Alert } from "react-native";
 
 export interface ApiError {
   message: string;
@@ -20,12 +20,12 @@ export class ErrorHandler {
    * Handle API errors with user-friendly messages
    */
   static handleApiError(error: any, context?: string): ApiError {
-    __DEV__ && console.error(`[${context || 'API Error'}]:`, error);
+    __DEV__ && console.error(`[${context || "API Error"}]:`, error);
 
-    let message = 'An unexpected error occurred';
-    let detail = 'Please try again or contact support if the problem persists.';
-    let code = 'UNK_001';
-    let category = 'unknown';
+    let message = "An unexpected error occurred";
+    let detail = "Please try again or contact support if the problem persists.";
+    let code = "UNK_001";
+    let category = "unknown";
     let statusCode = 500;
     let details = null;
     let errorContext = null;
@@ -36,96 +36,104 @@ export class ErrorHandler {
       details = error.response.data;
 
       // Check if server returned structured error response
-      if (details && typeof details === 'object') {
+      if (details && typeof details === "object") {
         // New structured error format
         if (details.message) message = details.message;
         if (details.detail) detail = details.detail;
         if (details.code) code = details.code;
         if (details.category) category = details.category;
         if (details.context) errorContext = details.context;
-      } else if (typeof details === 'string') {
+      } else if (typeof details === "string") {
         // Legacy string error format
         message = details;
         detail = details;
       }
 
       // Fallback to status code based messages if structured format not available
-      if (!details || typeof details === 'string') {
+      if (!details || typeof details === "string") {
         switch (statusCode) {
           case 400:
-            message = message || 'Invalid request. Please check your input.';
-            code = code || 'VAL_002';
-            category = category || 'validation';
+            message = message || "Invalid request. Please check your input.";
+            code = code || "VAL_002";
+            category = category || "validation";
             break;
           case 401:
-            message = message || 'Session expired. Please login again.';
-            code = code || 'AUTH_003';
-            category = category || 'authentication';
+            message = message || "Session expired. Please login again.";
+            code = code || "AUTH_003";
+            category = category || "authentication";
             break;
           case 403:
-            message = message || 'You don\'t have permission to perform this action.';
-            code = code || 'AUTHZ_001';
-            category = category || 'authorization';
+            message =
+              message || "You don't have permission to perform this action.";
+            code = code || "AUTHZ_001";
+            category = category || "authorization";
             break;
           case 404:
-            message = message || 'Requested resource not found.';
-            code = code || 'RES_001';
-            category = category || 'resource';
+            message = message || "Requested resource not found.";
+            code = code || "RES_001";
+            category = category || "resource";
             break;
           case 409:
-            message = message || 'This operation conflicts with existing data.';
-            code = code || 'VAL_002';
-            category = category || 'validation';
+            message = message || "This operation conflicts with existing data.";
+            code = code || "VAL_002";
+            category = category || "validation";
             break;
           case 422:
-            message = message || 'Validation error. Please check your input.';
-            code = code || 'VAL_002';
-            category = category || 'validation';
+            message = message || "Validation error. Please check your input.";
+            code = code || "VAL_002";
+            category = category || "validation";
             break;
           case 429:
-            message = message || 'Too many requests. Please wait a moment and try again.';
-            code = code || 'SRV_002';
-            category = category || 'server';
+            message =
+              message ||
+              "Too many requests. Please wait a moment and try again.";
+            code = code || "SRV_002";
+            category = category || "server";
             break;
           case 500:
-            message = message || 'Server error. Please try again later.';
-            code = code || 'SRV_001';
-            category = category || 'server';
+            message = message || "Server error. Please try again later.";
+            code = code || "SRV_001";
+            category = category || "server";
             break;
           case 503:
-            message = message || 'Service temporarily unavailable. Please try again.';
-            code = code || 'DB_001';
-            category = category || 'database';
+            message =
+              message || "Service temporarily unavailable. Please try again.";
+            code = code || "DB_001";
+            category = category || "database";
             break;
           default:
-            message = message || 'An error occurred';
+            message = message || "An error occurred";
         }
       }
     } else if (error.request) {
       // Request made but no response
-      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        message = 'Connection timeout. Please check your internet connection and try again.';
-        code = 'NET_001';
-        category = 'network';
-        detail = 'The request took too long to complete. Your connection may be slow or unstable.';
-      } else if (error.code === 'ECONNREFUSED' || !error.response) {
-        message = 'Cannot connect to server. Please check if the server is running.';
-        code = 'NET_002';
-        category = 'network';
-        detail = 'The server is not responding. It may be down or unreachable.';
+      if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+        message =
+          "Connection timeout. Please check your internet connection and try again.";
+        code = "NET_001";
+        category = "network";
+        detail =
+          "The request took too long to complete. Your connection may be slow or unstable.";
+      } else if (error.code === "ECONNREFUSED" || !error.response) {
+        message =
+          "Cannot connect to server. Please check if the server is running.";
+        code = "NET_002";
+        category = "network";
+        detail = "The server is not responding. It may be down or unreachable.";
       } else {
-        message = 'Network error. Please check your internet connection.';
-        code = 'NET_001';
-        category = 'network';
-        detail = 'Unable to reach the server. Please check your network connection.';
+        message = "Network error. Please check your internet connection.";
+        code = "NET_001";
+        category = "network";
+        detail =
+          "Unable to reach the server. Please check your network connection.";
       }
       statusCode = 0;
     } else {
       // Error in request setup
-      message = error.message || 'An unexpected error occurred';
-      detail = error.message || 'Please try again or contact support.';
-      code = 'UNK_001';
-      category = 'unknown';
+      message = error.message || "An unexpected error occurred";
+      detail = error.message || "Please try again or contact support.";
+      code = "UNK_001";
+      category = "unknown";
     }
 
     return {
@@ -135,34 +143,28 @@ export class ErrorHandler {
       category,
       statusCode,
       details,
-      context: errorContext
+      context: errorContext,
     };
   }
 
   /**
    * Show error alert to user
    */
-  static showError(error: any, context?: string, title = 'Error') {
+  static showError(error: any, context?: string, title = "Error") {
     const apiError = this.handleApiError(error, context);
 
-    Alert.alert(
-      title,
-      apiError.message,
-      [{ text: 'OK', style: 'default' }],
-      { cancelable: true }
-    );
+    Alert.alert(title, apiError.message, [{ text: "OK", style: "default" }], {
+      cancelable: true,
+    });
   }
 
   /**
    * Show success message
    */
-  static showSuccess(message: string, title = 'Success') {
-    Alert.alert(
-      title,
-      message,
-      [{ text: 'OK', style: 'default' }],
-      { cancelable: true }
-    );
+  static showSuccess(message: string, title = "Success") {
+    Alert.alert(title, message, [{ text: "OK", style: "default" }], {
+      cancelable: true,
+    });
   }
 
   /**
@@ -172,33 +174,36 @@ export class ErrorHandler {
     message: string,
     onConfirm: () => void,
     onCancel?: () => void,
-    title = 'Confirm'
+    title = "Confirm",
   ) {
     Alert.alert(
       title,
       message,
       [
         {
-          text: 'Cancel',
-          style: 'cancel',
-          onPress: onCancel
+          text: "Cancel",
+          style: "cancel",
+          onPress: onCancel,
         },
         {
-          text: 'Confirm',
-          style: 'default',
-          onPress: onConfirm
-        }
+          text: "Confirm",
+          style: "default",
+          onPress: onConfirm,
+        },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   }
 
   /**
    * Validate required fields
    */
-  static validateRequired(fields: Record<string, any>, fieldNames: Record<string, string>): string | null {
+  static validateRequired(
+    fields: Record<string, any>,
+    fieldNames: Record<string, string>,
+  ): string | null {
     for (const [key, label] of Object.entries(fieldNames)) {
-      if (!fields[key] || fields[key].toString().trim() === '') {
+      if (!fields[key] || fields[key].toString().trim() === "") {
         return `${label} is required`;
       }
     }
@@ -227,11 +232,12 @@ export class ErrorHandler {
    */
   static logError(context: string, error: any, additionalInfo?: any) {
     const timestamp = new Date().toISOString();
-    __DEV__ && console.error(`[${timestamp}] [${context}]`, {
-      error: error.message || error,
-      stack: error.stack,
-      ...additionalInfo
-    });
+    __DEV__ &&
+      console.error(`[${timestamp}] [${context}]`, {
+        error: error.message || error,
+        stack: error.stack,
+        ...additionalInfo,
+      });
   }
 }
 
@@ -241,10 +247,10 @@ export class ErrorHandler {
 export class NetworkMonitor {
   static async checkConnectivity(): Promise<boolean> {
     try {
-      await fetch('https://www.google.com', {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-cache'
+      await fetch("https://www.google.com", {
+        method: "HEAD",
+        mode: "no-cors",
+        cache: "no-cache",
       });
       return true;
     } catch {
@@ -254,9 +260,9 @@ export class NetworkMonitor {
 
   static showNoConnection() {
     Alert.alert(
-      'No Internet Connection',
-      'Please check your internet connection and try again.',
-      [{ text: 'OK' }]
+      "No Internet Connection",
+      "Please check your internet connection and try again.",
+      [{ text: "OK" }],
     );
   }
 }
@@ -270,7 +276,7 @@ export class RetryHandler {
   static async retry<T>(
     operation: () => Promise<T>,
     maxRetries: number = 3,
-    delayMs: number = 1000
+    delayMs: number = 1000,
   ): Promise<T> {
     let lastError: any;
 
@@ -282,7 +288,7 @@ export class RetryHandler {
         __DEV__ && console.log(`Attempt ${attempt} failed, retrying...`);
 
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
         }
       }
     }
@@ -294,4 +300,3 @@ export class RetryHandler {
 /**
  * Enhanced error handling with context
  */
-

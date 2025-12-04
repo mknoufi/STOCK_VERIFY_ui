@@ -4,10 +4,10 @@
  * Documentation and examples for the Card component
  */
 
-import type { Meta, StoryObj } from '@storybook/react';
-import { Card } from './Card';
-import { View, Text, StyleSheet } from 'react-native';
-import { Button } from './Button';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Card } from "./Card";
+import { View, Text, StyleSheet } from "react-native";
+import { Button } from "./Button";
 
 const styles = StyleSheet.create({
   container: {
@@ -26,41 +26,42 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
 });
 
 const meta: Meta<typeof Card> = {
-  title: 'Components/Card',
+  title: "Components/Card",
   component: Card,
   parameters: {
     docs: {
       description: {
-        component: 'Material Design card component with title, subtitle, and customizable elevation. Supports pressable cards.',
+        component:
+          "Material Design card component with title, subtitle, and customizable elevation. Supports pressable cards.",
       },
     },
   },
   argTypes: {
     title: {
-      control: 'text',
-      description: 'Card title',
+      control: "text",
+      description: "Card title",
     },
     subtitle: {
-      control: 'text',
-      description: 'Card subtitle',
+      control: "text",
+      description: "Card subtitle",
     },
     elevation: {
-      control: { type: 'range', min: 0, max: 8, step: 1 },
-      description: 'Card elevation/shadow depth',
+      control: { type: "range", min: 0, max: 8, step: 1 },
+      description: "Card elevation/shadow depth",
     },
     padding: {
-      control: { type: 'range', min: 0, max: 32, step: 4 },
-      description: 'Card padding',
+      control: { type: "range", min: 0, max: 32, step: 4 },
+      description: "Card padding",
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -76,7 +77,7 @@ export const Default: Story = {
 // With Title
 export const WithTitle: Story = {
   args: {
-    title: 'Card Title',
+    title: "Card Title",
     children: <Text>This card has a title</Text>,
   },
 };
@@ -84,8 +85,8 @@ export const WithTitle: Story = {
 // With Title and Subtitle
 export const WithTitleAndSubtitle: Story = {
   args: {
-    title: 'Item Details',
-    subtitle: 'Stock verification information',
+    title: "Item Details",
+    subtitle: "Stock verification information",
     children: <Text>Card content with both title and subtitle</Text>,
   },
 };
@@ -93,9 +94,9 @@ export const WithTitleAndSubtitle: Story = {
 // Pressable Card
 export const Pressable: Story = {
   args: {
-    title: 'Pressable Card',
-    subtitle: 'Tap to interact',
-    onPress: () => console.log('Card pressed'),
+    title: "Pressable Card",
+    subtitle: "Tap to interact",
+    onPress: () => console.log("Card pressed"),
     children: <Text>This card can be pressed</Text>,
   },
 };
@@ -103,7 +104,7 @@ export const Pressable: Story = {
 // Different Elevations
 export const LowElevation: Story = {
   args: {
-    title: 'Low Elevation',
+    title: "Low Elevation",
     elevation: 1,
     children: <Text>Card with low elevation (1)</Text>,
   },
@@ -111,7 +112,7 @@ export const LowElevation: Story = {
 
 export const MediumElevation: Story = {
   args: {
-    title: 'Medium Elevation',
+    title: "Medium Elevation",
     elevation: 4,
     children: <Text>Card with medium elevation (4)</Text>,
   },
@@ -119,7 +120,7 @@ export const MediumElevation: Story = {
 
 export const HighElevation: Story = {
   args: {
-    title: 'High Elevation',
+    title: "High Elevation",
     elevation: 8,
     children: <Text>Card with high elevation (8)</Text>,
   },
@@ -128,7 +129,7 @@ export const HighElevation: Story = {
 // With Custom Padding
 export const CustomPadding: Story = {
   args: {
-    title: 'Custom Padding',
+    title: "Custom Padding",
     padding: 24,
     children: <Text>Card with custom padding (24px)</Text>,
   },
@@ -137,16 +138,27 @@ export const CustomPadding: Story = {
 // Complex Content
 export const ComplexContent: Story = {
   args: {
-    title: 'Item Card',
-    subtitle: 'Stock: 150 units',
+    title: "Item Card",
+    subtitle: "Stock: 150 units",
     children: (
       <View style={styles.complexContent}>
         <Text style={styles.description}>
-          This card contains complex content including buttons and multiple text elements.
+          This card contains complex content including buttons and multiple text
+          elements.
         </Text>
         <View style={styles.buttonRow}>
-          <Button title="Edit" variant="outline" size="small" onPress={() => { }} />
-          <Button title="Delete" variant="danger" size="small" onPress={() => { }} />
+          <Button
+            title="Edit"
+            variant="outline"
+            size="small"
+            onPress={() => {}}
+          />
+          <Button
+            title="Delete"
+            variant="danger"
+            size="small"
+            onPress={() => {}}
+          />
         </View>
       </View>
     ),
@@ -172,5 +184,3 @@ export const AllElevations: Story = {
     </View>
   ),
 };
-
-

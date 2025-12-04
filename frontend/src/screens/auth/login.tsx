@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,27 +10,33 @@ import {
   TouchableOpacity,
   Animated,
   Pressable,
-} from 'react-native';
-import { useRouter, useSegments, Href } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SystemStatus } from '@/components/feedback/SystemStatus';
-import { StatusBar } from 'expo-status-bar';
-import { storage } from '@/services/asyncStorageService';
-import { AppLogo } from '@/components/AppLogo';
-import EnhancedTextInput from '@/components/forms/EnhancedTextInput';
-import EnhancedButton from '@/components/forms/EnhancedButton';
-import { useFormValidation } from '@/hooks/useFormValidation';
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { colors, spacing, typography, borderRadius, shadows } from '@/styles/globalStyles';
-import { runFullDiagnostics } from '@/utils/loginDiagnostics';
+} from "react-native";
+import { useRouter, useSegments, Href } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { SystemStatus } from "@/components/feedback/SystemStatus";
+import { StatusBar } from "expo-status-bar";
+import { storage } from "@/services/asyncStorageService";
+import { AppLogo } from "@/components/AppLogo";
+import EnhancedTextInput from "@/components/forms/EnhancedTextInput";
+import EnhancedButton from "@/components/forms/EnhancedButton";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from "@/styles/globalStyles";
+import { runFullDiagnostics } from "@/utils/loginDiagnostics";
 
-import { LoginDiagnosticsPanel } from '@/components/LoginDiagnosticsPanel';
-import { useAuthStore, AuthState } from '@/store/authStore';
+import { LoginDiagnosticsPanel } from "@/components/LoginDiagnosticsPanel";
+import { useAuthStore, AuthState } from "@/store/authStore";
 
 const STORAGE_KEYS = {
-  REMEMBERED_USERNAME: 'remembered_username_v1',
-  REMEMBER_ME_ENABLED: 'remember_me_enabled_v1',
+  REMEMBERED_USERNAME: "remembered_username_v1",
+  REMEMBER_ME_ENABLED: "remember_me_enabled_v1",
 };
 
 export default function LoginScreen() {
@@ -54,8 +60,6 @@ export default function LoginScreen() {
   const passwordInputRef = useRef<TextInput>(null);
   const isMounted = useRef(true);
 
-
-
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -72,21 +76,27 @@ export default function LoginScreen() {
     handleSubmit,
   } = useFormValidation<{ username: string; password: string }>([
     {
-      name: 'username',
-      label: 'Username',
-      defaultValue: '',
+      name: "username",
+      label: "Username",
+      defaultValue: "",
       rules: {
-        required: 'Username is required',
-        minLength: { value: 3, message: 'Username must be at least 3 characters' },
+        required: "Username is required",
+        minLength: {
+          value: 3,
+          message: "Username must be at least 3 characters",
+        },
       },
     },
     {
-      name: 'password',
-      label: 'Password',
-      defaultValue: '',
+      name: "password",
+      label: "Password",
+      defaultValue: "",
       rules: {
-        required: 'Password is required',
-        minLength: { value: 4, message: 'Password must be at least 4 characters' },
+        required: "Password is required",
+        minLength: {
+          value: 4,
+          message: "Password must be at least 4 characters",
+        },
       },
     },
   ]);
@@ -94,17 +104,17 @@ export default function LoginScreen() {
   // Keyboard shortcuts for web
   useKeyboardShortcuts([
     {
-      key: 'Enter',
+      key: "Enter",
       callback: () => {
-        if (Platform.OS === 'web' && !isSubmitting) {
+        if (Platform.OS === "web" && !isSubmitting) {
           submitLogin();
         }
       },
     },
     {
-      key: 'Escape',
+      key: "Escape",
       callback: () => {
-        if (Platform.OS === 'web') {
+        if (Platform.OS === "web") {
           if (showDiagnostics) {
             setShowDiagnostics(false);
           } else {
@@ -114,11 +124,11 @@ export default function LoginScreen() {
       },
     },
     {
-      key: 'd',
+      key: "d",
       shift: true,
       ctrl: true,
       callback: () => {
-        if (Platform.OS === 'web') {
+        if (Platform.OS === "web") {
           setShowDiagnostics(!showDiagnostics);
           // Re-run diagnostics when opening
           if (!showDiagnostics) {
@@ -130,8 +140,10 @@ export default function LoginScreen() {
                 touched,
                 user,
                 isLoading,
-                segments
-              ).catch(err => __DEV__ && console.error('Diagnostic error:', err));
+                segments,
+              ).catch(
+                (err) => __DEV__ && console.error("Diagnostic error:", err),
+              );
             }, 100);
           }
         }
@@ -141,12 +153,16 @@ export default function LoginScreen() {
 
   // Log web platform identification and inject web-specific styles
   useEffect(() => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       // Global handlers to prevent text selection without blocking clicks
       const handleSelectStart = (e: Event) => {
         const target = e.target as HTMLElement;
         // Only prevent selection on non-input, non-textarea elements
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+        if (
+          target.tagName !== "INPUT" &&
+          target.tagName !== "TEXTAREA" &&
+          !target.isContentEditable
+        ) {
           e.preventDefault();
         }
       };
@@ -154,7 +170,11 @@ export default function LoginScreen() {
       const handleMouseUp = (e: MouseEvent) => {
         // Clear any accidental text selection on mouse up (but only if it's not in an input)
         const target = e.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+        if (
+          target.tagName !== "INPUT" &&
+          target.tagName !== "TEXTAREA" &&
+          !target.isContentEditable
+        ) {
           const selection = window.getSelection();
           if (selection && selection.toString().length > 0 && e.detail === 2) {
             // Double-click detected, clear selection
@@ -164,14 +184,14 @@ export default function LoginScreen() {
       };
 
       // Use capture phase to catch events early, but don't prevent default on click
-      document.addEventListener('selectstart', handleSelectStart, true);
-      document.addEventListener('mouseup', handleMouseUp, false);
+      document.addEventListener("selectstart", handleSelectStart, true);
+      document.addEventListener("mouseup", handleMouseUp, false);
 
       // Inject CSS to fix mouse/pointer events on web
-      if (typeof document !== 'undefined') {
-        const styleId = 'login-web-styles';
+      if (typeof document !== "undefined") {
+        const styleId = "login-web-styles";
         if (!document.getElementById(styleId)) {
-          const style = document.createElement('style');
+          const style = document.createElement("style");
           style.id = styleId;
           style.textContent = `
             input#username:focus,
@@ -312,15 +332,25 @@ export default function LoginScreen() {
       }
 
       if (__DEV__) {
-        __DEV__ && console.log('🌐 LoginScreen loaded on WEB platform');
-        __DEV__ && console.log('🌐 Window location:', typeof window !== 'undefined' ? window.location.href : 'N/A');
-        __DEV__ && console.log('🌐 Auth state:', { hasUser: !!user, isLoading, userRole: user?.role });
-        __DEV__ && console.log('🌐 Form state:', {
-          hasUsername: !!values.username,
-          hasPassword: !!values.password,
-          isSubmitting,
-          errors: Object.keys(errors).length > 0 ? errors : 'none'
-        });
+        __DEV__ && console.log("🌐 LoginScreen loaded on WEB platform");
+        __DEV__ &&
+          console.log(
+            "🌐 Window location:",
+            typeof window !== "undefined" ? window.location.href : "N/A",
+          );
+        __DEV__ &&
+          console.log("🌐 Auth state:", {
+            hasUser: !!user,
+            isLoading,
+            userRole: user?.role,
+          });
+        __DEV__ &&
+          console.log("🌐 Form state:", {
+            hasUsername: !!values.username,
+            hasPassword: !!values.password,
+            isSubmitting,
+            errors: Object.keys(errors).length > 0 ? errors : "none",
+          });
 
         // Run full diagnostics after a short delay to allow DOM to render
         setTimeout(() => {
@@ -331,49 +361,54 @@ export default function LoginScreen() {
             touched,
             user,
             isLoading,
-            segments
-          ).catch(err => {
-            __DEV__ && console.error('❌ Diagnostic error:', err);
+            segments,
+          ).catch((err) => {
+            __DEV__ && console.error("❌ Diagnostic error:", err);
           });
         }, 1000);
 
         // Verify form is in DOM
         setTimeout(() => {
-          if (typeof document !== 'undefined') {
-            const formElement = document.querySelector('[data-testid="login-form"]') ||
-              document.querySelector('form') ||
+          if (typeof document !== "undefined") {
+            const formElement =
+              document.querySelector('[data-testid="login-form"]') ||
+              document.querySelector("form") ||
               document.querySelector('[class*="form"]');
             if (__DEV__) {
-              __DEV__ && console.log('🌐 Form element found:', !!formElement);
+              __DEV__ && console.log("🌐 Form element found:", !!formElement);
             }
-            const usernameInput = document.getElementById('username') ||
+            const usernameInput =
+              document.getElementById("username") ||
               document.querySelector('input[placeholder*="Username" i]');
-            const passwordInput = document.getElementById('password') ||
+            const passwordInput =
+              document.getElementById("password") ||
               document.querySelector('input[type="password"]');
             if (__DEV__) {
-              __DEV__ && console.log('🌐 Inputs found:', {
-                username: !!usernameInput,
-                password: !!passwordInput
-              });
+              __DEV__ &&
+                console.log("🌐 Inputs found:", {
+                  username: !!usernameInput,
+                  password: !!passwordInput,
+                });
             }
             // Check visibility
             if (formElement && __DEV__) {
               const styles = window.getComputedStyle(formElement as Element);
-              __DEV__ && console.log('🌐 Form visibility:', {
-                display: styles.display,
-                visibility: styles.visibility,
-                opacity: styles.opacity,
-                width: styles.width,
-                height: styles.height,
-              });
+              __DEV__ &&
+                console.log("🌐 Form visibility:", {
+                  display: styles.display,
+                  visibility: styles.visibility,
+                  opacity: styles.opacity,
+                  width: styles.width,
+                  height: styles.height,
+                });
             }
           }
         }, 500);
       }
 
       return () => {
-        document.removeEventListener('selectstart', handleSelectStart, true);
-        document.removeEventListener('mouseup', handleMouseUp, false);
+        document.removeEventListener("selectstart", handleSelectStart, true);
+        document.removeEventListener("mouseup", handleMouseUp, false);
       };
     }
     return undefined;
@@ -381,18 +416,20 @@ export default function LoginScreen() {
 
   // Redirect if already logged in (let _layout handle it, but also check here as backup)
   useEffect(() => {
-    if (user && !isLoading && Platform.OS === 'web') {
+    if (user && !isLoading && Platform.OS === "web") {
       // User is already logged in, redirect based on role
-      const targetRoute = (user.role === 'supervisor' || user.role === 'admin')
-        ? '/admin/control-panel'
-        : '/staff/home';
+      const targetRoute =
+        user.role === "supervisor" || user.role === "admin"
+          ? "/admin/control-panel"
+          : "/staff/home";
 
       if (__DEV__) {
-        __DEV__ && console.log('[LOGIN] User already logged in, redirecting', {
-          username: user.username,
-          role: user.role,
-          targetRoute
-        });
+        __DEV__ &&
+          console.log("[LOGIN] User already logged in, redirecting", {
+            username: user.username,
+            role: user.role,
+            targetRoute,
+          });
       }
 
       // Small delay to ensure state is ready
@@ -427,20 +464,18 @@ export default function LoginScreen() {
     const loadSavedUsername = async () => {
       try {
         const wasRemembered = await storage.get(
-          STORAGE_KEYS.REMEMBER_ME_ENABLED
+          STORAGE_KEYS.REMEMBER_ME_ENABLED,
         );
-        if (wasRemembered === 'true') {
-          const saved = await storage.get(
-            STORAGE_KEYS.REMEMBERED_USERNAME
-          );
+        if (wasRemembered === "true") {
+          const saved = await storage.get(STORAGE_KEYS.REMEMBERED_USERNAME);
           if (saved) {
-            setValue('username', saved);
+            setValue("username", saved);
             setRememberMe(true);
           }
         }
       } catch {
         if (__DEV__) {
-          __DEV__ && console.warn('Failed to load saved login preference.');
+          __DEV__ && console.warn("Failed to load saved login preference.");
         }
       }
     };
@@ -454,25 +489,19 @@ export default function LoginScreen() {
     async (save: boolean, value: string) => {
       try {
         if (save) {
-          await storage.set(
-            STORAGE_KEYS.REMEMBERED_USERNAME,
-            value
-          );
-          await storage.set(
-            STORAGE_KEYS.REMEMBER_ME_ENABLED,
-            'true'
-          );
+          await storage.set(STORAGE_KEYS.REMEMBERED_USERNAME, value);
+          await storage.set(STORAGE_KEYS.REMEMBER_ME_ENABLED, "true");
         } else {
           await storage.remove(STORAGE_KEYS.REMEMBERED_USERNAME);
           await storage.remove(STORAGE_KEYS.REMEMBER_ME_ENABLED);
         }
       } catch {
         if (__DEV__) {
-          __DEV__ && console.warn('Failed to persist login preference.');
+          __DEV__ && console.warn("Failed to persist login preference.");
         }
       }
     },
-    []
+    [],
   );
 
   const handleLogin = useCallback(async () => {
@@ -480,86 +509,108 @@ export default function LoginScreen() {
     const stepLog = (step: number, message: string, data?: unknown) => {
       if (__DEV__) {
         const elapsed = Date.now() - loginStartTime;
-        __DEV__ && console.log(`[LOGIN STEP ${step}] [${elapsed}ms] ${message}`, data || '');
+        __DEV__ &&
+          console.log(
+            `[LOGIN STEP ${step}] [${elapsed}ms] ${message}`,
+            data || "",
+          );
       }
     };
 
-    stepLog(1, '🔐 Login handler called');
+    stepLog(1, "🔐 Login handler called");
 
     const sanitizedUsername = values.username.trim();
-    stepLog(4, 'Starting login', { username: sanitizedUsername, passwordLength: values.password.length, rememberMe });
-
-
+    stepLog(4, "Starting login", {
+      username: sanitizedUsername,
+      passwordLength: values.password.length,
+      rememberMe,
+    });
 
     try {
-      stepLog(5, 'Calling authStore.login()');
+      stepLog(5, "Calling authStore.login()");
 
       // Call login directly - throttleNetworkRequest is just a boolean check, not a wrapper
-      const success = await login(sanitizedUsername, values.password, rememberMe);
+      const success = await login(
+        sanitizedUsername,
+        values.password,
+        rememberMe,
+      );
 
-      stepLog(6, 'authStore.login() completed', { success });
+      stepLog(6, "authStore.login() completed", { success });
 
       if (!isMounted.current) {
-        stepLog(6.1, '⚠️ Component unmounted - aborting redirect');
+        stepLog(6.1, "⚠️ Component unmounted - aborting redirect");
         return;
       }
 
       if (success) {
-        stepLog(7, '✅ Login successful - starting post-login flow');
+        stepLog(7, "✅ Login successful - starting post-login flow");
 
-        stepLog(7.1, 'Persisting username preference');
+        stepLog(7.1, "Persisting username preference");
         await persistUsernamePreference(rememberMe, sanitizedUsername);
-        stepLog(7.2, 'Username preference persisted');
+        stepLog(7.2, "Username preference persisted");
 
-        stepLog(7.3, 'Waiting for state/AsyncStorage sync');
+        stepLog(7.3, "Waiting for state/AsyncStorage sync");
         // On web, wait a bit longer for state to propagate
-        const waitTime = Platform.OS === 'web' ? 500 : 100;
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        stepLog(7.4, 'Wait completed');
+        const waitTime = Platform.OS === "web" ? 500 : 100;
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        stepLog(7.4, "Wait completed");
 
         // Get the user from store to determine redirect target
         // Try multiple times in case state hasn't updated yet
         let currentUser = useAuthStore.getState().user;
         let attempts = 0;
         while (!currentUser && attempts < 5) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
           currentUser = useAuthStore.getState().user;
           attempts++;
         }
 
-        stepLog(7.5, 'Current user after login', {
+        stepLog(7.5, "Current user after login", {
           hasUser: !!currentUser,
           role: currentUser?.role,
           username: currentUser?.username,
-          attempts
+          attempts,
         });
 
         if (currentUser) {
           // Determine target route based on role
           let targetRoute: string;
-          if (Platform.OS === 'web' && (currentUser.role === 'supervisor' || currentUser.role === 'admin')) {
-            targetRoute = '/admin/control-panel';
-          } else if (currentUser.role === 'supervisor' || currentUser.role === 'admin') {
-            targetRoute = '/supervisor/dashboard';
+          if (
+            Platform.OS === "web" &&
+            (currentUser.role === "supervisor" || currentUser.role === "admin")
+          ) {
+            targetRoute = "/admin/control-panel";
+          } else if (
+            currentUser.role === "supervisor" ||
+            currentUser.role === "admin"
+          ) {
+            targetRoute = "/supervisor/dashboard";
           } else {
-            targetRoute = '/staff/home';
+            targetRoute = "/staff/home";
           }
 
-          stepLog(8, '🚀 Redirecting after login', {
+          stepLog(8, "🚀 Redirecting after login", {
             platform: Platform.OS,
             role: currentUser.role,
             targetRoute,
-            username: currentUser.username
+            username: currentUser.username,
           });
 
           // On web, use window.location for more reliable redirect
-          if (Platform.OS === 'web') {
-            if (typeof window !== 'undefined') {
-              stepLog(8.1, 'Using window.location.href for redirect on web');
+          if (Platform.OS === "web") {
+            if (typeof window !== "undefined") {
+              stepLog(8.1, "Using window.location.href for redirect on web");
               if (__DEV__) {
-                __DEV__ && console.log('[LOGIN] 🚀 Redirecting to:', targetRoute);
-                __DEV__ && console.log('[LOGIN] Current URL:', window.location.href);
-                __DEV__ && console.log('[LOGIN] Target URL will be:', window.location.origin + targetRoute);
+                __DEV__ &&
+                  console.log("[LOGIN] 🚀 Redirecting to:", targetRoute);
+                __DEV__ &&
+                  console.log("[LOGIN] Current URL:", window.location.href);
+                __DEV__ &&
+                  console.log(
+                    "[LOGIN] Target URL will be:",
+                    window.location.origin + targetRoute,
+                  );
               }
               // Use a small delay to ensure state is fully updated
               setTimeout(() => {
@@ -570,38 +621,46 @@ export default function LoginScreen() {
           }
 
           // Fallback to router for mobile
-          stepLog(8.2, 'Using router.replace for redirect');
+          stepLog(8.2, "Using router.replace for redirect");
           router.replace(targetRoute as Href);
-          stepLog(9, 'Router redirect initiated');
+          stepLog(9, "Router redirect initiated");
         } else {
-          stepLog(8, '⚠️ No user found after login - letting _layout handle redirect');
+          stepLog(
+            8,
+            "⚠️ No user found after login - letting _layout handle redirect",
+          );
           // Fallback: navigate to index and let _layout handle it
-          router.replace('/');
+          router.replace("/");
         }
       } else {
-        stepLog(6.2, '❌ Login returned false - invalid credentials');
-        setFieldError('password', 'Invalid credentials. Please check your username and password.');
+        stepLog(6.2, "❌ Login returned false - invalid credentials");
+        setFieldError(
+          "password",
+          "Invalid credentials. Please check your username and password.",
+        );
       }
     } catch (err: unknown) {
-      stepLog(10, '❌ Exception caught in login handler');
-      const fallback = 'Login failed. Please try again.';
-      const axiosError = err as { 
-        message?: string; 
-        response?: { 
-          data?: { 
-            detail?: { 
-              message?: string;
-              error?: { message?: string };
-            } | string; 
-            message?: string 
-          } 
-        } 
+      stepLog(10, "❌ Exception caught in login handler");
+      const fallback = "Login failed. Please try again.";
+      const axiosError = err as {
+        message?: string;
+        response?: {
+          data?: {
+            detail?:
+              | {
+                  message?: string;
+                  error?: { message?: string };
+                }
+              | string;
+            message?: string;
+          };
+        };
       };
-      let msg = 'Login failed. Please try again.';
+      let msg = "Login failed. Please try again.";
 
       if (axiosError?.response?.data?.detail) {
         const detail = axiosError.response.data.detail;
-        if (typeof detail === 'string') {
+        if (typeof detail === "string") {
           msg = detail;
         } else if (detail.error && detail.error.message) {
           msg = detail.error.message;
@@ -614,8 +673,8 @@ export default function LoginScreen() {
         msg = axiosError.message;
       }
 
-      stepLog(10.1, 'Error message extracted', { message: msg, error: err });
-      setFieldError('password', msg);
+      stepLog(10.1, "Error message extracted", { message: msg, error: err });
+      setFieldError("password", msg);
     } finally {
       const totalTime = Date.now() - loginStartTime;
       stepLog(12, `🏁 Login flow completed in ${totalTime}ms`);
@@ -638,46 +697,54 @@ export default function LoginScreen() {
   }, [handleSubmit, handleLogin, isSubmitting, isLoading]);
 
   // On web, don't use KeyboardAvoidingView as it can block events
-  return Platform.OS === 'web' ? (
+  return Platform.OS === "web" ? (
     <View style={[styles.container, styles.containerWeb]}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#121212', '#0A0A0A', '#000000']}
+        colors={["#121212", "#0A0A0A", "#000000"]}
         style={StyleSheet.absoluteFill}
       />
 
-
-
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, Platform.OS === 'web' && styles.scrollContentWeb]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          Platform.OS === "web" && styles.scrollContentWeb,
+        ]}
         keyboardShouldPersistTaps="handled"
-        style={Platform.OS === 'web' ? styles.scrollViewWeb : undefined}
+        style={Platform.OS === "web" ? styles.scrollViewWeb : undefined}
         scrollEventThrottle={16}
-        {...(Platform.OS === 'web' ? {
-          pointerEvents: 'auto' as const,
-          onMouseUp: (e: React.MouseEvent) => {
-            // Clear selection on double-click, but don't prevent the click
-            if (e.detail === 2 && window.getSelection) {
-              const selection = window.getSelection();
-              if (selection && selection.toString().length > 0) {
-                selection.removeAllRanges();
-              }
+        {...(Platform.OS === "web"
+          ? {
+              pointerEvents: "auto" as const,
+              onMouseUp: (e: React.MouseEvent) => {
+                // Clear selection on double-click, but don't prevent the click
+                if (e.detail === 2 && window.getSelection) {
+                  const selection = window.getSelection();
+                  if (selection && selection.toString().length > 0) {
+                    selection.removeAllRanges();
+                  }
+                }
+              },
             }
-          },
-        } : {})}
+          : {})}
       >
         {/* Back Button */}
         <TouchableOpacity
-          style={[styles.backButton, Platform.OS === 'web' && { cursor: 'pointer' }]}
+          style={[
+            styles.backButton,
+            Platform.OS === "web" && { cursor: "pointer" },
+          ]}
           onPress={() => {
             router.back();
           }}
           accessibilityLabel="Go back"
-          {...(Platform.OS === 'web' ? {
-            onSelectStart: (e: React.SyntheticEvent) => {
-              e.preventDefault();
-            },
-          } : {})}
+          {...(Platform.OS === "web"
+            ? {
+                onSelectStart: (e: React.SyntheticEvent) => {
+                  e.preventDefault();
+                },
+              }
+            : {})}
         >
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
@@ -694,10 +761,8 @@ export default function LoginScreen() {
           <AppLogo size="large" showText={true} variant="default" />
         </Animated.View>
 
-
-
         {/* Web: Wrap in proper HTML form element for password manager support */}
-        {Platform.OS === 'web' ? (
+        {Platform.OS === "web" ? (
           <View style={styles.formWrapper}>
             <form
               onSubmit={(e) => {
@@ -707,13 +772,16 @@ export default function LoginScreen() {
               }}
             >
               <View
-                style={[styles.form, Platform.OS === 'web' && styles.webFormContainer]}
+                style={[
+                  styles.form,
+                  Platform.OS === "web" && styles.webFormContainer,
+                ]}
                 data-testid="login-form"
-                {...(Platform.OS !== 'web'
+                {...(Platform.OS !== "web"
                   ? {
-                    onStartShouldSetResponder: () => true,
-                    onResponderTerminationRequest: () => false,
-                  }
+                      onStartShouldSetResponder: () => true,
+                      onResponderTerminationRequest: () => false,
+                    }
                   : {})}
               >
                 {/* Display form-level errors */}
@@ -729,8 +797,8 @@ export default function LoginScreen() {
                   label="Username"
                   placeholder="Username"
                   value={values.username}
-                  onChangeText={(text: string) => setValue('username', text)}
-                  onBlur={() => setFieldTouched('username', true)}
+                  onChangeText={(text: string) => setValue("username", text)}
+                  onBlur={() => setFieldTouched("username", true)}
                   error={touched.username ? errors.username : undefined}
                   editable={!(isSubmitting || isLoading)}
                   autoCapitalize="none"
@@ -745,12 +813,12 @@ export default function LoginScreen() {
                   label="Password"
                   placeholder="Password"
                   value={values.password}
-                  onChangeText={(text: string) => setValue('password', text)}
-                  onBlur={() => setFieldTouched('password', true)}
+                  onChangeText={(text: string) => setValue("password", text)}
+                  onBlur={() => setFieldTouched("password", true)}
                   error={touched.password ? errors.password : undefined}
                   editable={!(isSubmitting || isLoading)}
                   secureTextEntry={!showPassword}
-                  rightIcon={showPassword ? 'eye-off' : 'eye'}
+                  rightIcon={showPassword ? "eye-off" : "eye"}
                   rightIconColor="#fff"
                   onRightIconPress={() => setShowPassword(!showPassword)}
                   autoComplete="current-password"
@@ -771,23 +839,25 @@ export default function LoginScreen() {
                   disabled={isSubmitting || isLoading}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: rememberMe }}
-                  {...(Platform.OS === 'web' ? {
-                    onSelectStart: (e: React.SyntheticEvent) => {
-                      e.preventDefault();
-                    },
-                  } : {})}
+                  {...(Platform.OS === "web"
+                    ? {
+                        onSelectStart: (e: React.SyntheticEvent) => {
+                          e.preventDefault();
+                        },
+                      }
+                    : {})}
                 >
                   <Ionicons
-                    name={rememberMe ? 'checkbox' : 'square-outline'}
+                    name={rememberMe ? "checkbox" : "square-outline"}
                     size={24}
-                    color={rememberMe ? '#4CAF50' : '#888'}
+                    color={rememberMe ? "#4CAF50" : "#888"}
                   />
                   <Text style={styles.rememberMeText}>Remember Me</Text>
                 </Pressable>
 
                 {/* Login Button */}
                 <EnhancedButton
-                  title={isSubmitting || isLoading ? 'Logging in...' : 'Login'}
+                  title={isSubmitting || isLoading ? "Logging in..." : "Login"}
                   onPress={() => submitLogin()}
                   disabled={isSubmitting || isLoading}
                   loading={isSubmitting || isLoading}
@@ -800,15 +870,17 @@ export default function LoginScreen() {
                   <Pressable
                     onPress={() => {
                       if (!(isSubmitting || isLoading)) {
-                        router.push('/register');
+                        router.push("/register");
                       }
                     }}
                     disabled={isSubmitting || isLoading}
-                    {...(Platform.OS === 'web' ? {
-                      onSelectStart: (e: any) => {
-                        e.preventDefault();
-                      },
-                    } : {})}
+                    {...(Platform.OS === "web"
+                      ? {
+                          onSelectStart: (e: any) => {
+                            e.preventDefault();
+                          },
+                        }
+                      : {})}
                   >
                     <Text style={styles.registerLinkText}>
                       {"Don't have an account? "}
@@ -845,8 +917,8 @@ export default function LoginScreen() {
               label="Username"
               placeholder="Username"
               value={values.username}
-              onChangeText={(text) => setValue('username', text)}
-              onBlur={() => setFieldTouched('username', true)}
+              onChangeText={(text) => setValue("username", text)}
+              onBlur={() => setFieldTouched("username", true)}
               error={touched.username ? errors.username : undefined}
               editable={!(isSubmitting || isLoading)}
               autoCapitalize="none"
@@ -861,12 +933,12 @@ export default function LoginScreen() {
               label="Password"
               placeholder="Password"
               value={values.password}
-              onChangeText={(text) => setValue('password', text)}
-              onBlur={() => setFieldTouched('password', true)}
+              onChangeText={(text) => setValue("password", text)}
+              onBlur={() => setFieldTouched("password", true)}
               error={touched.password ? errors.password : undefined}
               editable={!(isSubmitting || isLoading)}
               secureTextEntry={!showPassword}
-              rightIcon={showPassword ? 'eye-off' : 'eye'}
+              rightIcon={showPassword ? "eye-off" : "eye"}
               rightIconColor="#fff"
               onRightIconPress={() => setShowPassword(!showPassword)}
               autoComplete="current-password"
@@ -879,22 +951,24 @@ export default function LoginScreen() {
             {/* Remember Me */}
             <Pressable
               style={styles.rememberMeContainer}
-              onPress={() => !(isSubmitting || isLoading) && setRememberMe(!rememberMe)}
+              onPress={() =>
+                !(isSubmitting || isLoading) && setRememberMe(!rememberMe)
+              }
               disabled={isSubmitting || isLoading}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: rememberMe }}
             >
               <Ionicons
-                name={rememberMe ? 'checkbox' : 'square-outline'}
+                name={rememberMe ? "checkbox" : "square-outline"}
                 size={24}
-                color={rememberMe ? '#4CAF50' : '#888'}
+                color={rememberMe ? "#4CAF50" : "#888"}
               />
               <Text style={styles.rememberMeText}>Remember Me</Text>
             </Pressable>
 
             {/* Login Button */}
             <EnhancedButton
-              title={isSubmitting || isLoading ? 'Logging in...' : 'Login'}
+              title={isSubmitting || isLoading ? "Logging in..." : "Login"}
               onPress={submitLogin}
               disabled={isSubmitting || isLoading}
               loading={isSubmitting || isLoading}
@@ -907,7 +981,7 @@ export default function LoginScreen() {
               <Pressable
                 onPress={() => {
                   if (!(isSubmitting || isLoading)) {
-                    router.push('/register');
+                    router.push("/register");
                   }
                 }}
                 disabled={isSubmitting || isLoading}
@@ -946,15 +1020,13 @@ export default function LoginScreen() {
   ) : (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#1a1a1a', '#0d0d0d', '#000000']}
+        colors={["#1a1a1a", "#0d0d0d", "#000000"]}
         style={StyleSheet.absoluteFill}
       />
-
-
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -984,8 +1056,6 @@ export default function LoginScreen() {
           <AppLogo size="large" showText={true} variant="default" />
         </Animated.View>
 
-
-
         {/* Mobile: Direct View without form wrapper */}
         <View style={styles.form}>
           {/* Display form-level errors */}
@@ -1001,8 +1071,8 @@ export default function LoginScreen() {
             label="Username"
             placeholder="Username"
             value={values.username}
-            onChangeText={(text) => setValue('username', text)}
-            onBlur={() => setFieldTouched('username', true)}
+            onChangeText={(text) => setValue("username", text)}
+            onBlur={() => setFieldTouched("username", true)}
             error={touched.username ? errors.username : undefined}
             editable={!(isSubmitting || isLoading)}
             autoCapitalize="none"
@@ -1017,8 +1087,8 @@ export default function LoginScreen() {
             label="Password"
             placeholder="Password"
             value={values.password}
-            onChangeText={(text) => setValue('password', text)}
-            onBlur={() => setFieldTouched('password', true)}
+            onChangeText={(text) => setValue("password", text)}
+            onBlur={() => setFieldTouched("password", true)}
             error={touched.password ? errors.password : undefined}
             editable={!(isSubmitting || isLoading)}
             secureTextEntry={!showPassword}
@@ -1032,22 +1102,24 @@ export default function LoginScreen() {
           {/* Remember Me */}
           <Pressable
             style={styles.rememberMeContainer}
-            onPress={() => !(isSubmitting || isLoading) && setRememberMe(!rememberMe)}
+            onPress={() =>
+              !(isSubmitting || isLoading) && setRememberMe(!rememberMe)
+            }
             disabled={isSubmitting || isLoading}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: rememberMe }}
           >
             <Ionicons
-              name={rememberMe ? 'checkbox' : 'square-outline'}
+              name={rememberMe ? "checkbox" : "square-outline"}
               size={24}
-              color={rememberMe ? '#4CAF50' : '#888'}
+              color={rememberMe ? "#4CAF50" : "#888"}
             />
             <Text style={styles.rememberMeText}>Remember Me</Text>
           </Pressable>
 
           {/* Login Button */}
           <EnhancedButton
-            title={isSubmitting || isLoading ? 'Logging in...' : 'Login'}
+            title={isSubmitting || isLoading ? "Logging in..." : "Login"}
             onPress={submitLogin}
             disabled={isSubmitting || isLoading}
             loading={isSubmitting || isLoading}
@@ -1060,7 +1132,7 @@ export default function LoginScreen() {
             <Pressable
               onPress={() => {
                 if (!(isSubmitting || isLoading)) {
-                  router.push('/register');
+                  router.push("/register");
                 }
               }}
               disabled={isSubmitting || isLoading}
@@ -1097,60 +1169,64 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundDark,
   },
   containerWeb: {
-    minHeight: '100vh',
-    width: '100%',
+    minHeight: "100vh",
+    width: "100%",
   } as any,
   scrollViewWeb: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   } as any,
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: spacing.lg,
   },
   scrollContentWeb: {
-    minHeight: '100vh',
-    width: '100%',
+    minHeight: "100vh",
+    width: "100%",
     maxWidth: 500,
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingTop: 60,
     paddingBottom: 60,
   } as any,
 
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 48,
     left: spacing.lg,
     zIndex: 10,
     padding: spacing.sm,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: spacing.xxl,
   },
 
   formWrapper: {
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
   },
   form: {
-    width: '100%',
-    ...(Platform.OS === 'web' ? {
-      maxWidth: '100%',
-    } : {}),
+    width: "100%",
+    ...(Platform.OS === "web"
+      ? {
+          maxWidth: "100%",
+        }
+      : {}),
   } as any,
   webFormContainer: {
-    ...(Platform.OS === 'web' ? {
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      pointerEvents: 'auto',
-    } : {}),
+    ...(Platform.OS === "web"
+      ? {
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          pointerEvents: "auto",
+        }
+      : {}),
   } as any,
   errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: `${colors.error}20`,
     borderLeftWidth: 4,
     borderLeftColor: colors.error,
@@ -1165,8 +1241,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.md,
     marginTop: spacing.sm,
   },
@@ -1177,7 +1253,7 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     marginTop: spacing.lg,
-    alignItems: 'center',
+    alignItems: "center",
     padding: spacing.sm,
   },
   registerLinkText: {
@@ -1186,8 +1262,8 @@ const styles = StyleSheet.create({
   },
   registerLinkBold: {
     color: colors.success,
-    fontWeight: 'bold',
-    textDecorationLine: Platform.OS === 'web' ? 'underline' : 'none',
+    fontWeight: "bold",
+    textDecorationLine: Platform.OS === "web" ? "underline" : "none",
   },
   infoBox: {
     marginTop: spacing.xl,
@@ -1205,7 +1281,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: spacing.xl,
-    alignItems: 'center',
+    alignItems: "center",
     gap: spacing.md,
     paddingBottom: spacing.xl,
   },

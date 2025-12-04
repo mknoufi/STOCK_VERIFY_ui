@@ -33,5 +33,5 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        types_or: [javascript, jsx, ts, tsx, css, json, md]
+        types_or: [javascript, jsx, ts, tsx, css, json, markdown]
         files: ^frontend/

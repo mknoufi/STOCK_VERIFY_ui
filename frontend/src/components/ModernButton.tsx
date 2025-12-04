@@ -11,7 +11,7 @@
  * - Glassmorphism variant
  */
 
-import React from 'react';
+import React from "react";
 import {
   TouchableOpacity,
   Text,
@@ -19,22 +19,37 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-} from 'react-native-reanimated';
-import { modernColors, modernTypography, modernSpacing, modernBorderRadius, modernShadows, modernAnimations } from '../styles/modernDesignSystem';
+} from "react-native-reanimated";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+  modernBorderRadius,
+  modernShadows,
+  modernAnimations,
+} from "../styles/modernDesignSystem";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'glass' | 'gradient';
-export type ButtonSize = 'small' | 'medium' | 'large';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "danger"
+  | "glass"
+  | "gradient";
+export type ButtonSize = "small" | "medium" | "large";
 
 interface ModernButtonProps {
   title: string;
@@ -44,7 +59,7 @@ interface ModernButtonProps {
   disabled?: boolean;
   loading?: boolean;
   icon?: keyof typeof Ionicons.glyphMap;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -56,12 +71,12 @@ interface ModernButtonProps {
 export const ModernButton: React.FC<ModernButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'medium',
+  variant = "primary",
+  size = "medium",
   disabled = false,
   loading = false,
   icon,
-  iconPosition = 'left',
+  iconPosition = "left",
   fullWidth = false,
   style,
   textStyle,
@@ -110,13 +125,13 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   const getButtonStyles = (): ViewStyle => {
     const baseStyle: ViewStyle = {
       borderRadius: modernBorderRadius.button,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'row',
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row",
       gap: modernSpacing.sm,
       minHeight: getSizeConfig().height,
       paddingHorizontal: getSizeConfig().paddingHorizontal,
-      ...(fullWidth && { width: '100%' }),
+      ...(fullWidth && { width: "100%" }),
       ...(disabled && { opacity: modernAnimations.opacity.disabled }),
     };
 
@@ -131,22 +146,22 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
         ...modernShadows.sm,
       },
       outline: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
         borderWidth: 2,
         borderColor: modernColors.primary[500],
       },
       ghost: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
       },
       danger: {
         backgroundColor: modernColors.error.main,
         ...modernShadows.sm,
       },
       glass: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
       },
       gradient: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
       },
     };
 
@@ -160,17 +175,17 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   const getTextStyles = (): TextStyle => {
     const baseStyle: TextStyle = {
       ...getSizeConfig().typography,
-      fontWeight: '600' as const,
+      fontWeight: "600" as const,
     };
 
     const variantTextColors: Record<ButtonVariant, string> = {
-      primary: '#FFFFFF',
-      secondary: '#FFFFFF',
+      primary: "#FFFFFF",
+      secondary: "#FFFFFF",
       outline: modernColors.primary[500],
       ghost: modernColors.primary[500],
-      danger: '#FFFFFF',
+      danger: "#FFFFFF",
       glass: modernColors.text.primary,
-      gradient: '#FFFFFF',
+      gradient: "#FFFFFF",
     };
 
     return {
@@ -181,13 +196,13 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
 
   // Get icon color
   const getIconColor = (): string => {
-    if (variant === 'outline' || variant === 'ghost') {
+    if (variant === "outline" || variant === "ghost") {
       return modernColors.primary[500];
     }
-    if (variant === 'glass') {
+    if (variant === "glass") {
       return modernColors.text.primary;
     }
-    return '#FFFFFF';
+    return "#FFFFFF";
   };
 
   // Size configuration
@@ -222,11 +237,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     if (!icon || loading) return null;
 
     return (
-      <Ionicons
-        name={icon}
-        size={sizeConfig.iconSize}
-        color={getIconColor()}
-      />
+      <Ionicons name={icon} size={sizeConfig.iconSize} color={getIconColor()} />
     );
   };
 
@@ -236,16 +247,20 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       return (
         <ActivityIndicator
           size="small"
-          color={variant === 'outline' || variant === 'ghost' ? modernColors.primary[500] : '#FFFFFF'}
+          color={
+            variant === "outline" || variant === "ghost"
+              ? modernColors.primary[500]
+              : "#FFFFFF"
+          }
         />
       );
     }
 
     return (
       <>
-        {iconPosition === 'left' && renderIcon()}
+        {iconPosition === "left" && renderIcon()}
         <Text style={[getTextStyles(), textStyle]}>{title}</Text>
-        {iconPosition === 'right' && renderIcon()}
+        {iconPosition === "right" && renderIcon()}
       </>
     );
   };
@@ -254,7 +269,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   const renderButton = () => {
     const buttonStyle = [getButtonStyles(), style];
 
-    if (variant === 'gradient') {
+    if (variant === "gradient") {
       const colors = gradientColors || modernColors.gradients.primary;
       return (
         <AnimatedTouchableOpacity
@@ -281,7 +296,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
       );
     }
 
-    if (variant === 'glass') {
+    if (variant === "glass") {
       return (
         <AnimatedTouchableOpacity
           onPress={onPress}
@@ -327,26 +342,26 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
     borderRadius: modernBorderRadius.button,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     gap: modernSpacing.sm,
-    minHeight: '100%',
-    width: '100%',
+    minHeight: "100%",
+    width: "100%",
   },
   blur: {
     flex: 1,
     borderRadius: modernBorderRadius.button,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     gap: modernSpacing.sm,
-    minHeight: '100%',
-    width: '100%',
+    minHeight: "100%",
+    width: "100%",
     paddingHorizontal: modernSpacing.lg,
     paddingVertical: modernSpacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
 });
 

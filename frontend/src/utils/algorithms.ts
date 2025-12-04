@@ -39,8 +39,8 @@ export const levenshteinDistance = (a: string, b: string): number => {
           matrix[i - 1]![j - 1]! + 1, // substitution
           Math.min(
             matrix[i]![j - 1]! + 1, // insertion
-            matrix[i - 1]![j]! + 1 // deletion
-          )
+            matrix[i - 1]![j]! + 1, // deletion
+          ),
         );
       }
     }
@@ -57,14 +57,14 @@ export const levenshteinDistance = (a: string, b: string): number => {
  */
 export const longestCommonSubsequence = (
   text1: string,
-  text2: string
+  text2: string,
 ): string => {
   const m = text1.length;
   const n = text2.length;
 
   // Create a 2D array to store the lengths of LCS
   const dp: number[][] = Array.from({ length: m + 1 }, () =>
-    Array(n + 1).fill(0)
+    Array(n + 1).fill(0),
   );
 
   // Fill in the DP table
@@ -94,7 +94,7 @@ export const longestCommonSubsequence = (
     }
   }
 
-  return lcs.join('');
+  return lcs.join("");
 };
 
 /**
@@ -105,7 +105,7 @@ export const longestCommonSubsequence = (
  */
 export const hammingDistance = (str1: string, str2: string): number => {
   if (str1.length !== str2.length) {
-    throw new Error('Strings must be of the same length.');
+    throw new Error("Strings must be of the same length.");
   }
 
   let dist = 0;

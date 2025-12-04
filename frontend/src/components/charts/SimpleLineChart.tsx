@@ -3,11 +3,15 @@
  * Fully functional line chart using React Native Views
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
-import { modernColors, modernTypography, modernSpacing } from '../../styles/modernDesignSystem';
+import React from "react";
+import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;
 const CHART_HEIGHT = 200;
 const PADDING = 40;
@@ -61,7 +65,7 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
   const scaleY = chartHeight / (yRange + yPadding * 2);
 
   const points = data.map((point, index) => {
-    const x = (index * scaleX);
+    const x = index * scaleX;
     const y = chartHeight - (point.y - minY + yPadding) * scaleY;
     return { x, y, value: point.y, label: point.label || String(point.x) };
   });
@@ -77,7 +81,9 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
 
   // Generate x-axis labels
   const xLabels = data
-    .filter((_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1)
+    .filter(
+      (_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1,
+    )
     .map((point) => ({
       x: data.indexOf(point) * scaleX,
       label: String(point.x),
@@ -178,7 +184,7 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
                   },
                 ]}
               >
-                {Platform.OS === 'web' && (
+                {Platform.OS === "web" && (
                   <View style={styles.tooltip}>
                     <Text style={styles.tooltipText}>{point.value}</Text>
                   </View>
@@ -216,15 +222,15 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.xs,
   },
   chartContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: CHART_HEIGHT,
   },
   yAxis: {
     width: PADDING,
-    position: 'relative',
+    position: "relative",
   },
   yAxisLabelContainer: {
-    position: 'absolute',
+    position: "absolute",
     right: modernSpacing.xs,
     transform: [{ translateY: -8 }],
   },
@@ -235,40 +241,40 @@ const styles = StyleSheet.create({
   },
   chartArea: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
     height: CHART_HEIGHT,
   },
   gridLine: {
-    position: 'absolute',
+    position: "absolute",
     height: 1,
     backgroundColor: modernColors.border.light,
     opacity: 0.3,
-    borderStyle: 'dashed',
-    ...(Platform.OS === 'web' && {
+    borderStyle: "dashed",
+    ...(Platform.OS === "web" && {
       borderTopWidth: 1,
       borderTopColor: modernColors.border.light,
-      borderStyle: 'dashed',
+      borderStyle: "dashed",
     }),
   },
   axisLine: {
-    position: 'absolute',
+    position: "absolute",
     backgroundColor: modernColors.border.medium,
   },
   lineSegment: {
-    position: 'absolute',
+    position: "absolute",
     height: 3,
     borderRadius: 1.5,
   },
   point: {
-    position: 'absolute',
+    position: "absolute",
     width: 8,
     height: 8,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
   },
   tooltip: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 12,
     left: -20,
     backgroundColor: modernColors.background.paper,
@@ -278,40 +284,40 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: modernColors.border.light,
     minWidth: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tooltipText: {
     ...modernTypography.body.small,
     fontSize: 10,
     color: modernColors.text.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   xAxis: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -20,
-    width: '100%',
+    width: "100%",
     height: 20,
   },
   xAxisLabel: {
-    position: 'absolute',
+    position: "absolute",
     transform: [{ translateX: -20 }],
   },
   xAxisText: {
     ...modernTypography.body.small,
     fontSize: 10,
     color: modernColors.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   xAxisLabelText: {
     ...modernTypography.body.small,
     color: modernColors.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: modernSpacing.md,
   },
   emptyState: {
     height: CHART_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.elevated,
     borderRadius: 8,
   },

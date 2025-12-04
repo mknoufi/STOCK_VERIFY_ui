@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
-import { useAuthStore } from '../src/store/authStore';
-import { useTheme } from '../src/hooks/useTheme';
-import EnhancedTextInput from '../src/components/forms/EnhancedTextInput';
-import EnhancedButton from '../src/components/forms/EnhancedButton';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { useAuthStore } from "../src/store/authStore";
+import { useTheme } from "../src/hooks/useTheme";
+import EnhancedTextInput from "../src/components/forms/EnhancedTextInput";
+import EnhancedButton from "../src/components/forms/EnhancedButton";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login } = useAuthStore();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!username || !password) {
-      Alert.alert('Error', 'Please enter username and password');
+      Alert.alert("Error", "Please enter username and password");
       return;
     }
 
@@ -26,23 +33,21 @@ export default function LoginScreen() {
     try {
       const success = await login(username, password);
       if (!success) {
-        Alert.alert('Login Failed', 'Invalid username or password');
+        Alert.alert("Login Failed", "Invalid username or password");
       }
       // Router will auto-redirect based on user role in _layout
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid username or password');
+      Alert.alert("Login Failed", "Invalid username or password");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View
-      style={styles.gradient}
-    >
+    <View style={styles.gradient}>
       <StatusBar style="light" />
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
         <View style={styles.header}>
@@ -61,7 +66,7 @@ export default function LoginScreen() {
             leftIcon="person-outline"
             editable={!loading}
           />
-          
+
           <EnhancedTextInput
             label="Password"
             value={password}
@@ -74,7 +79,7 @@ export default function LoginScreen() {
           />
 
           <EnhancedButton
-            title={loading ? 'Signing in...' : 'Sign In'}
+            title={loading ? "Signing in..." : "Sign In"}
             onPress={handleLogin}
             disabled={loading}
             loading={loading}
@@ -92,23 +97,23 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 24,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 48,
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: "700",
+    color: "#fff",
     marginTop: 16,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#94A3B8',
+    color: "#94A3B8",
   },
   form: {
     gap: 16,

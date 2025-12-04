@@ -2,15 +2,15 @@
  * Setting Item Component - Individual setting row
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
+import React from "react";
+import { View, Text, StyleSheet, Switch, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
 
 interface SettingItemProps {
   label: string;
   value: any;
-  type: 'switch' | 'select' | 'slider' | 'number';
+  type: "switch" | "select" | "slider" | "number";
   onValueChange: (value: any) => void;
   options?: { label: string; value: any }[];
   min?: number;
@@ -37,9 +37,9 @@ export const SettingItem: React.FC<SettingItemProps> = ({
   const handlePress = () => {
     if (disabled) return;
 
-    if (type === 'select' && options.length > 0) {
+    if (type === "select" && options.length > 0) {
       // Show picker - simplified for now
-      const currentIndex = options.findIndex(opt => opt.value === value);
+      const currentIndex = options.findIndex((opt) => opt.value === value);
       const nextIndex = (currentIndex + 1) % options.length;
       const nextOption = options[nextIndex];
       if (nextOption) {
@@ -56,7 +56,7 @@ export const SettingItem: React.FC<SettingItemProps> = ({
         disabled && styles.disabled,
       ]}
       onPress={handlePress}
-      disabled={disabled || type === 'switch'}
+      disabled={disabled || type === "switch"}
       activeOpacity={0.7}
     >
       <View style={styles.leftContainer}>
@@ -79,7 +79,7 @@ export const SettingItem: React.FC<SettingItemProps> = ({
       </View>
 
       <View style={styles.rightContainer}>
-        {type === 'switch' && (
+        {type === "switch" && (
           <Switch
             value={value}
             onValueChange={onValueChange}
@@ -92,10 +92,11 @@ export const SettingItem: React.FC<SettingItemProps> = ({
           />
         )}
 
-        {type === 'select' && (
+        {type === "select" && (
           <View style={styles.selectContainer}>
             <Text style={[styles.value, { color: theme.colors.textSecondary }]}>
-              {options.find(opt => opt.value === value)?.label || String(value)}
+              {options.find((opt) => opt.value === value)?.label ||
+                String(value)}
             </Text>
             <Ionicons
               name="chevron-forward"
@@ -105,12 +106,13 @@ export const SettingItem: React.FC<SettingItemProps> = ({
           </View>
         )}
 
-        {(type === 'slider' || type === 'number') && (
+        {(type === "slider" || type === "number") && (
           <Text style={[styles.value, { color: theme.colors.textSecondary }]}>
             {String(value)}
-            {type === 'slider' && min !== undefined && max !== undefined && (
+            {type === "slider" && min !== undefined && max !== undefined && (
               <Text style={styles.sliderHint}>
-                {' '}({min}-{max})
+                {" "}
+                ({min}-{max})
               </Text>
             )}
           </Text>
@@ -122,9 +124,9 @@ export const SettingItem: React.FC<SettingItemProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
@@ -134,8 +136,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   leftContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   icon: {
@@ -146,12 +148,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rightContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   selectContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   value: {
     fontSize: 16,

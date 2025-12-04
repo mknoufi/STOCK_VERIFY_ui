@@ -3,11 +3,22 @@
  * Fully functional date range selection for reports and analytics
  */
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Ionicons } from '@expo/vector-icons';
-import { modernColors, modernSpacing, modernTypography, modernBorderRadius } from '@/styles/modernDesignSystem';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  modernColors,
+  modernSpacing,
+  modernTypography,
+  modernBorderRadius,
+} from "@/styles/modernDesignSystem";
 
 interface DateRangePickerProps {
   startDate: Date;
@@ -28,10 +39,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const [showEndPicker, setShowEndPicker] = useState(false);
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -43,20 +54,32 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           style={styles.dateButton}
           onPress={() => setShowStartPicker(true)}
         >
-          <Ionicons name="calendar" size={20} color={modernColors.primary[500]} />
+          <Ionicons
+            name="calendar"
+            size={20}
+            color={modernColors.primary[500]}
+          />
           <View style={styles.dateContent}>
             <Text style={styles.dateLabel}>Start Date</Text>
             <Text style={styles.dateValue}>{formatDate(startDate)}</Text>
           </View>
         </TouchableOpacity>
 
-        <Ionicons name="arrow-forward" size={20} color={modernColors.text.secondary} />
+        <Ionicons
+          name="arrow-forward"
+          size={20}
+          color={modernColors.text.secondary}
+        />
 
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => setShowEndPicker(true)}
         >
-          <Ionicons name="calendar" size={20} color={modernColors.primary[500]} />
+          <Ionicons
+            name="calendar"
+            size={20}
+            color={modernColors.primary[500]}
+          />
           <View style={styles.dateContent}>
             <Text style={styles.dateLabel}>End Date</Text>
             <Text style={styles.dateValue}>{formatDate(endDate)}</Text>
@@ -68,10 +91,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         <DateTimePicker
           value={startDate}
           mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={(event, selectedDate) => {
-            setShowStartPicker(Platform.OS === 'ios');
-            if (selectedDate && event.type !== 'dismissed') {
+            setShowStartPicker(Platform.OS === "ios");
+            if (selectedDate && event.type !== "dismissed") {
               onStartDateChange(selectedDate);
             }
           }}
@@ -83,10 +106,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         <DateTimePicker
           value={endDate}
           mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={(event, selectedDate) => {
-            setShowEndPicker(Platform.OS === 'ios');
-            if (selectedDate && event.type !== 'dismissed') {
+            setShowEndPicker(Platform.OS === "ios");
+            if (selectedDate && event.type !== "dismissed") {
               onEndDateChange(selectedDate);
             }
           }}
@@ -106,17 +129,17 @@ const styles = StyleSheet.create({
     ...modernTypography.body.medium,
     color: modernColors.text.primary,
     marginBottom: modernSpacing.sm,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: modernSpacing.md,
   },
   dateButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: modernSpacing.sm,
     padding: modernSpacing.md,
     backgroundColor: modernColors.background.elevated,
@@ -135,6 +158,6 @@ const styles = StyleSheet.create({
   dateValue: {
     ...modernTypography.body.medium,
     color: modernColors.text.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

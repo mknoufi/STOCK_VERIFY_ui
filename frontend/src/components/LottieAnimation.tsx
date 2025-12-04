@@ -3,10 +3,10 @@
  * Wrapper for Lottie animations with fallback support
  */
 
-import React from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { useTheme } from '../hooks/useTheme';
-import { flags } from '../constants/flags';
+import React from "react";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { useTheme } from "../hooks/useTheme";
+import { flags } from "../constants/flags";
 
 interface LottieAnimationProps {
   source?: any; // Lottie JSON source or require() path
@@ -35,7 +35,7 @@ export const LottieAnimation: React.FC<LottieAnimationProps> = ({
 
   React.useEffect(() => {
     if (flags.enableAnimations) {
-      import('lottie-react-native')
+      import("lottie-react-native")
         .then((mod) => {
           setLottieView(() => mod.default);
         })
@@ -70,10 +70,10 @@ export const LottieAnimation: React.FC<LottieAnimationProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   animation: {
-    alignSelf: 'center',
+    alignSelf: "center",
   },
 });

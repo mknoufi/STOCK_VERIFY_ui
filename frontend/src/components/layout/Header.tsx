@@ -2,10 +2,16 @@
  * Header Component - App header with navigation
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
 
 interface HeaderProps {
   title: string;
@@ -31,14 +37,11 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <StatusBar
-        barStyle={theme.isDark ? 'light-content' : 'dark-content'}
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
         backgroundColor={theme.colors.background}
       />
       <View
-        style={[
-          styles.container,
-          { backgroundColor: theme.colors.primary },
-        ]}
+        style={[styles.container, { backgroundColor: theme.colors.primary }]}
       >
         <View style={styles.leftContainer}>
           {(leftIcon || showBack) && (
@@ -48,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
               activeOpacity={0.7}
             >
               <Ionicons
-                name={leftIcon || 'arrow-back'}
+                name={leftIcon || "arrow-back"}
                 size={24}
                 color="#FFFFFF"
               />
@@ -58,9 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <View style={styles.centerContainer}>
           <Text style={styles.title}>{title}</Text>
-          {subtitle && (
-            <Text style={styles.subtitle}>{subtitle}</Text>
-          )}
+          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
 
         <View style={styles.rightContainer}>
@@ -70,11 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
               onPress={onRightPress}
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={rightIcon}
-                size={24}
-                color="#FFFFFF"
-              />
+              <Ionicons name={rightIcon} size={24} color="#FFFFFF" />
             </TouchableOpacity>
           )}
         </View>
@@ -85,45 +82,45 @@ export const Header: React.FC<HeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
     paddingTop: 48,
     minHeight: 80,
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
   leftContainer: {
     width: 40,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   centerContainer: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   rightContainer: {
     width: 40,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   iconButton: {
     padding: 8,
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#FFFFFF",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 12,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     opacity: 0.9,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 2,
   },
 });

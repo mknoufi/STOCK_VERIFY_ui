@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -18,20 +18,20 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#121212',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
     padding: 24,
   },
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 16,
   },
   message: {
-    color: '#888',
+    color: "#888",
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

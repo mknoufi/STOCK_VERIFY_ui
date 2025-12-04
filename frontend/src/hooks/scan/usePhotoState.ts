@@ -2,22 +2,22 @@
  * usePhotoState Hook
  * Manages photo proof capture state
  */
-import { useState, useCallback } from 'react';
-import { PhotoProofType, PhotoProofDraft } from '@/types/scan';
+import { useState, useCallback } from "react";
+import { PhotoProofType, PhotoProofDraft } from "@/types/scan";
 
 interface PhotoState {
   photoProofs: PhotoProofDraft[];
   selectedPhotoType: PhotoProofType;
   showPhotoCapture: boolean;
-  photoCameraType: 'back' | 'front';
+  photoCameraType: "back" | "front";
   photoCaptureLoading: boolean;
 }
 
 const initialState: PhotoState = {
   photoProofs: [],
-  selectedPhotoType: 'ITEM',
+  selectedPhotoType: "ITEM",
   showPhotoCapture: false,
-  photoCameraType: 'back',
+  photoCameraType: "back",
   photoCaptureLoading: false,
 };
 

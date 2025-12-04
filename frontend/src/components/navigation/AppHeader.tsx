@@ -3,7 +3,7 @@
  * Replaces custom headers with consistent, accessible header
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -11,13 +11,13 @@ import {
   TouchableOpacity,
   ViewStyle,
   Platform,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@/hooks/useTheme';
-import { layout, spacing, typography } from '../../styles/globalStyles';
-import { useAuthStore } from '../../store/authStore';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "@/hooks/useTheme";
+import { layout, spacing, typography } from "../../styles/globalStyles";
+import { useAuthStore } from "../../store/authStore";
 
 interface HeaderAction {
   icon: keyof typeof Ionicons.glyphMap;
@@ -58,8 +58,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   };
 
   // Calculate header height including safe area
-  const headerHeight = layout.headerHeight + (Platform.OS === 'ios' ? insets.top : 0);
-  const paddingTop = Platform.OS === 'ios' ? insets.top : 0;
+  const headerHeight =
+    layout.headerHeight + (Platform.OS === "ios" ? insets.top : 0);
+  const paddingTop = Platform.OS === "ios" ? insets.top : 0;
 
   return (
     <View
@@ -98,7 +99,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               {title}
             </Text>
             {showUser && user && (
-              <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.subtitle, { color: theme.colors.textSecondary }]}
+              >
                 Hello, {user.full_name || user.username}
               </Text>
             )}
@@ -127,10 +130,21 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               accessibilityRole="button"
               accessibilityLabel={action.label}
             >
-              <Ionicons name={action.icon} size={22} color={action.color || theme.colors.text} />
+              <Ionicons
+                name={action.icon}
+                size={22}
+                color={action.color || theme.colors.text}
+              />
               {action.badge !== undefined && action.badge > 0 && (
-                <View style={[styles.badge, { backgroundColor: theme.colors.error }]}>
-                  <Text style={styles.badgeText}>{action.badge > 99 ? '99+' : action.badge}</Text>
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: theme.colors.error },
+                  ]}
+                >
+                  <Text style={styles.badgeText}>
+                    {action.badge > 99 ? "99+" : action.badge}
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -143,27 +157,29 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'column',
-    justifyContent: 'center',
+    flexDirection: "column",
+    justifyContent: "center",
     borderBottomWidth: 1,
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-    } : {}),
+    ...(Platform.OS === "web"
+      ? {
+          position: "sticky" as const,
+          top: 0,
+          zIndex: 100,
+        }
+      : {}),
   } as any,
   contentContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.md,
     height: layout.headerHeight,
   },
   leftSection: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: spacing.md,
   },
   backButton: {
@@ -178,28 +194,28 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   rightSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.sm,
   },
   actionButton: {
     padding: spacing.xs,
-    position: 'relative',
+    position: "relative",
   },
   badge: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

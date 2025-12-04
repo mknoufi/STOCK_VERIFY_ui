@@ -35,7 +35,7 @@ from backend.api.enhanced_item_api import init_enhanced_api
 from backend.api.erp_api import init_erp_api
 from backend.api.erp_api import router as erp_router  # noqa: E402
 from backend.api.exports_api import exports_router  # noqa: E402
-from backend.api.health import health_router  # noqa: E402
+from backend.api.health import health_router, info_router  # noqa: E402
 from backend.api.item_verification_api import (  # noqa: E402
     init_verification_api,
     verification_router,
@@ -838,6 +838,7 @@ api_router = APIRouter()
 # Register all routers with the app
 app.include_router(health_router)  # Health check endpoints at /health/*
 app.include_router(health_router, prefix="/api")  # Alias for frontend compatibility
+app.include_router(info_router)  # Version check and info endpoints at /api/*
 app.include_router(permissions_router, prefix="/api")  # Permissions management
 app.include_router(exports_router, prefix="/api")  # Export functionality
 # Include routers

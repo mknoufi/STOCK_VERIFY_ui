@@ -9,7 +9,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Linking,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VersionCheckResult } from '../services/versionService';

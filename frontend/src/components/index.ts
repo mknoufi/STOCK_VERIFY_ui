@@ -4,4 +4,4 @@ export * from './layout';
 export * from './navigation';
 export * from './charts';
 export * from './feedback';
-export * from './UpgradeNotification';
+export { default } from './UpgradeNotification';

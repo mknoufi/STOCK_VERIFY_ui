@@ -2,7 +2,7 @@
  * useVersionCheck Hook
  * Provides version checking and upgrade notification functionality
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useAppVersion } from './useAppVersion';
 import {
   checkVersion,

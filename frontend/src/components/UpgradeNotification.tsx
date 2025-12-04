@@ -62,17 +62,19 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
 
   const getUpdateMessage = () => {
     if (forceUpdate) {
-      return `This version is no longer supported. Please update to version ${versionInfo.current_version} to continue using the app.`;
+      return `This version is no longer supported. Please update to version ${versionInfo.current_version ?? 'the latest'} to continue using the app.`;
     }
 
-    const updateTypeText = {
+    const updateTypeText: Record<string, string> = {
       major: 'A major update',
       minor: 'A new update',
       patch: 'A bug fix update',
     };
 
     const updateType = versionInfo.update_type || 'minor';
-    return `${updateTypeText[updateType]} is available (v${versionInfo.current_version}). We recommend updating for the best experience.`;
+    const updateLabel = updateTypeText[updateType] || 'An update';
+
+    return `${updateLabel} is available (v${versionInfo.current_version ?? 'latest'}). We recommend updating for the best experience.`;
   };
 
   const getIcon = () => {

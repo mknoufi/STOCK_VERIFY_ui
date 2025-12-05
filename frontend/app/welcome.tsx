@@ -332,7 +332,5 @@ const styles = StyleSheet.create({
     color: '#3B82F6',
     fontWeight: '600',
     fontSize: 16,
-    flex: 1,
-    textAlign: 'center',
   },
 });

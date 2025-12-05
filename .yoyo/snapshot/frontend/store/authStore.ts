@@ -117,19 +117,19 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (error: unknown) {
           // Use warn to avoid red screen in Expo Go
           console.warn('Login error:', error);
-          
+
           // Type guard for axios error with response
-          const isAxiosError = (err: unknown): err is { 
-            response?: { 
-              data?: any; 
-              status?: number; 
-            }; 
-            code?: string; 
-            message?: string; 
+          const isAxiosError = (err: unknown): err is {
+            response?: {
+              data?: any;
+              status?: number;
+            };
+            code?: string;
+            message?: string;
           } => {
             return typeof err === 'object' && err !== null;
           };
-          
+
           if (error instanceof Error) {
             console.error('Error details:', {
               message: error.message,
@@ -166,12 +166,12 @@ export const useAuthStore = create<AuthState>((set) => ({
               throw new Error(error.response?.data?.detail?.message || error.response?.data?.detail || error.response?.data?.message || error.message || 'Login failed');
             }
           }
-          
+
           // Fallback for non-axios errors
           if (error instanceof Error) {
             throw new Error(error.message);
           }
-          
+
           throw new Error('Login failed');
         }
   },

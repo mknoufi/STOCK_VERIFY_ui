@@ -3,7 +3,7 @@ description: Recommends a specific folder structure for Qwik projects to maintai
 globs: qwik.config.js
 ---
 - Recommended folder structure:
-  
+
   src/
     components/
     routes/

@@ -17,4 +17,3 @@ with open('/path/to/exported-entities.json', 'r') as file:
 
 with open(output_file_name, 'w') as f:
     f.write(result['svg_string'])
-

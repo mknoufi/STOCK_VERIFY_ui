@@ -16,7 +16,7 @@ sleep 2
 kill $EXPO_PID 2>/dev/null || true
 
 # Clear Expo cache
-echo "🗂️ Clearing Expo cache..."  
+echo "🗂️ Clearing Expo cache..."
 npx expo install --fix
 
 # Clear AsyncStorage (this will be done automatically by the app)

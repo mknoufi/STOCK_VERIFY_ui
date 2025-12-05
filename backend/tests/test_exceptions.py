@@ -4,16 +4,16 @@ Verifies exception structure and error handling
 """
 
 from backend.exceptions import (
-    StockVerifyException,
-    DatabaseConnectionError,
-    SQLServerConnectionError,
-    MongoDBConnectionError,
-    SyncError,
-    ItemNotFoundError,
-    ValidationError,
     AuthenticationError,
     AuthorizationError,
+    DatabaseConnectionError,
+    ItemNotFoundError,
+    MongoDBConnectionError,
     RateLimitError,
+    SQLServerConnectionError,
+    StockVerifyException,
+    SyncError,
+    ValidationError,
 )
 
 

@@ -160,4 +160,3 @@ async def backfill_new_fields():
 
 if __name__ == "__main__":
     asyncio.run(backfill_new_fields())
-

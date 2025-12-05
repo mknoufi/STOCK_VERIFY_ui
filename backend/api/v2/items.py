@@ -13,8 +13,9 @@ project_root = Path(__file__).parent.parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from typing import Any, Dict, Optional, cast  # noqa: E402
+
 from fastapi import APIRouter, Depends, Query  # noqa: E402
-from typing import Optional, Dict, Any  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 from backend.api.response_models import ApiResponse, PaginatedResponse  # noqa: E402
@@ -94,15 +95,21 @@ async def get_items_v2(
             page_size=page_size,
         )
 
-        return ApiResponse.success_response(
-            data=paginated_response,
-            message=f"Retrieved {len(item_responses)} items",
+        return cast(
+            ApiResponse[PaginatedResponse[ItemResponse]],
+            ApiResponse.success_response(
+                data=paginated_response,
+                message=f"Retrieved {len(item_responses)} items",
+            ),
         )
 
     except Exception as e:
-        return ApiResponse.error_response(
-            error_code="ITEMS_FETCH_ERROR",
-            error_message=f"Failed to fetch items: {str(e)}",
+        return cast(
+            ApiResponse[PaginatedResponse[ItemResponse]],
+            ApiResponse.error_response(
+                error_code="ITEMS_FETCH_ERROR",
+                error_message=f"Failed to fetch items: {str(e)}",
+            ),
         )
 
 
@@ -116,15 +123,19 @@ async def get_item_v2(
     Returns standardized response
     """
     try:
-        from backend.server import db
         from bson import ObjectId
+
+        from backend.server import db
 
         item = await db.erp_items.find_one({"_id": ObjectId(item_id)})
 
         if not item:
-            return ApiResponse.error_response(
-                error_code="ITEM_NOT_FOUND",
-                error_message=f"Item with ID {item_id} not found",
+            return cast(
+                ApiResponse[ItemResponse],
+                ApiResponse.error_response(
+                    error_code="ITEM_NOT_FOUND",
+                    error_message=f"Item with ID {item_id} not found",
+                ),
             )
 
         item_response = ItemResponse(
@@ -140,13 +151,19 @@ async def get_item_v2(
             uom_name=item.get("uom_name"),
         )
 
-        return ApiResponse.success_response(
-            data=item_response,
-            message="Item retrieved successfully",
+        return cast(
+            ApiResponse[ItemResponse],
+            ApiResponse.success_response(
+                data=item_response,
+                message="Item retrieved successfully",
+            ),
         )
 
     except Exception as e:
-        return ApiResponse.error_response(
-            error_code="ITEM_FETCH_ERROR",
-            error_message=f"Failed to fetch item: {str(e)}",
+        return cast(
+            ApiResponse[ItemResponse],
+            ApiResponse.error_response(
+                error_code="ITEM_FETCH_ERROR",
+                error_message=f"Failed to fetch item: {str(e)}",
+            ),
         )

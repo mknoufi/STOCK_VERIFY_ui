@@ -219,41 +219,15 @@ class DatabaseOptimizer:
 
             # Common index optimizations
             if collection_name == "erp_items":
-                if "item_code_1" not in index_names:
-                    await collection.create_index("item_code", unique=True, background=True)
-                    optimizations.append("item_code")
-
-                if "barcode_1" not in index_names:
-                    await collection.create_index("barcode", background=True)
-                    optimizations.append("barcode")
-
-                if "item_name_text" not in index_names:
-                    await collection.create_index([("item_name", "text")], background=True)
-                    optimizations.append("item_name_text")
-
+                optimizations.extend(
+                    await self._optimize_erp_items_indexes(collection, index_names)
+                )
             elif collection_name == "count_lines":
-                if "session_id_1" not in index_names:
-                    await collection.create_index("session_id", background=True)
-                    optimizations.append("session_id")
-
-                if "item_code_1" not in index_names:
-                    await collection.create_index("item_code", background=True)
-                    optimizations.append("item_code")
-
-                if "session_id_1_item_code_1" not in index_names:
-                    await collection.create_index(
-                        [("session_id", 1), ("item_code", 1)], background=True
-                    )
-                    optimizations.append("session_id_item_code")
-
+                optimizations.extend(
+                    await self._optimize_count_lines_indexes(collection, index_names)
+                )
             elif collection_name == "sessions":
-                if "created_at_1" not in index_names:
-                    await collection.create_index("created_at", background=True)
-                    optimizations.append("created_at")
-
-                if "status_1" not in index_names:
-                    await collection.create_index("status", background=True)
-                    optimizations.append("status")
+                optimizations.extend(await self._optimize_sessions_indexes(collection, index_names))
 
             if optimizations:
                 logger.info(f"Optimized indexes for {collection_name}: {', '.join(optimizations)}")
@@ -262,6 +236,56 @@ class DatabaseOptimizer:
 
         except Exception as e:
             logger.error(f"Failed to optimize indexes for {collection_name}: {str(e)}")
+
+    async def _optimize_erp_items_indexes(
+        self, collection: Any, index_names: List[str]
+    ) -> List[str]:
+        """Optimize indexes for erp_items collection"""
+        optimizations = []
+        if "item_code_1" not in index_names:
+            await collection.create_index("item_code", unique=True, background=True)
+            optimizations.append("item_code")
+
+        if "barcode_1" not in index_names:
+            await collection.create_index("barcode", background=True)
+            optimizations.append("barcode")
+
+        if "item_name_text" not in index_names:
+            await collection.create_index([("item_name", "text")], background=True)
+            optimizations.append("item_name_text")
+        return optimizations
+
+    async def _optimize_count_lines_indexes(
+        self, collection: Any, index_names: List[str]
+    ) -> List[str]:
+        """Optimize indexes for count_lines collection"""
+        optimizations = []
+        if "session_id_1" not in index_names:
+            await collection.create_index("session_id", background=True)
+            optimizations.append("session_id")
+
+        if "item_code_1" not in index_names:
+            await collection.create_index("item_code", background=True)
+            optimizations.append("item_code")
+
+        if "session_id_1_item_code_1" not in index_names:
+            await collection.create_index([("session_id", 1), ("item_code", 1)], background=True)
+            optimizations.append("session_id_item_code")
+        return optimizations
+
+    async def _optimize_sessions_indexes(
+        self, collection: Any, index_names: List[str]
+    ) -> List[str]:
+        """Optimize indexes for sessions collection"""
+        optimizations = []
+        if "created_at_1" not in index_names:
+            await collection.create_index("created_at", background=True)
+            optimizations.append("created_at")
+
+        if "status_1" not in index_names:
+            await collection.create_index("status", background=True)
+            optimizations.append("status")
+        return optimizations
 
     async def check_connection_health(self, db: AsyncIOMotorDatabase) -> Dict[str, Any]:
         """

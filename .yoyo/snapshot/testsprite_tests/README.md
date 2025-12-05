@@ -76,7 +76,7 @@ node testsprite_tests/dynamic-port-config.js
    ```bash
    # For TestSprite (web testing)
    cd frontend && npm run web
-   
+
    # For native testing
    cd frontend && npm start
    ```

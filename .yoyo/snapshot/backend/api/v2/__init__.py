@@ -19,4 +19,3 @@ v2_router.include_router(connection_status.router, prefix="/connections", tags=[
 v2_router.include_router(metrics.router, prefix="/metrics", tags=["Metrics v2"])
 
 __all__ = ["v2_router"]
-

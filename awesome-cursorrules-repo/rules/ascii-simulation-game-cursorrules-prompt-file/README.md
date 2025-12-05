@@ -13,4 +13,3 @@ This prompt would benefit simulation game developers, allowing them to create a 
 
 ## Overview of .cursorrules prompt
 The .cursorrules file describes a complex simulation game set in ancient times where the player is an observer rather than an active participant. This simulation is rendered in ASCII graphics on a 10x10 grid with sub-grids and features random map generation with balanced capabilities for nations. Nations can trade, go to war, and make peace while expanding their territories through strategic resource management and army deployment. Key mechanics include resource rarity, turn-based decisions, and a CRT monitor-like display style. The game mirrors concepts from Conway's Game of Life, emphasizing autonomous interactions between nations and resources. Detailed logging and a trackable history of gameplay are emphasized for comprehensive insight into game dynamics.
-

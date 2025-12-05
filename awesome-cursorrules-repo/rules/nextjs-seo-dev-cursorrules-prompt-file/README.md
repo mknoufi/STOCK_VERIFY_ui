@@ -13,4 +13,3 @@ Developers maintaining a Next.js app can benefit by ensuring consistent code doc
 
 ## Overview of .cursorrules prompt
 1. The .cursorrules file provides instructions for maintaining a package.json file associated with a Next.js app. It emphasizes adding helpful comments to the code and advises against altering lines with specific comments. The package.json file specifies the app's name, version, scripts for building and running the application, and its dependencies and devDependencies, which include various libraries and tools such as Next.js, React, TypeScript, ESLint, and TailwindCSS. Additionally, there are configurations for handling vercel deployments and script commands for development and production builds.
-

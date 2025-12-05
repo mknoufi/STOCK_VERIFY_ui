@@ -12,7 +12,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 async def check_items():
     try:
-        client = AsyncIOMotorClient("mongodb://localhost:27017")
+        client: AsyncIOMotorClient = AsyncIOMotorClient("mongodb://localhost:27017")
         db = client["stock_verification"]  # Updated to match config.py DB_NAME
 
         # Check connection

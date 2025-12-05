@@ -3,7 +3,7 @@ API v2 Metrics Endpoints
 Connection pool and system metrics monitoring
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from fastapi import APIRouter, Depends
 
@@ -23,9 +23,12 @@ async def get_connection_pool_metrics(current_user: dict = Depends(get_current_u
         from backend.server import connection_pool
 
         if not connection_pool:
-            return ApiResponse.error_response(
-                error_code="POOL_NOT_INITIALIZED",
-                error_message="Connection pool is not initialized",
+            return cast(
+                ApiResponse[Dict[str, Any]],
+                ApiResponse.error_response(
+                    error_code="POOL_NOT_INITIALIZED",
+                    error_message="Connection pool is not initialized",
+                ),
             )
 
         # Get stats from pool
@@ -36,15 +39,21 @@ async def get_connection_pool_metrics(current_user: dict = Depends(get_current_u
             health = connection_pool.check_health()
             stats["health"] = health
 
-        return ApiResponse.success_response(
-            data=stats,
-            message="Connection pool metrics retrieved successfully",
+        return cast(
+            ApiResponse[Dict[str, Any]],
+            ApiResponse.success_response(
+                data=stats,
+                message="Connection pool metrics retrieved successfully",
+            ),
         )
 
     except Exception as e:
-        return ApiResponse.error_response(
-            error_code="METRICS_ERROR",
-            error_message=f"Failed to get connection pool metrics: {str(e)}",
+        return cast(
+            ApiResponse[Dict[str, Any]],
+            ApiResponse.error_response(
+                error_code="METRICS_ERROR",
+                error_message=f"Failed to get connection pool metrics: {str(e)}",
+            ),
         )
 
 
@@ -67,48 +76,63 @@ async def get_system_metrics(current_user: dict = Depends(get_current_user)):
             "services": {},
         }
 
-        # Monitoring service metrics
-        if hasattr(monitoring_service, "get_metrics"):
-            try:
-                monitoring_metrics = monitoring_service.get_metrics()
-                metrics["monitoring"] = monitoring_metrics
-            except Exception as e:
-                metrics["monitoring"] = {"error": str(e)}
-
-        # Cache service metrics
-        if hasattr(cache_service, "get_status"):
-            try:
-                cache_status = cache_service.get_status()
-                metrics["services"]["cache"] = cache_status
-            except Exception as e:
-                metrics["services"]["cache"] = {"error": str(e)}
-
-        # Rate limiter metrics
-        if hasattr(rate_limiter, "get_stats"):
-            try:
-                rate_limiter_stats = rate_limiter.get_stats()
-                metrics["services"]["rate_limiter"] = rate_limiter_stats
-            except Exception as e:
-                metrics["services"]["rate_limiter"] = {"error": str(e)}
-
-        # Database health
-        try:
-            mongo_health = database_health_service.check_mongodb_health()
-            metrics["services"]["mongodb"] = mongo_health
-        except Exception as e:
-            metrics["services"]["mongodb"] = {"error": str(e)}
+        # Collect metrics
+        metrics["monitoring"] = _get_monitoring_metrics(monitoring_service)
+        metrics["services"]["cache"] = _get_cache_metrics(cache_service)
+        metrics["services"]["rate_limiter"] = _get_rate_limiter_metrics(rate_limiter)
+        metrics["services"]["mongodb"] = await _get_mongo_health(database_health_service)
 
         from datetime import datetime
 
         metrics["timestamp"] = datetime.utcnow().isoformat()
 
-        return ApiResponse.success_response(
-            data=metrics,
-            message="System metrics retrieved successfully",
+        return cast(
+            ApiResponse[Dict[str, Any]],
+            ApiResponse.success_response(
+                data=metrics,
+                message="System metrics retrieved successfully",
+            ),
         )
 
     except Exception as e:
-        return ApiResponse.error_response(
-            error_code="SYSTEM_METRICS_ERROR",
-            error_message=f"Failed to get system metrics: {str(e)}",
+        return cast(
+            ApiResponse[Dict[str, Any]],
+            ApiResponse.error_response(
+                error_code="SYSTEM_METRICS_ERROR",
+                error_message=f"Failed to get system metrics: {str(e)}",
+            ),
         )
+
+
+def _get_monitoring_metrics(monitoring_service: Any) -> Dict[str, Any]:
+    if hasattr(monitoring_service, "get_metrics"):
+        try:
+            return cast(Dict[str, Any], monitoring_service.get_metrics())
+        except Exception as e:
+            return {"error": str(e)}
+    return {}
+
+
+def _get_cache_metrics(cache_service: Any) -> Dict[str, Any]:
+    if hasattr(cache_service, "get_status"):
+        try:
+            return cast(Dict[str, Any], cache_service.get_status())
+        except Exception as e:
+            return {"error": str(e)}
+    return {}
+
+
+def _get_rate_limiter_metrics(rate_limiter: Any) -> Dict[str, Any]:
+    if hasattr(rate_limiter, "get_stats"):
+        try:
+            return cast(Dict[str, Any], rate_limiter.get_stats())
+        except Exception as e:
+            return {"error": str(e)}
+    return {}
+
+
+async def _get_mongo_health(database_health_service: Any) -> Dict[str, Any]:
+    try:
+        return cast(Dict[str, Any], await database_health_service.check_mongo_health())
+    except Exception as e:
+        return {"error": str(e)}

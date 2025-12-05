@@ -54,4 +54,3 @@ Key Conventions:
 4. Use version control (e.g., git) for tracking changes in notebooks and scripts.
 
 Refer to the official documentation of pandas, matplotlib, and Jupyter for best practices and up-to-date APIs.
-

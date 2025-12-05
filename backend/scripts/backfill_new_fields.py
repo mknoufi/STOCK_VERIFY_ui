@@ -12,12 +12,12 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-import os
+import os  # noqa: E402
 
-from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv  # noqa: E402
+from motor.motor_asyncio import AsyncIOMotorClient  # noqa: E402
 
-from backend.sql_server_connector import SQLServerConnector
+from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Load environment variables
 load_dotenv()
@@ -48,7 +48,7 @@ async def backfill_new_fields():
 
     # Connect to MongoDB
     logger.info(f"Connecting to MongoDB: {mongo_uri}/{db_name}")
-    mongo_client = AsyncIOMotorClient(mongo_uri)
+    mongo_client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_uri)
     db = mongo_client[db_name]
 
     try:
@@ -92,52 +92,9 @@ async def backfill_new_fields():
         # Update each MongoDB item
         logger.info("Updating MongoDB items with new fields...")
         for mongo_item in mongo_items:
-            item_code = mongo_item.get("item_code")
-            if not item_code:
-                logger.warning(f"Skipping item without item_code: {mongo_item.get('_id')}")
-                continue
+            await _process_item(db, mongo_item, sql_item_map, stats)
 
-            sql_item = sql_item_map.get(item_code)
-            if not sql_item:
-                stats["not_found_in_sql"] += 1
-                logger.debug(f"Item {item_code} not found in SQL Server")
-                continue
-
-            try:
-                # Prepare update document with new fields
-                update_doc = {
-                    "$set": {
-                        "subcategory": sql_item.get("subcategory", ""),
-                        "floor": sql_item.get("floor", ""),
-                        "rack": sql_item.get("rack", ""),
-                        "uom_code": sql_item.get("uom_code", ""),
-                        "uom_name": sql_item.get("uom_name", ""),
-                        "data_version": 3,
-                        "last_backfill": datetime.utcnow(),
-                    }
-                }
-
-                # Only update if fields are missing or different
-                needs_update = False
-                for field in ["subcategory", "floor", "rack", "uom_code", "uom_name"]:
-                    current_value = mongo_item.get(field, "")
-                    new_value = sql_item.get(field, "")
-                    if current_value != new_value:
-                        needs_update = True
-                        break
-
-                if needs_update:
-                    await db.erp_items.update_one(
-                        {"item_code": item_code},
-                        update_doc,
-                    )
-                    stats["updated"] += 1
-                    if stats["updated"] % 100 == 0:
-                        logger.info(f"Updated {stats['updated']} items so far...")
-
-            except Exception as e:
-                stats["errors"] += 1
-                logger.error(f"Error updating item {item_code}: {str(e)}")
+        # Print summary
 
         # Print summary
         logger.info("\n" + "=" * 60)
@@ -158,6 +115,61 @@ async def backfill_new_fields():
     except Exception as e:
         logger.error(f"Backfill failed: {str(e)}", exc_info=True)
         raise
+
+
+async def _process_item(db, mongo_item, sql_item_map, stats):
+    """Process a single item for backfill"""
+    item_code = mongo_item.get("item_code")
+    if not item_code:
+        logger.warning(f"Skipping item without item_code: {mongo_item.get('_id')}")
+        return
+
+    sql_item = sql_item_map.get(item_code)
+    if not sql_item:
+        stats["not_found_in_sql"] += 1
+        logger.debug(f"Item {item_code} not found in SQL Server")
+        return
+
+    try:
+        await _update_mongo_item(db, item_code, mongo_item, sql_item, stats)
+        if stats["updated"] % 100 == 0:
+            logger.info(f"Updated {stats['updated']} items so far...")
+
+    except Exception as e:
+        stats["errors"] += 1
+        logger.error(f"Error updating item {item_code}: {str(e)}")
+
+
+async def _update_mongo_item(db, item_code, mongo_item, sql_item, stats):
+    """Update a single MongoDB item if needed"""
+    # Prepare update document with new fields
+    update_doc = {
+        "$set": {
+            "subcategory": sql_item.get("subcategory", ""),
+            "floor": sql_item.get("floor", ""),
+            "rack": sql_item.get("rack", ""),
+            "uom_code": sql_item.get("uom_code", ""),
+            "uom_name": sql_item.get("uom_name", ""),
+            "data_version": 3,
+            "last_backfill": datetime.utcnow(),
+        }
+    }
+
+    # Only update if fields are missing or different
+    needs_update = False
+    for field in ["subcategory", "floor", "rack", "uom_code", "uom_name"]:
+        current_value = mongo_item.get(field, "")
+        new_value = sql_item.get(field, "")
+        if current_value != new_value:
+            needs_update = True
+            break
+
+    if needs_update:
+        await db.erp_items.update_one(
+            {"item_code": item_code},
+            update_doc,
+        )
+        stats["updated"] += 1
 
 
 if __name__ == "__main__":

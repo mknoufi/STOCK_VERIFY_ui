@@ -5,10 +5,10 @@ Systematically scans and reports code quality issues
 
 import ast
 import logging
-from pathlib import Path
-from typing import List, Dict, Any
-from dataclasses import dataclass
 from collections import defaultdict
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Union
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +130,9 @@ class CodebaseUpgradeChecker:
                     )
                 )
 
-    def _check_type_hints(self, node: ast.FunctionDef, file_path: Path, lines: List[str]):
+    def _check_type_hints(
+        self, node: Union[ast.FunctionDef, ast.AsyncFunctionDef], file_path: Path, lines: List[str]
+    ):
         """Check for missing type hints"""
         # Skip private methods and test files
         if node.name.startswith("_") or "test" in str(file_path):
@@ -182,14 +184,14 @@ class CodebaseUpgradeChecker:
 
     def _group_issues_by_type(self) -> Dict[str, int]:
         """Group issues by type"""
-        grouped = defaultdict(int)
+        grouped: Dict[str, int] = defaultdict(int)
         for issue in self.issues:
             grouped[issue.issue_type] += 1
         return dict(grouped)
 
     def _group_issues_by_severity(self) -> Dict[str, int]:
         """Group issues by severity"""
-        grouped = defaultdict(int)
+        grouped: Dict[str, int] = defaultdict(int)
         for issue in self.issues:
             grouped[issue.severity] += 1
         return dict(grouped)

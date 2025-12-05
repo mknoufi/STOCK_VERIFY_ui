@@ -13,4 +13,3 @@ Angular developers aiming to enhance code quality and adhere to best practices c
 
 ## Overview of .cursorrules prompt
 The .cursorrules file specifies guidelines for an expert Angular programmer using TypeScript, Angular 18, and Jest to produce code that is clear, readable, and performant. It emphasizes thoughtful and accurate reasoning, with a focus on providing well-reasoned answers. The file highlights best practices such as writing bug-free and fully functional code, ensuring proper imports and naming, and adhering to specific coding standards from configuration files like .eslintrc.json and .prettierrc. It also sets constraints on code structure and style, including limits on parameter count, lines of code, and nesting depth. The .cursorrules file encourages refactoring while preserving documentation and maintaining conciseness.
-

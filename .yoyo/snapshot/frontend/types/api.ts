@@ -58,4 +58,3 @@ export interface ConnectionPoolStatusResponse {
   metrics: Record<string, unknown>;
   health_check?: string;
 }
-

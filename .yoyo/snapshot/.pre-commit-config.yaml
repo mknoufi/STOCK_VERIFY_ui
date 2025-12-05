@@ -94,4 +94,3 @@ default_language_version:
   node: "20"
 
 fail_fast: false
-

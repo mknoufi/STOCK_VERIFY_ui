@@ -106,4 +106,3 @@ Biome Rules:
 - Integrate Biome into the CI/CD pipeline for automated checks
 - Keep Biome updated to the latest stable version
 - Use Biome's ignore patterns to exclude specific files or directories when necessary
-

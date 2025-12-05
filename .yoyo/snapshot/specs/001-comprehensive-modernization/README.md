@@ -1,7 +1,7 @@
 # Comprehensive Modernization Specification
 
-**Spec ID:** 001-comprehensive-modernization  
-**Status:** Specification Complete  
+**Spec ID:** 001-comprehensive-modernization
+**Status:** Specification Complete
 **Created:** 2025-11-13
 
 ## Overview

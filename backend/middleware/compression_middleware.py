@@ -5,7 +5,7 @@ High-performance compression for API responses
 
 import gzip
 import logging
-from typing import Callable
+from typing import Awaitable, Callable, List, Optional
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -24,7 +24,7 @@ class CompressionMiddleware(BaseHTTPMiddleware):
         self,
         app,
         minimum_size: int = 1024,  # Compress responses > 1KB
-        compressible_types: list = None,
+        compressible_types: Optional[List[str]] = None,
     ):
         super().__init__(app)
         self.minimum_size = minimum_size
@@ -38,7 +38,9 @@ class CompressionMiddleware(BaseHTTPMiddleware):
             "application/xml",
         ]
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Process request with compression"""
         response = await call_next(request)
 

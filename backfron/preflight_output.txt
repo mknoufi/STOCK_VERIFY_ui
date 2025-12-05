@@ -1,0 +1,171 @@
+
+> frontend@1.0.0 preflight
+> npm run lint && npm run typecheck && npm run test && npm run build:web
+
+
+> frontend@1.0.0 lint
+> expo lint
+
+env: load .env
+env: export EXPO_PUBLIC_BACKEND_PORT EXPO_PUBLIC_BACKEND_URL EXPO_PUBLIC_API_TIMEOUT EXPO_PUBLIC_DEBUG_MODE EXPO_PUBLIC_ENABLE_NETWORK_LOGGING
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/index.tsx
+  9:17  warning  'isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/login.tsx
+  12:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  32:14  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/login_test.tsx
+   4:10  warning  'LinearGradient' is defined but never used   @typescript-eslint/no-unused-vars
+   8:10  warning  'useTheme' is defined but never used         @typescript-eslint/no-unused-vars
+  13:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  32:14  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/register.tsx
+  8:9  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/staff/home.tsx
+  1:27  warning  'useMemo' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx
+    2:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+    2:38  warning  'useRef' is defined but never used     @typescript-eslint/no-unused-vars
+  210:20  error    'TouchableOpacity' is not defined      react/jsx-no-undef
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/activity-logs.tsx
+  76:6  warning  React Hook React.useCallback has a missing dependency: 'show'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/dashboard.tsx
+   23:77  warning  'modernLayout' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+   53:11  warning  'user' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+   74:10  warning  'showFilterModal' is assigned a value but never used                                                               @typescript-eslint/no-unused-vars
+   76:10  warning  'showBulkModal' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+   80:10  warning  'mrpSearchResults' is assigned a value but never used                                                              @typescript-eslint/no-unused-vars
+   84:10  warning  'isMRPUpdating' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+   87:24  warning  'setFilterStatus' is assigned a value but never used                                                               @typescript-eslint/no-unused-vars
+   88:18  warning  'setSortBy' is assigned a value but never used                                                                     @typescript-eslint/no-unused-vars
+   89:21  warning  'setSortOrder' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+   92:10  warning  'analyticsData' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+   93:10  warning  'analyticsLoading' is assigned a value but never used                                                              @typescript-eslint/no-unused-vars
+  100:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+  186:14  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  193:9   warning  'updateItemMRP' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  209:14  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  236:14  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  247:6   warning  React Hook useEffect has a missing dependency: 'fetchAnalytics'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  259:9   warning  'clearSelection' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/db-mapping.tsx
+  157:14  warning  'error' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+  160:6   warning  React Hook React.useCallback has a missing dependency: 'show'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/error-logs.tsx
+   86:14  warning  'error' is defined but never used                        @typescript-eslint/no-unused-vars
+  133:9   warning  'handleClearLogs' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  138:14  warning  'error' is defined but never used                        @typescript-eslint/no-unused-vars
+  143:9   warning  'handleResolveError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  148:14  warning  'error' is defined but never used                        @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/export-schedules.tsx
+  15:10  warning  'Header' is defined but never used    @typescript-eslint/no-unused-vars
+  16:10  warning  'useTheme' is defined but never used  @typescript-eslint/no-unused-vars
+  18:10  warning  'useToast' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/export.tsx
+  4:10  warning  'Header' is defined but never used    @typescript-eslint/no-unused-vars
+  5:10  warning  'useTheme' is defined but never used  @typescript-eslint/no-unused-vars
+  7:10  warning  'useToast' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/offline-queue.tsx
+   4:10  warning  'Header' is defined but never used             @typescript-eslint/no-unused-vars
+   5:10  warning  'useTheme' is defined but never used           @typescript-eslint/no-unused-vars
+   6:10  warning  'OfflineDebugPanel' is defined but never used  @typescript-eslint/no-unused-vars
+   7:10  warning  'useNetworkStore' is defined but never used    @typescript-eslint/no-unused-vars
+  14:3   warning  'QueuedMutation' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/session-detail.tsx
+  5:10  warning  'Header' is defined but never used    @typescript-eslint/no-unused-vars
+  6:10  warning  'useTheme' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/sync-conflicts.tsx
+  21:10  warning  'Header' is defined but never used    @typescript-eslint/no-unused-vars
+  22:10  warning  'useTheme' is defined but never used  @typescript-eslint/no-unused-vars
+  23:10  warning  'useToast' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/variance-details.tsx
+  13:10  warning  'Header' is defined but never used         @typescript-eslint/no-unused-vars
+  15:10  warning  'verifyStock' is defined but never used    @typescript-eslint/no-unused-vars
+  15:23  warning  'unverifyStock' is defined but never used  @typescript-eslint/no-unused-vars
+  17:10  warning  'useToast' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/variances.tsx
+  19:10  warning  'Header' is defined but never used    @typescript-eslint/no-unused-vars
+  21:10  warning  'useToast' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/DatabaseSyncStatus.tsx
+  20:107  warning  'IDatabaseSyncStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/ToastProvider.tsx
+  2:16  warning  'Text' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/premium/PremiumButton.tsx
+   1:25  warning  'useEffect' is defined but never used             @typescript-eslint/no-unused-vars
+   3:5   warning  'TouchableOpacity' is defined but never used      @typescript-eslint/no-unused-vars
+  17:5   warning  'modernTypography' is defined but never used      @typescript-eslint/no-unused-vars
+  96:11  warning  'handlePress' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/hooks/useAutoLogout.ts
+  93:6  warning  React Hook useEffect has missing dependencies: 'logout', 'resetTimer', and 'router'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/hooks/useFormValidation.ts
+  112:32  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/admin/control-panel.tsx
+   66:10  warning  'metrics' is assigned a value but never used                                                                                                                   @typescript-eslint/no-unused-vars
+   67:10  warning  'sessionsAnalytics' is assigned a value but never used                                                                                                         @typescript-eslint/no-unused-vars
+   68:10  warning  'securitySummary' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+  108:6   warning  React Hook useEffect has missing dependencies: 'hasRole', 'loadData', 'loading', 'router', and 'services'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/auth/login.tsx
+    4:3   warning  'Text' is defined but never used            @typescript-eslint/no-unused-vars
+  179:9   warning  'theme' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  180:11  warning  'width' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/main/welcome.tsx
+  2:10  warning  'View' is defined but never used  @typescript-eslint/no-unused-vars
+  2:16  warning  'Text' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/api/api.ts
+  8:27  warning  'normalizeBarcode' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/api/enrichmentApi.ts
+  16:3  warning  'BulkEnrichmentImport' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/api/notesApi.ts
+  1:8  warning  'axios' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/authStore.ts
+  2:10  warning  'storage' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/backupService.ts
+  8:10  warning  'getSessionsCache' is defined but never used  @typescript-eslint/no-unused-vars
+  8:28  warning  'getItemsCache' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/batchOperationsService.ts
+   12:10  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+   25:11  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  139:14  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  158:21  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  162:27  warning  A `require()` style import is forbidden                      @typescript-eslint/no-require-imports
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/httpClient.ts
+  25:32  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  26:26  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/mmkvStorage.ts
+   3:10  warning  'flags' is defined but never used  @typescript-eslint/no-unused-vars
+  13:10  warning  'e' is defined but never used      @typescript-eslint/no-unused-vars
+
+✖ 92 problems (1 error, 91 warnings)
+  0 errors and 5 warnings potentially fixable with the `--fix` option.

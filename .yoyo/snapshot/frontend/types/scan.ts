@@ -83,4 +83,3 @@ export interface ScanFormData {
   remark: string;
   varianceNote: string;
 }
-

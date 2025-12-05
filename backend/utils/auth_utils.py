@@ -1,9 +1,9 @@
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from backend.auth.jwt_provider import jwt
 from passlib.context import CryptContext
 
+from backend.auth.jwt_provider import jwt
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -80,15 +80,11 @@ def _verify_bcrypt_fallback(password_bytes: bytes, hashed_password: str) -> bool
     try:
         import bcrypt
 
-        if isinstance(hashed_password, str):
-            hash_bytes = hashed_password.encode("utf-8")
-            result = bcrypt.checkpw(password_bytes, hash_bytes)
-            if result:
-                logger.debug("Password verified using direct bcrypt")
-            return bool(result)
-        else:
-            logger.error(f"Password hash is not a string: {type(hashed_password)}")
-            return False
+        hash_bytes = hashed_password.encode("utf-8")
+        result = bcrypt.checkpw(password_bytes, hash_bytes)
+        if result:
+            logger.debug("Password verified using direct bcrypt")
+        return bool(result)
     except ImportError:
         logger.error("bcrypt module not available - password verification cannot proceed")
         return False
@@ -102,7 +98,9 @@ def get_password_hash(password: str) -> str:
     return str(pwd_context.hash(password))
 
 
-def create_access_token(data: Dict[str, Any], secret_key: str = None, algorithm: str = None) -> str:
+def create_access_token(
+    data: Dict[str, Any], secret_key: Optional[str] = None, algorithm: Optional[str] = None
+) -> str:
     """Create a JWT access token from user data"""
     key = secret_key if secret_key else SECRET_KEY
     algo = algorithm if algorithm else ALGORITHM

@@ -111,7 +111,7 @@ async function generateReadme(): Promise<void> {
   // Generate the README content
   let readmeContent = `# MCP Servers
 
-A curated collection of Model Context Protocol (MCP) servers for various services and tools. 
+A curated collection of Model Context Protocol (MCP) servers for various services and tools.
 
 To add a server, see the [Contributing Guidelines](CONTRIBUTING.md).
 
@@ -157,7 +157,7 @@ To add a server, see the [Contributing Guidelines](CONTRIBUTING.md).
             : "";
           serverList += `<br>- **${server.name}** - ${server.description}${installButton}`;
         }
-        
+
         // Render group as a table row with accordion in Description column
         // Keep everything on one line to avoid breaking markdown table parsing
         const detailsContent = `<details><summary>${groupServers.length} server${groupServers.length > 1 ? 's' : ''}</summary>${serverList}</details>`;

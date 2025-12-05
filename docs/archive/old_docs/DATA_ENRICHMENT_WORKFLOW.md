@@ -181,25 +181,25 @@ Move to next item
   // Primary Key
   _id: ObjectId("..."),
   item_code: "ITEM001",  // Unique from SQL Server
-  
+
   // Basic Info (from SQL Server)
   description: "Widget Type A",
   category: "Electronics",
   unit: "PCS",
-  
+
   // Quantity Tracking
   sql_server_qty: 100,           // Current qty in SQL Server
   last_synced: ISODate("2025-11-28T10:00:00Z"),
   sql_modified: ISODate("2025-11-28T09:30:00Z"),
   qty_changed: false,            // Did SQL qty change since last sync?
   last_checked: ISODate("2025-11-28T10:15:00Z"),
-  
+
   // Verification Data (from staff)
   last_verified_qty: 98,
   last_verified_at: ISODate("2025-11-28T10:15:00Z"),
   last_verified_by: "user123",
   verification_status: "completed",  // pending | in_progress | completed
-  
+
   // Enriched Data (added/corrected by staff)
   serial_number: "SN12345",      // ← Staff added
   mrp: 1999.00,                  // ← Staff added
@@ -207,12 +207,12 @@ Move to next item
   barcode: "1234567890123",      // ← Staff corrected
   location: "Rack A-12",         // ← Staff added
   condition: "good",             // good | damaged | obsolete
-  
+
   // Data Completeness
   required_fields: ["serial_number", "mrp", "hsn_code", "barcode"],
   data_complete: true,           // All required fields filled?
   completion_percentage: 100,    // % of fields filled
-  
+
   // Enrichment Tracking
   last_enriched_at: ISODate("2025-11-28T10:15:00Z"),
   enriched_by: "user123",
@@ -230,7 +230,7 @@ Move to next item
       }
     }
   ],
-  
+
   // Metadata
   created_at: ISODate("2025-11-28T09:00:00Z"),
   updated_at: ISODate("2025-11-28T10:15:00Z"),
@@ -243,17 +243,17 @@ Move to next item
 {
   _id: ObjectId("..."),
   verification_id: "VER-2025-001234",
-  
+
   // Item Reference
   item_code: "ITEM001",
   item_description: "Widget Type A",
-  
+
   // Stock Count
   sql_server_qty: 100,           // Expected from SQL Server
   counted_qty: 98,               // Actual count by staff
   discrepancy: -2,               // Difference
   discrepancy_percentage: -2.0,  // -2%
-  
+
   // Corrections/Additions
   corrections: {
     serial_number: {
@@ -287,7 +287,7 @@ Move to next item
       action: "added"
     }
   },
-  
+
   // Additional Info
   notes: "2 pieces damaged, moved to scrap",
   photos: [
@@ -297,7 +297,7 @@ Move to next item
       description: "Damaged items"
     }
   ],
-  
+
   // Audit Trail
   verified_by: "user123",
   verified_by_name: "John Doe",
@@ -307,13 +307,13 @@ Move to next item
     lat: 12.9716,
     lng: 77.5946
   },
-  
+
   // Approval Workflow
   status: "pending_approval",    // pending_approval | approved | rejected
   approved_by: null,
   approved_at: null,
   rejection_reason: null,
-  
+
   // Metadata
   created_at: ISODate("2025-11-28T10:15:00Z"),
   updated_at: ISODate("2025-11-28T10:15:00Z")
@@ -336,12 +336,12 @@ def check_missing_fields(item):
         "hsn_code": "HSN Code",
         "barcode": "Barcode"
     }
-    
+
     missing = []
     for field, label in required_fields.items():
         if not item.get(field):
             missing.append(label)
-    
+
     return {
         "has_missing": len(missing) > 0,
         "missing_fields": missing,
@@ -356,27 +356,27 @@ def validate_enrichment_data(data):
     Validate enriched data before saving
     """
     errors = []
-    
+
     # Serial number format
     if data.get("serial_number"):
         if not re.match(r'^SN[0-9]{5,}$', data["serial_number"]):
             errors.append("Serial number must be in format: SN12345")
-    
+
     # MRP validation
     if data.get("mrp"):
         if data["mrp"] <= 0:
             errors.append("MRP must be greater than 0")
-    
+
     # HSN code validation (4 or 8 digits)
     if data.get("hsn_code"):
         if not re.match(r'^\d{4}(\d{4})?$', data["hsn_code"]):
             errors.append("HSN code must be 4 or 8 digits")
-    
+
     # Barcode validation
     if data.get("barcode"):
         if not re.match(r'^\d{13}$', data["barcode"]):
             errors.append("Barcode must be 13 digits (EAN-13)")
-    
+
     return {
         "is_valid": len(errors) == 0,
         "errors": errors
@@ -396,17 +396,17 @@ def import_enriched_data_from_excel(file_path):
     - etc.
     """
     df = pd.read_excel(file_path)
-    
+
     results = {
         "success": 0,
         "failed": 0,
         "errors": []
     }
-    
+
     for _, row in df.iterrows():
         try:
             item_code = row['Item Code']
-            
+
             # Validate data
             validation = validate_enrichment_data(row.to_dict())
             if not validation["is_valid"]:
@@ -416,7 +416,7 @@ def import_enriched_data_from_excel(file_path):
                     "errors": validation["errors"]
                 })
                 continue
-            
+
             # Update MongoDB
             mongodb.items.update_one(
                 {"item_code": item_code},
@@ -432,16 +432,16 @@ def import_enriched_data_from_excel(file_path):
                     }
                 }
             )
-            
+
             results["success"] += 1
-            
+
         except Exception as e:
             results["failed"] += 1
             results["errors"].append({
                 "item_code": item_code,
                 "error": str(e)
             })
-    
+
     return results
 ```
 
@@ -575,7 +575,7 @@ interface EnrichmentForm {
     placeholder: 'SN12345',
     suggestions: ['SN12345', 'SN12346', 'SN12347']  // From recent entries
   },
-  
+
   // Number input with currency format
   mrp: {
     type: 'currency',
@@ -583,7 +583,7 @@ interface EnrichmentForm {
     min: 0,
     placeholder: '₹1,999.00'
   },
-  
+
   // HSN code lookup
   hsn_code: {
     type: 'searchable',
@@ -591,7 +591,7 @@ interface EnrichmentForm {
     placeholder: 'Search HSN...',
     recentlyUsed: ['8517', '8471', '8528']
   },
-  
+
   // Barcode scanner
   barcode: {
     type: 'barcode',
@@ -599,14 +599,14 @@ interface EnrichmentForm {
     manualEntry: true,
     validation: /^\d{13}$/
   },
-  
+
   // Location picker
   location: {
     type: 'picker',
     options: ['Rack A-12', 'Rack A-13', 'Rack B-01'],
     allowCustom: true
   },
-  
+
   // Condition radio
   condition: {
     type: 'radio',
@@ -636,7 +636,7 @@ interface EnrichmentForm {
 
 ---
 
-**Last Updated:** 2025-11-28  
-**Purpose:** Stock verification + Data enrichment  
-**Primary Database:** MongoDB (enriched data)  
+**Last Updated:** 2025-11-28
+**Purpose:** Stock verification + Data enrichment
+**Primary Database:** MongoDB (enriched data)
 **Source Database:** SQL Server (read-only reference)

@@ -75,9 +75,11 @@ def test_connection(host, port, database, user=None, password=None):
 
         cursor = conn.cursor()
         cursor.execute("SELECT @@VERSION")
-        version = cursor.fetchone()[0]
+        row_version = cursor.fetchone()
+        version = row_version[0] if row_version else "Unknown"
         cursor.execute("SELECT DB_NAME()")
-        current_db = cursor.fetchone()[0]
+        row_db = cursor.fetchone()
+        current_db = row_db[0] if row_db else "Unknown"
         cursor.close()
         conn.close()
 
@@ -169,7 +171,7 @@ def find_sql_server_instances():
         print(f"Testing {host_display}...", end=" ")
         try:
             if port:
-                conn = pymssql.connect(server=host, port=port, database="master", timeout=2)
+                conn = pymssql.connect(server=host, port=str(port), database="master", timeout=2)
             else:
                 conn = pymssql.connect(server=host, database="master", timeout=2)
             conn.close()
@@ -223,11 +225,11 @@ def main():
                     password = input("Enter Password: ").strip() or None
 
                 try:
-                    port = int(port)
+                    port_int = int(port)
                 except (ValueError, TypeError):
-                    port = 1433
+                    port_int = 1433
 
-                test_connection(host, port, database, user, password)
+                test_connection(host, port_int, database, user, password)
         except (EOFError, KeyboardInterrupt):
             # Running in non-interactive mode
             print("\n⚠️  Non-interactive mode detected.")

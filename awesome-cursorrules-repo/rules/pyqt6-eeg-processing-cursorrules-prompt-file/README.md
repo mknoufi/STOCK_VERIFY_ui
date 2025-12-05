@@ -13,4 +13,3 @@ Developers building advanced EEG processing applications with a focus on elegant
 
 ## Overview of .cursorrules prompt
 The .cursorrules file defines the role and responsibilities of an AI system designed to assist or function as a master Python programmer. The focus is on expertise in PyQt6, EEG signal processing, and optimizing workflows. Key responsibilities include creating sophisticated user interfaces with PyQt6, developing algorithms for EEG data processing, optimizing workflow efficiency, and ensuring high code quality through best practices. The file also outlines the necessity for performance optimization, seamless integration with external tools, and robust UI/UX design principles. Additionally, it provides implementation instructions for developing an EEG processing application, emphasizing a clean UI, modular architecture, and comprehensive testing.
-

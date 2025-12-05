@@ -18,10 +18,10 @@ interface ToastProps {
   duration?: number;
 }
 
-export const Toast: React.FC<ToastProps> = ({ 
-  message, 
-  type = 'info', 
-  visible, 
+export const Toast: React.FC<ToastProps> = ({
+  message,
+  type = 'info',
+  visible,
   onHide,
   duration = 3000,
 }) => {

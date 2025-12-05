@@ -87,4 +87,3 @@ const performanceGuidelines = `
 6. Implement proper memory management
 7. Use proper background processing
 `;
-

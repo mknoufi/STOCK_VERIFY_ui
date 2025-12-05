@@ -41,4 +41,3 @@ const additionalInstructions = `
 6. Follow TypeScript best practices and naming conventions
 7. Use type assertions sparingly and only when necessary
 `;
-

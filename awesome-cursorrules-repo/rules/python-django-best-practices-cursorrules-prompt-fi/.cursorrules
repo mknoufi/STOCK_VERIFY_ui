@@ -58,4 +58,3 @@ Key Conventions
 3. Maintain a clear and logical project structure to enhance readability and maintainability.
 
 Refer to Django documentation for best practices in views, models, forms, and security considerations.
-

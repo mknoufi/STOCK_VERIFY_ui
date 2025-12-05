@@ -44,10 +44,10 @@ describe('calculateTotal', () => {
   it('should calculate total for valid items with tax', () => {
     // Arrange
     const items = [{ price: 10, quantity: 2 }, { price: 20, quantity: 1 }];
-    
+
     // Act
     const result = calculateTotal(items);
-    
+
     // Assert
     expect(result).toBe(44); // (10 * 2 + 20 * 1) * 1.1 (tax) = 44
   });
@@ -96,10 +96,10 @@ describe('getUserData', () => {
     // Arrange
     const mockUser: User = { id: 1, name: 'John Doe', email: 'john@example.com' };
     (fetchUser as jest.Mock).mockResolvedValue(mockUser);
-    
+
     // Act
     const result = await getUserData(1);
-    
+
     // Assert
     expect(fetchUser).toHaveBeenCalledWith(1);
     expect(result).toEqual(mockUser);
@@ -108,7 +108,7 @@ describe('getUserData', () => {
   it('should throw error when user is not found', async () => {
     // Arrange
     (fetchUser as jest.Mock).mockResolvedValue(null);
-    
+
     // Act & Assert
     await expect(getUserData(999)).rejects.toThrow('User not found');
   });
@@ -116,8 +116,8 @@ describe('getUserData', () => {
   it('should handle API errors gracefully', async () => {
     // Arrange
     (fetchUser as jest.Mock).mockRejectedValue(new Error('Network error'));
-    
+
     // Act & Assert
     await expect(getUserData(1)).rejects.toThrow('Failed to fetch user: Network error');
   });
-}); 
+});

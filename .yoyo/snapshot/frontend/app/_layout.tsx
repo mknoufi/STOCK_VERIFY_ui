@@ -118,9 +118,9 @@ export default function RootLayout() {
           const syncService = initializeSyncService();
 
           // Start offline queue (if enabled) after listeners are ready
-          try { 
-            startOfflineQueue(apiClient); 
-          } catch (e) { 
+          try {
+            startOfflineQueue(apiClient);
+          } catch (e) {
             if (__DEV__) {
               console.warn('Offline queue start failed:', e);
             }

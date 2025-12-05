@@ -13,4 +13,3 @@ Developers building a Next.js web application with Tailwind CSS and DaisyUI comp
 
 ## Overview of .cursorrules prompt
 The .cursorrules file provides comprehensive guidelines and best practices for developers working with React, TypeScript, Next.js, TailwindCSS, DaisyUI, and Starknet React. It outlines rules for prompt generation, general component creation, and development processes. It emphasizes reusability, modularity, and consistent coding standards. Specific rules include using TailwindCSS and DaisyUI for styling, employing TypeScript's advanced features, leveraging Next.js capabilities, and managing blockchain connections with Starknet React. It also stresses code quality through Biome for formatting and linting, and encourages thorough testing and documentation. The file serves as a structured approach to ensure efficient, maintainable, and high-quality code production.
-

@@ -5,7 +5,7 @@ Comprehensive Database Manager - Handles all database operations with enhanced f
 import logging
 import time
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
@@ -33,7 +33,7 @@ class DatabaseManager:
         self.mongo_client = mongo_client
         self.mongo_db = mongo_db
         self.sql_connector = sql_connector
-        self._health_stats = {
+        self._health_stats: Dict[str, Any] = {
             "last_health_check": None,
             "mongo_health": "unknown",
             "sql_health": "unknown",
@@ -132,7 +132,7 @@ class DatabaseManager:
             # Test connection
             connected = self.sql_connector.test_connection()
 
-            if not connected:
+            if not connected or not self.sql_connector.connection:
                 return {
                     "status": "error",
                     "error": "Connection test failed",
@@ -169,7 +169,7 @@ class DatabaseManager:
             # Get counts from both databases
             mongo_count = await self.mongo_db.erp_items.count_documents({})
 
-            if not self.sql_connector.test_connection():
+            if not self.sql_connector.test_connection() or not self.sql_connector.connection:
                 return {"status": "error", "error": "SQL Server not connected"}
 
             cursor = self.sql_connector.connection.cursor()
@@ -235,7 +235,7 @@ class DatabaseManager:
             logger.error(f"Performance metrics failed: {str(e)}")
             return {"error": str(e)}
 
-    async def _get_index_info(self) -> Dict[str, List[str]]:
+    async def _get_index_info(self) -> Dict[str, Any]:
         """Get index information for all collections"""
         index_info = {}
 
@@ -256,7 +256,7 @@ class DatabaseManager:
 
     async def optimize_database_performance(self) -> Dict[str, Any]:
         """Optimize database performance"""
-        optimizations = {
+        optimizations: Dict[str, Any] = {
             "indexes_created": 0,
             "indexes_rebuilt": 0,
             "maintenance_tasks": [],
@@ -272,8 +272,8 @@ class DatabaseManager:
                         await self.mongo_db[collection].create_index(
                             index_spec["keys"], name=index_spec["name"], background=True
                         )
-                        optimizations["indexes_created"] += 1
-                        optimizations["maintenance_tasks"].append(
+                        optimizations["indexes_created"] = int(optimizations["indexes_created"]) + 1
+                        cast(List[str], optimizations["maintenance_tasks"]).append(
                             f"Created index {index_spec['name']} on {collection}"
                         )
                     except Exception as e:
@@ -285,7 +285,9 @@ class DatabaseManager:
             for collection in large_collections:
                 try:
                     await self.mongo_db.command("compact", collection)
-                    optimizations["maintenance_tasks"].append(f"Compacted collection {collection}")
+                    cast(List[str], optimizations["maintenance_tasks"]).append(
+                        f"Compacted collection {collection}"
+                    )
                 except Exception as e:
                     logger.warning(f"Collection compaction failed for {collection}: {str(e)}")
 
@@ -369,7 +371,7 @@ class DatabaseManager:
 
     async def get_database_insights(self) -> Dict[str, Any]:
         """Get insights about database usage and optimization opportunities"""
-        insights = {
+        insights: Dict[str, Any] = {
             "timestamp": datetime.utcnow().isoformat(),
             "recommendations": [],
             "statistics": {},
@@ -378,9 +380,25 @@ class DatabaseManager:
 
         try:
             # Analyze query patterns
-            stats = insights["statistics"]
+            stats: Dict[str, Any] = insights["statistics"]
 
             # MongoDB collection analysis
+            await self._analyze_mongo_collections(stats, insights["recommendations"])
+
+            # SQL Server analysis
+            self._analyze_sql_server(insights["recommendations"])
+
+        except Exception as e:
+            logger.error(f"Database insights failed: {str(e)}")
+            insights["error"] = str(e)
+
+        return insights
+
+    async def _analyze_mongo_collections(
+        self, stats: Dict[str, Any], recommendations: List[Dict[str, Any]]
+    ):
+        """Analyze MongoDB collections for insights"""
+        try:
             collections = await self.mongo_db.list_collection_names()
             for collection in collections:
                 try:
@@ -392,7 +410,7 @@ class DatabaseManager:
 
                     # Check for potential issues
                     if count > 50000:
-                        insights["recommendations"].append(
+                        recommendations.append(
                             {
                                 "type": "performance",
                                 "priority": "medium",
@@ -401,7 +419,7 @@ class DatabaseManager:
                         )
 
                     if count == 0 and collection in ["erp_items", "sessions"]:
-                        insights["recommendations"].append(
+                        recommendations.append(
                             {
                                 "type": "data",
                                 "priority": "high",
@@ -411,45 +429,42 @@ class DatabaseManager:
 
                 except Exception:
                     continue
-
-            # SQL Server analysis
-            if self.sql_connector.test_connection():
-                try:
-                    cursor = self.sql_connector.connection.cursor()
-
-                    # Check for items without barcodes
-                    cursor.execute(
-                        """
-                        SELECT COUNT(*) FROM dbo.Products P
-                        LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                        WHERE P.IsActive = 1 AND (PB.AutoBarcode IS NULL OR PB.AutoBarcode = '')
-                    """
-                    )
-                    items_without_barcodes = cursor.fetchone()[0]
-
-                    if items_without_barcodes > 0:
-                        insights["recommendations"].append(
-                            {
-                                "type": "data_quality",
-                                "priority": "medium",
-                                "message": f"{items_without_barcodes:,} products have no AutoBarcode. Consider data cleanup in ERP.",
-                            }
-                        )
-
-                    cursor.close()
-
-                except Exception as e:
-                    logger.warning(f"SQL Server analysis failed: {str(e)}")
-
         except Exception as e:
-            logger.error(f"Database insights failed: {str(e)}")
-            insights["error"] = str(e)
+            logger.warning(f"MongoDB analysis failed: {str(e)}")
 
-        return insights
+    def _analyze_sql_server(self, recommendations: List[Dict[str, Any]]):
+        """Analyze SQL Server for insights"""
+        if self.sql_connector.test_connection() and self.sql_connector.connection:
+            try:
+                cursor = self.sql_connector.connection.cursor()
+
+                # Check for items without barcodes
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) FROM dbo.Products P
+                    LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
+                    WHERE P.IsActive = 1 AND (PB.AutoBarcode IS NULL OR PB.AutoBarcode = '')
+                """
+                )
+                items_without_barcodes = cursor.fetchone()[0]
+
+                if items_without_barcodes > 0:
+                    recommendations.append(
+                        {
+                            "type": "data_quality",
+                            "priority": "medium",
+                            "message": f"{items_without_barcodes:,} products have no AutoBarcode. Consider data cleanup in ERP.",
+                        }
+                    )
+
+                cursor.close()
+
+            except Exception as e:
+                logger.warning(f"SQL Server analysis failed: {str(e)}")
 
     async def verify_data_flow(self) -> Dict[str, Any]:
         """Verify complete data flow from SQL Server to Frontend"""
-        flow_test = {
+        flow_test: Dict[str, Any] = {
             "timestamp": datetime.utcnow().isoformat(),
             "steps": {},
             "overall_status": "unknown",

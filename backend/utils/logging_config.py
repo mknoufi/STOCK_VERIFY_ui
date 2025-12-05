@@ -8,6 +8,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 
 class NonClosingStreamHandler(logging.StreamHandler):
@@ -56,7 +57,7 @@ class JSONFormatter(logging.Formatter):
 def setup_logging(
     log_level: str = "INFO",
     log_format: str = "text",
-    log_file: str = None,
+    log_file: Optional[str] = None,
     app_name: str = "stock_count",
 ) -> logging.Logger:
     """
@@ -86,7 +87,7 @@ def setup_logging(
     console_handler.setLevel(numeric_level)
 
     if log_format == "json":
-        formatter = JSONFormatter()
+        formatter: logging.Formatter = JSONFormatter()
     else:
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s",

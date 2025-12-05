@@ -5,7 +5,7 @@ Generates comprehensive reports in multiple formats (Excel, CSV, PDF)
 
 import io
 import logging
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import pandas as pd
 from openpyxl import Workbook
@@ -100,7 +100,7 @@ class ReportGenerator:
             if line_entry.get("variance", 0) < 0
         )
 
-        stats_data = [
+        stats_data: List[List[Any]] = [
             ["Total Items Counted:", total_items],
             ["Items with Variance:", with_variance],
             ["Items Without Variance:", total_items - with_variance],
@@ -353,7 +353,7 @@ class ReportGenerator:
         df = pd.DataFrame(data)
         if columns:
             df = df[columns]
-        return df.to_csv(index=False)
+        return str(df.to_csv(index=False))
 
     @staticmethod
     def generate_variance_summary_csv(count_lines: List[Dict]) -> str:
@@ -375,4 +375,4 @@ class ReportGenerator:
                 )
 
         df = pd.DataFrame(variance_data)
-        return df.to_csv(index=False)
+        return str(df.to_csv(index=False))

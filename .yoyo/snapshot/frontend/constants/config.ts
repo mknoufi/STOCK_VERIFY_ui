@@ -11,4 +11,3 @@ export const SEARCH_DEBOUNCE_MS = 500;
 export const SESSION_TIMEOUT_MS = 15 * 60 * 1000;
 
 export const DEFAULT_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
-

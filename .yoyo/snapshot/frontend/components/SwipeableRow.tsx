@@ -18,13 +18,13 @@ const Action = ({ label, color, onPress }: { label: string; color: string; onPre
 
 export const SwipeableRow: React.FC<Props> = ({ children, leftLabel = 'Left', rightLabel = 'Right', onLeftAction, onRightAction }) => {
   const renderLeft = () => (
-    <View style={[styles.actionsContainer, { justifyContent: 'flex-start' }]}> 
+    <View style={[styles.actionsContainer, { justifyContent: 'flex-start' }]}>
       <Action label={leftLabel} color="#4CAF50" onPress={onLeftAction} />
     </View>
   );
 
   const renderRight = () => (
-    <View style={[styles.actionsContainer, { justifyContent: 'flex-end' }]}> 
+    <View style={[styles.actionsContainer, { justifyContent: 'flex-end' }]}>
       <Action label={rightLabel} color="#FF5252" onPress={onRightAction} />
     </View>
   );

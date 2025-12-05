@@ -202,7 +202,7 @@ await AsyncStorage.multiSet([
 **Docs**: [React useMemo](https://react.dev/reference/react/useMemo)
 **Implementation**:
 ```typescript
-const filteredItems = useMemo(() => 
+const filteredItems = useMemo(() =>
   items.filter(i => i.active), [items]
 );
 ```
@@ -273,7 +273,7 @@ import { haptics } from '../../services/haptics';
 **Objective**: Suggest based on history.
 **Implementation**:
 ```typescript
-const suggestQty = (history) => 
+const suggestQty = (history) =>
   history.reduce((a, b) => a + b, 0) / history.length;
 ```
 
@@ -281,7 +281,7 @@ const suggestQty = (history) =>
 **Objective**: Visual indicators.
 **Implementation**:
 ```typescript
-const getColor = (variance) => 
+const getColor = (variance) =>
   Math.abs(variance) > 5 ? 'red' : 'green';
 ```
 
@@ -313,7 +313,7 @@ await AsyncStorage.setItem('queue', JSON.stringify(queue));
 **Objective**: Handle merge conflicts.
 **Implementation**:
 ```typescript
-const resolve = (local, remote) => 
+const resolve = (local, remote) =>
   local.updatedAt > remote.updatedAt ? local : remote;
 ```
 

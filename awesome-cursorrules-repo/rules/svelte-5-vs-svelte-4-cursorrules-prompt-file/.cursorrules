@@ -29,13 +29,13 @@ In Svelte 5, event handlers are treated as standard HTML properties rather than 
 ```html
 <script>
   import { $state, $effect, $derived } from 'svelte';
-  
+
   // Define state with runes
   let count = $state(0);
-  
+
   // Option 1: Using $derived for computed values
   let double = $derived(count * 2);
-  
+
   // Reactive effects using runes
   $effect(() => {
     if (count > 10) alert('Too high!');
@@ -55,16 +55,16 @@ In Svelte 5, event handlers are treated as standard HTML properties rather than 
 
 ## Key Differences:
 
-1. **Reactivity is Explicit**: 
+1. **Reactivity is Explicit**:
    - Svelte 5 uses `$state()` to explicitly mark reactive variables
-   - `$derived()` replaces `$:` for computed values 
+   - `$derived()` replaces `$:` for computed values
    - `$effect()` replaces `$: {}` blocks for side effects
 
 2. **Event Handling is Standardized**:
    - Svelte 4: `on:click={handler}`
    - Svelte 5: `onclick={handler}`
 
-3. **Import Runes**: 
+3. **Import Runes**:
    - All runes must be imported from 'svelte': `import { $state, $effect, $derived, $props, $slots } from 'svelte';`
 
 4. **No More Event Modifiers**:

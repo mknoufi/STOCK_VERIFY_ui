@@ -124,24 +124,9 @@ class ActivityLogService:
         """
         try:
             # Build filter query
-            filter_query = {}
-
-            if user:
-                filter_query["user"] = user
-            if role:
-                filter_query["role"] = role
-            if action:
-                filter_query["action"] = action
-            if entity_type:
-                filter_query["entity_type"] = entity_type
-            if status:
-                filter_query["status"] = status
-            if start_date or end_date:
-                filter_query["timestamp"] = {}
-                if start_date:
-                    filter_query["timestamp"]["$gte"] = start_date
-                if end_date:
-                    filter_query["timestamp"]["$lte"] = end_date
+            filter_query = self._build_filter_query(
+                user, role, action, entity_type, status, start_date, end_date
+            )
 
             # Count total
             total = await self.collection.count_documents(filter_query)
@@ -175,6 +160,38 @@ class ActivityLogService:
             logger.error(f"Failed to retrieve activities: {str(e)}")
             raise
 
+    def _build_filter_query(
+        self,
+        user: Optional[str],
+        role: Optional[str],
+        action: Optional[str],
+        entity_type: Optional[str],
+        status: Optional[str],
+        start_date: Optional[datetime],
+        end_date: Optional[datetime],
+    ) -> Dict[str, Any]:
+        """Build filter query for activities"""
+        filter_query: Dict[str, Any] = {}
+
+        if user:
+            filter_query["user"] = user
+        if role:
+            filter_query["role"] = role
+        if action:
+            filter_query["action"] = action
+        if entity_type:
+            filter_query["entity_type"] = entity_type
+        if status:
+            filter_query["status"] = status
+        if start_date or end_date:
+            filter_query["timestamp"] = {}
+            if start_date:
+                filter_query["timestamp"]["$gte"] = start_date
+            if end_date:
+                filter_query["timestamp"]["$lte"] = end_date
+
+        return filter_query
+
     async def get_user_activities(self, username: str, limit: int = 100) -> List[Dict[str, Any]]:
         """Get recent activities for a specific user"""
         try:
@@ -195,7 +212,7 @@ class ActivityLogService:
     ) -> Dict[str, Any]:
         """Get activity statistics"""
         try:
-            filter_query = {}
+            filter_query: Dict[str, Any] = {}
             if start_date or end_date:
                 filter_query["timestamp"] = {}
                 if start_date:
@@ -216,7 +233,7 @@ class ActivityLogService:
             )
 
             # By action (top 10)
-            pipeline = [
+            pipeline: List[Dict[str, Any]] = [
                 {"$match": filter_query} if filter_query else {"$match": {}},
                 {"$group": {"_id": "$action", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}},

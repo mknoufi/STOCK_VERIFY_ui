@@ -76,7 +76,7 @@ class BarcodeAnalyzer:
     }
 
     @staticmethod
-    def analyze_barcode(barcode: str) -> Dict[str, Any]:
+    def analyze_barcode(barcode: str) -> BarcodeAnalysisResult:
         """
         Analyze barcode and return aging/discount recommendations
         """

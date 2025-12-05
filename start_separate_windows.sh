@@ -59,7 +59,7 @@ echo -e "${YELLOW}📱 Starting Frontend Server in new window...${NC}"
 osascript <<EOF
 tell application "Terminal"
     activate
-    set frontendWindow to do script "cd '$SCRIPT_DIR/frontend' && clear && echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' && echo '🚀 FRONTEND SERVER (EXPO)' && echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' && echo '📍 Scan QR code with Expo Go app' && echo '📍 Or press w for web version' && echo '' && echo 'Press Ctrl+C to stop' && echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' && echo '' && npm start"
+    set frontendWindow to do script "cd '$SCRIPT_DIR/backfron' && clear && echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' && echo '🚀 FRONTEND SERVER (EXPO)' && echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' && echo '📍 Scan QR code with Expo Go app' && echo '📍 Or press w for web version' && echo '' && echo 'Press Ctrl+C to stop' && echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' && echo '' && npm start"
     set custom title of frontendWindow to "Frontend Server - Expo"
 end tell
 EOF
@@ -73,4 +73,3 @@ echo "   • Frontend: Check Expo window for QR code"
 echo "   • To stop: Press Ctrl+C in each window"
 echo "   • Or run: ./stop.sh"
 echo ""
-

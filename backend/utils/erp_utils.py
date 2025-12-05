@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException
 
@@ -63,7 +63,9 @@ def _get_barcode_variations(barcode: str) -> List[str]:
     return variations
 
 
-def _map_erp_item_to_schema(item: Dict[str, Any], original_barcode: str = None) -> Dict[str, Any]:
+def _map_erp_item_to_schema(
+    item: Dict[str, Any], original_barcode: Optional[str] = None
+) -> Dict[str, Any]:
     """Map raw ERP item data to internal schema format."""
     return {
         "item_code": item.get("item_code", ""),

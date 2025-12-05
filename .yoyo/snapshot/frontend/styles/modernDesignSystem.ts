@@ -1,7 +1,7 @@
 /**
  * Modern Design System - Enhanced UI/UX Upgrade
  * Version: 2.0
- * 
+ *
  * Features:
  * - Modern color palette with semantic tokens
  * - Enhanced typography scale
@@ -31,7 +31,7 @@ export const modernColors = {
     800: '#1E40AF',
     900: '#1E3A8A',
   },
-  
+
   // Secondary - Emerald Green
   secondary: {
     50: '#ECFDF5',
@@ -45,7 +45,7 @@ export const modernColors = {
     800: '#065F46',
     900: '#064E3B',
   },
-  
+
   // Accent - Purple
   accent: {
     50: '#F5F3FF',
@@ -59,7 +59,7 @@ export const modernColors = {
     800: '#5B21B6',
     900: '#4C1D95',
   },
-  
+
   // Neutral Grays - Dark Mode Optimized
   neutral: {
     50: '#F9FAFB',
@@ -74,7 +74,7 @@ export const modernColors = {
     900: '#111827',
     950: '#030712',
   },
-  
+
   // Semantic Colors
   success: {
     light: '#D1FAE5',
@@ -82,28 +82,28 @@ export const modernColors = {
     dark: '#059669',
     contrast: '#FFFFFF',
   },
-  
+
   error: {
     light: '#FEE2E2',
     main: '#EF4444',
     dark: '#DC2626',
     contrast: '#FFFFFF',
   },
-  
+
   warning: {
     light: '#FEF3C7',
     main: '#F59E0B',
     dark: '#D97706',
     contrast: '#111827',
   },
-  
+
   info: {
     light: '#DBEAFE',
     main: '#3B82F6',
     dark: '#2563EB',
     contrast: '#FFFFFF',
   },
-  
+
   // Background Colors (Dark Mode)
   background: {
     default: '#0F172A',      // Slate 900
@@ -112,7 +112,7 @@ export const modernColors = {
     overlay: 'rgba(15, 23, 42, 0.8)',
     glass: 'rgba(30, 41, 59, 0.7)', // Glassmorphism
   },
-  
+
   // Text Colors
   text: {
     primary: '#F8FAFC',      // Slate 50
@@ -123,7 +123,7 @@ export const modernColors = {
     link: '#60A5FA',         // Blue 400
     linkHover: '#93C5FD',    // Blue 300
   },
-  
+
   // Border Colors
   border: {
     light: '#334155',        // Slate 700
@@ -132,7 +132,7 @@ export const modernColors = {
     focus: '#3B82F6',        // Blue 500
     error: '#EF4444',        // Red 500
   },
-  
+
   // Gradient Definitions
   gradients: {
     primary: ['#3B82F6', '#2563EB', '#1D4ED8'],
@@ -172,7 +172,7 @@ export const modernTypography = {
       letterSpacing: -0.5,
     },
   },
-  
+
   // Headings
   h1: {
     fontSize: 32,
@@ -210,7 +210,7 @@ export const modernTypography = {
     lineHeight: 24,
     letterSpacing: 0.15,
   },
-  
+
   // Body Text
   body: {
     large: {
@@ -232,7 +232,7 @@ export const modernTypography = {
       letterSpacing: 0.25,
     },
   },
-  
+
   // Labels & Captions
   label: {
     large: {
@@ -254,7 +254,7 @@ export const modernTypography = {
       letterSpacing: 0.5,
     },
   },
-  
+
   // Button Text
   button: {
     large: {
@@ -276,7 +276,7 @@ export const modernTypography = {
       letterSpacing: 0.5,
     },
   },
-  
+
   // Overline (Uppercase Labels)
   overline: {
     fontSize: 10,
@@ -306,7 +306,7 @@ export const modernSpacing = {
   16: 64,
   20: 80,
   24: 96,
-  
+
   // Semantic spacing
   xs: 4,
   sm: 8,
@@ -316,7 +316,7 @@ export const modernSpacing = {
   '2xl': 48,
   '3xl': 64,
   '4xl': 80,
-  
+
   // Component-specific spacing
   screenPadding: 24,
   cardPadding: 20,
@@ -341,7 +341,7 @@ export const modernBorderRadius = {
   '2xl': 24,
   '3xl': 32,
   full: 9999,
-  
+
   // Component-specific
   button: 12,
   card: 16,
@@ -362,7 +362,7 @@ export const modernShadows = {
     shadowRadius: 0,
     elevation: 0,
   },
-  
+
   xs: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -370,7 +370,7 @@ export const modernShadows = {
     shadowRadius: 2,
     elevation: 1,
   },
-  
+
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -378,7 +378,7 @@ export const modernShadows = {
     shadowRadius: 4,
     elevation: 2,
   },
-  
+
   md: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -386,7 +386,7 @@ export const modernShadows = {
     shadowRadius: 8,
     elevation: 4,
   },
-  
+
   lg: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -394,7 +394,7 @@ export const modernShadows = {
     shadowRadius: 16,
     elevation: 8,
   },
-  
+
   xl: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
@@ -402,7 +402,7 @@ export const modernShadows = {
     shadowRadius: 24,
     elevation: 12,
   },
-  
+
   // Colored shadows for brand elements
   primary: {
     shadowColor: modernColors.primary[500],
@@ -411,7 +411,7 @@ export const modernShadows = {
     shadowRadius: 8,
     elevation: 4,
   },
-  
+
   success: {
     shadowColor: modernColors.success.main,
     shadowOffset: { width: 0, height: 4 },
@@ -434,7 +434,7 @@ export const modernAnimations = {
     slow: 500,
     slower: 700,
   },
-  
+
   // Easing functions
   easing: {
     linear: 'linear',
@@ -448,14 +448,14 @@ export const modernAnimations = {
       mass: 1,
     },
   },
-  
+
   // Common animation values
   scale: {
     pressed: 0.95,
     hover: 1.02,
     focus: 1.05,
   },
-  
+
   opacity: {
     disabled: 0.5,
     hover: 0.9,
@@ -474,14 +474,14 @@ export const glassmorphism = {
     borderWidth: 1,
     backdropFilter: 'blur(10px)',
   },
-  
+
   medium: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderColor: 'rgba(255, 255, 255, 0.25)',
     borderWidth: 1,
     backdropFilter: 'blur(15px)',
   },
-  
+
   dark: {
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -500,7 +500,7 @@ export const modernLayout = {
     top: Platform.OS === 'ios' ? 44 : 24,
     bottom: Platform.OS === 'ios' ? 34 : 0,
   },
-  
+
   // Component heights
   headerHeight: 64,
   tabBarHeight: 72,
@@ -510,11 +510,11 @@ export const modernLayout = {
     medium: 44,
     large: 56,
   },
-  
+
   // Sidebar
   sidebarWidth: 280,
   sidebarCollapsedWidth: 80,
-  
+
   // Container widths
   containerMaxWidth: {
     mobile: '100%',
@@ -522,7 +522,7 @@ export const modernLayout = {
     desktop: 1200,
     wide: 1440,
   },
-  
+
   // Z-index scale
   zIndex: {
     dropdown: 1000,
@@ -576,19 +576,19 @@ export const modernCommonStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: modernColors.background.default,
   },
-  
+
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: modernColors.background.default,
   },
-  
+
   scrollContent: {
     flexGrow: 1,
     padding: modernSpacing.screenPadding,
   },
-  
+
   // Cards
   card: {
     backgroundColor: modernColors.background.paper,
@@ -598,14 +598,14 @@ export const modernCommonStyles = StyleSheet.create({
     borderColor: modernColors.border.light,
     ...modernShadows.sm,
   },
-  
+
   cardElevated: {
     backgroundColor: modernColors.background.paper,
     borderRadius: modernBorderRadius.card,
     padding: modernSpacing.cardPadding,
     ...modernShadows.md,
   },
-  
+
   cardGlass: {
     backgroundColor: modernColors.background.glass,
     borderRadius: modernBorderRadius.card,
@@ -613,7 +613,7 @@ export const modernCommonStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  
+
   // Buttons
   button: {
     borderRadius: modernBorderRadius.button,
@@ -624,25 +624,25 @@ export const modernCommonStyles = StyleSheet.create({
     minHeight: modernLayout.buttonHeight.medium,
     paddingHorizontal: modernSpacing.buttonPadding,
   },
-  
+
   buttonPrimary: {
     backgroundColor: modernColors.primary[500],
   },
-  
+
   buttonSecondary: {
     backgroundColor: modernColors.secondary[500],
   },
-  
+
   buttonOutline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
     borderColor: modernColors.primary[500],
   },
-  
+
   buttonGhost: {
     backgroundColor: 'transparent',
   },
-  
+
   // Inputs
   input: {
     height: modernLayout.inputHeight,
@@ -654,39 +654,39 @@ export const modernCommonStyles = StyleSheet.create({
     color: modernColors.text.primary,
     fontSize: modernTypography.body.medium.fontSize,
   },
-  
+
   inputFocused: {
     borderColor: modernColors.border.focus,
     borderWidth: 2,
   },
-  
+
   inputError: {
     borderColor: modernColors.border.error,
   },
-  
+
   // Text styles
   textPrimary: {
     color: modernColors.text.primary,
     ...modernTypography.body.medium,
   },
-  
+
   textSecondary: {
     color: modernColors.text.secondary,
     ...modernTypography.body.small,
   },
-  
+
   textTertiary: {
     color: modernColors.text.tertiary,
     ...modernTypography.body.small,
   },
-  
+
   // Spacing helpers
   gapXs: { gap: modernSpacing.xs },
   gapSm: { gap: modernSpacing.sm },
   gapMd: { gap: modernSpacing.md },
   gapLg: { gap: modernSpacing.lg },
   gapXl: { gap: modernSpacing.xl },
-  
+
   // Flex helpers
   row: { flexDirection: 'row' },
   column: { flexDirection: 'column' },
@@ -710,4 +710,3 @@ export default {
   breakpoints,
   commonStyles: modernCommonStyles,
 };
-

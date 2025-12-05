@@ -1,12 +1,13 @@
 """Check and create default users if they don't exist"""
 
 import asyncio
-import os
 from datetime import datetime
 
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
+
+from backend.config import settings
 
 load_dotenv()
 
@@ -22,11 +23,11 @@ pwd_context = CryptContext(
 
 
 async def check_users():
-    mongo_url = os.environ["MONGO_URL"]
-    db_name = os.environ["DB_NAME"]
+    # mongo_url = os.environ["MONGO_URL"] # This line is now redundant if using settings.MONGODB_URL
+    # db_name = os.environ["DB_NAME"]     # This line is now redundant if using settings.DB_NAME
 
-    client = AsyncIOMotorClient(mongo_url)
-    db = client[db_name]
+    client: AsyncIOMotorClient = AsyncIOMotorClient(settings.MONGO_URL)
+    db = client[settings.DB_NAME]  # Changed to use settings.DB_NAME for consistency
 
     users = await db.users.find({}).to_list(10)
     print(f"Users found: {len(users)}")

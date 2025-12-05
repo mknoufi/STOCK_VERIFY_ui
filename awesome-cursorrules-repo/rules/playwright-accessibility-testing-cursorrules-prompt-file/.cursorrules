@@ -47,7 +47,7 @@ test.describe('Login Page Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await injectAxe(page);
-    
+
     // Configure axe rules if needed
     await configureAxe(page, {
       rules: [
@@ -68,19 +68,19 @@ test.describe('Login Page Accessibility', () => {
   test('should be navigable by keyboard', async ({ page }) => {
     // Send Tab key to navigate through elements
     await page.keyboard.press('Tab');
-    let hasFocus = await page.evaluate(() => 
+    let hasFocus = await page.evaluate(() =>
       document.activeElement.id === 'username'
     );
     expect(hasFocus).toBeTruthy();
-    
+
     await page.keyboard.press('Tab');
-    hasFocus = await page.evaluate(() => 
+    hasFocus = await page.evaluate(() =>
       document.activeElement.id === 'password'
     );
     expect(hasFocus).toBeTruthy();
-    
+
     await page.keyboard.press('Tab');
-    hasFocus = await page.evaluate(() => 
+    hasFocus = await page.evaluate(() =>
       document.activeElement.id === 'login-button'
     );
     expect(hasFocus).toBeTruthy();
@@ -90,10 +90,10 @@ test.describe('Login Page Accessibility', () => {
     // Check form has proper ARIA attributes
     const form = await page.locator('form');
     expect(await form.getAttribute('aria-labelledby')).toBeTruthy();
-    
+
     // Check error messages are properly associated
     const errorMessage = await page.locator('.error-message');
     expect(await errorMessage.getAttribute('aria-live')).toBe('assertive');
   });
 });
-``` 
+```

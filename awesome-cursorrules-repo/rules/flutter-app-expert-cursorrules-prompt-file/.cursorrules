@@ -103,4 +103,3 @@ const testingTestingGuidelines = `
 6. Follow proper test naming conventions
 7. Implement proper CI/CD testing
 `;
-

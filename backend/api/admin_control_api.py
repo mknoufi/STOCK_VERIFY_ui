@@ -25,11 +25,11 @@ from fastapi.responses import Response, StreamingResponse  # noqa: E402
 # Import auth
 from backend.auth import get_current_user  # noqa: E402
 from backend.auth.dependencies import auth_deps  # noqa: E402
+from backend.config import settings  # noqa: E402
 from backend.services.system_report_service import SystemReportService  # noqa: E402
+from backend.sql_server_connector import sql_connector  # noqa: E402
 from backend.utils.port_detector import PortDetector  # noqa: E402
 from backend.utils.service_manager import ServiceManager  # noqa: E402
-from backend.sql_server_connector import sql_connector  # noqa: E402
-from backend.config import settings  # noqa: E402
 
 # Constants
 BACKEND_PROCESS_NEEDLE = "server.py"
@@ -662,7 +662,7 @@ def _read_log_file(
     log_path: Path, lines: int, level: Optional[str], service: str
 ) -> List[Dict[str, Any]]:
     """Read and parse log file"""
-    logs = []
+    logs: List[Dict[str, Any]] = []
     if not log_path.exists():
         return logs
 
@@ -814,7 +814,7 @@ async def update_sql_server_config(
         return {
             "success": True,
             "message": "SQL Server configuration updated and connected successfully",
-            "data": {k: v for k, v in sql_connector.config.items() if k != "password"},
+            "data": {k: v for k, v in (sql_connector.config or {}).items() if k != "password"},
         }
 
     except Exception as e:

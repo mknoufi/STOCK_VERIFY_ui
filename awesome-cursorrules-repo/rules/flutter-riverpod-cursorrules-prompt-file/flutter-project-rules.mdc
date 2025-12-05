@@ -4,7 +4,7 @@ globs: lib/**/*
 ---
 - Implement code following this directory structure:
 
-  
+
   lib/features/products/
   ├── data/
   │   ├── models/
@@ -27,7 +27,7 @@ globs: lib/**/*
   └── shared/
       └── models/
           └── address.dart
-  
+
 
 - Placement Rules:
   - **lib/**: Contains all Dart code.

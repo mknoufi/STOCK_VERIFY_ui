@@ -13,4 +13,3 @@ Developers seeking to build a scalable web application with a modern stack benef
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines a set of guidelines and procedures for assisting with software development tasks. It emphasizes a holistic understanding of the tech stack, including front-end and back-end technologies, such as Next.js, TypeScript, Tailwind CSS, and Python for LLM integration. It promotes modularity, DRY principles, performance, and security in coding style. The coding process is methodical, with an emphasis on step-by-step reasoning and prioritization of tasks. Detailed guidelines for editing code, coding verbosity levels, and a structured response format for the assistant are also included. The assistant acts as a senior pair programmer, offering expertise in the programming language used, and provides a concise summary of requirements and code history. Deployment strategies are yet to be determined.
-

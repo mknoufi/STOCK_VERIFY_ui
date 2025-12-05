@@ -18,7 +18,7 @@ cleanup_files() {
     local category="$1"
     shift
     local files=("$@")
-    
+
     echo ""
     echo "📋 $category:"
     for file in "${files[@]}"; do

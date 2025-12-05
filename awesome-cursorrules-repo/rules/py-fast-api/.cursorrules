@@ -66,4 +66,3 @@ Key Conventions
    - Structure routes and dependencies clearly to optimize readability and maintainability.
 
 Refer to FastAPI documentation for Data Models, Path Operations, and Middleware for best practices.
-

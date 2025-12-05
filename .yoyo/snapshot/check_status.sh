@@ -9,7 +9,7 @@ check_port() {
     local port=$1
     local service=$2
     local pid=$(lsof -ti :$port 2>/dev/null)
-    
+
     if [ ! -z "$pid" ]; then
         echo "✅ $service: RUNNING (Port $port, PID: $pid)"
         return 0
@@ -38,7 +38,7 @@ if [ -d "logs" ]; then
     else
         echo "❌ Admin Panel PID file not found"
     fi
-    
+
     if [ -f "logs/backend.pid" ]; then
         backend_pid=$(cat logs/backend.pid 2>/dev/null)
         if kill -0 $backend_pid 2>/dev/null; then
@@ -49,7 +49,7 @@ if [ -d "logs" ]; then
     else
         echo "❌ Backend API PID file not found"
     fi
-    
+
     if [ -f "logs/frontend.pid" ]; then
         frontend_pid=$(cat logs/frontend.pid 2>/dev/null)
         if kill -0 $frontend_pid 2>/dev/null; then
@@ -85,7 +85,7 @@ fi
 echo ""
 echo "📁 PROJECT STRUCTURE:"
 echo "✅ Admin Panel: $([ -d "admin-panel" ] && echo "EXISTS" || echo "MISSING")"
-echo "✅ Backend: $([ -d "backend" ] && echo "EXISTS" || echo "MISSING")"  
+echo "✅ Backend: $([ -d "backend" ] && echo "EXISTS" || echo "MISSING")"
 echo "✅ Frontend: $([ -d "frontend" ] && echo "EXISTS" || echo "MISSING")"
 
 # Check key files

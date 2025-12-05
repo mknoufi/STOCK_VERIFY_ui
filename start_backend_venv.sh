@@ -9,4 +9,5 @@ echo ""
 
 # Use the virtual environment Python
 export PORT=8001
+export MONGO_URL=mongodb://127.0.0.1:27017
 "/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/.venv/bin/python" -m backend.server

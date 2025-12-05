@@ -1,0 +1,10 @@
+{
+  "packs": [
+    {
+      "name": "light-spec",
+      "version": "0.1.0",
+      "source": "built-in"
+    }
+  ],
+  "profiles": {}
+}

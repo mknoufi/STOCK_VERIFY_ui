@@ -7,7 +7,7 @@ import os
 import platform
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -29,16 +29,45 @@ service_logs_router = APIRouter(prefix="/api/admin/logs", tags=["Service Logs"])
 
 def require_admin(current_user: dict = Depends(get_current_user)):
     """Require admin role"""
-    if isinstance(current_user, dict):
-        user_role = current_user.get("role")
-    else:
-        user_role = getattr(current_user, "role", None)
+    user_role = current_user.get("role")
 
     if user_role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-    return (
-        current_user if isinstance(current_user, dict) else {"role": "admin", "username": "admin"}
-    )
+    return current_user
+
+
+def _read_log_file(log_path: Path, lines: int, level: Optional[str]) -> List[Dict[str, Any]]:
+    """Read and parse log file"""
+    logs = []
+    if log_path.exists():
+        with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+            all_lines = f.readlines()
+            recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
+
+            for line in recent_lines:
+                line = line.strip()
+                if not line:
+                    continue
+
+                log_level = "INFO"
+                if "ERROR" in line or "error" in line.lower():
+                    log_level = "ERROR"
+                elif "WARN" in line or "warning" in line.lower():
+                    log_level = "WARN"
+                elif "DEBUG" in line or "debug" in line.lower():
+                    log_level = "DEBUG"
+
+                if level and log_level != level:
+                    continue
+
+                logs.append(
+                    {
+                        "timestamp": datetime.now().isoformat(),
+                        "level": log_level,
+                        "message": line,
+                    }
+                )
+    return logs
 
 
 @service_logs_router.get("/backend")
@@ -55,39 +84,9 @@ async def get_backend_logs(
             # Try alternative locations
             log_file = Path(__file__).parent.parent.parent / "backend.log"
 
-        logs = []
-        if log_file.exists():
-            with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
-                all_lines = f.readlines()
-                # Get last N lines
-                recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
+        logs = _read_log_file(log_file, lines, level)
 
-                for line in recent_lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-
-                    # Parse log level
-                    log_level = "INFO"
-                    if "ERROR" in line or "error" in line.lower():
-                        log_level = "ERROR"
-                    elif "WARN" in line or "warning" in line.lower():
-                        log_level = "WARN"
-                    elif "DEBUG" in line or "debug" in line.lower():
-                        log_level = "DEBUG"
-
-                    # Filter by level if specified
-                    if level and log_level != level:
-                        continue
-
-                    logs.append(
-                        {
-                            "timestamp": datetime.now().isoformat(),
-                            "level": log_level,
-                            "message": line,
-                        }
-                    )
-        else:
+        if not logs and not log_file.exists():
             # Return recent log entries from memory if available
             logs = [
                 {
@@ -171,32 +170,9 @@ async def get_mongodb_logs(
         logs = []
         for log_path in log_paths:
             if log_path.exists():
-                with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
-                    all_lines = f.readlines()
-                    recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
-
-                    for line in recent_lines:
-                        line = line.strip()
-                        if not line:
-                            continue
-
-                        log_level = "INFO"
-                        if "ERROR" in line or "error" in line.lower():
-                            log_level = "ERROR"
-                        elif "WARN" in line or "warning" in line.lower():
-                            log_level = "WARN"
-
-                        if level and log_level != level:
-                            continue
-
-                        logs.append(
-                            {
-                                "timestamp": datetime.now().isoformat(),
-                                "level": log_level,
-                                "message": line,
-                            }
-                        )
-                break
+                logs = _read_log_file(log_path, lines, level)
+                if logs:
+                    break
 
         if not logs:
             logs = [
@@ -236,35 +212,7 @@ async def get_system_logs(
         if not log_file.exists():
             log_file = Path(__file__).parent.parent.parent / "app.log"
 
-        logs = []
-        if log_file.exists():
-            with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
-                all_lines = f.readlines()
-                recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
-
-                for line in recent_lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-
-                    log_level = "INFO"
-                    if "ERROR" in line or "error" in line.lower():
-                        log_level = "ERROR"
-                    elif "WARN" in line or "warning" in line.lower():
-                        log_level = "WARN"
-                    elif "DEBUG" in line or "debug" in line.lower():
-                        log_level = "DEBUG"
-
-                    if level and log_level != level:
-                        continue
-
-                    logs.append(
-                        {
-                            "timestamp": datetime.now().isoformat(),
-                            "level": log_level,
-                            "message": line,
-                        }
-                    )
+        logs = _read_log_file(log_file, lines, level)
 
         return {
             "success": True,

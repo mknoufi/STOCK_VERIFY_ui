@@ -9,7 +9,7 @@ echo "📡 Checking port 8001..."
 if lsof -Pi :8001 -sTCP:LISTEN -t >/dev/null 2>&1; then
     pid=$(lsof -ti:8001)
     echo "✅ Backend server is running on port 8001 (PID: $pid)"
-    
+
     # Test if it's responding
     echo "🧪 Testing backend response..."
     if curl -s -f http://localhost:8001/health >/dev/null 2>&1; then
@@ -26,19 +26,19 @@ else
     echo "❌ No service running on port 8001"
     echo ""
     echo "🚀 Starting backend server..."
-    
+
     cd /Users/noufi1/STOCK_VERIFY_2-db-maped/backend
     echo "📂 Current directory: $(pwd)"
     echo "🐍 Starting with: /Users/noufi1/STOCK_VERIFY_2-db-maped/.venv/bin/python server.py"
-    
+
     # Start backend
     /Users/noufi1/STOCK_VERIFY_2-db-maped/.venv/bin/python server.py &
     BACKEND_PID=$!
-    
+
     echo "🔄 Backend started with PID: $BACKEND_PID"
     echo "⏳ Waiting 5 seconds for startup..."
     sleep 5
-    
+
     # Test again
     if curl -s -f http://localhost:8001/health >/dev/null 2>&1; then
         echo "✅ Backend is now responding!"

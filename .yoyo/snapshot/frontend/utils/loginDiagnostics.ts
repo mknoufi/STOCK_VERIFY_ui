@@ -36,7 +36,7 @@ export class LoginDiagnostics {
       timestamp: new Date().toISOString(),
     };
     this.steps.push(step);
-    
+
     const emoji = {
       pending: '⏳',
       checking: '🔍',
@@ -442,4 +442,3 @@ export async function runFullDiagnostics(
 
   return loginDiagnostics.getSteps();
 }
-

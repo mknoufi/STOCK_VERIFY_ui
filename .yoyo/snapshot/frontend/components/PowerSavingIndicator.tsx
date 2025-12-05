@@ -116,4 +116,3 @@ const styles = StyleSheet.create({
 });
 
 export default PowerSavingIndicator;
-

@@ -3,6 +3,7 @@
 ## 📚 Documentation (v2.1)
 
 * **[Codebase Memory](docs/codebase_memory_v2.1.md)**: Architecture, Tech Stack, and Data Models.
+* **[User Guide](docs/USER_GUIDE.md)**: Comprehensive user manual and operational guide.
 * **[Cursor Rules](docs/STOCK_VERIFY_2.1_cursor_rules.md)**: AI behavior and coding standards.
 * **[Verified Coding Policy](docs/verified_coding_policy.md)**: Testing and verification requirements.
 * **[Changelog](docs/CHANGELOG.md)**: Version history.

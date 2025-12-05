@@ -1362,23 +1362,23 @@ body {
     .dashboard-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .sidebar {
         position: relative;
         top: 0;
         max-height: none;
     }
-    
+
     .live-views-container,
     .terminal-views-container {
         grid-template-columns: 1fr;
     }
-    
+
     .error-notification-panel {
         width: 90%;
         max-width: 400px;
     }
-    
+
     .terminal-panel {
         height: 400px;
     }
@@ -1388,20 +1388,20 @@ body {
     .services-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .header-content {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .actions-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .error-stats {
         grid-template-columns: 1fr;
     }
-    
+
     .section-header {
         flex-direction: column;
         align-items: flex-start;

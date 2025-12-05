@@ -41,4 +41,3 @@ const additionalInstructions = `
 6. Follow both Solid.js and Tailwind naming conventions
 7. Use JIT (Just-In-Time) mode for faster development
 `;
-

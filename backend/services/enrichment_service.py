@@ -6,7 +6,7 @@ Manages serial numbers, MRP, HSN codes, and other missing data additions
 import logging
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -59,39 +59,8 @@ class EnrichmentService:
                     "errors": validation_result["errors"],
                 }
 
-            # Build update document
-            update_fields = {}
-            corrections = {}
-
-            # Process each enrichment field
-            for field, new_value in enrichment_data.items():
-                if field in [
-                    "serial_number",
-                    "mrp",
-                    "hsn_code",
-                    "barcode",
-                    "location",
-                    "condition",
-                    "notes",
-                ]:
-                    old_value = existing_item.get(field)
-
-                    if new_value is not None and str(new_value).strip():
-                        update_fields[field] = new_value
-
-                        # Track correction type
-                        if old_value is None or old_value == "":
-                            corrections[field] = {
-                                "old_value": old_value,
-                                "new_value": new_value,
-                                "action": "added",
-                            }
-                        elif old_value != new_value:
-                            corrections[field] = {
-                                "old_value": old_value,
-                                "new_value": new_value,
-                                "action": "corrected",
-                            }
+            # Identify corrections and build update fields
+            corrections, update_fields = self._identify_corrections(existing_item, enrichment_data)
 
             # Add enrichment metadata
             update_fields["last_enriched_at"] = datetime.utcnow()
@@ -150,52 +119,104 @@ class EnrichmentService:
             logger.error(f"Enrichment failed for {item_code}: {str(e)}")
             raise
 
+    def _identify_corrections(
+        self, existing_item: Dict[str, Any], enrichment_data: Dict[str, Any]
+    ) -> tuple[Dict[str, Any], Dict[str, Any]]:
+        """Identify corrections and build update fields"""
+        update_fields = {}
+        corrections = {}
+        enrichment_fields = [
+            "serial_number",
+            "mrp",
+            "hsn_code",
+            "barcode",
+            "location",
+            "condition",
+            "notes",
+        ]
+
+        for field, new_value in enrichment_data.items():
+            if field in enrichment_fields:
+                old_value = existing_item.get(field)
+
+                if new_value is not None and str(new_value).strip():
+                    update_fields[field] = new_value
+
+                    # Track correction type
+                    if old_value is None or old_value == "":
+                        corrections[field] = {
+                            "old_value": old_value,
+                            "new_value": new_value,
+                            "action": "added",
+                        }
+                    elif old_value != new_value:
+                        corrections[field] = {
+                            "old_value": old_value,
+                            "new_value": new_value,
+                            "action": "corrected",
+                        }
+        return corrections, update_fields
+
     def validate_enrichment_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate enrichment data before saving
-
-        Args:
-            data: Dictionary with enrichment fields
-
-        Returns:
-            Dictionary with validation result and errors
         """
         errors = []
 
-        # Serial number validation
-        if "serial_number" in data and data["serial_number"]:
-            serial = str(data["serial_number"]).strip()
-            if serial and not re.match(r"^[A-Z0-9\-]+$", serial, re.IGNORECASE):
-                errors.append("Serial number must contain only letters, numbers, and hyphens")
+        if err := self._validate_serial_number(data.get("serial_number")):
+            errors.append(err)
 
-        # MRP validation
-        if "mrp" in data and data["mrp"] is not None:
-            try:
-                mrp = float(data["mrp"])
-                if mrp < 0:
-                    errors.append("MRP must be greater than or equal to 0")
-            except (ValueError, TypeError):
-                errors.append("MRP must be a valid number")
+        if err := self._validate_mrp(data.get("mrp")):
+            errors.append(err)
 
-        # HSN code validation (4 or 8 digits)
-        if "hsn_code" in data and data["hsn_code"]:
-            hsn = str(data["hsn_code"]).strip()
-            if hsn and not re.match(r"^\d{4}(\d{4})?$", hsn):
-                errors.append("HSN code must be 4 or 8 digits")
+        if err := self._validate_hsn_code(data.get("hsn_code")):
+            errors.append(err)
 
-        # Barcode validation (EAN-13: 13 digits)
-        if "barcode" in data and data["barcode"]:
-            barcode = str(data["barcode"]).strip()
-            if barcode and not re.match(r"^\d{8,13}$", barcode):
-                errors.append("Barcode must be 8-13 digits")
+        if err := self._validate_barcode(data.get("barcode")):
+            errors.append(err)
 
-        # Condition validation
-        if "condition" in data and data["condition"]:
-            valid_conditions = ["good", "damaged", "obsolete", "new"]
-            if data["condition"].lower() not in valid_conditions:
-                errors.append(f"Condition must be one of: {', '.join(valid_conditions)}")
+        if err := self._validate_condition(data.get("condition")):
+            errors.append(err)
 
         return {"is_valid": len(errors) == 0, "errors": errors}
+
+    def _validate_serial_number(self, serial_number: Any) -> Optional[str]:
+        if serial_number:
+            serial = str(serial_number).strip()
+            if serial and not re.match(r"^[A-Z0-9\-]+$", serial, re.IGNORECASE):
+                return "Serial number must contain only letters, numbers, and hyphens"
+        return None
+
+    def _validate_mrp(self, mrp_value: Any) -> Optional[str]:
+        if mrp_value is not None:
+            try:
+                mrp = float(mrp_value)
+                if mrp < 0:
+                    return "MRP must be greater than or equal to 0"
+            except (ValueError, TypeError):
+                return "MRP must be a valid number"
+        return None
+
+    def _validate_hsn_code(self, hsn_code: Any) -> Optional[str]:
+        if hsn_code:
+            hsn = str(hsn_code).strip()
+            if hsn and not re.match(r"^\d{4}(\d{4})?$", hsn):
+                return "HSN code must be 4 or 8 digits"
+        return None
+
+    def _validate_barcode(self, barcode_val: Any) -> Optional[str]:
+        if barcode_val:
+            barcode = str(barcode_val).strip()
+            if barcode and not re.match(r"^\d{8,13}$", barcode):
+                return "Barcode must be 8-13 digits"
+        return None
+
+    def _validate_condition(self, condition: Any) -> Optional[str]:
+        if condition:
+            valid_conditions = ["good", "damaged", "obsolete", "new"]
+            if str(condition).lower() not in valid_conditions:
+                return f"Condition must be one of: {', '.join(valid_conditions)}"
+        return None
 
     async def calculate_completeness(
         self, item_code: str, additional_fields: Optional[Dict[str, Any]] = None
@@ -248,7 +269,7 @@ class EnrichmentService:
             List of missing field names
         """
         completeness = await self.calculate_completeness(item_code)
-        return completeness["missing_fields"]
+        return cast(List[str], completeness["missing_fields"])
 
     async def get_enrichment_stats(
         self,
@@ -369,14 +390,16 @@ class EnrichmentService:
         Returns:
             Dictionary with import results
         """
-        results = {"success": 0, "failed": 0, "errors": []}
+        results: Dict[str, Any] = {"success": 0, "failed": 0, "errors": []}
 
         for enrichment in enrichments:
             try:
                 item_code = enrichment.get("item_code")
                 if not item_code:
-                    results["failed"] += 1
-                    results["errors"].append({"item_code": None, "error": "Missing item_code"})
+                    results["failed"] = int(results["failed"]) + 1
+                    cast(List[Dict[str, Any]], results["errors"]).append(
+                        {"item_code": None, "error": "Missing item_code"}
+                    )
                     continue
 
                 # Record enrichment
@@ -388,16 +411,16 @@ class EnrichmentService:
                 )
 
                 if result["success"]:
-                    results["success"] += 1
+                    results["success"] = int(results["success"]) + 1
                 else:
-                    results["failed"] += 1
-                    results["errors"].append(
+                    results["failed"] = int(results["failed"]) + 1
+                    cast(List[Dict[str, Any]], results["errors"]).append(
                         {"item_code": item_code, "error": result.get("error", "Unknown error")}
                     )
 
             except Exception as e:
-                results["failed"] += 1
-                results["errors"].append(
+                results["failed"] = int(results["failed"]) + 1
+                cast(List[Dict[str, Any]], results["errors"]).append(
                     {"item_code": enrichment.get("item_code"), "error": str(e)}
                 )
 
@@ -434,7 +457,7 @@ class EnrichmentService:
             if end_date:
                 match_query["enriched_at"]["$lte"] = end_date
 
-        pipeline = [
+        pipeline: List[Dict[str, Any]] = [
             {"$match": match_query},
             {
                 "$group": {
@@ -476,7 +499,9 @@ class EnrichmentService:
         Returns:
             List of items with missing fields highlighted
         """
-        query = {"$or": [{"data_complete": {"$ne": True}}, {"data_complete": {"$exists": False}}]}
+        query: Dict[str, Any] = {
+            "$or": [{"data_complete": {"$ne": True}}, {"data_complete": {"$exists": False}}]
+        }
 
         if category:
             query["category"] = category

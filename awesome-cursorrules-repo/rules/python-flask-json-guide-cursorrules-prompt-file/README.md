@@ -13,4 +13,3 @@ Developers working on automation and visualization in Factorio could use this pr
 
 ## Overview of .cursorrules prompt
 The .cursorrules file provides instructions for utilizing a custom Drawscape Factorio Python module. It includes examples of how to import the module, load a JSON file from an FUE5 MOD, parse the JSON data, and then use the parsed data to generate a Factorio-themed SVG file with specific settings such as theme name, color scheme, and visible layers. Additionally, it provides an `environment.yml` file listing the dependencies and Python version required to run the project, including libraries like Flask, svgwrite, and numpy.
-

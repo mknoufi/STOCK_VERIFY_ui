@@ -13,4 +13,3 @@ This prompt would benefit developers using Next.js App Router to build browser-b
 
 ## Overview of .cursorrules prompt
 The .cursorrules file defines a set of operational guidelines for an AI programming assistant specializing in JavaScript coding, with a focus on browser environments. It emphasizes using the latest versions of libraries and frameworks, specifically React and Next.js with the App Router, and strictly advises against the usage of the pages router. The assistant is tasked with providing detailed pseudocode before writing actual code, ensuring the code is accurate, secure, bug-free, and readable, prioritizing clear and concise implementation over minimalism or performance. It also stresses on compatibility with Vercel and Replit hosting platforms. Additionally, the assistant should be honest about the scope of its knowledge and avoid making assumptions or leaving incomplete code.
-

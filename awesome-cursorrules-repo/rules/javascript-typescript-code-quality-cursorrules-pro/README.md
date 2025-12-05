@@ -13,4 +13,3 @@ This prompt benefits junior developers by providing a framework to build clean, 
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines guidelines for a senior full-stack developer focused on producing high-quality, clean, and maintainable code. Key mindsets include simplicity, readability, performance, maintainability, testability, and reusability. Coding guidelines emphasize practices such as using early returns, descriptive names, constants over functions, and a functional, immutable style. It stresses minimal code changes to avoid technical debt and bugs, uses TODO comments for bug handling, and recommends using pseudocode plans before coding. Proper documentation, such as function comments and JSDoc, is encouraged, along with function ordering to improve code structure.
-

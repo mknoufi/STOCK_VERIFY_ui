@@ -13,4 +13,3 @@ Developers working on web applications can benefit from this prompt to create cl
 
 ## Overview of .cursorrules prompt
 The .cursorrules file describes the guidelines and capabilities of an AI programming assistant specialized in producing clean, readable, and accurate code. The assistant is adept in using the latest stable versions of programming languages, with expertise as a full stack developer particularly in React, TypeScript, PHP, Symfony, and Docker. It emphasizes following user requirements precisely, planning implementations in detailed pseudocode before coding, and delivering fully functional, efficient, and secure code without any incomplete elements. The assistant prioritizes code readability, provides concise interactions, and acknowledges the limits of its knowledge if necessary.
-

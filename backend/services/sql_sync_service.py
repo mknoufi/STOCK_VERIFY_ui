@@ -40,7 +40,7 @@ class SQLSyncService:
         self._running = False
         self._task: Optional[asyncio.Task] = None
         self._last_sync: Optional[datetime] = None
-        self._sync_stats = {
+        self._sync_stats: Dict[str, Any] = {
             "total_syncs": 0,
             "successful_syncs": 0,
             "failed_syncs": 0,
@@ -63,13 +63,13 @@ class SQLSyncService:
             raise SQLServerConnectionError("SQL Server connection not available")
 
         start_time = datetime.utcnow()
-        stats = {
+        stats: Dict[str, Any] = {
             "items_checked": 0,
             "qty_updated": 0,
             "items_created": 0,
             "qty_changes_detected": 0,
             "errors": 0,
-            "duration": 0,
+            "duration": 0.0,
         }
 
         try:
@@ -176,7 +176,9 @@ class SQLSyncService:
 
             stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
             self._last_sync = datetime.utcnow()
-            self._sync_stats["successful_syncs"] += 1
+            self._sync_stats["successful_syncs"] = (
+                int(self._sync_stats.get("successful_syncs", 0)) + 1
+            )
             self._sync_stats["items_synced"] = stats["items_checked"]
             self._sync_stats["qty_changes_detected"] = stats["qty_changes_detected"]
             self._sync_stats["last_sync"] = self._last_sync.isoformat()
@@ -206,7 +208,7 @@ class SQLSyncService:
 
         except Exception as e:
             logger.error(f"SQL qty sync failed: {str(e)}")
-            self._sync_stats["failed_syncs"] += 1
+            self._sync_stats["failed_syncs"] = int(self._sync_stats.get("failed_syncs", 0)) + 1
             stats["errors"] = 1
             raise
 
@@ -317,10 +319,12 @@ class SQLSyncService:
                     self._sync_stats["failed_syncs"] += 1
                 else:
                     await self.sync_quantities_only()
-                    self._sync_stats["total_syncs"] += 1
+                    self._sync_stats["total_syncs"] = (
+                        int(self._sync_stats.get("total_syncs", 0)) + 1
+                    )
             except Exception as e:
                 logger.error(f"Sync loop error: {str(e)}")
-                self._sync_stats["failed_syncs"] += 1
+                self._sync_stats["failed_syncs"] = int(self._sync_stats.get("failed_syncs", 0)) + 1
 
             # Wait for next sync interval
             await asyncio.sleep(self.sync_interval)

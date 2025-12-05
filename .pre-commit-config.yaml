@@ -7,6 +7,7 @@ repos:
       - id: check-yaml
         args: [--allow-multiple-documents]
       - id: check-added-large-files
+        args: ['--maxkb=2000']
 
   - repo: https://github.com/psf/black
     rev: 24.10.0
@@ -34,5 +35,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        types_or: [javascript, jsx, ts, tsx, css, json, markdown]
-        files: ^frontend/
+        # Use a explicit files regex instead of types_or to avoid compatibility issues with
+        # older versions of pre-commit/identify that don't recognize 'md' shorthand.
+        # This matches common Prettier-compatible frontend file extensions in the backfron/ folder.
+        files: ^backfron/.*\.(js|jsx|ts|tsx|css|json|md|markdown)$

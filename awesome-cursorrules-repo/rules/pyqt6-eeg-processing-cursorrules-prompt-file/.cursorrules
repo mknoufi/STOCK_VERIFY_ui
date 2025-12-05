@@ -64,4 +64,3 @@ def implement_eeg_processor():
 
 if __name__ == '__main__':
   implement_eeg_processor()
-

@@ -37,14 +37,18 @@ os.environ.update(
     }
 )
 
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from motor.motor_asyncio import AsyncIOMotorClient
+import pytest_asyncio  # noqa: E402
+from httpx import ASGITransport, AsyncClient  # noqa: E402
+from motor.motor_asyncio import AsyncIOMotorClient  # noqa: E402
 
-from backend.services.cache_service import CacheService
+from backend.server import app  # noqa: E402
+from backend.services.cache_service import CacheService  # noqa: E402
 
 # Import test utilities and mocks
-from backend.tests.utils.in_memory_db import InMemoryDatabase, setup_server_with_in_memory_db
+from backend.tests.utils.in_memory_db import (  # noqa: E402
+    InMemoryDatabase,
+    setup_server_with_in_memory_db,
+)
 
 # Provide Path symbol for legacy tests that expect it in globals
 globals().setdefault("Path", Path)
@@ -71,7 +75,6 @@ def test_db(monkeypatch) -> InMemoryDatabase:
 @pytest_asyncio.fixture
 async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None]:
     """Provide an async client for API testing."""
-    from backend.server import app
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
@@ -80,11 +83,13 @@ async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None
 @pytest_asyncio.fixture
 async def mongo_client() -> AsyncGenerator[AsyncIOMotorClient, None]:
     """Provide MongoDB test client."""
-    client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
+    client: AsyncIOMotorClient = AsyncIOMotorClient(
+        os.getenv("MONGO_URL", "mongodb://localhost:27017/stock_count_test")
+    )
     yield client
 
     # Cleanup test database
-    await client.drop_database(os.getenv("DB_NAME"))
+    await client.drop_database(os.getenv("DB_NAME", "stock_count_test"))
     client.close()
 
 
@@ -130,8 +135,8 @@ async def authenticated_headers(test_db: InMemoryDatabase) -> dict:
 
     token = encode(
         {"sub": user["username"], "role": user["role"]},
-        os.getenv("JWT_SECRET"),
-        algorithm=os.getenv("JWT_ALGORITHM"),
+        os.getenv("JWT_SECRET", "test-secret"),
+        algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
     )
 
     return {"Authorization": f"Bearer {token}"}

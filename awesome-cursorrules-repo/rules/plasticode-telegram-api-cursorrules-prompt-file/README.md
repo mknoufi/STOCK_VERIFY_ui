@@ -13,4 +13,3 @@ Developers can build a robust Telegram bot using PHP and Plasticode, adhering to
 
 ## Overview of .cursorrules prompt
 The .cursorrules file is designed for developers working with PHP, Plasticode, and the Telegram Bot API, guiding them towards best practices in web development. It emphasizes writing concise and technical responses, using object-oriented programming and following SOLID principles. The file encourages developers to prioritize iteration and modularization to avoid code duplication, to use descriptive names for variables and methods, and to favor dependency injection. It specifies the use of PHP 7.4 features, adheres to PSR-12 coding standards, and includes implementing proper error handling with try-catch blocks. Dependencies mentioned include Plasticode and Composer for managing dependencies.
-

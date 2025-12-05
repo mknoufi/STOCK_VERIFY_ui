@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+from pymongo import UpdateOne
 
 from backend.utils.async_utils import AsyncExecutor, safe_async_execute
 from backend.utils.result_types import Result
@@ -31,12 +32,12 @@ class OptimizedDatabaseQuery(Generic[T]):
     ):
         self.collection = collection
         self.executor = executor or AsyncExecutor()
-        self._pipeline = []
-        self._filters = {}
-        self._projection = None
-        self._sort = None
-        self._limit_val = None
-        self._skip_val = None
+        self._pipeline: List[Dict[str, Any]] = []
+        self._filters: Dict[str, Any] = {}
+        self._projection: Optional[Dict[str, int]] = None
+        self._sort: Optional[Dict[str, int]] = None
+        self._limit_val: Optional[int] = None
+        self._skip_val: Optional[int] = None
 
     def filter(self, **filters: Any) -> "OptimizedDatabaseQuery[T]":
         """Add filters (chainable)"""
@@ -170,16 +171,14 @@ class DatabaseQueryBuilder:
                         continue
 
                     bulk_ops.append(
-                        {
-                            "updateOne": {
-                                "filter": {upsert_key: key_value},
-                                "update": {
-                                    "$set": {**doc, "updated_at": datetime.utcnow()},
-                                    "$setOnInsert": {"created_at": datetime.utcnow()},
-                                },
-                                "upsert": True,
-                            }
-                        }
+                        UpdateOne(
+                            {upsert_key: key_value},
+                            {
+                                "$set": {**doc, "updated_at": datetime.utcnow()},
+                                "$setOnInsert": {"created_at": datetime.utcnow()},
+                            },
+                            upsert=True,
+                        )
                     )
 
                 if bulk_ops:
@@ -293,7 +292,7 @@ class PerformanceMonitor:
             metrics["slow_queries"] += 1
             logger.warning(f"Slow query detected: {operation_name} took {duration:.2f}s")
 
-        return result
+        return result  # type: ignore
 
     def get_metrics(self, operation_name: Optional[str] = None) -> Dict[str, Any]:
         """Get performance metrics"""

@@ -1,0 +1,34 @@
+Issue Type,Summary,Description,Acceptance Criteria
+Epic,Frontend: Monorepo + Core Shell & Auth,"Foundation for modular architecture, authentication, routing, global layout",
+Story,Monorepo scaffold with workspace packages,"As a developer, I want a monorepo scaffold with workspace packages so that I can build modular frontend packages and manage dependencies cleanly.","1. Setup packages: app-shell, ui-core, shared-types. 2. Configure TypeScript and build tools."
+Story,Login / logout flow with token storage,"As a user, I want a login / logout flow with token storage and role-based routing so that access control is enforced across front-end.","1. Implement login screen. 2. Store tokens securely. 3. Redirect based on role."
+Story,Linting + TypeScript strict mode + basic CI,"As a developer, I want linting + TypeScript strict mode + basic CI pipeline so that code quality is maintained.","1. Configure ESLint and Prettier. 2. Enable TS strict mode. 3. Setup CI pipeline."
+Epic,Session & Item Scan Workflow,"Build core scanning, session management, item lookup, line save flows",
+Story,Select floor & rack and start a session,"As a staff auditor, I want to select floor & rack and start a session so that I can begin inventory for that rack.","1. UI for floor/rack selection. 2. Session header component."
+Story,Scan or manually enter barcode / search item,"As a staff auditor, I want to scan or manually enter barcode / search item name / enter serial so that scanning is flexible.","1. Support camera scanning. 2. Support manual barcode entry. 3. Support item name search."
+Story,See item details before counting,"As a staff auditor, I want to see item details (name, barcode, system qty) before counting so that I have correct context.","1. Display item metadata after lookup. 2. Show system stock quantity."
+Story,Enter physical qty, damaged qty, condition,"As a staff auditor, I want to enter physical qty, damaged qty, condition, optional note so that I can record accurate inventory state.","1. Form validation for quantity. 2. Optional damage and remark fields."
+Story,Save the line to session (online or offline),"As a staff auditor, I want to save the line to session so that my work isn’t lost if network fails.","1. Save API integration. 2. Offline queue fallback."
+Epic,Offline-first support & sync engine,"Ensure usability in unreliable network conditions",
+Story,Work offline and queue operations,"As a staff auditor, I want the app to work offline and queue operations so that I can continue counting without connectivity.","1. Implement local queue (IndexedDB/AsyncStorage). 2. Background sync logic."
+Story,See sync status (online/offline/syncing/error),"As a frontend user, I want to see sync status so that I know whether my data is safe or pending sync.","1. UI status indicator. 2. Manual retry button."
+Story,Detect conflicts from server,"As a team, I want the sync workflow to detect conflicts from server and surface them for supervisor review.","1. Handle 409/422 responses. 2. Notification system for conflicts."
+Epic,Realtime presence & multi-staff session support,"Enable multiple staff to work on same session concurrently",
+Story,See who else is auditing the same rack,"As a staff member, I want to see who else is currently auditing the same rack so that I avoid duplicate counts.","1. WebSocket presence channel. 2. UI list of active staff."
+Story,Soft-locking on line edits,"As a developer, I want soft-locking on line edits so that simultaneous edits don’t lead to silent overwrite.","1. Soft-lock logic on edit start."
+Story,Live update of lines created/modified,"As a team, we want live update of lines created/modified by other staff so all clients stay in sync.","1. Broadcast WS events. 2. Real-time UI updates."
+Epic,Supervisor Control Panel & Governance Flow,"Tools for review, reconciliation, and oversight",
+Story,Pending-variance list UI,"As a supervisor, I want a pending-variance list UI so that I can review inconsistencies flagged by staff.","1. Variance list with filters."
+Story,Diff view for each variance,"As a supervisor, I want a diff view for each variance so I can approve, reject, or request resolution.","1. Side-by-side comparison UI."
+Story,Approve or reject a variance,"As a supervisor, I want to approve or reject a variance so that changes are audited and controlled.","1. Approval/Rejection actions. 2. Audit logging."
+Story,Raise a recount request,"As a supervisor, I want to raise a recount request for any line or rack so staff can re-audit suspicious entries.","1. Recount creation flow."
+Story,Inbox for recount requests,"As a staff auditor, I want an inbox for recount requests so I can accept and perform recount on demand.","1. Staff notification/list view."
+Story,Recount workbench,"As a staff auditor, I want a recount workbench so I can re-validate entries.","1. Specialized scanning UI for recounts."
+Epic,Admin Panel & Reporting,"Provide administrative controls, reporting, configuration",
+Story,Feature-toggle & config UI,"As an admin, I want a feature-toggle & config UI so I can manage system behavior without code deploy.","1. Config panel with persistence."
+Story,Reports on conflicts and productivity,"As an admin, I want reports on conflicts, temp-items, staff productivity so I can monitor health.","1. Dashboard analytics. 2. Export options."
+Story,Role & permission management UI,"As an admin, I want role & permission management UI so I can assign/revoke privileges.","1. User management interface."
+Epic,Infrastructure & Developer Experience,"Build a professional-grade development pipeline",
+Story,Full CI pipeline,"As a developer, I want full CI pipeline so that code quality is automatically validated.","1. GitHub Actions/GitLab CI setup. 2. Lint/Test/Build steps."
+Story,Shared types generated from backend,"As a dev team, we want shared types generated from backend OpenAPI so frontend / backend stay in sync.","1. OpenAPI codegen integration."
+Story,E2E test skeleton for core flows,"As a QA, I want an E2E test skeleton for core flows so regression is minimized.","1. Cypress/Playwright setup. 2. Basic happy-path tests."

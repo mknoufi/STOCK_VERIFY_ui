@@ -29,4 +29,3 @@ done
 # Final fallback: Default web port
 echo "19006"
 exit 0
-

@@ -36,4 +36,3 @@ const additionalInstructions = `
 6. Utilize MobX DevTools for debugging
 7. Follow MobX best practices for scalable state management
 `;
-

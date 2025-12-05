@@ -19,4 +19,3 @@ export { default as typography } from './typography';
 export * from './themes';
 export * from './designSystem';
 export { PremiumTheme, PremiumStyles } from './designSystem';
-

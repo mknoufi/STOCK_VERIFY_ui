@@ -1,0 +1,12 @@
+{
+  "memory/tasks/tasks_plan_template.md": "light-spec",
+  "memory/tasks/active_context_template.md": "light-spec",
+  "memory/docs/product_requirement_docs_template.md": "light-spec",
+  "memory/docs/technical_template.md": "light-spec",
+  "memory/docs/architecture_template.md": "light-spec",
+  "tools/web_scraper.py": "light-spec",
+  "tools/screenshot_utils.py": "light-spec",
+  "tools/requirements.txt": "light-spec",
+  "tools/search_engine.py": "light-spec",
+  "tools/llm_api.py": "light-spec"
+}

@@ -250,7 +250,7 @@ class ScheduledExportService:
     async def _export_variance_report(self, filters: Dict[str, Any]) -> List[Dict]:
         """Export variance summary report"""
         # Aggregate variance data
-        pipeline = [
+        pipeline: List[Dict[str, Any]] = [
             {"$match": {"variance": {"$ne": 0}}},
             {
                 "$group": {
@@ -365,9 +365,6 @@ class ScheduledExportService:
                     second=0,
                     microsecond=0,
                 )
-        else:
-            next_run = now + timedelta(days=1)
-
         return next_run
 
     async def _run_scheduler(self):

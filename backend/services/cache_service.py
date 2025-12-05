@@ -8,8 +8,9 @@ import json
 import logging
 import threading
 import time
-from typing import Any, Dict, Optional, Callable
 from datetime import datetime
+from typing import Any, Callable, Dict, Optional
+
 from bson import ObjectId
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ try:
     REDIS_AVAILABLE = True
 except ImportError:
     try:
-        import redis
+        import redis  # type: ignore[no-redef]
         from redis.exceptions import RedisError
 
         REDIS_AVAILABLE = True
@@ -41,7 +42,7 @@ except ImportError:
         logger.warning("Redis not available, using in-memory cache")
 
         # Define dummy RedisError for type safety when Redis is missing
-        class RedisError(Exception):
+        class RedisError(Exception):  # type: ignore[no-redef]
             pass
 
 
@@ -158,7 +159,7 @@ class CacheService:
         if self.use_redis:
             try:
                 count = await self.redis_client.delete(cache_key)
-                return count > 0
+                return int(count) > 0
             except RedisError as e:
                 logger.error(f"Redis delete error: {str(e)}")
                 return False
@@ -185,6 +186,31 @@ class CacheService:
                 logger.error(f"Redis clear error: {str(e)}")
         else:
             keys_to_remove = [k for k in self._memory_cache.keys() if k.startswith(f"{prefix}:")]
+            for k in keys_to_remove:
+                del self._memory_cache[k]
+            return len(keys_to_remove)
+
+        return 0
+
+    async def clear_pattern(self, pattern: str) -> int:
+        """Clear all keys matching pattern"""
+        if self.use_redis:
+            try:
+                keys = []
+                async for key in self.redis_client.scan_iter(match=pattern):
+                    keys.append(key)
+
+                if keys:
+                    count = await self.redis_client.delete(*keys)
+                    return int(count)
+            except RedisError as e:
+                logger.error(f"Redis clear error: {str(e)}")
+        else:
+            # Simple glob-like matching for in-memory (only supports * at end for now or exact match)
+            # For full support, would need fnmatch
+            import fnmatch
+
+            keys_to_remove = [k for k in self._memory_cache.keys() if fnmatch.fnmatch(k, pattern)]
             for k in keys_to_remove:
                 del self._memory_cache[k]
             return len(keys_to_remove)

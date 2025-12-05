@@ -4,7 +4,7 @@ Generates OpenAPI/Swagger documentation with comprehensive examples.
 """
 
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import yaml
 from fastapi import FastAPI
@@ -83,7 +83,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
     }
 
     # Add comprehensive examples for each endpoint
-    enhanced_paths = {}
+    enhanced_paths: Dict[str, Any] = {}
 
     for path, methods in openapi_schema.get("paths", {}).items():
         enhanced_paths[path] = {}
@@ -709,7 +709,20 @@ Get your token by calling the `/auth/login` endpoint.
 """
 
     # Group endpoints by tags
-    endpoints_by_tag = {}
+    endpoints_by_tag = _group_endpoints_by_tag(openapi_schema)
+
+    # Generate markdown for each tag
+    for tag, endpoints in endpoints_by_tag.items():
+        md_content += f"### {tag}\n\n"
+        for endpoint in endpoints:
+            md_content += _generate_endpoint_markdown(endpoint)
+
+    return md_content
+
+
+def _group_endpoints_by_tag(openapi_schema: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+    """Group endpoints by their tags"""
+    endpoints_by_tag: Dict[str, List[Dict[str, Any]]] = {}
     for path, methods in openapi_schema.get("paths", {}).items():
         for method, operation in methods.items():
             tags = operation.get("tags", ["General"])
@@ -721,78 +734,76 @@ Get your token by calling the `/auth/login` endpoint.
             endpoints_by_tag[tag].append(
                 {"path": path, "method": method.upper(), "operation": operation}
             )
+    return endpoints_by_tag
 
-    # Generate markdown for each tag
-    for tag, endpoints in endpoints_by_tag.items():
-        md_content += f"### {tag}\n\n"
 
-        for endpoint in endpoints:
-            path = endpoint["path"]
-            method = endpoint["method"]
-            operation = endpoint["operation"]
+def _generate_endpoint_markdown(endpoint: Dict[str, Any]) -> str:
+    """Generate markdown for a single endpoint"""
+    path = endpoint["path"]
+    method = endpoint["method"]
+    operation = endpoint["operation"]
 
-            summary = operation.get("summary", f"{method} {path}")
-            description = operation.get("description", "")
+    summary = operation.get("summary", f"{method} {path}")
+    description = operation.get("description", "")
 
-            md_content += f"#### {method} {path}\n\n"
-            md_content += f"**{summary}**\n\n"
+    content = f"#### {method} {path}\n\n"
+    content += f"**{summary}**\n\n"
 
-            if description:
-                md_content += f"{description}\n\n"
+    if description:
+        content += f"{description}\n\n"
 
-            # Parameters
-            parameters = operation.get("parameters", [])
-            if parameters:
-                md_content += "**Parameters:**\n\n"
-                md_content += "| Name | Type | Required | Description |\n"
-                md_content += "|------|------|----------|-------------|\n"
+    # Parameters
+    parameters = operation.get("parameters", [])
+    if parameters:
+        content += "**Parameters:**\n\n"
+        content += "| Name | Type | Required | Description |\n"
+        content += "|------|------|----------|-------------|\n"
 
-                for param in parameters:
-                    name = param.get("name", "")
-                    param_type = param.get("schema", {}).get("type", "string")
-                    required = "Yes" if param.get("required", False) else "No"
-                    desc = param.get("description", "")
-                    md_content += f"| {name} | {param_type} | {required} | {desc} |\n"
+        for param in parameters:
+            name = param.get("name", "")
+            param_type = param.get("schema", {}).get("type", "string")
+            required = "Yes" if param.get("required", False) else "No"
+            desc = param.get("description", "")
+            content += f"| {name} | {param_type} | {required} | {desc} |\n"
 
-                md_content += "\n"
+        content += "\n"
 
-            # Request body examples
-            request_body = operation.get("requestBody", {})
-            if request_body:
-                content = request_body.get("content", {}).get("application/json", {})
-                examples = content.get("examples", {})
+    # Request body examples
+    request_body = operation.get("requestBody", {})
+    if request_body:
+        content_obj = request_body.get("content", {}).get("application/json", {})
+        examples = content_obj.get("examples", {})
 
-                if examples:
-                    md_content += "**Request Examples:**\n\n"
-                    for example_name, example_data in examples.items():
-                        summary = example_data.get("summary", example_name)
-                        value = example_data.get("value", {})
+        if examples:
+            content += "**Request Examples:**\n\n"
+            for example_name, example_data in examples.items():
+                summary = example_data.get("summary", example_name)
+                value = example_data.get("value", {})
 
-                        md_content += f"*{summary}:*\n"
-                        md_content += "```json\n"
-                        md_content += json.dumps(value, indent=2)
-                        md_content += "\n```\n\n"
+                content += f"*{summary}:*\n"
+                content += "```json\n"
+                content += json.dumps(value, indent=2)
+                content += "\n```\n\n"
 
-            # Response examples
-            responses = operation.get("responses", {})
-            if responses:
-                md_content += "**Responses:**\n\n"
+    # Response examples
+    responses = operation.get("responses", {})
+    if responses:
+        content += "**Responses:**\n\n"
 
-                for status_code, response in responses.items():
-                    description = response.get("description", "")
-                    content = response.get("content", {}).get("application/json", {})
-                    example = content.get("example")
+        for status_code, response in responses.items():
+            description = response.get("description", "")
+            resp_content = response.get("content", {}).get("application/json", {})
+            example = resp_content.get("example")
 
-                    md_content += f"**{status_code}** - {description}\n\n"
+            content += f"**{status_code}** - {description}\n\n"
 
-                    if example:
-                        md_content += "```json\n"
-                        md_content += json.dumps(example, indent=2)
-                        md_content += "\n```\n\n"
+            if example:
+                content += "```json\n"
+                content += json.dumps(example, indent=2)
+                content += "\n```\n\n"
 
-            md_content += "---\n\n"
-
-    return md_content
+    content += "---\n\n"
+    return content
 
 
 if __name__ == "__main__":

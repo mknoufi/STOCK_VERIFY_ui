@@ -94,4 +94,3 @@ Plan:
     d. Optimizing the shader code to maintain performance, especially for larger simulations or complex region effects.
 
 This system will allow for complex, user-defined behaviors across the simulation space, significantly enhancing the depth and interactivity of the cellular automata simulation.
-

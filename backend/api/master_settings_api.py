@@ -4,7 +4,7 @@ Master Settings API - Centralized system configuration
 
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 master_settings_router = APIRouter(prefix="/api/admin/settings", tags=["Master Settings"])
 
 
-def require_admin(current_user: dict = Depends(get_current_user)):
+def require_admin(current_user: Any = Depends(get_current_user)):
     """Require admin role"""
     if isinstance(current_user, dict):
         user_role = current_user.get("role")
@@ -41,48 +41,78 @@ def require_admin(current_user: dict = Depends(get_current_user)):
 
 class SystemParameters(BaseModel):
     # API Settings
-    api_timeout: int = Field(30, ge=5, le=300, description="API request timeout in seconds")
-    api_rate_limit: int = Field(100, ge=10, le=10000, description="API rate limit per minute")
+    api_timeout: Annotated[
+        int, Field(ge=5, le=300, description="API request timeout in seconds")
+    ] = 30
+    api_rate_limit: Annotated[
+        int, Field(ge=10, le=10000, description="API rate limit per minute")
+    ] = 100
 
     # Cache Settings
-    cache_enabled: bool = Field(True, description="Enable caching")
-    cache_ttl: int = Field(3600, ge=60, le=86400, description="Cache TTL in seconds")
-    cache_max_size: int = Field(1000, ge=100, le=10000, description="Maximum cache entries")
+    cache_enabled: Annotated[bool, Field(description="Enable caching")] = True
+    cache_ttl: Annotated[int, Field(ge=60, le=86400, description="Cache TTL in seconds")] = 3600
+    cache_max_size: Annotated[int, Field(ge=100, le=10000, description="Maximum cache entries")] = (
+        1000
+    )
 
     # Sync Settings
-    sync_interval: int = Field(3600, ge=60, le=86400, description="ERP sync interval in seconds")
-    sync_batch_size: int = Field(100, ge=10, le=1000, description="Sync batch size")
-    auto_sync_enabled: bool = Field(True, description="Enable automatic sync")
+    sync_interval: Annotated[
+        int, Field(ge=60, le=86400, description="ERP sync interval in seconds")
+    ] = 3600
+    sync_batch_size: Annotated[int, Field(ge=10, le=1000, description="Sync batch size")] = 100
+    auto_sync_enabled: Annotated[bool, Field(description="Enable automatic sync")] = True
 
     # Session Settings
-    session_timeout: int = Field(3600, ge=300, le=86400, description="Session timeout in seconds")
-    max_concurrent_sessions: int = Field(
-        50, ge=10, le=500, description="Maximum concurrent sessions"
-    )
+    session_timeout: Annotated[
+        int, Field(ge=300, le=86400, description="Session timeout in seconds")
+    ] = 3600
+    max_concurrent_sessions: Annotated[
+        int, Field(ge=10, le=500, description="Maximum concurrent sessions")
+    ] = 50
 
     # Logging Settings
-    log_level: str = Field("INFO", pattern="^(DEBUG|INFO|WARN|ERROR)$", description="Log level")
-    log_retention_days: int = Field(30, ge=1, le=365, description="Log retention in days")
-    enable_audit_log: bool = Field(True, description="Enable audit logging")
+    log_level: Annotated[
+        str, Field(pattern="^(DEBUG|INFO|WARN|ERROR)$", description="Log level")
+    ] = "INFO"
+    log_retention_days: Annotated[int, Field(ge=1, le=365, description="Log retention in days")] = (
+        30
+    )
+    enable_audit_log: Annotated[bool, Field(description="Enable audit logging")] = True
 
     # Database Settings
-    mongo_pool_size: int = Field(10, ge=1, le=100, description="MongoDB connection pool size")
-    sql_pool_size: int = Field(5, ge=1, le=20, description="SQL Server connection pool size")
-    query_timeout: int = Field(30, ge=5, le=300, description="Database query timeout in seconds")
+    mongo_pool_size: Annotated[
+        int, Field(ge=1, le=100, description="MongoDB connection pool size")
+    ] = 10
+    sql_pool_size: Annotated[
+        int, Field(ge=1, le=20, description="SQL Server connection pool size")
+    ] = 5
+    query_timeout: Annotated[
+        int, Field(ge=5, le=300, description="Database query timeout in seconds")
+    ] = 30
 
     # Security Settings
-    password_min_length: int = Field(8, ge=6, le=32, description="Minimum password length")
-    password_require_uppercase: bool = Field(True, description="Require uppercase in password")
-    password_require_lowercase: bool = Field(True, description="Require lowercase in password")
-    password_require_numbers: bool = Field(True, description="Require numbers in password")
-    jwt_expiration: int = Field(86400, ge=3600, le=604800, description="JWT expiration in seconds")
+    password_min_length: Annotated[
+        int, Field(ge=6, le=32, description="Minimum password length")
+    ] = 8
+    password_require_uppercase: Annotated[
+        bool, Field(description="Require uppercase in password")
+    ] = True
+    password_require_lowercase: Annotated[
+        bool, Field(description="Require lowercase in password")
+    ] = True
+    password_require_numbers: Annotated[bool, Field(description="Require numbers in password")] = (
+        True
+    )
+    jwt_expiration: Annotated[
+        int, Field(ge=3600, le=604800, description="JWT expiration in seconds")
+    ] = 86400
 
     # Performance Settings
-    enable_compression: bool = Field(True, description="Enable response compression")
-    max_request_size: int = Field(
-        10485760, ge=1048576, le=104857600, description="Max request size in bytes"
-    )
-    enable_cors: bool = Field(True, description="Enable CORS")
+    enable_compression: Annotated[bool, Field(description="Enable response compression")] = True
+    max_request_size: Annotated[
+        int, Field(ge=1048576, le=104857600, description="Max request size in bytes")
+    ] = 10485760
+    enable_cors: Annotated[bool, Field(description="Enable CORS")] = True
 
 
 @master_settings_router.get("/parameters")

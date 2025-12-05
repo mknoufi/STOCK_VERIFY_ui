@@ -14,13 +14,13 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # ruff: noqa: E402
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient  # noqa: E402
 
 # Import settings with fallback
 try:
     from backend.config import settings
 except ImportError:
-    import os
+    # os is already imported
 
     from dotenv import load_dotenv
 
@@ -30,7 +30,7 @@ except ImportError:
         MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
         DB_NAME = os.getenv("DB_NAME", "stock_verification")
 
-    settings = Settings()
+    settings = Settings()  # type: ignore
 
 
 async def test_mongodb_connection():
@@ -40,7 +40,7 @@ async def test_mongodb_connection():
 
     try:
         # Connect using settings
-        client = AsyncIOMotorClient(settings.MONGO_URL)
+        client: AsyncIOMotorClient = AsyncIOMotorClient(settings.MONGO_URL)
         db = client[settings.DB_NAME]
 
         # Test connection
@@ -108,7 +108,7 @@ async def test_backend_api():
     print("🌐 Testing Backend API...")
     print("=" * 60)
 
-    import requests
+    import requests  # noqa: E402
 
     # Test health endpoint
     try:

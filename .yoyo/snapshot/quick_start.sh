@@ -12,7 +12,7 @@ mkdir -p logs
 # Kill any existing processes on our ports
 echo "🧹 Cleaning up existing processes..."
 lsof -ti:3000 | xargs kill -9 2>/dev/null || true
-lsof -ti:8000 | xargs kill -9 2>/dev/null || true  
+lsof -ti:8000 | xargs kill -9 2>/dev/null || true
 lsof -ti:19006 | xargs kill -9 2>/dev/null || true
 
 sleep 2
@@ -31,7 +31,7 @@ cd ..
 
 sleep 3
 
-# 2. Backend API (Port 8000)  
+# 2. Backend API (Port 8000)
 echo "🔧 Starting Backend API..."
 cd backend
 nohup /Users/noufi1/STOCK_VERIFY_2-db-maped/.venv/bin/python server.py > ../logs/backend.log 2>&1 &
@@ -58,7 +58,7 @@ echo ""
 echo "🌟 ENHANCED DASHBOARD: http://localhost:3000/dashboard.html"
 echo "🔧 LEGACY ADMIN:       http://localhost:3000/index.html"
 echo "🌐 BACKEND API:        http://localhost:8000"
-echo "📚 API DOCS:           http://localhost:8000/docs"  
+echo "📚 API DOCS:           http://localhost:8000/docs"
 echo "📱 FRONTEND WEB:       http://localhost:19006"
 echo ""
 echo "📋 Process IDs:"
@@ -68,7 +68,7 @@ cat logs/frontend.pid | xargs echo "   📱 Frontend PID:"
 echo ""
 echo "📝 View logs:"
 echo "   tail -f logs/admin.log"
-echo "   tail -f logs/backend.log"  
+echo "   tail -f logs/backend.log"
 echo "   tail -f logs/frontend.log"
 echo ""
 echo "🛑 To stop all: ./stop_all_services.sh"

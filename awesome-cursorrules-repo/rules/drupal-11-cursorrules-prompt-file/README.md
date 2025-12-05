@@ -16,14 +16,14 @@ The goal of this project is to enable a consistent, secure, and efficient develo
 
 ## Installation
 
-1. **Copy the Rule File:**  
+1. **Copy the Rule File:**
    Place the `.cursorrules` file in the root of your Drupal 11 project (i.e., in the same directory as your `composer.json`).
 
-2. **Enable in Your Editor:**  
+2. **Enable in Your Editor:**
    - If you’re using the Cursor AI editor, make sure that project rules are enabled (usually via a settings toggle).
    - For VS Code users, install the [Cursor VS Code extension](https://marketplace.visualstudio.com/) and use its command palette to ensure the `.cursorrules` file is recognized.
 
-3. **Commit the Changes:**  
+3. **Commit the Changes:**
    Once added, commit the file to your repository so that the rules are shared with your entire development team.
 
 ## References

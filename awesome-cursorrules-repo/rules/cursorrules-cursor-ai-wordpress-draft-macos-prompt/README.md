@@ -13,4 +13,3 @@ Developers building WordPress management tools can utilize this prompt to create
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines a project named PressThat, a system tray application that interfaces with WordPress websites to manage draft posts. The app requires configuration with the user's WordPress website URL, username, and an Application Password obtained from the WordPress dashboard. The user experience involves downloading, installing, and opening the app, entering website credentials, testing the connection, and syncing draft posts. A menu bar or system tray icon displays the number of draft posts, and clicking the icon presents the main interface that combines cards and tables to showcase drafts, arranged by recency.
-

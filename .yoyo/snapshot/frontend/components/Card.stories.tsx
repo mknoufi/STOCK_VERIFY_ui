@@ -1,6 +1,6 @@
 /**
  * Card Component Stories
- * 
+ *
  * Documentation and examples for the Card component
  */
 
@@ -172,4 +172,3 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
 });
-

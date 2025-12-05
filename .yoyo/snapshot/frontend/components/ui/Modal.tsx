@@ -49,7 +49,7 @@ export const Modal: React.FC<ModalProps> = ({
   animationType = 'fade',
 }) => {
   const theme = useTheme();
-  
+
   // Reanimated values for smooth animations
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.9);
@@ -257,4 +257,3 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 });
-

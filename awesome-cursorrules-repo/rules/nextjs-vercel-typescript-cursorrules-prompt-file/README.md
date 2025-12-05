@@ -13,4 +13,3 @@ Developers skilled in Next.js and TypeScript can build scalable, efficient AI-dr
 
 ## Overview of .cursorrules prompt
 The .cursorrules file provides a comprehensive set of guidelines for integrating the `ai-sdk-rsc` library with Vercel middleware and a KV database within a Next.js application. It outlines best practices for utilizing TypeScript, React Server Components, and Shadcn/Radix UI, emphasizing modularity, performance optimization, and styling. The file includes instructions on setting up middleware in `middleware.ts`, managing user sessions with Vercel's KV database, and using AI SDK hooks for generative content streaming. It also covers data fetching strategies, state management, and deployment considerations to ensure a scalable and efficient application.
-

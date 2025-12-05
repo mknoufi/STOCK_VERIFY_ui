@@ -85,4 +85,3 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ApiResponse.error(400, ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }
-

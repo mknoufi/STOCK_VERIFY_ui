@@ -13,4 +13,3 @@ Chromium extension developers can leverage this prompt to develop efficient, sec
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines best practices and guidelines for developing Chrome extensions. It covers various aspects such as code style (emphasizing concise ES6+ JavaScript and modular architecture), naming conventions (camelCase, PascalCase, and uppercase for constants), and usage of modern JavaScript features. It also details how to structure the extension, including manifest files, and the implementation of Chrome APIs while ensuring security and performance. Additionally, it provides steps for the development process, tips for testing and debugging, and preparation for publishing on the Chrome Web Store. The file also encourages using internationalization features and recommends referencing example extensions for learning.
-

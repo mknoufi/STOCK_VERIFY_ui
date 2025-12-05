@@ -1,0 +1,82 @@
+{
+  "cursor": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "windsurf": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "cline": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "roo": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "kilocode": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "warp": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "copilot": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "claude-code": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "codex-cli": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  },
+  "gemini-cli": {
+    "timestamp": "2025-12-04T14:58:44.046449+00:00",
+    "mode": "all",
+    "packs": [
+      "light-spec"
+    ],
+    "pack_count": 1
+  }
+}

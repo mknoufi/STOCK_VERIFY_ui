@@ -64,4 +64,3 @@ Whenever you see a line with this following comment, do not touch it, rewrite it
     "vercel": "^32.4.1"
   }
 }
-

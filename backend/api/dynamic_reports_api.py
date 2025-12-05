@@ -367,7 +367,7 @@ async def quick_report_variance_summary(
     - format: Output format (excel, csv, json) - default: excel
     """
     try:
-        filters = {}
+        filters: Dict[str, Any] = {}
         if start_date:
             filters["session_date"] = {"$gte": start_date}
         if end_date:

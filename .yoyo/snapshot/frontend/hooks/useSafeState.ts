@@ -60,4 +60,3 @@ export function useSafeAsyncState<T>(initialValue: T) {
     setState,
   };
 }
-

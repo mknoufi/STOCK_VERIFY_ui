@@ -9,7 +9,7 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Coroutine, List, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Dict, List, Optional, TypeVar
 
 from backend.utils.result_types import Result
 
@@ -36,7 +36,7 @@ class AsyncExecutor:
         self.retry_attempts = retry_attempts
         self.backoff_factor = backoff_factor
         self.semaphore = asyncio.Semaphore(max_concurrent)
-        self._circuit_breaker_state = {}
+        self._circuit_breaker_state: Dict[str, Dict[str, Any]] = {}
         self._circuit_breaker_threshold = 5
         self._circuit_breaker_timeout = 60  # seconds
 
@@ -46,7 +46,7 @@ class AsyncExecutor:
         """
         Execute coroutine with automatic retry and zero-error handling
         """
-        last_error = None
+        last_error: Optional[Exception] = None
 
         for attempt in range(self.retry_attempts):
             try:
@@ -201,7 +201,7 @@ async def async_connection_pool(pool_size: int = 10):
     """
     Modern connection pool context manager
     """
-    pool = []
+    pool: List[Optional[Any]] = []
 
     try:
         # Initialize pool
@@ -230,9 +230,9 @@ class AsyncCache:
     def __init__(self, max_size: int = 1000, default_ttl: int = 3600):
         self.max_size = max_size
         self.default_ttl = default_ttl
-        self._cache = {}
-        self._access_times = {}
-        self._expiry_times = {}
+        self._cache: Dict[str, Any] = {}
+        self._access_times: Dict[str, float] = {}
+        self._expiry_times: Dict[str, float] = {}
         self._lock = asyncio.Lock()
 
     async def get(self, key: str) -> Optional[Any]:
@@ -312,7 +312,7 @@ async def cached_async(key_func: Optional[Callable[..., str]] = None, ttl: int =
             # Try cache first
             cached = await _async_cache.get(cache_key)
             if cached is not None:
-                return cached
+                return cached  # type: ignore
 
             # Execute and cache
             result = await func(*args, **kwargs)

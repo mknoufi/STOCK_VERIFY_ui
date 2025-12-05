@@ -62,7 +62,7 @@ BEE_CLIENT_SECRET=your_client_secret_here
 </head>
 <body>
     <div id="beefree-sdk-container"></div>
-    
+
     <script src="https://app-rsrc.getbee.io/plugin/BeefreeSDK.js"></script>
     <script>
         const beeConfig = {
@@ -171,7 +171,7 @@ const BEE_CLIENT_SECRET = process.env.BEE_CLIENT_SECRET;
 app.post('/proxy/bee-auth', async (req, res) => {
   try {
     const { uid } = req.body;
-    
+
     const response = await axios.post(
       'https://auth.getbee.io/loginV2',
       {
@@ -181,7 +181,7 @@ app.post('/proxy/bee-auth', async (req, res) => {
       },
       { headers: { 'Content-Type': 'application/json' } }
     );
-    
+
     res.json(response.data);
   } catch (error) {
     console.error('Auth error:', error.message);
@@ -257,7 +257,7 @@ const response = await fetch('https://api.getbee.io/v1/conversion/html-to-json',
     "Content-Type": "text/html"
   },
   body: "<!DOCTYPE html><html><body><h1>Hello World</h1></body></html>"
-}); 
+});
 const data = await response.json();
 ```
 

@@ -85,7 +85,7 @@ class SQLServerConnector:
         Automatically tries multiple connection methods if initial attempt fails
         """
         methods_to_try = self._build_connection_methods(host, port, database, user, password)
-        
+
         # Try each method
         last_error = None
         for method in methods_to_try:
@@ -97,7 +97,7 @@ class SQLServerConnector:
         error_msg = f"All {len(methods_to_try)} connection methods failed. Last error: {last_error or 'Unknown error'}"
         logger.error(error_msg)
         raise DatabaseConnectionError(error_msg)
-    
+
     def _build_connection_methods(self, host: str, port: int, database: str, user: Optional[str], password: Optional[str]) -> List[Dict[str, Any]]:
         """Build list of connection methods to try"""
         host_variants = [host, host.upper(), host.lower(), host.capitalize()]
@@ -107,9 +107,9 @@ class SQLServerConnector:
             methods_to_try.extend(self._build_sql_auth_methods(host_variants, port, database, user, password))
         else:
             methods_to_try.extend(self._build_windows_auth_methods(host_variants, port, database))
-        
+
         return methods_to_try
-    
+
     def _build_sql_auth_methods(self, host_variants: List[str], port: int, database: str, user: str, password: str) -> List[Dict[str, Any]]:
         """Build SQL Server Authentication methods"""
         methods = []
@@ -133,7 +133,7 @@ class SQLServerConnector:
                 "name": f"SQL Auth: {h} (no port)",
             })
         return methods
-    
+
     def _build_windows_auth_methods(self, host_variants: List[str], port: int, database: str) -> List[Dict[str, Any]]:
         """Build Windows Authentication methods"""
         methods = []
@@ -157,12 +157,12 @@ class SQLServerConnector:
                 "name": f"Windows Auth: {h} (no port)",
             })
         return methods
-    
+
     def _attempt_connection_method(self, method: Dict[str, Any]) -> bool:
         """Attempt connection using a specific method"""
         try:
             port_param = self._normalize_port_value(method.get("port"))
-            
+
             self.connection = SQLServerConnectionBuilder.create_optimized_connection(
                 host=str(method["host"]),
                 database=str(method["database"]),
@@ -188,7 +188,7 @@ class SQLServerConnector:
                 "error": str(e)
             })
             return False
-    
+
     def _normalize_port_value(self, port_value: Any) -> Optional[int]:
         """Normalize port value to proper type"""
         if port_value is None:
@@ -199,7 +199,7 @@ class SQLServerConnector:
             return int(port_value)
         else:
             return None
-    
+
     def _store_successful_config(self, method: Dict[str, Any]) -> None:
         """Store successful connection configuration"""
         self.config = {
@@ -219,7 +219,7 @@ class SQLServerConnector:
             "method": method["name"],
             "config": {k: v for k, v in self.config.items() if k != "password"},
         })
-    
+
     def _get_last_error_from_method(self, method: Dict[str, Any]) -> Optional[str]:
         """Get last error from connection methods history"""
         for conn_method in reversed(self.connection_methods):
@@ -242,23 +242,23 @@ class SQLServerConnector:
 
         if self._validate_connection():
             return True
-        
+
         # Connection lost, try to reconnect
         logger.debug("Connection test failed")
         return self._attempt_reconnect_on_failure()
-    
+
     def _attempt_auto_reconnect(self) -> bool:
         """Attempt to auto-reconnect using saved config"""
         if not self.config:
             return False
-        
+
         try:
             logger.info("Attempting to establish SQL Server connection from saved config...")
             return self._reconnect_with_config()
         except Exception as e:
             logger.debug(f"Auto-reconnect failed: {str(e)[:100]}")
             return False
-    
+
     def _validate_connection(self) -> bool:
         """Validate if current connection is working"""
         if not self.connection:
@@ -271,12 +271,12 @@ class SQLServerConnector:
             return True
         except Exception:
             return False
-    
+
     def _attempt_reconnect_on_failure(self) -> bool:
         """Attempt to reconnect when connection validation fails"""
         if not self.config:
             return False
-        
+
         try:
             logger.warning("Connection lost, attempting to reconnect...")
             return self._reconnect_with_config()
@@ -286,12 +286,12 @@ class SQLServerConnector:
         except Exception as reconnect_error:
             logger.error(f"Unexpected reconnect error: {str(reconnect_error)[:100]}")
             return False
-    
+
     def _reconnect_with_config(self) -> bool:
         """Reconnect using saved configuration"""
         if not self.config or not isinstance(self.config, dict):
             return False
-        
+
         host = str(self.config["host"])
         port = int(self.config.get("port", 1433))
         database = str(self.config["database"])

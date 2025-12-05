@@ -22,7 +22,7 @@ class RequestDeduplicationService {
   ): Promise<T> {
     // Check if request is already pending
     const existing = this.pendingRequests.get(key);
-    
+
     if (existing) {
       // Check if request is still valid (not expired)
       const age = Date.now() - existing.timestamp;
@@ -102,4 +102,3 @@ export const requestDeduplication = new RequestDeduplicationService();
 
 // Export class for custom instances
 export default RequestDeduplicationService;
-

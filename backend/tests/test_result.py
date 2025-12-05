@@ -2,17 +2,11 @@
 Comprehensive test suite for the Result type implementation.
 """
 
+from typing import Any
+
 import pytest
 
-from backend.utils.result import (
-    Fail,
-    Left,
-    Ok,
-    Result,
-    Right,
-    UnwrapError,
-    result_function,
-)
+from backend.utils.result import Either, Fail, Left, Ok, Result, Right, UnwrapError, result_function
 
 
 # Test data
@@ -70,9 +64,9 @@ class TestResult:
     def test_and_then_success(self):
         """Test chaining operations that might fail."""
 
-        def safe_divide(x: int, y: int) -> Result[int, str]:
+        def safe_divide(x: int, y: int) -> Result[int, Exception]:
             if y == 0:
-                return Fail("division by zero")
+                return Fail(ValueError("division by zero"))
             return Ok(x // y)
 
         result = Ok(10).and_then(lambda x: safe_divide(x, 2))
@@ -81,8 +75,8 @@ class TestResult:
     def test_and_then_failure(self):
         """Test that and_then short-circuits on failure."""
 
-        def fail_if_positive(x: int) -> Result[int, str]:
-            return Fail("positive")
+        def fail_if_positive(x: int) -> Result[int, Exception]:
+            return Fail(ValueError("positive"))
 
         result = (
             Ok(10)
@@ -91,17 +85,17 @@ class TestResult:
             .and_then(lambda x: Ok(x + 1))  # This is skipped
         )
         assert result.is_err
-        assert result.unwrap_or("error") == "error"
+        assert result.unwrap_or(0) == 0
 
     def test_or_else(self):
         """Test error recovery with or_else."""
-        result = Fail("original error").or_else(lambda e: Ok(f"recovered from {e}"))
+        result = Fail(ValueError("original error")).or_else(lambda e: Ok(f"recovered from {e}"))
         assert result.unwrap() == "recovered from original error"
 
     def test_match(self):
         """Test pattern matching style handling."""
         success = Ok(42)
-        failure = Fail(ValueError("error"))
+        failure: Result[int, Exception] = Fail(ValueError("error"))
 
         def handle(result: Result[int, Exception]) -> str:
             return result.match(ok=lambda x: f"Success: {x}", err=lambda e: f"Error: {str(e)}")
@@ -127,7 +121,7 @@ class TestResult:
         def add(a: int, b: int) -> int:
             return a + b
 
-        result = Result.from_callable(add, 2, 3)
+        result: Result[int, Any] = Result.from_callable(add, 2, 3)
         assert result.unwrap() == 5
 
     def test_from_callable_failure(self):
@@ -165,7 +159,7 @@ class TestResultFunctionDecorator:
         def add(a: int, b: int) -> int:
             return a + b
 
-        result = add(2, 3)
+        result: Result[int, ValueError] = add(2, 3)
         assert result.unwrap() == 5
 
     def test_failing_function(self):
@@ -175,9 +169,9 @@ class TestResultFunctionDecorator:
         def divide(a: int, b: int) -> float:
             return a / b
 
-        result = divide(10, 0)
+        result: Result[float, ValueError] = divide(10, 0)
         assert result.is_err
-        assert isinstance(result.unwrap_or("error"), str)
+        assert result.unwrap_or(0.0) == 0.0
 
     def test_custom_error_type(self):
         """Test with a custom error type."""
@@ -186,9 +180,9 @@ class TestResultFunctionDecorator:
         def might_fail() -> int:
             raise ValueError("test")
 
-        result = might_fail()
+        result: Result[int, CustomError] = might_fail()
         assert result.is_err
-        assert isinstance(result.unwrap_or("error"), str)
+        assert result.unwrap_or(0) == 0
 
 
 class TestEither:
@@ -196,31 +190,31 @@ class TestEither:
 
     def test_right_creation(self):
         """Test creating a Right value."""
-        right = Right(42)
+        right: Either[Any, int] = Right(42)
         assert right.is_right
         assert not right.is_left
 
     def test_left_creation(self):
         """Test creating a Left value."""
-        left = Left("error")
+        left: Either[str, Any] = Left("error")
         assert left.is_left
         assert not left.is_right
 
     def test_fold_right(self):
         """Test folding a Right value."""
-        right = Right(42)
+        right: Either[Any, int] = Right(42)
         result = right.fold(left_fn=lambda e: f"Error: {e}", right_fn=lambda x: f"Success: {x}")
         assert result == "Success: 42"
 
     def test_fold_left(self):
         """Test folding a Left value."""
-        left = Left("failure")
+        left: Either[str, Any] = Left("failure")
         result = left.fold(left_fn=lambda e: f"Error: {e}", right_fn=lambda x: f"Success: {x}")
         assert result == "Error: failure"
 
     def test_map_right(self):
         """Test mapping over a Right value."""
-        right = Right(21).map(lambda x: x * 2)
+        right: Either = Right(21).map(lambda x: x * 2)
         assert right.fold(left_fn=str, right_fn=str) == "42"
 
     def test_map_left(self):

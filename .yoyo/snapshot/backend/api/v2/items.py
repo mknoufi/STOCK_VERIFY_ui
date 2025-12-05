@@ -40,7 +40,7 @@ async def get_items_v2(
     """
     try:
         from backend.server import db
-        
+
         # Build query
         query = {}
         if search:
@@ -50,15 +50,15 @@ async def get_items_v2(
                     {"barcode": {"$regex": search, "$options": "i"}},
                 ]
             }
-        
+
         # Get total count
         total = await db.erp_items.count_documents(query)
-        
+
         # Get paginated items
         skip = (page - 1) * page_size
         items_cursor = db.erp_items.find(query).skip(skip).limit(page_size)
         items = await items_cursor.to_list(length=page_size)
-        
+
         # Convert to response models
         item_responses = [
             ItemResponse(
@@ -75,19 +75,19 @@ async def get_items_v2(
             )
             for item in items
         ]
-        
+
         paginated_response = PaginatedResponse.create(
             items=item_responses,
             total=total,
             page=page,
             page_size=page_size,
         )
-        
+
         return ApiResponse.success_response(
             data=paginated_response,
             message=f"Retrieved {len(item_responses)} items",
         )
-        
+
     except Exception as e:
         return ApiResponse.error_response(
             error_code="ITEMS_FETCH_ERROR",
@@ -107,15 +107,15 @@ async def get_item_v2(
     try:
         from backend.server import db
         from bson import ObjectId
-        
+
         item = await db.erp_items.find_one({"_id": ObjectId(item_id)})
-        
+
         if not item:
             return ApiResponse.error_response(
                 error_code="ITEM_NOT_FOUND",
                 error_message=f"Item with ID {item_id} not found",
             )
-        
+
         item_response = ItemResponse(
             id=str(item["_id"]),
             name=item.get("item_name", ""),
@@ -128,15 +128,14 @@ async def get_item_v2(
             warehouse=item.get("warehouse"),
             uom_name=item.get("uom_name"),
         )
-        
+
         return ApiResponse.success_response(
             data=item_response,
             message="Item retrieved successfully",
         )
-        
+
     except Exception as e:
         return ApiResponse.error_response(
             error_code="ITEM_FETCH_ERROR",
             error_message=f"Failed to fetch item: {str(e)}",
         )
-

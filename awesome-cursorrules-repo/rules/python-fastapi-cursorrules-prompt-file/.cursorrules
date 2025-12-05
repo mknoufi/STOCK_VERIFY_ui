@@ -35,4 +35,3 @@ additional_instructions = """
 6. Follow PEP 8 style guide for Python code
 7. Implement comprehensive unit and integration tests
 """
-

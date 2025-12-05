@@ -2,8 +2,8 @@
 
 ## 📋 System Overview
 
-**Project Type:** Stock Verification System  
-**Architecture Pattern:** Microservices with Mobile Frontend  
+**Project Type:** Stock Verification System
+**Architecture Pattern:** Microservices with Mobile Frontend
 **Data Flow:** One-Way (SQL Server → MongoDB)
 
 ---
@@ -76,8 +76,8 @@
 ## 🗄️ Database Roles
 
 ### **SQL Server (Source Database)**
-**Role:** READ-ONLY data source  
-**Purpose:** Fetch existing data/records  
+**Role:** READ-ONLY data source
+**Purpose:** Fetch existing data/records
 **Operations:**
 - ✅ SELECT queries only
 - ✅ Read historical data
@@ -94,8 +94,8 @@ SQL_SERVER_CONN = "mssql+pyodbc://user:pass@server/db?ReadOnly=true"
 ```
 
 ### **MongoDB (Working Database)**
-**Role:** PRIMARY working database  
-**Purpose:** Store, process, and manage all data  
+**Role:** PRIMARY working database
+**Purpose:** Store, process, and manage all data
 **Operations:**
 - ✅ INSERT (store fetched data)
 - ✅ UPDATE (modify records)
@@ -332,10 +332,10 @@ def sync_stock_items(last_sync_time=None):
     else:
         # Initial full sync
         query = "SELECT * FROM Items"
-    
+
     # Fetch from SQL Server
     items = fetch_from_sql_server(query)
-    
+
     # Upsert to MongoDB
     for item in items:
         mongodb.stock_items.update_one(
@@ -368,10 +368,10 @@ def test_mongodb_crud():
 def test_sync_flow():
     # Fetch from SQL Server
     sql_data = fetch_from_sql_server()
-    
+
     # Store in MongoDB
     mongo_result = store_in_mongodb(sql_data)
-    
+
     # Verify stored correctly
     assert mongo_result.modified_count > 0
 ```
@@ -412,31 +412,31 @@ def test_sync_flow():
 
 ### **Key Points:**
 
-✅ **SQL Server** = READ ONLY source  
-✅ **MongoDB** = PRIMARY working database  
-✅ **Data flows ONE WAY** (SQL → MongoDB)  
-✅ **NO write-back** to SQL Server  
-✅ **NO ERPNext/Frappe** integration  
-✅ **Python backend** (FastAPI/Flask)  
-✅ **React Native frontend** (Expo Router)  
+✅ **SQL Server** = READ ONLY source
+✅ **MongoDB** = PRIMARY working database
+✅ **Data flows ONE WAY** (SQL → MongoDB)
+✅ **NO write-back** to SQL Server
+✅ **NO ERPNext/Frappe** integration
+✅ **Python backend** (FastAPI/Flask)
+✅ **React Native frontend** (Expo Router)
 ✅ **All changes stored in MongoDB**
 
 ### **Don't Do:**
-❌ Write back to SQL Server  
-❌ Export to ERPNext  
-❌ Use Frappe framework  
-❌ Bidirectional sync  
+❌ Write back to SQL Server
+❌ Export to ERPNext
+❌ Use Frappe framework
+❌ Bidirectional sync
 
 ### **Do:**
-✅ Fetch from SQL Server (read-only)  
-✅ Process in MongoDB  
-✅ Store changes in MongoDB  
-✅ Use MongoDB for all CRUD operations  
-✅ Cache SQL Server queries  
+✅ Fetch from SQL Server (read-only)
+✅ Process in MongoDB
+✅ Store changes in MongoDB
+✅ Use MongoDB for all CRUD operations
+✅ Cache SQL Server queries
 ✅ Implement proper error handling
 
 ---
 
-**Last Updated:** 2025-11-28  
-**Project:** STOCK_VERIFY_2-db-maped  
+**Last Updated:** 2025-11-28
+**Project:** STOCK_VERIFY_2-db-maped
 **Architecture:** Corrected and Verified ✅

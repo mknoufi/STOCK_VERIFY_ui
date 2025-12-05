@@ -6,6 +6,7 @@ Automatically detect and use available ports
 import logging
 import os
 import socket
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class PortDetector:
             return False
 
     @staticmethod
-    def find_available_port(preferred_port: int, port_range: range = None) -> int:
+    def find_available_port(preferred_port: int, port_range: Optional[range] = None) -> int:
         """Find an available port starting from preferred"""
 
         # Try preferred port first
@@ -76,7 +77,7 @@ class PortDetector:
 
                         from motor.motor_asyncio import AsyncIOMotorClient
 
-                        client = AsyncIOMotorClient(
+                        client: AsyncIOMotorClient = AsyncIOMotorClient(
                             f"mongodb://{host}:{port}", serverSelectionTimeoutMS=1000
                         )
                         # Try to ping
@@ -144,7 +145,7 @@ class PortDetector:
         }
 
     @staticmethod
-    def generate_frontend_config(backend_port: int, frontend_port: int = None) -> str:
+    def generate_frontend_config(backend_port: int, frontend_port: Optional[int] = None) -> str:
         """Generate frontend configuration with dynamic ports"""
 
         # Try to detect current frontend port

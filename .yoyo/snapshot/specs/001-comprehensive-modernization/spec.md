@@ -1,8 +1,8 @@
 # Comprehensive Modernization of STOCK_VERIFY Application
 
-**Specification ID:** 001-comprehensive-modernization  
-**Version:** 1.0  
-**Date:** 2025-11-13  
+**Specification ID:** 001-comprehensive-modernization
+**Version:** 1.0
+**Date:** 2025-11-13
 **Status:** Draft
 
 ## Overview

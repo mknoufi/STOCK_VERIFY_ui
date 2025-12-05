@@ -32,7 +32,7 @@ const mockApiResponses = {
       },
       {
         id: '2',
-        barcode: 'TEST002', 
+        barcode: 'TEST002',
         name: 'Test Item 2',
         category: 'Furniture',
         quantity: 5,
@@ -54,7 +54,7 @@ class MockApiService {
   async login(username: string, password: string) {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     if (username === 'testuser' && password === 'testpass') {
       return mockApiResponses.login;
     }
@@ -65,7 +65,7 @@ class MockApiService {
     if (!this.token) {
       throw new Error('Authentication required');
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 50));
     return mockApiResponses.items;
   }
@@ -74,12 +74,12 @@ class MockApiService {
     if (!this.token) {
       throw new Error('Authentication required');
     }
-    
+
     const item = mockApiResponses.items.data.find(item => item.barcode === barcode);
     if (!item) {
       throw new Error('Item not found');
     }
-    
+
     return { success: true, data: item };
   }
 
@@ -87,12 +87,12 @@ class MockApiService {
     if (!this.token) {
       throw new Error('Authentication required');
     }
-    
+
     const newItem = {
       id: Date.now().toString(),
       ...itemData
     };
-    
+
     return { success: true, data: newItem };
   }
 
@@ -100,12 +100,12 @@ class MockApiService {
     if (!this.token) {
       throw new Error('Authentication required');
     }
-    
+
     const item = mockApiResponses.items.data.find(item => item.id === id);
     if (!item) {
       throw new Error('Item not found');
     }
-    
+
     return { success: true, data: { ...item, ...updateData } };
   }
 }
@@ -118,17 +118,17 @@ class MockAuthStore {
 
   async login(username: string, password: string) {
     const apiService = new MockApiService();
-    
+
     try {
       const response = await apiService.login(username, password);
       this.token = response.data.access_token;
       this.user = response.data.user;
       this.isAuthenticated = true;
-      
+
       // Store in AsyncStorage
       await AsyncStorage.setItem('auth_token', this.token);
       await AsyncStorage.setItem('user_data', JSON.stringify(this.user));
-      
+
       return { success: true, user: this.user };
     } catch (error) {
       throw error;
@@ -139,7 +139,7 @@ class MockAuthStore {
     this.user = null;
     this.token = null;
     this.isAuthenticated = false;
-    
+
     await AsyncStorage.removeItem('auth_token');
     await AsyncStorage.removeItem('user_data');
   }
@@ -148,14 +148,14 @@ class MockAuthStore {
     try {
       const token = await AsyncStorage.getItem('auth_token');
       const userData = await AsyncStorage.getItem('user_data');
-      
+
       if (token && userData) {
         this.token = token;
         this.user = JSON.parse(userData);
         this.isAuthenticated = true;
         return true;
       }
-      
+
       return false;
     } catch {
       return false;
@@ -184,11 +184,11 @@ class MockItemStore {
   async loadItems() {
     this.loading = true;
     this.error = null;
-    
+
     try {
       const apiService = new MockApiService();
       apiService.setAuthToken('mock_token');
-      
+
       const response = await apiService.getItems();
       this.items = response.data;
       this.loading = false;
@@ -205,17 +205,17 @@ class MockItemStore {
       item.barcode.includes(query) ||
       item.category.toLowerCase().includes(query.toLowerCase())
     );
-    
+
     return filteredItems;
   }
 
   async addItem(itemData: any) {
     const apiService = new MockApiService();
     apiService.setAuthToken('mock_token');
-    
+
     const response = await apiService.createItem(itemData);
     this.items.push(response.data);
-    
+
     return response.data;
   }
 
@@ -242,7 +242,7 @@ describe('API Service Tests', () => {
   describe('Authentication', () => {
     test('successful login returns token and user data', async () => {
       const response = await apiService.login('testuser', 'testpass');
-      
+
       expect(response.success).toBe(true);
       expect(response.data.access_token).toBeDefined();
       expect(response.data.user.username).toBe('testuser');
@@ -268,7 +268,7 @@ describe('API Service Tests', () => {
 
     test('get items returns list of items', async () => {
       const response = await apiService.getItems();
-      
+
       expect(response.success).toBe(true);
       expect(Array.isArray(response.data)).toBe(true);
       expect(response.data.length).toBeGreaterThan(0);
@@ -276,7 +276,7 @@ describe('API Service Tests', () => {
 
     test('get item by barcode returns specific item', async () => {
       const response = await apiService.getItemByBarcode('TEST001');
-      
+
       expect(response.success).toBe(true);
       expect(response.data.barcode).toBe('TEST001');
     });
@@ -294,9 +294,9 @@ describe('API Service Tests', () => {
         category: 'Test',
         quantity: 1
       };
-      
+
       const response = await apiService.createItem(itemData);
-      
+
       expect(response.success).toBe(true);
       expect(response.data.id).toBeDefined();
       expect(response.data.barcode).toBe('NEW001');
@@ -315,7 +315,7 @@ describe('Auth Store Tests', () => {
 
   test('successful login updates store state', async () => {
     const result = await authStore.login('testuser', 'testpass');
-    
+
     expect(result.success).toBe(true);
     expect(authStore.isLoggedIn()).toBe(true);
     expect(authStore.getUser()).toBeDefined();
@@ -324,10 +324,10 @@ describe('Auth Store Tests', () => {
 
   test('login stores data in AsyncStorage', async () => {
     await authStore.login('testuser', 'testpass');
-    
+
     const storedToken = await AsyncStorage.getItem('auth_token');
     const storedUser = await AsyncStorage.getItem('user_data');
-    
+
     expect(storedToken).toBeDefined();
     expect(storedUser).toBeDefined();
   });
@@ -335,13 +335,13 @@ describe('Auth Store Tests', () => {
   test('logout clears store and AsyncStorage', async () => {
     await authStore.login('testuser', 'testpass');
     await authStore.logout();
-    
+
     expect(authStore.isLoggedIn()).toBe(false);
     expect(authStore.getUser()).toBeNull();
-    
+
     const storedToken = await AsyncStorage.getItem('auth_token');
     const storedUser = await AsyncStorage.getItem('user_data');
-    
+
     expect(storedToken).toBeNull();
     expect(storedUser).toBeNull();
   });
@@ -350,9 +350,9 @@ describe('Auth Store Tests', () => {
     // Manually store auth data
     await AsyncStorage.setItem('auth_token', 'stored_token');
     await AsyncStorage.setItem('user_data', JSON.stringify({ username: 'stored_user' }));
-    
+
     const loaded = await authStore.loadStoredAuth();
-    
+
     expect(loaded).toBe(true);
     expect(authStore.isLoggedIn()).toBe(true);
     expect(authStore.getToken()).toBe('stored_token');
@@ -361,7 +361,7 @@ describe('Auth Store Tests', () => {
 
   test('loadStoredAuth handles missing data gracefully', async () => {
     const loaded = await authStore.loadStoredAuth();
-    
+
     expect(loaded).toBe(false);
     expect(authStore.isLoggedIn()).toBe(false);
   });
@@ -376,7 +376,7 @@ describe('Item Store Tests', () => {
 
   test('loadItems populates store with data', async () => {
     await itemStore.loadItems();
-    
+
     expect(itemStore.getItems().length).toBeGreaterThan(0);
     expect(itemStore.isLoading()).toBe(false);
     expect(itemStore.getError()).toBeNull();
@@ -384,41 +384,41 @@ describe('Item Store Tests', () => {
 
   test('searchItems filters results correctly', async () => {
     await itemStore.loadItems();
-    
+
     const results = await itemStore.searchItems('Test Item 1');
-    
+
     expect(results.length).toBe(1);
     expect(results[0].name).toBe('Test Item 1');
   });
 
   test('searchItems handles multiple matches', async () => {
     await itemStore.loadItems();
-    
+
     const results = await itemStore.searchItems('Test');
-    
+
     expect(results.length).toBe(2);
   });
 
   test('searchItems by category', async () => {
     await itemStore.loadItems();
-    
+
     const results = await itemStore.searchItems('Electronics');
-    
+
     expect(results.length).toBe(1);
     expect(results[0].category).toBe('Electronics');
   });
 
   test('addItem updates local store', async () => {
     const initialCount = itemStore.getItems().length;
-    
+
     const newItem = {
       barcode: 'ADDED001',
       name: 'Added Item',
       category: 'Test'
     };
-    
+
     await itemStore.addItem(newItem);
-    
+
     expect(itemStore.getItems().length).toBe(initialCount + 1);
   });
 });
@@ -427,50 +427,50 @@ describe('Utility Functions Tests', () => {
   describe('Data Validation', () => {
     const validateItem = (item: any) => {
       const errors: string[] = [];
-      
+
       if (!item.barcode || item.barcode.trim() === '') {
         errors.push('Barcode is required');
       }
-      
+
       if (!item.name || item.name.trim() === '') {
         errors.push('Name is required');
       }
-      
+
       if (item.quantity !== undefined && (isNaN(item.quantity) || item.quantity < 0)) {
         errors.push('Quantity must be a non-negative number');
       }
-      
+
       return errors;
     };
-    
+
     test('validates complete item successfully', () => {
       const validItem = {
         barcode: 'TEST001',
         name: 'Test Item',
         quantity: 10
       };
-      
+
       const errors = validateItem(validItem);
       expect(errors).toHaveLength(0);
     });
-    
+
     test('catches missing required fields', () => {
       const invalidItem = {
         quantity: 5
       };
-      
+
       const errors = validateItem(invalidItem);
       expect(errors).toContain('Barcode is required');
       expect(errors).toContain('Name is required');
     });
-    
+
     test('validates quantity constraints', () => {
       const invalidItem = {
         barcode: 'TEST001',
         name: 'Test Item',
         quantity: -5
       };
-      
+
       const errors = validateItem(invalidItem);
       expect(errors).toContain('Quantity must be a non-negative number');
     });
@@ -483,7 +483,7 @@ describe('Utility Functions Tests', () => {
         currency: 'USD'
       }).format(amount);
     };
-    
+
     const formatDate = (date: Date) => {
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
@@ -491,13 +491,13 @@ describe('Utility Functions Tests', () => {
         day: 'numeric'
       });
     };
-    
+
     test('formats currency correctly', () => {
       expect(formatCurrency(123.45)).toBe('$123.45');
       expect(formatCurrency(0)).toBe('$0.00');
       expect(formatCurrency(1000)).toBe('$1,000.00');
     });
-    
+
     test('formats dates correctly', () => {
       const testDate = new Date('2023-12-25');
       expect(formatDate(testDate)).toBe('Dec 25, 2023');
@@ -529,7 +529,7 @@ describe('Utility Functions Tests', () => {
         };
       }
     };
-    
+
     test('handles server errors', () => {
       const serverError = {
         response: {
@@ -537,32 +537,32 @@ describe('Utility Functions Tests', () => {
           data: { message: 'Internal server error' }
         }
       };
-      
+
       const handled = handleApiError(serverError);
-      
+
       expect(handled.type).toBe('server_error');
       expect(handled.message).toBe('Internal server error');
       expect(handled.status).toBe(500);
     });
-    
+
     test('handles network errors', () => {
       const networkError = {
         request: {}
       };
-      
+
       const handled = handleApiError(networkError);
-      
+
       expect(handled.type).toBe('network_error');
       expect(handled.message).toBe('Network connection failed');
     });
-    
+
     test('handles unknown errors', () => {
       const unknownError = {
         message: 'Something went wrong'
       };
-      
+
       const handled = handleApiError(unknownError);
-      
+
       expect(handled.type).toBe('unknown_error');
       expect(handled.message).toBe('Something went wrong');
     });
@@ -578,16 +578,16 @@ describe('Performance Tests', () => {
       name: `Item ${i}`,
       category: i % 2 === 0 ? 'Electronics' : 'Furniture'
     }));
-    
+
     const mockStore = new MockItemStore();
     mockStore['items'] = largeItemList;  // Direct assignment for test
-    
+
     const startTime = performance.now();
     const results = await mockStore.searchItems('Item 1');
     const endTime = performance.now();
-    
+
     const searchTime = endTime - startTime;
-    
+
     expect(results.length).toBeGreaterThan(0);
     expect(searchTime).toBeLessThan(100); // Should complete within 100ms
   });
@@ -595,16 +595,16 @@ describe('Performance Tests', () => {
   test('async operations handle concurrent requests', async () => {
     const apiService = new MockApiService();
     apiService.setAuthToken('mock_token');
-    
+
     // Make multiple concurrent requests
-    const promises = Array.from({ length: 10 }, (_, i) => 
+    const promises = Array.from({ length: 10 }, (_, i) =>
       apiService.getItemByBarcode(i % 2 === 0 ? 'TEST001' : 'TEST002')
     );
-    
+
     const startTime = performance.now();
     const results = await Promise.all(promises);
     const endTime = performance.now();
-    
+
     expect(results).toHaveLength(10);
     expect(results.every(r => r.success)).toBe(true);
     expect(endTime - startTime).toBeLessThan(1000); // Should handle concurrency efficiently

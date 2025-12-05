@@ -4,7 +4,7 @@ Provides consistent response formats across all API endpoints
 """
 
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Optional, TypeVar
+from typing import Annotated, Any, Dict, Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -17,12 +17,16 @@ class ApiResponse(BaseModel, Generic[T]):
     All API endpoints should use this format for consistency
     """
 
-    success: bool = Field(..., description="Whether the request was successful")
-    data: Optional[T] = Field(None, description="Response data")
-    error: Optional[Dict[str, Any]] = Field(None, description="Error details if success is false")
-    message: Optional[str] = Field(None, description="Human-readable message")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Response timestamp")
-    request_id: Optional[str] = Field(None, description="Request ID for tracking")
+    success: Annotated[bool, Field(description="Whether the request was successful")]
+    data: Annotated[Optional[T], Field(description="Response data")] = None
+    error: Annotated[
+        Optional[Dict[str, Any]], Field(description="Error details if success is false")
+    ] = None
+    message: Annotated[Optional[str], Field(description="Human-readable message")] = None
+    timestamp: Annotated[
+        datetime, Field(default_factory=datetime.utcnow, description="Response timestamp")
+    ]
+    request_id: Annotated[Optional[str], Field(description="Request ID for tracking")] = None
 
     @classmethod
     def success_response(
@@ -34,6 +38,7 @@ class ApiResponse(BaseModel, Generic[T]):
             data=data,
             message=message,
             request_id=request_id,
+            timestamp=datetime.utcnow(),
         )
 
     @classmethod
@@ -53,6 +58,7 @@ class ApiResponse(BaseModel, Generic[T]):
                 "details": details or {},
             },
             request_id=request_id,
+            timestamp=datetime.utcnow(),
         )
 
 
@@ -62,13 +68,13 @@ class PaginatedResponse(BaseModel, Generic[T]):
     Use for endpoints that return lists with pagination
     """
 
-    items: List[T] = Field(..., description="List of items")
-    total: int = Field(..., description="Total number of items")
-    page: int = Field(..., ge=1, description="Current page number")
-    page_size: int = Field(..., ge=1, le=100, description="Items per page")
-    total_pages: int = Field(..., description="Total number of pages")
-    has_next: bool = Field(..., description="Whether there is a next page")
-    has_previous: bool = Field(..., description="Whether there is a previous page")
+    items: Annotated[List[T], Field(description="List of items")]
+    total: Annotated[int, Field(description="Total number of items")]
+    page: Annotated[int, Field(ge=1, description="Current page number")]
+    page_size: Annotated[int, Field(ge=1, le=100, description="Items per page")]
+    total_pages: Annotated[int, Field(description="Total number of pages")]
+    has_next: Annotated[bool, Field(description="Whether there is a next page")]
+    has_previous: Annotated[bool, Field(description="Whether there is a previous page")]
 
     @classmethod
     def create(

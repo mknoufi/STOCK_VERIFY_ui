@@ -8,12 +8,13 @@ import asyncio
 import sys
 from datetime import datetime
 
+import settings
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
 async def add_test_items():
     try:
-        client = AsyncIOMotorClient("mongodb://localhost:27017")
+        client: AsyncIOMotorClient = AsyncIOMotorClient(settings.MONGODB_URL)
         db = client["stock_verify"]
 
         # Check connection

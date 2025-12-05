@@ -50,14 +50,14 @@ Use these inputs to structure and tag tests appropriately
 
 # Input/Output Expectations
 
-**Input**: 
+**Input**:
 - Team name(s) to associate with the tests
 - Test type(s) to create (e.g., api, ui, accessibility)
 - Test category(ies) to apply (e.g., smoke, regression, usability)
 - Feature or component description to test
 - Optional case IDs for tests
 
-**Output**: 
+**Output**:
 - Properly formatted Cypress test files with hierarchical tagging
 - Configuration file with provided team names, test types, and categories
 
@@ -94,7 +94,7 @@ describe('[CartTeam][regression] Shopping Cart Tests', () => {
       // Setup: First add an item
       cy.get('[data-testid="product-list"]').find('.product-item').first().click();
       cy.get('[data-testid="add-to-cart"]').click();
-      
+
       // Test removal
       cy.get('[data-testid="cart-items"]').find('[data-testid="remove-item"]').click();
       cy.get('[data-testid="cart-count"]').should('contain', '0');
@@ -106,7 +106,7 @@ describe('[CartTeam][regression] Shopping Cart Tests', () => {
       // Setup: First add an item
       cy.get('[data-testid="product-list"]').find('.product-item').first().click();
       cy.get('[data-testid="add-to-cart"]').click();
-      
+
       // Apply discount
       cy.get('[data-testid="discount-code"]').type('SAVE20');
       cy.get('[data-testid="apply-discount"]').click();
@@ -139,4 +139,4 @@ module.exports = {
 //   csvDownloadsPath: './downloads',
 //   weeklySummaryStartDay: 'Monday' as const,
 // };
-``` 
+```

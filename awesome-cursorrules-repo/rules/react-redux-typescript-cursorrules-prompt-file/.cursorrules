@@ -42,4 +42,3 @@ const additionalInstructions = `
 6. Use Redux DevTools for debugging
 7. Follow Redux style guide for naming conventions
 `;
-

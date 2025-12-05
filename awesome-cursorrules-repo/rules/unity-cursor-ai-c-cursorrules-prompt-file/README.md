@@ -13,4 +13,3 @@ Game developers refactoring a tower defense game with Nintendo Ringcon controls 
 
 ## Overview of .cursorrules prompt
 The .cursorrules file serves as a context provider for a tower defense style game project using a Nintendo Ringcon controller. It outlines the current state of the project, which involves a refactor for long-term efficiency and extensibility. The development utilizes C# within the Unity 2021.3.18f1 environment. The intention is to allow players to place turrets and engage in exercises to charge them up, integrating physical activity with gameplay.
-

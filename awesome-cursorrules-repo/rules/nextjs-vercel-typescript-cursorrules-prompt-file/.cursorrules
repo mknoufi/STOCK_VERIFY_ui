@@ -48,7 +48,7 @@ To extend the provided rules to include usage of the `ai-sdk-rsc` library and in
 
 - Use `nuqs` for URL search parameter state management.
 - Optimize Web Vitals (LCP, CLS, FID).
-- Limit `use client`: 
+- Limit `use client`:
   - Favor server components and Next.js SSR.
   - Use only for Web API access in small components.
   - Avoid for data fetching or state management.
@@ -126,4 +126,3 @@ To extend the provided rules to include usage of the `ai-sdk-rsc` library and in
   - Configure Vercel's KV and other serverless functions correctly to handle scalability and performance needs.
 
 By following these extended rules, you'll be able to create a well-optimized, scalable, and efficient Next.js application that leverages `ai-sdk-rsc`, Vercel middleware, and KV database for building sophisticated AI-driven interfaces.
-

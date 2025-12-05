@@ -22,7 +22,7 @@ except ImportError:
     try:
         from auth.jwt import get_current_user
     except ImportError:
-        get_current_user = _default_user  # type: ignore
+        get_current_user = _default_user
 
 logger = logging.getLogger(__name__)
 
@@ -31,16 +31,11 @@ sql_connection_router = APIRouter(prefix="/api/admin/sql", tags=["SQL Server"])
 
 def require_admin(current_user: dict = Depends(get_current_user)):
     """Require admin role"""
-    if isinstance(current_user, dict):
-        user_role = current_user.get("role")
-    else:
-        user_role = getattr(current_user, "role", None)
+    user_role = current_user.get("role")
 
     if user_role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-    return (
-        current_user if isinstance(current_user, dict) else {"role": "admin", "username": "admin"}
-    )
+    return current_user
 
 
 class SQLConnectionConfig(BaseModel):

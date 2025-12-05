@@ -7,7 +7,7 @@ import io
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 import pandas as pd
 from bson import ObjectId
@@ -87,14 +87,14 @@ class DynamicReportService:
     async def get_report_templates(self, report_type: Optional[str] = None) -> List[Dict[str, Any]]:
         """Get all report templates"""
         try:
-            query = {"enabled": True}
+            query: Dict[str, Any] = {"enabled": True}
             if report_type:
                 query["report_type"] = report_type
 
             cursor = self.report_templates.find(query).sort("name", 1)
             templates = await cursor.to_list(length=None)
 
-            return templates
+            return cast(List[Dict[str, Any]], templates)
 
         except Exception as e:
             logger.error(f"Error getting report templates: {str(e)}")
@@ -266,7 +266,7 @@ class DynamicReportService:
                     for dv in dynamic_values:
                         item[dv["field_name"]] = dv["value"]
 
-            return items
+            return cast(List[Dict[str, Any]], items)
 
         except Exception as e:
             logger.error(f"Error fetching items data: {str(e)}")
@@ -301,7 +301,7 @@ class DynamicReportService:
                     ).to_list(length=None)
                     session["items"] = items
 
-            return sessions
+            return cast(List[Dict[str, Any]], sessions)
 
         except Exception as e:
             logger.error(f"Error fetching sessions data: {str(e)}")
@@ -383,7 +383,7 @@ class DynamicReportService:
                     )
 
             logs = await cursor.to_list(length=10000)
-            return logs
+            return cast(List[Dict[str, Any]], logs)
 
         except Exception as e:
             logger.error(f"Error fetching audit data: {str(e)}")
@@ -437,7 +437,7 @@ class DynamicReportService:
 
         if agg_dict:
             grouped = df.groupby(grouping).agg(agg_dict).reset_index()
-            return grouped.to_dict("records")
+            return cast(List[Dict[str, Any]], grouped.to_dict("records"))
 
         return data
 
@@ -575,7 +575,7 @@ class DynamicReportService:
             cursor = self.generated_reports.find(query).sort("generated_at", -1).limit(limit)
             reports = await cursor.to_list(length=None)
 
-            return reports
+            return cast(List[Dict[str, Any]], reports)
 
         except Exception as e:
             logger.error(f"Error getting generated reports: {str(e)}")

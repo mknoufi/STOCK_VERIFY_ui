@@ -153,8 +153,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install pre-commit
-        run: pip install pre-commit
+      - name: Install pre-commit (upgrade identify too)
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade pre-commit identify
 
       - name: Run pre-commit
         run: pre-commit run -a

@@ -21,9 +21,9 @@ from backend.services.monitoring_service import MonitoringService
 logger = logging.getLogger(__name__)
 
 # These will be initialized at runtime
-db: AsyncIOMotorDatabase = None
-cache_service = None
-monitoring_service: MonitoringService = None
+db: Optional[AsyncIOMotorDatabase] = None
+cache_service: Optional[Any] = None
+monitoring_service: Optional[MonitoringService] = None
 
 
 def init_enhanced_api(database, cache_svc, monitoring_svc):
@@ -52,6 +52,9 @@ class ItemResponse:
 async def get_item_by_barcode_enhanced(
     barcode: str,
     request: Request,
+    session_id: Optional[str] = Query(
+        None, description="Current session ID to check for duplicates"
+    ),
     force_source: Optional[str] = Query(None, description="Force data source: mongodb, or cache"),
     include_metadata: bool = Query(True, description="Include response metadata"),
     current_user: dict = Depends(get_current_user),
@@ -63,7 +66,8 @@ async def get_item_by_barcode_enhanced(
 
     try:
         # Log request for monitoring
-        monitoring_service.track_request("enhanced_barcode_lookup", request)
+        if monitoring_service:
+            monitoring_service.track_request("enhanced_barcode_lookup", method=request.method)
 
         # Validate barcode format
         if not barcode or len(barcode.strip()) == 0:
@@ -76,6 +80,22 @@ async def get_item_by_barcode_enhanced(
             item_data, source = await _fetch_from_specific_source(barcode, force_source)
         else:
             item_data, source = await _fetch_with_fallback_strategy(barcode)
+
+        # Check for previous counts if session_id and item_data are available
+        previous_count = None
+        if item_data and session_id and db is not None:
+            # Find the most recent count for this item in this session
+            count_record = await db.count_lines.find_one(
+                {"session_id": session_id, "item_code": item_data.get("item_code")},
+                sort=[("scanned_at", -1)],
+            )
+            if count_record:
+                previous_count = {
+                    "counted_by": count_record.get("counted_by", "Unknown"),
+                    "counted_qty": count_record.get("counted_qty"),
+                    "scanned_at": count_record.get("scanned_at"),
+                    "is_duplicate": True,
+                }
 
         response_time = (time.time() - start_time) * 1000
 
@@ -92,6 +112,7 @@ async def get_item_by_barcode_enhanced(
                     "timestamp": datetime.utcnow().isoformat(),
                     "barcode_searched": barcode,
                     "user": current_user["username"],
+                    "previous_count": previous_count,
                 }
                 if include_metadata
                 else None
@@ -133,6 +154,8 @@ async def _fetch_from_specific_source(barcode: str, source: str) -> tuple[Option
     """Fetch item from a specific data source"""
 
     if source == "mongodb":
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
         item = await db.erp_items.find_one({"barcode": barcode})
         return item, "mongodb"
 
@@ -164,14 +187,15 @@ async def _fetch_with_fallback_strategy(barcode: str) -> tuple[Optional[Dict], s
             pass  # Continue to next strategy
 
     # Strategy 2: MongoDB (primary app database)
-    try:
-        mongo_item = await db.erp_items.find_one({"barcode": barcode})
-        if mongo_item:
-            # Convert ObjectId to string for JSON serialization
-            mongo_item["_id"] = str(mongo_item["_id"])
-            return mongo_item, "mongodb"
-    except Exception as e:
-        logger.warning(f"MongoDB lookup failed: {str(e)}")
+    if db is not None:
+        try:
+            mongo_item = await db.erp_items.find_one({"barcode": barcode})
+            if mongo_item:
+                # Convert ObjectId to string for JSON serialization
+                mongo_item["_id"] = str(mongo_item["_id"])
+                return mongo_item, "mongodb"
+        except Exception as e:
+            logger.warning(f"MongoDB lookup failed: {str(e)}")
 
     # All strategies failed
     return None, "not_found"
@@ -249,7 +273,7 @@ def _build_match_conditions(
     stock_level: Optional[str],
 ) -> Dict[str, Any]:
     """Build match conditions for search pipeline"""
-    match_conditions = {"$or": []}
+    match_conditions: Dict[str, Any] = {"$or": []}
 
     for field in search_fields:
         match_conditions["$or"].append({field: {"$regex": query, "$options": "i"}})
@@ -285,7 +309,7 @@ def _build_search_pipeline(
     stock_level: Optional[str],
 ) -> List[Dict[str, Any]]:
     """Build MongoDB aggregation pipeline for advanced search"""
-    pipeline = []
+    pipeline: List[Dict[str, Any]] = []
 
     # Match stage - search criteria
     match_conditions = _build_match_conditions(
@@ -339,6 +363,9 @@ async def advanced_item_search(
     """
     start_time = time.time()
 
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not initialized")
+
     try:
         # Build MongoDB aggregation pipeline
         pipeline = _build_search_pipeline(
@@ -360,7 +387,7 @@ async def advanced_item_search(
         # Reconstruct match conditions for count query
         # This is a bit redundant but keeps the helper function focused on the pipeline
         match_conditions = pipeline[0]["$match"]
-        count_pipeline = [{"$match": match_conditions}, {"$count": "total"}]
+        count_pipeline: List[Dict[str, Any]] = [{"$match": match_conditions}, {"$count": "total"}]
         count_result = await db.erp_items.aggregate(count_pipeline).to_list(1)
         total_count = count_result[0]["total"] if count_result else 0
 
@@ -426,22 +453,27 @@ async def get_item_api_performance(current_user: dict = Depends(get_current_user
         # Initialize SQL connector
         sql_connector = SQLServerConnector()
 
-        db_manager = DatabaseManager(
-            mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
-        )
+        if db is not None:
+            db_manager = DatabaseManager(
+                mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
+            )
 
-        # Comprehensive performance analysis
-        performance_data = {
-            "database_health": await db_manager.check_database_health(),
-            "data_flow_verification": await db_manager.verify_data_flow(),
-            "database_insights": await db_manager.get_database_insights(),
-            "api_metrics": (
-                monitoring_service.get_endpoint_metrics("/erp/items") if monitoring_service else {}
-            ),
-            "cache_stats": await cache_service.get_stats() if cache_service else {},
-        }
+            # Comprehensive performance analysis
+            performance_data = {
+                "database_health": await db_manager.check_database_health(),
+                "data_flow_verification": await db_manager.verify_data_flow(),
+                "database_insights": await db_manager.get_database_insights(),
+                "api_metrics": (
+                    monitoring_service.get_endpoint_metrics("/erp/items")
+                    if monitoring_service
+                    else {}
+                ),
+                "cache_stats": await cache_service.get_stats() if cache_service else {},
+            }
 
-        return performance_data
+            return performance_data
+        else:
+            raise HTTPException(status_code=503, detail="Database not initialized")
 
     except Exception as e:
         logger.error(f"Performance stats failed: {str(e)}")
@@ -450,7 +482,7 @@ async def get_item_api_performance(current_user: dict = Depends(get_current_user
 
 @enhanced_item_router.post("/sync/realtime")
 async def trigger_realtime_sync(
-    item_codes: List[str] = None, current_user: dict = Depends(get_current_user)
+    item_codes: Optional[List[str]] = None, current_user: dict = Depends(get_current_user)
 ):
     """
     Trigger real-time sync for specific items or all items (Now disabled as ERP is disconnected)
@@ -477,11 +509,13 @@ async def get_database_status(current_user: dict = Depends(get_current_user)):
         # Initialize SQL connector
         sql_connector = SQLServerConnector()
 
-        db_manager = DatabaseManager(
-            mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
-        )
-
-        return await db_manager.check_database_health()
+        if db is not None:
+            db_manager = DatabaseManager(
+                mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
+            )
+            return await db_manager.check_database_health()
+        else:
+            raise HTTPException(status_code=503, detail="Database not initialized")
 
     except Exception as e:
         logger.error(f"Database status check failed: {str(e)}")
@@ -498,16 +532,23 @@ async def optimize_database_performance(current_user: dict = Depends(get_current
 
     try:
         from backend.services.database_manager import DatabaseManager
+        from backend.sql_server_connector import SQLServerConnector
 
-        db_manager = DatabaseManager(mongo_client=db.client, mongo_db=db)
+        if db is not None:
+            sql_connector = SQLServerConnector()
+            db_manager = DatabaseManager(
+                mongo_client=db.client, mongo_db=db, sql_connector=sql_connector
+            )
 
-        optimization_results = await db_manager.optimize_database_performance()
+            optimization_results = await db_manager.optimize_database_performance()
 
-        return {
-            "optimization_completed": True,
-            "results": optimization_results,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+            return {
+                "optimization_completed": True,
+                "results": optimization_results,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        else:
+            raise HTTPException(status_code=503, detail="Database not initialized")
 
     except Exception as e:
         logger.error(f"Database optimization failed: {str(e)}")

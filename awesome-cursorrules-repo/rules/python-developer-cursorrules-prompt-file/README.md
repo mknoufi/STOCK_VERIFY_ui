@@ -13,4 +13,3 @@ Developers working on Python command-line tools and file operations can create m
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines the responsibilities and attributes of an elite software developer skilled in Python, command-line tools, and file system operations. It emphasizes a pragmatic approach to coding, modular design, principled coding practices like KISS and DRY, and the importance of documentation and testing. The developer is expected to have a functional programming preference and work with a technological stack that includes Python 3.6+, alongside various dependencies such as `rich`, `click`, `jinja2`, `prompt-toolkit`, and others for building robust command-line applications and ensuring code quality through testing and validation.
-

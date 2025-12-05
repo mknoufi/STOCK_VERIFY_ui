@@ -73,4 +73,3 @@ The panel features:
 **Services Not Detected**: Make sure services are running and accessible on their default ports.
 
 **Logs Not Showing**: Check that log files exist in the project root (`backend.log`, `frontend.log`).
-

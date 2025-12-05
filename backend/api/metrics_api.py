@@ -3,6 +3,8 @@ Metrics API
 Prometheus-compatible metrics endpoint
 """
 
+from typing import Any, Dict, List
+
 from fastapi import APIRouter, Response
 
 metrics_router = APIRouter(prefix="/metrics", tags=["metrics"])
@@ -124,7 +126,7 @@ async def get_staff_performance():
     from backend.server import db
 
     # Aggregate items scanned per user
-    pipeline = [
+    pipeline: List[Dict[str, Any]] = [
         {
             "$group": {
                 "_id": "$scanned_by",
@@ -138,7 +140,9 @@ async def get_staff_performance():
     items_stats = await db.items.aggregate(pipeline).to_list(length=100)
 
     # Aggregate variances found per user
-    variance_pipeline = [{"$group": {"_id": "$reported_by", "variances_found": {"$sum": 1}}}]
+    variance_pipeline: List[Dict[str, Any]] = [
+        {"$group": {"_id": "$reported_by", "variances_found": {"$sum": 1}}}
+    ]
 
     variance_stats = await db.variances.aggregate(variance_pipeline).to_list(length=100)
     variance_map = {v["_id"]: v["variances_found"] for v in variance_stats}

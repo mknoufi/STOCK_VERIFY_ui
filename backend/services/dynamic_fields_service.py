@@ -5,7 +5,7 @@ Allows supervisors to dynamically add custom fields to items with database mappi
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from bson import ObjectId
 
@@ -37,7 +37,7 @@ class DynamicFieldsService:
         searchable: bool = False,
         in_reports: bool = True,
         order: int = 0,
-        created_by: str = None,
+        created_by: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Create a new dynamic field definition
@@ -131,14 +131,14 @@ class DynamicFieldsService:
             cursor = self.field_definitions.find(query).sort("order", 1)
             fields = await cursor.to_list(length=None)
 
-            return fields
+            return cast(List[Dict[str, Any]], fields)
 
         except Exception as e:
             logger.error(f"Error getting field definitions: {str(e)}")
             raise
 
     async def update_field_definition(
-        self, field_id: str, updates: Dict[str, Any], updated_by: str = None
+        self, field_id: str, updates: Dict[str, Any], updated_by: Optional[str] = None
     ) -> Dict[str, Any]:
         """Update a field definition"""
         try:
@@ -154,7 +154,7 @@ class DynamicFieldsService:
                 raise ValueError(f"Field definition not found: {field_id}")
 
             logger.info(f"Updated field definition: {field_id}")
-            return result
+            return cast(Dict[str, Any], result)
 
         except Exception as e:
             logger.error(f"Error updating field definition: {str(e)}")
@@ -168,14 +168,14 @@ class DynamicFieldsService:
                 {"$set": {"enabled": False, "deleted_at": datetime.utcnow()}},
             )
 
-            return result.modified_count > 0
+            return bool(result.modified_count > 0)
 
         except Exception as e:
             logger.error(f"Error deleting field definition: {str(e)}")
             raise
 
     async def set_field_value(
-        self, item_code: str, field_name: str, value: Any, set_by: str = None
+        self, item_code: str, field_name: str, value: Any, set_by: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Set value for a dynamic field on an item
@@ -223,7 +223,7 @@ class DynamicFieldsService:
                     },
                     return_document=True,
                 )
-                return result
+                return cast(Dict[str, Any], result)
             else:
                 # Create new value
                 field_value = {
@@ -293,7 +293,7 @@ class DynamicFieldsService:
         """
         try:
             # Build aggregation pipeline
-            pipeline = []
+            pipeline: List[Dict[str, Any]] = []
 
             # Match field filters if provided
             if field_filters:

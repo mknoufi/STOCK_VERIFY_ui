@@ -1,10 +1,8 @@
-import pytest
 from unittest.mock import Mock
-from backend.services.auto_diagnosis import (
-    AutoDiagnosisService,
-    ErrorCategory,
-    ErrorSeverity,
-)
+
+import pytest
+
+from backend.services.auto_diagnosis import AutoDiagnosisService, ErrorCategory, ErrorSeverity
 from backend.utils.result_types import Result
 
 

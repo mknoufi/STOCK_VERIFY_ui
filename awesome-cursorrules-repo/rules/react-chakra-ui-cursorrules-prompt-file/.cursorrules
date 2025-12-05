@@ -39,4 +39,3 @@ const additionalInstructions = `
 6. Use Chakra UI's layout components for responsive design
 7. Follow Chakra UI best practices for performance optimization
 `;
-

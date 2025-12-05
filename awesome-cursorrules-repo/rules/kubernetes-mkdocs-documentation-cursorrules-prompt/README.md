@@ -13,4 +13,3 @@ Developers and technical writers can use this prompt to create comprehensive and
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines the guidelines and best practices for creating technical documentation related to cloud native technologies, specifically focusing on Kubernetes, Markdown, and MkDocs. It emphasizes producing clear, concise, and technically accurate content with a logical structure, consistent formatting, and comprehensive coverage of topics. The file provides detailed instructions for documenting cloud native concepts, Kubernetes components, and MkDocs usage. It highlights the importance of technical accuracy, usability, collaboration, and version control in the documentation process. Additionally, the file specifies the use of metadata for enhanced SEO and requires adherence to specific documentation standards, ensuring thorough, user-friendly, and up-to-date content.
-

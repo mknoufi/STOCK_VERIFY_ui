@@ -1,6 +1,6 @@
 /**
  * Admin Web Dashboard - Comprehensive Monitoring, Reporting & Analytics
- * 
+ *
  * Features:
  * - Real-time system monitoring
  * - Report generation and management
@@ -222,7 +222,7 @@ export default function AdminDashboardWeb() {
   // Prepare analytics data for charts
   const prepareSessionChartData = () => {
     if (!sessionsData || sessionsData.length === 0) return [];
-    
+
     // Group sessions by date
     const sessionsByDate: Record<string, number> = {};
     sessionsData.forEach((session: any) => {
@@ -241,7 +241,7 @@ export default function AdminDashboardWeb() {
 
   const prepareStatusChartData = () => {
     if (!sessionsData || sessionsData.length === 0) return [];
-    
+
     const statusCounts: Record<string, number> = {};
     sessionsData.forEach((session: any) => {
       const status = session.status || 'unknown';
@@ -265,7 +265,7 @@ export default function AdminDashboardWeb() {
 
   const prepareUserActivityData = () => {
     if (!sessionsData || sessionsData.length === 0) return [];
-    
+
     const userActivity: Record<string, number> = {};
     sessionsData.forEach((session: any) => {
       const user = session.created_by?.username || session.created_by || 'Unknown';
@@ -1575,4 +1575,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

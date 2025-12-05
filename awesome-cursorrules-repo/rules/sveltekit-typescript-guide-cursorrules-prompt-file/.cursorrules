@@ -29,4 +29,3 @@ class Counter {
   }
 }
 export const counter = new Counter();
-

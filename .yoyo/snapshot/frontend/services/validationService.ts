@@ -1,7 +1,7 @@
 /**
  * Validation Service - Data validation and sanitization
  * Handles input validation, data sanitization, and validation rules
- * 
+ *
  * @deprecated Use utils/validation.ts instead for barcode validation.
  * This service is kept for backward compatibility but should not be used for new code.
  * For barcode validation, use validateBarcode() and normalizeBarcode() from utils/validation.ts

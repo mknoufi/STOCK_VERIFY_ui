@@ -116,7 +116,7 @@ POST /api/clear-logs       # Log management
 
 #### **🔒 Command Security**
 - **Whitelisted Commands**: Only safe commands allowed
-- **Service Isolation**: Commands scoped to service context  
+- **Service Isolation**: Commands scoped to service context
 - **Input Validation**: Comprehensive input sanitization
 - **Execution Timeout**: Commands auto-terminated after 10s
 - **Audit Logging**: All command executions logged
@@ -153,7 +153,7 @@ curl http://localhost:3000/api/status
 PORT = 3000                    # Admin panel port
 UPDATE_INTERVALS = {
     'STATUS': 5000,           # Service status refresh (ms)
-    'METRICS': 3000,          # System metrics refresh (ms)  
+    'METRICS': 3000,          # System metrics refresh (ms)
     'LOGS': 2000,             # Log refresh (ms)
     'SECURITY': 10000,        # Security check (ms)
 }
@@ -218,10 +218,10 @@ python3 enhanced-server.py
 
 The Enhanced Admin Dashboard transforms the basic service monitoring into a **professional-grade system administration tool** with:
 
-✅ **Real-time Monitoring** - Live system metrics and service health  
-✅ **Security Monitoring** - Comprehensive threat detection  
-✅ **Performance Analytics** - Historical trend analysis  
-✅ **Modern UI/UX** - Professional, responsive interface  
-✅ **Advanced Features** - Charts, themes, alerts, analytics  
+✅ **Real-time Monitoring** - Live system metrics and service health
+✅ **Security Monitoring** - Comprehensive threat detection
+✅ **Performance Analytics** - Historical trend analysis
+✅ **Modern UI/UX** - Professional, responsive interface
+✅ **Advanced Features** - Charts, themes, alerts, analytics
 
 **Access the enhanced dashboard at: `http://localhost:3000/dashboard.html`**

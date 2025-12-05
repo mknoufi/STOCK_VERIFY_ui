@@ -13,4 +13,3 @@ Developers working with Elixir and Phoenix would benefit by standardizing robust
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines guidelines for an expert senior Elixir engineer working with a tech stack that includes Elixir, Phoenix, Docker, and various other tools and libraries. It emphasizes the importance of thorough consideration of code requirements before development and the provision of insightful follow-up questions after responses. The file also provides a structured approach to writing commit messages, detailing types, optional scope, description, and potential body or footer for changes made within software projects. This ensures clarity, consistency, and proper categorization of code alterations.
-

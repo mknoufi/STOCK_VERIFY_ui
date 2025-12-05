@@ -3,7 +3,7 @@ description: Specifies the recommended folder structure for SolidJS projects und
 globs: src/**/*
 ---
 - Enforce the following folder structure:
-  
+
   src/
     components/
     pages/

@@ -19,7 +19,7 @@ export const initSentry = async () => {
 
   try {
     const Sentry = await import('@sentry/react-native');
-    
+
     Sentry.init({
       dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || '', // Set in .env
       debug: __DEV__,
@@ -50,7 +50,7 @@ export const initSentry = async () => {
 
 export const captureException = async (error: Error, context?: Record<string, any>) => {
   if (!SentryInitialized) return;
-  
+
   try {
     const Sentry = await import('@sentry/react-native');
     Sentry.captureException(error, {
@@ -63,7 +63,7 @@ export const captureException = async (error: Error, context?: Record<string, an
 
 export const captureMessage = async (message: string, level: 'info' | 'warning' | 'error' = 'info') => {
   if (!SentryInitialized) return;
-  
+
   try {
     const Sentry = await import('@sentry/react-native');
     Sentry.captureMessage(message, level);
@@ -74,7 +74,7 @@ export const captureMessage = async (message: string, level: 'info' | 'warning' 
 
 export const setUser = async (user: { id: string; email?: string; username?: string }) => {
   if (!SentryInitialized) return;
-  
+
   try {
     const Sentry = await import('@sentry/react-native');
     Sentry.setUser(user);
@@ -85,7 +85,7 @@ export const setUser = async (user: { id: string; email?: string; username?: str
 
 export const clearUser = async () => {
   if (!SentryInitialized) return;
-  
+
   try {
     const Sentry = await import('@sentry/react-native');
     Sentry.setUser(null);
@@ -93,4 +93,3 @@ export const clearUser = async () => {
     console.warn('[Sentry] Failed to clear user:', e);
   }
 };
-

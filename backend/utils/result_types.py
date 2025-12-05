@@ -5,7 +5,7 @@ Type-safe error handling without exceptions where possible
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Generic, Optional, TypeVar
+from typing import Any, Callable, Generic, Optional, TypeVar, cast
 
 T = TypeVar("T")
 E = TypeVar("E", bound=Exception)
@@ -53,54 +53,54 @@ class Result(Generic[T, E]):
     def unwrap(self) -> T:
         """Get value or raise error (use when certain of success)"""
         if self.is_success:
-            return self._value
+            return cast(T, self._value)
         raise self._error or ValueError(self._error_message)
 
     def unwrap_or(self, default: T) -> T:
         """Get value or return default"""
-        return self._value if self.is_success else default
+        return cast(T, self._value) if self.is_success else default
 
     def unwrap_or_else(self, fn: Callable[[E], T]) -> T:
         """Get value or compute from error"""
         if self.is_success:
-            return self._value
-        return fn(self._error)
+            return cast(T, self._value)
+        return fn(cast(E, self._error))
 
-    def map(self, fn: Callable[[T], Any]) -> "Result[Any, E]":
+    def map(self, fn: Callable[[T], Any]) -> "Result[Any, Exception]":
         """Transform successful value"""
         if self.is_success:
             try:
-                return Result.success(fn(self._value))
+                return Result.success(fn(cast(T, self._value)))
             except Exception as e:
                 return Result.error(e, str(e))
-        return Result.error(self._error, self._error_message)
+        return Result.error(cast(Exception, self._error), self._error_message)
 
     def map_error(self, fn: Callable[[E], Any]) -> "Result[T, Any]":
         """Transform error"""
         if self.is_error:
             try:
-                return Result.error(fn(self._error), self._error_message)
+                return Result.error(fn(cast(E, self._error)), self._error_message)
             except Exception as e:
                 return Result.error(e, str(e))
-        return Result.success(self._value)
+        return Result.success(cast(T, self._value))
 
     def and_then(self, fn: Callable[[T], "Result[Any, E]"]) -> "Result[Any, E]":
         """Chain operations (flatMap/monadic bind)"""
         if self.is_success:
-            return fn(self._value)
-        return Result.error(self._error, self._error_message)
+            return fn(cast(T, self._value))
+        return Result.error(cast(E, self._error), self._error_message)
 
     def or_else(self, fn: Callable[[E], "Result[T, Any]"]) -> "Result[T, Any]":
         """Recover from error"""
         if self.is_error:
-            return fn(self._error)
-        return Result.success(self._value)
+            return fn(cast(E, self._error))
+        return Result.success(cast(T, self._value))
 
     def match(self, on_success: Callable[[T], Any], on_error: Callable[[E, str], Any]) -> Any:
         """Pattern matching style handling"""
         if self.is_success:
-            return on_success(self._value)
-        return on_error(self._error, self._error_message)
+            return on_success(cast(T, self._value))
+        return on_error(cast(E, self._error), self._error_message or str(self._error))
 
     def to_tuple(self) -> tuple[bool, Optional[T], Optional[E]]:
         """Convert to tuple for compatibility"""

@@ -36,7 +36,7 @@ export const typography = {
     '3xl': 32,   // Heading 2
     '4xl': 48,   // Heading 1
   },
-  
+
   // Font Weights
   fontWeight: {
     light: '300' as const,
@@ -45,7 +45,7 @@ export const typography = {
     semibold: '600' as const,
     bold: '700' as const,
   },
-  
+
   // Line Heights
   lineHeight: {
     tight: 1.2,
@@ -54,7 +54,7 @@ export const typography = {
     loose: 1.6,
     veryLoose: 1.8,
   },
-  
+
   // Letter Spacing
   letterSpacing: {
     tighter: -0.5,

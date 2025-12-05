@@ -1,8 +1,8 @@
 # Comprehensive App Improvements Specification
 
-**Spec ID:** 002-comprehensive-improvements  
-**Status:** Specification Complete  
-**Created:** 2025-11-13  
+**Spec ID:** 002-comprehensive-improvements
+**Status:** Specification Complete
+**Created:** 2025-11-13
 **Related:** 001-comprehensive-modernization
 
 ## Overview

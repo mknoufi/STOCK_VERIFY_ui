@@ -33,4 +33,3 @@ echo "✅ Bootstrap complete! Port configured: $DETECTED_PORT"
 echo ""
 echo "📋 To run tests:"
 echo "   node /Users/noufi1/.npm/_npx/8ddf6bea01b2519d/node_modules/@testsprite/testsprite-mcp/dist/index.js generateCodeAndExecute"
-

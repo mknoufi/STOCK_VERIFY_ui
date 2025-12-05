@@ -13,4 +13,3 @@ Developers building RESTful APIs with FastAPI can create robust, scalable applic
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines best practices and guidelines for developing Python applications using Python 3.12 along with several frameworks and tools. It specifies the use of frameworks such as pydantic, fastapi, sqlalchemy, and various fastapi extensions for user management, authentication, email sending, caching, rate limiting, and pagination. Dependency management is handled by poetry, and alembic is recommended for managing database migrations. The file also emphasizes coding standards, like using meaningful names, following PEP 8, using docstrings, writing simple code, and employing list comprehensions and try-except blocks. Additional recommendations include using virtual environments, writing unit tests, utilizing type hints, and avoiding global variables to ensure the creation of clean, efficient, and maintainable code.
-

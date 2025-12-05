@@ -8,7 +8,7 @@ import logging
 import threading
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class MonitoringService:
         self._recent_errors: deque = deque(maxlen=100)
 
         # System health
-        self._health_status = {
+        self._health_status: Dict[str, Any] = {
             "status": "healthy",
             "last_check": datetime.utcnow().isoformat(),
             "uptime": 0,
@@ -111,10 +111,41 @@ class MonitoringService:
                 }
             self._endpoint_metrics[endpoint_key]["errors"] += 1
 
+    def get_endpoint_metrics(self, endpoint: str) -> Dict[str, Any]:
+        """Get metrics for a specific endpoint"""
+        with self._lock:
+            # Try exact match first
+            for key, metrics in self._endpoint_metrics.items():
+                if f"GET {endpoint}" == key:
+                    return dict(metrics)
+
+            # Fallback to aggregation if multiple methods
+            aggregated: Dict[str, Any] = {
+                "count": 0,
+                "errors": 0,
+                "total_time": 0.0,
+                "avg_time": 0.0,
+            }
+
+            found = False
+            for key, metrics in self._endpoint_metrics.items():
+                if key.endswith(f" {endpoint}"):
+                    found = True
+                    aggregated["count"] += metrics["count"]
+                    aggregated["errors"] += metrics["errors"]
+                    aggregated["total_time"] += metrics["total_time"]
+
+            if found and aggregated["count"] > 0:
+                aggregated["avg_time"] = aggregated["total_time"] / aggregated["count"]
+                return aggregated
+
+            return {}
+
     def get_metrics(self) -> Dict[str, Any]:
         """Get current metrics"""
         with self._lock:
-            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
+            start_time = cast(datetime, self._health_status["start_time"])
+            uptime = (datetime.utcnow() - start_time).total_seconds()
             avg_response_time = (
                 self._total_response_time / self._request_count if self._request_count > 0 else 0.0
             )
@@ -160,7 +191,8 @@ class MonitoringService:
     def get_health(self) -> Dict[str, Any]:
         """Get health status"""
         with self._lock:
-            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
+            start_time = cast(datetime, self._health_status["start_time"])
+            uptime = (datetime.utcnow() - start_time).total_seconds()
 
             # Determine health status
             error_rate = (
@@ -177,7 +209,7 @@ class MonitoringService:
             return {
                 "status": status,
                 "uptime": uptime,
-                "start_time": self._health_status["start_time"].isoformat(),
+                "start_time": start_time.isoformat(),
                 "last_check": datetime.utcnow().isoformat(),
                 "metrics": {
                     "total_requests": self._request_count,
@@ -248,7 +280,8 @@ class MonitoringService:
             lines.append("")
 
             # Uptime
-            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
+            start_time = cast(datetime, self._health_status["start_time"])
+            uptime = (datetime.utcnow() - start_time).total_seconds()
             lines.append("# HELP app_uptime_seconds Application uptime in seconds")
             lines.append("# TYPE app_uptime_seconds counter")
             lines.append(f"app_uptime_seconds {uptime:.0f}")
@@ -264,4 +297,3 @@ class MonitoringService:
             lines.append("")
 
             return "\n".join(lines)
-            self._health_status["start_time"] = datetime.utcnow()

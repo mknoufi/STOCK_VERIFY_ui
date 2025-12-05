@@ -36,17 +36,17 @@ class MetricsStore:
         self.security_events = []
         self.system_logs = []
         self.alert_count = 0
-        
+
     def add_cpu_metric(self, value):
         timestamp = time.time()
         self.cpu_history.append({'timestamp': timestamp, 'value': value})
         self._cleanup_old_data(self.cpu_history)
-        
+
     def add_memory_metric(self, value):
         timestamp = time.time()
         self.memory_history.append({'timestamp': timestamp, 'value': value})
         self._cleanup_old_data(self.memory_history)
-        
+
     def add_security_event(self, event_type, message, severity='info'):
         event = {
             'type': event_type,
@@ -57,7 +57,7 @@ class MetricsStore:
         self.security_events.append(event)
         if len(self.security_events) > 100:
             self.security_events.pop(0)
-            
+
     def add_system_log(self, level, service, message):
         log_entry = {
             'timestamp': datetime.now().isoformat(),
@@ -68,7 +68,7 @@ class MetricsStore:
         self.system_logs.append(log_entry)
         if len(self.system_logs) > 500:
             self.system_logs.pop(0)
-            
+
     def _cleanup_old_data(self, data_list, max_age_hours=24):
         cutoff = time.time() - (max_age_hours * 3600)
         while data_list and data_list[0]['timestamp'] < cutoff:
@@ -82,7 +82,7 @@ class MetricsCollector(threading.Thread):
     def __init__(self):
         super().__init__(daemon=True)
         self.running = True
-        
+
     def run(self):
         logger.info("Starting metrics collection thread")
         while self.running:
@@ -90,24 +90,24 @@ class MetricsCollector(threading.Thread):
                 # Collect CPU usage
                 cpu_percent = psutil.cpu_percent(interval=1)
                 metrics.add_cpu_metric(cpu_percent)
-                
+
                 # Collect memory usage
                 memory = psutil.virtual_memory()
                 metrics.add_memory_metric(memory.percent)
-                
+
                 # Check service status
                 self._update_service_status()
-                
+
                 # Add sample logs
                 if len(metrics.system_logs) < 10:  # Add some initial logs
                     metrics.add_system_log('INFO', 'METRICS', f'System metrics collected - CPU: {cpu_percent}%, Memory: {memory.percent}%')
-                
+
                 time.sleep(5)  # Collect every 5 seconds
-                
+
             except Exception as e:
                 logger.error(f"Error in metrics collection: {e}")
                 time.sleep(10)
-                
+
     def _update_service_status(self):
         """Update service status in metrics"""
         try:
@@ -120,7 +120,7 @@ class MetricsCollector(threading.Thread):
             metrics.service_status = services
         except Exception as e:
             logger.error(f"Error updating service status: {e}")
-            
+
     def _check_mongodb(self):
         for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
             try:
@@ -129,7 +129,7 @@ class MetricsCollector(threading.Thread):
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         return {'running': False, 'pid': None, 'port': 27017}
-        
+
     def _check_backend(self):
         for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
             try:
@@ -139,7 +139,7 @@ class MetricsCollector(threading.Thread):
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         return {'running': False, 'pid': None, 'port': 8000}
-        
+
     def _check_frontend(self):
         for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
             try:
@@ -149,7 +149,7 @@ class MetricsCollector(threading.Thread):
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         return {'running': False, 'pid': None, 'port': 8081}
-        
+
     def _check_sql_server(self):
         # Check if SQL Server port is accessible
         try:
@@ -160,7 +160,7 @@ class MetricsCollector(threading.Thread):
             return {'running': result == 0, 'pid': None, 'port': 1433}
         except:
             return {'running': False, 'pid': None, 'port': 1433}
-            
+
     def stop(self):
         self.running = False
 
@@ -171,7 +171,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         """Handle GET requests"""
         parsed_path = urlparse(self.path)
-        
+
         # Enhanced API endpoints
         if parsed_path.path == '/api/status':
             self.handle_status()
@@ -215,7 +215,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         """Handle POST requests"""
         parsed_path = urlparse(self.path)
-        
+
         if parsed_path.path == '/api/start':
             self.handle_start()
         elif parsed_path.path == '/api/stop':
@@ -239,7 +239,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
         """Enhanced service status with detailed metrics"""
         try:
             services = {}
-            
+
             # Get current service status from metrics store
             if metrics.service_status:
                 services = metrics.service_status.copy()
@@ -251,7 +251,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     'frontend': self._check_service_frontend(),
                     'sql_server': self._check_service_sql()
                 }
-            
+
             # Add performance metrics to each service
             for service_name, service_data in services.items():
                 if service_data['running']:
@@ -262,13 +262,13 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                         'memory_usage': self._get_service_memory(service_name),
                         'uptime': self._get_service_uptime(service_name)
                     })
-                
+
             self.send_json_response({
                 'success': True,
                 'data': services,
                 'timestamp': datetime.now().isoformat()
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_status: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -280,10 +280,10 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
             cpu_percent = psutil.cpu_percent()
             memory = psutil.virtual_memory()
             disk = psutil.disk_usage('/')
-            
+
             # Network stats
             network = psutil.net_io_counters()
-            
+
             metrics_data = {
                 'cpu': {
                     'current': cpu_percent,
@@ -311,12 +311,12 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 'boot_time': psutil.boot_time(),
                 'timestamp': time.time()
             }
-            
+
             self.send_json_response({
                 'success': True,
                 'data': metrics_data
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_metrics: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -326,23 +326,23 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
         try:
             # Get service status
             services = metrics.service_status or {}
-            
+
             # Calculate health score
             critical_services = ['backend', 'mongodb']
             optional_services = ['frontend', 'sql_server']
-            
+
             running_critical = sum(1 for s in critical_services if services.get(s, {}).get('running', False))
             running_optional = sum(1 for s in optional_services if services.get(s, {}).get('running', False))
-            
+
             # Base score calculation (critical services worth 60%, optional 40%)
             base_score = (running_critical / len(critical_services)) * 60 + (running_optional / len(optional_services)) * 40
-            
+
             # Adjust for system performance
             cpu_penalty = max(0, (psutil.cpu_percent() - 80) / 2)  # Penalty for high CPU
             memory_penalty = max(0, (psutil.virtual_memory().percent - 80) / 2)  # Penalty for high memory
-            
+
             final_score = max(0, min(100, base_score - cpu_penalty - memory_penalty))
-            
+
             # Determine status
             if final_score >= 85:
                 status = 'excellent'
@@ -352,7 +352,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 status = 'degraded'
             else:
                 status = 'critical'
-            
+
             self.send_json_response({
                 'success': True,
                 'data': {
@@ -366,7 +366,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     'recommendations': self._get_health_recommendations(final_score, services)
                 }
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_system_health: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -375,15 +375,15 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
         """Security monitoring data"""
         try:
             # Get recent security events
-            recent_events = [event for event in metrics.security_events 
+            recent_events = [event for event in metrics.security_events
                            if datetime.fromisoformat(event['timestamp']) > datetime.now() - timedelta(hours=24)]
-            
+
             failed_logins = len([e for e in recent_events if 'failed login' in e.get('message', '').lower()])
             suspicious_activity = len([e for e in recent_events if e.get('severity') == 'warning'])
-            
+
             # Get active processes (simulated active sessions)
             active_sessions = len([p for p in psutil.process_iter() if 'python' in p.name().lower() or 'node' in p.name().lower()])
-            
+
             self.send_json_response({
                 'success': True,
                 'data': {
@@ -395,7 +395,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     'alerts': [e for e in recent_events if e.get('severity') in ['warning', 'error']]
                 }
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_security_summary: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -407,23 +407,23 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
             service_filter = params.get('service', ['all'])[0]
             level_filter = params.get('level', ['all'])[0]
             limit = int(params.get('limit', ['100'])[0])
-            
+
             # Filter logs
             filtered_logs = metrics.system_logs.copy()
-            
+
             if service_filter != 'all':
                 filtered_logs = [log for log in filtered_logs if log['service'].lower() == service_filter.lower()]
-                
+
             if level_filter != 'all':
                 level_priority = {'ERROR': 3, 'WARNING': 2, 'INFO': 1}
                 min_priority = level_priority.get(level_filter.upper(), 0)
-                filtered_logs = [log for log in filtered_logs 
+                filtered_logs = [log for log in filtered_logs
                                if level_priority.get(log['level'], 0) >= min_priority]
-            
+
             # Sort by timestamp (newest first) and limit
             filtered_logs.sort(key=lambda x: x['timestamp'], reverse=True)
             filtered_logs = filtered_logs[:limit]
-            
+
             self.send_json_response({
                 'success': True,
                 'data': {
@@ -432,7 +432,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     'filtered_count': len(filtered_logs)
                 }
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_logs: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -442,7 +442,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
         try:
             params = parse_qs(query_string)
             time_range = params.get('range', ['1h'])[0]
-            
+
             # Convert time range to seconds
             range_seconds = {
                 '1h': 3600,
@@ -450,13 +450,13 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 '24h': 86400,
                 '7d': 604800
             }.get(time_range, 3600)
-            
+
             cutoff_time = time.time() - range_seconds
-            
+
             # Filter data by time range
             cpu_data = [d for d in metrics.cpu_history if d['timestamp'] > cutoff_time]
             memory_data = [d for d in metrics.memory_history if d['timestamp'] > cutoff_time]
-            
+
             # Sample API response times (simulate endpoint performance)
             api_endpoints = {
                 'auth': {'avg_response': 150, 'success_rate': 99.2},
@@ -465,7 +465,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 'reports': {'avg_response': 800, 'success_rate': 97.1},
                 'sync': {'avg_response': 1200, 'success_rate': 95.5}
             }
-            
+
             self.send_json_response({
                 'success': True,
                 'data': {
@@ -494,7 +494,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     }
                 }
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_analytics: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -506,36 +506,36 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
             if content_length > 10000:  # Limit payload size
                 self.send_json_response({'success': False, 'error': 'Request too large'}, 400)
                 return
-                
+
             if content_length > 0:
                 post_data = self.rfile.read(content_length)
                 config = json.loads(post_data.decode('utf-8'))
             else:
                 config = {}
-            
+
             # Validate and sanitize inputs
             host = str(config.get('host', 'localhost')).strip()
             if not host or len(host) > 255:
                 self.send_json_response({'success': False, 'error': 'Invalid host'}, 400)
                 return
-            
+
             # Validate host format (basic check)
             import re
             if not re.match(r'^[a-zA-Z0-9.-]+$', host):
                 self.send_json_response({'success': False, 'error': 'Invalid host format'}, 400)
                 return
-            
+
             port = int(config.get('port', 1433))
             if not (1 <= port <= 65535):
                 self.send_json_response({'success': False, 'error': 'Invalid port range'}, 400)
                 return
-            
+
             # Test if port is accessible
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
             result = sock.connect_ex((host, port))
             sock.close()
-            
+
             if result == 0:
                 metrics.add_security_event('sql_test', f'SQL Server connection test successful to {host}:{port}', 'info')
                 self.send_json_response({
@@ -550,7 +550,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     'message': f'Could not connect to {host}:{port}. Connection refused.',
                     'error_code': result
                 })
-                
+
         except Exception as e:
             logger.error(f"Error in handle_sql_test: {e}")
             metrics.add_security_event('sql_test', f'SQL Server test error: {str(e)}', 'error')
@@ -561,12 +561,12 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
         try:
             metrics.system_logs.clear()
             metrics.add_system_log('INFO', 'ADMIN', 'System logs cleared by administrator')
-            
+
             self.send_json_response({
                 'success': True,
                 'message': 'System logs cleared successfully'
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_clear_logs: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -577,7 +577,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
             # Get network information
             hostname = socket.gethostname()
             local_ip = socket.gethostbyname(hostname)
-            
+
             # Try to get actual local IP (not 127.0.0.1)
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -586,7 +586,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 s.close()
             except:
                 pass
-            
+
             qr_data = {
                 'expo_url': f'exp://{local_ip}:8081',
                 'web_url': f'http://{local_ip}:8081',
@@ -596,12 +596,12 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 'hostname': hostname,
                 'timestamp': datetime.now().isoformat()
             }
-            
+
             self.send_json_response({
                 'success': True,
                 'data': qr_data
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_qr: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -611,7 +611,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
         try:
             hostname = socket.gethostname()
             local_ip = socket.gethostbyname(hostname)
-            
+
             # Try to get actual local IP
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -620,7 +620,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 s.close()
             except:
                 pass
-            
+
             # Get network interfaces
             interfaces = []
             for interface, addrs in psutil.net_if_addrs().items():
@@ -631,7 +631,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                             'ip': addr.address,
                             'netmask': addr.netmask
                         })
-            
+
             self.send_json_response({
                 'success': True,
                 'data': {
@@ -647,7 +647,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     }
                 }
             })
-            
+
         except Exception as e:
             logger.error(f"Error in handle_network_info: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -701,7 +701,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
             # Try to start MongoDB
             mongod_path = '/opt/homebrew/bin/mongod'
             if os.path.exists(mongod_path):
-                subprocess.Popen([mongod_path, '--dbpath', os.path.expanduser('~/data/db')], 
+                subprocess.Popen([mongod_path, '--dbpath', os.path.expanduser('~/data/db')],
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 metrics.add_system_log('INFO', 'MONGODB', 'MongoDB start command issued')
                 self.send_json_response({'success': True, 'message': 'MongoDB starting'})
@@ -722,7 +722,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                         killed += 1
                     except:
                         pass
-            
+
             metrics.add_system_log('INFO', 'MONGODB', f'MongoDB stop command issued, {killed} processes terminated')
             self.send_json_response({'success': True, 'message': f'Stopped {killed} MongoDB processes'})
         except Exception as e:
@@ -734,21 +734,21 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
         # Basic rate limiting check
         client_ip = self.client_address[0]
         current_time = time.time()
-        
+
         if not hasattr(self, '_command_rate_limit'):
             self._command_rate_limit = {}
-        
+
         if client_ip in self._command_rate_limit:
             last_command = self._command_rate_limit[client_ip]
             if current_time - last_command < 2:  # 2 second cooldown
                 self.send_json_response({
-                    'success': False, 
+                    'success': False,
                     'error': 'Rate limit exceeded. Please wait before executing another command.'
                 }, 429)
                 return
-        
+
         self._command_rate_limit[client_ip] = current_time
-        
+
         try:
             content_length = int(self.headers.get('Content-Length', 0))
             if content_length > 5000:  # Limit payload size
@@ -757,29 +757,29 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     'error': 'Request payload too large'
                 }, 400)
                 return
-                
+
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
-            
+
             service = data.get('service', '')
             command = data.get('command', '').strip()
-            
+
             if not command:
                 self.send_json_response({'success': False, 'error': 'No command provided'})
                 return
-            
+
             # Enhanced security: whitelist of safe commands
             safe_commands = {
                 'frontend': ['npm', 'node', 'npx', 'expo', 'yarn', 'ls', 'pwd', 'ps', 'whoami'],
                 'backend': ['python', 'python3', 'pip', 'pip3', 'ls', 'pwd', 'ps', 'whoami'],
                 'system': ['ls', 'pwd', 'ps', 'whoami', 'date', 'uptime', 'df', 'free']
             }
-            
+
             # Check command safety
             command_parts = command.split()
             base_command = command_parts[0] if command_parts else ''
             allowed = safe_commands.get(service, safe_commands['system'])
-            
+
             if base_command not in allowed:
                 metrics.add_security_event('command_blocked', f'Blocked unsafe command: {command}', 'warning')
                 self.send_json_response({
@@ -787,7 +787,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     'error': f'Command "{base_command}" not allowed'
                 })
                 return
-            
+
             # Execute command
             try:
                 result = subprocess.run(
@@ -797,7 +797,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                     text=True,
                     timeout=10
                 )
-                
+
                 metrics.add_system_log('INFO', 'COMMAND', f'Executed: {command}')
                 self.send_json_response({
                     'success': True,
@@ -808,7 +808,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response({'success': False, 'error': 'Command timed out'})
             except Exception as e:
                 self.send_json_response({'success': False, 'error': str(e)})
-                
+
         except Exception as e:
             logger.error(f"Error executing command: {e}")
             self.send_json_response({'success': False, 'error': str(e)}, 500)
@@ -888,22 +888,22 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
     def _get_health_recommendations(self, score, services):
         """Generate health recommendations"""
         recommendations = []
-        
+
         if score < 50:
             recommendations.append("Critical: Multiple services are down. Restart services immediately.")
         elif score < 70:
             recommendations.append("Warning: System performance is degraded. Check service logs.")
-        
+
         for service, data in services.items():
             if not data.get('running'):
                 recommendations.append(f"Start {service} service to improve system reliability.")
-        
+
         if psutil.cpu_percent() > 80:
             recommendations.append("High CPU usage detected. Consider scaling resources.")
-        
+
         if psutil.virtual_memory().percent > 80:
             recommendations.append("High memory usage detected. Check for memory leaks.")
-        
+
         return recommendations[:3]  # Return top 3 recommendations
 
     def send_json_response(self, data, status=200):
@@ -939,7 +939,7 @@ class EnhancedAdminHandler(http.server.SimpleHTTPRequestHandler):
 def main():
     """Start the enhanced admin panel server"""
     os.chdir(ADMIN_PANEL_DIR)
-    
+
     # Check if port is already in use
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -949,30 +949,30 @@ def main():
         print(f"⚠️  Port {PORT} is already in use!")
         print(f"✅ Enhanced admin panel might already be running at http://localhost:{PORT}")
         return
-    
+
     # Start metrics collection
     metrics_collector = MetricsCollector()
     metrics_collector.start()
-    
+
     # Add initial logs
     metrics.add_system_log('INFO', 'SYSTEM', 'Enhanced admin panel server starting')
     metrics.add_security_event('system', 'Admin panel server initialized', 'info')
-    
+
     # Create server with SO_REUSEADDR
     class ReusableTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
-    
+
     try:
         with ReusableTCPServer(("", PORT), EnhancedAdminHandler) as httpd:
             print(f"🚀 Enhanced Admin Panel running at http://localhost:{PORT}")
             print(f"📊 Real-time metrics: http://localhost:{PORT}/dashboard.html")
             print(f"📁 Serving from: {ADMIN_PANEL_DIR}")
             print(f"🛑 Press Ctrl+C to stop")
-            
+
             metrics.add_system_log('INFO', 'SYSTEM', f'Enhanced admin panel server started on port {PORT}')
-            
+
             httpd.serve_forever()
-            
+
     except KeyboardInterrupt:
         print("\n🛑 Stopping enhanced admin panel server...")
         metrics_collector.stop()

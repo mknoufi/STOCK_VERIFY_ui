@@ -4,11 +4,13 @@ Prevents DOS attacks via large request payloads
 """
 
 import logging
+from typing import Any, List, Optional
 
 from fastapi import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+from starlette.types import ASGIApp
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +23,10 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
 
     def __init__(
         self,
-        app,
+        app: ASGIApp,
         max_size: int = 10 * 1024 * 1024,  # 10 MB default
-        exempt_paths: list = None,
-    ):
+        exempt_paths: Optional[List[Any]] = None,
+    ) -> None:
         super().__init__(app)
         self.max_size = max_size
         self.exempt_paths = exempt_paths or ["/health"]
@@ -36,11 +38,11 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Check Content-Length header
-        content_length = request.headers.get("content-length")
+        content_length_str = request.headers.get("content-length")
 
-        if content_length:
+        if content_length_str:
             try:
-                content_length = int(content_length)
+                content_length = int(content_length_str)
             except ValueError:
                 return JSONResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,

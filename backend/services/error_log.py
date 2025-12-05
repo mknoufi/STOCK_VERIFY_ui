@@ -6,7 +6,7 @@ Tracks and stores application errors, exceptions, and system issues for monitori
 import logging
 import traceback
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
@@ -184,7 +184,7 @@ class ErrorLogService:
 
         # Create error object
         error = Exception(error_message)
-        error.error_code = error_code
+        error.error_code = error_code  # type: ignore
 
         return await self.log_error(
             error=error,
@@ -232,24 +232,9 @@ class ErrorLogService:
         """
         try:
             # Build filter query
-            filter_query = {}
-
-            if severity:
-                filter_query["severity"] = severity
-            if error_type:
-                filter_query["error_type"] = error_type
-            if endpoint:
-                filter_query["endpoint"] = endpoint
-            if user:
-                filter_query["user"] = user
-            if resolved is not None:
-                filter_query["resolved"] = resolved
-            if start_date or end_date:
-                filter_query["timestamp"] = {}
-                if start_date:
-                    filter_query["timestamp"]["$gte"] = start_date
-                if end_date:
-                    filter_query["timestamp"]["$lte"] = end_date
+            filter_query = self._build_filter_query(
+                severity, error_type, endpoint, user, resolved, start_date, end_date
+            )
 
             # Count total
             total = await self.collection.count_documents(filter_query)
@@ -261,15 +246,10 @@ class ErrorLogService:
             cursor = (
                 self.collection.find(filter_query).sort("timestamp", -1).skip(skip).limit(page_size)
             )
-            errors = await cursor.to_list(page_size)
+            raw_errors = await cursor.to_list(page_size)
 
-            # Convert ObjectId to string and clean up
-            for error in errors:
-                error["id"] = str(error["_id"])
-                del error["_id"]
-                # Truncate stack trace for list view (full trace available in detail view)
-                if error.get("stack_trace") and len(error["stack_trace"]) > 500:
-                    error["stack_trace_preview"] = error["stack_trace"][:500] + "..."
+            # Process errors
+            errors = self._process_errors(raw_errors)
 
             return {
                 "errors": errors,
@@ -285,6 +265,54 @@ class ErrorLogService:
         except Exception as e:
             logger.error(f"Failed to retrieve errors: {str(e)}")
             raise
+
+    def _build_filter_query(
+        self,
+        severity: Optional[str],
+        error_type: Optional[str],
+        endpoint: Optional[str],
+        user: Optional[str],
+        resolved: Optional[bool],
+        start_date: Optional[datetime],
+        end_date: Optional[datetime],
+    ) -> Dict[str, Any]:
+        """Build filter query for errors"""
+        filter_query: Dict[str, Any] = {}
+
+        if severity:
+            filter_query["severity"] = severity
+        if error_type:
+            filter_query["error_type"] = error_type
+        if endpoint:
+            filter_query["endpoint"] = endpoint
+        if user:
+            filter_query["user"] = user
+        if resolved is not None:
+            filter_query["resolved"] = resolved
+        if start_date or end_date:
+            filter_query["timestamp"] = {}
+            if start_date:
+                filter_query["timestamp"]["$gte"] = start_date
+            if end_date:
+                filter_query["timestamp"]["$lte"] = end_date
+
+        return filter_query
+
+    def _process_errors(self, errors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Process error documents for response"""
+        processed_errors = []
+        for error in errors:
+            # Convert ObjectId to string
+            if "_id" in error:
+                error["id"] = str(error["_id"])
+                del error["_id"]
+
+            # Truncate stack trace for list view
+            if error.get("stack_trace") and len(error["stack_trace"]) > 500:
+                error["stack_trace_preview"] = error["stack_trace"][:500] + "..."
+
+            processed_errors.append(error)
+        return processed_errors
 
     async def get_error_by_id(self, error_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific error by ID"""
@@ -328,7 +356,7 @@ class ErrorLogService:
     ) -> Dict[str, Any]:
         """Get error statistics"""
         try:
-            filter_query = {}
+            filter_query: Dict[str, Any] = {}
             if start_date or end_date:
                 filter_query["timestamp"] = {}
                 if start_date:
@@ -357,7 +385,7 @@ class ErrorLogService:
             )
 
             # By error type (top 10)
-            pipeline = [
+            pipeline: List[Dict[str, Any]] = [
                 {"$match": filter_query} if filter_query else {"$match": {}},
                 {"$group": {"_id": "$error_type", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}},
@@ -366,7 +394,7 @@ class ErrorLogService:
             top_error_types = await self.collection.aggregate(pipeline).to_list(10)
 
             # By endpoint (top 10)
-            pipeline = [
+            pipeline_endpoints: List[Dict[str, Any]] = [
                 (
                     {
                         "$match": {
@@ -381,7 +409,7 @@ class ErrorLogService:
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            top_endpoints = await self.collection.aggregate(pipeline).to_list(10)
+            top_endpoints = await self.collection.aggregate(pipeline_endpoints).to_list(10)
 
             # Recent errors (last 24 hours)
             last_24h = datetime.utcnow() - timedelta(hours=24)

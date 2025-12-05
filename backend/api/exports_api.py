@@ -137,7 +137,7 @@ async def update_export_schedule(
 ):
     """Update an export schedule"""
     # Prepare updates
-    updates = {}
+    updates: Dict[str, Any] = {}
     if schedule_update.name is not None:
         updates["name"] = schedule_update.name
     if schedule_update.frequency is not None:

@@ -7,14 +7,14 @@ Refine the offline queue functionality and address specific user requirements re
 
 ### 1. Inventory Count Logic
 - **Requirement**: "Damaged cont also include in physical count".
-- **Implementation**: 
+- **Implementation**:
     - Added separate input fields for "Returnable Damage Qty" and "Non-Returnable Damage Qty".
     - "Physical Quantity" input remains for counting good items.
     - Total Count is calculated as `Physical + Returnable Damage`.
 
 ### 2. Variance Calculation
 - **Requirement**: `calculated variance = stock - physical + returnable damage`.
-- **Implementation**: 
+- **Implementation**:
     - Updated variance calculation logic in `handleSaveCount`.
     - Formula: `Variance = (Physical + Returnable Damage) - Stock`.
     - This aligns with standard variance definition (Actual - Expected). If the user meant "Missing Quantity", the sign would be inverted, but "Variance" usually implies this direction.

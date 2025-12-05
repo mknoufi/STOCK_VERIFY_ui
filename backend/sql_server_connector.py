@@ -504,6 +504,43 @@ class SQLServerConnector:
             logger.error(f"Error fetching item by code: {str(e)}")
             raise DatabaseQueryError(f"Failed to fetch item by code: {str(e)}")
 
+    async def execute_query(
+        self, query: str, params: Optional[List[Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Execute a raw SQL query asynchronously.
+        Useful for dynamic queries like change detection.
+        """
+        import asyncio
+
+        if not self.connection:
+            raise DatabaseConnectionError(DB_NOT_CONNECTED_MSG)
+
+        # Capture connection to ensure it's not None in closure
+        conn = self.connection
+
+        def _run_query():
+            try:
+                cursor = conn.cursor()
+                if params:
+                    cursor.execute(query, params)
+                else:
+                    cursor.execute(query)
+
+                if cursor.description:
+                    rows = cursor.fetchall()
+                    results = [self._cursor_to_dict(cursor, row) for row in rows]
+                else:
+                    results = []
+
+                cursor.close()
+                return results
+            except Exception as e:
+                logger.error(f"Error executing query: {str(e)}")
+                raise DatabaseQueryError(f"Failed to execute query: {str(e)}")
+
+        return await asyncio.get_event_loop().run_in_executor(None, _run_query)
+
 
 # Global connector instance
 sql_connector = SQLServerConnector()

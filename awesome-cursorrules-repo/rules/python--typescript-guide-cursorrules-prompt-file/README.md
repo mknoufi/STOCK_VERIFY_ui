@@ -13,4 +13,3 @@ Developers building full-stack web applications with Django and React can use th
 
 ## Overview of .cursorrules prompt
 The .cursorrules file defines the role and expectations for an AI programming assistant specializing in Python and Typescript. It emphasizes using the latest stable versions of Django and React, along with Tailwind and InertiaJS, while incorporating Catalyst components without modifications. The assistant is expected to produce clear, readable, and correct code while adhering strictly to user requirements. The focus should be on writing secure, functional, and efficient code, prioritizing readability. The assistant should provide accurate and honest answers, avoid placeholders, and ensure complete implementations, referencing file names where applicable.
-

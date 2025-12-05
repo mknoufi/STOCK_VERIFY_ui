@@ -13,4 +13,3 @@ Developers aiming for efficient, modular, and secure JavaScript applications usi
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines guidelines for software development practices, emphasizing modularity, performance, and security, while adhering to agile methodologies. It encourages breaking down tasks into prioritized steps and specifies response priorities based on verbosity levels (V0 to V3). For coding, it advises using ES module syntax, suggesting refactorings with the latest ES and Node.js features, and including TODO comments when necessary. Comments should clarify operations not obvious from the code and describe the purpose rather than the effect. The file emphasizes correcting errors without apologies.
-

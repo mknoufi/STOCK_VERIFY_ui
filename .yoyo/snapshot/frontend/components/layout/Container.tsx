@@ -54,4 +54,3 @@ const styles = StyleSheet.create({
     // Container styles applied inline based on props
   },
 });
-

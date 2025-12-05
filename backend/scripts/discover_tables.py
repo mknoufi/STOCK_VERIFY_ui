@@ -133,6 +133,19 @@ def main():
         "Document",
     ]
 
+    discovered_tables = _search_and_print_tables(conn, search_terms)
+    _print_detailed_analysis(conn, discovered_tables)
+
+    print("\n\n" + "=" * 80)
+    print("✅ DISCOVERY COMPLETE")
+    print("=" * 80)
+    print(f"\nTotal tables found: {len(discovered_tables)}")
+
+    conn.close()
+
+
+def _search_and_print_tables(conn, search_terms):
+    """Search for tables and print results"""
     discovered_tables = {}
 
     for term in search_terms:
@@ -157,6 +170,11 @@ def main():
         else:
             print("  ⚠️  No tables found")
 
+    return discovered_tables
+
+
+def _print_detailed_analysis(conn, discovered_tables):
+    """Print detailed analysis for priority tables"""
     # Get detailed info for promising tables
     print("\n\n" + "=" * 80)
     print("📋 DETAILED TABLE ANALYSIS")
@@ -197,13 +215,7 @@ def main():
         else:
             print(f"   {samples}")
 
-    print("\n\n" + "=" * 80)
-    print("✅ DISCOVERY COMPLETE")
-    print("=" * 80)
-    print(f"\nTotal tables found: {len(discovered_tables)}")
     print(f"Priority tables analyzed: {len(priority_tables)}")
-
-    conn.close()
 
 
 if __name__ == "__main__":

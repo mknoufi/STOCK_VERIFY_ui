@@ -81,14 +81,14 @@ def get_sample_data(conn, table_name, schema="dbo", limit=3):
         # Validate and sanitize inputs
         if not table_name or not schema:
             raise ValueError("Table name and schema cannot be empty")
-        
+
         # Sanitize table and schema names (allow only alphanumeric and underscore)
         import re
         if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
             raise ValueError("Invalid table name format")
         if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', schema):
             raise ValueError("Invalid schema name format")
-        
+
         # Ensure limit is a safe integer
         try:
             limit = int(limit)
@@ -96,7 +96,7 @@ def get_sample_data(conn, table_name, schema="dbo", limit=3):
                 limit = 3
         except (ValueError, TypeError):
             limit = 3
-        
+
         # Use QUOTENAME for safe identifier quoting
         query = f"SELECT TOP {limit} * FROM {schema}.{table_name}"
         cursor.execute(query)

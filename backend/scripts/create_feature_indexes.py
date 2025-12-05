@@ -13,10 +13,10 @@ from pathlib import Path
 # Add backend to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-import os
+import os  # noqa: E402
 
-from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv  # noqa: E402
+from motor.motor_asyncio import AsyncIOMotorClient  # noqa: E402  # noqa: E402
 
 # Load environment
 load_dotenv()
@@ -34,7 +34,7 @@ async def create_indexes():
 
     # Connect to database
     print(f"Connecting to MongoDB: {MONGO_URL}")
-    client = AsyncIOMotorClient(MONGO_URL)
+    client: AsyncIOMotorClient = AsyncIOMotorClient(MONGO_URL)
     db = client[DB_NAME]
 
     try:
@@ -44,40 +44,14 @@ async def create_indexes():
         print()
 
         # Export schedules indexes
-        print("Creating indexes for export_schedules collection...")
-        try:
-            await db.export_schedules.create_index([("next_run", 1), ("enabled", 1)])
-            print("  ✓ Index: next_run + enabled")
-
-            await db.export_schedules.create_index([("created_by", 1), ("created_at", -1)])
-            print("  ✓ Index: created_by + created_at")
-        except Exception as e:
-            print(f"  ✗ Error: {e}")
+        # Export schedules indexes
+        await _create_export_schedules_indexes(db)
 
         # Export results indexes
-        print("\nCreating indexes for export_results collection...")
-        try:
-            await db.export_results.create_index([("schedule_id", 1), ("created_at", -1)])
-            print("  ✓ Index: schedule_id + created_at")
-
-            await db.export_results.create_index([("created_at", -1)])
-            print("  ✓ Index: created_at")
-        except Exception as e:
-            print(f"  ✗ Error: {e}")
+        await _create_export_results_indexes(db)
 
         # Sync conflicts indexes
-        print("\nCreating indexes for sync_conflicts collection...")
-        try:
-            await db.sync_conflicts.create_index([("status", 1), ("created_at", -1)])
-            print("  ✓ Index: status + created_at")
-
-            await db.sync_conflicts.create_index([("session_id", 1), ("user", 1)])
-            print("  ✓ Index: session_id + user")
-
-            await db.sync_conflicts.create_index([("entity_type", 1), ("entity_id", 1)])
-            print("  ✓ Index: entity_type + entity_id")
-        except Exception as e:
-            print(f"  ✗ Error: {e}")
+        await _create_sync_conflicts_indexes(db)
 
         # Verify indexes
         print("\n" + "=" * 60)
@@ -108,6 +82,45 @@ async def create_indexes():
         client.close()
 
     return True
+
+
+async def _create_export_schedules_indexes(db):
+    print("Creating indexes for export_schedules collection...")
+    try:
+        await db.export_schedules.create_index([("next_run", 1), ("enabled", 1)])
+        print("  ✓ Index: next_run + enabled")
+
+        await db.export_schedules.create_index([("created_by", 1), ("created_at", -1)])
+        print("  ✓ Index: created_by + created_at")
+    except Exception as e:
+        print(f"  ✗ Error: {e}")
+
+
+async def _create_export_results_indexes(db):
+    print("\nCreating indexes for export_results collection...")
+    try:
+        await db.export_results.create_index([("schedule_id", 1), ("created_at", -1)])
+        print("  ✓ Index: schedule_id + created_at")
+
+        await db.export_results.create_index([("created_at", -1)])
+        print("  ✓ Index: created_at")
+    except Exception as e:
+        print(f"  ✗ Error: {e}")
+
+
+async def _create_sync_conflicts_indexes(db):
+    print("\nCreating indexes for sync_conflicts collection...")
+    try:
+        await db.sync_conflicts.create_index([("status", 1), ("created_at", -1)])
+        print("  ✓ Index: status + created_at")
+
+        await db.sync_conflicts.create_index([("session_id", 1), ("user", 1)])
+        print("  ✓ Index: session_id + user")
+
+        await db.sync_conflicts.create_index([("entity_type", 1), ("entity_id", 1)])
+        print("  ✓ Index: entity_type + entity_id")
+    except Exception as e:
+        print(f"  ✗ Error: {e}")
 
 
 if __name__ == "__main__":

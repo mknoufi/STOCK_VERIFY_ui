@@ -12,7 +12,7 @@ globs: **/*.tsx
   const ComponentName = () => {
     // Component logic
   };
-  
+
 - For props, use interface definitions:
   tsx
   interface ComponentNameProps {
@@ -21,20 +21,20 @@ globs: **/*.tsx
   const ComponentName = ({ prop1, prop2 }: ComponentNameProps) => {
     // Component logic
   };
-  
+
 - Use named exports for components in .tsx files:
   tsx
   export const ComponentName = () => {
     // Component logic
   };
-  
+
 - For page components, use default exports in .tsx files:
   tsx
   const Page = () => {
     // Page component logic
   };
   export default Page;
-  
+
 - If explicit typing is needed, prefer `React.FC` or `React.ReactNode`:
   tsx
   import React from 'react';
@@ -45,7 +45,7 @@ globs: **/*.tsx
   const ComponentName = (): React.ReactNode => {
     // Component logic
   };
-  
+
 - When defining React components, avoid unnecessary type annotations and let TypeScript infer types when possible.
 - Use `React.FC` or `React.ReactNode` for explicit typing only when necessary, avoiding `JSX.Element`.
 - Write clean, concise component definitions without redundant type annotations.

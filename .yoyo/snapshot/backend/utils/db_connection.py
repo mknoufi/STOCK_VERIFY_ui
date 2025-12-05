@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 class SQLServerConnectionBuilder:
     """Centralized SQL Server connection string builder and connection utilities"""
-    
+
     DEFAULT_DRIVER = "ODBC Driver 17 for SQL Server"
     DEFAULT_TIMEOUT = 30
-    
+
     @staticmethod
     def build_connection_string(
         host: str,
@@ -26,7 +26,7 @@ class SQLServerConnectionBuilder:
     ) -> str:
         """
         Build optimized ODBC connection string with consistent parameters
-        
+
         Args:
             host: Database server hostname/IP
             database: Database name
@@ -35,12 +35,12 @@ class SQLServerConnectionBuilder:
             password: Optional password for SQL Server auth
             timeout: Connection timeout in seconds
             additional_params: Optional additional connection parameters
-            
+
         Returns:
             Formatted ODBC connection string
         """
         server = f"{host},{port}" if port else host
-        
+
         # Base connection string components with performance optimizations
         base_params = [
             f"DRIVER={{{SQLServerConnectionBuilder.DEFAULT_DRIVER}}}",
@@ -54,7 +54,7 @@ class SQLServerConnectionBuilder:
             "MARS Connection=True",  # Multiple Active Result Sets for better concurrency
             "ApplicationIntent=ReadWrite",
         ]
-        
+
         # Authentication
         if user and password:
             base_params.extend([
@@ -64,16 +64,16 @@ class SQLServerConnectionBuilder:
         else:
             # Windows Authentication
             base_params.append("Trusted_Connection=yes")
-        
+
         # Add any additional parameters
         if additional_params:
             for key, value in additional_params.items():
                 base_params.append(f"{key}={value}")
-        
+
         conn_str = ";".join(base_params)
         logger.debug(f"Built connection string for {host}:{port or 'default'}/{database}")
         return conn_str
-    
+
     @staticmethod
     def create_optimized_connection(
         host: str,
@@ -85,10 +85,10 @@ class SQLServerConnectionBuilder:
     ) -> pyodbc.Connection:
         """
         Create an optimized SQL Server connection with consistent settings
-        
+
         Returns:
             Configured pyodbc connection
-            
+
         Raises:
             pyodbc.Error: If connection fails
         """
@@ -100,12 +100,12 @@ class SQLServerConnectionBuilder:
             password=password,
             timeout=timeout
         )
-        
+
         conn = pyodbc.connect(conn_str, timeout=timeout)
-        
+
         # Set connection attributes for performance
         conn.timeout = timeout
-        
+
         # Optimize connection settings
         cursor = conn.cursor()
         try:
@@ -120,10 +120,10 @@ class SQLServerConnectionBuilder:
             logger.warning(f"Failed to set optimization settings: {e}")
         finally:
             cursor.close()
-        
+
         logger.info(f"Successfully created optimized connection to {host}/{database}")
         return conn
-    
+
     @staticmethod
     def test_connection(
         host: str,
@@ -135,7 +135,7 @@ class SQLServerConnectionBuilder:
     ) -> bool:
         """
         Test if a connection can be established
-        
+
         Returns:
             True if connection successful, False otherwise
         """
@@ -153,15 +153,15 @@ class SQLServerConnectionBuilder:
         except Exception as e:
             logger.debug(f"Connection test failed for {host}:{port or 'default'}/{database}: {e}")
             return False
-    
+
     @staticmethod
     def is_connection_valid(conn: pyodbc.Connection) -> bool:
         """
         Check if an existing connection is still valid
-        
+
         Args:
             conn: pyodbc connection to test
-            
+
         Returns:
             True if connection is valid, False otherwise
         """
@@ -177,7 +177,7 @@ class SQLServerConnectionBuilder:
 
 class ConnectionStringOptimizer:
     """Utility for optimizing existing connection strings"""
-    
+
     @staticmethod
     def optimize_existing_connection_string(
         connection_string: str,
@@ -186,12 +186,12 @@ class ConnectionStringOptimizer:
     ) -> str:
         """
         Add performance optimizations to an existing connection string
-        
+
         Args:
             connection_string: Original connection string
             connect_timeout: Connection timeout in seconds
             command_timeout: Command timeout in seconds
-            
+
         Returns:
             Optimized connection string
         """
@@ -201,22 +201,22 @@ class ConnectionStringOptimizer:
             "Pooling": "True",
             "MARS Connection": "True",
         }
-        
+
         # Parse existing connection string
         params = {}
         for param in connection_string.split(';'):
             if '=' in param:
                 key, value = param.split('=', 1)
                 params[key.strip()] = value.strip()
-        
+
         # Add optimizations if not present
         for key, value in optimizations.items():
             if key not in params:
                 params[key] = value
-        
+
         # Rebuild connection string
         optimized_parts = [f"{key}={value}" for key, value in params.items() if value]
         optimized_string = ";".join(optimized_parts)
-        
+
         logger.info("Connection string optimized with performance enhancements")
         return optimized_string

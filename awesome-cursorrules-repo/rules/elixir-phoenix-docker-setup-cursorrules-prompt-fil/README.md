@@ -13,4 +13,3 @@ Developers utilizing Elixir and Phoenix can leverage this prompt to improve thei
 
 ## Overview of .cursorrules prompt
 The .cursorrules file defines guidelines and rules for an Elixir expert to follow when participating in a software development process using specific technologies such as Elixir, Phoenix, Docker, PostgreSQL, and more. It includes instructions for approaching code writing by considering all requirements before implementation. Additionally, it provides a structured format for conventional commit messages, detailing specific types, optional scopes, descriptions, body content, and footers to ensure clarity and consistency in code documentation and version control. The file also advises providing concise responses to inquiries prefixed with "VV" and suggests thought-provoking follow-up questions after providing solutions.
-

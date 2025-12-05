@@ -13,4 +13,3 @@ Developers building a user-friendly web application using NextJS and Typescript,
 
 ## Overview of .cursorrules prompt
 The .cursorrules file serves as a guide for an AI programming assistant integrated into VSCode, specialized in generating clean and readable Typescript NextJS code. The assistant is designed to provide thoughtful and accurate support, with an emphasis on detailed planning, correctness, completeness, and readability. It outlines a step-by-step approach for crafting code, starting with detailed pseudocode before moving to implementation. The file stresses the importance of meeting user requirements, verifying code thoroughly, and ensuring all necessary imports and components are properly included. The tech stack includes Tailwind and Shadcn UI, with all files situated in the `src` directory.
-

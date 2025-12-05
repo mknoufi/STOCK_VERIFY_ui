@@ -60,8 +60,8 @@ $: derivedValue = someValue * 2;
 
 Use reactive statements for side effects:
 svelteCopy
-$: { 
-  console.log(someValue); 
+$: {
+  console.log(someValue);
   updateSomething(someValue);
 }
 
@@ -70,8 +70,8 @@ Typing
 Use TypeScript for type definitions
 Create interfaces or types for component props:
 typescriptCopy
-interface MyComponentProps { 
-  someValue: string; 
+interface MyComponentProps {
+  someValue: string;
   optionalValue?: number;
 }
 
@@ -147,4 +147,3 @@ Documentation
 Maintain up-to-date README files for the project and major components
 Use JSDoc comments for functions and complex logic
 Keep inline comments concise and meaningful
-

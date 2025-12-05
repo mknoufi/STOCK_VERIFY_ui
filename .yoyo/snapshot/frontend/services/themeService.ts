@@ -13,24 +13,24 @@ export interface ThemeColors {
   secondary: string;
   secondaryLight?: string;
   secondaryDark?: string;
-  
+
   // Background colors
   background: string;
   surface: string;
   surfaceDark?: string;
   surfaceLight?: string;
   card: string;
-  
+
   // Text colors
   text: string;
   textSecondary: string;
   textTertiary?: string;
   textInverse?: string;
-  
+
   // Border & divider
   border: string;
   divider?: string;
-  
+
   // Semantic colors
   error: string;
   errorLight?: string;
@@ -44,7 +44,7 @@ export interface ThemeColors {
   info: string;
   infoLight?: string;
   infoDark?: string;
-  
+
   // Accent & special
   accent: string;
   disabled: string;
@@ -70,24 +70,24 @@ export const lightTheme: Theme = {
     secondary: '#03DAC6',
     secondaryLight: '#4DD0E1',
     secondaryDark: '#00ACC1',
-    
+
     // Background colors
     background: '#FFFFFF',
     surface: '#F5F5F5',
     surfaceDark: '#E0E0E0',
     surfaceLight: '#FAFAFA',
     card: '#FFFFFF',
-    
+
     // Text colors
     text: '#212121',
     textSecondary: '#757575',
     textTertiary: '#9E9E9E',
     textInverse: '#FFFFFF',
-    
+
     // Border & divider
     border: '#E0E0E0',
     divider: '#BDBDBD',
-    
+
     // Semantic colors
     error: '#F44336',
     errorLight: '#EF5350',
@@ -101,7 +101,7 @@ export const lightTheme: Theme = {
     info: '#2196F3',
     infoLight: '#42A5F5',
     infoDark: '#1976D2',
-    
+
     // Accent & special
     accent: '#FF4081',
     disabled: '#BDBDBD',
@@ -122,24 +122,24 @@ export const darkTheme: Theme = {
     secondary: '#10B981',  // Emerald 500
     secondaryLight: '#34D399', // Emerald 400
     secondaryDark: '#059669', // Emerald 600
-    
+
     // Background colors
     background: '#0F172A', // Slate 900
     surface: '#1E293B',    // Slate 800
     surfaceDark: '#020617', // Slate 950
     surfaceLight: '#334155', // Slate 700
     card: '#1E293B',       // Slate 800
-    
+
     // Text colors
     text: '#F8FAFC',       // Slate 50
     textSecondary: '#94A3B8', // Slate 400
     textTertiary: '#64748B',  // Slate 500
     textInverse: '#0F172A', // Slate 900
-    
+
     // Border & divider
     border: '#334155',     // Slate 700
     divider: '#475569',     // Slate 600
-    
+
     // Semantic colors
     error: '#EF4444',      // Red 500
     errorLight: '#F87171', // Red 400
@@ -153,7 +153,7 @@ export const darkTheme: Theme = {
     info: '#3B82F6',       // Blue 500
     infoLight: '#60A5FA',  // Blue 400
     infoDark: '#2563EB',   // Blue 600
-    
+
     // Accent & special
     accent: '#8B5CF6',     // Violet 500
     disabled: '#475569',   // Slate 600

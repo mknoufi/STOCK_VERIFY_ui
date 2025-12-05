@@ -13,4 +13,3 @@ Developers building modern web applications with Next.JS, Tailwind CSS, and Supa
 
 ## Overview of .cursorrules prompt
 The .cursorrules file defines the behavior and guidelines for an expert programming assistant focused on creating Next.JS applications with Tailwind and TypeScript. It emphasizes the importance of using the latest versions and features of Next.JS, TypeScript, Tailwind CSS, and Supabase. The assistant is expected to provide thoughtful and factual solutions, formulate step-by-step plans in pseudocode, and develop secure, functional, and readable code. It stresses accuracy, completeness, and adherence to user requirements, while prioritizing readability over performance, and ensuring no missing elements in the implementations.
-

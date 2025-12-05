@@ -77,7 +77,7 @@ python -m py_compile backend/utils/error_handler_with_diagnosis.py
 **Files:** `backend/api/dynamic_reports_api.py`
 **Estimated Time:** 10 minutes
 
-**Issue:** 
+**Issue:**
 - Lines 92, 128, 180, 226, 252, 281, 347 - `server` is undefined
 - Line 284 - `db` is undefined
 
@@ -131,7 +131,7 @@ python -Wall -m py_compile backend/**/*.py 2>&1 | grep SyntaxWarning
 
 **Issue:** Lines 23, 28 - Event handler type mismatch
 ```
-Argument of type '(id: string) => void' is not assignable to 
+Argument of type '(id: string) => void' is not assignable to
 parameter of type 'ToastEventHandler'
 ```
 

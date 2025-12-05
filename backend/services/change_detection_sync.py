@@ -16,7 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import UpdateMany
 
 from backend.sql_server_connector import SQLServerConnector
-from backend.utils.result import Fail, Ok, Result, result_function
+from backend.utils.result import Fail, Ok, Result
 
 from .errors import ConnectionError, DatabaseError, SyncConfigError, SyncError
 
@@ -108,49 +108,8 @@ class ChangeDetectionSyncService:
                     {"error": str(e), "last_sync_time": last_sync_time},
                 )
             )
-        # If ModifiedDate column exists, use it for change detection
-        # Otherwise, we'll fetch all and compare with MongoDB
-        if last_sync_time:
-            # SQL Server 2008 R2 compatible - use ModifiedDate if exists
-            return """
-                SELECT DISTINCT
-                    P.ProductID as item_id,
-                    P.ProductCode as item_code,
-                    COALESCE(PB.RefItemName, P.ProductName) as item_name,
-                    CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    PB.MannualBarcode as manual_barcode,
-                    COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
-                    PB.Stock as stock_qty,
-                    COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
-                FROM dbo.Products P
-                INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                WHERE P.IsActive = 1
-                  AND PB.AutoBarcode IS NOT NULL
-                  AND (COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) > ? OR PB.ModifiedDate > ?)
-                ORDER BY P.ProductCode
-            """
-        else:
-            # First sync - get all active products
-            return """
-                SELECT DISTINCT
-                    P.ProductID as item_id,
-                    P.ProductCode as item_code,
-                    COALESCE(PB.RefItemName, P.ProductName) as item_name,
-                    CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    PB.MannualBarcode as manual_barcode,
-                    COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
-                    PB.Stock as stock_qty,
-                    COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
-                FROM dbo.Products P
-                INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                WHERE P.IsActive = 1
-                  AND PB.AutoBarcode IS NOT NULL
-                ORDER BY P.ProductCode
-            """
 
-    def _build_update_operations(
-        self, changes: List[ProductData]
-    ) -> Result[List[Dict[str, Any]], SyncError]:
+    def _build_update_operations(self, changes: List[ProductData]) -> Result[List[Any], SyncError]:
         """
         Build MongoDB update operations for changed products.
 
@@ -198,12 +157,14 @@ class ChangeDetectionSyncService:
                 )
             )
 
-    @result_function(SyncError)
-    async def _fetch_changed_products(self) -> List[ProductData]:
+    async def _fetch_changed_products(
+        self, force_full: bool = False
+    ) -> Result[List[ProductData], SyncError]:
         """Fetch changed products from the database."""
-        query_result = self._get_products_with_changes_query(self._last_sync)
+        last_sync = None if force_full else self._last_sync
+        query_result = self._get_products_with_changes_query(last_sync)
         if query_result.is_err:
-            return query_result  # type: ignore
+            return Fail(query_result._error)  # type: ignore
 
         query = query_result.unwrap()
         params = [self._last_sync] if self._last_sync else None
@@ -220,15 +181,16 @@ class ChangeDetectionSyncService:
                 )
             )
 
-    @result_function(SyncError)
-    async def _apply_changes_to_mongodb(self, changes: List[ProductData]) -> Dict[str, int]:
+    async def _apply_changes_to_mongodb(
+        self, changes: List[ProductData]
+    ) -> Result[Dict[str, int], SyncError]:
         """Apply changes to MongoDB."""
         if not changes:
             return Ok({"matched": 0, "modified": 0})
 
         operations_result = self._build_update_operations(changes)
         if operations_result.is_err:
-            return operations_result  # type: ignore
+            return Fail(operations_result._error)  # type: ignore
 
         operations = operations_result.unwrap()
         if not operations:
@@ -251,9 +213,31 @@ class ChangeDetectionSyncService:
                 )
             )
 
-    async def _sync_changes(self) -> SyncResult:
+    async def _run(self):
+        """Main sync loop"""
+        while self._running:
+            try:
+                await self._sync_changes()
+            except Exception as e:
+                logger.error(f"Error in sync loop: {e}")
+
+            # Wait for next sync
+            await asyncio.sleep(self.sync_interval)
+
+    def _get_next_sync_in(self) -> int:
+        """Get seconds until next sync"""
+        if not self._last_sync:
+            return 0
+        elapsed = (datetime.utcnow() - self._last_sync).total_seconds()
+        remaining = self.sync_interval - elapsed
+        return max(0, int(remaining))
+
+    async def _sync_changes(self, force_full: bool = False) -> SyncResult:
         """
         Perform a single sync of changed products.
+
+        Args:
+            force_full: If True, ignore last sync time and fetch all changes.
 
         Returns:
             Result containing sync statistics or an error.
@@ -266,9 +250,13 @@ class ChangeDetectionSyncService:
 
         try:
             # Step 1: Fetch changed products
-            fetch_result = await self._fetch_changed_products()
+            # If force_full is True, we pass None as last_sync to fetch all
+            # We pass force_full to _fetch_changed_products which handles the logic
+
+            fetch_result = await self._fetch_changed_products(force_full=force_full)
             if fetch_result.is_err:
-                return fetch_result
+                # Wrap the error in the expected generic type
+                return Fail(fetch_result._error)  # type: ignore
 
             changed_products = fetch_result.unwrap()
 
@@ -332,45 +320,6 @@ class ChangeDetectionSyncService:
 
         return Ok(result)
 
-    def _update_sync_stats(
-        self, success: bool, items_processed: int = 0, error: Optional[str] = None
-    ) -> None:
-        """
-        Update sync statistics.
-
-        Args:
-            success: Whether the sync was successful.
-            items_processed: Number of items processed in this sync.
-            error: Error message if the sync failed.
-        """
-        now = datetime.utcnow()
-        self._sync_stats["total_syncs"] += 1
-
-        if success:
-            self._sync_stats["successful_syncs"] += 1
-            self._sync_stats["items_checked"] += items_processed
-            self._sync_stats["last_success"] = now.isoformat()
-            self._sync_stats["last_error"] = None
-        else:
-            self._sync_stats["failed_syncs"] += 1
-            self._sync_stats["last_error"] = {
-                "message": error,
-                "timestamp": now.isoformat(),
-            }
-
-        self._sync_stats["last_sync"] = now.isoformat()
-
-        # Log stats periodically
-        if self._sync_stats["total_syncs"] % 10 == 0:  # Every 10 syncs
-            logger.info(
-                "Sync stats - Total: %d, Success: %d, Failed: %d, Items Checked: %d, Last Error: %s",
-                self._sync_stats["total_syncs"],
-                self._sync_stats["successful_syncs"],
-                self._sync_stats["failed_syncs"],
-                self._sync_stats["items_checked"],
-                self._sync_stats.get("last_error", "None"),
-            )
-
     async def start(self) -> SyncResult:
         """
         Start the sync service.
@@ -384,9 +333,9 @@ class ChangeDetectionSyncService:
             return Fail(SyncError(msg))
 
         if not self.sql_connector.connection:
-            error = ConnectionError("SQL Server connection not established")
-            logger.error(str(error))
-            return Fail(error)
+            conn_error = ConnectionError("SQL Server connection not established")
+            logger.error(str(conn_error))
+            return Fail(conn_error)
 
         try:
             self._running = True
@@ -429,7 +378,13 @@ class ChangeDetectionSyncService:
 
     async def sync_now(self) -> Dict[str, Any]:
         """Trigger immediate change detection sync"""
-        return await self.sync_changed_items(force_full=True)
+        result = await self._sync_changes(force_full=True)
+        if result.is_ok:
+            return result.unwrap()
+        # Result doesn't have unwrap_err, so we access _error directly or raise it
+        if result._error:
+            raise result._error
+        raise SyncError("Unknown error during sync")
 
     def get_status(self) -> Dict[str, Any]:
         """

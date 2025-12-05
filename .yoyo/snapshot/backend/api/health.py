@@ -100,7 +100,7 @@ async def _build_readiness_checks() -> Dict[str, Any]:
     try:
         resources = _gather_system_resources()
         checks["system_resources"] = resources
-        
+
         # Check disk space
         if resources["disk"]["status"] == "critical":
             checks["disk_space"] = False

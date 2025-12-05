@@ -13,4 +13,3 @@ Developers creating scalable APIs with FastAPI will benefit from this prompt to 
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines best practices and guidelines for Python and FastAPI development, emphasizing scalable API solutions. It covers principles like functional and declarative programming, error handling, and performance optimization. It recommends concise and accurate Python examples, type hints, Pydantic models for validation, and asynchronous operations. Developers are encouraged to use FastAPI's dependency injection and middleware for improved performance and maintainability, with specific focus on managing startup and shutdown processes efficiently and employing caching strategies. The file prioritizes readability, modularization, and error logging, along with leveraging FastAPI-specific features like Pydantic models for consistency.
-

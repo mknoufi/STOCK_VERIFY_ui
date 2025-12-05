@@ -47,10 +47,10 @@ describe('formatDate', () => {
   it('should format date correctly', () => {
     // Arrange
     const date = new Date('2023-10-15');
-    
+
     // Act
     const result = formatDate(date);
-    
+
     // Assert
     expect(result).toBe('2023-10-15');
   });
@@ -104,16 +104,16 @@ describe('getForecast', () => {
 
   it('should return forecast when weather data is available', async () => {
     // Arrange
-    const mockWeather: WeatherData = { 
-      temperature: 25, 
-      humidity: 65, 
-      conditions: 'sunny' 
+    const mockWeather: WeatherData = {
+      temperature: 25,
+      humidity: 65,
+      conditions: 'sunny'
     };
     (getWeatherData as any).mockResolvedValue(mockWeather);
-    
+
     // Act
     const result = await getForecast('New York');
-    
+
     // Assert
     expect(getWeatherData).toHaveBeenCalledWith('New York');
     expect(result).toEqual({
@@ -126,7 +126,7 @@ describe('getForecast', () => {
     // Arrange: Weather data with missing fields
     const incompleteData = { temperature: 25 };
     (getWeatherData as any).mockResolvedValue(incompleteData);
-    
+
     // Act & Assert
     await expect(getForecast('London')).rejects.toThrow('Incomplete weather data');
   });
@@ -134,8 +134,8 @@ describe('getForecast', () => {
   it('should handle API errors gracefully', async () => {
     // Arrange: API failure
     (getWeatherData as any).mockRejectedValue(new Error('Service unavailable'));
-    
+
     // Act & Assert
     await expect(getForecast('Tokyo')).rejects.toThrow('Failed to get forecast: Service unavailable');
   });
-}); 
+});

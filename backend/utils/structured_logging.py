@@ -117,7 +117,7 @@ class StructuredLogger:
         exc_info=None,
     ):
         """Log with additional context"""
-        extra = {}
+        extra: Dict[str, Any] = {}
         if extra_fields:
             extra["extra_fields"] = extra_fields
         if request_id:

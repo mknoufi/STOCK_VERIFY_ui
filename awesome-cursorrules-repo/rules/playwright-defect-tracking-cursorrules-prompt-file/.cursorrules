@@ -55,53 +55,53 @@ test.describe('[Windsor] Login functionality tests', () => {
     // Test with case ID and category tags
     test('should accept email with special characters [C1234][defect][regression]', async ({ page }) => {
       await page.goto('/login');
-      
+
       await page.fill('#email', 'test+special@example.com');
       await page.fill('#password', 'Test123!');
-      
+
       // Take screenshot for evidence
       await page.screenshot({ path: './qa-reports/evidence/special-email-before-login.png' });
-      
+
       await page.click('#login-button');
-      
+
       // Verify fix
       const errorMessage = await page.locator('.error-message');
       await expect(errorMessage).not.toBeVisible();
-      
+
       // Verify redirect to dashboard
       await expect(page).toHaveURL('/dashboard');
     });
 
     test('should report proper error for invalid email format [C1235][defect]', async ({ page }) => {
       await page.goto('/login');
-      
+
       await page.fill('#email', 'invalid-email');
       await page.fill('#password', 'Test123!');
-      
+
       await page.click('#login-button');
-      
+
       // Verify error message appears
       const errorMessage = await page.locator('.error-message');
       await expect(errorMessage).toBeVisible();
       await expect(errorMessage).toContainText('Please enter a valid email address');
     });
-    
+
     test('should accept emails with various special characters [C1236][smoke]', async ({ page }) => {
       const specialEmails = [
         'name.last@example.com',
         'name-last@example.com',
         'name_last@example.com'
       ];
-      
+
       for (const email of specialEmails) {
         await page.goto('/login');
         await page.fill('#email', email);
         await page.fill('#password', 'Test123!');
         await page.click('#login-button');
-        
+
         // Verify login succeeds
         await expect(page).toHaveURL('/dashboard');
       }
     });
   });
-}); 
+});

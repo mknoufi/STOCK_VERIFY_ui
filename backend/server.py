@@ -27,12 +27,59 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from backend.api.admin_control_api import admin_control_router  # noqa: E402
-from backend.api.auth import router as auth_router  # noqa: E402
+# --- Core Services Initialization (Moved to top to avoid circular imports) ---
+try:
+    from backend.config import settings
+except Exception as e:
+    logging.error(f"Failed to load configuration: {str(e)}")
+    raise
+
+# Core service initialization must happen before API imports to avoid circular dependencies
+# and ensure services are available
+from backend.services.cache_service import CacheService  # noqa: E402
+
+# noqa: E402
+from backend.services.monitoring_service import MonitoringService  # noqa: E402
+from backend.sql_server_connector import SQLServerConnector  # noqa: E402
+
+# Initialize MongoDB
+mongo_url = settings.MONGO_URL.rstrip("/")
+mongo_client_options = dict(
+    maxPoolSize=100,
+    minPoolSize=10,
+    maxIdleTimeMS=45000,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=20000,
+    socketTimeoutMS=20000,
+    retryWrites=True,
+    retryReads=True,
+)
+client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_url, **mongo_client_options)  # type: ignore
+db = client[settings.DB_NAME]
+
+
+# Services
+cache_service = CacheService(
+    redis_url=getattr(settings, "REDIS_URL", None),
+    default_ttl=getattr(settings, "CACHE_TTL", 3600),
+)
+monitoring_service = MonitoringService(
+    history_size=getattr(settings, "METRICS_HISTORY_SIZE", 1000),
+)
+sql_connector = SQLServerConnector()
+
+# Global variables for export
+
+# ---------------------------------------------------------------------------
+
+from backend.api.admin_control_api import admin_control_router as admin_router  # noqa: E402
+from backend.api.auth import (  # noqa: E402  # noqa: E402  # noqa: E402  # noqa: E402
+    router as auth_router,
+)
 from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
 from backend.api.enhanced_item_api import enhanced_item_router as items_router  # noqa: E402
-from backend.api.enhanced_item_api import init_enhanced_api
-from backend.api.erp_api import init_erp_api
+from backend.api.enhanced_item_api import init_enhanced_api  # noqa: E402
+from backend.api.erp_api import init_erp_api  # noqa: E402
 from backend.api.erp_api import router as erp_router  # noqa: E402
 from backend.api.exports_api import exports_router  # noqa: E402
 from backend.api.health import health_router  # noqa: E402
@@ -44,6 +91,7 @@ from backend.api.metrics_api import metrics_router, set_monitoring_service  # no
 
 # New feature API routers
 from backend.api.permissions_api import permissions_router  # noqa: E402
+from backend.api.quality_control_api import router as quality_control_router  # noqa: E402
 from backend.api.security_api import security_router  # noqa: E402
 from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
 
@@ -55,20 +103,18 @@ from backend.api.sync_management_api import (  # noqa: E402
 )
 from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
 from backend.api.variance_api import router as variance_router  # noqa: E402
-from backend.api_mapping import router as mapping_router  # noqa: E402
+
+# noqa: E402
 from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
-from backend.config import settings  # noqa: E402
 from backend.db.migrations import MigrationManager  # noqa: E402
 from backend.db.runtime import set_client, set_db  # noqa: E402
 from backend.error_messages import get_error_message  # noqa: E402
 from backend.services.activity_log import ActivityLogService  # noqa: E402
 from backend.services.batch_operations import BatchOperationsService  # noqa: E402
-from backend.services.cache_service import CacheService  # noqa: E402
 
 # Production services
 from backend.services.connection_pool import SQLServerConnectionPool  # noqa: E402
 from backend.services.database_health import DatabaseHealthService  # noqa: E402
-from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
 from backend.services.error_log import ErrorLogService  # noqa: E402
 from backend.services.errors import (  # noqa: E402
     AuthenticationError,
@@ -78,13 +124,11 @@ from backend.services.errors import (  # noqa: E402
     RateLimitExceededError,
     ValidationError,
 )
-from backend.services.monitoring_service import MonitoringService  # noqa: E402
 from backend.services.rate_limiter import ConcurrentRequestHandler, RateLimiter  # noqa: E402
 from backend.services.refresh_token import RefreshTokenService  # noqa: E402
 from backend.services.runtime import set_cache_service, set_refresh_token_service  # noqa: E402
 from backend.services.scheduled_export_service import ScheduledExportService  # noqa: E402
 from backend.services.sync_conflicts_service import SyncConflictsService  # noqa: E402
-from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
 from backend.utils.api_utils import result_to_response  # noqa: E402
@@ -204,58 +248,6 @@ def create_safe_error_response(
     )
 
 
-# Load configuration with validation
-try:
-    # Use centralized validated settings
-    from backend.config import settings
-except Exception as e:
-    logger.error(f"Failed to load configuration: {str(e)}")
-    raise
-
-
-# Only define fallback Settings if settings is None
-# Removed insecure local Settings fallback. All configuration must come from backend.config
-
-
-# settings is guaranteed from backend.config
-
-
-# MongoDB connection with optimization
-mongo_url = settings.MONGO_URL
-# Normalize trailing slash (avoid accidental DB name in URL)
-mongo_url = mongo_url.rstrip("/")
-# Do not append pool options to URL; keep them in client options only
-
-mongo_client_options = dict(
-    maxPoolSize=100,
-    minPoolSize=10,
-    maxIdleTimeMS=45000,
-    serverSelectionTimeoutMS=5000,
-    connectTimeoutMS=20000,
-    socketTimeoutMS=20000,
-    retryWrites=True,
-    retryReads=True,
-)
-
-client: AsyncIOMotorClient = AsyncIOMotorClient(
-    mongo_url,
-    **mongo_client_options,  # type: ignore
-)
-# Use DB_NAME from settings (database name should not be in URL for this setup)
-db = client[settings.DB_NAME]
-
-# Database optimizer
-db_optimizer = DatabaseOptimizer(
-    mongo_client=client,
-    max_pool_size=100,
-    min_pool_size=10,
-    max_idle_time_ms=45000,
-    server_selection_timeout_ms=5000,
-    connect_timeout_ms=20000,
-    socket_timeout_ms=20000,
-)
-client = db_optimizer.optimize_client()
-
 # Security - Modern password hashing with Argon2 (OWASP recommended)
 # Fallback to bcrypt-only if argon2 is not available
 try:
@@ -329,11 +321,6 @@ if (
     except Exception as e:
         logging.warning(f"Connection pool initialization failed: {str(e)}")
 
-# Cache service
-cache_service = CacheService(
-    redis_url=getattr(settings, "REDIS_URL", None),
-    default_ttl=getattr(settings, "CACHE_TTL", 3600),
-)
 
 # Rate limiter
 rate_limiter = RateLimiter(
@@ -349,13 +336,6 @@ concurrent_handler = ConcurrentRequestHandler(
     queue_size=getattr(settings, "QUEUE_SIZE", 100),
 )
 
-# Monitoring service
-monitoring_service = MonitoringService(
-    history_size=getattr(settings, "METRICS_HISTORY_SIZE", 1000),
-)
-
-# SQL Server connector (global instance)
-sql_connector = SQLServerConnector()
 
 # Database health service (reuse shared db to avoid extra client)
 database_health_service = DatabaseHealthService(
@@ -786,6 +766,7 @@ elif _env == "development":
         "http://localhost:8081",
         "http://127.0.0.1:8081",
         "exp://localhost:8081",
+        "*",  # Allow all origins in development for mobile testing
     ]
     # Add additional dev origins from environment if configured
     if getattr(settings, "CORS_DEV_ORIGINS", None):
@@ -839,9 +820,10 @@ api_router = APIRouter()
 app.include_router(health_router)  # Health check endpoints at /health/*
 app.include_router(health_router, prefix="/api")  # Alias for frontend compatibility
 app.include_router(permissions_router, prefix="/api")  # Permissions management
+app.include_router(quality_control_router)  # Quality control (has its own prefix /api/v1/quality)
 app.include_router(exports_router, prefix="/api")  # Export functionality
 # Include routers
-app.include_router(mapping_router, prefix="/api/mapping")  # API mappings
+app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])  # API mappings
 app.include_router(auth_router, prefix="/api")
 app.include_router(items_router)  # Enhanced items API (has its own prefix /api/v2/erp/items)
 app.include_router(metrics_router, prefix="/api")  # Metrics and monitoring
@@ -852,7 +834,7 @@ app.include_router(security_router)  # Security dashboard (has its own prefix)
 app.include_router(verification_router)
 app.include_router(erp_router, prefix="/api")  # ERP endpoints
 app.include_router(variance_router, prefix="/api")  # Variance reasons and trendspoints
-app.include_router(admin_control_router)  # Admin control endpoints
+app.include_router(admin_router)  # Admin control endpoints
 app.include_router(dynamic_fields_router)  # Dynamic fields management
 
 
@@ -2372,3 +2354,19 @@ if __name__ == "__main__":
         log_level="info",
         access_log=True,
     )
+
+__all__ = [
+    "app",
+    "db",
+    "client",
+    "monitoring_service",
+    "cache_service",
+    "settings",
+    "sql_connector",
+    "scheduled_export_service",
+    "sync_conflicts_service",
+    "refresh_token_service",
+    "batch_operations",
+    "activity_log_service",
+    "error_log_service",
+]

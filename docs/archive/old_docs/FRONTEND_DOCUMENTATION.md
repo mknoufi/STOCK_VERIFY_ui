@@ -1,8 +1,8 @@
 # Frontend Documentation - Stock Verification System
 
-**Version:** 1.0.0  
-**Last Updated:** 2025-01-28  
-**Framework:** React Native + Expo Router  
+**Version:** 1.0.0
+**Last Updated:** 2025-01-28
+**Framework:** React Native + Expo Router
 **Platform:** iOS, Android, Web
 
 ## Overview
@@ -223,5 +223,5 @@ npm run build:web
 
 ---
 
-**Document Version:** 1.0.0  
+**Document Version:** 1.0.0
 **Last Updated:** 2025-01-28

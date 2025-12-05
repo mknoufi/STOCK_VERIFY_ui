@@ -6,10 +6,12 @@ Monitors SQL Server connection and triggers sync service when connection is rest
 import asyncio
 import logging
 from datetime import datetime
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable, Dict, Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from backend.sql_server_connector import SQLServerConnector
+
 from backend.services.erp_sync_service import SQLSyncService
+from backend.sql_server_connector import SQLServerConnector
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +49,7 @@ class AutoSyncManager:
         self._sync_in_progress = False
 
         # Statistics
-        self._stats = {
+        self._stats: Dict[str, Any] = {
             "connection_checks": 0,
             "connection_restored": 0,
             "connection_lost": 0,
@@ -135,44 +137,52 @@ class AutoSyncManager:
 
             # Connection state changed
             if is_available and not self._sql_available:
-                # Connection restored
-                logger.info("✅ SQL Server connection restored - triggering sync")
-                self._sql_available = True
-                self._stats["connection_restored"] += 1
-                self._stats["last_connection_time"] = datetime.utcnow().isoformat()
-
-                # Trigger sync
-                await self._trigger_sync()
-
-                # Callback
-                if self._on_connection_restored:
-                    try:
-                        await self._on_connection_restored()
-                    except Exception as e:
-                        logger.error(f"Error in connection restored callback: {e}")
+                await self._handle_connection_restored()
 
             elif not is_available and self._sql_available:
-                # Connection lost
-                logger.warning("⚠️ SQL Server connection lost")
-                self._sql_available = False
-                self._stats["connection_lost"] += 1
-
-                # Stop sync service
-                if self._sync_service:
-                    await self._sync_service.stop()
-
-                # Callback
-                if self._on_connection_lost:
-                    try:
-                        await self._on_connection_lost()
-                    except Exception as e:
-                        logger.error(f"Error in connection lost callback: {e}")
+                await self._handle_connection_lost()
 
         except Exception as e:
             logger.error(f"Error checking SQL Server connection: {e}")
             if self._sql_available:
                 self._sql_available = False
                 self._stats["connection_lost"] += 1
+
+    async def _handle_connection_restored(self):
+        """Handle SQL Server connection restoration"""
+        # Connection restored
+        logger.info("✅ SQL Server connection restored - triggering sync")
+        self._sql_available = True
+        self._stats["connection_restored"] += 1
+        self._stats["last_connection_time"] = datetime.utcnow().isoformat()
+
+        # Trigger sync
+        await self._trigger_sync()
+
+        # Callback
+        if self._on_connection_restored:
+            try:
+                await self._on_connection_restored()
+            except Exception as e:
+                logger.error(f"Error in connection restored callback: {e}")
+
+    async def _handle_connection_lost(self):
+        """Handle SQL Server connection loss"""
+        # Connection lost
+        logger.warning("⚠️ SQL Server connection lost")
+        self._sql_available = False
+        self._stats["connection_lost"] += 1
+
+        # Stop sync service
+        if self._sync_service:
+            await self._sync_service.stop()
+
+        # Callback
+        if self._on_connection_lost:
+            try:
+                await self._on_connection_lost()
+            except Exception as e:
+                logger.error(f"Error in connection lost callback: {e}")
 
     async def _trigger_sync(self):
         """Trigger sync from SQL Server to MongoDB"""
@@ -248,7 +258,7 @@ class AutoSyncManager:
                 self._last_sync_attempt.isoformat() if self._last_sync_attempt else None
             ),
             "stats": self._stats.copy(),
-            "sync_service_status": self._sync_service.get_status() if self._sync_service else None,
+            "sync_service_status": self._sync_service.get_stats() if self._sync_service else None,
         }
 
     def get_stats(self) -> Dict[str, Any]:

@@ -13,4 +13,3 @@ Blockchain developers and web developers could use this prompt to build a decent
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines the structure and development guidelines for a project named Astral, which is a Block Explorer for the Autonomys network. It is built using Next.js and TypeScript, incorporating libraries for state management, UI components, and data fetching. The file lists key URLs related to the project, provides an overview of the project structure, and specifies development guidelines emphasizing TypeScript, responsiveness, accessibility, and style using Tailwind CSS. It details important scripts for development and production builds, AI interaction guidelines adhering to React best practices, and includes terminology relevant to the Autonomys ecosystem. Additional resources are linked for further reference.
-

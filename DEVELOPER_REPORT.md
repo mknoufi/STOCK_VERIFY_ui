@@ -1,7 +1,7 @@
 # 📊 Stock Verify Application - Developer Report
 
-**Generated:** 2025-01-27  
-**Version:** 2.1  
+**Generated:** 2025-01-27
+**Version:** 2.1
 **Report Type:** Comprehensive System Analysis
 
 ---
@@ -258,6 +258,13 @@ CORS_ALLOW_ORIGINS=http://localhost:3000,http://localhost:8081
    - Recommendation: JSON format with correlation IDs
 
 ### 🟡 Future Features
+
+---
+
+## 🛠️ Recent Fixes
+
+- **pre-commit / Prettier:** Resolved a CI failure caused by `identify` not recognizing 'md' shorthand (available in older versions). We now use an explicit `files` regex for the Prettier hook and upgraded pre-commit/identify in the CI workflow to prevent similar issues. Local mitigation guidance added: `pip install --upgrade pre-commit identify`.
+
 1. **Advanced Analytics Dashboard**
    - Variance trend analysis
    - Staff performance metrics

@@ -38,4 +38,3 @@ const additionalInstructions = `
 6. Use query invalidation for data refetching
 7. Follow React Query naming conventions for consistency
 `;
-

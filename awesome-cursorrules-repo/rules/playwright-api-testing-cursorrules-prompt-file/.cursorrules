@@ -56,7 +56,7 @@ const userSchema = z.object({
 test.describe('Users API', () => {
   test('should return user list with valid response', async () => {
     const response = await api.get('/api/users');
-    
+
     expect(response.status()).toBe(200);
     const data = await response.json();
     expect(data).toBeInstanceOf(Array);
@@ -69,7 +69,7 @@ test.describe('Users API', () => {
       headers: { Authorization: 'invalid-token' },
       failOnStatusCode: false,
     });
-    
+
     expect(response.status()).toBe(401);
     const data = await response.json();
     expect(data).toHaveProperty('error', 'Unauthorized');
@@ -77,15 +77,15 @@ test.describe('Users API', () => {
 
   test('should create a new user with valid data', async () => {
     const newUser = { name: 'Test User', email: 'test@example.com' };
-    
+
     const response = await api.post('/api/users', { data: newUser });
-    
+
     expect(response.status()).toBe(201);
     const data = await response.json();
-    
+
     // Optional schema validation
     const result = userSchema.safeParse(data);
     expect(result.success).toBeTruthy();
   });
 });
-``` 
+```

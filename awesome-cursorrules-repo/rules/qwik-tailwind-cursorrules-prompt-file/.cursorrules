@@ -45,4 +45,3 @@ const additionalInstructions = `
 7. Use server$ for server-side code execution
 8. Leverage Vite plugins for optimized builds
 `;
-

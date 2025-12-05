@@ -9,6 +9,7 @@ import json
 import sys
 from pathlib import Path
 
+import settings
 from bson import json_util
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -66,7 +67,7 @@ async def restore_backup(backup_dir: Path, db_name: str = DB_NAME):
     """Restore all collections from backup directory"""
     try:
         # Connect to MongoDB
-        client = AsyncIOMotorClient("mongodb://localhost:27017")
+        client: AsyncIOMotorClient = AsyncIOMotorClient(settings.MONGODB_URL)
 
         # Test connection
         await client.admin.command("ping")

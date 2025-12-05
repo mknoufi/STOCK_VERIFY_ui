@@ -1,0 +1,187 @@
+
+> frontend@1.0.0 preflight
+> npm run lint && npm run typecheck && npm run test && npm run build:web
+
+
+> frontend@1.0.0 lint
+> expo lint
+
+env: load .env
+env: export EXPO_PUBLIC_BACKEND_PORT EXPO_PUBLIC_BACKEND_URL EXPO_PUBLIC_API_TIMEOUT EXPO_PUBLIC_DEBUG_MODE EXPO_PUBLIC_ENABLE_NETWORK_LOGGING
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/staff/history.tsx
+  8:25  error  Unable to resolve path to module '../../src/services/haptics'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/staff/home.tsx
+  1:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx
+  201:6  warning  React Hook React.useEffect has missing dependencies: 'updateItemState' and 'updateUiState'. Either include them or remove the dependency array                                                                               react-hooks/exhaustive-deps
+  243:6  warning  React Hook React.useCallback has missing dependencies: 'reset', 'updateItemState', 'updatePhotoState', 'updateScannerState', 'updateUiState', and 'updateWorkflowState'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  253:6  warning  React Hook React.useEffect has a missing dependency: 'updateUiState'. Either include it or remove the dependency array                                                                                                       react-hooks/exhaustive-deps
+  336:9  warning  The 'handleSearch' function makes the dependencies of useCallback Hook (at line 790) change on every render. To fix this, wrap the definition of 'handleSearch' in its own useCallback() Hook                                react-hooks/exhaustive-deps
+  828:6  warning  React Hook React.useCallback has missing dependencies: 'resetForm', 'updateUiState', and 'updateWorkflowState'. Either include them or remove the dependency array                                                           react-hooks/exhaustive-deps
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/activity-logs.tsx
+  17:24  error  Unable to resolve path to module '../../src/components/Header'      import/no-unresolved
+  20:26  error  Unable to resolve path to module '../../src/services/toastService'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/dashboard.tsx
+    1:38  warning  'useMemo' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+   14:3   warning  'Platform' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   18:30  error    Unable to resolve path to module '../../store/authStore'                                                           import/no-unresolved
+   52:11  warning  'user' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+   99:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+  188:14  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  211:14  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  240:14  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  251:6   warning  React Hook useEffect has a missing dependency: 'fetchAnalytics'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  294:22  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/db-mapping.tsx
+  21:24  error  Unable to resolve path to module '../../src/components/Header'      import/no-unresolved
+  31:26  error  Unable to resolve path to module '../../src/services/toastService'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/error-logs.tsx
+  19:24  error  Unable to resolve path to module '../../src/components/Header'      import/no-unresolved
+  22:26  error  Unable to resolve path to module '../../src/services/toastService'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/notes.tsx
+  6:57  error  Unable to resolve path to module '../../src/services/notesApi'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/session-detail.tsx
+  7:26  error  Unable to resolve path to module '../../src/services/toastService'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/settings.tsx
+  16:34  error  Unable to resolve path to module '../../store/settingsStore'          import/no-unresolved
+  18:29  error  Unable to resolve path to module '../../src/components/SettingItem'   import/no-unresolved
+  19:30  error  Unable to resolve path to module '../../src/components/SettingGroup'  import/no-unresolved
+  20:24  error  Unable to resolve path to module '../../src/components/Header'        import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/app/supervisor/variance-details.tsx
+  16:59  error  Unable to resolve path to module '../../styles/globalStyles'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/DatabaseSyncStatus.tsx
+  20:91  error  Unable to resolve path to module '../services/databaseStatusService'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/Input.stories.tsx
+  8:23  error  Unable to resolve path to module './Input'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/OfflineDebugPanel.tsx
+  3:63  error  Unable to resolve path to module '../services/offlineStorage'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/SearchAutocomplete.stories.tsx
+  8:36  error  Unable to resolve path to module './SearchAutocomplete'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/ToastProvider.tsx
+  2:16  warning  'Text' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/feedback/LoadingSkeleton.tsx
+  4:26  error  Unable to resolve path to module '../hooks/useTheme'   import/no-unresolved
+  5:23  error  Unable to resolve path to module '../constants/flags'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/feedback/LoadingSpinner.tsx
+   9:26  error  Unable to resolve path to module '../hooks/useTheme'   import/no-unresolved
+  10:23  error  Unable to resolve path to module '../constants/flags'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/feedback/NetworkStatusBanner.tsx
+  3:33  error  Unable to resolve path to module '../services/networkService'  import/no-unresolved
+  4:33  error  Unable to resolve path to module '../services/offlineStorage'  import/no-unresolved
+  5:34  error  Unable to resolve path to module '../services/api'             import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/feedback/ToastProvider.tsx
+  4:30  error  Unable to resolve path to module '../services/toastService'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/forms/DateRangePicker.tsx
+  10:83  error  Unable to resolve path to module '../styles/modernDesignSystem'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/forms/EnhancedTextInput.tsx
+  2:23  error  Unable to resolve path to module '../Input'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/forms/Input.tsx
+  16:26  error  Unable to resolve path to module '../hooks/useTheme'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/forms/SearchAutocomplete.tsx
+  18:26  error  Unable to resolve path to module '../hooks/useTheme'                  import/no-unresolved
+  19:53  error  Unable to resolve path to module '../services/enhancedSearchService'  import/no-unresolved
+  20:44  error  Unable to resolve path to module '../hooks/useDebouncedCallback'      import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/index.ts
+  2:15  error  Unable to resolve path to module './forms'     import/no-unresolved
+  6:15  error  Unable to resolve path to module './feedback'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/layout/Header.tsx
+  8:26  error  Unable to resolve path to module '../hooks/useTheme'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/layout/SettingGroup.tsx
+  8:26  error  Unable to resolve path to module '../hooks/useTheme'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/components/layout/SettingItem.tsx
+  8:26  error  Unable to resolve path to module '../hooks/useTheme'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/hooks/useAutoLogout.ts
+  92:6  warning  React Hook useEffect has missing dependencies: 'logout', 'resetTimer', and 'router'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/hooks/useFormValidation.ts
+  112:32  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/index.ts
+  4:15  error  Unable to resolve path to module './store'      import/no-unresolved
+  5:15  error  Unable to resolve path to module './types'      import/no-unresolved
+  6:15  error  Unable to resolve path to module './utils'      import/no-unresolved
+  7:15  error  Unable to resolve path to module './hooks'      import/no-unresolved
+  8:15  error  Unable to resolve path to module './constants'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/admin/control-panel.tsx
+   66:10  warning  'metrics' is assigned a value but never used                                                                                                                   @typescript-eslint/no-unused-vars
+   67:10  warning  'sessionsAnalytics' is assigned a value but never used                                                                                                         @typescript-eslint/no-unused-vars
+   68:10  warning  'securitySummary' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+  108:6   warning  React Hook useEffect has missing dependencies: 'hasRole', 'loadData', 'loading', 'router', and 'services'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/admin/dashboard-web.tsx
+  58:33  error  Unable to resolve path to module '../../components/DateRangePicker'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/auth/login.tsx
+   17:30  error    Unable to resolve path to module '@/components/SystemStatus'  import/no-unresolved
+  587:13  warning  'fallback' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/auth/register.tsx
+  17:25  error  Unable to resolve path to module '../services/asyncStorageService'  import/no-unresolved
+  18:30  error  Unable to resolve path to module '../store/authStore'               import/no-unresolved
+  19:30  error  Unable to resolve path to module '../services/api'                  import/no-unresolved
+  20:25  error  Unable to resolve path to module '../components/AppLogo'            import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/main/help.tsx
+  15:24  error  Unable to resolve path to module '../components/Header'  import/no-unresolved
+  16:26  error  Unable to resolve path to module '../hooks/useTheme'     import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/main/index.tsx
+  4:30  error  Unable to resolve path to module '../store/authStore'  import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/screens/main/welcome.tsx
+  13:38  warning  'layout' is defined but never used                         @typescript-eslint/no-unused-vars
+  13:52  error    Unable to resolve path to module '../styles/globalStyles'  import/no-unresolved
+  14:30  error    Unable to resolve path to module '../store/authStore'      import/no-unresolved
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/api/api.ts
+  8:27  warning  'normalizeBarcode' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/api/enrichmentApi.ts
+  16:3  warning  'BulkEnrichmentImport' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/api/notesApi.ts
+  1:8  warning  'axios' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/backupService.ts
+  8:10  warning  'getSessionsCache' is defined but never used  @typescript-eslint/no-unused-vars
+  8:28  warning  'getItemsCache' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/frontend/src/services/batchOperationsService.ts
+   12:10  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+   25:11  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  139:14  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  158:21  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  162:27  warning  A `require()` style import is forbidden                      @typescript-eslint/no-require-imports
+
+✖ 88 problems (54 errors, 34 warnings)
+  0 errors and 5 warnings potentially fixable with the `--fix` option.

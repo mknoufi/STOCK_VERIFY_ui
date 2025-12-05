@@ -13,7 +13,7 @@ mkdir -p logs
 # Kill any existing processes
 echo "🧹 Cleaning up existing processes..."
 lsof -ti:3000 | xargs kill -9 2>/dev/null || true
-lsof -ti:8001 | xargs kill -9 2>/dev/null || true  
+lsof -ti:8001 | xargs kill -9 2>/dev/null || true
 lsof -ti:8081 | xargs kill -9 2>/dev/null || true
 
 sleep 2
@@ -29,7 +29,7 @@ cd ..
 
 sleep 3
 
-# 2. Start Backend API  
+# 2. Start Backend API
 echo "🔧 Starting Backend API Server..."
 # Run from root as module to fix imports
 nohup /Users/noufi1/STOCK_VERIFY_2-db-maped/.venv/bin/python -m backend.server > logs/backend.log 2>&1 &
@@ -57,7 +57,7 @@ echo "🌐 Web version will be available at: http://localhost:8081"
 echo "🔄 Metro bundler will start automatically"
 echo ""
 echo "📋 ACTIVE SERVICES:"
-echo "   📊 Enhanced Dashboard: http://localhost:3000/dashboard.html"  
+echo "   📊 Enhanced Dashboard: http://localhost:3000/dashboard.html"
 echo "   🔧 Backend API: http://localhost:8001"
 echo "   📱 Frontend Mobile: Use QR code below"
 echo ""

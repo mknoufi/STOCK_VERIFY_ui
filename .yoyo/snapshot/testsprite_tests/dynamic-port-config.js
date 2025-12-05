@@ -27,13 +27,13 @@ function checkPort(port) {
         resolve(true);
       }
     );
-    
+
     req.on('error', () => resolve(false));
     req.on('timeout', () => {
       req.destroy();
       resolve(false);
     });
-    
+
     req.end();
   });
 }
@@ -53,24 +53,24 @@ async function detectFrontendPort() {
         return port;
       }
     }
-    
+
     // Fallback: Try to use the Node.js detection script
     const result = execSync(`node "${PORT_DETECTION_SCRIPT}"`, {
       encoding: 'utf8',
       cwd: PROJECT_ROOT,
       timeout: 5000,
     });
-    
+
     const portInfo = JSON.parse(result);
     const detectedPort = portInfo.port;
-    
+
     // If detected port is Metro (8081), prefer web port for TestSprite
     if (detectedPort === 8081) {
       console.log('⚠️  Metro port detected (8081), but TestSprite needs web port');
       console.log('💡 Start Expo web server: cd frontend && npm run web');
       return 19006; // Default to web port for TestSprite
     }
-    
+
     return detectedPort || 19006;
   } catch (error) {
     console.warn('Failed to detect port dynamically, using default:', error.message);
@@ -83,10 +83,10 @@ async function detectFrontendPort() {
  */
 async function updateTestSpriteConfig() {
   const detectedPort = await detectFrontendPort();
-  
+
   const configPath = path.join(__dirname, 'tmp', 'config.json');
   let config = {};
-  
+
   // Read existing config if it exists
   if (fs.existsSync(configPath)) {
     try {
@@ -95,25 +95,25 @@ async function updateTestSpriteConfig() {
       console.warn('Could not read existing config, creating new one');
     }
   }
-  
+
   // Update port
   config.localPort = detectedPort;
   config.frontendUrl = `http://localhost:${detectedPort}`;
   config.portDetected = true;
   config.portDetectionTime = new Date().toISOString();
-  
+
   // Ensure directory exists
   const configDir = path.dirname(configPath);
   if (!fs.existsSync(configDir)) {
     fs.mkdirSync(configDir, { recursive: true });
   }
-  
+
   // Write updated config
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-  
+
   console.log(`✅ TestSprite configured to use port: ${detectedPort}`);
   console.log(`   Frontend URL: http://localhost:${detectedPort}`);
-  
+
   return detectedPort;
 }
 
@@ -134,4 +134,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-

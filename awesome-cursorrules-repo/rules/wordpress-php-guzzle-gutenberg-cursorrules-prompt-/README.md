@@ -13,4 +13,3 @@ WordPress developers can create a plugin that integrates external APIs using Guz
 
 ## Overview of .cursorrules prompt
 The .cursorrules file provides guidelines for developing a WordPress plugin that includes a Guzzle-based HTTP client, WP REST endpoint additions, and new Gutenberg editor blocks. It emphasizes using WordPress coding standards for PHP, JavaScript, and TypeScript, with a preference for TypeScript over JavaScript. The file promotes functional programming paradigms and composition over inheritance while ensuring consistency with WordPress ecosystem best practices. Additionally, it stresses the importance of optimizing code for readability and employing type hinting in PHP code.
-

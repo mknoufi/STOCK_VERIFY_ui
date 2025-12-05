@@ -38,7 +38,7 @@ class DatabaseHealthService:
         self.mongo_db = mongo_db
         self.sql_connector = sql_connector
         self.check_interval = check_interval
-        self._health_status = {
+        self._health_status: Dict[str, Any] = {
             "mongo": {
                 "status": "unknown",
                 "last_check": None,
@@ -87,6 +87,8 @@ class DatabaseHealthService:
         """Check MongoDB connection health"""
         start_time = datetime.utcnow()
         try:
+            if self.mongo_db is None:
+                raise RuntimeError("MongoDB not connected")
             # Simple ping operation
             await self.mongo_db.command("ping")
             response_time = (datetime.utcnow() - start_time).total_seconds()
@@ -137,7 +139,6 @@ class DatabaseHealthService:
                     "status": "skipped",
                     "last_check": datetime.utcnow().isoformat(),
                     "response_time": None,
-                    "error": "SQL Server not configured",
                 }
                 return {
                     "status": "skipped",
@@ -240,7 +241,11 @@ class DatabaseHealthService:
 
     def get_status(self) -> Dict[str, Any]:
         """Get current health status"""
-        uptime = (datetime.utcnow() - self._health_status["uptime_start"]).total_seconds()
+        uptime_start = self._health_status.get("uptime_start")
+        if isinstance(uptime_start, datetime):
+            uptime = (datetime.utcnow() - uptime_start).total_seconds()
+        else:
+            uptime = 0.0
 
         return {
             **self._health_status,
@@ -259,44 +264,8 @@ class DatabaseHealthService:
         status = self.get_status()
 
         # Get database statistics
-        mongo_stats = {}
-        sql_stats = {}
-
-        try:
-            # MongoDB stats
-            db_stats = await self.mongo_db.command("dbStats")
-            mongo_stats = {
-                "collections": db_stats.get("collections", 0),
-                "data_size": db_stats.get("dataSize", 0),
-                "storage_size": db_stats.get("storageSize", 0),
-            }
-        except InvalidOperation as e:
-            if self._switch_to_dedicated_client():
-                try:
-                    db_stats = await self.mongo_db.command("dbStats")
-                    mongo_stats = {
-                        "collections": db_stats.get("collections", 0),
-                        "data_size": db_stats.get("dataSize", 0),
-                        "storage_size": db_stats.get("storageSize", 0),
-                    }
-                except Exception as inner:
-                    mongo_stats = {"error": str(inner)}
-            else:
-                mongo_stats = {"error": str(e)}
-        except Exception as e:
-            mongo_stats = {"error": str(e)}
-
-        try:
-            # SQL Server stats (if connected)
-            if self.sql_connector.test_connection():
-                sql_stats = {
-                    "connected": True,
-                    "config": self.sql_connector.config,
-                }
-            else:
-                sql_stats = {"connected": False}
-        except Exception as e:
-            sql_stats = {"error": str(e)}
+        mongo_stats = await self._get_mongo_stats()
+        sql_stats = self._get_sql_stats()
 
         return {
             **health_check,
@@ -306,3 +275,45 @@ class DatabaseHealthService:
                 "sql_server": sql_stats,
             },
         }
+
+    async def _get_mongo_stats(self) -> Dict[str, Any]:
+        """Get MongoDB statistics"""
+        try:
+            if self.mongo_db is None:
+                raise RuntimeError("MongoDB not connected")
+            db_stats = await self.mongo_db.command("dbStats")
+            return {
+                "collections": db_stats.get("collections", 0),
+                "data_size": db_stats.get("dataSize", 0),
+                "storage_size": db_stats.get("storageSize", 0),
+            }
+        except InvalidOperation as e:
+            if self._switch_to_dedicated_client():
+                try:
+                    if self.mongo_db is None:
+                        raise RuntimeError("MongoDB not connected")
+                    db_stats = await self.mongo_db.command("dbStats")
+                    return {
+                        "collections": db_stats.get("collections", 0),
+                        "data_size": db_stats.get("dataSize", 0),
+                        "storage_size": db_stats.get("storageSize", 0),
+                    }
+                except Exception as inner:
+                    return {"error": str(inner)}
+            else:
+                return {"error": str(e)}
+        except Exception as e:
+            return {"error": str(e)}
+
+    def _get_sql_stats(self) -> Dict[str, Any]:
+        """Get SQL Server statistics"""
+        try:
+            if self.sql_connector.test_connection():
+                return {
+                    "connected": True,
+                    "config": self.sql_connector.config,
+                }
+            else:
+                return {"connected": False}
+        except Exception as e:
+            return {"error": str(e)}

@@ -39,4 +39,3 @@ const additionalInstructions = `
 6. Use Apollo Client DevTools for debugging
 7. Follow naming conventions for queries, mutations, and fragments
 `;
-

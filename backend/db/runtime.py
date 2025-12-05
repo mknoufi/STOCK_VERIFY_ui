@@ -12,7 +12,7 @@ _DATABASE: AsyncIOMotorDatabase | None = None
 
 
 @asynccontextmanager
-def lifespan_db(
+async def lifespan_db(
     uri: str, db_name: str
 ) -> AsyncIterator[Tuple[AsyncIOMotorClient, AsyncIOMotorDatabase]]:
     """Create a Mongo client bound to the active event loop and tear it down safely."""

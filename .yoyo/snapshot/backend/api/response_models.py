@@ -104,4 +104,3 @@ class ConnectionPoolStatusResponse(BaseModel):
     utilization: float = Field(..., description="Pool utilization percentage")
     metrics: Dict[str, Any] = Field(..., description="Detailed metrics")
     health_check: Optional[Dict[str, Any]] = Field(None, description="Last health check results")
-

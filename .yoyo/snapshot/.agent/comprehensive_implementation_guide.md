@@ -168,12 +168,12 @@ export const ScanHeader: React.FC<ScanHeaderProps> = ({ onBack, onLogout, userna
       // Scanner Config
       showScanner: boolean;
       manualBarcode: string;
-      
+
       // Item Data
       currentItem: Item | null;
       countedQty: string;
       damageQty: string;
-      
+
       // Workflow
       autoIncrement: boolean;
       serialCapture: boolean;
@@ -336,7 +336,7 @@ npx expo install expo-background-fetch expo-task-manager
       if (queue.length === 0) return;
 
       // Process items...
-      
+
       await AsyncStorage.setItem(QUEUE_KEY, '[]');
     };
     ```

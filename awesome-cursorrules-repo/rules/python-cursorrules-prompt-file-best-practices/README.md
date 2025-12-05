@@ -13,6 +13,3 @@ Developers building scalable, maintainable Python applications with CI/CD pipeli
 
 ## Overview of .cursorrules prompt
 The .cursorrules file specifies guidelines for developing Python projects with a focus on AI-assisted development. It emphasizes a well-structured project with separate directories for various components, modular design, and comprehensive configuration management using environment variables. The approach includes robust error handling, thorough testing with pytest, and detailed documentation practices. Dependency management is handled via uv (preferred) and virtual environments, while code style consistency is achieved using Ruff. Continuous Integration and Deployment (CI/CD) can be implemented using GitHub Actions or GitLab CI. The file promotes AI-friendly coding practices such as descriptive naming, type hints, and insightful comments, and provides code snippets and explanations tailored to these principles. Additionally, it outlines the importance of adding typing annotations, descriptive docstrings, and adhering to testing conventions using pytest, ensuring clarity and effectiveness in Python development.
-
-
-

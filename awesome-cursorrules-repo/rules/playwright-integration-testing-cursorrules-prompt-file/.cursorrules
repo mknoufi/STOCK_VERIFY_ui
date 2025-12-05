@@ -36,7 +36,7 @@ test.describe('Registration Form Integration', () => {
     await page.route('**/api/register', async route => {
       const request = route.request();
       const body = await request.postDataJSON();
-      
+
       if (body.email && body.email.includes('@')) {
         await route.fulfill({
           status: 200,
@@ -49,7 +49,7 @@ test.describe('Registration Form Integration', () => {
         });
       }
     });
-    
+
     // Navigate to the registration page
     await page.goto('/register');
   });
@@ -59,14 +59,14 @@ test.describe('Registration Form Integration', () => {
     await page.fill('[data-testid="name-input"]', 'John Doe');
     await page.fill('[data-testid="email-input"]', 'john@example.com');
     await page.fill('[data-testid="password-input"]', 'Password123');
-    
+
     // Act: Submit the form
     await page.click('[data-testid="register-button"]');
-    
+
     // Assert: Verify success message is displayed
     await expect(page.locator('[data-testid="success-message"]')).toBeVisible();
     await expect(page.locator('[data-testid="success-message"]')).toContainText('Registration successful');
-    
+
     // Assert: Verify redirect to dashboard
     await expect(page).toHaveURL(/.*\/dashboard/);
   });
@@ -76,14 +76,14 @@ test.describe('Registration Form Integration', () => {
     await page.fill('[data-testid="name-input"]', 'John Doe');
     await page.fill('[data-testid="email-input"]', 'invalid-email');
     await page.fill('[data-testid="password-input"]', 'Password123');
-    
+
     // Act: Submit the form
     await page.click('[data-testid="register-button"]');
-    
+
     // Assert: Verify error message is displayed
     await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
     await expect(page.locator('[data-testid="error-message"]')).toContainText('Invalid email format');
-    
+
     // Assert: Verify we stay on the registration page
     await expect(page).toHaveURL(/.*\/register/);
   });
@@ -91,12 +91,12 @@ test.describe('Registration Form Integration', () => {
   test('should validate input fields before submission', async ({ page }) => {
     // Act: Submit the form without filling any fields
     await page.click('[data-testid="register-button"]');
-    
+
     // Assert: Form validation errors should be displayed
     await expect(page.locator('[data-testid="name-error"]')).toBeVisible();
     await expect(page.locator('[data-testid="email-error"]')).toBeVisible();
     await expect(page.locator('[data-testid="password-error"]')).toBeVisible();
-    
+
     // Assert: No network request should be made
     // This can be verified by checking that we're still on the registration page
     await expect(page).toHaveURL(/.*\/register/);
@@ -139,30 +139,30 @@ test.describe('Shopping Cart Integration', () => {
         ] as ProductType[])
       });
     });
-    
+
     // Mock the cart API
     await page.route('**/api/cart/add', async route => {
       const request = route.request();
       const body = await request.postDataJSON();
-      
+
       if (body.productId === 3) {
         await route.fulfill({
           status: 400,
-          body: JSON.stringify({ 
-            error: 'Product out of stock' 
+          body: JSON.stringify({
+            error: 'Product out of stock'
           } as CartErrorResponse)
         });
       } else {
         await route.fulfill({
           status: 200,
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             message: 'Product added to cart',
             cartCount: 1
           } as CartSuccessResponse)
         });
       }
     });
-    
+
     // Navigate to the products page
     await page.goto('/products');
   });
@@ -170,15 +170,15 @@ test.describe('Shopping Cart Integration', () => {
   test('should add in-stock product to cart', async ({ page }) => {
     // Verify products are displayed
     await expect(page.locator('[data-testid="product-item"]')).toHaveCount(3);
-    
+
     // Add first product to cart
     await page.locator('[data-testid="product-item"]').first()
       .locator('[data-testid="add-to-cart"]')
       .click();
-    
+
     // Verify cart count is updated
     await expect(page.locator('[data-testid="cart-count"]')).toContainText('1');
-    
+
     // Verify success message
     await expect(page.locator('[data-testid="cart-notification"]')).toBeVisible();
     await expect(page.locator('[data-testid="cart-notification"]')).toContainText('Product added to cart');
@@ -189,12 +189,12 @@ test.describe('Shopping Cart Integration', () => {
     await page.locator('[data-testid="product-item"]').nth(2)
       .locator('[data-testid="add-to-cart"]')
       .click();
-    
+
     // Verify error message
     await expect(page.locator('[data-testid="error-notification"]')).toBeVisible();
     await expect(page.locator('[data-testid="error-notification"]')).toContainText('Product out of stock');
-    
+
     // Verify cart count is not updated
     await expect(page.locator('[data-testid="cart-count"]')).toContainText('0');
   });
-}); 
+});

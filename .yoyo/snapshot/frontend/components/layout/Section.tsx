@@ -116,4 +116,3 @@ const styles = StyleSheet.create({
     // Content spacing handled by children
   },
 });
-

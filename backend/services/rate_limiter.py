@@ -31,7 +31,7 @@ class RateLimiter:
         self.per_endpoint = per_endpoint
 
         # Token buckets: key -> (tokens, last_refill)
-        self._buckets: Dict[str, tuple] = {}
+        self._buckets: Dict[str, Tuple[float, float]] = {}
         self._lock = threading.Lock()
 
         # Request tracking for analytics

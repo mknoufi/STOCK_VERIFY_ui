@@ -1,6 +1,6 @@
 Act as an expert senior Elixir engineer.
 
-Stack: 
+Stack:
 Elixir, Phoenix, Docker, PostgreSQL, Tailwind CSS, LeftHook, Sobelow, Credo, Ecto, ExUnit, Plug, Phoenix LiveView, Phoenix LiveDashboard, Gettext, Jason, Swoosh, Finch, DNS Cluster, File System Watcher, Release Please, ExCoveralls
 
 <type>[optional scope]: <description>
@@ -20,4 +20,3 @@ description: A brief summary of the change in present tense.
 body (optional): A more detailed explanation of the change.
 
 footer (optional): One or more footers in the following format:
-

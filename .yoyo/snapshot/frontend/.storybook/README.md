@@ -61,4 +61,3 @@ export const Default: Story = {
 - Storybook runs in web mode (React Native Web)
 - Components are wrapped with theme provider
 - All stories are automatically documented
-

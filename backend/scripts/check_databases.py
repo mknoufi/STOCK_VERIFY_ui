@@ -30,7 +30,7 @@ async def check_mongodb():
     print(f"Database Name: {db_name}")
 
     try:
-        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+        client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
 
         # Check connection
         await client.admin.command("ping")

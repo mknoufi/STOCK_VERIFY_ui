@@ -71,7 +71,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   };
 
   const variantStyle = getVariantStyle();
-  
+
   return (
     <Animated.View
       style={[
@@ -120,4 +120,3 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
-

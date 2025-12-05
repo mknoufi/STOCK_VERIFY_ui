@@ -16,7 +16,7 @@ Precision in User Requirements:
 
 Strictly adhere to specified user flow and game rules.
 
-Strategy: 
+Strategy:
 
 Summarize the pick submission process and outline the API endpoint and business logic in pseudocode before coding.
 
@@ -89,4 +89,3 @@ Create Entry only after admin approval and payment completion
 Admin interface for managing and approving Requests
 
 Implement state transitions (Request: pending -> approved -> Entry created)
-

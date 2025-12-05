@@ -30,4 +30,3 @@ describe('validation utils', () => {
     expect(validateMRP('-1').valid).toBe(false);
   });
 });
-

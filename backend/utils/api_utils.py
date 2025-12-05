@@ -4,7 +4,7 @@ import uuid
 from functools import wraps
 from typing import Any
 from typing import Any as AnyType
-from typing import Callable, Coroutine, Dict, TypeVar
+from typing import Callable, Coroutine, Dict, Optional, TypeVar
 
 from fastapi import HTTPException
 
@@ -52,7 +52,10 @@ def sanitize_for_logging(user_input: str, max_length: int = 50) -> str:
 
 
 def create_safe_error_response(
-    status_code: int, message: str, error_code: str = "INTERNAL_ERROR", log_details: str = None
+    status_code: int,
+    message: str,
+    error_code: str = "INTERNAL_ERROR",
+    log_details: Optional[str] = None,
 ) -> HTTPException:
     """
     Create a safe error response that doesn't leak sensitive information.
@@ -187,7 +190,7 @@ def result_to_response(success_status: int = 200) -> Callable[[F], F]:
 
     def decorator(func: F) -> F:
         @wraps(func)
-        async def wrapper(*args: AnyType, **kwargs: AnyType) -> Dict[str, Any]:
+        async def wrapper(*args: AnyType, **kwargs: AnyType) -> Any:
             try:
                 result = await func(*args, **kwargs)
                 if isinstance(result, Result):

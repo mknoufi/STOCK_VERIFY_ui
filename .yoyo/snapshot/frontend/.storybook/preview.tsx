@@ -47,7 +47,7 @@ const preview: Preview = {
           </div>
         );
       }
-      
+
       // For native, use View
       return (
         <UnistylesThemeProvider>
@@ -69,4 +69,3 @@ const styles = StyleSheet.create({
 });
 
 export default preview;
-

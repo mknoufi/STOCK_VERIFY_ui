@@ -4,7 +4,7 @@ echo "📱 Starting Frontend with Expo QR Code"
 echo "======================================"
 echo ""
 
-cd /Users/noufi1/STOCK_VERIFY_2-db-maped/frontend
+cd "/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/backfron"
 
 # Check if dependencies are installed
 if [ ! -d "node_modules" ]; then

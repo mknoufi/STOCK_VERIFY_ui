@@ -4,8 +4,8 @@ Tests for Sync endpoints
 
 import pytest
 from fastapi.testclient import TestClient
-from server import app
 
+from backend.server import app
 from backend.tests.utils.in_memory_db import setup_server_with_in_memory_db
 
 

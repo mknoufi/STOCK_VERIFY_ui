@@ -1,6 +1,6 @@
 /**
  * DataTable Component Stories
- * 
+ *
  * Documentation and examples for the DataTable component
  */
 
@@ -177,4 +177,3 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 });
-

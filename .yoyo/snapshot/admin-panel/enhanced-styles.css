@@ -10,7 +10,7 @@
     --info-color: #06b6d4;
     --dark-color: #1f2937;
     --light-color: #f9fafb;
-    
+
     /* Theme Colors */
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
@@ -20,7 +20,7 @@
     --text-muted: #9ca3af;
     --border-color: #e5e7eb;
     --shadow-color: rgba(0, 0, 0, 0.1);
-    
+
     /* Component Sizing */
     --header-height: 70px;
     --sidebar-width: 280px;
@@ -177,7 +177,7 @@ body {
     display: grid;
     gap: var(--grid-gap);
     grid-template-columns: 1fr;
-    grid-template-areas: 
+    grid-template-areas:
         "metrics"
         "services"
         "security"
@@ -894,34 +894,34 @@ body {
     .dashboard-header {
         padding: 0 1rem;
     }
-    
+
     .header-brand h1 {
         font-size: 1.25rem;
     }
-    
+
     .dashboard-main {
         padding: 1rem;
         gap: 1rem;
     }
-    
+
     .metrics-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .analytics-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .services-matrix {
         gap: 0.5rem;
     }
-    
+
     .service-node {
         grid-template-columns: auto 1fr;
         grid-template-rows: auto auto;
         gap: 0.5rem;
     }
-    
+
     .service-actions {
         grid-column: 1 / -1;
         justify-self: end;

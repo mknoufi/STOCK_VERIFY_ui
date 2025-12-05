@@ -27,4 +27,3 @@ Error Handling and Validation
 - Implement proper error logging and user-friendly messages.
 
 Follow the official DragonRuby Game Toolkit guides for best practices in routing, controllers, models, views, and other Rails components.
-

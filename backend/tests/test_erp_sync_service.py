@@ -3,11 +3,13 @@ Tests for ERP Sync Service (Refactored)
 Tests the modular sync flow with proper exception handling
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
-from backend.services.erp_sync_service import SQLSyncService
-from backend.exceptions import SQLServerConnectionError
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
+from backend.exceptions import SQLServerConnectionError
+from backend.services.erp_sync_service import SQLSyncService
 
 
 @pytest.fixture
@@ -309,7 +311,7 @@ class TestSQLSyncService:
     async def test_enable_service(self, sync_service):
         """Test enable service"""
         # Mock start to avoid background task issues
-        with patch.object(sync_service, "start") as mock_start:
+        with patch.object(sync_service, "start"):
             # Start disabled
             sync_service.disable()
             assert sync_service.enabled is False
@@ -317,20 +319,6 @@ class TestSQLSyncService:
             # Enable
             sync_service.enable()
             assert sync_service.enabled is True
-            # mock_start.called is already asserted by sync_service.enable() calling start()
-            # which calls mock_start. But wait, start() calls _sync_loop which is async.
-            # The issue might be that start() returns None, and we are asserting on mock_start.called.
-            # But why is it unreachable?
-            # Ah, if sync_service.enable() raises an exception, this line is unreachable.
-            # But enable() shouldn't raise.
-            # Let's look at the previous lines.
-            # sync_service.enable() calls self.start().
-            # self.start() calls asyncio.create_task(self._sync_loop()).
-            # It should return.
-            # Maybe the linter thinks assert mock_start.called is unreachable because of something else?
-            # Or maybe I should just remove it if it's redundant or problematic.
-            # Actually, let's just assert mock_start.called.
-            assert mock_start.called
 
     @pytest.mark.asyncio
     async def test_sync_all_items_backwards_compatibility(

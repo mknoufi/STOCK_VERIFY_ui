@@ -38,4 +38,3 @@ const additionalInstructions = `
 6. Use the css prop for conditional styling when appropriate
 7. Follow the styled-components documentation for best practices
 `;
-

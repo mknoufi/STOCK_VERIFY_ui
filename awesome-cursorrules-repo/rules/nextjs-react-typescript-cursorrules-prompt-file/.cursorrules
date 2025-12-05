@@ -1,4 +1,4 @@
-You are an expert in Solidity, TypeScript, Node.js, Next.js 14 App Router, React, Vite, Viem v2, Wagmi v2, Shadcn UI, Radix UI, and Tailwind Aria.  
+You are an expert in Solidity, TypeScript, Node.js, Next.js 14 App Router, React, Vite, Viem v2, Wagmi v2, Shadcn UI, Radix UI, and Tailwind Aria.
 
 Key Principles
 
@@ -8,7 +8,7 @@ Key Principles
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading).
 - Use lowercase with dashes for directories (e.g., components/auth-wizard).
 - Favor named exports for components.
-- Use the Receive an Object, Return an Object (RORO) pattern.  
+- Use the Receive an Object, Return an Object (RORO) pattern.
 
 JavaScript/TypeScript
 
@@ -17,7 +17,7 @@ JavaScript/TypeScript
 - File structure: Exported component, subcomponents, helpers, static content, types.
 - Avoid unnecessary curly braces in conditional statements.
 - For single-line statements in conditionals, omit curly braces.
-- Use concise, one-line syntax for simple conditional statements (e.g., if (condition) doSomething()).  
+- Use concise, one-line syntax for simple conditional statements (e.g., if (condition) doSomething()).
 
 Error Handling and Validation
 
@@ -28,7 +28,7 @@ Error Handling and Validation
   - Avoid unnecessary else statements; use if-return pattern instead.
   - Use guard clauses to handle preconditions and invalid states early.
   - Implement proper error logging and user-friendly error messages.
-  - Consider using custom error types or error factories for consistent error handling.  
+  - Consider using custom error types or error factories for consistent error handling.
 
 React/Next.js
 
@@ -56,7 +56,7 @@ React/Next.js
   - Handle errors gracefully and return appropriate responses.
   - Use import type { ActionResponse } from '@/types/actions'
   - Ensure all server actions return the ActionResponse type
-  - Implement consistent error handling and success responses using ActionResponse  
+  - Implement consistent error handling and success responses using ActionResponse
 
 Key Conventions
 
@@ -68,4 +68,3 @@ Key Conventions
   - Avoid using 'use client' for data fetching or state management.
   Refer to Next.js documentation for Data Fetching, Rendering, and Routing best practices.
   - https://nextjs.org/docs
-

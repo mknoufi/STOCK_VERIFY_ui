@@ -221,45 +221,45 @@ logger = logging.getLogger(__name__)
 def sanitize_for_logging(user_input: str, max_length: int = 50) -> str:
     """
     Sanitize user input before logging to prevent log injection attacks.
-    
+
     Args:
         user_input: The user input to sanitize
         max_length: Maximum length to allow (default: 50)
-        
+
     Returns:
         Sanitized string safe for logging
     """
     if not user_input:
         return ""
-    
+
     # Convert to string and truncate
     sanitized = str(user_input)[:max_length]
-    
+
     # Remove newlines, carriage returns, and control characters that could break log format
     sanitized = re.sub(r'[\r\n\x00-\x1f\x7f-\x9f]', '', sanitized)
-    
+
     # Remove potentially dangerous characters for log parsers
     sanitized = re.sub(r'[<>&"\'`]', '', sanitized)
-    
+
     return sanitized
 
 # SECURITY: Helper function for safe error responses
 def create_safe_error_response(status_code: int, message: str, error_code: str = "INTERNAL_ERROR", log_details: str = None) -> HTTPException:
     """
     Create a safe error response that doesn't leak sensitive information.
-    
+
     Args:
         status_code: HTTP status code
         message: Safe user-facing error message
         error_code: Application-specific error code
         log_details: Detailed error for logging only (not sent to client)
-        
+
     Returns:
         HTTPException with sanitized error information
     """
     if log_details:
         logger.error(f"Internal error ({error_code}): {log_details}")
-    
+
     return HTTPException(
         status_code=status_code,
         detail={
@@ -838,7 +838,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=[
         "Accept",
-        "Accept-Language", 
+        "Accept-Language",
         "Content-Language",
         "Content-Type",
         "Authorization",
@@ -1781,7 +1781,7 @@ async def create_session(
         raise HTTPException(status_code=400, detail="Warehouse name must be less than 100 characters")
     # Sanitize warehouse name (remove potentially dangerous characters)
     warehouse = warehouse.replace('<', '').replace('>', '').replace('"', '').replace("'", '')
-    
+
     session = Session(
         warehouse=warehouse,
         staff_user=current_user["username"],
@@ -2892,7 +2892,7 @@ async def approve_count_line(
     """Approve a count line variance."""
     if current_user["role"] not in ["supervisor", "admin"]:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
-    
+
     try:
         result = await db.count_lines.update_one(
             {"_id": ObjectId(line_id)},
@@ -2908,10 +2908,10 @@ async def approve_count_line(
                 }
             }
         )
-        
+
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Count line not found")
-            
+
         return {"success": True, "message": "Count line approved"}
     except Exception as e:
         logger.error(f"Error approving count line {line_id}: {str(e)}")
@@ -2926,7 +2926,7 @@ async def reject_count_line(
     """Reject a count line (request recount)."""
     if current_user["role"] not in ["supervisor", "admin"]:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
-        
+
     try:
         result = await db.count_lines.update_one(
             {"_id": ObjectId(line_id)},
@@ -2940,10 +2940,10 @@ async def reject_count_line(
                 }
             }
         )
-        
+
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Count line not found")
-            
+
         return {"success": True, "message": "Count line rejected"}
     except Exception as e:
         logger.error(f"Error rejecting count line {line_id}: {str(e)}")
@@ -2964,11 +2964,11 @@ async def check_item_counted(
             "item_code": item_code
         })
         count_lines = await cursor.to_list(length=None)
-        
+
         # Convert ObjectId to string
         for line in count_lines:
             line["_id"] = str(line["_id"])
-            
+
         return {
             "already_counted": len(count_lines) > 0,
             "count_lines": count_lines

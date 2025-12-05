@@ -51,7 +51,7 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
 }) => {
   const theme = useTheme();
-  
+
   // Reanimated values for press animation
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);

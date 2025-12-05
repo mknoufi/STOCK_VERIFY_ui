@@ -6,7 +6,7 @@ Handles multiple batches of same item and condition tracking
 import logging
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class BatchManager:
     """Manage multiple batches of same item"""
 
     @staticmethod
-    def create_batch(item_code: str, batch_data: Dict) -> Dict:
+    def create_batch(item_code: str, batch_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new batch entry"""
         batch = {
             "batch_id": batch_data.get("batch_id")
@@ -94,88 +94,157 @@ class BatchManager:
         return batch
 
     @staticmethod
-    def _analyze_batch_condition(batch: Dict) -> Dict:
+    def _analyze_batch_condition(batch: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze batch and recommend actions"""
         flags = []
         recommendations = []
         priority = "NORMAL"
 
         # Check expiry
-        if batch.get("expiry_date"):
-            try:
-                expiry = datetime.fromisoformat(batch["expiry_date"])
-                days_to_expiry = (expiry - datetime.now()).days
+        expiry_result = BatchManager._check_expiry(batch)
+        if expiry_result:
+            flags.extend(expiry_result["flags"])
+            recommendations.extend(expiry_result["recommendations"])
+            priority = expiry_result["priority"]
+            batch["recommended_action"] = expiry_result["action"]
 
-                if days_to_expiry < 0:
-                    flags.append("EXPIRED")
-                    batch["recommended_action"] = BatchAction.DISPOSE
-                    priority = "URGENT"
-                    recommendations.append("DO NOT SELL - Expired product")
-                    recommendations.append("Remove from shelves immediately")
-                    recommendations.append("Dispose as per regulations")
-                elif days_to_expiry <= 7:
-                    flags.append("EXPIRING_SOON")
-                    batch["recommended_action"] = BatchAction.CLEARANCE
-                    priority = "HIGH"
-                    recommendations.append(f"Expires in {days_to_expiry} days - Clear urgently")
-                    recommendations.append("Apply 50-70% discount")
-                elif days_to_expiry <= 30:
-                    flags.append("SHORT_EXPIRY")
-                    batch["recommended_action"] = BatchAction.DISCOUNT_SALE
-                    priority = "MEDIUM"
-                    recommendations.append(f"Expires in {days_to_expiry} days")
-                    recommendations.append("Apply 20-30% discount")
-            except (ValueError, TypeError):
-                pass
+        # Check condition if no expiry action taken
+        if not batch.get("recommended_action"):
+            condition_result = BatchManager._check_condition(batch)
+            if condition_result:
+                flags.extend(condition_result["flags"])
+                recommendations.extend(condition_result["recommendations"])
+                priority = condition_result["priority"]
+                batch["recommended_action"] = condition_result["action"]
 
-        # Check condition
+        # Check manufacturing date age
+        age_flags = BatchManager._check_age(batch)
+        flags.extend(age_flags)
+
+        batch["condition_flags"] = flags
+        batch["recommendations"] = recommendations
+        batch["action_priority"] = priority
+
+        return batch
+
+    @staticmethod
+    def _check_expiry(batch: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Check expiry date and return action if needed"""
+        if not batch.get("expiry_date"):
+            return None
+
+        try:
+            expiry = datetime.fromisoformat(batch["expiry_date"])
+            days_to_expiry = (expiry - datetime.now()).days
+
+            if days_to_expiry < 0:
+                return {
+                    "flags": ["EXPIRED"],
+                    "action": BatchAction.DISPOSE,
+                    "priority": "URGENT",
+                    "recommendations": [
+                        "DO NOT SELL - Expired product",
+                        "Remove from shelves immediately",
+                        "Dispose as per regulations",
+                    ],
+                }
+            elif days_to_expiry <= 7:
+                return {
+                    "flags": ["EXPIRING_SOON"],
+                    "action": BatchAction.CLEARANCE,
+                    "priority": "HIGH",
+                    "recommendations": [
+                        f"Expires in {days_to_expiry} days - Clear urgently",
+                        "Apply 50-70% discount",
+                    ],
+                }
+            elif days_to_expiry <= 30:
+                return {
+                    "flags": ["SHORT_EXPIRY"],
+                    "action": BatchAction.DISCOUNT_SALE,
+                    "priority": "MEDIUM",
+                    "recommendations": [
+                        f"Expires in {days_to_expiry} days",
+                        "Apply 20-30% discount",
+                    ],
+                }
+        except (ValueError, TypeError):
+            pass
+        return None
+
+    @staticmethod
+    def _check_condition(batch: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Check condition and return action if needed"""
         condition = batch.get("condition", ItemCondition.GOOD)
 
         if condition == ItemCondition.DAMAGED:
-            flags.append("DAMAGED")
-            batch["recommended_action"] = BatchAction.RETURN_TO_SUPPLIER
-            priority = "HIGH"
-            recommendations.append("Check if within return period")
-            recommendations.append("Document with photos")
-            recommendations.append("Contact supplier for replacement")
-
+            return {
+                "flags": ["DAMAGED"],
+                "action": BatchAction.RETURN_TO_SUPPLIER,
+                "priority": "HIGH",
+                "recommendations": [
+                    "Check if within return period",
+                    "Document with photos",
+                    "Contact supplier for replacement",
+                ],
+            }
         elif condition == ItemCondition.EXPIRED:
-            flags.append("EXPIRED")
-            batch["recommended_action"] = BatchAction.DISPOSE
-            priority = "URGENT"
-            recommendations.append("Remove from sales floor")
-            recommendations.append("Dispose immediately")
-
+            return {
+                "flags": ["EXPIRED"],
+                "action": BatchAction.DISPOSE,
+                "priority": "URGENT",
+                "recommendations": [
+                    "Remove from sales floor",
+                    "Dispose immediately",
+                ],
+            }
         elif condition == ItemCondition.AGING:
-            flags.append("AGING")
-            batch["recommended_action"] = BatchAction.DISCOUNT_SALE
-            priority = "MEDIUM"
-            recommendations.append("Apply 15-25% discount")
-            recommendations.append("Promote in clearance section")
-
+            return {
+                "flags": ["AGING"],
+                "action": BatchAction.DISCOUNT_SALE,
+                "priority": "MEDIUM",
+                "recommendations": [
+                    "Apply 15-25% discount",
+                    "Promote in clearance section",
+                ],
+            }
         elif condition in [ItemCondition.SLOW_MOVING, ItemCondition.NON_MOVING]:
-            flags.append("SLOW_MOVING")
-            batch["recommended_action"] = BatchAction.DISCOUNT_SALE
-            priority = "LOW"
-            recommendations.append("Create bundle offers")
-            recommendations.append("Place in high-traffic area")
-
+            return {
+                "flags": ["SLOW_MOVING"],
+                "action": BatchAction.DISCOUNT_SALE,
+                "priority": "LOW",
+                "recommendations": [
+                    "Create bundle offers",
+                    "Place in high-traffic area",
+                ],
+            }
         elif condition == ItemCondition.PACKAGING_DAMAGED:
-            flags.append("PACKAGING_ISSUE")
-            batch["recommended_action"] = BatchAction.REPACKAGE
-            priority = "MEDIUM"
-            recommendations.append("Repackage if product is intact")
-            recommendations.append("Sell at 10-15% discount")
-
+            return {
+                "flags": ["PACKAGING_ISSUE"],
+                "action": BatchAction.REPACKAGE,
+                "priority": "MEDIUM",
+                "recommendations": [
+                    "Repackage if product is intact",
+                    "Sell at 10-15% discount",
+                ],
+            }
         elif condition in [ItemCondition.WATER_DAMAGED, ItemCondition.PEST_DAMAGED]:
-            flags.append("UNSELLABLE")
-            batch["recommended_action"] = BatchAction.WRITE_OFF
-            priority = "HIGH"
-            recommendations.append("Cannot be sold")
-            recommendations.append("Write off from inventory")
-            recommendations.append("Dispose safely")
+            return {
+                "flags": ["UNSELLABLE"],
+                "action": BatchAction.WRITE_OFF,
+                "priority": "HIGH",
+                "recommendations": [
+                    "Cannot be sold",
+                    "Write off from inventory",
+                    "Dispose safely",
+                ],
+            }
+        return None
 
-        # Check manufacturing date age
+    @staticmethod
+    def _check_age(batch: Dict[str, Any]) -> List[str]:
+        """Check manufacturing date age"""
+        flags = []
         if batch.get("mfg_date"):
             try:
                 mfg = datetime.fromisoformat(batch["mfg_date"])
@@ -187,15 +256,10 @@ class BatchManager:
                     flags.append("OLD_STOCK")
             except (ValueError, TypeError):
                 pass
-
-        batch["condition_flags"] = flags
-        batch["recommendations"] = recommendations
-        batch["action_priority"] = priority
-
-        return batch
+        return flags
 
     @staticmethod
-    def aggregate_batches(batches: List[Dict]) -> Dict:
+    def aggregate_batches(batches: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Aggregate multiple batches of same item"""
         if not batches:
             return {}
@@ -203,7 +267,7 @@ class BatchManager:
         total_qty = sum(b.get("quantity", 0) for b in batches)
 
         # Categorize batches by condition
-        by_condition = {}
+        by_condition: Dict[str, List[Dict[str, Any]]] = {}
         for batch in batches:
             condition = batch.get("condition", ItemCondition.GOOD)
             if condition not in by_condition:
@@ -329,7 +393,7 @@ class ConditionMarker:
     }
 
     @staticmethod
-    def get_condition_options() -> List[Dict]:
+    def get_condition_options() -> List[Dict[str, Any]]:
         """Get all condition options for UI"""
         return [
             {
@@ -388,11 +452,11 @@ class ConditionMarker:
             ],
         }
 
-        return actions_map.get(condition, [])
+        return actions_map.get(condition, [])  # type: ignore
 
 
 # Sample batch tracking workflow
-def create_multi_batch_count(item_code: str, batches_data: List[Dict]) -> Dict:
+def create_multi_batch_count(item_code: str, batches_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Create count entry with multiple batches
 

@@ -110,4 +110,3 @@
 - [x] Text rendering fixed (no React Native errors)
 - [x] Camera permissions handling improved
 - [x] Web compatibility fixed
-

@@ -48,10 +48,10 @@ async function checkPort(port) {
 async function detectPort() {
   // Check all ports in parallel
   const checks = await Promise.all(EXPO_PORTS.map(checkPort));
-  
+
   // Find first active port
   const activePort = checks.find((check) => check.active);
-  
+
   if (activePort) {
     return activePort.port;
   }
@@ -73,7 +73,7 @@ async function main() {
       detected: true,
       timestamp: new Date().toISOString(),
     };
-    
+
     console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   } catch (error) {
@@ -85,11 +85,10 @@ async function main() {
       error: error.message,
       timestamp: new Date().toISOString(),
     };
-    
+
     console.log(JSON.stringify(result, null, 2));
     process.exit(1);
   }
 }
 
 main();
-

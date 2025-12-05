@@ -26,4 +26,3 @@ Here are some best practices and rules you must follow:
 10. **Avoid Global Variables**: Limit the use of global variables to reduce side effects.
 
 These rules will help you write clean, efficient, and maintainable Python code.
-

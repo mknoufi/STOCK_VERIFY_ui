@@ -35,4 +35,3 @@ const additionalInstructions = `
 6. Follow Next.js naming conventions for special files
 7. Use environment variables for configuration
 `;
-

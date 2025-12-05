@@ -4,7 +4,7 @@ Performance Middleware - Track request performance and add caching headers
 
 import logging
 import time
-from typing import Callable
+from typing import Awaitable, Callable
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -30,7 +30,9 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.monitoring = monitoring
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Process request and track performance"""
         start_time = time.time()
 
@@ -92,7 +94,9 @@ class CacheMiddleware(BaseHTTPMiddleware):
             "/api/count-lines",
         }
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Add cache headers to response"""
         response = await call_next(request)
 

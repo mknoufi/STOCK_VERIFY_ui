@@ -54,8 +54,38 @@ class AutoRecovery:
         Returns:
             Tuple of (result, success, error_message)
         """
-        last_error = None
+        # Attempt operation with retries
+        result, success, last_error = self._attempt_operation(
+            operation, max_retries, retry_delay, strategy, context
+        )
+        if success:
+            return result, True, None
+
+        # Try fallback
+        if strategy == RecoveryStrategy.FALLBACK and fallback:
+            return self._handle_fallback(fallback)
+
+        # Return default value
+        if strategy == RecoveryStrategy.DEFAULT and default_value is not None:
+            return self._handle_default(default_value)
+
+        # All recovery attempts failed
+        self.recovery_stats["failed_recoveries"] += 1
+        error_msg = f"All recovery attempts failed: {str(last_error)}"
+        logger.error(error_msg)
+        return None, False, error_msg
+
+    def _attempt_operation(
+        self,
+        operation: Callable,
+        max_retries: int,
+        retry_delay: float,
+        strategy: RecoveryStrategy,
+        context: Optional[Dict[str, Any]],
+    ) -> Tuple[Any, bool, Optional[Exception]]:
+        """Attempt operation with retries"""
         retry_count = 0
+        last_error = None
 
         while retry_count < max_retries:
             try:
@@ -70,17 +100,7 @@ class AutoRecovery:
                 retry_count += 1
                 self.recovery_stats["total_recoveries"] += 1
 
-                error_info = {
-                    "error": str(e),
-                    "type": type(e).__name__,
-                    "retry_count": retry_count,
-                    "strategy": strategy.value,
-                    "context": context or {},
-                    "traceback": traceback.format_exc(),
-                }
-                self.error_history.append(error_info)
-                if len(self.error_history) > self.max_history:
-                    self.error_history.pop(0)
+                self._log_error(e, retry_count, strategy, context)
 
                 logger.warning(f"Error occurred (attempt {retry_count}/{max_retries}): {str(e)}")
 
@@ -88,30 +108,46 @@ class AutoRecovery:
                 if retry_count < max_retries:
                     time.sleep(retry_delay * retry_count)  # Exponential backoff
 
-        # All retries failed, try fallback
-        if strategy == RecoveryStrategy.FALLBACK and fallback:
-            try:
-                self.recovery_stats["fallback_used"] += 1
-                logger.info("Using fallback operation")
-                result = fallback()
-                self.recovery_stats["successful_recoveries"] += 1
-                return result, True, None
-            except Exception as e:
-                logger.error(f"Fallback also failed: {str(e)}")
-                self.recovery_stats["failed_recoveries"] += 1
-                return None, False, str(e)
+        return None, False, last_error
 
-        # Return default value
-        if strategy == RecoveryStrategy.DEFAULT and default_value is not None:
-            logger.info("Using default value")
+    def _log_error(
+        self,
+        error: Exception,
+        retry_count: int,
+        strategy: RecoveryStrategy,
+        context: Optional[Dict[str, Any]],
+    ):
+        """Log error details to history"""
+        error_info = {
+            "error": str(error),
+            "type": type(error).__name__,
+            "retry_count": retry_count,
+            "strategy": strategy.value,
+            "context": context or {},
+            "traceback": traceback.format_exc(),
+        }
+        self.error_history.append(error_info)
+        if len(self.error_history) > self.max_history:
+            self.error_history.pop(0)
+
+    def _handle_fallback(self, fallback: Callable) -> Tuple[Any, bool, Optional[str]]:
+        """Handle fallback strategy"""
+        try:
+            self.recovery_stats["fallback_used"] += 1
+            logger.info("Using fallback operation")
+            result = fallback()
             self.recovery_stats["successful_recoveries"] += 1
-            return default_value, True, "Used default value"
+            return result, True, None
+        except Exception as e:
+            logger.error(f"Fallback also failed: {str(e)}")
+            self.recovery_stats["failed_recoveries"] += 1
+            return None, False, str(e)
 
-        # All recovery attempts failed
-        self.recovery_stats["failed_recoveries"] += 1
-        error_msg = f"All recovery attempts failed: {str(last_error)}"
-        logger.error(error_msg)
-        return None, False, error_msg
+    def _handle_default(self, default_value: Any) -> Tuple[Any, bool, Optional[str]]:
+        """Handle default value strategy"""
+        logger.info("Using default value")
+        self.recovery_stats["successful_recoveries"] += 1
+        return default_value, True, "Used default value"
 
     def get_stats(self) -> Dict[str, Any]:
         """Get recovery statistics"""

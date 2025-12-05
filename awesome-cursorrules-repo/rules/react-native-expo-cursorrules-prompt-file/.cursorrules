@@ -36,4 +36,3 @@ const additionalInstructions = `
 6. Follow React Native best practices for performance
 7. Use Expo's OTA updates for quick deployments
 `;
-

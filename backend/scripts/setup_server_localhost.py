@@ -25,15 +25,7 @@ def setup_localhost():
     print("=" * 80)
 
     # Read existing .env if it exists
-    env_vars = {}
-    if ENV_FILE.exists():
-        print(f"\n📄 Reading existing {ENV_FILE}...")
-        with open(ENV_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, value = line.split("=", 1)
-                    env_vars[key.strip()] = value.strip()
+    env_vars = _read_env_file(ENV_FILE)
 
     # Update SQL Server configuration for localhost
     print("\n✅ Updating SQL Server configuration for localhost...")
@@ -49,14 +41,47 @@ def setup_localhost():
 
     # Write updated .env
     print(f"\n💾 Writing updated {ENV_FILE}...")
+    _write_env_file(ENV_FILE, env_vars)
 
-    # Read template or existing file
+    print("✅ Configuration updated!")
+
+    print("\n📋 Updated Configuration:")
+    print("   SQL_SERVER_HOST=localhost")
+    print("   SQL_SERVER_PORT=1433")
+    print(f"   SQL_SERVER_DATABASE={env_vars['SQL_SERVER_DATABASE']}")
+    print("   SQL_SERVER_USER=  (empty - Windows Auth)")
+    print("   SQL_SERVER_PASSWORD=  (empty - Windows Auth)")
+
+    print("\n✅ Setup complete!")
+    print("\n💡 Next steps:")
+    print("   1. Run: python backend/test_sql_connection.py")
+    print("   2. If successful, start the server: python backend/server.py")
+    print("   3. Windows Authentication will work automatically (same machine)")
+
+    return True
+
+
+def _read_env_file(env_path: Path) -> dict:
+    """Read .env file into a dictionary"""
+    env_vars = {}
+    if env_path.exists():
+        print(f"\n📄 Reading existing {env_path}...")
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    env_vars[key.strip()] = value.strip()
+    return env_vars
+
+
+def _write_env_file(env_path: Path, env_vars: dict) -> None:
+    """Write dictionary to .env file preserving structure where possible"""
     lines = []
-    if ENV_FILE.exists():
-        with open(ENV_FILE, "r", encoding="utf-8") as f:
+    if env_path.exists():
+        with open(env_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
-    # Update or add SQL Server variables
     updated_lines = []
     sql_server_vars = [
         "SQL_SERVER_HOST",
@@ -85,25 +110,8 @@ def setup_localhost():
             updated_lines.append(f"{var}={env_vars.get(var, '')}\n")
 
     # Write file
-    with open(ENV_FILE, "w", encoding="utf-8") as f:
+    with open(env_path, "w", encoding="utf-8") as f:
         f.writelines(updated_lines)
-
-    print("✅ Configuration updated!")
-
-    print("\n📋 Updated Configuration:")
-    print("   SQL_SERVER_HOST=localhost")
-    print("   SQL_SERVER_PORT=1433")
-    print(f"   SQL_SERVER_DATABASE={env_vars['SQL_SERVER_DATABASE']}")
-    print("   SQL_SERVER_USER=  (empty - Windows Auth)")
-    print("   SQL_SERVER_PASSWORD=  (empty - Windows Auth)")
-
-    print("\n✅ Setup complete!")
-    print("\n💡 Next steps:")
-    print("   1. Run: python backend/test_sql_connection.py")
-    print("   2. If successful, start the server: python backend/server.py")
-    print("   3. Windows Authentication will work automatically (same machine)")
-
-    return True
 
 
 if __name__ == "__main__":

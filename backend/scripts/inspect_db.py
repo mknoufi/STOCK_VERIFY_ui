@@ -19,7 +19,9 @@ db_name = os.environ["DB_NAME"]
 
 
 async def inspect_database():
-    client = AsyncIOMotorClient(mongo_url)
+    client: AsyncIOMotorClient = AsyncIOMotorClient(
+        mongo_url
+    )  # Reverted to mongo_url to maintain syntactic correctness without adding new imports
     db = client[db_name]
 
     print("=" * 80)

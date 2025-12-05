@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo import UpdateOne
 
 from backend.sql_server_connector import SQLServerConnector
 
@@ -47,7 +48,7 @@ class AdvancedERPSyncService:
         self._last_sync: Optional[datetime] = None
 
         # Enhanced statistics
-        self._sync_stats = {
+        self._sync_stats: Dict[str, Any] = {
             "total_syncs": 0,
             "successful_syncs": 0,
             "failed_syncs": 0,
@@ -65,7 +66,7 @@ class AdvancedERPSyncService:
         }
 
         # Performance tracking
-        self._performance_history = []
+        self._performance_history: List[Dict[str, Any]] = []
         self._max_history = 50
 
     async def validate_item_data(self, item: Dict[str, Any]) -> tuple[bool, List[str]]:
@@ -112,7 +113,8 @@ class AdvancedERPSyncService:
             raise SQLServerConnectionError("SQL Server connection not available")
 
         start_time = datetime.utcnow()
-        stats = {
+        start_time = datetime.utcnow()
+        stats: Dict[str, Any] = {
             "items_synced": 0,
             "items_created": 0,
             "items_updated": 0,
@@ -169,7 +171,9 @@ class AdvancedERPSyncService:
 
             # Update service stats
             self._last_sync = datetime.utcnow()
-            self._sync_stats["successful_syncs"] += 1
+            self._sync_stats["successful_syncs"] = (
+                int(self._sync_stats.get("successful_syncs", 0)) + 1
+            )
             self._sync_stats["items_synced"] = stats["items_synced"]
             self._sync_stats["last_sync"] = self._last_sync.isoformat()
             self._sync_stats["last_sync_duration"] = duration
@@ -178,12 +182,11 @@ class AdvancedERPSyncService:
             )
 
             # Update average duration
-            if self._sync_stats["avg_sync_duration"] == 0:
+            current_avg = float(self._sync_stats.get("avg_sync_duration", 0.0))
+            if current_avg == 0:
                 self._sync_stats["avg_sync_duration"] = duration
             else:
-                self._sync_stats["avg_sync_duration"] = (
-                    self._sync_stats["avg_sync_duration"] + duration
-                ) / 2
+                self._sync_stats["avg_sync_duration"] = (current_avg + duration) / 2
 
             # Store performance history
             self._performance_history.append(
@@ -226,7 +229,7 @@ class AdvancedERPSyncService:
 
         except Exception as e:
             logger.error(f"Advanced ERP sync failed: {str(e)}")
-            self._sync_stats["failed_syncs"] += 1
+            self._sync_stats["failed_syncs"] = int(self._sync_stats.get("failed_syncs", 0)) + 1
             stats["error"] = str(e)
             raise
 
@@ -242,7 +245,7 @@ class AdvancedERPSyncService:
         }
 
         # Prepare bulk operations for better performance
-        bulk_operations = []
+        bulk_operations: List[UpdateOne] = []
 
         for item in batch:
             try:
@@ -279,16 +282,14 @@ class AdvancedERPSyncService:
 
                 # Add to bulk operations
                 bulk_operations.append(
-                    {
-                        "update_one": {
-                            "filter": {"item_code": item_doc["item_code"]},
-                            "update": {
-                                "$set": item_doc,
-                                "$setOnInsert": {"created_at": datetime.utcnow()},
-                            },
-                            "upsert": True,
-                        }
-                    }
+                    UpdateOne(
+                        {"item_code": item_doc["item_code"]},
+                        {
+                            "$set": item_doc,
+                            "$setOnInsert": {"created_at": datetime.utcnow()},
+                        },
+                        upsert=True,
+                    )
                 )
 
                 batch_stats["items_synced"] += 1
@@ -330,9 +331,9 @@ class AdvancedERPSyncService:
         health = {
             "sql_server": {
                 "connected": self.sql_connector.test_connection(),
-                "response_time_ms": 0,
+                "response_time_ms": 0.0,
             },
-            "mongodb": {"connected": True, "response_time_ms": 0, "item_count": 0},
+            "mongodb": {"connected": True, "response_time_ms": 0.0, "item_count": 0},
         }
 
         # Test SQL Server response time
@@ -391,7 +392,7 @@ class AdvancedERPSyncService:
 
             raise SQLServerConnectionError("SQL Server connection not available")
 
-        stats = {"items_synced": 0, "items_failed": 0, "errors": []}
+        stats: Dict[str, Any] = {"items_synced": 0, "items_failed": 0, "errors": []}
 
         for item_code in item_codes:
             try:

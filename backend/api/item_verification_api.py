@@ -8,7 +8,7 @@ import io
 import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
@@ -20,7 +20,7 @@ from backend.auth.dependencies import get_current_user_async as get_current_user
 logger = logging.getLogger(__name__)
 
 # These will be initialized at runtime
-db: AsyncIOMotorDatabase = None
+db: Optional[AsyncIOMotorDatabase] = None
 
 
 def init_verification_api(database):
@@ -127,6 +127,45 @@ class ItemUpdateRequest(BaseModel):
     uom: Optional[str] = None
 
 
+def _build_verification_update(
+    request: VerificationRequest, current_user: Dict[str, Any], variance: Optional[float]
+) -> Dict[str, Any]:
+    """Build the update document for item verification"""
+    update_doc = {
+        "$set": {
+            "verified": request.verified,
+            "verified_by": current_user["username"],
+            "verified_at": datetime.utcnow(),
+            "last_scanned_at": datetime.utcnow(),
+        }
+    }
+
+    if request.verified_qty is not None:
+        update_doc["$set"]["verified_qty"] = request.verified_qty
+        update_doc["$set"]["variance"] = variance
+
+    # New fields
+    if request.damaged_qty is not None:
+        update_doc["$set"]["damaged_qty"] = request.damaged_qty
+    if request.non_returnable_damaged_qty is not None:
+        update_doc["$set"]["non_returnable_damaged_qty"] = request.non_returnable_damaged_qty
+    if request.item_condition:
+        update_doc["$set"]["item_condition"] = request.item_condition
+    if request.serial_number:
+        update_doc["$set"]["serial_number"] = request.serial_number
+    if request.floor:
+        update_doc["$set"]["verified_floor"] = request.floor
+    if request.rack:
+        update_doc["$set"]["verified_rack"] = request.rack
+    if request.session_id:
+        update_doc["$set"]["session_id"] = request.session_id
+
+    if request.notes:
+        update_doc["$set"]["verification_notes"] = request.notes
+
+    return update_doc
+
+
 @verification_router.patch("/{item_code}/update-master")
 async def update_item_master(
     item_code: str,
@@ -138,6 +177,8 @@ async def update_item_master(
     """
     try:
         # Get current item
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
         item = await db.erp_items.find_one({"item_code": item_code})
         if not item:
             raise HTTPException(status_code=404, detail=f"Item {item_code} not found")
@@ -191,6 +232,8 @@ async def verify_item(
     """
     try:
         # Get current item
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
         item = await db.erp_items.find_one({"item_code": item_code})
         if not item:
             raise HTTPException(status_code=404, detail=f"Item {item_code} not found")
@@ -203,39 +246,8 @@ async def verify_item(
             total_assets = request.verified_qty + (request.damaged_qty or 0.0)
             variance = total_assets - system_qty
 
-        # Update item with verification data
-        update_doc = {
-            "$set": {
-                "verified": request.verified,
-                "verified_by": current_user["username"],
-                "verified_at": datetime.utcnow(),
-                "last_scanned_at": datetime.utcnow(),
-            }
-        }
-
-        if request.verified_qty is not None:
-            update_doc["$set"]["verified_qty"] = request.verified_qty
-            update_doc["$set"]["variance"] = variance
-
-        # New fields
-        if request.damaged_qty is not None:
-            update_doc["$set"]["damaged_qty"] = request.damaged_qty
-        if request.non_returnable_damaged_qty is not None:
-            update_doc["$set"]["non_returnable_damaged_qty"] = request.non_returnable_damaged_qty
-        if request.item_condition:
-            update_doc["$set"]["item_condition"] = request.item_condition
-        if request.serial_number:
-            update_doc["$set"]["serial_number"] = request.serial_number
-        if request.floor:
-            update_doc["$set"]["verified_floor"] = request.floor
-        if request.rack:
-            update_doc["$set"]["verified_rack"] = request.rack
-        if request.session_id:
-            update_doc["$set"]["session_id"] = request.session_id
-
-        if request.notes:
-            update_doc["$set"]["verification_notes"] = request.notes
-
+        # Prepare update document
+        update_doc = _build_verification_update(request, current_user, variance)
         await db.erp_items.update_one({"item_code": item_code}, update_doc)
 
         # Create variance record if there's a variance OR if we are just recording a verification
@@ -272,7 +284,8 @@ async def verify_item(
 
         # Get updated item
         updated_item = await db.erp_items.find_one({"item_code": item_code})
-        updated_item["_id"] = str(updated_item["_id"])
+        if updated_item:
+            updated_item["_id"] = str(updated_item["_id"])
 
         return {
             "success": True,
@@ -319,6 +332,9 @@ async def get_filtered_items(
 
         verified_filter = deepcopy(filter_query)
         verified_filter["verified"] = True
+
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
 
         items_task = db.erp_items.find(filter_query).skip(skip).limit(limit).to_list(length=limit)
         total_count_task = db.erp_items.count_documents(filter_query)
@@ -379,6 +395,8 @@ async def export_items_csv(
         )
 
         # Get all matching items
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
         cursor = db.erp_items.find(filter_query)
         items = await cursor.to_list(length=None)
 
@@ -455,7 +473,7 @@ async def get_variances(
     Get list of items with variances (verified qty != system qty)
     """
     try:
-        filter_query = {}
+        filter_query: Dict[str, Any] = {}
 
         if category:
             filter_query["category"] = {"$regex": category, "$options": "i"}
@@ -473,6 +491,8 @@ async def get_variances(
         filter_query["variance"] = {"$ne": 0}
 
         # Get total count
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
         total_count = await db.item_variances.count_documents(filter_query)
 
         # Get variances
@@ -512,7 +532,9 @@ async def get_live_users(current_user: dict = Depends(get_current_user)):
         one_hour_ago = datetime.utcnow() - timedelta(hours=1)
 
         # Get distinct users who verified items in last hour
-        pipeline = [
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
+        pipeline: List[Dict[str, Any]] = [
             {
                 "$match": {
                     "verified_at": {"$gte": one_hour_ago},
@@ -562,6 +584,8 @@ async def get_live_verifications(
     """
     try:
         # Get recent verifications
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database not available")
         cursor = (
             db.erp_items.find(
                 {

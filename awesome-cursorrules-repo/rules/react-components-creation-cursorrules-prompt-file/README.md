@@ -13,4 +13,3 @@ Frontend React developers can use this prompt to efficiently create new componen
 
 ## Overview of .cursorrules prompt
 The .cursorrules file provides a structured methodology for creating new React components within a project. It guides developers to first evaluate the necessity of a new component by reviewing existing components in specified directories. If a new component is needed, it instructs on generating a detailed prompt, focusing on naming, purpose, props, styling using Tailwind CSS, and TypeScript. The prompt is then URL encoded and formatted into a clickable link for further actions. The file also emphasizes adapting the new component to fit the existing project structure, importing necessary common and app-specific components, and following established patterns, with room for custom logic or state management if needed.
-

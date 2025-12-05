@@ -13,4 +13,3 @@ This prompt is useful for Angular developers working with standalone components 
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines a set of coding standards and principles to guide developers in creating optimal, production-ready code. It emphasizes preserving existing code structures, verifying changes, and delivering concise solutions. Key coding principles such as DRY (Don't Repeat Yourself), KISS (Keep It Simple Stupid), and YAGNI (You Aren't Gonna Need It) are highlighted to maintain code quality and avoid unnecessary complexity. It also includes specific rules for debugging, testing, and maintaining project structure, while integrating Angular with standalone components and Novo Elements. The file aims for thorough testing, clear documentation, and minimal diffs in code changes to meet specified project requirements efficiently.
-

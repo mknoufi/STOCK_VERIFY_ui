@@ -13,4 +13,3 @@ Developers building a sports pool management platform would benefit from this pr
 
 ## Overview of .cursorrules prompt
 The .cursorrules file outlines a structured approach for developing a pool-based application using specified technologies such as Node.js, MongoDB, React.js, and Git. It emphasizes precision in adhering to user requirements, especially in the user flow and game rules. The file advises starting with pseudocode to strategize the implementation of features, ensuring secure and efficient code following RESTful API best practices, and implementing error handling and input validation. Key user flows and management processes such as entry and pick management, scoring, and results viewing are detailed. The file provides guidelines on limiting user requests, tracking entries, managing payments and state transitions, and developing an admin interface for requests. Optional Docker deployment is suggested for deployment purposes.
-

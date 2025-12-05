@@ -5,7 +5,7 @@ Provides endpoints for security monitoring, failed login tracking, and audit log
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -36,7 +36,7 @@ async def get_failed_logins(
         from backend.server import db
 
         # Build query
-        query = {
+        query: Dict[str, Any] = {
             "success": False,
             "timestamp": {"$gte": datetime.utcnow() - timedelta(hours=hours)},
         }
@@ -61,7 +61,7 @@ async def get_failed_logins(
         total_failed = await db.login_attempts.count_documents(query)
 
         # Group by IP
-        ip_pipeline = [
+        ip_pipeline: List[Dict[str, Any]] = [
             {"$match": query},
             {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}},
@@ -70,7 +70,7 @@ async def get_failed_logins(
         top_ips = await db.login_attempts.aggregate(ip_pipeline).to_list(10)
 
         # Group by username
-        user_pipeline = [
+        user_pipeline: List[Dict[str, Any]] = [
             {"$match": query},
             {"$group": {"_id": "$username", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}},
@@ -112,7 +112,7 @@ async def get_suspicious_activity(
         cutoff_time = datetime.utcnow() - timedelta(hours=hours)
 
         # Multiple failed logins from same IP
-        ip_pipeline = [
+        ip_pipeline: List[Dict[str, Any]] = [
             {"$match": {"success": False, "timestamp": {"$gte": cutoff_time}}},
             {
                 "$group": {
@@ -128,7 +128,7 @@ async def get_suspicious_activity(
         suspicious_ips = await db.login_attempts.aggregate(ip_pipeline).to_list(50)
 
         # Multiple failed logins for same username
-        user_pipeline = [
+        user_pipeline: List[Dict[str, Any]] = [
             {"$match": {"success": False, "timestamp": {"$gte": cutoff_time}}},
             {
                 "$group": {
@@ -183,7 +183,7 @@ async def get_security_sessions(
         from backend.server import db
 
         # Get refresh tokens (active sessions)
-        query = {"revoked": False}
+        query: Dict[str, Any] = {"revoked": False}
         if active_only:
             query["expires_at"] = {"$gt": datetime.utcnow()}
 
@@ -260,7 +260,7 @@ async def get_audit_log(
         from backend.server import db
 
         # Build query
-        query = {"timestamp": {"$gte": datetime.utcnow() - timedelta(hours=hours)}}
+        query: Dict[str, Any] = {"timestamp": {"$gte": datetime.utcnow() - timedelta(hours=hours)}}
 
         # Security-related actions
         security_actions = [
@@ -327,7 +327,7 @@ async def get_ip_tracking(
         cutoff_time = datetime.utcnow() - timedelta(hours=hours)
 
         # Aggregate IP data from login attempts
-        ip_pipeline = [
+        ip_pipeline: List[Dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": cutoff_time}}},
             {
                 "$group": {

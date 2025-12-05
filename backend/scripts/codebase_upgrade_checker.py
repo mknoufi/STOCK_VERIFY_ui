@@ -5,10 +5,10 @@ Systematically scans and reports code quality issues
 
 import ast
 import logging
-from pathlib import Path
-from typing import List, Dict, Any
-from dataclasses import dataclass
 from collections import defaultdict
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 

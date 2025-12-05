@@ -6,9 +6,8 @@ Generates secure secrets for JWT_SECRET and JWT_REFRESH_SECRET.
 Can optionally write them to the .env file.
 """
 
-import secrets
 import argparse
-
+import secrets
 from pathlib import Path
 
 

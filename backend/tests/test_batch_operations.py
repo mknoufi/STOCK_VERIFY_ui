@@ -3,11 +3,13 @@ Tests for Batch Operations Service
 Verifies batch processing functionality and error handling
 """
 
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock
-from backend.services.batch_operations import BatchOperationsService
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.errors import PyMongoError
+
+from backend.services.batch_operations import BatchOperationsService
 
 
 @pytest.fixture

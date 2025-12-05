@@ -6,10 +6,12 @@ Monitors SQL Server connection and triggers sync service when connection is rest
 import asyncio
 import logging
 from datetime import datetime
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable, Dict, Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from backend.sql_server_connector import SQLServerConnector
+
 from backend.services.erp_sync_service import SQLSyncService
+from backend.sql_server_connector import SQLServerConnector
 
 logger = logging.getLogger(__name__)
 

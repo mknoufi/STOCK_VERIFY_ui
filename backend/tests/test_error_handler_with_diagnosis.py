@@ -1,11 +1,13 @@
-import pytest
 from unittest.mock import AsyncMock, patch
-from backend.utils.error_handler_with_diagnosis import (
-    with_auto_diagnosis,
-    diagnose_and_handle,
-    SelfDiagnosingErrorHandler,
-)
+
+import pytest
+
 from backend.services.auto_diagnosis import DiagnosisResult, ErrorCategory, ErrorSeverity
+from backend.utils.error_handler_with_diagnosis import (
+    SelfDiagnosingErrorHandler,
+    diagnose_and_handle,
+    with_auto_diagnosis,
+)
 from backend.utils.result_types import Result
 
 

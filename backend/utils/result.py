@@ -9,8 +9,7 @@ import logging
 import traceback
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Callable, Dict, Generic, Optional, Type, TypeVar, cast, Literal
-
+from typing import Any, Callable, Dict, Generic, Literal, Optional, Type, TypeVar, cast
 
 # Type variables for generic typing
 T = TypeVar("T")
@@ -314,8 +313,10 @@ def result_function(
 
 # API Response Helpers
 try:  # noqa: C901
+    from typing import Any as AnyType
+    from typing import Coroutine
+
     from fastapi import HTTPException
-    from typing import Any as AnyType, Coroutine
 
     F_Async = TypeVar("F_Async", bound=Callable[..., Coroutine[AnyType, AnyType, AnyType]])
 

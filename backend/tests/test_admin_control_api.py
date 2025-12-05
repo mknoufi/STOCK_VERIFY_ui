@@ -1,8 +1,10 @@
+from unittest.mock import MagicMock, mock_open, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, mock_open
 from fastapi.testclient import TestClient
-from backend.server import app
+
 from backend.auth import get_current_user
+from backend.server import app
 
 client = TestClient(app)
 

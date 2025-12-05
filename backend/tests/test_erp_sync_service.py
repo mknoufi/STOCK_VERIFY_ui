@@ -3,11 +3,13 @@ Tests for ERP Sync Service (Refactored)
 Tests the modular sync flow with proper exception handling
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
-from backend.services.erp_sync_service import SQLSyncService
-from backend.exceptions import SQLServerConnectionError
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
+from backend.exceptions import SQLServerConnectionError
+from backend.services.erp_sync_service import SQLSyncService
 
 
 @pytest.fixture

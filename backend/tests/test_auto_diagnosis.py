@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from backend.services.auto_diagnosis import (
     AutoDiagnosisService,
     ErrorCategory,

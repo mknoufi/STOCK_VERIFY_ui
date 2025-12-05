@@ -15,6 +15,7 @@ def fake_environment(monkeypatch):
 
     # Mock SQL Connector methods to return data instead of 503
     from unittest.mock import MagicMock
+
     import server
 
     mock_sql = MagicMock()

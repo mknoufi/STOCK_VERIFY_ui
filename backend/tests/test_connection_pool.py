@@ -3,9 +3,10 @@ Test Connection Pool
 Tests for the standard SQLServerConnectionPool
 """
 
-from unittest.mock import Mock, patch
-import pytest
 import time
+from unittest.mock import Mock, patch
+
+import pytest
 
 from backend.services.connection_pool import SQLServerConnectionPool
 

@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, Platform } from 'react-native';
+import { View, ActivityIndicator, Platform, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../src/store/authStore';
 
 export default function IndexScreen() {
   const router = useRouter();
-  const { user, isLoading, loadStoredAuth } = useAuthStore();
+  const { user, loadStoredAuth } = useAuthStore();
 
   useEffect(() => {
     // Ensure auth state is loaded
@@ -35,8 +37,40 @@ export default function IndexScreen() {
   }, [user, router]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' }}>
-      <ActivityIndicator color="#00E676" size="large" />
-    </View>
+    <LinearGradient
+      colors={['#0F172A', '#1E293B', '#0F172A']}
+      style={styles.container}
+    >
+      <View style={styles.logoContainer}>
+        <Ionicons name="cube-outline" size={48} color="#3B82F6" />
+      </View>
+      <Text style={styles.title}>Stock Verify</Text>
+      <ActivityIndicator color="#3B82F6" size="large" style={styles.loader} />
+      <Text style={styles.loadingText}>Loading...</Text>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoContainer: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 32,
+  },
+  loader: {
+    marginBottom: 16,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#94A3B8',
+  },
+});

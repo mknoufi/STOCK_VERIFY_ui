@@ -57,6 +57,8 @@ export interface CreateCountLinePayload {
   mrp_source?: string;
   variant_id?: string;
   variant_barcode?: string;
+  category_correction?: string;
+  subcategory_correction?: string;
 }
 
 export interface ApiErrorResponse {

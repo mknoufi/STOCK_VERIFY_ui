@@ -24,7 +24,7 @@ fi
 # Format TypeScript/JavaScript code
 echo "📝 Formatting TypeScript/JavaScript code..."
 if command -v npx &> /dev/null; then
-    cd frontend
+    cd backfron
     npx prettier --write "**/*.{ts,tsx,js,jsx,json}" --ignore-path .gitignore
     echo "✅ Prettier formatting complete"
     cd ..

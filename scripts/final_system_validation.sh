@@ -376,10 +376,10 @@ run_test_suites() {
     fi
 
     # Frontend tests
-    if [ -d "frontend/__tests__" ] || [ -d "frontend/tests" ]; then
+    if [ -d "backfron/__tests__" ] || [ -d "backfron/tests" ]; then
         log_message "INFO" "Running frontend test suite..."
 
-        cd frontend
+        cd backfron
         if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
             if npm test -- --watchAll=false --coverage=false > /tmp/frontend_test_results.log 2>&1; then
                 log_message "SUCCESS" "Frontend tests passed"

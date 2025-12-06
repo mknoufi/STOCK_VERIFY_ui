@@ -99,6 +99,7 @@ from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
 from backend.api.sync_conflicts_api import sync_conflicts_router  # noqa: E402
 from backend.api.sync_management_api import (  # noqa: E402
     set_change_detection_service,
+    set_erp_sync_service,
     sync_management_router,
 )
 from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
@@ -113,9 +114,11 @@ from backend.services.activity_log import ActivityLogService  # noqa: E402
 from backend.services.batch_operations import BatchOperationsService  # noqa: E402
 
 # Production services
+from backend.services.change_detection_sync import ChangeDetectionSyncService  # noqa: E402
 from backend.services.connection_pool import SQLServerConnectionPool  # noqa: E402
 from backend.services.database_health import DatabaseHealthService  # noqa: E402
 from backend.services.error_log import ErrorLogService  # noqa: E402
+from backend.services.erp_sync_service import SQLSyncService  # noqa: E402
 from backend.services.errors import (  # noqa: E402
     AuthenticationError,
     AuthorizationError,
@@ -347,25 +350,35 @@ database_health_service = DatabaseHealthService(
     mongo_client_options=mongo_client_options,
 )
 
-# ERP sync service (full sync) - DISABLED to avoid conflicts with change detection
-# Using ChangeDetectionSyncService instead for better performance
+# ERP sync service (full sync)
 erp_sync_service = None
-# if getattr(settings, 'ERP_SYNC_ENABLED', True):
-#     try:
-#         erp_sync_service = ERPSyncService(
-#             sql_connector=sql_connector,
-#             mongo_db=db,
-#             sync_interval=getattr(settings, 'ERP_SYNC_INTERVAL', 3600),
-#             enabled=True,
-#         )
-#         logging.info("✓ ERP sync service initialized")
-#     except Exception as e:
-#         logging.warning(f"ERP sync service initialization failed: {str(e)}")
+if getattr(settings, "ERP_SYNC_ENABLED", True):
+    try:
+        erp_sync_service = SQLSyncService(
+            sql_connector=sql_connector,
+            mongo_db=db,
+            sync_interval=getattr(settings, "ERP_SYNC_INTERVAL", 3600),
+            enabled=True,
+        )
+        set_erp_sync_service(erp_sync_service)
+        logging.info("✓ ERP sync service initialized")
+    except Exception as e:
+        logging.warning(f"ERP sync service initialization failed: {str(e)}")
 
 # Change detection sync service (syncs item_name, manual_barcode, MRP changes)
-# FULLY DISABLED FOR TESTING
 change_detection_sync = None
-set_change_detection_service(change_detection_sync)
+if getattr(settings, "CHANGE_SYNC_ENABLED", True):
+    try:
+        change_detection_sync = ChangeDetectionSyncService(
+            sql_connector=sql_connector,
+            mongo_db=db,
+            sync_interval=getattr(settings, "CHANGE_SYNC_INTERVAL", 300),
+            enabled=True,
+        )
+        set_change_detection_service(change_detection_sync)
+        logging.info("✓ Change detection sync service initialized")
+    except Exception as e:
+        logging.warning(f"Change detection sync service initialization failed: {str(e)}")
 
 # Auto-sync manager - automatically syncs when SQL Server becomes available
 from backend.services.auto_sync_manager import AutoSyncManager  # noqa: E402
@@ -944,6 +957,8 @@ class CountLineCreate(BaseModel):
     remark: Optional[str] = None
     photo_base64: Optional[str] = None
     mrp_counted: Optional[float] = None
+    category_correction: Optional[str] = None
+    subcategory_correction: Optional[str] = None
     split_section: Optional[str] = None
     serial_numbers: Optional[List[str]] = None
     correction_reason: Optional[CorrectionReason] = None
@@ -1968,17 +1983,9 @@ async def create_count_line(
     # High-risk corrections require supervisor review
     approval_status = "NEEDS_REVIEW" if risk_flags else "PENDING"
 
-    # Check for duplicates
-    duplicate_check = await db.count_lines.count_documents(
-        {
-            "session_id": line_data.session_id,
-            "item_code": line_data.item_code,
-            "counted_by": current_user["username"],
-        }
-    )
-    if duplicate_check > 0:
-        risk_flags.append("DUPLICATE_CORRECTION")
-        approval_status = "NEEDS_REVIEW"
+    # Duplicate check removed to allow multiple scans of the same item in the same session
+    # (e.g. item found in multiple locations within the area)
+    # duplicate_check = await db.count_lines.count_documents(...)
 
     # Create count line with enhanced fields
     count_line = {
@@ -2002,7 +2009,11 @@ async def create_count_line(
         "rack_no": line_data.rack_no,
         "mark_location": line_data.mark_location,
         "sr_no": line_data.sr_no,
+        "serial_numbers": line_data.serial_numbers,
         "manufacturing_date": line_data.manufacturing_date,
+        "mrp_counted": line_data.mrp_counted,
+        "category_correction": line_data.category_correction,
+        "subcategory_correction": line_data.subcategory_correction,
         "correction_reason": (
             line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
@@ -2023,10 +2034,8 @@ async def create_count_line(
         "counted_at": datetime.utcnow(),
         # MRP tracking
         "mrp_erp": erp_item["mrp"],
-        "mrp_counted": line_data.mrp_counted,
         # Additional fields
         "split_section": line_data.split_section,
-        "serial_numbers": line_data.serial_numbers,
         # Legacy approval fields
         "status": "pending",
         "verified": False,

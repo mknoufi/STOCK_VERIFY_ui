@@ -20,6 +20,7 @@ export const SyncStatus = () => {
     lastSync: null,
     pendingOperations: 0,
     errors: [],
+    conflicts: 0,
   });
   const [spinValue] = useState(new Animated.Value(0));
 

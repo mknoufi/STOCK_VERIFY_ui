@@ -15,89 +15,83 @@ TABLE_MAPPINGS = {
 
 # Column mappings for Products table
 PRODUCTS_COLUMN_MAP = {
-    "item_code": "ProductCode",
-    "item_name": "ProductName",
-    "barcode": "ProductCode",  # Default to ProductCode, will be enhanced with ProductBarcodes
+    "item_code": "Mfr ID",
+    "item_name": "Product",
+    "barcode": "Mannual Barcode",  # Default to Mannual Barcode
     "stock_qty": "Stock",
-    "uom_code": "BasicUnitID",
-    "uom_name": "UnitName",  # From UnitOfMeasures join
-    "category": "ProductGroupID",
-    "location": "WarehouseID",
-    "item_id": "ProductID",
+    "uom_code": "Unit",
+    "uom_name": "Unit",
+    "category": "Category",
+    "location": "Department",
+    "item_id": "Si No",
 }
 
 # Column mappings for ProductBatches table
 BATCH_COLUMN_MAP = {
-    "batch_id": "ProductBatchID",
-    "item_code": "ProductID",
-    "batch_no": "BatchNo",
-    "barcode": "MannualBarcode",
-    "auto_barcode": "AutoBarcode",
+    "batch_id": "Si No",
+    "item_code": "Mfr ID",
+    "batch_no": "Batch Criteria",
+    "barcode": "Mannual Barcode",
+    "auto_barcode": "Autobarcode",
     "mfg_date": "MfgDate",
     "expiry_date": "ExpiryDate",
     "stock_qty": "Stock",
     "opening_stock": "OpeningStock",
-    "warehouse_id": "WarehouseID",
+    "warehouse_id": "Department",
     "shelf_id": "ShelfID",
 }
 
 # SQL Query Templates
+# Note: Using bracketed identifiers for columns with spaces as per Excel reference
 SQL_TEMPLATES = {
     "get_item_by_barcode": """
         SELECT DISTINCT
-            P.ProductID as item_id,
-            P.ProductCode as item_code,
-            P.ProductName as item_name,
-            COALESCE(PB.MannualBarcode, P.ProductCode) as barcode,
-            PB.ProductBatchID as batch_id,
-            PB.BatchNo as batch_no,
-            PB.MfgDate as mfg_date,
-            PB.ExpiryDate as expiry_date,
-            PB.Stock as stock_qty,
-            P.BasicUnitID as uom_id,
-            UOM.UnitCode as uom_code,
-            UOM.UnitName as uom_name,
-            W.WarehouseID as warehouse_id,
-            W.WarehouseName as location
+            P.[Si No] as item_id,
+            P.[Mfr ID] as item_code,
+            P.[Product] as item_name,
+            COALESCE(P.[Mannual Barcode], P.[Autobarcode]) as barcode,
+            P.[Si No] as batch_id,
+            P.[Batch Criteria] as batch_no,
+            NULL as mfg_date,
+            NULL as expiry_date,
+            P.[Stock] as stock_qty,
+            P.[Unit] as uom_id,
+            P.[Unit] as uom_code,
+            P.[Unit] as uom_name,
+            P.[Department] as warehouse_id,
+            P.[Department] as location
         FROM dbo.Products P
-        LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-        LEFT JOIN dbo.ProductBarcodes PBC ON PB.ProductBatchID = PBC.ProductBatchID
-        LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
-        LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE PBC.Barcode = %s
-           OR PB.MannualBarcode = %s
-           OR P.ProductCode = %s
-           OR CAST(PB.AutoBarcode AS VARCHAR(50)) = %s
+        WHERE P.[Mannual Barcode] = ?
+           OR P.[Autobarcode] = ?
+           OR P.[Mfr ID] = ?
+           OR P.[PLU Code] = ?
     """,
     "get_item_by_code": """
         SELECT DISTINCT
-            P.ProductID as item_id,
-            P.ProductCode as item_code,
-            P.ProductName as item_name,
-            COALESCE(PB.MannualBarcode, P.ProductCode) as barcode,
-            PB.ProductBatchID as batch_id,
-            PB.BatchNo as batch_no,
-            PB.MfgDate as mfg_date,
-            PB.ExpiryDate as expiry_date,
-            PB.Stock as stock_qty,
-            P.BasicUnitID as uom_id,
-            UOM.UnitCode as uom_code,
-            UOM.UnitName as uom_name,
-            W.WarehouseID as warehouse_id,
-            W.WarehouseName as location
+            P.[Si No] as item_id,
+            P.[Mfr ID] as item_code,
+            P.[Product] as item_name,
+            COALESCE(P.[Mannual Barcode], P.[Autobarcode]) as barcode,
+            P.[Si No] as batch_id,
+            P.[Batch Criteria] as batch_no,
+            NULL as mfg_date,
+            NULL as expiry_date,
+            P.[Stock] as stock_qty,
+            P.[Unit] as uom_id,
+            P.[Unit] as uom_code,
+            P.[Unit] as uom_name,
+            P.[Department] as warehouse_id,
+            P.[Department] as location
         FROM dbo.Products P
-        LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-        LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
-        LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE P.ProductCode = %s
+        WHERE P.[Mfr ID] = ?
     """,
     "get_all_items": """
         SELECT DISTINCT TOP 1000
-            P.ProductID as item_id,
-            P.ProductCode as item_code,
-            P.ProductName as item_name,
-            COALESCE(PB.MannualBarcode, P.ProductCode) as barcode,
-            PB.ProductBatchID as batch_id,
+            P.[Si No] as item_id,
+            P.[Mfr ID] as item_code,
+            P.[Product] as item_name,
+            COALESCE(P.[Mannual Barcode], P.[Autobarcode]) as barcode,
+            P.[Si No] as batch_id,
             PB.BatchNo as batch_no,
             PB.MfgDate as mfg_date,
             PB.ExpiryDate as expiry_date,
@@ -132,12 +126,24 @@ SQL_TEMPLATES = {
             W.WarehouseName as location
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
+        LEFT JOIN dbo.ProductBarcodes PBC ON PB.ProductBatchID = PBC.ProductBatchID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE (P.ProductName LIKE %s
-           OR P.ProductCode LIKE %s
-           OR P.ItemAlias LIKE %s)
+        LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
+        WHERE (P.ProductName LIKE ?
+           OR P.ProductCode LIKE ?
+           OR P.ItemAlias LIKE ?
+           OR PB.MannualBarcode LIKE ?
+           OR PBC.Barcode LIKE ?
+           OR CAST(PB.AutoBarcode AS VARCHAR(50)) LIKE ?
+           OR PG.GroupName LIKE ?)
           AND P.IsActive = 1
+        ORDER BY
+           CASE WHEN P.ProductName LIKE ? THEN 1
+                WHEN P.ProductCode LIKE ? THEN 2
+                WHEN P.ItemAlias LIKE ? THEN 3
+                ELSE 4 END,
+           P.ProductName
     """,
     "get_item_batches": """
         SELECT
@@ -159,7 +165,7 @@ SQL_TEMPLATES = {
         INNER JOIN dbo.Products P ON PB.ProductID = P.ProductID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
         LEFT JOIN dbo.Shelfs S ON PB.ShelfID = S.ShelfID
-        WHERE P.ProductID = %s OR P.ProductCode = %s
+        WHERE P.ProductID = ? OR P.ProductCode = ?
         ORDER BY PB.ExpiryDate, PB.BatchNo
     """,
 }

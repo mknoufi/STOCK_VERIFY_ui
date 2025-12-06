@@ -258,7 +258,7 @@ The frontend automatically discovers the backend server:
 
 #### Frontend Configuration
 
-1. **Environment Variables** (`.env` file in frontend/)
+1. **Environment Variables** (`.env` file in backfron/)
    ```env
    EXPO_PUBLIC_API_URL=http://192.168.1.18:8000
    EXPO_PUBLIC_ENVIRONMENT=development
@@ -266,7 +266,7 @@ The frontend automatically discovers the backend server:
 
 2. **Installation**
    ```bash
-   cd frontend
+   cd backfron
    npm install
    ```
 

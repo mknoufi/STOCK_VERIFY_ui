@@ -50,7 +50,7 @@ class TestSyncEndpoints:
         )
 
         # May fail if SQL Server not connected, which is acceptable
-        assert response.status_code in [200, 400, 500]
+        assert response.status_code in [200, 400, 500, 503]
 
     def test_trigger_change_sync(self, client, supervisor_token):
         """Test triggering change detection sync"""
@@ -62,7 +62,7 @@ class TestSyncEndpoints:
         )
 
         # May fail if SQL Server not connected, which is acceptable
-        assert response.status_code in [200, 400, 500]
+        assert response.status_code in [200, 400, 500, 503]
 
     def test_get_change_sync_stats(self, client, supervisor_token):
         """Test getting change sync statistics"""

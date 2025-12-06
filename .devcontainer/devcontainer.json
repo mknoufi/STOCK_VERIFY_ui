@@ -9,8 +9,10 @@
   },
   "remoteUser": "vscode",
   "postCreateCommand": "pip install pre-commit && pre-commit install || true",
-  "postStartCommand": "cd frontend && npm ci || true",
-  "runArgs": ["--cap-drop=ALL"],
+  "postStartCommand": "cd backfron && npm ci || true",
+  "runArgs": [
+    "--cap-drop=ALL"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -42,7 +44,12 @@
       }
     }
   },
-  "forwardPorts": [8000, 19000, 19001, 19002],
+  "forwardPorts": [
+    8000,
+    19000,
+    19001,
+    19002
+  ],
   "portsAttributes": {
     "8000": {
       "label": "Backend API",

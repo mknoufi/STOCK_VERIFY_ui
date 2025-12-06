@@ -5,6 +5,9 @@ export interface SearchResult {
   name: string;
   item_name?: string;
   barcode?: string;
+  manual_barcode?: string;
+  auto_barcode?: string;
+  plu_code?: string;
   mrp?: number;
   stock_qty?: number;
   category?: string;

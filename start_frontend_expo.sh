@@ -5,7 +5,7 @@
 cd "$(dirname "$0")"
 
 # Navigate to frontend
-cd frontend || exit
+cd backfron || exit
 
 echo "📱 Starting Frontend Development Server..."
 

@@ -220,7 +220,7 @@ npm install --save-dev eslint@8.57.1
 
 **Steps:**
 1. Run backend type checking: `cd backend && mypy . --config-file=../pyproject.toml`
-2. Run frontend type checking: `cd frontend && npm run typecheck`
+2. Run frontend type checking: `cd backfron && npm run typecheck`
 3. Check for any remaining import errors
 4. Fix any circular dependencies
 
@@ -256,7 +256,7 @@ pytest tests/ -v --tb=short
 **Estimated Time:** 3 minutes
 
 ```bash
-cd frontend
+cd backfron
 npm run typecheck
 ```
 
@@ -268,7 +268,7 @@ npm run typecheck
 **Estimated Time:** 3 minutes
 
 ```bash
-cd frontend
+cd backfron
 npm run lint
 ```
 
@@ -283,7 +283,7 @@ npm run lint
 1. Start MongoDB (if not running): `brew services start mongodb-community`
 2. Start backend: `cd backend && uvicorn backend.server:app --host 0.0.0.0 --port 8000 --reload`
 3. Verify backend health: `curl http://localhost:8000/api/health`
-4. Start frontend: `cd frontend && npm start`
+4. Start frontend: `cd backfron && npm start`
 5. Verify frontend loads without errors
 
 ---

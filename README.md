@@ -25,7 +25,7 @@ python -m uvicorn backend.server:app --host 0.0.0.0 --port 8000 --reload
 ### 2. Frontend
 
 ```bash
-cd frontend
+cd backfron
 # Install dependencies
 npm install
 # Start Expo (Port 8081)

@@ -10,6 +10,7 @@ import {
   Platform,
   KeyboardAvoidingView,
   ScrollView,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,12 +30,22 @@ import {
   modernBorderRadius,
 } from "../../src/styles/modernDesignSystem";
 
+const FLOOR_OPTIONS = [
+  "Ground Floor",
+  "1st Floor",
+  "2nd Floor",
+  "Top Godown",
+  "Back Godown",
+  "Damage Area",
+];
+
 export default function StaffHome() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
 
   // State for new session
   const [floorName, setFloorName] = useState("");
+  const [showFloorPicker, setShowFloorPicker] = useState(false);
   const [rackName, setRackName] = useState("");
   const [currentPage] = useState(1);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
@@ -80,7 +91,8 @@ export default function StaffHome() {
 
     try {
       setIsCreatingSession(true);
-      const session = await createSession(validation.value);
+      // Pass floor and rack separately along with the combined warehouse name
+      const session = await createSession(validation.value, floorName, rackName);
       setFloorName("");
       setRackName("");
       await refetch();
@@ -170,13 +182,17 @@ export default function StaffHome() {
             >
               <View style={styles.inputRow}>
                 <View style={styles.inputWrapper}>
-                  <PremiumInput
-                    label="Floor No."
-                    placeholder="e.g. 1, G"
-                    value={floorName}
-                    onChangeText={setFloorName}
-                    autoCapitalize="characters"
-                  />
+                  <TouchableOpacity onPress={() => setShowFloorPicker(true)}>
+                    <View pointerEvents="none">
+                      <PremiumInput
+                        label="Floor No."
+                        placeholder="Select Floor"
+                        value={floorName}
+                        editable={false}
+                        rightIcon="chevron-down"
+                      />
+                    </View>
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.inputWrapper}>
                   <PremiumInput
@@ -223,6 +239,47 @@ export default function StaffHome() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={showFloorPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFloorPicker(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowFloorPicker(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Floor</Text>
+            <View style={styles.floorGrid}>
+              {FLOOR_OPTIONS.map((floor) => (
+                <TouchableOpacity
+                  key={floor}
+                  style={[
+                    styles.floorOption,
+                    floorName === floor && styles.floorOptionSelected,
+                  ]}
+                  onPress={() => {
+                    setFloorName(floor);
+                    setShowFloorPicker(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.floorOptionText,
+                      floorName === floor && styles.floorOptionTextSelected,
+                    ]}
+                  >
+                    {floor}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -339,5 +396,57 @@ const styles = StyleSheet.create({
     color: modernColors.text.secondary,
     textAlign: "center",
     marginTop: modernSpacing.xl,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: modernSpacing.lg,
+  },
+  modalContent: {
+    backgroundColor: modernColors.background.paper,
+    borderRadius: modernBorderRadius.lg,
+    padding: modernSpacing.lg,
+    width: "100%",
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: modernColors.border.light,
+  },
+  modalTitle: {
+    ...modernTypography.h4,
+    color: modernColors.text.primary,
+    marginBottom: modernSpacing.lg,
+    textAlign: "center",
+  },
+  floorGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: modernSpacing.md,
+    justifyContent: "space-between",
+  },
+  floorOption: {
+    width: "48%", // 2 columns with gap
+    paddingVertical: modernSpacing.md,
+    paddingHorizontal: modernSpacing.sm,
+    borderRadius: modernBorderRadius.md,
+    backgroundColor: modernColors.background.default,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: modernColors.border.light,
+  },
+  floorOptionSelected: {
+    backgroundColor: modernColors.primary[500],
+    borderColor: modernColors.primary[600],
+  },
+  floorOptionText: {
+    ...modernTypography.body.medium,
+    fontWeight: "600",
+    color: modernColors.text.primary,
+    textAlign: "center",
+  },
+  floorOptionTextSelected: {
+    color: "#FFFFFF",
   },
 });

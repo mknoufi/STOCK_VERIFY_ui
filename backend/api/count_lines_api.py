@@ -145,17 +145,9 @@ async def create_count_line(
     # High-risk corrections require supervisor review
     approval_status = "NEEDS_REVIEW" if risk_flags else "PENDING"
 
-    # Check for duplicates
-    duplicate_check = await db.count_lines.count_documents(
-        {
-            "session_id": line_data.session_id,
-            "item_code": line_data.item_code,
-            "counted_by": current_user["username"],
-        }
-    )
-    if duplicate_check > 0:
-        risk_flags.append("DUPLICATE_CORRECTION")
-        approval_status = "NEEDS_REVIEW"
+    # Duplicate check removed to allow multiple scans of the same item in the same session
+    # (e.g. item found in multiple locations within the area)
+    # duplicate_check = await db.count_lines.count_documents(...)
 
     # Create count line with enhanced fields
     count_line = {
@@ -174,12 +166,15 @@ async def create_count_line(
         "photo_base64": line_data.photo_base64,
         # Enhanced fields
         "damaged_qty": line_data.damaged_qty,
+        "damage_included": getattr(line_data, "damage_included", None),
         "item_condition": line_data.item_condition,
         "floor_no": line_data.floor_no,
         "rack_no": line_data.rack_no,
         "mark_location": line_data.mark_location,
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
+        "category_correction": getattr(line_data, "category_correction", None),
+        "subcategory_correction": getattr(line_data, "subcategory_correction", None),
         "correction_reason": (
             line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),

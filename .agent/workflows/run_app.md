@@ -44,7 +44,7 @@ python -m backend.server
 ### 2. Start Frontend (Expo)
 
 ```bash
-cd frontend
+cd backfron
 npx expo start --clear
 ```
 

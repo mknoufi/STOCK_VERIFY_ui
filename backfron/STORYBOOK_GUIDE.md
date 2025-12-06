@@ -9,7 +9,7 @@ Storybook has been successfully installed and configured for your STOCK_VERIFY p
 ### Start Storybook
 
 ```bash
-cd frontend
+cd backfron
 npm run storybook
 ```
 

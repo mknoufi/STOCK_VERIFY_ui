@@ -18,7 +18,7 @@
       "edgeToEdgeEnabled": true
     },
     "androidStatusBar": {
-      "backgroundColor": "#000000"
+      "backgroundColor": "#000"
     },
     "web": {
       "bundler": "metro"

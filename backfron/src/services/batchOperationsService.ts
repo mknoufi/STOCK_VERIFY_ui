@@ -4,6 +4,7 @@
  */
 
 import { createCountLine } from "./api/api";
+import { useAuthStore } from "../store/authStore";
 import { BatchProcessor } from "./monitoring/performanceService";
 import { handleErrorWithRecovery } from "./utils/errorRecovery";
 import apiClient from "./httpClient";
@@ -67,14 +68,20 @@ export class BatchOperationsService {
             try {
               await handleErrorWithRecovery(
                 () =>
-                  createCountLine({
-                    session_id: operation.session_id,
-                    item_code: item.item_code,
-                    counted_qty: item.counted_qty,
-                    variance_reason: item.variance_reason || null,
-                    variance_note: item.variance_note || null,
-                    remark: item.remark || null,
-                  }),
+                  createCountLine(
+                    {
+                      session_id: operation.session_id,
+                      item_code: item.item_code,
+                      counted_qty: item.counted_qty,
+                      variance_reason: item.variance_reason || null,
+                      variance_note: item.variance_note || null,
+                      remark: item.remark || null,
+                    },
+                    {
+                      itemName: "Batch Item",
+                      username: "Batch User",
+                    }
+                  ),
                 {
                   context: "Batch Count",
                   recovery: { maxRetries: 2 },

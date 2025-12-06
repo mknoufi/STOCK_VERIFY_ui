@@ -1,4 +1,4 @@
-FROM mongo:7
+FROM mongo:8.0
 
 # Install cron
 RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*

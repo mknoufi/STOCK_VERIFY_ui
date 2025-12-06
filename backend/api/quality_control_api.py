@@ -227,14 +227,12 @@ async def create_expiry_alert(
 
         expiry_date = datetime.fromisoformat(request.expiry_date.replace("Z", "+00:00"))
 
-        alert_data = {
-            "item_code": request.item_code,
-            "batch_number": request.batch_number,
-            "expiry_date": expiry_date,
-            "alert_type": request.alert_type,
-        }
-
-        alert = ExpiryAlert(**alert_data)
+        alert = ExpiryAlert(
+            item_code=request.item_code,
+            batch_number=request.batch_number,
+            expiry_date=expiry_date,
+            alert_type=request.alert_type,
+        )
         alert_id = await service.create_expiry_alert(alert)
 
         return {"alert_id": alert_id, "message": "Expiry alert created successfully"}

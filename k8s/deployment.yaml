@@ -59,6 +59,9 @@ spec:
           image: ghcr.io/mknoufi/stock_verify_ui:latest-frontend
           ports:
             - containerPort: 80
+          env:
+            - name: BACKEND_HOST
+              value: "stock-verify-backend"
           resources:
             requests:
               memory: "128Mi"

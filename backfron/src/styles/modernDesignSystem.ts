@@ -145,6 +145,44 @@ export const modernColors = {
     error: ["#EF4444", "#DC2626"] as const,
     glass: ["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.05)"] as const,
   },
+
+  // Opacity Scales (for layering and depth)
+  opacity: {
+    0: 0,
+    5: 0.05,
+    10: 0.1,
+    20: 0.2,
+    30: 0.3,
+    40: 0.4,
+    50: 0.5,
+    60: 0.6,
+    70: 0.7,
+    80: 0.8,
+    90: 0.9,
+    95: 0.95,
+    100: 1,
+  },
+
+  // Interactive State Colors
+  states: {
+    hover: {
+      primary: "#60A5FA", // Blue 400
+      secondary: "#34D399", // Emerald 400
+      accent: "#A78BFA", // Purple 400
+      surface: "#475569", // Slate 600
+    },
+    pressed: {
+      primary: "#1D4ED8", // Blue 700
+      secondary: "#047857", // Emerald 700
+      accent: "#6D28D9", // Purple 700
+      surface: "#334155", // Slate 700
+    },
+    disabled: {
+      background: "#1E293B", // Slate 800
+      text: "#475569", // Slate 600
+      border: "#334155", // Slate 700
+    },
+  },
 };
 
 // ==========================================
@@ -420,6 +458,39 @@ export const modernShadows = {
     shadowRadius: 8,
     elevation: 4,
   },
+
+  error: {
+    shadowColor: modernColors.error.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  // Glow effects (for focus states)
+  glow: {
+    primary: {
+      shadowColor: modernColors.primary[500],
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+    success: {
+      shadowColor: modernColors.success.main,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+    error: {
+      shadowColor: modernColors.error.main,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+  },
 };
 
 // ==========================================
@@ -434,6 +505,7 @@ export const modernAnimations = {
     normal: 300,
     slow: 500,
     slower: 700,
+    slowest: 1000,
   },
 
   // Easing functions
@@ -448,6 +520,16 @@ export const modernAnimations = {
       stiffness: 300,
       mass: 1,
     },
+    springBouncy: {
+      damping: 10,
+      stiffness: 200,
+      mass: 0.8,
+    },
+    springGentle: {
+      damping: 20,
+      stiffness: 150,
+      mass: 1,
+    },
   },
 
   // Common animation values
@@ -455,12 +537,50 @@ export const modernAnimations = {
     pressed: 0.95,
     hover: 1.02,
     focus: 1.05,
+    active: 0.98,
   },
 
   opacity: {
     disabled: 0.5,
     hover: 0.9,
     pressed: 0.8,
+    inactive: 0.6,
+  },
+
+  // Gesture animations
+  gesture: {
+    swipeThreshold: 50,
+    swipeVelocity: 500,
+    dragResistance: 0.5,
+  },
+
+  // Transition presets
+  transitions: {
+    fadeIn: {
+      duration: 300,
+      from: { opacity: 0 },
+      to: { opacity: 1 },
+    },
+    fadeOut: {
+      duration: 200,
+      from: { opacity: 1 },
+      to: { opacity: 0 },
+    },
+    slideUp: {
+      duration: 300,
+      from: { translateY: 20, opacity: 0 },
+      to: { translateY: 0, opacity: 1 },
+    },
+    slideDown: {
+      duration: 300,
+      from: { translateY: -20, opacity: 0 },
+      to: { translateY: 0, opacity: 1 },
+    },
+    scaleIn: {
+      duration: 300,
+      from: { scale: 0.9, opacity: 0 },
+      to: { scale: 1, opacity: 1 },
+    },
   },
 };
 
@@ -488,6 +608,28 @@ export const glassmorphism = {
     borderColor: "rgba(255, 255, 255, 0.1)",
     borderWidth: 1,
     backdropFilter: "blur(20px)",
+  },
+
+  // Enhanced variants with glow
+  glowPrimary: {
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
+    borderColor: "rgba(59, 130, 246, 0.3)",
+    borderWidth: 1,
+    backdropFilter: "blur(15px)",
+  },
+
+  glowSuccess: {
+    backgroundColor: "rgba(16, 185, 129, 0.1)",
+    borderColor: "rgba(16, 185, 129, 0.3)",
+    borderWidth: 1,
+    backdropFilter: "blur(15px)",
+  },
+
+  glowError: {
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    borderColor: "rgba(239, 68, 68, 0.3)",
+    borderWidth: 1,
+    backdropFilter: "blur(15px)",
   },
 };
 

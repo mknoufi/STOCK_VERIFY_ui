@@ -1,79 +1,163 @@
 #!/bin/bash
 
-# Colors for output
+# 🚀 STOCK VERIFICATION SYSTEM - COMPLETE STARTUP
+# =================================================
+# Starts all components of the Stock Verification System
+# - Enhanced Admin Panel (Port 3000)
+# - Backend API (Port 8001)
+# - Frontend Development Server (Port 8081)
+
+echo "🚀 STOCK VERIFICATION SYSTEM - COMPLETE STARTUP"
+echo "================================================="
+echo ""
+
+# Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKEND_PORT=8001
-FRONTEND_PORTS=(8081 19000 19001 19002 19006)
-
-echo -e "${GREEN}🚀 Starting Stock Verify Application...${NC}"
-
-# Function to check and kill process on port
-check_and_kill_port() {
+# Function to check if a port is in use
+check_port() {
     local port=$1
-    local pid=$(lsof -ti :$port 2>/dev/null)
-
-    if [ ! -z "$pid" ]; then
-        echo -e "${YELLOW}⚠️  Port $port is busy (PID: $pid)${NC}"
-        read -p "Kill process on port $port? (y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            kill -9 $pid 2>/dev/null
-            sleep 1
-            echo -e "${GREEN}✅ Process killed on port $port${NC}"
-            return 0
-        else
-            echo -e "${RED}❌ Port $port is still busy. Exiting...${NC}"
-            return 1
-        fi
+    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+        return 0  # Port is in use
+    else
+        return 1  # Port is free
     fi
-    return 0
 }
 
-# Check backend port
-if ! check_and_kill_port $BACKEND_PORT; then
-    exit 1
+# Function to kill process on port
+kill_port() {
+    local port=$1
+    local pid=$(lsof -ti:$port 2>/dev/null)
+    if [ ! -z "$pid" ]; then
+        echo -e "${YELLOW}🔧 Stopping existing service on port $port (PID: $pid)${NC}"
+        kill $pid 2>/dev/null
+        sleep 2
+    fi
+}
+
+# Check and prepare environment
+echo -e "${BLUE}🔍 Checking environment...${NC}"
+
+# Check Python virtual environment
+if [ ! -f ".venv/bin/python" ]; then
+    echo -e "${RED}❌ Python virtual environment not found${NC}"
+    echo -e "${YELLOW}💡 Creating virtual environment...${NC}"
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.production.txt
+else
+    echo -e "${GREEN}✅ Python virtual environment found${NC}"
 fi
 
-# Check frontend ports
-for port in "${FRONTEND_PORTS[@]}"; do
-    if ! check_and_kill_port $port; then
+# Check MongoDB
+echo -e "${BLUE}🍃 Checking MongoDB...${NC}"
+if pgrep mongod > /dev/null; then
+    echo -e "${GREEN}✅ MongoDB is running${NC}"
+else
+    echo -e "${YELLOW}⚠️  MongoDB not detected - attempting to start...${NC}"
+    # Try to start MongoDB
+    if command -v brew &> /dev/null && brew services list | grep mongodb &> /dev/null; then
+        brew services start mongodb-community
+        sleep 3
+    elif command -v mongod &> /dev/null; then
+        mongod --fork --logpath /tmp/mongod.log --dbpath /usr/local/var/mongodb
+        sleep 3
+    else
+        echo -e "${RED}❌ MongoDB not found - please install and start MongoDB${NC}"
         exit 1
     fi
-done
+fi
 
-# Kill any existing processes
-echo -e "${YELLOW}🧹 Cleaning up existing processes...${NC}"
-pkill -f "uvicorn.*backend.server" 2>/dev/null
-pkill -f "expo\|metro" 2>/dev/null
+# Clean up existing processes on our ports
+echo -e "${BLUE}🧹 Cleaning up existing processes...${NC}"
+chmod +x ensure_ports_free.sh
+./ensure_ports_free.sh
+
+# Wait for ports to be free
 sleep 2
 
-# Start Backend in new Terminal window
-echo -e "${GREEN}📦 Starting Backend Server...${NC}"
-osascript <<EOF
-tell application "Terminal"
-    activate
-    set backendWindow to do script "cd '$SCRIPT_DIR/backend' && export PYTHONPATH='$SCRIPT_DIR' && echo '🚀 Backend Server (Port $BACKEND_PORT)' && echo '📍 API: http://localhost:$BACKEND_PORT' && echo 'Press Ctrl+C to stop' && echo '' && uvicorn backend.server:app --host 0.0.0.0 --port $BACKEND_PORT --reload"
-    set custom title of backendWindow to "Backend Server"
-end tell
-EOF
+# Create log directory
+mkdir -p logs
 
-# Wait a moment for backend to start
+echo ""
+echo -e "${PURPLE}🎯 Starting all services...${NC}"
+echo ""
+
+# 1. Start Enhanced Admin Panel (Port 3000)
+echo -e "${CYAN}📊 Starting Enhanced Admin Panel...${NC}"
+cd admin-panel
+chmod +x ../start_admin.sh
+nohup ../start_admin.sh > ../logs/admin-panel.log 2>&1 &
+ADMIN_PID=$!
+echo -e "${GREEN}✅ Admin Panel started (PID: $ADMIN_PID)${NC}"
+echo -e "${BLUE}   📊 Dashboard: http://localhost:3000/dashboard.html${NC}"
+echo -e "${BLUE}   🔧 Legacy: http://localhost:3000/index.html${NC}"
+cd ..
+
 sleep 3
 
-# Start Frontend in new Terminal window
-echo -e "${GREEN}📱 Starting Frontend Server...${NC}"
-osascript <<EOF
-tell application "Terminal"
-    activate
-    set frontendWindow to do script "cd '$SCRIPT_DIR/frontend' && echo '🚀 Frontend Server (Expo)' && echo 'Press Ctrl+C to stop' && echo '' && npm start"
-    set custom title of frontendWindow to "Frontend Server"
-end tell
-EOF
+# 2. Start Backend API (Port 8001)
+echo -e "${CYAN}🔧 Starting Backend API...${NC}"
+chmod +x start_backend_venv.sh
+nohup ./start_backend_venv.sh > logs/backend.log 2>&1 &
+BACKEND_PID=$!
+echo -e "${GREEN}✅ Backend API started (PID: $BACKEND_PID)${NC}"
+echo -e "${BLUE}   🌐 API: http://localhost:8001${NC}"
+echo -e "${BLUE}   📚 Docs: http://localhost:8001/docs${NC}"
 
-echo -e "${GREEN}✅ Both servers started in separate Terminal windows!${NC}"
-echo -e "${YELLOW}💡 To stop servers, run: ./stop.sh${NC}"
+sleep 5
+
+# 3. Start Frontend Development Server (Port 8081)
+echo -e "${CYAN}📱 Starting Frontend Development Server...${NC}"
+chmod +x start_frontend_expo.sh
+nohup ./start_frontend_expo.sh > logs/frontend.log 2>&1 &
+FRONTEND_PID=$!
+echo -e "${GREEN}✅ Frontend started (PID: $FRONTEND_PID)${NC}"
+echo -e "${BLUE}   📱 Frontend: http://localhost:8081${NC}"
+
+# Save PIDs for cleanup
+echo "$ADMIN_PID" > logs/admin.pid
+echo "$BACKEND_PID" > logs/backend.pid
+echo "$FRONTEND_PID" > logs/frontend.pid
+
+sleep 3
+
+echo ""
+echo -e "${GREEN}🎉 STOCK VERIFICATION SYSTEM STARTED SUCCESSFULLY!${NC}"
+echo -e "${GREEN}===================================================${NC}"
+echo ""
+echo -e "${PURPLE}🔗 SERVICE URLS:${NC}"
+echo -e "${CYAN}📊 Enhanced Admin Dashboard: http://localhost:3000/dashboard.html${NC}"
+echo -e "${CYAN}🔧 Legacy Admin Panel:      http://localhost:3000/index.html${NC}"
+echo -e "${CYAN}🌐 Backend API:             http://localhost:8001${NC}"
+echo -e "${CYAN}📚 API Documentation:       http://localhost:8001/docs${NC}"
+echo -e "${CYAN}📱 Frontend Web:            http://localhost:8081${NC}"
+echo ""
+echo -e "${PURPLE}📋 SERVICE STATUS:${NC}"
+echo -e "${GREEN}✅ Enhanced Admin Panel (PID: $ADMIN_PID)${NC}"
+echo -e "${GREEN}✅ Backend API Server (PID: $BACKEND_PID)${NC}"
+echo -e "${GREEN}✅ Frontend Dev Server (PID: $FRONTEND_PID)${NC}"
+echo ""
+echo -e "${YELLOW}📝 LOGS:${NC}"
+echo -e "${BLUE}   Admin Panel: tail -f logs/admin-panel.log${NC}"
+echo -e "${BLUE}   Backend API: tail -f logs/backend.log${NC}"
+echo -e "${BLUE}   Frontend:    tail -f logs/frontend.log${NC}"
+echo ""
+echo -e "${YELLOW}🛑 TO STOP ALL SERVICES:${NC}"
+echo -e "${BLUE}   ./stop_all_services.sh${NC}"
+echo -e "${BLUE}   OR: kill $ADMIN_PID $BACKEND_PID $FRONTEND_PID${NC}"
+echo ""
+echo -e "${PURPLE}🎯 Press Ctrl+C to stop all services${NC}"
+
+# Wait for interrupt
+trap 'echo -e "\n${YELLOW}🛑 Stopping all services...${NC}"; kill $ADMIN_PID $BACKEND_PID $FRONTEND_PID 2>/dev/null; rm -f logs/*.pid; echo -e "${GREEN}✅ All services stopped${NC}"; exit 0' INT
+
+# Keep script running
+echo -e "${BLUE}⏳ System running... (Press Ctrl+C to stop all services)${NC}"
+wait

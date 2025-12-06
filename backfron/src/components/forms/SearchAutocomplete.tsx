@@ -20,7 +20,6 @@ import {
   searchItems,
   SearchResult,
 } from "../../services/enhancedSearchService";
-import { useStableDebouncedCallback } from "../../hooks/useDebouncedCallback";
 
 interface SearchAutocompleteProps {
   onSelectItem: (item: SearchResult) => void;
@@ -75,12 +74,14 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
     [minChars],
   );
 
-  // Debounced search using stable hook
-  const debouncedSearch = useStableDebouncedCallback(performSearch, 300);
-
+  // Debounced search using standard useEffect
   useEffect(() => {
-    debouncedSearch(query);
-  }, [query, debouncedSearch]);
+    const timer = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query, performSearch]);
 
   const handleQueryChange = (text: string) => {
     setQuery(text);
@@ -275,6 +276,59 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                     {item.barcode}
                   </Text>
                 </View>
+              </>
+            )}
+            {item.manual_barcode && (
+              <>
+                <Text
+                  style={[styles.metaDivider, { color: theme.colors.border }]}
+                >
+                  |
+                </Text>
+                <Text
+                  style={[
+                    styles.metaText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  M: {item.manual_barcode}
+                </Text>
+              </>
+            )}
+            {item.auto_barcode &&
+             item.auto_barcode.length === 6 &&
+             (item.auto_barcode.startsWith('51') || item.auto_barcode.startsWith('52') || item.auto_barcode.startsWith('53')) && (
+              <>
+                <Text
+                  style={[styles.metaDivider, { color: theme.colors.border }]}
+                >
+                  |
+                </Text>
+                <Text
+                  style={[
+                    styles.metaText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  A: {item.auto_barcode}
+                </Text>
+              </>
+            )}
+            {item.plu_code && (
+              <>
+                <Text
+                  style={[styles.metaDivider, { color: theme.colors.border }]}
+                >
+                  |
+                </Text>
+                <Text
+                  style={[
+                    styles.metaText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  PLU: {item.plu_code}
+                </Text>
               </>
             )}
             {item.category && (

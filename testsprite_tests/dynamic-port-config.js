@@ -67,7 +67,7 @@ async function detectFrontendPort() {
     // If detected port is Metro (8081), prefer web port for TestSprite
     if (detectedPort === 8081) {
       console.log('⚠️  Metro port detected (8081), but TestSprite needs web port');
-      console.log('💡 Start Expo web server: cd frontend && npm run web');
+      console.log('💡 Start Expo web server: cd backfron && npm run web');
       return 19006; // Default to web port for TestSprite
     }
 

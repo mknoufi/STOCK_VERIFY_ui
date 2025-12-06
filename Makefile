@@ -33,7 +33,7 @@ python-format:
 
 python-typecheck:
 	@echo "Running Python type checker..."
-	cd backend && mypy . --ignore-missing-imports --python-version=3.10 || true
+	mypy backend --ignore-missing-imports --python-version=3.10 || true
 
 # Node.js frontend targets
 .PHONY: node-ci node-test node-lint node-typecheck
@@ -42,15 +42,15 @@ node-ci: node-lint node-typecheck node-test
 
 node-test:
 	@echo "Running Node.js tests..."
-	cd frontend && npm test || true
+	cd backfron && npm test || true
 
 node-lint:
 	@echo "Running Node.js linter..."
-	cd frontend && npm run lint
+	cd backfron && npm run lint
 
 node-typecheck:
 	@echo "Running TypeScript type checker..."
-	cd frontend && npm run typecheck
+	cd backfron && npm run typecheck
 
 # Combined targets
 ci: python-ci node-ci
@@ -75,7 +75,7 @@ install:
 	pip install -r backend/requirements.txt
 	pip install pre-commit black ruff mypy pytest pytest-cov
 	@echo "Installing Node.js dependencies..."
-	cd frontend && npm ci
+	cd backfron && npm ci
 	@echo "Installing pre-commit hooks..."
 	pre-commit install
 

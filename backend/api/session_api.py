@@ -49,6 +49,8 @@ async def create_session(
 
     session = Session(
         warehouse=warehouse,
+        floor=session_data.floor,
+        rack=session_data.rack,
         staff_user=current_user["username"],
         staff_name=current_user["full_name"],
     )
@@ -61,7 +63,11 @@ async def create_session(
         action="create_session",
         entity_type="session",
         entity_id=session.id,
-        details={"warehouse": session_data.warehouse},
+        details={
+            "warehouse": session_data.warehouse,
+            "floor": session_data.floor,
+            "rack": session_data.rack,
+        },
         ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent") if request else None,
     )

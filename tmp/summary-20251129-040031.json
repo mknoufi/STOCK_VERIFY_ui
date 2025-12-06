@@ -1,4 +1,0 @@
-{
-  "summary": "User shared the GitHub Actions CI badge link, but no new runtime logs were provided; reiterated need for concrete error output to debug frontend/backend runtime issues.",
-  "current_status": "Awaiting detailed Expo Go and backend error traces; no code changes or tests run yet."
-}

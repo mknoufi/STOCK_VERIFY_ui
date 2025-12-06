@@ -22,7 +22,7 @@ async def test_creds():
 
         print(f"Testing {url}...")
         try:
-            client = AsyncIOMotorClient(url, serverSelectionTimeoutMS=2000)
+            client: AsyncIOMotorClient = AsyncIOMotorClient(url, serverSelectionTimeoutMS=2000)
             db = client["stock_verification"]
             # Try to find one user
             await db.users.find_one({})

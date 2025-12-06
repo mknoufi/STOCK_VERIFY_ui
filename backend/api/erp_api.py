@@ -40,7 +40,17 @@ async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_cur
         return ERPItem(**cached_item)
 
     # Fallback to MongoDB
-    item = await _db.erp_items.find_one({"barcode": barcode})
+    # Search in multiple barcode fields (Manual -> Auto -> PLU -> Barcode)
+    item = await _db.erp_items.find_one(
+        {
+            "$or": [
+                {"barcode": barcode},
+                {"manual_barcode": barcode},
+                {"auto_barcode": barcode},
+                {"plu_code": barcode},
+            ]
+        }
+    )
     if not item:
         error = get_error_message("DB_ITEM_NOT_FOUND", {"barcode": barcode})
         logger.warning(f"Item not found in MongoDB: barcode={barcode}")
@@ -111,6 +121,8 @@ async def get_all_items(
                     {"item_code": {"$regex": search_term, "$options": "i"}},
                     {"barcode": {"$regex": search_term, "$options": "i"}},
                     {"manual_barcode": {"$regex": search_term, "$options": "i"}},
+                    {"auto_barcode": {"$regex": search_term, "$options": "i"}},
+                    {"plu_code": {"$regex": search_term, "$options": "i"}},
                 ]
             }
         )
@@ -121,6 +133,8 @@ async def get_all_items(
                     {"item_code": {"$regex": search_term, "$options": "i"}},
                     {"barcode": {"$regex": search_term, "$options": "i"}},
                     {"manual_barcode": {"$regex": search_term, "$options": "i"}},
+                    {"auto_barcode": {"$regex": search_term, "$options": "i"}},
+                    {"plu_code": {"$regex": search_term, "$options": "i"}},
                 ]
             }
         )

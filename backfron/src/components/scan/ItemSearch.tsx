@@ -58,9 +58,24 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
   onSearchResultSelect,
   onActivityReset,
 }) => {
+  const getStatusColor = (item: any) => {
+    if (item.previous_count) return modernColors.success.main;
+    if ((item.stock_qty || item.current_stock || 0) > 0)
+      return modernColors.warning.main;
+    return modernColors.error.main;
+  };
+
   return (
     <View style={styles.manualEntryContainer}>
-      <Text style={styles.manualEntryTitle}>Scan or Search Item</Text>
+      {/* Full Width Scan Button */}
+      {onScan && (
+        <TouchableOpacity style={styles.fullWidthScanButton} onPress={onScan}>
+          <Ionicons name="scan-circle" size={28} color="#fff" />
+          <Text style={styles.fullWidthScanButtonText}>Scan Barcode</Text>
+        </TouchableOpacity>
+      )}
+
+      <Text style={styles.manualEntryTitle}>Manual Entry or Search</Text>
 
       {/* Barcode Input */}
       <View style={styles.inputGroup}>
@@ -70,34 +85,23 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             size={20}
             color={modernColors.primary[500]}
           />
-          <Text style={styles.inputLabel}>Scan Barcode</Text>
+          <Text style={styles.inputLabel}>Enter Barcode</Text>
         </View>
         <View style={styles.combinedInputContainer}>
           <TextInput
             style={styles.manualInput}
-            placeholder="Enter barcode"
+            placeholder="Enter barcode manually"
             placeholderTextColor={modernColors.text.disabled}
             value={manualBarcode}
             onChangeText={(text) => {
               onActivityReset?.();
               onBarcodeChange(text);
-              if (text.length === 6) {
-                onBarcodeSubmit();
-              }
             }}
             keyboardType="numeric"
             returnKeyType="done"
             onSubmitEditing={onBarcodeSubmit}
           />
-          {onScan && (
-            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
-              <Ionicons
-                name="scan-outline"
-                size={20}
-                color={modernColors.text.primary}
-              />
-            </TouchableOpacity>
-          )}
+
           <TouchableOpacity
             style={[
               styles.searchButton,
@@ -194,7 +198,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             {searchResults.map((item, index) => (
               <TouchableOpacity
                 key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
-                style={styles.searchResultItem}
+                style={[
+                  styles.searchResultItem,
+                  { borderLeftColor: getStatusColor(item), borderLeftWidth: 4 },
+                ]}
                 onPress={() => onSearchResultSelect(item)}
               >
                 <View style={styles.searchResultContent}>
@@ -209,9 +216,16 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
                       Barcode: {item.barcode}
                     </Text>
                   )}
-                  <Text style={styles.searchResultStock}>
-                    Stock: {item.stock_qty || item.current_stock || 0}
-                  </Text>
+                  <View style={styles.stockRow}>
+                    <Text style={styles.searchResultStock}>
+                      System: {item.stock_qty || item.current_stock || 0}
+                    </Text>
+                    {item.previous_count && (
+                      <Text style={styles.previousCount}>
+                        Prev: {item.previous_count.counted_qty}
+                      </Text>
+                    )}
+                  </View>
                 </View>
                 <Ionicons
                   name="chevron-forward"
@@ -386,5 +400,33 @@ const styles = StyleSheet.create({
   searchingText: {
     ...modernTypography.body.large,
     color: modernColors.text.secondary,
+  },
+  fullWidthScanButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: modernColors.primary[500],
+    paddingVertical: modernSpacing.md,
+    paddingHorizontal: modernSpacing.lg,
+    borderRadius: modernBorderRadius.lg,
+    marginBottom: modernSpacing.xl,
+    gap: modernSpacing.sm,
+    ...modernShadows.md,
+  },
+  fullWidthScanButtonText: {
+    ...modernTypography.h5,
+    color: "#fff",
+    fontWeight: "600",
+  },
+  stockRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: modernSpacing.md,
+    marginTop: 4,
+  },
+  previousCount: {
+    ...modernTypography.label.medium,
+    color: modernColors.text.secondary,
+    fontWeight: "500",
   },
 });

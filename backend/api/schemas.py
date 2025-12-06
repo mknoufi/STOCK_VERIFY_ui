@@ -40,6 +40,8 @@ class ERPItem(BaseModel):
     verified_at: Optional[datetime] = None
     last_scanned_at: Optional[datetime] = None
     manual_barcode: Optional[str] = None
+    auto_barcode: Optional[str] = None
+    plu_code: Optional[str] = None
 
 
 class UserInfo(BaseModel):
@@ -111,11 +113,16 @@ class CountLineCreate(BaseModel):
     correction_reason: Optional[CorrectionReason] = None
     photo_proofs: Optional[List[PhotoProof]] = None
     correction_metadata: Optional[CorrectionMetadata] = None
+    category_correction: Optional[str] = None
+    subcategory_correction: Optional[str] = None
+    damage_included: Optional[bool] = True
 
 
 class Session(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     warehouse: str
+    floor: Optional[str] = None
+    rack: Optional[str] = None
     staff_user: str
     staff_name: str
     status: str = "OPEN"  # OPEN, RECONCILE, CLOSED
@@ -127,6 +134,8 @@ class Session(BaseModel):
 
 class SessionCreate(BaseModel):
     warehouse: str
+    floor: Optional[str] = None
+    rack: Optional[str] = None
 
 
 class UnknownItem(BaseModel):

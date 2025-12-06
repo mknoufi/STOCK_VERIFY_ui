@@ -43,13 +43,19 @@ export const isOnline = () => {
 };
 
 // Create session (with offline support)
-export const createSession = async (warehouse: string) => {
+export const createSession = async (
+  warehouse: string,
+  floor?: string,
+  rack?: string,
+) => {
   try {
     if (!isOnline()) {
       // Create offline session
       const offlineSession = {
         session_id: `offline_${Date.now()}`,
         warehouse,
+        floor,
+        rack,
         status: "active",
         created_by: "offline_user",
         created_at: new Date().toISOString(),
@@ -61,7 +67,7 @@ export const createSession = async (warehouse: string) => {
       return offlineSession;
     }
 
-    const response = await api.post("/api/sessions", { warehouse });
+    const response = await api.post("/api/sessions", { warehouse, floor, rack });
     await cacheSession(response.data);
     return response.data;
   } catch (error) {
@@ -76,6 +82,8 @@ export const createSession = async (warehouse: string) => {
     const offlineSession = {
       session_id: `offline_${Date.now()}`,
       warehouse,
+      floor,
+      rack,
       status: "active",
       created_by: "offline_user",
       created_at: new Date().toISOString(),

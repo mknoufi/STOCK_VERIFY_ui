@@ -62,7 +62,12 @@ export const validateSessionName = (
 };
 
 export const normalizeBarcode = (barcode: string): string => {
-  return barcode.trim();
+  const trimmed = barcode.trim();
+  // If purely numeric and less than 6 digits, pad with zeros
+  if (/^\d+$/.test(trimmed) && trimmed.length < 6) {
+    return trimmed.padStart(6, "0");
+  }
+  return trimmed;
 };
 
 export const validateBarcode = (barcode: string): ValidationResult<string> => {

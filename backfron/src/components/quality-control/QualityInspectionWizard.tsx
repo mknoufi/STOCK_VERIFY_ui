@@ -13,8 +13,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Components
 import { ModernCard } from "../ModernCard";
-import { EnhancedTextInput } from "../forms/EnhancedTextInput";
-import { EnhancedButton } from "../forms/EnhancedButton";
+import EnhancedTextInput from "../forms/EnhancedTextInput";
+import EnhancedButton from "../forms/EnhancedButton";
 import { LoadingSpinner } from "../feedback/LoadingSpinner";
 import { useToast } from "../feedback/ToastProvider";
 
@@ -344,7 +344,7 @@ export const QualityInspectionWizard: React.FC<
         <ModernCard style={styles.headerCard}>
           <EnhancedTextInput
             label="Quality Inspection"
-            value={`Step ${currentStep + 1} of ${steps.length}: ${steps[currentStep].title}`}
+            value={`Step ${currentStep + 1} of ${steps.length}: ${steps[currentStep]?.title || ""}`}
             editable={false}
             style={styles.stepIndicator}
           />

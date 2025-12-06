@@ -10,14 +10,14 @@ The TestSprite configuration now **automatically detects** which port your front
 
 **For Web Testing (Recommended for TestSprite):**
 ```bash
-cd frontend
+cd backfron
 npm run web
 ```
 This starts Expo web server on port **19006** (default).
 
 **For Native Testing:**
 ```bash
-cd frontend
+cd backfron
 npm start
 ```
 This starts Metro bundler on port **8081**.
@@ -75,10 +75,10 @@ node testsprite_tests/dynamic-port-config.js
 2. **Start the correct server:**
    ```bash
    # For TestSprite (web testing)
-   cd frontend && npm run web
+   cd backfron && npm run web
 
    # For native testing
-   cd frontend && npm start
+   cd backfron && npm start
    ```
 
 ### TestSprite Needs Web Port
@@ -87,7 +87,7 @@ TestSprite requires the **web server** (port 19006), not Metro (8081).
 
 If you see Metro port detected, start web server:
 ```bash
-cd frontend
+cd backfron
 npm run web
 ```
 

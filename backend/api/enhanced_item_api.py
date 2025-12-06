@@ -189,7 +189,17 @@ async def _fetch_with_fallback_strategy(barcode: str) -> tuple[Optional[Dict], s
     # Strategy 2: MongoDB (primary app database)
     if db is not None:
         try:
-            mongo_item = await db.erp_items.find_one({"barcode": barcode})
+            # Search in multiple barcode fields
+            mongo_item = await db.erp_items.find_one(
+                {
+                    "$or": [
+                        {"barcode": barcode},
+                        {"manual_barcode": barcode},
+                        {"auto_barcode": barcode},
+                        {"plu_code": barcode},
+                    ]
+                }
+            )
             if mongo_item:
                 # Convert ObjectId to string for JSON serialization
                 mongo_item["_id"] = str(mongo_item["_id"])
@@ -256,6 +266,13 @@ def _build_relevance_stage(query: str) -> Dict[str, Any]:
                                 }
                             },
                             5,
+                            0,
+                        ]
+                    },
+                    {
+                        "$cond": [
+                            {"$gt": ["$stock_qty", 0]},
+                            20,  # High priority boost for positive stock
                             0,
                         ]
                     },
@@ -346,7 +363,8 @@ def _build_search_pipeline(
 async def advanced_item_search(
     query: str = Query(..., description="Search query"),
     search_fields: List[str] = Query(
-        ["item_name", "item_code", "barcode"], description="Fields to search in"
+        ["item_name", "item_code", "barcode", "manual_barcode", "auto_barcode", "plu_code"],
+        description="Fields to search in",
     ),
     limit: int = Query(50, ge=1, le=200, description="Maximum results"),
     offset: int = Query(0, ge=0, description="Results offset"),

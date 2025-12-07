@@ -590,6 +590,24 @@ async def get_available_reports(current_user: dict = Depends(require_admin)):
                     "description": "Complete audit trail of all actions",
                     "category": "audit",
                 },
+                {
+                    "id": "items_inventory",
+                    "name": "Items Inventory Report",
+                    "description": "Complete inventory with purchase details, GST, HSN, supplier info",
+                    "category": "inventory",
+                },
+                {
+                    "id": "items_verification",
+                    "name": "Items Verification Report",
+                    "description": "Items with verification status and variances",
+                    "category": "inventory",
+                },
+                {
+                    "id": "purchase_summary",
+                    "name": "Purchase Summary Report",
+                    "description": "Last purchase prices, suppliers, and quantities",
+                    "category": "purchase",
+                },
             ]
         },
     }
@@ -920,4 +938,159 @@ async def get_system_stats(current_user: dict = Depends(require_admin)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get system stats: {str(e)}",
+        )
+
+
+@admin_control_router.get("/users")
+async def get_users_list(
+    page: int = 1,
+    limit: int = 20,
+    role: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: dict = Depends(require_admin),
+):
+    """Get list of all users with pagination"""
+    try:
+        from server import db
+
+        # Build query
+        query: Dict[str, Any] = {}
+        if role:
+            query["role"] = role
+        if search:
+            query["$or"] = [
+                {"username": {"$regex": search, "$options": "i"}},
+                {"full_name": {"$regex": search, "$options": "i"}},
+                {"email": {"$regex": search, "$options": "i"}},
+            ]
+
+        # Get total count
+        total = await db.users.count_documents(query)
+
+        # Get paginated users
+        skip = (page - 1) * limit
+        cursor = db.users.find(query, {"password": 0}).skip(skip).limit(limit).sort("created_at", -1)
+        users = await cursor.to_list(length=limit)
+
+        # Convert ObjectId to string
+        for user in users:
+            user["_id"] = str(user["_id"])
+
+        return {
+            "success": True,
+            "data": {
+                "users": users,
+                "total": total,
+                "page": page,
+                "limit": limit,
+            },
+        }
+    except Exception as e:
+        logger.error(f"Error getting users list: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get users list: {str(e)}",
+        )
+
+
+@admin_control_router.get("/verifications")
+async def get_verifications_list(
+    page: int = 1,
+    limit: int = 20,
+    status_filter: Optional[str] = None,
+    search: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: dict = Depends(require_admin),
+):
+    """Get list of all verifications with pagination"""
+    try:
+        from server import db
+
+        # Build query
+        query: Dict[str, Any] = {}
+        if status_filter:
+            query["status"] = status_filter
+        if search:
+            query["$or"] = [
+                {"item_code": {"$regex": search, "$options": "i"}},
+                {"item_name": {"$regex": search, "$options": "i"}},
+            ]
+        if start_date:
+            query["verified_at"] = {"$gte": datetime.fromisoformat(start_date)}
+        if end_date:
+            if "verified_at" in query:
+                query["verified_at"]["$lte"] = datetime.fromisoformat(end_date)
+            else:
+                query["verified_at"] = {"$lte": datetime.fromisoformat(end_date)}
+
+        # Get total count
+        total = await db.item_verifications.count_documents(query)
+
+        # Get paginated verifications
+        skip = (page - 1) * limit
+        cursor = db.item_verifications.find(query).skip(skip).limit(limit).sort("verified_at", -1)
+        verifications = await cursor.to_list(length=limit)
+
+        # Convert ObjectId to string
+        for v in verifications:
+            v["_id"] = str(v["_id"])
+
+        return {
+            "success": True,
+            "data": {
+                "items": verifications,
+                "total": total,
+                "page": page,
+                "limit": limit,
+            },
+        }
+    except Exception as e:
+        logger.error(f"Error getting verifications list: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get verifications list: {str(e)}",
+        )
+
+
+@admin_control_router.get("/variances")
+async def get_variances_list(
+    page: int = 1,
+    limit: int = 20,
+    current_user: dict = Depends(require_admin),
+):
+    """Get list of items with variances (verified_qty != system_qty)"""
+    try:
+        from server import db
+
+        # Query for items with variances
+        query = {"$expr": {"$ne": ["$verified_qty", "$system_qty"]}}
+
+        # Get total count
+        total = await db.item_verifications.count_documents(query)
+
+        # Get paginated variances
+        skip = (page - 1) * limit
+        cursor = db.item_verifications.find(query).skip(skip).limit(limit).sort("verified_at", -1)
+        variances = await cursor.to_list(length=limit)
+
+        # Convert ObjectId to string and calculate variance
+        for v in variances:
+            v["_id"] = str(v["_id"])
+            v["variance"] = (v.get("verified_qty", 0) or 0) - (v.get("system_qty", 0) or 0)
+
+        return {
+            "success": True,
+            "data": {
+                "items": variances,
+                "total": total,
+                "page": page,
+                "limit": limit,
+            },
+        }
+    except Exception as e:
+        logger.error(f"Error getting variances list: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get variances list: {str(e)}",
         )

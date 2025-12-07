@@ -4,9 +4,9 @@
  */
 
 import React, { useState } from "react";
-import { View, TouchableOpacity, Modal } from "react-native";
+import { Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import styled from "@emotion/native";
 
 import { RippleButton } from "./enhanced/RippleButton";

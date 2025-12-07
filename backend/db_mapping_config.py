@@ -22,8 +22,18 @@ PRODUCTS_COLUMN_MAP = {
     "uom_code": "Unit",
     "uom_name": "Unit",
     "category": "Category",
+    "subcategory": "Sub Category",
     "location": "Department",
     "item_id": "Si No",
+    # Purchase-related field mappings
+    "last_purchase_price": "Last Purchase Price",
+    "gst_percentage": "GST%",
+    "hsn_code": "HSN Code",
+    "last_purchase_type": "Last Purchase Type",
+    "supplier_name": "Supplier Name",
+    "last_purchase_qty": "Last Purchase Qty",
+    "last_purchase_date": "Last Purchase Date",
+    "voucher_number": "Voucher Number",
 }
 
 # Column mappings for ProductBatches table
@@ -59,7 +69,17 @@ SQL_TEMPLATES = {
             P.[Unit] as uom_code,
             P.[Unit] as uom_name,
             P.[Department] as warehouse_id,
-            P.[Department] as location
+            P.[Department] as location,
+            P.[Category] as category,
+            P.[Sub Category] as subcategory,
+            P.[Last Purchase Price] as last_purchase_price,
+            P.[GST%] as gst_percentage,
+            P.[HSN Code] as hsn_code,
+            P.[Last Purchase Type] as last_purchase_type,
+            P.[Supplier Name] as supplier_name,
+            P.[Last Purchase Qty] as last_purchase_qty,
+            P.[Last Purchase Date] as last_purchase_date,
+            P.[Voucher Number] as voucher_number
         FROM dbo.Products P
         WHERE P.[Mannual Barcode] = ?
            OR P.[Autobarcode] = ?
@@ -81,7 +101,17 @@ SQL_TEMPLATES = {
             P.[Unit] as uom_code,
             P.[Unit] as uom_name,
             P.[Department] as warehouse_id,
-            P.[Department] as location
+            P.[Department] as location,
+            P.[Category] as category,
+            P.[Sub Category] as subcategory,
+            P.[Last Purchase Price] as last_purchase_price,
+            P.[GST%] as gst_percentage,
+            P.[HSN Code] as hsn_code,
+            P.[Last Purchase Type] as last_purchase_type,
+            P.[Supplier Name] as supplier_name,
+            P.[Last Purchase Qty] as last_purchase_qty,
+            P.[Last Purchase Date] as last_purchase_date,
+            P.[Voucher Number] as voucher_number
         FROM dbo.Products P
         WHERE P.[Mfr ID] = ?
     """,

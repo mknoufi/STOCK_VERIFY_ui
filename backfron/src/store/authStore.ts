@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { storage } from "../services/asyncStorageService";
-import apiClient from "../services/httpClient";
+import apiClient, { setCachedToken } from "../services/httpClient";
 
 interface User {
   id: string;
@@ -50,7 +50,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (response.data.success && response.data.data) {
         const { access_token, user } = response.data.data;
 
-        // Store token for subsequent requests
+        // Store token for subsequent requests (both in cache and defaults)
+        setCachedToken(access_token);
         apiClient.defaults.headers.common["Authorization"] =
           `Bearer ${access_token}`;
         await storage.setItem(TOKEN_STORAGE_KEY, access_token);
@@ -85,6 +86,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     storage.removeItem(AUTH_STORAGE_KEY);
     storage.removeItem(TOKEN_STORAGE_KEY);
+    setCachedToken(null);
     delete apiClient.defaults.headers.common["Authorization"];
     set({
       user: null,
@@ -103,6 +105,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (storedUser && storedToken) {
         const user = JSON.parse(storedUser) as User;
+        // Set token in both cache and defaults
+        setCachedToken(storedToken);
         apiClient.defaults.headers.common["Authorization"] =
           `Bearer ${storedToken}`;
         set({

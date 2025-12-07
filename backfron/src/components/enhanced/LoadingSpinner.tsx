@@ -3,7 +3,6 @@
  */
 
 import React, { useEffect } from "react";
-import { View, ViewStyle } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -13,7 +12,7 @@ import Animated, {
   cancelAnimation,
 } from "react-native-reanimated";
 import styled from "@emotion/native";
-import { modernColors, modernSpacing } from "../../styles/modernDesignSystem";
+import { modernColors } from "../../styles/modernDesignSystem";
 
 type SpinnerSize = "small" | "medium" | "large";
 type SpinnerVariant = "primary" | "secondary" | "white";
@@ -44,7 +43,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     return () => {
       cancelAnimation(rotation);
     };
-  }, []);
+  }, [rotation]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],

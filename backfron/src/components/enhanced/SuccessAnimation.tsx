@@ -3,19 +3,17 @@
  */
 
 import React, { useEffect } from "react";
-import { View, ViewStyle } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   useAnimatedProps,
   withSpring,
   withTiming,
-  withSequence,
   withDelay,
 } from "react-native-reanimated";
 import Svg, { Circle, Path } from "react-native-svg";
 import styled from "@emotion/native";
-import { modernColors, modernShadows } from "../../styles/modernDesignSystem";
+import { modernColors } from "../../styles/modernDesignSystem";
 import { springPresets, timingPresets } from "../../utils/animationHelpers";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -61,7 +59,7 @@ export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
         }
       })
     );
-  }, []);
+  }, [checkProgress, circleProgress, onComplete, opacity, scale]);
 
   const containerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

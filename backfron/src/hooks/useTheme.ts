@@ -1,11 +1,22 @@
 import { useColorScheme } from "react-native";
+import { useSettingsStore } from "../store/settingsStore";
 
 export const useTheme = () => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const systemColorScheme = useColorScheme();
+  const { settings } = useSettingsStore();
+
+  // Determine effective theme based on user preference
+  let effectiveTheme: "light" | "dark";
+  if (settings.theme === "auto") {
+    effectiveTheme = systemColorScheme === "dark" ? "dark" : "light";
+  } else {
+    effectiveTheme = settings.theme === "dark" ? "dark" : "light";
+  }
+
+  const isDark = effectiveTheme === "dark";
 
   const theme = {
-    theme: colorScheme || "light",
+    theme: effectiveTheme,
     isDark,
     colors: {
       primary: "#007bff",
@@ -132,11 +143,14 @@ export const useTheme = () => {
     xl: theme.spacing.xl,
 
     // Structured theme objects
-    theme: theme.theme,
+    theme: effectiveTheme,
     isDark: theme.isDark,
     colors: theme.colors,
     spacing: theme.spacing,
     typography: theme.typography,
     borderRadius: theme.borderRadius,
+
+    // User preference
+    userThemePreference: settings.theme,
   };
 };

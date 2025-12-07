@@ -3,17 +3,14 @@
  * Features: Progress circle, summary table, variance highlights
  */
 
-import React, { useState } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import React from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import Svg, { Circle } from "react-native-svg";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import styled from "@emotion/native";
 
 import { RippleButton } from "../../components/enhanced/RippleButton";
-import { EnhancedCard } from "../../components/enhanced/EnhancedCard";
 import { modernColors, modernSpacing, modernTypography, modernBorderRadius } from "../../styles/modernDesignSystem";
 
 interface BinItem {
@@ -182,7 +179,7 @@ export default function BinSummaryScreen() {
         {/* Summary Table */}
         <SummarySection>
           <SectionTitle>Item Summary</SectionTitle>
-          
+
           <TableHeader>
             <TableHeaderCell flex={2}>Item</TableHeaderCell>
             <TableHeaderCell>System</TableHeaderCell>

@@ -183,6 +183,14 @@ class MigrationManager:
         await self.db.erp_items.create_index(
             [("category", 1), ("data_complete", 1)]
         )  # Compound for filtering
+
+        # Purchase-related indexes for reports
+        await self.db.erp_items.create_index("supplier_name")  # For supplier filtering
+        await self.db.erp_items.create_index("hsn_code")  # For HSN filtering
+        await self.db.erp_items.create_index([("last_purchase_date", -1)])  # For purchase history
+        await self.db.erp_items.create_index([("supplier_name", 1), ("last_purchase_date", -1)])  # Supplier history
+        await self.db.erp_items.create_index("gst_percentage")  # For GST filtering
+
         # Text index for full-text search (MongoDB requires special syntax)
         # Check if text index already exists before creating
         try:

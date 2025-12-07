@@ -4,16 +4,14 @@
  */
 
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, TextInput, TouchableOpacity, FlatList } from "react-native";
+import { FlatList } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import styled from "@emotion/native";
-import { useTheme } from "@emotion/react";
 
-import { EnhancedCard } from "../../components/enhanced/EnhancedCard";
 import { RippleButton } from "../../components/enhanced/RippleButton";
 import { SkeletonList } from "../../components/enhanced/SkeletonLoader";
 import { modernColors, modernSpacing, modernTypography } from "../../styles/modernDesignSystem";
@@ -57,12 +55,11 @@ interface ItemWithStatus extends Item {
 
 export default function ScanHomeScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
-  const [items, setItems] = useState<ItemWithStatus[]>(
+  const [items] = useState<ItemWithStatus[]>(
     MOCK_ITEMS.map((item) => ({ ...item, status: "not_counted" as ItemStatus }))
   );
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const handleScanPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

@@ -25,10 +25,6 @@ import {
 } from "../../src/services/offline/offlineStorage";
 import {
   colors,
-  layout,
-  spacing,
-  typography,
-  borderRadius,
 } from "../../src/styles/globalStyles";
 
 interface SyncConflict {
@@ -159,7 +155,7 @@ export default function SyncConflictsScreen() {
         Alert.alert("Queued", "Item queued for retry.");
       }
       loadConflicts();
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to update local item.");
     }
   };

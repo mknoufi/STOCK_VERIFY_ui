@@ -255,27 +255,12 @@ export default function RootLayout() {
               <Stack.Screen name="login" options={{ headerShown: false }} />
               <Stack.Screen name="welcome" />
               <Stack.Screen name="register" />
-              <Stack.Screen name="staff/home" />
-              <Stack.Screen name="staff/scan" />
-              <Stack.Screen name="staff/history" />
-              <Stack.Screen name="supervisor/dashboard" />
-              <Stack.Screen name="supervisor/session-detail" />
-              <Stack.Screen name="supervisor/settings" />
-              <Stack.Screen name="supervisor/db-mapping" />
-
-              <Stack.Screen name="supervisor/activity-logs" />
-              <Stack.Screen name="supervisor/error-logs" />
-              <Stack.Screen name="supervisor/export-schedules" />
-              <Stack.Screen name="supervisor/export-results" />
-              <Stack.Screen name="supervisor/sync-conflicts" />
-              <Stack.Screen name="supervisor/offline-queue" />
-              <Stack.Screen name="admin/permissions" />
-              <Stack.Screen name="admin/metrics" />
-              <Stack.Screen name="admin/control-panel" />
-              <Stack.Screen name="admin/logs" />
-              <Stack.Screen name="admin/sql-config" />
-              <Stack.Screen name="admin/reports" />
-              <Stack.Screen name="admin/security" />
+              {/* Staff group - uses its own _layout.tsx with Tabs */}
+              <Stack.Screen name="staff" options={{ headerShown: false }} />
+              {/* Supervisor group */}
+              <Stack.Screen name="supervisor" options={{ headerShown: false }} />
+              {/* Admin group */}
+              <Stack.Screen name="admin" options={{ headerShown: false }} />
               <Stack.Screen name="help" />
               <Stack.Screen name="+not-found" />
             </Stack>

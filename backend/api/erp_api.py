@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -8,6 +9,7 @@ from backend.api.schemas import ERPItem
 from backend.auth.dependencies import get_current_user
 from backend.error_messages import get_error_message
 from backend.services.cache_service import CacheService
+from backend.utils.security_utils import escape_regex, create_safe_regex_query
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -111,33 +113,22 @@ async def get_all_items(
 
     # If search query provided, search items
     if search and search.strip():
-        search_term = search.strip()
+        # SECURITY: Escape regex special characters to prevent ReDoS attacks (CWE-1333)
+        search_term = escape_regex(search.strip())
 
-        # Search in MongoDB
-        items_cursor = _db.erp_items.find(
-            {
-                "$or": [
-                    {"item_name": {"$regex": search_term, "$options": "i"}},
-                    {"item_code": {"$regex": search_term, "$options": "i"}},
-                    {"barcode": {"$regex": search_term, "$options": "i"}},
-                    {"manual_barcode": {"$regex": search_term, "$options": "i"}},
-                    {"auto_barcode": {"$regex": search_term, "$options": "i"}},
-                    {"plu_code": {"$regex": search_term, "$options": "i"}},
-                ]
-            }
-        )
-        total = await _db.erp_items.count_documents(
-            {
-                "$or": [
-                    {"item_name": {"$regex": search_term, "$options": "i"}},
-                    {"item_code": {"$regex": search_term, "$options": "i"}},
-                    {"barcode": {"$regex": search_term, "$options": "i"}},
-                    {"manual_barcode": {"$regex": search_term, "$options": "i"}},
-                    {"auto_barcode": {"$regex": search_term, "$options": "i"}},
-                    {"plu_code": {"$regex": search_term, "$options": "i"}},
-                ]
-            }
-        )
+        # Search in MongoDB with escaped pattern
+        search_query = {
+            "$or": [
+                {"item_name": create_safe_regex_query(search.strip())},
+                {"item_code": create_safe_regex_query(search.strip())},
+                {"barcode": create_safe_regex_query(search.strip())},
+                {"manual_barcode": create_safe_regex_query(search.strip())},
+                {"auto_barcode": create_safe_regex_query(search.strip())},
+                {"plu_code": create_safe_regex_query(search.strip())},
+            ]
+        }
+        items_cursor = _db.erp_items.find(search_query)
+        total = await _db.erp_items.count_documents(search_query)
         skip = (page - 1) * page_size
         items = await items_cursor.skip(skip).limit(page_size).to_list(page_size)
 
@@ -206,3 +197,101 @@ async def search_items_compatibility(
         page=page,
         page_size=page_size,
     )
+
+
+@router.get("/erp/categories")
+async def get_categories(current_user: dict = Depends(get_current_user)):
+    """
+    Get all unique categories and subcategories from the ERP items collection.
+    Returns a list of categories with their associated subcategories.
+    """
+    if _db is None:
+        raise HTTPException(status_code=503, detail="Service not initialized")
+
+    try:
+        # Aggregate categories and subcategories
+        pipeline = [
+            {
+                "$match": {
+                    "category": {"$exists": True, "$ne": None, "$ne": ""}
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$category",
+                    "subcategories": {"$addToSet": "$subcategory"},
+                    "item_count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id": 1}}
+        ]
+
+        categories = []
+        async for doc in _db.erp_items.aggregate(pipeline):
+            # Filter out empty/null subcategories
+            subcats = [s for s in doc.get("subcategories", []) if s]
+            categories.append({
+                "name": doc["_id"],
+                "subcategories": sorted(subcats),
+                "item_count": doc["item_count"]
+            })
+
+        # Also get items without category
+        uncategorized_count = await _db.erp_items.count_documents({
+            "$or": [
+                {"category": {"$exists": False}},
+                {"category": None},
+                {"category": ""}
+            ]
+        })
+
+        if uncategorized_count > 0:
+            categories.append({
+                "name": "Uncategorized",
+                "subcategories": [],
+                "item_count": uncategorized_count
+            })
+
+        return {
+            "success": True,
+            "data": {
+                "categories": categories,
+                "total_categories": len(categories)
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching categories: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch categories: {str(e)}"
+        )
+
+
+@router.get("/erp/subcategories/{category}")
+async def get_subcategories(category: str, current_user: dict = Depends(get_current_user)):
+    """
+    Get all subcategories for a specific category.
+    """
+    if _db is None:
+        raise HTTPException(status_code=503, detail="Service not initialized")
+
+    try:
+        subcategories = await _db.erp_items.distinct(
+            "subcategory",
+            {"category": category, "subcategory": {"$exists": True, "$ne": None, "$ne": ""}}
+        )
+
+        return {
+            "success": True,
+            "data": {
+                "category": category,
+                "subcategories": sorted(subcategories),
+                "count": len(subcategories)
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching subcategories for {category}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch subcategories: {str(e)}"
+        )

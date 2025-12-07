@@ -49,7 +49,7 @@ async def inspect_database():
 
     # ERP Items
     print("=" * 80)
-    print("📦 ERP ITEMS (Mock Data)")
+    print("📦 ERP ITEMS")
     print("=" * 80)
     items = await db.erp_items.find().to_list(100)
     print(f"{'Code':<12} {'Name':<25} {'Barcode':<15} {'Stock':<8} {'MRP':<8}")

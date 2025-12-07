@@ -130,3 +130,8 @@ archive_old_docs/
 
 # React Native Metro cache
 frontend/.metro-cache/
+
+# Database Data
+data/db/
+backend/data/db/
+

@@ -19,7 +19,7 @@ class AuthDependencies:
     """Thread-safe authentication dependencies container"""
 
     def __init__(self):
-        logger.error("DEBUG: AuthDependencies.__init__ called")
+        logger.debug("AuthDependencies.__init__ called")
         self._db: Optional[AsyncIOMotorDatabase] = None
         self._secret_key: Optional[str] = None
         self._algorithm: Optional[str] = None
@@ -29,8 +29,8 @@ class AuthDependencies:
 
     def initialize(self, db: AsyncIOMotorDatabase, secret_key: str, algorithm: str):
         """Initialize auth dependencies (call once at startup)"""
-        logger.error(
-            f"DEBUG: AuthDependencies.initialize called with secret_key={secret_key[:5]}..."
+        logger.debug(
+            f"AuthDependencies.initialize called with secret_key={secret_key[:5]}..."
         )
         if self._initialized:
             # In non-dev environments, raise error on double initialization

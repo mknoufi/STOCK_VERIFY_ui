@@ -2,14 +2,12 @@
  * Ripple Button - Enhanced button with ripple effect and animations
  */
 
-import React, { useRef } from "react";
-import { Text, ActivityIndicator, TouchableOpacity, View, ViewStyle } from "react-native";
+import React from "react";
+import { ActivityIndicator, TouchableOpacity } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
-  runOnJS,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -20,11 +18,8 @@ import {
   modernSpacing,
   modernTypography,
   modernShadows,
-  modernAnimations,
 } from "../../styles/modernDesignSystem";
 import {
-  springPresets,
-  timingPresets,
   animatePress,
   animateRelease,
 } from "../../utils/animationHelpers";

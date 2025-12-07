@@ -20,6 +20,7 @@ from pydantic import BaseModel  # noqa: E402
 
 from backend.api.response_models import ApiResponse, PaginatedResponse  # noqa: E402
 from backend.auth.dependencies import get_current_user_async as get_current_user  # noqa: E402
+from backend.utils.security_utils import create_safe_regex_query  # noqa: E402
 
 router = APIRouter()
 
@@ -56,10 +57,11 @@ async def get_items_v2(
         # Build query
         query = {}
         if search:
+            # SECURITY: Use escaped regex to prevent ReDoS attacks (CWE-1333)
             query = {
                 "$or": [
-                    {"item_name": {"$regex": search, "$options": "i"}},
-                    {"barcode": {"$regex": search, "$options": "i"}},
+                    {"item_name": create_safe_regex_query(search)},
+                    {"barcode": create_safe_regex_query(search)},
                 ]
             }
 

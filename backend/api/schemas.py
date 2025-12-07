@@ -2,9 +2,14 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 T = TypeVar("T")
+
+# Constants for quantity validation
+MIN_QUANTITY = 0.0
+MAX_QUANTITY = 1_000_000.0
+MAX_PRICE = 10_000_000.0  # 1 crore
 
 
 class ApiResponse(BaseModel, Generic[T]):
@@ -42,6 +47,59 @@ class ERPItem(BaseModel):
     manual_barcode: Optional[str] = None
     auto_barcode: Optional[str] = None
     plu_code: Optional[str] = None
+    # Purchase-related fields
+    last_purchase_price: Optional[float] = None
+    gst_percentage: Optional[float] = None
+    hsn_code: Optional[str] = None
+    last_purchase_type: Optional[str] = None  # "PI" (Purchase Invoice) or "PE" (Purchase Entry)
+    supplier_name: Optional[str] = None
+    last_purchase_qty: Optional[float] = None
+    last_purchase_date: Optional[datetime] = None
+    voucher_number: Optional[str] = None
+
+    # Validators for quantity and price fields
+    @validator("stock_qty", "last_purchase_qty", pre=True, always=True)
+    def validate_quantity(cls, v):
+        """Validate quantity is within acceptable range."""
+        if v is None:
+            return 0.0
+        try:
+            val = float(v)
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid quantity value: {v}")
+        if val < MIN_QUANTITY:
+            raise ValueError(f"Quantity must be at least {MIN_QUANTITY}")
+        if val > MAX_QUANTITY:
+            raise ValueError(f"Quantity must not exceed {MAX_QUANTITY:,.0f}")
+        return val
+
+    @validator("mrp", "last_purchase_price", pre=True, always=True)
+    def validate_price(cls, v):
+        """Validate price is within acceptable range."""
+        if v is None:
+            return 0.0
+        try:
+            val = float(v)
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid price value: {v}")
+        if val < 0:
+            raise ValueError("Price cannot be negative")
+        if val > MAX_PRICE:
+            raise ValueError(f"Price must not exceed {MAX_PRICE:,.0f}")
+        return val
+
+    @validator("gst_percentage", pre=True, always=True)
+    def validate_gst(cls, v):
+        """Validate GST percentage is valid."""
+        if v is None:
+            return None
+        try:
+            val = float(v)
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid GST percentage: {v}")
+        if val < 0 or val > 100:
+            raise ValueError("GST percentage must be between 0 and 100")
+        return val
 
 
 class UserInfo(BaseModel):
@@ -116,6 +174,37 @@ class CountLineCreate(BaseModel):
     category_correction: Optional[str] = None
     subcategory_correction: Optional[str] = None
     damage_included: Optional[bool] = True
+
+    # Validators for quantity fields
+    @validator("counted_qty", "damaged_qty", pre=True, always=True)
+    def validate_quantity(cls, v):
+        """Validate quantity is within acceptable range."""
+        if v is None:
+            return 0.0
+        try:
+            val = float(v)
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid quantity value: {v}")
+        if val < MIN_QUANTITY:
+            raise ValueError(f"Quantity must be at least {MIN_QUANTITY}")
+        if val > MAX_QUANTITY:
+            raise ValueError(f"Quantity must not exceed {MAX_QUANTITY:,.0f}")
+        return val
+
+    @validator("mrp_counted", pre=True, always=True)
+    def validate_mrp(cls, v):
+        """Validate MRP is within acceptable range."""
+        if v is None:
+            return None
+        try:
+            val = float(v)
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid MRP value: {v}")
+        if val < 0:
+            raise ValueError("MRP cannot be negative")
+        if val > MAX_PRICE:
+            raise ValueError(f"MRP must not exceed {MAX_PRICE:,.0f}")
+        return val
 
 
 class Session(BaseModel):

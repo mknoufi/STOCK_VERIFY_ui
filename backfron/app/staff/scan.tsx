@@ -1,21 +1,22 @@
 // cspell:words pricetag barcodes prioritise
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   Alert,
   ActivityIndicator,
-  Platform,
   StyleSheet,
   ScrollView,
   Switch,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Image,
+  Platform,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useCameraPermissions, CameraView } from "expo-camera";
-import { StatusBar } from "expo-status-bar";
 import { StaffLayout } from "../../src/components/layout";
 import { useAuthStore } from "../../src/store/authStore";
 import { PremiumButton } from "../../src/components/premium/PremiumButton";
@@ -32,10 +33,10 @@ import {
   getItemByBarcode,
   createCountLine,
   searchItems,
+  getSession,
 } from "../../src/services/api/api";
 import { SearchableSelectModal } from "../../src/components/modals/SearchableSelectModal";
 import { PhotoCaptureModal } from "../../src/components/modals/PhotoCaptureModal";
-import { Image } from "react-native";
 
 const CATEGORY_OPTIONS = [
   "Electronics",
@@ -76,8 +77,36 @@ export default function ScanScreen() {
   const isWeb = Platform.OS === "web";
   const [isScanning, setIsScanning] = useState(false);
 
+  const [sessionDetails, setSessionDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
+
+  // Debug state for visible debugging - MUST BE BEFORE useEffects that use addDebug
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const addDebug = (msg: string) => {
+    console.log(msg);
+    setDebugInfo(prev => [...prev.slice(-10), `${new Date().toLocaleTimeString()}: ${msg}`]);
+  };
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      if (sessionId) {
+        try {
+          const details = await getSession(sessionId);
+          setSessionDetails(details);
+        } catch (error) {
+          console.error("Failed to fetch session details:", error);
+        }
+      }
+    };
+    fetchSession();
+  }, [sessionId]);
+
+  // Add mount debug info
+  useEffect(() => {
+    addDebug(`ScanScreen mounted, sessionId: ${sessionId || 'NONE'}`);
+    addDebug(`User: ${user?.username || 'not logged in'}`);
+  }, []);
 
   // Search State
   const [manualItemName, setManualItemName] = useState("");
@@ -98,19 +127,20 @@ export default function ScanScreen() {
   const [mrp, setMrp] = useState("");
 
   // Correction State
-  const [isCorrectionEnabled, setIsCorrectionEnabled] = useState(false);
   const [mfgDate, setMfgDate] = useState("");
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
+  const [condition, setCondition] = useState("");
+  const [remark, setRemark] = useState("");
 
   // Modern UI State
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showSubCategoryModal, setShowSubCategoryModal] = useState(false);
+  const [showConditionModal, setShowConditionModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoType, setPhotoType] = useState<"item" | "verification">("item");
   const [itemPhoto, setItemPhoto] = useState<any>(null);
   const [verificationPhoto, setVerificationPhoto] = useState<any>(null);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [damageIncluded, setDamageIncluded] = useState(true);
   const [isManualEntry, setIsManualEntry] = useState(false);
 
@@ -134,23 +164,15 @@ export default function ScanScreen() {
     setIsDamageEnabled(false);
     setDamageQty("");
     setMrp("");
-    setIsCorrectionEnabled(false);
     setMfgDate("");
     setCategory("");
     setSubCategory("");
+    setCondition("");
+    setRemark("");
     setItemPhoto(null);
     setVerificationPhoto(null);
-    setSelectedConditions([]);
     setDamageIncluded(true);
     setIsManualEntry(false);
-  };
-
-  const toggleCondition = (condition: string) => {
-    if (selectedConditions.includes(condition)) {
-      setSelectedConditions(selectedConditions.filter((c) => c !== condition));
-    } else {
-      setSelectedConditions([...selectedConditions, condition]);
-    }
   };
 
   const handlePhotoCapture = (photo: any) => {
@@ -184,7 +206,11 @@ export default function ScanScreen() {
   };
 
   const handleManualSubmit = async () => {
-    if (!manualBarcode) return;
+    addDebug(`handleManualSubmit called, barcode: ${manualBarcode}`);
+    if (!manualBarcode) {
+      addDebug("No barcode provided, returning early");
+      return;
+    }
     setIsManualEntry(true);
     await handleLookup(manualBarcode);
   };
@@ -192,10 +218,17 @@ export default function ScanScreen() {
   const handleLookup = async (barcode: string) => {
     if (!barcode.trim()) return;
 
+    addDebug(`handleLookup called with barcode: ${barcode}`);
+    addDebug(`sessionId: ${sessionId}`);
+
     setLoading(true);
     try {
+      addDebug("Calling getItemByBarcode...");
       const item = await getItemByBarcode(barcode, 3, sessionId);
+      addDebug(`getItemByBarcode returned: ${item ? item.item_name : 'null'}`);
+
       if (item) {
+        addDebug(`Item found: ${item.item_code} - ${item.item_name}`);
         setScannedItem(item);
         setMrp(
           item.mrp || item.standard_rate
@@ -213,8 +246,11 @@ export default function ScanScreen() {
             [{ text: "OK" }],
           );
         }
+      } else {
+        addDebug("No item returned from getItemByBarcode");
       }
     } catch (error: any) {
+      addDebug(`Lookup error: ${error.message || error}`);
       Alert.alert("Error", error.message || "Item not found");
       setScannedItem(null);
     } finally {
@@ -228,14 +264,6 @@ export default function ScanScreen() {
     // Validation
     if (!quantity || isNaN(Number(quantity)) || Number(quantity) <= 0) {
       Alert.alert("Invalid Quantity", "Please enter a valid quantity");
-      return;
-    }
-
-    if (isManualEntry && !verificationPhoto) {
-      Alert.alert(
-        "Verification Required",
-        "Please take a verification photo for manual entry.",
-      );
       return;
     }
 
@@ -272,8 +300,8 @@ export default function ScanScreen() {
           counted_qty: Number(quantity),
           damaged_qty: isDamageEnabled ? Number(damageQty) : 0,
           damage_included: isDamageEnabled ? damageIncluded : undefined,
-          item_condition: selectedConditions.join(", "),
-          remark: selectedConditions.length > 0 ? selectedConditions.join(", ") : undefined,
+          item_condition: condition || undefined,
+          remark: remark || undefined,
           photo_base64: itemPhoto?.base64,
           photo_proofs: verificationPhoto
             ? [
@@ -314,22 +342,16 @@ export default function ScanScreen() {
       scannedItem.current_stock || scannedItem.stock_qty || 0,
     );
 
-    if (systemQty > 0) {
-      const variance = Math.abs(currentQty - systemQty);
-      const variancePercent = variance / systemQty;
-
-      if (variancePercent > 0.5) {
-        // 50% variance threshold
-        Alert.alert(
-          "High Variance Warning",
-          `System expects ${systemQty}, but you entered ${currentQty}.\nIs this correct?`,
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Yes, Submit", onPress: submitVerifiedCount },
-          ],
-        );
-        return;
-      }
+    if (systemQty > 0 && currentQty !== systemQty) {
+      Alert.alert(
+        "Variance Detected",
+        `System expects ${systemQty}, but you entered ${currentQty}.\nIs this correct?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Yes, Submit", onPress: submitVerifiedCount },
+        ],
+      );
+      return;
     }
 
     await submitVerifiedCount();
@@ -367,11 +389,11 @@ export default function ScanScreen() {
     },
   ];
 
-  if (!permission) {
+  if (!isWeb && !permission) {
     return <View />;
   }
 
-  if (!permission.granted) {
+  if (!isWeb && permission && !permission.granted) {
     return (
       <View style={styles.center}>
         <Text style={styles.permissionText}>
@@ -400,6 +422,48 @@ export default function ScanScreen() {
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Debug Panel - Visible on screen */}
+          {__DEV__ && debugInfo.length > 0 && (
+            <View style={{ backgroundColor: '#1a1a2e', padding: 10, margin: 10, borderRadius: 8 }}>
+              <Text style={{ color: '#00ff88', fontWeight: 'bold', marginBottom: 5 }}>🔍 Debug Log:</Text>
+              {debugInfo.map((msg, i) => (
+                <Text key={i} style={{ color: '#fff', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>{msg}</Text>
+              ))}
+              <TouchableOpacity onPress={() => setDebugInfo([])} style={{ marginTop: 5 }}>
+                <Text style={{ color: '#ff6b6b', fontSize: 12 }}>Clear Logs</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {sessionDetails && (
+            <View style={styles.sessionInfoCard}>
+              <View style={styles.sessionInfoRow}>
+                <Ionicons
+                  name="business-outline"
+                  size={16}
+                  color={modernColors.text.secondary}
+                />
+                <Text style={styles.sessionInfoText}>
+                  {sessionDetails.warehouse}
+                </Text>
+              </View>
+              {(sessionDetails.floor || sessionDetails.rack) && (
+                <View style={styles.sessionInfoRow}>
+                  <Ionicons
+                    name="location-outline"
+                    size={16}
+                    color={modernColors.text.secondary}
+                  />
+                  <Text style={styles.sessionInfoText}>
+                    {[sessionDetails.floor, sessionDetails.rack]
+                      .filter(Boolean)
+                      .join(" - ")}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
           <View style={styles.scanSection}>
             {/* Scanner / Input Section */}
             {!scannedItem ? (
@@ -441,7 +505,7 @@ export default function ScanScreen() {
                         {scannedItem.item_name || scannedItem.name}
                       </Text>
                       <Text style={styles.itemCode}>
-                        {scannedItem.item_code}
+                        {scannedItem.barcode || "N/A"}
                       </Text>
                     </View>
                     <TouchableOpacity onPress={resetForm}>
@@ -455,13 +519,13 @@ export default function ScanScreen() {
 
                   <View style={styles.itemMetaRow}>
                     <View style={styles.metaItem}>
-                      <Text style={styles.metaLabel}>Barcode</Text>
+                      <Text style={styles.metaLabel}>Item Code</Text>
                       <Text style={styles.metaValue}>
-                        {scannedItem.barcode || "N/A"}
+                        {scannedItem.item_code}
                       </Text>
                     </View>
                     <View style={styles.metaItem}>
-                      <Text style={styles.metaLabel}>Stock</Text>
+                      <Text style={styles.metaLabel}>Stock Qty</Text>
                       <Text style={styles.metaValue}>
                         {scannedItem.current_stock ||
                           scannedItem.stock_qty ||
@@ -498,6 +562,7 @@ export default function ScanScreen() {
                       <TouchableOpacity
                         style={[
                           styles.photoButton,
+                          { flex: 1 },
                           itemPhoto && styles.photoButtonActive,
                         ]}
                         onPress={() => {
@@ -517,48 +582,8 @@ export default function ScanScreen() {
                             color={modernColors.text.secondary}
                           />
                         )}
-                        <Text style={styles.photoLabel}>Item Photo</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[
-                          styles.photoButton,
-                          verificationPhoto && styles.photoButtonActive,
-                          isManualEntry &&
-                            !verificationPhoto &&
-                            styles.photoButtonRequired,
-                        ]}
-                        onPress={() => {
-                          setPhotoType("verification");
-                          setShowPhotoModal(true);
-                        }}
-                      >
-                        {verificationPhoto ? (
-                          <Image
-                            source={{ uri: verificationPhoto.uri }}
-                            style={styles.photoPreview}
-                          />
-                        ) : (
-                          <Ionicons
-                            name="shield-checkmark-outline"
-                            size={24}
-                            color={
-                              isManualEntry
-                                ? modernColors.warning.main
-                                : modernColors.text.secondary
-                            }
-                          />
-                        )}
-                        <Text
-                          style={[
-                            styles.photoLabel,
-                            isManualEntry && {
-                              color: modernColors.warning.main,
-                            },
-                          ]}
-                        >
-                          Verification
-                          {isManualEntry ? "*" : ""}
+                        <Text style={styles.photoLabel}>
+                          Add Item Photo (Optional)
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -597,33 +622,47 @@ export default function ScanScreen() {
                   {/* Category & Subcategory */}
                   <View style={styles.row}>
                     <View style={{ flex: 1 }}>
+                      <Text style={styles.inputLabel}>Category</Text>
                       <TouchableOpacity
+                        style={styles.selectorButton}
                         onPress={() => setShowCategoryModal(true)}
                       >
-                        <View pointerEvents="none">
-                          <PremiumInput
-                            label="Category"
-                            value={category}
-                            placeholder="Select"
-                            editable={false}
-                            rightIcon="chevron-down"
-                          />
-                        </View>
+                        <Text
+                          style={[
+                            styles.selectorText,
+                            !category && styles.placeholderText,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {category || "Select"}
+                        </Text>
+                        <Ionicons
+                          name="chevron-down"
+                          size={20}
+                          color={modernColors.text.tertiary}
+                        />
                       </TouchableOpacity>
                     </View>
                     <View style={{ flex: 1 }}>
+                      <Text style={styles.inputLabel}>Sub-Category</Text>
                       <TouchableOpacity
+                        style={styles.selectorButton}
                         onPress={() => setShowSubCategoryModal(true)}
                       >
-                        <View pointerEvents="none">
-                          <PremiumInput
-                            label="Sub-Category"
-                            value={subCategory}
-                            placeholder="Select"
-                            editable={false}
-                            rightIcon="chevron-down"
-                          />
-                        </View>
+                        <Text
+                          style={[
+                            styles.selectorText,
+                            !subCategory && styles.placeholderText,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {subCategory || "Select"}
+                        </Text>
+                        <Ionicons
+                          name="chevron-down"
+                          size={20}
+                          color={modernColors.text.tertiary}
+                        />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -631,22 +670,30 @@ export default function ScanScreen() {
                   {/* Conditions */}
                   <View style={styles.conditionsSection}>
                     <Text style={styles.sectionTitle}>Item Condition</Text>
-                    <View style={styles.conditionsList}>
-                      {CONDITION_OPTIONS.map((option) => (
-                        <View key={option} style={styles.conditionToggleRow}>
-                          <Text style={styles.conditionLabel}>{option}</Text>
-                          <Switch
-                            value={selectedConditions.includes(option)}
-                            onValueChange={() => toggleCondition(option)}
-                            trackColor={{
-                              false: modernColors.background.elevated,
-                              true: modernColors.warning.main,
-                            }}
-                          />
-                        </View>
-                      ))}
-                    </View>
+                    <TouchableOpacity
+                      onPress={() => setShowConditionModal(true)}
+                    >
+                      <View pointerEvents="none">
+                        <PremiumInput
+                          label="Condition"
+                          value={condition}
+                          placeholder="Select Condition"
+                          editable={false}
+                          rightIcon="chevron-down"
+                        />
+                      </View>
+                    </TouchableOpacity>
                   </View>
+
+                  {/* Remarks */}
+                  <PremiumInput
+                    label="Remarks"
+                    value={remark}
+                    onChangeText={setRemark}
+                    placeholder="Enter remarks (optional)"
+                    multiline
+                    numberOfLines={2}
+                  />
 
                   {/* Damage Toggle */}
                   <View style={styles.toggleCard}>
@@ -823,6 +870,14 @@ export default function ScanScreen() {
         onSelect={setSubCategory}
         options={SUBCATEGORY_OPTIONS}
         title="Select Sub-Category"
+      />
+
+      <SearchableSelectModal
+        visible={showConditionModal}
+        onClose={() => setShowConditionModal(false)}
+        onSelect={setCondition}
+        options={CONDITION_OPTIONS}
+        title="Select Condition"
       />
 
       <PhotoCaptureModal
@@ -1161,5 +1216,54 @@ const styles = StyleSheet.create({
   },
   closeScannerButton: {
     padding: 20,
+  },
+  sessionInfoCard: {
+    backgroundColor: modernColors.background.elevated,
+    borderRadius: modernBorderRadius.md,
+    padding: modernSpacing.md,
+    marginBottom: modernSpacing.md,
+    borderWidth: 1,
+    borderColor: modernColors.border.light,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    maxWidth: 600,
+    alignSelf: "center",
+    width: "100%",
+  },
+  sessionInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: modernSpacing.xs,
+  },
+  sessionInfoText: {
+    ...modernTypography.body.small,
+    color: modernColors.text.secondary,
+    fontWeight: "500",
+  },
+  inputLabel: {
+    ...modernTypography.label.medium,
+    color: modernColors.text.secondary,
+    marginBottom: modernSpacing.xs,
+    fontWeight: "600",
+  },
+  selectorButton: {
+    backgroundColor: modernColors.background.paper,
+    borderWidth: 1,
+    borderColor: modernColors.border.light,
+    borderRadius: modernBorderRadius.md,
+    paddingHorizontal: modernSpacing.md,
+    paddingVertical: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  selectorText: {
+    ...modernTypography.body.medium,
+    color: modernColors.text.primary,
+    flex: 1,
+  },
+  placeholderText: {
+    color: modernColors.text.tertiary,
   },
 });

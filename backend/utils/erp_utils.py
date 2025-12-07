@@ -7,6 +7,7 @@ from fastapi import HTTPException
 
 from backend.api.schemas import ERPItem
 from backend.error_messages import get_error_message
+from backend.utils.security_utils import create_safe_regex_query
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +82,15 @@ def _map_erp_item_to_schema(
         "floor": item.get("floor", ""),
         "rack": item.get("rack", ""),
         "manual_barcode": item.get("manual_barcode", ""),
+        # Purchase-related fields
+        "last_purchase_price": float(item.get("last_purchase_price", 0.0)) if item.get("last_purchase_price") else None,
+        "gst_percentage": float(item.get("gst_percentage", 0.0)) if item.get("gst_percentage") else None,
+        "hsn_code": item.get("hsn_code", ""),
+        "last_purchase_type": item.get("last_purchase_type", ""),
+        "supplier_name": item.get("supplier_name", ""),
+        "last_purchase_qty": float(item.get("last_purchase_qty", 0.0)) if item.get("last_purchase_qty") else None,
+        "last_purchase_date": item.get("last_purchase_date"),
+        "voucher_number": item.get("voucher_number", ""),
     }
 
 
@@ -291,11 +301,12 @@ async def search_items_in_erp(search_term: str, sql_connector: Any, db: Any) -> 
             pass
 
     # Fallback: Search in MongoDB
+    # SECURITY: Use escaped regex to prevent ReDoS attacks (CWE-1333)
     query = {
         "$or": [
-            {"item_name": {"$regex": search_term, "$options": "i"}},
-            {"item_code": {"$regex": search_term, "$options": "i"}},
-            {"barcode": {"$regex": search_term, "$options": "i"}},
+            {"item_name": create_safe_regex_query(search_term)},
+            {"item_code": create_safe_regex_query(search_term)},
+            {"barcode": create_safe_regex_query(search_term)},
         ]
     }
     cursor = db.erp_items.find(query).limit(50)

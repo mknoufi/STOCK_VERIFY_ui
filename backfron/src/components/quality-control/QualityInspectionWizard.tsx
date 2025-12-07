@@ -1,21 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   ScrollView,
   StyleSheet,
   Alert,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Components
 import { ModernCard } from "../ModernCard";
 import EnhancedTextInput from "../forms/EnhancedTextInput";
 import EnhancedButton from "../forms/EnhancedButton";
-import { LoadingSpinner } from "../feedback/LoadingSpinner";
 import { useToast } from "../feedback/ToastProvider";
 
 // Services
@@ -58,7 +55,7 @@ export const QualityInspectionWizard: React.FC<
   const toast = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos] = useState<string[]>([]);
 
   const {
     control,
@@ -113,7 +110,7 @@ export const QualityInspectionWizard: React.FC<
         session_id: sessionId,
       };
 
-      const response = await qualityControlApi.createInspection(inspectionData);
+      await qualityControlApi.createInspection(inspectionData);
 
       toast.show("Quality inspection completed successfully", "success");
 

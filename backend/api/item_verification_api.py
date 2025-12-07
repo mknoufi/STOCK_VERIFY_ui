@@ -16,6 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 
 from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.utils.security_utils import escape_regex, create_safe_regex_query
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +34,11 @@ verification_router = APIRouter(prefix="/api/v2/erp/items", tags=["Item Verifica
 
 
 def _regex_filter(value: Optional[str]) -> Optional[Dict[str, str]]:
+    """Create a safe regex filter with escaped user input (ReDoS prevention)."""
     if not value:
         return None
-    return {"$regex": value, "$options": "i"}
+    # SECURITY: Escape regex special characters to prevent ReDoS (CWE-1333)
+    return create_safe_regex_query(value)
 
 
 def build_item_filter_query(
@@ -79,10 +82,11 @@ def build_item_filter_query(
         filter_query["verified"] = verified
 
     if search:
+        # SECURITY: Use escaped regex to prevent ReDoS attacks (CWE-1333)
         filter_query["$or"] = [
-            {"item_name": {"$regex": search, "$options": "i"}},
-            {"item_code": {"$regex": search, "$options": "i"}},
-            {"barcode": {"$regex": search, "$options": "i"}},
+            {"item_name": create_safe_regex_query(search)},
+            {"item_code": create_safe_regex_query(search)},
+            {"barcode": create_safe_regex_query(search)},
         ]
 
     return filter_query

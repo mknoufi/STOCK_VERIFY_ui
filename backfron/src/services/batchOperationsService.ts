@@ -4,7 +4,6 @@
  */
 
 import { createCountLine } from "./api/api";
-import { useAuthStore } from "../store/authStore";
 import { BatchProcessor } from "./monitoring/performanceService";
 import { handleErrorWithRecovery } from "./utils/errorRecovery";
 import apiClient from "./httpClient";

@@ -2,15 +2,14 @@
  * Floating Label Input - Enhanced input with floating label animation
  */
 
-import React, { useState, useRef } from "react";
-import { TextInput, TextInputProps, View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { TextInput, TextInputProps, TouchableOpacity } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSpring,
   interpolate,
-  Extrapolate,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import styled from "@emotion/native";
@@ -19,7 +18,6 @@ import {
   modernTypography,
   modernBorderRadius,
   modernSpacing,
-  modernShadows,
 } from "../../styles/modernDesignSystem";
 import { timingPresets, springPresets } from "../../utils/animationHelpers";
 
@@ -82,7 +80,7 @@ export const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInput
       } else if (!value && !isFocused && labelPosition.value === 1) {
         labelPosition.value = withSpring(0, springPresets.gentle);
       }
-    }, [value]);
+    }, [value, isFocused, labelPosition]);
 
     const labelStyle = useAnimatedStyle(() => {
       const translateY = interpolate(

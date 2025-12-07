@@ -773,13 +773,20 @@ if getattr(settings, "CORS_ALLOW_ORIGINS", None):
     ]
 elif _env == "development":
     # Base development origins (localhost variants)
+    # SECURITY FIX: Removed wildcard '*' to prevent CORS bypass attacks (CWE-942)
     _allowed_origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5173",  # Vite dev server
+        "http://127.0.0.1:5173",
         "http://localhost:8081",
         "http://127.0.0.1:8081",
+        "http://localhost:19006",  # Expo web
+        "http://127.0.0.1:19006",
         "exp://localhost:8081",
-        "*",  # Allow all origins in development for mobile testing
+        "exp://127.0.0.1:8081",
+        "exp://192.168.1.0:8081",  # Common local network range
+        "exp://10.0.0.0:8081",     # Common local network range
     ]
     # Add additional dev origins from environment if configured
     if getattr(settings, "CORS_DEV_ORIGINS", None):

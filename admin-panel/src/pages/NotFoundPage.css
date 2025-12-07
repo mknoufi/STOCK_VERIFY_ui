@@ -1,0 +1,102 @@
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-neutral-900) 0%, var(--color-primary-950) 100%);
+  padding: var(--space-8);
+  position: relative;
+  overflow: hidden;
+}
+
+.not-found-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 30%, rgba(51, 114, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(20px, 20px) rotate(5deg);
+  }
+}
+
+.not-found-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp var(--transition-slow) ease-out;
+}
+
+.not-found-content h1 {
+  font-size: 10rem;
+  font-weight: var(--font-bold);
+  margin: 0;
+  line-height: 1;
+  background: var(--color-accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 60px rgba(51, 114, 255, 0.5);
+}
+
+.not-found-content h2 {
+  font-size: var(--text-2xl);
+  color: var(--color-neutral-0);
+  margin: var(--space-4) 0 var(--space-2) 0;
+  font-weight: var(--font-semibold);
+}
+
+.not-found-content p {
+  color: var(--color-neutral-400);
+  margin: 0 0 var(--space-8) 0;
+  font-size: var(--text-lg);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-8);
+  background: var(--color-accent-gradient);
+  color: var(--color-neutral-0);
+  text-decoration: none;
+  border-radius: var(--radius-xl);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 20px -4px var(--color-primary-500);
+}
+
+.back-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px -4px var(--color-primary-500);
+  color: var(--color-neutral-0);
+}
+
+.back-link:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .not-found-content h1 {
+    font-size: 6rem;
+  }
+
+  .not-found-content h2 {
+    font-size: var(--text-xl);
+  }
+}

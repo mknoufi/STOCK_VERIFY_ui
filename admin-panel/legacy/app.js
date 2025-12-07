@@ -237,7 +237,7 @@ async function checkMongoDB() {
         // Fallback to admin panel API
         const response = await fetch(`${ADMIN_API}/status`);
         const data = await response.json();
-        const mongodb = data.mongodb || {};
+        const mongodb = data.data?.mongodb || data.mongodb || {};
 
         const status = document.getElementById('mongodbStatus');
         const pid = document.getElementById('mongodbPid');
@@ -307,7 +307,7 @@ async function checkBackend() {
         // Fallback to admin panel API
         const response = await fetch(`${ADMIN_API}/status`);
         const data = await response.json();
-        const backend = data.backend || {};
+        const backend = data.data?.backend || data.backend || {};
 
         const status = document.getElementById('backendStatus');
         const pid = document.getElementById('backendPid');
@@ -340,7 +340,7 @@ async function checkFrontend() {
         try {
             const response = await fetch(`${ADMIN_API}/status`);
             const data = await response.json();
-            frontend = data.frontend || {};
+            frontend = data.data?.frontend || data.frontend || {};
         } catch {
             try {
                 const response = await fetch(`${API_BASE}/admin/control`);

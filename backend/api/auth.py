@@ -447,3 +447,88 @@ async def get_me(current_user: Dict[str, Any] = Depends(get_current_user)) -> Di
         "role": current_user["role"],
         "permissions": current_user.get("permissions", []),
     }
+
+
+def require_admin(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+    """Require admin role for access."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": "Access denied",
+                "detail": "Admin privileges required",
+                "code": "AUTH_FORBIDDEN",
+                "category": "authorization",
+            },
+        )
+    return current_user
+
+
+@router.get("/auth/users")
+async def list_users(
+    current_user: Dict[str, Any] = Depends(require_admin),
+    skip: int = 0,
+    limit: int = 50,
+    role: Optional[str] = None,
+    is_active: Optional[bool] = None,
+) -> Dict[str, Any]:
+    """
+    List all users (admin only).
+
+    Supports pagination and filtering by role and active status.
+    """
+    db = get_db()
+
+    try:
+        # Build query filter
+        query: Dict[str, Any] = {}
+        if role:
+            query["role"] = role
+        if is_active is not None:
+            query["is_active"] = is_active
+
+        # Get total count
+        total = await db.users.count_documents(query)
+
+        # Get users with pagination
+        cursor = db.users.find(query).skip(skip).limit(limit).sort("created_at", -1)
+        users = await cursor.to_list(length=limit)
+
+        # Transform users for response (exclude sensitive fields)
+        user_list = []
+        for user in users:
+            user_list.append({
+                "id": str(user["_id"]),
+                "username": user.get("username", ""),
+                "full_name": user.get("full_name", ""),
+                "role": user.get("role", "staff"),
+                "email": user.get("email"),
+                "is_active": user.get("is_active", True),
+                "permissions": user.get("permissions", []),
+                "created_at": user.get("created_at").isoformat() if user.get("created_at") else None,
+                "last_login_at": user.get("last_login_at").isoformat() if user.get("last_login_at") else None,
+            })
+
+        logger.info(f"Listed {len(user_list)} users (total: {total}) by admin: {current_user['username']}")
+
+        return {
+            "success": True,
+            "data": {
+                "users": user_list,
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+            },
+            "message": f"Retrieved {len(user_list)} users",
+        }
+    except Exception as e:
+        logger.error(f"Error listing users: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": "Failed to list users",
+                "detail": str(e),
+                "code": "DATABASE_ERROR",
+                "category": "server",
+            },
+        )

@@ -9,6 +9,7 @@ import { useSettingsStore } from "../store/settingsStore";
 import { initializeBackendURL } from "../utils/backendUrl";
 import { initReactotron } from "../services/devtools/reactotron";
 import { initSentry } from "../services/sentry";
+import { initializeToken } from "../services/httpClient";
 
 export function useAppBootstrap() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -54,6 +55,15 @@ export function useAppBootstrap() {
             );
           }
           // Continue anyway - will use default URL
+        }
+
+        // Initialize token from storage FIRST (before loadStoredAuth to ensure httpClient has token)
+        try {
+          await initializeToken();
+        } catch (tokenError) {
+          if (__DEV__) {
+            console.warn("⚠️ Token initialization failed:", tokenError);
+          }
         }
 
         // Load stored auth

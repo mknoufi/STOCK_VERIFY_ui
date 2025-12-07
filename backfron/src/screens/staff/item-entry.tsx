@@ -4,11 +4,11 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { View, TextInput, TouchableOpacity, Modal, KeyboardAvoidingView, Platform } from "react-native";
+import { TextInput, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import styled from "@emotion/native";
 
 import { RippleButton } from "../../components/enhanced/RippleButton";
@@ -73,7 +73,7 @@ export default function ItemEntryScreen() {
 
   const validateCount = (): boolean => {
     const countValue = parseInt(count);
-    
+
     if (!count || isNaN(countValue)) {
       setErrors({ count: "Count is required" });
       return false;
@@ -160,7 +160,7 @@ export default function ItemEntryScreen() {
             {/* Count Input Section */}
             <CountSection>
               <CountLabel>Enter Count</CountLabel>
-              
+
               <CountInputContainer>
                 <CountButton
                   onPress={handleDecrement}

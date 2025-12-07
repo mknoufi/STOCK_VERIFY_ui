@@ -62,19 +62,20 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Health check - uses readiness endpoint that checks MongoDB connection
+# More robust than simple /health which might return 200 even if DB is down
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ready || exit 1
 
 # Run with Gunicorn for production
 CMD ["gunicorn", "backend.server:app", \
-     "--workers", "4", \
-     "--worker-class", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:8000", \
-     "--timeout", "120", \
-     "--keepalive", "5", \
-     "--max-requests", "1000", \
-     "--max-requests-jitter", "100", \
-     "--access-logfile", "/var/log/stock_count/access.log", \
-     "--error-logfile", "/var/log/stock_count/error.log", \
-     "--log-level", "info"]
+    "--workers", "4", \
+    "--worker-class", "uvicorn.workers.UvicornWorker", \
+    "--bind", "0.0.0.0:8000", \
+    "--timeout", "120", \
+    "--keepalive", "5", \
+    "--max-requests", "1000", \
+    "--max-requests-jitter", "100", \
+    "--access-logfile", "/var/log/stock_count/access.log", \
+    "--error-logfile", "/var/log/stock_count/error.log", \
+    "--log-level", "info"]

@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from "react-native";
+import { TouchableOpacity, ViewStyle } from "react-native";
 import { BlurView } from "expo-blur";
 import Animated, {
   useSharedValue,
@@ -199,7 +199,7 @@ const LoadingSkeleton: React.FC = () => {
     opacity.value = withTiming(0.7, { duration: 1000 }, () => {
       opacity.value = withTiming(0.3, { duration: 1000 });
     });
-  }, []);
+  }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

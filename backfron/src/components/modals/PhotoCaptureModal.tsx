@@ -13,7 +13,6 @@ import {
   modernColors,
   modernSpacing,
   modernTypography,
-  modernBorderRadius,
 } from "../../styles/modernDesignSystem";
 
 interface PhotoCaptureModalProps {

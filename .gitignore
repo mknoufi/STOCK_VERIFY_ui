@@ -21,6 +21,9 @@ node_modules/
 
 # Testing
 /coverage
+coverage/
+.coverage
+*.coverage
 
 # Next.js
 /.next/
@@ -45,6 +48,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 dump.rdb
+
+# Runtime files
+*.pid
+*_port.json
+backend_port.json
+.autopilot.json
 
 # System files
 .DS_Store

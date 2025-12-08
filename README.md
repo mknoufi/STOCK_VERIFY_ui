@@ -1,5 +1,8 @@
 # Stock Verify Application (v2.1)
 
+> **✨ This repository is available as a GitHub template!**  
+> Click "Use this template" to create your own Stock Verify instance. See [TEMPLATE_README.md](TEMPLATE_README.md) for setup instructions.
+
 ## 📚 Documentation (v2.1)
 
 * **[Codebase Memory](docs/codebase_memory_v2.1.md)**: Architecture, Tech Stack, and Data Models.
@@ -10,6 +13,15 @@
 ---
 
 ## 🚀 Quick Start
+
+### For New Deployments (Using Template)
+
+If you created this repository from the template:
+1. See **[TEMPLATE_README.md](TEMPLATE_README.md)** for complete setup guide
+2. Run `./init-new-instance.sh` to initialize your instance
+3. Configure `backend/.env` with your database credentials
+
+### For Development
 
 ### 1. Backend
 

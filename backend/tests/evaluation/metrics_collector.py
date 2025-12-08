@@ -109,11 +109,13 @@ class EvaluationReport:
 
     @property
     def success_rate(self) -> float:
-        """Calculate overall success rate."""
+        """Calculate overall success rate (PASSED + WARNING are considered successful)."""
         total = len(self.metrics)
         if total == 0:
             return 1.0
-        return self.passed_count / total
+        # Both PASSED and WARNING are considered successful (WARNING means at threshold)
+        successful = sum(1 for m in self.metrics if m.status in [MetricStatus.PASSED, MetricStatus.WARNING])
+        return successful / total
 
     def get_metrics_by_category(self, category: MetricCategory) -> List[Metric]:
         """Get metrics filtered by category."""

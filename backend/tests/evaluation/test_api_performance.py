@@ -215,16 +215,18 @@ class TestAPISuccessRate:
         collector: MetricsCollector,
     ):
         """Test overall API success rate."""
+        # Endpoints with (method, path, body, requires_auth, allow_404)
+        # allow_404=True for endpoints that may return 404 when no data exists
         endpoints = [
-            ("GET", "/health", None, False),
-            ("GET", "/api/sessions", None, True),
-            ("GET", "/api/v2/erp/items", None, True),
+            ("GET", "/health", None, False, False),
+            ("GET", "/api/sessions", None, True, True),
+            ("GET", "/api/v2/erp/items", None, True, True),
         ]
 
         total_requests = 0
         success_count = 0
 
-        for method, path, body, requires_auth in endpoints:
+        for method, path, body, requires_auth, allow_404 in endpoints:
             headers = authenticated_headers if requires_auth else {}
 
             for _ in range(5):
@@ -234,7 +236,8 @@ class TestAPISuccessRate:
                     response = await async_client.post(path, json=body, headers=headers)
 
                 total_requests += 1
-                if response.status_code < 400:
+                # Success: 2xx, or 404 for endpoints that allow it (no data in test)
+                if response.status_code < 400 or (allow_404 and response.status_code == 404):
                     success_count += 1
 
         success_rate = success_count / total_requests

@@ -104,6 +104,10 @@ class InMemoryCursor:
         self._documents = self._documents[:count]
         return self
 
+    def batch_size(self, size: int) -> "InMemoryCursor":
+        """Set batch size (no-op for in-memory, just returns self for chaining)."""
+        return self
+
     async def to_list(self, length: int) -> List[Dict[str, Any]]:
         return [copy.deepcopy(doc) for doc in self._documents[:length]]
 

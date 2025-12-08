@@ -2,9 +2,9 @@
  * useItemState Hook
  * Manages item-related state (current item, MRP variants, etc.)
  */
-import { useState, useCallback } from 'react';
-import { Item, NormalizedMrpVariant, VarianceReason } from '@/types/scan';
-import { getNormalizedMrpVariants } from '@/utils/scanUtils';
+import { useState, useCallback } from "react";
+import { Item, NormalizedMrpVariant, VarianceReason } from "@/types/scan";
+import { getNormalizedMrpVariants } from "@/utils/scanUtils";
 
 interface ItemState {
   currentItem: Item | null;
@@ -33,24 +33,24 @@ interface ItemState {
 
 const initialState: ItemState = {
   currentItem: null,
-  countedQty: '',
-  returnableDamageQty: '',
-  nonReturnableDamageQty: '',
-  countedMrp: '',
-  remark: '',
-  varianceNote: '',
+  countedQty: "",
+  returnableDamageQty: "",
+  nonReturnableDamageQty: "",
+  countedMrp: "",
+  remark: "",
+  varianceNote: "",
   selectedReason: null,
   varianceReasons: [],
-  itemCondition: 'good',
+  itemCondition: "good",
   conditionManuallySet: false,
   selectedVariant: null,
-  floorNo: '',
-  rackNo: '',
-  shelfNo: '',
-  damageQty: '',
-  srNo: '',
-  manufacturingDate: '',
-  markLocation: '',
+  floorNo: "",
+  rackNo: "",
+  shelfNo: "",
+  damageQty: "",
+  srNo: "",
+  manufacturingDate: "",
+  markLocation: "",
   mrpVariantOptions: [],
 };
 
@@ -62,7 +62,9 @@ export const useItemState = () => {
       const newState = { ...prev, ...updates };
       // Auto-update MRP variants when item changes
       if (updates.currentItem !== undefined) {
-        newState.mrpVariantOptions = getNormalizedMrpVariants(updates.currentItem ?? null);
+        newState.mrpVariantOptions = getNormalizedMrpVariants(
+          updates.currentItem ?? null,
+        );
       }
       return newState;
     });

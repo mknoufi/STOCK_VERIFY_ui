@@ -5,12 +5,7 @@ from typing import Any, Dict, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from backend.api.schemas import (
-    ApiResponse,
-    TokenResponse,
-    UserLogin,
-    UserRegister,
-)
+from backend.api.schemas import ApiResponse, TokenResponse, UserLogin, UserRegister
 from backend.auth.dependencies import auth_deps, get_current_user
 from backend.config import settings
 from backend.db.runtime import get_db
@@ -23,15 +18,8 @@ from backend.exceptions import (
     RateLimitError,
 )
 from backend.services.runtime import get_cache_service, get_refresh_token_service
-from backend.utils.api_utils import (
-    result_to_response,
-    sanitize_for_logging,
-)
-from backend.utils.auth_utils import (
-    create_access_token,
-    get_password_hash,
-    verify_password,
-)
+from backend.utils.api_utils import result_to_response, sanitize_for_logging
+from backend.utils.auth_utils import create_access_token, get_password_hash, verify_password
 from backend.utils.result import Fail, Ok, Result
 
 logger = logging.getLogger(__name__)

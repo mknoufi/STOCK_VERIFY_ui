@@ -74,13 +74,18 @@ export const cacheItem = async (item: Omit<CachedItem, "cached_at">) => {
 };
 
 export const getItemsCache = async (): Promise<Record<string, CachedItem>> => {
-  const cache = await storage.get<Record<string, CachedItem>>(STORAGE_KEYS.ITEMS_CACHE, {
-    defaultValue: {},
-  });
+  const cache = await storage.get<Record<string, CachedItem>>(
+    STORAGE_KEYS.ITEMS_CACHE,
+    {
+      defaultValue: {},
+    },
+  );
   return cache ?? {};
 };
 
-export const getItemFromCache = async (itemCode: string): Promise<CachedItem | null> => {
+export const getItemFromCache = async (
+  itemCode: string,
+): Promise<CachedItem | null> => {
   try {
     const cache = await getItemsCache();
     return cache[itemCode] || null;
@@ -90,7 +95,9 @@ export const getItemFromCache = async (itemCode: string): Promise<CachedItem | n
   }
 };
 
-export const searchItemsInCache = async (query: string): Promise<CachedItem[]> => {
+export const searchItemsInCache = async (
+  query: string,
+): Promise<CachedItem[]> => {
   try {
     const cache = await getItemsCache();
     const items = Object.values(cache);
@@ -103,7 +110,11 @@ export const searchItemsInCache = async (query: string): Promise<CachedItem[]> =
       const barcode = (item.barcode || "").toLowerCase();
 
       // Direct includes check (fast path)
-      if (code.includes(lowerQuery) || name.includes(lowerQuery) || barcode.includes(lowerQuery)) {
+      if (
+        code.includes(lowerQuery) ||
+        name.includes(lowerQuery) ||
+        barcode.includes(lowerQuery)
+      ) {
         return true;
       }
 
@@ -132,7 +143,10 @@ export const clearItemsCache = async () => {
 };
 
 // Offline Queue Operations
-export const addToOfflineQueue = async (type: OfflineQueueItem["type"], data: any) => {
+export const addToOfflineQueue = async (
+  type: OfflineQueueItem["type"],
+  data: any,
+) => {
   try {
     const queue = await getOfflineQueue();
     const queueItem: OfflineQueueItem = {
@@ -154,9 +168,12 @@ export const addToOfflineQueue = async (type: OfflineQueueItem["type"], data: an
 
 export const getOfflineQueue = async (): Promise<OfflineQueueItem[]> => {
   try {
-    const queue = await storage.get<OfflineQueueItem[]>(STORAGE_KEYS.OFFLINE_QUEUE, {
-      defaultValue: [],
-    });
+    const queue = await storage.get<OfflineQueueItem[]>(
+      STORAGE_KEYS.OFFLINE_QUEUE,
+      {
+        defaultValue: [],
+      },
+    );
     return queue ?? [];
   } catch (error) {
     __DEV__ && console.error("Error getting offline queue:", error);
@@ -205,7 +222,9 @@ export const clearOfflineQueue = async () => {
 };
 
 // Session Cache Operations
-export const cacheSession = async (session: Omit<CachedSession, "cached_at">) => {
+export const cacheSession = async (
+  session: Omit<CachedSession, "cached_at">,
+) => {
   try {
     const cachedSession: CachedSession = {
       ...session,
@@ -226,11 +245,16 @@ export const cacheSession = async (session: Omit<CachedSession, "cached_at">) =>
   }
 };
 
-export const getSessionsCache = async (): Promise<Record<string, CachedSession>> => {
+export const getSessionsCache = async (): Promise<
+  Record<string, CachedSession>
+> => {
   try {
-    const cache = await storage.get<Record<string, CachedSession>>(STORAGE_KEYS.SESSIONS_CACHE, {
-      defaultValue: {},
-    });
+    const cache = await storage.get<Record<string, CachedSession>>(
+      STORAGE_KEYS.SESSIONS_CACHE,
+      {
+        defaultValue: {},
+      },
+    );
     return cache ?? {};
   } catch (error) {
     __DEV__ && console.error("Error getting sessions cache:", error);
@@ -238,7 +262,9 @@ export const getSessionsCache = async (): Promise<Record<string, CachedSession>>
   }
 };
 
-export const getSessionFromCache = async (sessionId: string): Promise<CachedSession | null> => {
+export const getSessionFromCache = async (
+  sessionId: string,
+): Promise<CachedSession | null> => {
   try {
     const cache = await getSessionsCache();
     return cache[sessionId] || null;
@@ -249,7 +275,9 @@ export const getSessionFromCache = async (sessionId: string): Promise<CachedSess
 };
 
 // Count Lines Cache Operations
-export const cacheCountLine = async (countLine: Omit<CachedCountLine, "cached_at">) => {
+export const cacheCountLine = async (
+  countLine: Omit<CachedCountLine, "cached_at">,
+) => {
   try {
     const cachedCountLine: CachedCountLine = {
       ...countLine,
@@ -260,7 +288,9 @@ export const cacheCountLine = async (countLine: Omit<CachedCountLine, "cached_at
     const sessionLines = existingCache[countLine.session_id] || [];
 
     // Update or add the count line
-    const existingIndex = sessionLines.findIndex((line) => line._id === countLine._id);
+    const existingIndex = sessionLines.findIndex(
+      (line) => line._id === countLine._id,
+    );
     if (existingIndex >= 0) {
       sessionLines[existingIndex] = cachedCountLine;
     } else {
@@ -280,7 +310,9 @@ export const cacheCountLine = async (countLine: Omit<CachedCountLine, "cached_at
   }
 };
 
-export const getCountLinesCache = async (): Promise<Record<string, CachedCountLine[]>> => {
+export const getCountLinesCache = async (): Promise<
+  Record<string, CachedCountLine[]>
+> => {
   try {
     const cache = await storage.get<Record<string, CachedCountLine[]>>(
       STORAGE_KEYS.COUNT_LINES_CACHE,
@@ -300,7 +332,8 @@ export const getCountLinesBySessionFromCache = async (
     const cache = await getCountLinesCache();
     return cache[sessionId] || [];
   } catch (error) {
-    __DEV__ && console.error("Error getting count lines by session from cache:", error);
+    __DEV__ &&
+      console.error("Error getting count lines by session from cache:", error);
     return [];
   }
 };

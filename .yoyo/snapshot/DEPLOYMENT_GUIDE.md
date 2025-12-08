@@ -178,7 +178,7 @@ mongo admin --eval '
 mongo stock_verification --eval '
   db.createUser({
     user: "stockapp",
-    pwd: "STRONG_APP_PASSWORD", 
+    pwd: "STRONG_APP_PASSWORD",
     roles: [
       { role: "readWrite", db: "stock_verification" }
     ]
@@ -205,7 +205,7 @@ from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 # Security middleware configuration
 app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(
-    TrustedHostMiddleware, 
+    TrustedHostMiddleware,
     allowed_hosts=["yourdomain.com", "*.yourdomain.com"]
 )
 app.add_middleware(
@@ -259,11 +259,11 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:8000']
     metrics_path: '/metrics'
-    
+
   - job_name: 'mongodb_exporter'
     static_configs:
       - targets: ['localhost:9216']
-      
+
   - job_name: 'node_exporter'
     static_configs:
       - targets: ['localhost:9100']
@@ -376,12 +376,12 @@ REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP request laten
 async def metrics_middleware(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
-    
+
     REQUEST_COUNT.labels(
-        method=request.method, 
+        method=request.method,
         endpoint=request.url.path
     ).inc()
-    
+
     REQUEST_LATENCY.observe(time.time() - start_time)
     return response
 

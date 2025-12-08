@@ -3,11 +3,16 @@
  * Fully functional bar chart using React Native Views
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { modernColors, modernTypography, modernSpacing, modernBorderRadius } from '../../styles/modernDesignSystem';
+import React from "react";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+  modernBorderRadius,
+} from "../../styles/modernDesignSystem";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;
 const CHART_HEIGHT = 200;
 const PADDING = 40;
@@ -176,15 +181,15 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.sm,
   },
   chartContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: CHART_HEIGHT + 30,
   },
   yAxis: {
     width: PADDING,
-    position: 'relative',
+    position: "relative",
   },
   yAxisLabel: {
-    position: 'absolute',
+    position: "absolute",
     right: modernSpacing.xs,
   },
   yAxisText: {
@@ -194,41 +199,41 @@ const styles = StyleSheet.create({
   },
   chartArea: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
     height: CHART_HEIGHT,
   },
   gridLine: {
-    position: 'absolute',
+    position: "absolute",
     height: 1,
     backgroundColor: modernColors.border.light,
     opacity: 0.3,
   },
   axisLine: {
-    position: 'absolute',
+    position: "absolute",
     backgroundColor: modernColors.border.medium,
   },
   barContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
   bar: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: modernBorderRadius.xs,
   },
   valueLabel: {
-    position: 'absolute',
+    position: "absolute",
     transform: [{ translateX: -20 }],
   },
   valueText: {
     ...modernTypography.body.small,
     fontSize: 10,
     color: modernColors.text.primary,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   xLabel: {
-    position: 'absolute',
+    position: "absolute",
     transform: [{ translateX: -30 }],
     width: 60,
   },
@@ -236,12 +241,12 @@ const styles = StyleSheet.create({
     ...modernTypography.body.small,
     fontSize: 10,
     color: modernColors.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyState: {
     height: CHART_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.elevated,
     borderRadius: 8,
   },

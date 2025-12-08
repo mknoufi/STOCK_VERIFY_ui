@@ -10,7 +10,7 @@
  * - Performance metrics
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -23,20 +23,20 @@ import {
   RefreshControl,
   Modal,
   TextInput,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { BlurView } from 'expo-blur';
-import { usePermissions } from '../../src/hooks/usePermissions';
-import { ModernCard } from '../../src/components/ModernCard';
-import { ModernButton } from '../../src/components/ModernButton';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { BlurView } from "expo-blur";
+import { usePermissions } from "../../src/hooks/usePermissions";
+import { ModernCard } from "../../src/components/ModernCard";
+import { ModernButton } from "../../src/components/ModernButton";
 import {
   modernColors,
   modernSpacing,
   modernTypography,
   modernBorderRadius,
   modernShadows,
-} from '../../src/styles/modernDesignSystem';
+} from "../../src/styles/modernDesignSystem";
 import {
   getServicesStatus,
   getSystemStats,
@@ -51,17 +51,22 @@ import {
   getSyncStats,
   getVarianceTrend,
   getStaffPerformance,
-} from '../../src/services/api';
-import { SimpleLineChart as LineChart } from '../../src/components/charts/SimpleLineChart';
-import { SimpleBarChart as BarChart } from '../../src/components/charts/SimpleBarChart';
-import { SimplePieChart as PieChart } from '../../src/components/charts/SimplePieChart';
-import { DateRangePicker } from '../../src/components/forms/DateRangePicker';
+} from "../../src/services/api";
+import { SimpleLineChart as LineChart } from "../../src/components/charts/SimpleLineChart";
+import { SimpleBarChart as BarChart } from "../../src/components/charts/SimpleBarChart";
+import { SimplePieChart as PieChart } from "../../src/components/charts/SimplePieChart";
+import { DateRangePicker } from "../../src/components/forms/DateRangePicker";
 
-const { width } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
+const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
 const isTablet = width > 768;
 
-type DashboardTab = 'overview' | 'monitoring' | 'reports' | 'analytics' | 'users';
+type DashboardTab =
+  | "overview"
+  | "monitoring"
+  | "reports"
+  | "analytics"
+  | "users";
 
 interface MetricCard {
   title: string;
@@ -69,13 +74,13 @@ interface MetricCard {
   change?: number;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: "up" | "down" | "neutral";
 }
 
 export default function AdminDashboardWeb() {
   const router = useRouter();
   const { hasRole } = usePermissions();
-  const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
+  const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -94,9 +99,11 @@ export default function AdminDashboardWeb() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [reportFilters, setReportFilters] = useState<any>({});
   const [generating, setGenerating] = useState(false);
-  const [reportFormat, setReportFormat] = useState<'excel' | 'csv' | 'pdf'>('excel');
+  const [reportFormat, setReportFormat] = useState<"excel" | "csv" | "pdf">(
+    "excel",
+  );
   const [reportStartDate, setReportStartDate] = useState<Date>(
-    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
   );
   const [reportEndDate, setReportEndDate] = useState<Date>(new Date());
 
@@ -137,7 +144,10 @@ export default function AdminDashboardWeb() {
         getSystemStats().catch(() => ({ data: null })),
         getMetricsStats().catch(() => ({ data: null })),
         getMetricsHealth().catch(() => ({ data: null })),
-        getAvailableReports().catch(() => ({ success: false, data: { reports: [] } })),
+        getAvailableReports().catch(() => ({
+          success: false,
+          data: { reports: [] },
+        })),
         getSystemIssues().catch(() => ({ data: { issues: [] } })),
         getSystemHealthScore().catch(() => ({ data: null })),
         getSessions(1, 100).catch(() => ({ data: { sessions: [] } })),
@@ -147,46 +157,61 @@ export default function AdminDashboardWeb() {
         getStaffPerformance().catch(() => ({ data: [] })),
       ]);
 
-      if (servicesRes.status === 'fulfilled' && servicesRes.value?.data) {
+      if (servicesRes.status === "fulfilled" && servicesRes.value?.data) {
         setServices(servicesRes.value.data);
       }
-      if (statsRes.status === 'fulfilled' && statsRes.value?.data) {
+      if (statsRes.status === "fulfilled" && statsRes.value?.data) {
         setSystemStats(statsRes.value.data);
       }
-      if (metricsRes.status === 'fulfilled' && metricsRes.value?.data) {
+      if (metricsRes.status === "fulfilled" && metricsRes.value?.data) {
         setMetrics(metricsRes.value.data);
       }
-      if (healthRes.status === 'fulfilled' && healthRes.value?.data) {
+      if (healthRes.status === "fulfilled" && healthRes.value?.data) {
         setHealth(healthRes.value.data);
       }
-      if (reportsRes.status === 'fulfilled' && reportsRes.value?.success) {
+      if (reportsRes.status === "fulfilled" && reportsRes.value?.success) {
         setReports(reportsRes.value.data?.reports || []);
       }
-      if (issuesRes.status === 'fulfilled' && issuesRes.value?.data) {
+      if (issuesRes.status === "fulfilled" && issuesRes.value?.data) {
         setIssues(issuesRes.value.data.issues || []);
       }
-      if (healthScoreRes.status === 'fulfilled' && healthScoreRes.value?.data) {
+      if (healthScoreRes.status === "fulfilled" && healthScoreRes.value?.data) {
         setHealthScore(healthScoreRes.value.data.score);
       }
-      if (sessionsRes.status === 'fulfilled' && sessionsRes.value && 'data' in sessionsRes.value && sessionsRes.value.data) {
+      if (
+        sessionsRes.status === "fulfilled" &&
+        sessionsRes.value &&
+        "data" in sessionsRes.value &&
+        sessionsRes.value.data
+      ) {
         setSessionsData(sessionsRes.value.data.sessions || []);
       }
-      if (analyticsRes.status === 'fulfilled' && analyticsRes.value?.data) {
+      if (analyticsRes.status === "fulfilled" && analyticsRes.value?.data) {
         setSessionsAnalytics(analyticsRes.value.data);
       }
-      if (syncStatsRes.status === 'fulfilled' && syncStatsRes.value?.success && syncStatsRes.value?.data) {
+      if (
+        syncStatsRes.status === "fulfilled" &&
+        syncStatsRes.value?.success &&
+        syncStatsRes.value?.data
+      ) {
         setSyncStats(syncStatsRes.value.data);
       }
-      if (varianceTrendRes.status === 'fulfilled' && varianceTrendRes.value?.data) {
+      if (
+        varianceTrendRes.status === "fulfilled" &&
+        varianceTrendRes.value?.data
+      ) {
         setVarianceTrend(varianceTrendRes.value.data);
       }
-      if (staffPerformanceRes.status === 'fulfilled' && staffPerformanceRes.value?.data) {
+      if (
+        staffPerformanceRes.status === "fulfilled" &&
+        staffPerformanceRes.value?.data
+      ) {
         setStaffPerformance(staffPerformanceRes.value.data);
       }
 
       setLastUpdate(new Date());
     } catch (error: any) {
-      __DEV__ && console.error('Dashboard load error:', error);
+      __DEV__ && console.error("Dashboard load error:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -194,8 +219,8 @@ export default function AdminDashboardWeb() {
   }, []);
 
   useEffect(() => {
-    if (!hasRole('admin')) {
-      router.replace('/admin/control-panel' as any);
+    if (!hasRole("admin")) {
+      router.replace("/admin/control-panel" as any);
       return;
     }
     loadDashboardData();
@@ -210,22 +235,24 @@ export default function AdminDashboardWeb() {
       setGenerating(true);
       const filters = {
         ...reportFilters,
-        start_date: reportStartDate.toISOString().split('T')[0],
-        end_date: reportEndDate.toISOString().split('T')[0],
+        start_date: reportStartDate.toISOString().split("T")[0],
+        end_date: reportEndDate.toISOString().split("T")[0],
         format: reportFormat,
       };
       const response = await generateReport(reportId, reportFormat, filters);
       if (response.success) {
-        alert(`Report "${reportId}" generation started. Download will be available shortly.`);
+        alert(
+          `Report "${reportId}" generation started. Download will be available shortly.`,
+        );
         setShowReportModal(false);
         setSelectedReport(null);
         setReportFilters({});
         setReportStartDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
         setReportEndDate(new Date());
-        setReportFormat('excel');
+        setReportFormat("excel");
       }
     } catch (error: any) {
-      alert(`Error: ${error.message || 'Failed to generate report'}`);
+      alert(`Error: ${error.message || "Failed to generate report"}`);
     } finally {
       setGenerating(false);
     }
@@ -238,7 +265,9 @@ export default function AdminDashboardWeb() {
     // Group sessions by date
     const sessionsByDate: Record<string, number> = {};
     sessionsData.forEach((session: any) => {
-      const date = new Date(session.created_at || session.start_time).toLocaleDateString();
+      const date = new Date(
+        session.created_at || session.start_time,
+      ).toLocaleDateString();
       sessionsByDate[date] = (sessionsByDate[date] || 0) + 1;
     });
 
@@ -256,7 +285,7 @@ export default function AdminDashboardWeb() {
 
     const statusCounts: Record<string, number> = {};
     sessionsData.forEach((session: any) => {
-      const status = session.status || 'unknown';
+      const status = session.status || "unknown";
       statusCounts[status] = (statusCounts[status] || 0) + 1;
     });
 
@@ -280,7 +309,8 @@ export default function AdminDashboardWeb() {
 
     const userActivity: Record<string, number> = {};
     sessionsData.forEach((session: any) => {
-      const user = session.created_by?.username || session.created_by || 'Unknown';
+      const user =
+        session.created_by?.username || session.created_by || "Unknown";
       userActivity[user] = (userActivity[user] || 0) + 1;
     });
 
@@ -288,7 +318,7 @@ export default function AdminDashboardWeb() {
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([label, value]) => ({
-        label: label.length > 15 ? label.substring(0, 15) + '...' : label,
+        label: label.length > 15 ? label.substring(0, 15) + "..." : label,
         value: value as number,
       }));
   };
@@ -314,36 +344,39 @@ export default function AdminDashboardWeb() {
   const getOverviewMetrics = (): MetricCard[] => {
     return [
       {
-        title: 'Active Users',
+        title: "Active Users",
         value: metrics?.users?.active || 0,
         change: 12,
-        icon: 'people',
+        icon: "people",
         color: modernColors.primary[500],
-        trend: 'up',
+        trend: "up",
       },
       {
-        title: 'Total Sessions',
+        title: "Total Sessions",
         value: metrics?.sessions?.total || 0,
         change: 5,
-        icon: 'cube',
+        icon: "cube",
         color: modernColors.secondary[500],
-        trend: 'up',
+        trend: "up",
       },
       {
-        title: 'Items Synced',
+        title: "Items Synced",
         value: metrics?.items?.synced || 0,
         change: -2,
-        icon: 'sync',
+        icon: "sync",
         color: modernColors.accent[500],
-        trend: 'down',
+        trend: "down",
       },
       {
-        title: 'System Health',
-        value: healthScore ? `${healthScore}%` : 'N/A',
+        title: "System Health",
+        value: healthScore ? `${healthScore}%` : "N/A",
         change: healthScore ? healthScore - 95 : 0,
-        icon: 'heart',
-        color: healthScore && healthScore > 80 ? modernColors.success.main : modernColors.error.main,
-        trend: healthScore && healthScore > 80 ? 'up' : 'down',
+        icon: "heart",
+        color:
+          healthScore && healthScore > 80
+            ? modernColors.success.main
+            : modernColors.error.main,
+        trend: healthScore && healthScore > 80 ? "up" : "down",
       },
     ];
   };
@@ -368,11 +401,15 @@ export default function AdminDashboardWeb() {
           >
             <View style={styles.healthBannerContent as any}>
               <View>
-                <Text style={styles.healthBannerTitle as any}>System Health Score</Text>
-                <Text style={styles.healthBannerValue as any}>{healthScore}%</Text>
+                <Text style={styles.healthBannerTitle as any}>
+                  System Health Score
+                </Text>
+                <Text style={styles.healthBannerValue as any}>
+                  {healthScore}%
+                </Text>
               </View>
               <Ionicons
-                name={healthScore > 80 ? 'checkmark-circle' : 'warning'}
+                name={healthScore > 80 ? "checkmark-circle" : "warning"}
                 size={64}
                 color="#FFFFFF"
               />
@@ -404,19 +441,19 @@ export default function AdminDashboardWeb() {
                       styles.trendBadge,
                       {
                         backgroundColor:
-                          metric.trend === 'up'
+                          metric.trend === "up"
                             ? modernColors.success.light
-                            : metric.trend === 'down'
+                            : metric.trend === "down"
                               ? modernColors.error.light
                               : modernColors.neutral[200],
                       },
                     ]}
                   >
                     <Ionicons
-                      name={metric.trend === 'up' ? 'arrow-up' : 'arrow-down'}
+                      name={metric.trend === "up" ? "arrow-up" : "arrow-down"}
                       size={12}
                       color={
-                        metric.trend === 'up'
+                        metric.trend === "up"
                           ? modernColors.success.main
                           : modernColors.error.main
                       }
@@ -426,7 +463,7 @@ export default function AdminDashboardWeb() {
                         styles.trendText,
                         {
                           color:
-                            metric.trend === 'up'
+                            metric.trend === "up"
                               ? modernColors.success.main
                               : modernColors.error.main,
                         },
@@ -460,7 +497,7 @@ export default function AdminDashboardWeb() {
           <ModernCard variant="elevated" style={styles.quickStatCard}>
             <Text style={styles.quickStatLabel}>Sync Errors</Text>
             <Text style={styles.quickStatValue}>
-              {issues.filter((i) => i.type === 'sync').length}
+              {issues.filter((i) => i.type === "sync").length}
             </Text>
           </ModernCard>
         </View>
@@ -473,24 +510,26 @@ export default function AdminDashboardWeb() {
                 <View key={index} style={styles.issueItem}>
                   <Ionicons
                     name={
-                      issue.severity === 'high'
-                        ? 'alert-circle'
-                        : issue.severity === 'medium'
-                          ? 'warning'
-                          : 'information-circle'
+                      issue.severity === "high"
+                        ? "alert-circle"
+                        : issue.severity === "medium"
+                          ? "warning"
+                          : "information-circle"
                     }
                     size={20}
                     color={
-                      issue.severity === 'high'
+                      issue.severity === "high"
                         ? modernColors.error.main
-                        : issue.severity === 'medium'
+                        : issue.severity === "medium"
                           ? modernColors.warning.main
                           : modernColors.info.main
                     }
                   />
                   <View style={styles.issueContent}>
                     <Text style={styles.issueTitle}>{issue.title}</Text>
-                    <Text style={styles.issueDescription}>{issue.description}</Text>
+                    <Text style={styles.issueDescription}>
+                      {issue.description}
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -512,7 +551,8 @@ export default function AdminDashboardWeb() {
                 <View key={key} style={styles.serviceCard}>
                   <View style={styles.serviceHeader}>
                     <Text style={styles.serviceName}>
-                      {key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ')}
+                      {key.charAt(0).toUpperCase() +
+                        key.slice(1).replace("_", " ")}
                     </Text>
                     <View
                       style={[
@@ -542,30 +582,34 @@ export default function AdminDashboardWeb() {
 
         {/* System Stats */}
         {systemStats && (
-          <ModernCard variant="elevated" title="System Statistics" icon="stats-chart">
+          <ModernCard
+            variant="elevated"
+            title="System Statistics"
+            icon="stats-chart"
+          >
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>CPU Usage</Text>
                 <Text style={styles.statValue}>
-                  {systemStats.cpu || 'N/A'}%
+                  {systemStats.cpu || "N/A"}%
                 </Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Memory Usage</Text>
                 <Text style={styles.statValue}>
-                  {systemStats.memory || 'N/A'}%
+                  {systemStats.memory || "N/A"}%
                 </Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Disk Usage</Text>
                 <Text style={styles.statValue}>
-                  {systemStats.disk || 'N/A'}%
+                  {systemStats.disk || "N/A"}%
                 </Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statLabel}>Network I/O</Text>
                 <Text style={styles.statValue}>
-                  {systemStats.network || 'N/A'}
+                  {systemStats.network || "N/A"}
                 </Text>
               </View>
             </View>
@@ -594,7 +638,9 @@ export default function AdminDashboardWeb() {
                     ]}
                   />
                 </View>
-                <Text style={styles.healthMetricValue}>{health.database || 0}%</Text>
+                <Text style={styles.healthMetricValue}>
+                  {health.database || 0}%
+                </Text>
               </View>
               <View style={styles.healthMetric}>
                 <Text style={styles.healthMetricLabel}>API Response</Text>
@@ -683,13 +729,17 @@ export default function AdminDashboardWeb() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Generate Report</Text>
                 <TouchableOpacity onPress={() => setShowReportModal(false)}>
-                  <Ionicons name="close" size={24} color={modernColors.text.primary} />
+                  <Ionicons
+                    name="close"
+                    size={24}
+                    color={modernColors.text.primary}
+                  />
                 </TouchableOpacity>
               </View>
               <ScrollView style={styles.modalBody}>
                 <Text style={styles.modalLabel}>Report Type</Text>
                 <Text style={styles.modalValue}>
-                  {selectedReport || 'Custom Report'}
+                  {selectedReport || "Custom Report"}
                 </Text>
                 <Text style={styles.modalLabel}>Date Range</Text>
                 <DateRangePicker
@@ -703,15 +753,17 @@ export default function AdminDashboardWeb() {
                   <TouchableOpacity
                     style={[
                       styles.formatOption,
-                      reportFormat === 'excel' && styles.formatOptionActive,
+                      reportFormat === "excel" && styles.formatOptionActive,
                     ]}
-                    onPress={() => setReportFormat('excel')}
+                    onPress={() => setReportFormat("excel")}
                   >
                     <Ionicons
-                      name={reportFormat === 'excel' ? 'checkbox' : 'square-outline'}
+                      name={
+                        reportFormat === "excel" ? "checkbox" : "square-outline"
+                      }
                       size={20}
                       color={
-                        reportFormat === 'excel'
+                        reportFormat === "excel"
                           ? modernColors.primary[500]
                           : modernColors.text.secondary
                       }
@@ -719,7 +771,8 @@ export default function AdminDashboardWeb() {
                     <Text
                       style={[
                         styles.formatOptionText,
-                        reportFormat === 'excel' && styles.formatOptionTextActive,
+                        reportFormat === "excel" &&
+                          styles.formatOptionTextActive,
                       ]}
                     >
                       Excel
@@ -728,15 +781,17 @@ export default function AdminDashboardWeb() {
                   <TouchableOpacity
                     style={[
                       styles.formatOption,
-                      reportFormat === 'csv' && styles.formatOptionActive,
+                      reportFormat === "csv" && styles.formatOptionActive,
                     ]}
-                    onPress={() => setReportFormat('csv')}
+                    onPress={() => setReportFormat("csv")}
                   >
                     <Ionicons
-                      name={reportFormat === 'csv' ? 'checkbox' : 'square-outline'}
+                      name={
+                        reportFormat === "csv" ? "checkbox" : "square-outline"
+                      }
                       size={20}
                       color={
-                        reportFormat === 'csv'
+                        reportFormat === "csv"
                           ? modernColors.primary[500]
                           : modernColors.text.secondary
                       }
@@ -744,7 +799,7 @@ export default function AdminDashboardWeb() {
                     <Text
                       style={[
                         styles.formatOptionText,
-                        reportFormat === 'csv' && styles.formatOptionTextActive,
+                        reportFormat === "csv" && styles.formatOptionTextActive,
                       ]}
                     >
                       CSV
@@ -753,15 +808,17 @@ export default function AdminDashboardWeb() {
                   <TouchableOpacity
                     style={[
                       styles.formatOption,
-                      reportFormat === 'pdf' && styles.formatOptionActive,
+                      reportFormat === "pdf" && styles.formatOptionActive,
                     ]}
-                    onPress={() => setReportFormat('pdf')}
+                    onPress={() => setReportFormat("pdf")}
                   >
                     <Ionicons
-                      name={reportFormat === 'pdf' ? 'checkbox' : 'square-outline'}
+                      name={
+                        reportFormat === "pdf" ? "checkbox" : "square-outline"
+                      }
                       size={20}
                       color={
-                        reportFormat === 'pdf'
+                        reportFormat === "pdf"
                           ? modernColors.primary[500]
                           : modernColors.text.secondary
                       }
@@ -769,7 +826,7 @@ export default function AdminDashboardWeb() {
                     <Text
                       style={[
                         styles.formatOptionText,
-                        reportFormat === 'pdf' && styles.formatOptionTextActive,
+                        reportFormat === "pdf" && styles.formatOptionTextActive,
                       ]}
                     >
                       PDF
@@ -783,7 +840,7 @@ export default function AdminDashboardWeb() {
                       style={styles.modalInput}
                       placeholder="Warehouse (optional)"
                       placeholderTextColor={modernColors.text.tertiary}
-                      value={reportFilters.warehouse || ''}
+                      value={reportFilters.warehouse || ""}
                       onChangeText={(text) =>
                         setReportFilters({ ...reportFilters, warehouse: text })
                       }
@@ -792,7 +849,7 @@ export default function AdminDashboardWeb() {
                       style={styles.modalInput}
                       placeholder="Status (optional)"
                       placeholderTextColor={modernColors.text.tertiary}
-                      value={reportFilters.status || ''}
+                      value={reportFilters.status || ""}
                       onChangeText={(text) =>
                         setReportFilters({ ...reportFilters, status: text })
                       }
@@ -807,8 +864,10 @@ export default function AdminDashboardWeb() {
                   variant="outline"
                 />
                 <ModernButton
-                  title={generating ? 'Generating...' : 'Generate Report'}
-                  onPress={() => selectedReport && handleGenerateReport(selectedReport)}
+                  title={generating ? "Generating..." : "Generate Report"}
+                  onPress={() =>
+                    selectedReport && handleGenerateReport(selectedReport)
+                  }
                   variant="primary"
                   loading={generating}
                   disabled={generating}
@@ -880,7 +939,11 @@ export default function AdminDashboardWeb() {
         </ModernCard>
 
         {/* Sessions Over Time Chart */}
-        <ModernCard variant="elevated" title="Sessions Over Time" icon="trending-up">
+        <ModernCard
+          variant="elevated"
+          title="Sessions Over Time"
+          icon="trending-up"
+        >
           {sessionChartData.length > 0 ? (
             <LineChart
               data={sessionChartData}
@@ -893,7 +956,9 @@ export default function AdminDashboardWeb() {
             />
           ) : (
             <View style={styles.emptyChart}>
-              <Text style={styles.emptyChartText}>No session data available</Text>
+              <Text style={styles.emptyChartText}>
+                No session data available
+              </Text>
             </View>
           )}
         </ModernCard>
@@ -910,7 +975,9 @@ export default function AdminDashboardWeb() {
               <PieChart data={statusChartData} showLegend />
             ) : (
               <View style={styles.emptyChart}>
-                <Text style={styles.emptyChartText}>No status data available</Text>
+                <Text style={styles.emptyChartText}>
+                  No status data available
+                </Text>
               </View>
             )}
           </ModernCard>
@@ -953,7 +1020,9 @@ export default function AdminDashboardWeb() {
               />
             ) : (
               <View style={styles.emptyChart}>
-                <Text style={styles.emptyChartText}>No variance data available</Text>
+                <Text style={styles.emptyChartText}>
+                  No variance data available
+                </Text>
               </View>
             )}
           </ModernCard>
@@ -973,7 +1042,9 @@ export default function AdminDashboardWeb() {
               />
             ) : (
               <View style={styles.emptyChart}>
-                <Text style={styles.emptyChartText}>No staff performance data</Text>
+                <Text style={styles.emptyChartText}>
+                  No staff performance data
+                </Text>
               </View>
             )}
           </ModernCard>
@@ -981,7 +1052,11 @@ export default function AdminDashboardWeb() {
 
         {/* Analytics Summary */}
         {sessionsAnalytics && (
-          <ModernCard variant="elevated" title="Analytics Summary" icon="stats-chart">
+          <ModernCard
+            variant="elevated"
+            title="Analytics Summary"
+            icon="stats-chart"
+          >
             <View style={styles.analyticsSummary}>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Total Sessions</Text>
@@ -993,22 +1068,28 @@ export default function AdminDashboardWeb() {
                 <Text style={styles.summaryLabel}>Completed Sessions</Text>
                 <Text style={styles.summaryValue}>
                   {sessionsAnalytics.completed_sessions ||
-                    sessionsData.filter((s: any) => s.status === 'closed').length}
+                    sessionsData.filter((s: any) => s.status === "closed")
+                      .length}
                 </Text>
               </View>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Active Sessions</Text>
                 <Text style={styles.summaryValue}>
                   {sessionsAnalytics.active_sessions ||
-                    sessionsData.filter((s: any) => s.status === 'open' || s.status === 'in_progress').length}
+                    sessionsData.filter(
+                      (s: any) =>
+                        s.status === "open" || s.status === "in_progress",
+                    ).length}
                 </Text>
               </View>
               <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Average Items per Session</Text>
+                <Text style={styles.summaryLabel}>
+                  Average Items per Session
+                </Text>
                 <Text style={styles.summaryValue}>
                   {sessionsAnalytics.avg_items_per_session
                     ? Math.round(sessionsAnalytics.avg_items_per_session)
-                    : 'N/A'}
+                    : "N/A"}
                 </Text>
               </View>
             </View>
@@ -1024,7 +1105,7 @@ export default function AdminDashboardWeb() {
                 <Text style={styles.syncStatValue}>
                   {syncStats.last_sync
                     ? new Date(syncStats.last_sync).toLocaleString()
-                    : 'Never'}
+                    : "Never"}
                 </Text>
               </View>
               <View style={styles.syncStatItem}>
@@ -1040,16 +1121,16 @@ export default function AdminDashboardWeb() {
                     styles.syncStatusBadge,
                     {
                       backgroundColor:
-                        syncStats.status === 'success'
+                        syncStats.status === "success"
                           ? modernColors.success.main
-                          : syncStats.status === 'error'
+                          : syncStats.status === "error"
                             ? modernColors.error.main
                             : modernColors.warning.main,
                     },
                   ]}
                 >
                   <Text style={styles.syncStatusText}>
-                    {syncStats.status || 'Unknown'}
+                    {syncStats.status || "Unknown"}
                   </Text>
                 </View>
               </View>
@@ -1059,40 +1140,60 @@ export default function AdminDashboardWeb() {
 
         {/* Performance Metrics */}
         {metrics && (
-          <ModernCard variant="elevated" title="Performance Metrics" icon="speedometer">
+          <ModernCard
+            variant="elevated"
+            title="Performance Metrics"
+            icon="speedometer"
+          >
             <View style={styles.performanceGrid}>
               <View style={styles.performanceItem}>
-                <Ionicons name="time" size={24} color={modernColors.primary[500]} />
+                <Ionicons
+                  name="time"
+                  size={24}
+                  color={modernColors.primary[500]}
+                />
                 <Text style={styles.performanceLabel}>Avg Response Time</Text>
                 <Text style={styles.performanceValue}>
                   {metrics.avg_response_time
                     ? `${metrics.avg_response_time}ms`
-                    : 'N/A'}
+                    : "N/A"}
                 </Text>
               </View>
               <View style={styles.performanceItem}>
-                <Ionicons name="server" size={24} color={modernColors.secondary[500]} />
+                <Ionicons
+                  name="server"
+                  size={24}
+                  color={modernColors.secondary[500]}
+                />
                 <Text style={styles.performanceLabel}>API Requests</Text>
                 <Text style={styles.performanceValue}>
                   {metrics.total_requests || 0}
                 </Text>
               </View>
               <View style={styles.performanceItem}>
-                <Ionicons name="checkmark-circle" size={24} color={modernColors.success.main} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={modernColors.success.main}
+                />
                 <Text style={styles.performanceLabel}>Success Rate</Text>
                 <Text style={styles.performanceValue}>
                   {metrics.success_rate
                     ? `${(metrics.success_rate * 100).toFixed(1)}%`
-                    : 'N/A'}
+                    : "N/A"}
                 </Text>
               </View>
               <View style={styles.performanceItem}>
-                <Ionicons name="alert-circle" size={24} color={modernColors.error.main} />
+                <Ionicons
+                  name="alert-circle"
+                  size={24}
+                  color={modernColors.error.main}
+                />
                 <Text style={styles.performanceLabel}>Error Rate</Text>
                 <Text style={styles.performanceValue}>
                   {metrics.error_rate
                     ? `${(metrics.error_rate * 100).toFixed(1)}%`
-                    : 'N/A'}
+                    : "N/A"}
                 </Text>
               </View>
             </View>
@@ -1144,11 +1245,15 @@ export default function AdminDashboardWeb() {
       <View style={styles.tabs}>
         {(
           [
-            { id: 'overview', label: 'Overview', icon: 'grid' },
-            { id: 'monitoring', label: 'Monitoring', icon: 'pulse' },
-            { id: 'reports', label: 'Reports', icon: 'document-text' },
-            { id: 'analytics', label: 'Analytics', icon: 'stats-chart' },
-          ] as { id: DashboardTab; label: string; icon: keyof typeof Ionicons.glyphMap }[]
+            { id: "overview", label: "Overview", icon: "grid" },
+            { id: "monitoring", label: "Monitoring", icon: "pulse" },
+            { id: "reports", label: "Reports", icon: "document-text" },
+            { id: "analytics", label: "Analytics", icon: "stats-chart" },
+          ] as {
+            id: DashboardTab;
+            label: string;
+            icon: keyof typeof Ionicons.glyphMap;
+          }[]
         ).map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -1187,10 +1292,10 @@ export default function AdminDashboardWeb() {
           />
         }
       >
-        {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'monitoring' && renderMonitoring()}
-        {activeTab === 'reports' && renderReports()}
-        {activeTab === 'analytics' && renderAnalytics()}
+        {activeTab === "overview" && renderOverview()}
+        {activeTab === "monitoring" && renderMonitoring()}
+        {activeTab === "reports" && renderReports()}
+        {activeTab === "analytics" && renderAnalytics()}
       </ScrollView>
     </View>
   );
@@ -1203,8 +1308,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.default,
   },
   loadingText: {
@@ -1213,9 +1318,9 @@ const styles = StyleSheet.create({
     marginTop: modernSpacing.md,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: modernSpacing.lg,
     backgroundColor: modernColors.background.paper,
     borderBottomWidth: 1,
@@ -1231,20 +1336,20 @@ const styles = StyleSheet.create({
     marginTop: modernSpacing.xs,
   },
   tabs: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: modernColors.background.paper,
     borderBottomWidth: 1,
     borderBottomColor: modernColors.border.light,
     paddingHorizontal: modernSpacing.md,
   },
   tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: modernSpacing.md,
     paddingHorizontal: modernSpacing.lg,
     gap: modernSpacing.sm,
     borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    borderBottomColor: "transparent",
   },
   tabActive: {
     borderBottomColor: modernColors.primary[500],
@@ -1252,11 +1357,11 @@ const styles = StyleSheet.create({
   tabLabel: {
     ...modernTypography.body.medium,
     color: modernColors.text.secondary,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   tabLabelActive: {
     color: modernColors.primary[500],
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
@@ -1269,46 +1374,50 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.md,
   },
   healthBannerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   healthBannerTitle: {
     ...modernTypography.body.medium,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     opacity: 0.9,
   },
   healthBannerValue: {
     ...modernTypography.display.small,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     marginTop: modernSpacing.xs,
   },
   metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.md,
     marginBottom: modernSpacing.lg,
   },
   metricCard: {
-    flex: (isWeb && isTablet ? '0 0 calc(25% - 12px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet
+      ? "0 0 calc(25% - 12px)"
+      : isWeb
+        ? "0 0 calc(50% - 12px)"
+        : "0 0 100%") as any,
     minWidth: 200,
   },
   metricHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: modernSpacing.md,
   },
   metricIconContainer: {
     width: 48,
     height: 48,
     borderRadius: modernBorderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   trendBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: modernSpacing.xs,
     paddingHorizontal: modernSpacing.sm,
     paddingVertical: 2,
@@ -1316,7 +1425,7 @@ const styles = StyleSheet.create({
   },
   trendText: {
     ...modernTypography.label.small,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   metricValue: {
     ...modernTypography.h2,
@@ -1328,7 +1437,7 @@ const styles = StyleSheet.create({
     color: modernColors.text.secondary,
   },
   quickStatsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: modernSpacing.md,
     marginBottom: modernSpacing.lg,
   },
@@ -1348,7 +1457,7 @@ const styles = StyleSheet.create({
     gap: modernSpacing.md,
   },
   issueItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: modernSpacing.md,
     paddingVertical: modernSpacing.sm,
   },
@@ -1358,7 +1467,7 @@ const styles = StyleSheet.create({
   issueTitle: {
     ...modernTypography.body.medium,
     color: modernColors.text.primary,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: modernSpacing.xs,
   },
   issueDescription: {
@@ -1366,12 +1475,16 @@ const styles = StyleSheet.create({
     color: modernColors.text.secondary,
   },
   servicesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.md,
   },
   serviceCard: {
-    flex: (isWeb && isTablet ? '0 0 calc(25% - 12px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet
+      ? "0 0 calc(25% - 12px)"
+      : isWeb
+        ? "0 0 calc(50% - 12px)"
+        : "0 0 100%") as any,
     padding: modernSpacing.md,
     backgroundColor: modernColors.background.elevated,
     borderRadius: modernBorderRadius.md,
@@ -1379,15 +1492,15 @@ const styles = StyleSheet.create({
     borderColor: modernColors.border.light,
   },
   serviceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: modernSpacing.sm,
   },
   serviceName: {
     ...modernTypography.body.medium,
     color: modernColors.text.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   serviceStatus: {
     width: 12,
@@ -1404,12 +1517,12 @@ const styles = StyleSheet.create({
     color: modernColors.text.tertiary,
   },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.lg,
   },
   statItem: {
-    flex: (isWeb ? '0 0 calc(25% - 18px)' : '0 0 calc(50% - 12px)') as any,
+    flex: (isWeb ? "0 0 calc(25% - 18px)" : "0 0 calc(50% - 12px)") as any,
   },
   statLabel: {
     ...modernTypography.body.small,
@@ -1434,10 +1547,10 @@ const styles = StyleSheet.create({
     height: 8,
     backgroundColor: modernColors.background.elevated,
     borderRadius: modernBorderRadius.full,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   healthBarFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: modernBorderRadius.full,
   },
   healthMetricValue: {
@@ -1450,42 +1563,46 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.lg,
   },
   reportsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: modernSpacing.lg,
   },
   reportsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.md,
   },
   reportCard: {
-    flex: (isWeb && isTablet ? '0 0 calc(33.333% - 16px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet
+      ? "0 0 calc(33.333% - 16px)"
+      : isWeb
+        ? "0 0 calc(50% - 12px)"
+        : "0 0 100%") as any,
     minWidth: 300,
   },
   reportActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: modernSpacing.sm,
     marginTop: modernSpacing.md,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    width: isWeb ? 600 : '90%',
-    maxHeight: '80%',
+    width: isWeb ? 600 : "90%",
+    maxHeight: "80%",
     backgroundColor: modernColors.background.paper,
     borderRadius: modernBorderRadius.modal,
     ...modernShadows.xl,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: modernSpacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: modernColors.border.light,
@@ -1518,7 +1635,7 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.md,
   },
   formatOptions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: modernSpacing.sm,
   },
   formatOption: {
@@ -1528,34 +1645,34 @@ const styles = StyleSheet.create({
     borderRadius: modernBorderRadius.md,
     borderWidth: 1,
     borderColor: modernColors.border.light,
-    alignItems: 'center',
+    alignItems: "center",
   },
   formatOptionText: {
     ...modernTypography.body.medium,
     color: modernColors.text.primary,
   },
   modalFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     gap: modernSpacing.md,
     padding: modernSpacing.lg,
     borderTopWidth: 1,
     borderTopColor: modernColors.border.light,
   },
   chartsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.md,
     marginBottom: modernSpacing.lg,
   },
   chartCard: {
-    flex: (isWeb && isTablet ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb && isTablet ? "0 0 calc(50% - 12px)" : "0 0 100%") as any,
     minWidth: 300,
   },
   emptyChart: {
     height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.elevated,
     borderRadius: modernBorderRadius.md,
   },
@@ -1564,17 +1681,17 @@ const styles = StyleSheet.create({
     color: modernColors.text.secondary,
   },
   quickDateButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: modernSpacing.sm,
     marginTop: modernSpacing.md,
   },
   analyticsSummary: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.lg,
   },
   summaryItem: {
-    flex: (isWeb ? '0 0 calc(25% - 18px)' : '0 0 calc(50% - 12px)') as any,
+    flex: (isWeb ? "0 0 calc(25% - 18px)" : "0 0 calc(50% - 12px)") as any,
     padding: modernSpacing.md,
     backgroundColor: modernColors.background.elevated,
     borderRadius: modernBorderRadius.md,
@@ -1589,12 +1706,12 @@ const styles = StyleSheet.create({
     color: modernColors.text.primary,
   },
   syncStats: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.md,
   },
   syncStatItem: {
-    flex: (isWeb ? '0 0 calc(33.333% - 12px)' : '0 0 100%') as any,
+    flex: (isWeb ? "0 0 calc(33.333% - 12px)" : "0 0 100%") as any,
   },
   syncStatLabel: {
     ...modernTypography.body.small,
@@ -1604,29 +1721,33 @@ const styles = StyleSheet.create({
   syncStatValue: {
     ...modernTypography.body.large,
     color: modernColors.text.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   syncStatusBadge: {
     paddingHorizontal: modernSpacing.md,
     paddingVertical: modernSpacing.xs,
     borderRadius: modernBorderRadius.full,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginTop: modernSpacing.xs,
   },
   syncStatusText: {
     ...modernTypography.body.small,
-    color: '#FFFFFF',
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    color: "#FFFFFF",
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
   performanceGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: modernSpacing.md,
   },
   performanceItem: {
-    flex: (isWeb && isTablet ? '0 0 calc(25% - 12px)' : isWeb ? '0 0 calc(50% - 12px)' : '0 0 100%') as any,
-    alignItems: 'center',
+    flex: (isWeb && isTablet
+      ? "0 0 calc(25% - 12px)"
+      : isWeb
+        ? "0 0 calc(50% - 12px)"
+        : "0 0 100%") as any,
+    alignItems: "center",
     padding: modernSpacing.md,
     backgroundColor: modernColors.background.elevated,
     borderRadius: modernBorderRadius.md,
@@ -1635,13 +1756,13 @@ const styles = StyleSheet.create({
     ...modernTypography.body.small,
     color: modernColors.text.secondary,
     marginTop: modernSpacing.sm,
-    textAlign: 'center',
+    textAlign: "center",
   },
   performanceValue: {
     ...modernTypography.h4,
     color: modernColors.text.primary,
     marginTop: modernSpacing.xs,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   formatOptionActive: {
     borderColor: modernColors.primary[500],
@@ -1650,6 +1771,6 @@ const styles = StyleSheet.create({
   },
   formatOptionTextActive: {
     color: modernColors.primary[500],
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

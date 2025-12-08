@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const storage = {
   getItem: async (key: string): Promise<string | null> => {
@@ -13,7 +13,7 @@ export const storage = {
     try {
       await AsyncStorage.setItem(key, value);
     } catch (error) {
-      console.error('Storage setItem error:', error);
+      console.error("Storage setItem error:", error);
     }
   },
 
@@ -21,12 +21,13 @@ export const storage = {
     try {
       await AsyncStorage.removeItem(key);
     } catch (error) {
-      console.error('Storage removeItem error:', error);
+      console.error("Storage removeItem error:", error);
     }
   },
 
   // Additional methods for compatibility
   get: async (key: string): Promise<string | null> => storage.getItem(key),
-  set: async (key: string, value: string): Promise<void> => storage.setItem(key, value),
+  set: async (key: string, value: string): Promise<void> =>
+    storage.setItem(key, value),
   remove: async (key: string): Promise<void> => storage.removeItem(key),
 };

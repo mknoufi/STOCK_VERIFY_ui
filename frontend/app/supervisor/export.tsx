@@ -43,12 +43,17 @@ export default function ExportReports() {
       console.log("✅ [Export] Exporting", sessions.length, "sessions");
       await ExportService.exportSessions(sessions);
 
-      Alert.alert("Export Successful", `Exported ${sessions.length} sessions to Excel file`, [
-        { text: "OK" },
-      ]);
+      Alert.alert(
+        "Export Successful",
+        `Exported ${sessions.length} sessions to Excel file`,
+        [{ text: "OK" }],
+      );
     } catch (error: any) {
       console.error("❌ [Export] Session export failed:", error);
-      Alert.alert("Export Failed", error.message || "Failed to export sessions. Please try again.");
+      Alert.alert(
+        "Export Failed",
+        error.message || "Failed to export sessions. Please try again.",
+      );
     } finally {
       setLoading(false);
       setExportType(null);
@@ -76,7 +81,9 @@ export default function ExportReports() {
             text: "Export",
             onPress: async () => {
               try {
-                console.log("📊 [Export] Fetching all sessions with details...");
+                console.log(
+                  "📊 [Export] Fetching all sessions with details...",
+                );
                 const result = await getSessions(1, 10000);
                 const sessions = result.items || [];
 
@@ -86,7 +93,11 @@ export default function ExportReports() {
                 }
 
                 // Export with detailed count lines
-                console.log("✅ [Export] Exporting detailed data for", sessions.length, "sessions");
+                console.log(
+                  "✅ [Export] Exporting detailed data for",
+                  sessions.length,
+                  "sessions",
+                );
                 await ExportService.exportSessionsWithDetails(sessions);
 
                 Alert.alert(
@@ -96,7 +107,10 @@ export default function ExportReports() {
                 );
               } catch (error: any) {
                 console.error("❌ [Export] Details export failed:", error);
-                Alert.alert("Export Failed", error.message || "Failed to export details");
+                Alert.alert(
+                  "Export Failed",
+                  error.message || "Failed to export details",
+                );
               } finally {
                 setLoading(false);
                 setExportType(null);
@@ -127,14 +141,20 @@ export default function ExportReports() {
       }
 
       // Filter sessions with variance
-      const varianceSessions = sessions.filter((s: any) => Math.abs(s.total_variance || 0) > 0);
+      const varianceSessions = sessions.filter(
+        (s: any) => Math.abs(s.total_variance || 0) > 0,
+      );
 
       if (varianceSessions.length === 0) {
         Alert.alert("No Variance", "No sessions with variance found");
         return;
       }
 
-      console.log("✅ [Export] Exporting variance report for", varianceSessions.length, "sessions");
+      console.log(
+        "✅ [Export] Exporting variance report for",
+        varianceSessions.length,
+        "sessions",
+      );
       await ExportService.exportVarianceReport(varianceSessions);
 
       Alert.alert(
@@ -144,7 +164,10 @@ export default function ExportReports() {
       );
     } catch (error: any) {
       console.error("❌ [Export] Variance report failed:", error);
-      Alert.alert("Export Failed", error.message || "Failed to export variance report");
+      Alert.alert(
+        "Export Failed",
+        error.message || "Failed to export variance report",
+      );
     } finally {
       setLoading(false);
       setExportType(null);
@@ -165,15 +188,24 @@ export default function ExportReports() {
         return;
       }
 
-      console.log("✅ [Export] Exporting summary report for", sessions.length, "sessions");
+      console.log(
+        "✅ [Export] Exporting summary report for",
+        sessions.length,
+        "sessions",
+      );
       await ExportService.exportSummaryReport(sessions);
 
-      Alert.alert("Export Successful", `Exported summary report with ${sessions.length} sessions`, [
-        { text: "OK" },
-      ]);
+      Alert.alert(
+        "Export Successful",
+        `Exported summary report with ${sessions.length} sessions`,
+        [{ text: "OK" }],
+      );
     } catch (error: any) {
       console.error("❌ [Export] Summary report failed:", error);
-      Alert.alert("Export Failed", error.message || "Failed to export summary report");
+      Alert.alert(
+        "Export Failed",
+        error.message || "Failed to export summary report",
+      );
     } finally {
       setLoading(false);
       setExportType(null);
@@ -220,7 +252,10 @@ export default function ExportReports() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <View>
@@ -232,7 +267,10 @@ export default function ExportReports() {
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>📊 Available Reports</Text>
 
@@ -277,12 +315,18 @@ export default function ExportReports() {
           <Ionicons name="information-circle-outline" size={24} color="#888" />
           <View style={styles.infoContent}>
             <Text style={styles.infoTitle}>Export Information</Text>
-            <Text style={styles.infoText}>• Reports are generated in Excel format (.xlsx)</Text>
+            <Text style={styles.infoText}>
+              • Reports are generated in Excel format (.xlsx)
+            </Text>
             <Text style={styles.infoText}>
               • Files are saved to your device&apos;s Downloads folder
             </Text>
-            <Text style={styles.infoText}>• Large exports may take a few moments to generate</Text>
-            <Text style={styles.infoText}>• Check your file manager after export completes</Text>
+            <Text style={styles.infoText}>
+              • Large exports may take a few moments to generate
+            </Text>
+            <Text style={styles.infoText}>
+              • Check your file manager after export completes
+            </Text>
           </View>
         </View>
       </ScrollView>

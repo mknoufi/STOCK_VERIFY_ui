@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, FlatList, StyleSheet, RefreshControl, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  Pressable,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { flags } from "../../src/constants/flags";
 import {
@@ -63,11 +70,17 @@ export default function OfflineQueueScreen() {
       <FlatList
         data={queue}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
-        ListHeaderComponent={
-          <Text style={styles.sectionTitle}>Queued Mutations ({queue.length})</Text>
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={load} />
         }
-        ListEmptyComponent={<Text style={styles.muted}>No queued mutations</Text>}
+        ListHeaderComponent={
+          <Text style={styles.sectionTitle}>
+            Queued Mutations ({queue.length})
+          </Text>
+        }
+        ListEmptyComponent={
+          <Text style={styles.muted}>No queued mutations</Text>
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
@@ -90,11 +103,15 @@ export default function OfflineQueueScreen() {
         )}
       />
 
-      <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Conflicts ({conflicts.length})</Text>
+      <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
+        Conflicts ({conflicts.length})
+      </Text>
       <FlatList
         data={conflicts}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={load} />
+        }
         ListEmptyComponent={<Text style={styles.muted}>No conflicts</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -105,10 +122,21 @@ export default function OfflineQueueScreen() {
               At: {new Date(item.timestamp || item.createdAt).toLocaleString()}
             </Text>
             <Text style={styles.cardDetail} numberOfLines={4}>
-              {typeof item.detail === "string" ? item.detail : JSON.stringify(item.detail)}
+              {typeof item.detail === "string"
+                ? item.detail
+                : JSON.stringify(item.detail)}
             </Text>
-            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 8 }}>
-              <Pressable onPress={() => resolveConflict(item.id).then(load)} style={styles.navBtn}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                marginTop: 8,
+              }}
+            >
+              <Pressable
+                onPress={() => resolveConflict(item.id).then(load)}
+                style={styles.navBtn}
+              >
                 <Text style={styles.navText}>Dismiss</Text>
               </Pressable>
             </View>
@@ -137,7 +165,12 @@ const styles = StyleSheet.create({
   navText: { color: "#E0E0E0", fontSize: 12, fontWeight: "600" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   muted: { color: "#9CA3AF" },
-  sectionTitle: { color: "#CBD5E1", fontSize: 14, fontWeight: "700", marginBottom: 8 },
+  sectionTitle: {
+    color: "#CBD5E1",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
   card: {
     backgroundColor: "#111827",
     borderRadius: 10,
@@ -146,7 +179,12 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: "#374151",
   },
-  cardTitle: { color: "#F9FAFB", fontSize: 14, fontWeight: "700", marginBottom: 6 },
+  cardTitle: {
+    color: "#F9FAFB",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
   cardMeta: { color: "#9CA3AF", fontSize: 12 },
   cardDetail: { color: "#CBD5E1", fontSize: 12, marginTop: 8 },
 });

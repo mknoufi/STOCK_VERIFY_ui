@@ -3,16 +3,16 @@
  * Handles in-app notifications, badges, and alerts
  */
 
-import { Platform } from 'react-native';
-import Notifications, { NotificationTriggerInput } from 'expo-notifications';
-import { errorReporter } from './errorRecovery';
+import { Platform } from "react-native";
+import Notifications, { NotificationTriggerInput } from "expo-notifications";
+import { errorReporter } from "./errorRecovery";
 
 export interface NotificationOptions {
   title: string;
   body: string;
   data?: any;
   sound?: boolean;
-  priority?: 'default' | 'high' | 'max';
+  priority?: "default" | "high" | "max";
   badge?: number;
 }
 
@@ -32,16 +32,17 @@ export class NotificationService {
 
     try {
       // Request permissions
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
-      if (existingStatus !== 'granted') {
+      if (existingStatus !== "granted") {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
       }
 
-      if (finalStatus !== 'granted') {
-        __DEV__ && console.warn('Notification permissions not granted');
+      if (finalStatus !== "granted") {
+        __DEV__ && console.warn("Notification permissions not granted");
         return;
       }
 
@@ -58,7 +59,7 @@ export class NotificationService {
 
       this.initialized = true;
     } catch (error) {
-      errorReporter.report(error, 'NotificationService.initialize');
+      errorReporter.report(error, "NotificationService.initialize");
     }
   }
 
@@ -76,12 +77,12 @@ export class NotificationService {
           data: options.data,
           sound: options.sound !== false,
           badge: options.badge,
-          priority: options.priority || 'default',
+          priority: options.priority || "default",
         },
         trigger: null, // Show immediately
       });
     } catch (error) {
-      errorReporter.report(error, 'NotificationService.showNotification');
+      errorReporter.report(error, "NotificationService.showNotification");
     }
   }
 
@@ -90,14 +91,16 @@ export class NotificationService {
    */
   static async scheduleNotification(
     options: NotificationOptions,
-    trigger: Date | { seconds: number }
+    trigger: Date | { seconds: number },
   ) {
     try {
       await this.initialize();
 
-      const triggerValue = (trigger instanceof Date
-        ? { type: 'date', date: trigger }
-        : { type: 'timeInterval', seconds: trigger.seconds }) as NotificationTriggerInput;
+      const triggerValue = (
+        trigger instanceof Date
+          ? { type: "date", date: trigger }
+          : { type: "timeInterval", seconds: trigger.seconds }
+      ) as NotificationTriggerInput;
 
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -109,7 +112,7 @@ export class NotificationService {
         trigger: triggerValue,
       });
     } catch (error) {
-      errorReporter.report(error, 'NotificationService.scheduleNotification');
+      errorReporter.report(error, "NotificationService.scheduleNotification");
     }
   }
 
@@ -120,7 +123,7 @@ export class NotificationService {
     try {
       await Notifications.cancelScheduledNotificationAsync(notificationId);
     } catch (error) {
-      errorReporter.report(error, 'NotificationService.cancelNotification');
+      errorReporter.report(error, "NotificationService.cancelNotification");
     }
   }
 
@@ -131,7 +134,7 @@ export class NotificationService {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
     } catch (error) {
-      errorReporter.report(error, 'NotificationService.cancelAllNotifications');
+      errorReporter.report(error, "NotificationService.cancelAllNotifications");
     }
   }
 
@@ -140,11 +143,11 @@ export class NotificationService {
    */
   static async setBadgeCount(count: number) {
     try {
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === "ios") {
         await Notifications.setBadgeCountAsync(count);
       }
     } catch (error) {
-      errorReporter.report(error, 'NotificationService.setBadgeCount');
+      errorReporter.report(error, "NotificationService.setBadgeCount");
     }
   }
 
@@ -162,41 +165,41 @@ export class NotificationService {
 export const notify = {
   success: (message: string) => {
     NotificationService.showNotification({
-      title: 'Success',
+      title: "Success",
       body: message,
-      priority: 'default',
+      priority: "default",
     });
   },
 
   error: (message: string) => {
     NotificationService.showNotification({
-      title: 'Error',
+      title: "Error",
       body: message,
-      priority: 'high',
+      priority: "high",
     });
   },
 
   info: (message: string) => {
     NotificationService.showNotification({
-      title: 'Info',
+      title: "Info",
       body: message,
-      priority: 'default',
+      priority: "default",
     });
   },
 
   warning: (message: string) => {
     NotificationService.showNotification({
-      title: 'Warning',
+      title: "Warning",
       body: message,
-      priority: 'default',
+      priority: "default",
     });
   },
 
   syncComplete: (success: number, failed: number) => {
     NotificationService.showNotification({
-      title: 'Sync Complete',
-      body: `Synced ${success} items${failed > 0 ? `, ${failed} failed` : ''}`,
-      priority: 'default',
+      title: "Sync Complete",
+      body: `Synced ${success} items${failed > 0 ? `, ${failed} failed` : ""}`,
+      priority: "default",
     });
   },
 };

@@ -45,10 +45,10 @@ class SystemReportService:
         query = {}
         if start_date:
             query["timestamp"] = {"$gte": start_date}
-        
+
         cursor = self.db.login_history.find(query).sort("timestamp", -1).limit(100)
         logs = await cursor.to_list(length=100)
-        
+
         # Transform for report
         return [
             {

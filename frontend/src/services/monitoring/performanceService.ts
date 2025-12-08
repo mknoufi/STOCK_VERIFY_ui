@@ -8,7 +8,7 @@
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number = 300
+  wait: number = 300,
 ): (...args: Parameters<T>) => void {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -31,7 +31,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number = 1000
+  limit: number = 1000,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
 
@@ -49,14 +49,12 @@ export function throttle<T extends (...args: any[]) => any>(
  */
 export function memoize<T extends (...args: any[]) => any>(
   func: T,
-  keyGenerator?: (...args: Parameters<T>) => string
+  keyGenerator?: (...args: Parameters<T>) => string,
 ): T {
   const cache = new Map<string, ReturnType<T>>();
 
   return ((...args: Parameters<T>): ReturnType<T> => {
-    const key = keyGenerator
-      ? keyGenerator(...args)
-      : JSON.stringify(args);
+    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
 
     if (cache.has(key)) {
       return cache.get(key)!;
@@ -126,7 +124,7 @@ export class BatchProcessor<T> {
   async process(
     items: T[],
     processor: (batch: T[]) => Promise<void>,
-    onProgress?: (current: number, total: number) => void
+    onProgress?: (current: number, total: number) => void,
   ): Promise<void> {
     const total = items.length;
     let processed = 0;
@@ -142,7 +140,7 @@ export class BatchProcessor<T> {
 
       // Delay between batches
       if (i + this.batchSize < items.length) {
-        await new Promise(resolve => setTimeout(resolve, this.delay));
+        await new Promise((resolve) => setTimeout(resolve, this.delay));
       }
     }
   }
@@ -152,7 +150,10 @@ export class BatchProcessor<T> {
  * Cache manager - manages application cache
  */
 export class CacheManager {
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private cache = new Map<
+    string,
+    { data: any; timestamp: number; ttl: number }
+  >();
 
   set(key: string, data: any, ttl: number = 60000): void {
     this.cache.set(key, {
@@ -204,8 +205,11 @@ export class CacheManager {
 export const appCache = new CacheManager();
 
 // Auto-cleanup every 5 minutes
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    appCache.cleanup();
-  }, 5 * 60 * 1000);
+if (typeof setInterval !== "undefined") {
+  setInterval(
+    () => {
+      appCache.cleanup();
+    },
+    5 * 60 * 1000,
+  );
 }

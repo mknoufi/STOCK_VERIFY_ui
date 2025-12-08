@@ -3,9 +3,10 @@ API v2 Health Endpoints
 Enhanced health check endpoints with detailed service status
 """
 
-from fastapi import APIRouter, Depends
-from typing import Dict, Any
 from datetime import datetime
+from typing import Any, Dict
+
+from fastapi import APIRouter, Depends
 
 from backend.api.response_models import ApiResponse, HealthCheckResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
@@ -21,7 +22,7 @@ async def health_check_v2() -> ApiResponse[HealthCheckResponse]:
     """
     try:
         # Import here to avoid circular dependencies
-        from backend.server import database_health_service, connection_pool, cache_service
+        from backend.server import cache_service, connection_pool, database_health_service
 
         services: Dict[str, Dict[str, Any]] = {}
 
@@ -109,9 +110,9 @@ async def detailed_health_check(
     """
     try:
         from backend.server import (
-            database_health_service,
-            connection_pool,
             cache_service,
+            connection_pool,
+            database_health_service,
             monitoring_service,
         )
 

@@ -17,14 +17,18 @@ import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../src/hooks/useTheme";
-import { ItemVerificationAPI, VarianceItem } from "../../src/services/api/itemVerificationApi";
+import {
+  ItemVerificationAPI,
+  VarianceItem,
+} from "../../src/services/api/itemVerificationApi";
 import { ItemFilters, FilterValues } from "../../src/components/ItemFilters";
 import { exportVariancesToCSV, downloadCSV } from "../../src/utils/csvExport";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
 const getLocalFileUri = (filename: string) => {
-  const baseDir = FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
+  const baseDir =
+    FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
   return `${baseDir}${filename}`;
 };
 
@@ -162,12 +166,18 @@ export default function VariancesScreen() {
       >
         <View style={styles.varianceHeader}>
           <View style={styles.varianceHeaderLeft}>
-            <Text style={[styles.itemName, { color: theme.colors.text }]}>{item.item_name}</Text>
-            <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>
+            <Text style={[styles.itemName, { color: theme.colors.text }]}>
+              {item.item_name}
+            </Text>
+            <Text
+              style={[styles.itemCode, { color: theme.colors.textSecondary }]}
+            >
               {item.item_code}
             </Text>
           </View>
-          <View style={[styles.varianceBadge, { backgroundColor: varianceColor }]}>
+          <View
+            style={[styles.varianceBadge, { backgroundColor: varianceColor }]}
+          >
             <Text style={styles.varianceBadgeText}>
               {varianceSign}
               {item.variance.toFixed(2)}
@@ -178,7 +188,9 @@ export default function VariancesScreen() {
         <View style={styles.varianceDetails}>
           <View style={styles.qtyRow}>
             <View style={styles.qtyItem}>
-              <Text style={[styles.qtyLabel, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.qtyLabel, { color: theme.colors.textSecondary }]}
+              >
                 System Qty
               </Text>
               <Text style={[styles.qtyValue, { color: theme.colors.text }]}>
@@ -186,7 +198,9 @@ export default function VariancesScreen() {
               </Text>
             </View>
             <View style={styles.qtyItem}>
-              <Text style={[styles.qtyLabel, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.qtyLabel, { color: theme.colors.textSecondary }]}
+              >
                 Verified Qty
               </Text>
               <Text style={[styles.qtyValue, { color: theme.colors.text }]}>
@@ -197,24 +211,48 @@ export default function VariancesScreen() {
 
           {(item.floor || item.rack) && (
             <View style={styles.locationRow}>
-              <Ionicons name="location" size={14} color={theme.colors.textSecondary} />
-              <Text style={[styles.locationText, { color: theme.colors.textSecondary }]}>
+              <Ionicons
+                name="location"
+                size={14}
+                color={theme.colors.textSecondary}
+              />
+              <Text
+                style={[
+                  styles.locationText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 {[item.floor, item.rack].filter(Boolean).join(" / ")}
               </Text>
             </View>
           )}
 
           {item.category && (
-            <Text style={[styles.categoryText, { color: theme.colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.categoryText,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
               {item.category}
               {item.subcategory && ` • ${item.subcategory}`}
             </Text>
           )}
 
           <View style={styles.verificationInfo}>
-            <Ionicons name="person" size={14} color={theme.colors.textSecondary} />
-            <Text style={[styles.verificationInfoText, { color: theme.colors.textSecondary }]}>
-              Verified by {item.verified_by} • {new Date(item.verified_at).toLocaleString()}
+            <Ionicons
+              name="person"
+              size={14}
+              color={theme.colors.textSecondary}
+            />
+            <Text
+              style={[
+                styles.verificationInfoText,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
+              Verified by {item.verified_by} •{" "}
+              {new Date(item.verified_at).toLocaleString()}
             </Text>
           </View>
         </View>
@@ -225,10 +263,16 @@ export default function VariancesScreen() {
   if (loading && variances.length === 0) {
     return (
       <View
-        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: theme.colors.background },
+        ]}
       >
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+        <Text
+          style={[styles.loadingText, { color: theme.colors.textSecondary }]}
+        >
           Loading variances...
         </Text>
       </View>
@@ -236,12 +280,19 @@ export default function VariancesScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Item Variances</Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
+          Item Variances
+        </Text>
         <View style={styles.headerRight}>
           <TouchableOpacity
             style={styles.exportButton}
@@ -250,21 +301,35 @@ export default function VariancesScreen() {
           >
             <Ionicons name="download" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerCount, { color: theme.colors.textSecondary }]}>
+          <Text
+            style={[styles.headerCount, { color: theme.colors.textSecondary }]}
+          >
             {pagination.total} items
           </Text>
         </View>
       </View>
 
-      <ItemFilters onFilterChange={setFilters} showVerifiedFilter={false} showSearch={false} />
+      <ItemFilters
+        onFilterChange={setFilters}
+        showVerifiedFilter={false}
+        showSearch={false}
+      />
 
       {variances.length === 0 ? (
         <View style={styles.centered}>
-          <Ionicons name="checkmark-circle-outline" size={64} color={theme.colors.placeholder} />
-          <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+          <Ionicons
+            name="checkmark-circle-outline"
+            size={64}
+            color={theme.colors.placeholder}
+          />
+          <Text
+            style={[styles.emptyText, { color: theme.colors.textSecondary }]}
+          >
             No variances found
           </Text>
-          <Text style={[styles.emptySubtext, { color: theme.colors.placeholder }]}>
+          <Text
+            style={[styles.emptySubtext, { color: theme.colors.placeholder }]}
+          >
             All items match system quantities
           </Text>
         </View>
@@ -272,9 +337,13 @@ export default function VariancesScreen() {
         <FlashList
           data={variances}
           renderItem={renderVarianceItem}
-          keyExtractor={(item, index) => `${item.item_code}-${item.verified_at}-${index}`}
+          keyExtractor={(item, index) =>
+            `${item.item_code}-${item.verified_at}-${index}`
+          }
           contentContainerStyle={styles.listContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={

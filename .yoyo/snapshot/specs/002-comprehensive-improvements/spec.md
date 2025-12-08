@@ -1,9 +1,9 @@
 # Comprehensive App Improvements Specification
 
-**Specification ID:** 002-comprehensive-improvements  
-**Version:** 1.0  
-**Date:** 2025-11-13  
-**Status:** Draft  
+**Specification ID:** 002-comprehensive-improvements
+**Version:** 1.0
+**Date:** 2025-11-13
+**Status:** Draft
 **Related Spec:** 001-comprehensive-modernization
 
 ## Overview

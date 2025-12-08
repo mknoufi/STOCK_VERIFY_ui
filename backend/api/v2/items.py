@@ -13,8 +13,9 @@ project_root = Path(__file__).parent.parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from typing import Any, Dict, Optional  # noqa: E402
+
 from fastapi import APIRouter, Depends, Query  # noqa: E402
-from typing import Optional, Dict, Any  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 from backend.api.response_models import ApiResponse, PaginatedResponse  # noqa: E402
@@ -116,8 +117,9 @@ async def get_item_v2(
     Returns standardized response
     """
     try:
-        from backend.server import db
         from bson import ObjectId
+
+        from backend.server import db
 
         item = await db.erp_items.find_one({"_id": ObjectId(item_id)})
 

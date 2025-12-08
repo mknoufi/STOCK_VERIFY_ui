@@ -92,7 +92,11 @@ export default function WatchtowerScreen() {
       <ScrollView
         style={styles.container}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#4CAF50"
+          />
         }
       >
         {/* Live Indicator Header */}
@@ -101,7 +105,9 @@ export default function WatchtowerScreen() {
             <View style={[styles.liveDot, { opacity: loading ? 0.5 : 1 }]} />
             <Text style={styles.liveText}>LIVE MONITORING</Text>
           </View>
-          <Text style={styles.lastUpdatedText}>Updated: {lastUpdated.toLocaleTimeString()}</Text>
+          <Text style={styles.lastUpdatedText}>
+            Updated: {lastUpdated.toLocaleTimeString()}
+          </Text>
         </View>
 
         {loading && !stats ? (
@@ -176,12 +182,19 @@ export default function WatchtowerScreen() {
                   stats.recent_activity.map((activity, idx) => (
                     <View key={idx} style={styles.activityItem}>
                       <View style={styles.activityIcon}>
-                        <Ionicons name="barcode-outline" size={20} color="#fff" />
+                        <Ionicons
+                          name="barcode-outline"
+                          size={20}
+                          color="#fff"
+                        />
                       </View>
                       <View style={styles.activityInfo}>
                         <Text style={styles.activityMainText}>
-                          <Text style={styles.boldText}>{activity.user}</Text> scanned{" "}
-                          {activity.qty}x <Text style={styles.boldText}>{activity.item_code}</Text>
+                          <Text style={styles.boldText}>{activity.user}</Text>{" "}
+                          scanned {activity.qty}x{" "}
+                          <Text style={styles.boldText}>
+                            {activity.item_code}
+                          </Text>
                         </Text>
                         <Text style={styles.activityTime}>
                           {new Date(activity.time).toLocaleTimeString()}

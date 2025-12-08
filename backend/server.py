@@ -27,10 +27,7 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from backend.api import (
-    auth,
-    supervisor_pin,
-)
+from backend.api import auth, supervisor_pin
 from backend.api.admin_control_api import admin_control_router  # noqa: E402
 from backend.api.auth import router as auth_router  # noqa: E402
 from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402

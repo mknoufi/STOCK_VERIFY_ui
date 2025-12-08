@@ -223,7 +223,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   // Render icon
   const renderIcon = () => {
     if (!icon || loading) return null;
-    
+
     return (
       <Ionicons
         name={icon}
@@ -354,4 +354,3 @@ const styles = StyleSheet.create({
 });
 
 export default ModernButton;
-

@@ -3,16 +3,16 @@
  * Advanced table with sorting, filtering, and pagination
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { Ionicons } from "@expo/vector-icons";
 
 export interface TableColumn {
   key: string;
@@ -46,7 +46,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   onRowPress,
 }) => {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
 
   // Sort data
@@ -64,7 +64,7 @@ export const DataTable: React.FC<DataTableProps> = ({
       }
 
       const comparison = aValue < bValue ? -1 : 1;
-      return sortDirection === 'asc' ? comparison : -comparison;
+      return sortDirection === "asc" ? comparison : -comparison;
     });
   }, [data, sortColumn, sortDirection, sortable]);
 
@@ -88,10 +88,10 @@ export const DataTable: React.FC<DataTableProps> = ({
     }
 
     if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortColumn(column);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -101,17 +101,16 @@ export const DataTable: React.FC<DataTableProps> = ({
       {columns.map((column) => (
         <TouchableOpacity
           key={column.key}
-          style={[
-            styles.headerCell,
-            column.width && { width: column.width },
-          ] as any}
+          style={
+            [styles.headerCell, column.width && { width: column.width }] as any
+          }
           onPress={() => column.sortable && handleSort(column.key)}
           disabled={!column.sortable}
         >
           <Text style={styles.headerText}>{column.label}</Text>
           {sortable && column.sortable && sortColumn === column.key && (
             <Ionicons
-              name={sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'}
+              name={sortDirection === "asc" ? "chevron-up" : "chevron-down"}
               size={16}
               color="#2196F3"
               style={styles.sortIcon}
@@ -133,15 +132,14 @@ export const DataTable: React.FC<DataTableProps> = ({
       {columns.map((column) => (
         <View
           key={column.key}
-          style={[
-            styles.cell,
-            column.width && { width: column.width },
-          ] as any}
+          style={[styles.cell, column.width && { width: column.width }] as any}
         >
           {column.render ? (
             column.render(item[column.key], item)
           ) : (
-            <Text style={styles.cellText}>{String(item[column.key] || '')}</Text>
+            <Text style={styles.cellText}>
+              {String(item[column.key] || "")}
+            </Text>
           )}
         </View>
       ))}
@@ -157,11 +155,18 @@ export const DataTable: React.FC<DataTableProps> = ({
     return (
       <View style={styles.pagination}>
         <TouchableOpacity
-          style={[styles.paginationButton, currentPage === 1 && styles.paginationButtonDisabled]}
+          style={[
+            styles.paginationButton,
+            currentPage === 1 && styles.paginationButtonDisabled,
+          ]}
           onPress={() => setCurrentPage(currentPage - 1)}
           disabled={currentPage === 1}
         >
-          <Ionicons name="chevron-back" size={20} color={currentPage === 1 ? '#ccc' : '#2196F3'} />
+          <Ionicons
+            name="chevron-back"
+            size={20}
+            color={currentPage === 1 ? "#ccc" : "#2196F3"}
+          />
         </TouchableOpacity>
 
         <Text style={styles.paginationText}>
@@ -169,11 +174,18 @@ export const DataTable: React.FC<DataTableProps> = ({
         </Text>
 
         <TouchableOpacity
-          style={[styles.paginationButton, currentPage === totalPages && styles.paginationButtonDisabled]}
+          style={[
+            styles.paginationButton,
+            currentPage === totalPages && styles.paginationButtonDisabled,
+          ]}
           onPress={() => setCurrentPage(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
-          <Ionicons name="chevron-forward" size={20} color={currentPage === totalPages ? '#ccc' : '#2196F3'} />
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={currentPage === totalPages ? "#ccc" : "#2196F3"}
+          />
         </TouchableOpacity>
       </View>
     );
@@ -188,14 +200,20 @@ export const DataTable: React.FC<DataTableProps> = ({
     <View style={styles.container}>
       {renderHeader()}
       <View style={styles.tableWrapper}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.horizontalScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={true}
+          style={styles.horizontalScroll}
+        >
           <View style={styles.tableContent}>
             <FlashList
               data={paginatedData}
               renderItem={({ item, index }) => renderRow(item, index)}
               keyExtractor={(item, index) => {
                 // Create a stable key from item data
-                const keyParts = columns.map(col => String(item[col.key] || '')).join('-');
+                const keyParts = columns
+                  .map((col) => String(item[col.key] || ""))
+                  .join("-");
                 return `row-${index}-${keyParts.substring(0, 30)}`;
               }}
               extraData={sortColumn}
@@ -211,9 +229,9 @@ export const DataTable: React.FC<DataTableProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   tableWrapper: {
     maxHeight: 400, // Limit table height
@@ -222,56 +240,56 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   tableContent: {
-    minWidth: '100%',
+    minWidth: "100%",
   },
   header: {
-    flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
+    flexDirection: "row",
+    backgroundColor: "#f5f5f5",
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: "#ddd",
   },
   headerCell: {
     flex: 1,
     padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     minWidth: 100,
   },
   headerText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     flex: 1,
   },
   sortIcon: {
     marginLeft: 4,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   rowEven: {
-    backgroundColor: '#fafafa',
+    backgroundColor: "#fafafa",
   },
   cell: {
     flex: 1,
     padding: 12,
     minWidth: 100,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   cellText: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
   },
   pagination: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 12,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: "#ddd",
     gap: 16,
   },
   paginationButton: {
@@ -282,6 +300,6 @@ const styles = StyleSheet.create({
   },
   paginationText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
 });

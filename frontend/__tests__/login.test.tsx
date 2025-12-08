@@ -1,11 +1,11 @@
 /**
  * @jest-environment jsdom
  */
-import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import React from "react";
+import { render, fireEvent, waitFor } from "@testing-library/react-native";
 
 // Mock expo-router
-jest.mock('expo-router', () => ({
+jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
@@ -14,14 +14,14 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock AsyncStorage
-jest.mock('@react-native-async-storage/async-storage', () => ({
+jest.mock("@react-native-async-storage/async-storage", () => ({
   getItem: jest.fn(() => Promise.resolve(null)),
   setItem: jest.fn(() => Promise.resolve()),
   removeItem: jest.fn(() => Promise.resolve()),
 }));
 
 // Mock stores
-jest.mock('../src/store/authStore', () => ({
+jest.mock("../src/store/authStore", () => ({
   useAuthStore: () => ({
     login: jest.fn(() => Promise.resolve({ success: true })),
     isLoading: false,
@@ -30,61 +30,61 @@ jest.mock('../src/store/authStore', () => ({
   }),
 }));
 
-describe('Login Screen', () => {
+describe("Login Screen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should render login form elements', () => {
+  it("should render login form elements", () => {
     // Basic render test placeholder
     expect(true).toBe(true);
   });
 
-  it('should have username and password fields', () => {
+  it("should have username and password fields", () => {
     // Field validation test placeholder
     expect(true).toBe(true);
   });
 
-  it('should have a login button', () => {
+  it("should have a login button", () => {
     // Button test placeholder
     expect(true).toBe(true);
   });
 
-  it('should have remember me checkbox', () => {
+  it("should have remember me checkbox", () => {
     // Remember me feature test
     expect(true).toBe(true);
   });
 
-  it('should have forgot password link', () => {
+  it("should have forgot password link", () => {
     // Forgot password feature test
     expect(true).toBe(true);
   });
 
-  it('should display security notice', () => {
+  it("should display security notice", () => {
     // Security badge test
     expect(true).toBe(true);
   });
 
-  it('should display version footer', () => {
+  it("should display version footer", () => {
     // Version footer test
     expect(true).toBe(true);
   });
 });
 
-describe('Authentication Flow', () => {
-  it('should validate empty username', () => {
+describe("Authentication Flow", () => {
+  it("should validate empty username", () => {
     // Empty username validation
-    expect('').toBeFalsy();
+    expect("").toBeFalsy();
   });
 
-  it('should validate empty password', () => {
+  it("should validate empty password", () => {
     // Empty password validation
-    expect('').toBeFalsy();
+    expect("").toBeFalsy();
   });
 
-  it('should accept valid credentials format', () => {
-    const username = 'staff1';
-    const password = 'staff123';
+  it("should accept valid credentials format", () => {
+    const username = "staff1";
+    const password = "staff123";
     expect(username.length).toBeGreaterThan(0);
     expect(password.length).toBeGreaterThan(0);
   });

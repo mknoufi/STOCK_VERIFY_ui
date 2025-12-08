@@ -62,11 +62,19 @@ const SUBCATEGORY_OPTIONS = [
   "Pen",
   "Paper",
 ];
-const CONDITION_OPTIONS = ["Aging", "Non-moving", "Rate Issue", "Scratches", "Damaged"];
+const CONDITION_OPTIONS = [
+  "Aging",
+  "Non-moving",
+  "Rate Issue",
+  "Scratches",
+  "Damaged",
+];
 
 export default function ScanScreen() {
   const { sessionId: rawSessionId } = useLocalSearchParams();
-  const sessionId = Array.isArray(rawSessionId) ? rawSessionId[0] : rawSessionId;
+  const sessionId = Array.isArray(rawSessionId)
+    ? rawSessionId[0]
+    : rawSessionId;
   const router = useRouter();
   const { logout, user } = useAuthStore();
   const [permission, requestPermission] = useCameraPermissions();
@@ -86,7 +94,10 @@ export default function ScanScreen() {
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const addDebug = (msg: string) => {
     console.log(msg);
-    setDebugInfo((prev) => [...prev.slice(-10), `${new Date().toLocaleTimeString()}: ${msg}`]);
+    setDebugInfo((prev) => [
+      ...prev.slice(-10),
+      `${new Date().toLocaleTimeString()}: ${msg}`,
+    ]);
   };
 
   useEffect(() => {
@@ -258,7 +269,8 @@ export default function ScanScreen() {
 
   const handleScan = async ({ data }: { data: string }) => {
     // Deduplication Check
-    const { isDuplicate, reason } = scanDeduplicationService.checkDuplicate(data);
+    const { isDuplicate, reason } =
+      scanDeduplicationService.checkDuplicate(data);
     if (isDuplicate) {
       Vibration.vibrate([0, 50, 50, 50]); // Error pattern
       Alert.alert("Duplicate Scan Ignored", reason);
@@ -296,7 +308,11 @@ export default function ScanScreen() {
       if (item) {
         addDebug(`Item found: ${item.item_code} - ${item.item_name}`);
         setScannedItem(item);
-        setMrp(item.mrp || item.standard_rate ? String(item.mrp || item.standard_rate) : "");
+        setMrp(
+          item.mrp || item.standard_rate
+            ? String(item.mrp || item.standard_rate)
+            : "",
+        );
         setCategory(item.category || "");
         setSubCategory(item.subcategory || "");
 
@@ -329,7 +345,10 @@ export default function ScanScreen() {
       return;
     }
 
-    if (isDamageEnabled && (!damageQty || isNaN(Number(damageQty)) || Number(damageQty) < 0)) {
+    if (
+      isDamageEnabled &&
+      (!damageQty || isNaN(Number(damageQty)) || Number(damageQty) < 0)
+    ) {
       Alert.alert("Invalid Damage Qty", "Please enter a valid damage quantity");
       return;
     }
@@ -384,7 +403,9 @@ export default function ScanScreen() {
         await createCountLine(payload);
 
         // Record successful scan for deduplication
-        scanDeduplicationService.recordScan(scannedItem.item_code || scannedItem.barcode);
+        scanDeduplicationService.recordScan(
+          scannedItem.item_code || scannedItem.barcode,
+        );
 
         // Success haptic feedback
         Vibration.vibrate(50);
@@ -403,7 +424,9 @@ export default function ScanScreen() {
     // Skip if in BLIND mode
     if (sessionDetails?.type !== "BLIND") {
       const currentQty = Number(quantity);
-      const systemQty = Number(scannedItem.current_stock || scannedItem.stock_qty || 0);
+      const systemQty = Number(
+        scannedItem.current_stock || scannedItem.stock_qty || 0,
+      );
 
       if (systemQty > 0 && currentQty !== systemQty) {
         Alert.alert(
@@ -460,7 +483,9 @@ export default function ScanScreen() {
   if (!isWeb && permission && !permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.permissionText}>We need your permission to show the camera</Text>
+        <Text style={styles.permissionText}>
+          We need your permission to show the camera
+        </Text>
         <PremiumButton onPress={requestPermission} title="Grant Permission" />
       </View>
     );
@@ -480,11 +505,27 @@ export default function ScanScreen() {
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
       >
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Debug Panel - Visible on screen */}
           {__DEV__ && debugInfo.length > 0 && (
-            <View style={{ backgroundColor: "#1a1a2e", padding: 10, margin: 10, borderRadius: 8 }}>
-              <Text style={{ color: "#00ff88", fontWeight: "bold", marginBottom: 5 }}>
+            <View
+              style={{
+                backgroundColor: "#1a1a2e",
+                padding: 10,
+                margin: 10,
+                borderRadius: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#00ff88",
+                  fontWeight: "bold",
+                  marginBottom: 5,
+                }}
+              >
                 🔍 Debug Log:
               </Text>
               {debugInfo.map((msg, i) => (
@@ -499,8 +540,13 @@ export default function ScanScreen() {
                   {msg}
                 </Text>
               ))}
-              <TouchableOpacity onPress={() => setDebugInfo([])} style={{ marginTop: 5 }}>
-                <Text style={{ color: "#ff6b6b", fontSize: 12 }}>Clear Logs</Text>
+              <TouchableOpacity
+                onPress={() => setDebugInfo([])}
+                style={{ marginTop: 5 }}
+              >
+                <Text style={{ color: "#ff6b6b", fontSize: 12 }}>
+                  Clear Logs
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -508,14 +554,26 @@ export default function ScanScreen() {
           {sessionDetails && (
             <View style={styles.sessionInfoCard}>
               <View style={styles.sessionInfoRow}>
-                <Ionicons name="business-outline" size={16} color={modernColors.text.secondary} />
-                <Text style={styles.sessionInfoText}>{sessionDetails.warehouse}</Text>
+                <Ionicons
+                  name="business-outline"
+                  size={16}
+                  color={modernColors.text.secondary}
+                />
+                <Text style={styles.sessionInfoText}>
+                  {sessionDetails.warehouse}
+                </Text>
               </View>
               {(sessionDetails.floor || sessionDetails.rack) && (
                 <View style={styles.sessionInfoRow}>
-                  <Ionicons name="location-outline" size={16} color={modernColors.text.secondary} />
+                  <Ionicons
+                    name="location-outline"
+                    size={16}
+                    color={modernColors.text.secondary}
+                  />
                   <Text style={styles.sessionInfoText}>
-                    {[sessionDetails.floor, sessionDetails.rack].filter(Boolean).join(" - ")}
+                    {[sessionDetails.floor, sessionDetails.rack]
+                      .filter(Boolean)
+                      .join(" - ")}
                   </Text>
                 </View>
               )}
@@ -550,7 +608,9 @@ export default function ScanScreen() {
                 onSearchResultSelect={(item: any) => {
                   setScannedItem(item);
                   setMrp(
-                    item.mrp || item.standard_rate ? String(item.mrp || item.standard_rate) : "",
+                    item.mrp || item.standard_rate
+                      ? String(item.mrp || item.standard_rate)
+                      : "",
                   );
                   setCategory(item.category || "");
                   setSubCategory(item.subcategory || "");
@@ -578,24 +638,34 @@ export default function ScanScreen() {
                       <Text style={styles.itemName}>
                         {scannedItem.item_name || scannedItem.name}
                       </Text>
-                      <Text style={styles.itemCode}>{scannedItem.barcode || "N/A"}</Text>
+                      <Text style={styles.itemCode}>
+                        {scannedItem.barcode || "N/A"}
+                      </Text>
                     </View>
                     <TouchableOpacity onPress={resetForm}>
-                      <Ionicons name="close-circle" size={28} color={modernColors.text.tertiary} />
+                      <Ionicons
+                        name="close-circle"
+                        size={28}
+                        color={modernColors.text.tertiary}
+                      />
                     </TouchableOpacity>
                   </View>
 
                   <View style={styles.itemMetaRow}>
                     <View style={styles.metaItem}>
                       <Text style={styles.metaLabel}>Item Code</Text>
-                      <Text style={styles.metaValue}>{scannedItem.item_code}</Text>
+                      <Text style={styles.metaValue}>
+                        {scannedItem.item_code}
+                      </Text>
                     </View>
                     <View style={styles.metaItem}>
                       <Text style={styles.metaLabel}>Stock Qty</Text>
                       <Text style={styles.metaValue}>
                         {sessionDetails?.type === "BLIND"
                           ? "---"
-                          : scannedItem.current_stock || scannedItem.stock_qty || 0}
+                          : scannedItem.current_stock ||
+                            scannedItem.stock_qty ||
+                            0}
                       </Text>
                     </View>
 
@@ -612,7 +682,11 @@ export default function ScanScreen() {
                   {/* Photo Proofs Section */}
                   <View style={styles.photoSection}>
                     <View style={styles.sectionHeader}>
-                      <Ionicons name="camera-outline" size={18} color={modernColors.text.secondary} />
+                      <Ionicons
+                        name="camera-outline"
+                        size={18}
+                        color={modernColors.text.secondary}
+                      />
                       <Text style={styles.sectionTitle}>Photo Proofs</Text>
                       <Text style={styles.optionalBadge}>Optional</Text>
                     </View>
@@ -629,7 +703,10 @@ export default function ScanScreen() {
                         }}
                       >
                         {itemPhoto ? (
-                          <Image source={{ uri: itemPhoto.uri }} style={styles.photoPreview} />
+                          <Image
+                            source={{ uri: itemPhoto.uri }}
+                            style={styles.photoPreview}
+                          />
                         ) : (
                           <Ionicons
                             name="camera-outline"
@@ -637,7 +714,9 @@ export default function ScanScreen() {
                             color={modernColors.text.secondary}
                           />
                         )}
-                        <Text style={styles.photoLabel}>Add Item Photo (Optional)</Text>
+                        <Text style={styles.photoLabel}>
+                          Add Item Photo (Optional)
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -681,7 +760,10 @@ export default function ScanScreen() {
                         onPress={() => setShowCategoryModal(true)}
                       >
                         <Text
-                          style={[styles.selectorText, !category && styles.placeholderText]}
+                          style={[
+                            styles.selectorText,
+                            !category && styles.placeholderText,
+                          ]}
                           numberOfLines={1}
                         >
                           {category || "Select"}
@@ -700,7 +782,10 @@ export default function ScanScreen() {
                         onPress={() => setShowSubCategoryModal(true)}
                       >
                         <Text
-                          style={[styles.selectorText, !subCategory && styles.placeholderText]}
+                          style={[
+                            styles.selectorText,
+                            !subCategory && styles.placeholderText,
+                          ]}
                           numberOfLines={1}
                         >
                           {subCategory || "Select"}
@@ -717,10 +802,16 @@ export default function ScanScreen() {
                   {/* Conditions */}
                   <View style={styles.conditionsSection}>
                     <View style={styles.sectionHeader}>
-                      <Ionicons name="checkmark-circle-outline" size={18} color={modernColors.text.secondary} />
+                      <Ionicons
+                        name="checkmark-circle-outline"
+                        size={18}
+                        color={modernColors.text.secondary}
+                      />
                       <Text style={styles.sectionTitle}>Item Condition</Text>
                     </View>
-                    <TouchableOpacity onPress={() => setShowConditionModal(true)}>
+                    <TouchableOpacity
+                      onPress={() => setShowConditionModal(true)}
+                    >
                       <View pointerEvents="none">
                         <PremiumInput
                           label="Condition"
@@ -778,11 +869,15 @@ export default function ScanScreen() {
                           onPress={() => setDamageIncluded(!damageIncluded)}
                         >
                           <Ionicons
-                            name={damageIncluded ? "checkbox" : "square-outline"}
+                            name={
+                              damageIncluded ? "checkbox" : "square-outline"
+                            }
                             size={20}
                             color={modernColors.primary[500]}
                           />
-                          <Text style={styles.checkboxLabel}>Include in physical count?</Text>
+                          <Text style={styles.checkboxLabel}>
+                            Include in physical count?
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -797,7 +892,9 @@ export default function ScanScreen() {
                           size={20}
                           color={modernColors.text.secondary}
                         />
-                        <Text style={styles.toggleLabel}>Track Serial Numbers</Text>
+                        <Text style={styles.toggleLabel}>
+                          Track Serial Numbers
+                        </Text>
                       </View>
                       <Switch
                         value={isSerialEnabled}
@@ -825,7 +922,10 @@ export default function ScanScreen() {
                               currentSerial.trim() &&
                               !serialNumbers.includes(currentSerial.trim())
                             ) {
-                              setSerialNumbers([...serialNumbers, currentSerial.trim()]);
+                              setSerialNumbers([
+                                ...serialNumbers,
+                                currentSerial.trim(),
+                              ]);
                               setCurrentSerial("");
                             }
                           }}
@@ -836,7 +936,9 @@ export default function ScanScreen() {
                               <Text style={styles.serialChipText}>{sn}</Text>
                               <TouchableOpacity
                                 onPress={() =>
-                                  setSerialNumbers(serialNumbers.filter((s) => s !== sn))
+                                  setSerialNumbers(
+                                    serialNumbers.filter((s) => s !== sn),
+                                  )
                                 }
                               >
                                 <Ionicons

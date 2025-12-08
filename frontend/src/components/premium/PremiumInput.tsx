@@ -4,7 +4,7 @@
  */
 
 /// <reference types="react" />
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -14,20 +14,20 @@ import {
   TextStyle,
   TouchableOpacity,
   KeyboardTypeOptions,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 import {
   modernColors,
   modernTypography,
   modernSpacing,
   modernBorderRadius,
   modernAnimations,
-} from '../../styles/modernDesignSystem';
+} from "../../styles/modernDesignSystem";
 
 // Color helpers for semantic usage
 const colors = {
@@ -44,7 +44,7 @@ const colors = {
   backgroundDisabled: modernColors.neutral[700],
 };
 
-type InputVariant = 'default' | 'outlined' | 'filled' | 'underlined';
+type InputVariant = "default" | "outlined" | "filled" | "underlined";
 
 interface PremiumInputProps {
   label?: string;
@@ -60,7 +60,7 @@ interface PremiumInputProps {
   numberOfLines?: number;
   secureTextEntry?: boolean;
   keyboardType?: KeyboardTypeOptions;
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
   leftIcon?: keyof typeof Ionicons.glyphMap;
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightIconPress?: () => void;
@@ -76,7 +76,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   value,
   onChangeText,
   placeholder,
-  variant = 'outlined',
+  variant = "outlined",
   error,
   helperText,
   disabled = false,
@@ -84,8 +84,8 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   multiline = false,
   numberOfLines = 1,
   secureTextEntry = false,
-  keyboardType = 'default',
-  autoCapitalize = 'sentences',
+  keyboardType = "default",
+  autoCapitalize = "sentences",
   leftIcon,
   rightIcon,
   onRightIconPress,
@@ -139,21 +139,21 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   // Get variant styles
   const getVariantStyle = (): ViewStyle => {
     switch (variant) {
-      case 'filled':
+      case "filled":
         return {
           backgroundColor: modernColors.background.paper,
           borderWidth: 0,
           borderBottomWidth: 2,
           borderRadius: modernBorderRadius.sm,
         };
-      case 'underlined':
+      case "underlined":
         return {
-          backgroundColor: 'transparent',
+          backgroundColor: "transparent",
           borderWidth: 0,
           borderBottomWidth: 1,
           borderRadius: 0,
         };
-      case 'outlined':
+      case "outlined":
       default:
         return {
           backgroundColor: modernColors.background.default,
@@ -245,8 +245,8 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
               name={
                 isPasswordField
                   ? showPassword
-                    ? 'eye-off-outline'
-                    : 'eye-outline'
+                    ? "eye-off-outline"
+                    : "eye-outline"
                   : rightIcon!
               }
               size={20}
@@ -290,14 +290,14 @@ const styles = StyleSheet.create({
     color: colors.error,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     minHeight: 48,
     paddingHorizontal: modernSpacing.sm,
   },
   multilineContainer: {
     minHeight: 80,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     paddingVertical: modernSpacing.sm,
   },
   disabled: {
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     marginRight: modernSpacing.xs,
   },
   multilineInput: {
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   iconContainer: {
     padding: modernSpacing.xs,

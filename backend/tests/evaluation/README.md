@@ -210,7 +210,7 @@ Add to your CI pipeline:
 - name: Run Evaluations
   run: |
     python -m backend.tests.evaluation.run_evaluation --all --format json
-    
+
 - name: Upload Evaluation Report
   uses: actions/upload-artifact@v3
   with:
@@ -239,23 +239,23 @@ from backend.tests.evaluation import MetricsCollector
 class CustomEvaluator:
     def __init__(self, collector: MetricsCollector):
         self.collector = collector
-    
+
     async def evaluate(self, **kwargs) -> dict:
         results = {}
-        
+
         # Your evaluation logic
         start = time.time()
         success = await self._run_check()
         duration = time.time() - start
-        
+
         self.collector.record_timing("custom_check", duration)
         self.collector.record_success("custom_check", success)
-        
+
         results["custom_check"] = {
             "success": success,
             "duration": duration,
         }
-        
+
         return results
 ```
 

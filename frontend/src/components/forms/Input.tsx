@@ -2,7 +2,7 @@
  * Input Component - Enhanced text input
  */
 
-import React from 'react';
+import React from "react";
 import {
   TextInput,
   View,
@@ -11,9 +11,9 @@ import {
   TextInputProps,
   TouchableOpacity,
   Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -25,85 +25,95 @@ interface InputProps extends TextInputProps {
   containerStyle?: object;
 }
 
-export const Input = React.forwardRef<TextInput, InputProps>(({
-  label,
-  error,
-  leftIcon,
-  rightIcon,
-  rightIconColor,
-  onRightIconPress,
-  containerStyle,
-  ...textInputProps
-}, ref) => {
-  const theme = useTheme();
+export const Input = React.forwardRef<TextInput, InputProps>(
+  (
+    {
+      label,
+      error,
+      leftIcon,
+      rightIcon,
+      rightIconColor,
+      onRightIconPress,
+      containerStyle,
+      ...textInputProps
+    },
+    ref,
+  ) => {
+    const theme = useTheme();
 
-  return (
-    <View style={[styles.container, containerStyle]}>
-      {label && (
-        <Text style={[styles.label, { color: theme.colors.text }]}>
-          {label}
-        </Text>
-      )}
-      <View
-        style={[
-          styles.inputContainer,
-          {
-            borderColor: error ? theme.colors.error : theme.colors.border,
-            backgroundColor: theme.colors.surface,
-          },
-          textInputProps.multiline && styles.multilineContainer,
-        ]}
-      >
-        {leftIcon && (
-          <Ionicons
-            name={leftIcon}
-            size={20}
-            color={theme.colors.placeholder}
-            style={styles.leftIcon}
-          />
+    return (
+      <View style={[styles.container, containerStyle]}>
+        {label && (
+          <Text style={[styles.label, { color: theme.colors.text }]}>
+            {label}
+          </Text>
         )}
-        <TextInput
-          ref={ref}
+        <View
           style={[
-            styles.input,
+            styles.inputContainer,
             {
-              color: theme.colors.text,
+              borderColor: error ? theme.colors.error : theme.colors.border,
+              backgroundColor: theme.colors.surface,
             },
-            textInputProps.multiline && styles.multilineInput,
-            Platform.OS === 'web' && styles.inputWeb,
+            textInputProps.multiline && styles.multilineContainer,
           ]}
-          placeholderTextColor={theme.colors.placeholder}
-          {...(Platform.OS === 'web' ? {
-            // Web-specific props to ensure input works
-            autoComplete: textInputProps.autoComplete || 'off',
-            spellCheck: textInputProps.spellCheck !== undefined ? textInputProps.spellCheck : true,
-          } : {})}
-          {...textInputProps}
-        />
-        {rightIcon && (
-          <TouchableOpacity
-            onPress={onRightIconPress}
-            style={styles.rightIcon}
-            activeOpacity={0.7}
-          >
+        >
+          {leftIcon && (
             <Ionicons
-              name={rightIcon}
+              name={leftIcon}
               size={20}
-              color={rightIconColor || theme.colors.placeholder}
+              color={theme.colors.placeholder}
+              style={styles.leftIcon}
             />
-          </TouchableOpacity>
+          )}
+          <TextInput
+            ref={ref}
+            style={[
+              styles.input,
+              {
+                color: theme.colors.text,
+              },
+              textInputProps.multiline && styles.multilineInput,
+              Platform.OS === "web" && styles.inputWeb,
+            ]}
+            placeholderTextColor={theme.colors.placeholder}
+            {...(Platform.OS === "web"
+              ? {
+                  // Web-specific props to ensure input works
+                  autoComplete: textInputProps.autoComplete || "off",
+                  spellCheck:
+                    textInputProps.spellCheck !== undefined
+                      ? textInputProps.spellCheck
+                      : true,
+                }
+              : {})}
+            {...textInputProps}
+          />
+          {rightIcon && (
+            <TouchableOpacity
+              onPress={onRightIconPress}
+              style={styles.rightIcon}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={rightIcon}
+                size={20}
+                color={rightIconColor || theme.colors.placeholder}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+        {error && (
+          <Text style={[styles.error, { color: theme.colors.error }]}>
+            {error}
+          </Text>
         )}
       </View>
-      {error && (
-        <Text style={[styles.error, { color: theme.colors.error }]}>
-          {error}
-        </Text>
-      )}
-    </View>
-  );
-});
+    );
+  },
+);
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 const styles = StyleSheet.create({
   container: {
@@ -111,19 +121,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 8,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     minHeight: 44,
   },
   multilineContainer: {
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     paddingVertical: 12,
   },
   leftIcon: {
@@ -140,14 +150,14 @@ const styles = StyleSheet.create({
   },
   inputWeb: {
     // Web-specific styles to ensure input is interactive
-    outline: 'none',
-    WebkitUserSelect: 'text',
-    userSelect: 'text',
-    cursor: 'text',
+    outline: "none",
+    WebkitUserSelect: "text",
+    userSelect: "text",
+    cursor: "text",
   } as any,
   multilineInput: {
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   error: {
     fontSize: 12,

@@ -66,7 +66,7 @@ sudo lsof -i :8000
    ```bash
    # Kill process using port 8000
    sudo kill $(sudo lsof -t -i:8000)
-   
+
    # Restart service
    sudo systemctl restart stock-verification-api
    ```
@@ -75,10 +75,10 @@ sudo lsof -i :8000
    ```bash
    # Test MongoDB connection
    mongo --eval "db.runCommand('ping')" stock_verification
-   
+
    # Check environment variables
    sudo -u stockapp cat /opt/stock-verification/backend/.env | grep MONGODB_URI
-   
+
    # Restart MongoDB if needed
    sudo systemctl restart mongodb
    ```
@@ -90,7 +90,7 @@ sudo lsof -i :8000
    sudo -u stockapp rm -rf venv
    sudo -u stockapp python3 -m venv venv
    sudo -u stockapp ./venv/bin/pip install -r requirements.production.txt
-   
+
    # Restart service
    sudo systemctl restart stock-verification-api
    ```
@@ -100,7 +100,7 @@ sudo lsof -i :8000
    # Fix file permissions
    sudo chown -R stockapp:stockapp /opt/stock-verification
    sudo chmod +x /opt/stock-verification/backend/venv/bin/*
-   
+
    # Check systemd service file permissions
    sudo chmod 644 /etc/systemd/system/stock-verification-api.service
    sudo systemctl daemon-reload
@@ -130,10 +130,10 @@ curl -X POST https://api.yourdomain.com/auth/login \
    ```bash
    # Check MongoDB status
    sudo systemctl status mongodb
-   
+
    # Test connection with application credentials
    mongo -u stockapp -p stock_verification --authenticationDatabase stock_verification
-   
+
    # Restart services
    sudo systemctl restart mongodb
    sudo systemctl restart stock-verification-api
@@ -143,7 +143,7 @@ curl -X POST https://api.yourdomain.com/auth/login \
    ```bash
    # Verify all required environment variables
    sudo -u stockapp cat /opt/stock-verification/backend/.env
-   
+
    # Check for missing or malformed values
    grep -E "^[A-Z_]+=$" /opt/stock-verification/backend/.env
    ```
@@ -183,7 +183,7 @@ mongo --eval "db.runCommand({serverStatus: 1})" stock_verification | grep -A 5 n
    # Check for missing indexes
    cd /opt/stock-verification/backend
    sudo -u stockapp ./venv/bin/python scripts/analyze_slow_queries.py
-   
+
    # Rebuild indexes
    mongo stock_verification --eval "db.items.reIndex()"
    mongo stock_verification --eval "db.verifications.reIndex()"
@@ -193,7 +193,7 @@ mongo --eval "db.runCommand({serverStatus: 1})" stock_verification | grep -A 5 n
    ```bash
    # Restart API service to clear memory leaks
    sudo systemctl restart stock-verification-api
-   
+
    # Tune Gunicorn workers
    sudo nano /etc/systemd/system/stock-verification-api.service
    # Reduce --workers from 4 to 2 if memory constrained
@@ -203,7 +203,7 @@ mongo --eval "db.runCommand({serverStatus: 1})" stock_verification | grep -A 5 n
    ```bash
    # Check disk usage and performance
    iotop -ao
-   
+
    # Clean up old logs
    sudo find /opt/stock-verification/logs -name "*.log*" -mtime +7 -delete
    sudo find /var/log/nginx -name "*.log*" -mtime +7 -delete
@@ -236,7 +236,7 @@ ls -la /var/lib/mongodb/
    ```bash
    # Check available disk space
    df -h /var/lib/mongodb
-   
+
    # Clean up old database files
    sudo systemctl stop mongodb
    sudo rm /var/lib/mongodb/mongodb.lock
@@ -249,7 +249,7 @@ ls -la /var/lib/mongodb/
    # Fix MongoDB data directory permissions
    sudo chown -R mongodb:mongodb /var/lib/mongodb
    sudo chmod 755 /var/lib/mongodb
-   
+
    # Fix log file permissions
    sudo chown mongodb:mongodb /var/log/mongodb/mongod.log
    ```
@@ -258,7 +258,7 @@ ls -la /var/lib/mongodb/
    ```bash
    # Validate MongoDB configuration
    sudo mongod --config /etc/mongod.conf --configsvr --fork --logpath /tmp/mongod-test.log
-   
+
    # Check for syntax errors
    sudo tail -n 20 /tmp/mongod-test.log
    ```
@@ -287,7 +287,7 @@ mongo stock_verification --eval "db.items.stats()"
    # Run index analysis script
    cd /opt/stock-verification/backend
    sudo -u stockapp ./venv/bin/python scripts/optimize_database.py
-   
+
    # Create missing indexes manually
    mongo stock_verification --eval 'db.items.createIndex({"barcode": 1})'
    mongo stock_verification --eval 'db.items.createIndex({"category": 1, "location": 1})'
@@ -299,7 +299,7 @@ mongo stock_verification --eval "db.items.stats()"
    # Compact collections to reclaim space
    mongo stock_verification --eval "db.runCommand({compact: 'items'})"
    mongo stock_verification --eval "db.runCommand({compact: 'verifications'})"
-   
+
    # Archive old verification records
    mongo stock_verification --eval '
      db.verifications_archive.insertMany(
@@ -335,10 +335,10 @@ sudo nginx -t
    ```bash
    # Restart backend service
    sudo systemctl restart stock-verification-api
-   
+
    # Wait for service to fully start
    sleep 10
-   
+
    # Test connection
    curl http://127.0.0.1:8000/health
    ```
@@ -347,10 +347,10 @@ sudo nginx -t
    ```bash
    # Backup current configuration
    sudo cp /etc/nginx/sites-available/stock-verification /tmp/nginx-backup
-   
+
    # Reload configuration
    sudo systemctl reload nginx
-   
+
    # If reload fails, check configuration syntax
    sudo nginx -t -c /etc/nginx/nginx.conf
    ```
@@ -379,7 +379,7 @@ echo | openssl s_client -connect yourdomain.com:443 2>/dev/null | openssl x509 -
    ```bash
    # Renew certificates
    sudo certbot renew --force-renewal
-   
+
    # Restart Nginx
    sudo systemctl restart nginx
    ```
@@ -388,10 +388,10 @@ echo | openssl s_client -connect yourdomain.com:443 2>/dev/null | openssl x509 -
    ```bash
    # Verify certificate files exist
    ls -la /etc/letsencrypt/live/yourdomain.com/
-   
+
    # Update Nginx configuration with correct paths
    sudo nano /etc/nginx/sites-available/stock-verification
-   
+
    # Test and reload
    sudo nginx -t
    sudo systemctl reload nginx
@@ -423,10 +423,10 @@ curl -I https://api.yourdomain.com/health -v
    ```bash
    # Check firewall rules
    sudo ufw status verbose
-   
+
    # Ensure API port is accessible
    sudo netstat -tulpn | grep :443
-   
+
    # Test from different locations
    curl -I https://api.yourdomain.com/health --connect-timeout 10
    ```
@@ -435,7 +435,7 @@ curl -I https://api.yourdomain.com/health -v
    ```bash
    # Verify CORS origins in environment
    sudo -u stockapp grep CORS_ORIGINS /opt/stock-verification/backend/.env
-   
+
    # Test CORS headers
    curl -H "Origin: https://yourdomain.com" \
         -H "Access-Control-Request-Method: GET" \
@@ -459,7 +459,7 @@ curl -I https://api.yourdomain.com/health -v
    ```bash
    cd /opt/stock-verification/frontend
    sudo -u stockapp npm run build:production
-   
+
    # For EAS builds
    sudo -u stockapp eas build --platform all --profile production --clear-cache
    ```
@@ -495,7 +495,7 @@ netstat -i
    # Restart services to free memory
    sudo systemctl restart stock-verification-api
    sudo systemctl restart mongodb
-   
+
    # Configure swap if needed
    sudo fallocate -l 2G /swapfile
    sudo chmod 600 /swapfile
@@ -508,7 +508,7 @@ netstat -i
    # Reduce Gunicorn workers
    sudo nano /etc/systemd/system/stock-verification-api.service
    # Change --workers 4 to --workers 2
-   
+
    # Restart service
    sudo systemctl daemon-reload
    sudo systemctl restart stock-verification-api
@@ -519,7 +519,7 @@ netstat -i
    # Clean up logs
    sudo find /opt/stock-verification/logs -name "*.log*" -mtime +3 -delete
    sudo find /var/log -name "*.log*" -mtime +7 -delete
-   
+
    # Optimize database
    mongo stock_verification --eval "db.runCommand({compact: 'items', force: true})"
    ```
@@ -550,11 +550,11 @@ send_alert() {
 check_api_performance() {
     local response_time=$(curl -w "%{time_total}" -s -o /dev/null http://127.0.0.1:8000/health)
     local response_code=$(curl -w "%{http_code}" -s -o /dev/null http://127.0.0.1:8000/health)
-    
+
     if (( $(echo "$response_time > 5.0" | bc -l) )); then
         send_alert "API Performance Alert" "API response time: ${response_time}s (threshold: 5s)"
     fi
-    
+
     if [ "$response_code" != "200" ]; then
         send_alert "API Health Alert" "API returned HTTP $response_code"
     fi
@@ -565,15 +565,15 @@ check_system_resources() {
     local cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | sed 's/%us,//')
     local mem_usage=$(free | awk 'FNR==2{printf "%.0f", $3/($3+$4)*100}')
     local disk_usage=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
-    
+
     if (( $(echo "$cpu_usage > 80" | bc -l) )); then
         send_alert "High CPU Usage" "CPU usage: ${cpu_usage}%"
     fi
-    
+
     if [ "$mem_usage" -gt 85 ]; then
         send_alert "High Memory Usage" "Memory usage: ${mem_usage}%"
     fi
-    
+
     if [ "$disk_usage" -gt 90 ]; then
         send_alert "High Disk Usage" "Disk usage: ${disk_usage}%"
     fi
@@ -585,7 +585,7 @@ check_database_health() {
         send_alert "Database Connection Failed" "MongoDB connection test failed"
         systemctl restart mongodb
     fi
-    
+
     # Check for slow queries
     local slow_queries=$(mongo stock_verification --quiet --eval "db.system.profile.find({millis: {\$gt: 1000}}).count()")
     if [ "$slow_queries" -gt 10 ]; then
@@ -654,7 +654,7 @@ echo "----------------------------------------" >> "$RESULTS_FILE"
    sudo systemctl stop stock-verification-api
    sudo systemctl stop redis-server
    sudo systemctl stop mongodb
-   
+
    # Start services in order
    sudo systemctl start mongodb
    sleep 5
@@ -663,7 +663,7 @@ echo "----------------------------------------" >> "$RESULTS_FILE"
    sudo systemctl start stock-verification-api
    sleep 5
    sudo systemctl start nginx
-   
+
    # Verify all services are running
    sudo systemctl status mongodb redis-server stock-verification-api nginx
    ```
@@ -673,14 +673,14 @@ echo "----------------------------------------" >> "$RESULTS_FILE"
    # Stop dependent services
    sudo systemctl stop stock-verification-api
    sudo systemctl stop mongodb
-   
+
    # Repair database if corrupted
    sudo -u mongodb mongod --repair --dbpath /var/lib/mongodb
-   
+
    # Restore from backup if needed
    sudo systemctl start mongodb
    mongorestore --db stock_verification /opt/stock-verification/backups/latest/
-   
+
    # Restart services
    sudo systemctl start stock-verification-api
    ```

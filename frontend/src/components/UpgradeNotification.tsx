@@ -2,16 +2,16 @@
  * UpgradeNotification Component
  * Shows update available or force update banners
  */
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Linking,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { VersionCheckResult } from '../services/versionService';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { VersionCheckResult } from "../services/versionService";
 
 interface UpgradeNotificationProps {
   /** Version check result */
@@ -25,7 +25,7 @@ interface UpgradeNotificationProps {
   /** Custom app store URL */
   storeUrl?: string;
   /** Show as banner (inline) or modal (fullscreen blocking) */
-  variant?: 'banner' | 'modal';
+  variant?: "banner" | "modal";
 }
 
 export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
@@ -34,7 +34,7 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
   onDismiss,
   onUpdate,
   storeUrl,
-  variant = 'banner',
+  variant = "banner",
 }) => {
   const handleUpdate = async () => {
     if (onUpdate) {
@@ -49,49 +49,49 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
         if (canOpen) {
           await Linking.openURL(storeUrl);
         } else {
-          __DEV__ && console.log('Cannot open store URL:', storeUrl);
+          __DEV__ && console.log("Cannot open store URL:", storeUrl);
         }
       } catch (err) {
-        __DEV__ && console.log('Failed to open store URL', err);
+        __DEV__ && console.log("Failed to open store URL", err);
       }
     } else {
       // Platform-specific store URLs could be configured here
-      __DEV__ && console.log('No store URL configured for update');
+      __DEV__ && console.log("No store URL configured for update");
     }
   };
 
   const getUpdateMessage = () => {
     if (forceUpdate) {
-      return `This version is no longer supported. Please update to version ${versionInfo.current_version ?? 'the latest'} to continue using the app.`;
+      return `This version is no longer supported. Please update to version ${versionInfo.current_version ?? "the latest"} to continue using the app.`;
     }
 
     const updateTypeText: Record<string, string> = {
-      major: 'A major update',
-      minor: 'A new update',
-      patch: 'A bug fix update',
+      major: "A major update",
+      minor: "A new update",
+      patch: "A bug fix update",
     };
 
-    const updateType = versionInfo.update_type || 'minor';
-    const updateLabel = updateTypeText[updateType] || 'An update';
+    const updateType = versionInfo.update_type || "minor";
+    const updateLabel = updateTypeText[updateType] || "An update";
 
-    return `${updateLabel} is available (v${versionInfo.current_version ?? 'latest'}). We recommend updating for the best experience.`;
+    return `${updateLabel} is available (v${versionInfo.current_version ?? "latest"}). We recommend updating for the best experience.`;
   };
 
   const getIcon = () => {
     if (forceUpdate) {
-      return 'warning';
+      return "warning";
     }
-    return versionInfo.update_type === 'major' ? 'rocket' : 'arrow-up-circle';
+    return versionInfo.update_type === "major" ? "rocket" : "arrow-up-circle";
   };
 
   const getIconColor = () => {
     if (forceUpdate) {
-      return '#FF5252';
+      return "#FF5252";
     }
-    return versionInfo.update_type === 'major' ? '#4CAF50' : '#2196F3';
+    return versionInfo.update_type === "major" ? "#4CAF50" : "#2196F3";
   };
 
-  if (variant === 'modal') {
+  if (variant === "modal") {
     return (
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
@@ -104,26 +104,27 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
           </View>
 
           <Text style={styles.modalTitle}>
-            {forceUpdate ? 'Update Required' : 'Update Available'}
+            {forceUpdate ? "Update Required" : "Update Available"}
           </Text>
 
           <Text style={styles.modalMessage}>{getUpdateMessage()}</Text>
 
           <View style={styles.versionInfo}>
             <Text style={styles.versionLabel}>Current Version:</Text>
-            <Text style={styles.versionValue}>{versionInfo.client_version ?? 'unknown'}</Text>
+            <Text style={styles.versionValue}>
+              {versionInfo.client_version ?? "unknown"}
+            </Text>
           </View>
 
           <View style={styles.versionInfo}>
             <Text style={styles.versionLabel}>Latest Version:</Text>
-            <Text style={styles.versionValue}>{versionInfo.current_version ?? 'unknown'}</Text>
+            <Text style={styles.versionValue}>
+              {versionInfo.current_version ?? "unknown"}
+            </Text>
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.updateButton,
-              { backgroundColor: getIconColor() },
-            ]}
+            style={[styles.updateButton, { backgroundColor: getIconColor() }]}
             onPress={handleUpdate}
           >
             <Ionicons name="download" size={20} color="#fff" />
@@ -145,7 +146,7 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
     <View
       style={[
         styles.bannerContainer,
-        { backgroundColor: forceUpdate ? '#FFEBEE' : '#E3F2FD' },
+        { backgroundColor: forceUpdate ? "#FFEBEE" : "#E3F2FD" },
       ]}
     >
       <View style={styles.bannerContent}>
@@ -158,7 +159,7 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
 
         <View style={styles.bannerTextContainer}>
           <Text style={styles.bannerTitle}>
-            {forceUpdate ? 'Update Required' : 'Update Available'}
+            {forceUpdate ? "Update Required" : "Update Available"}
           </Text>
           <Text style={styles.bannerMessage} numberOfLines={2}>
             {getUpdateMessage()}
@@ -176,7 +177,10 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
         </TouchableOpacity>
 
         {!forceUpdate && onDismiss && (
-          <TouchableOpacity style={styles.bannerCloseButton} onPress={onDismiss}>
+          <TouchableOpacity
+            style={styles.bannerCloseButton}
+            onPress={onDismiss}
+          >
             <Ionicons name="close" size={20} color="#666" />
           </TouchableOpacity>
         )}
@@ -189,65 +193,65 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 24,
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalIconContainer: {
     marginBottom: 16,
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalMessage: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginBottom: 20,
     lineHeight: 22,
   },
   versionInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   versionLabel: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
     marginRight: 8,
   },
   versionValue: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
+    color: "#333",
+    fontWeight: "600",
   },
   updateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 8,
     marginTop: 20,
-    width: '100%',
+    width: "100%",
   },
   updateButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 8,
   },
   dismissButton: {
@@ -255,7 +259,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   dismissButtonText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
   },
 
@@ -264,11 +268,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginHorizontal: 16,
     marginVertical: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   bannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
   },
   bannerIcon: {
@@ -280,13 +284,13 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 2,
   },
   bannerMessage: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   bannerUpdateButton: {
     paddingVertical: 8,
@@ -294,9 +298,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   bannerUpdateButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   bannerCloseButton: {
     padding: 8,

@@ -1,2 +1,2 @@
-export * from './databaseStatusService';
-export * from './performanceService';
+export * from "./databaseStatusService";
+export * from "./performanceService";

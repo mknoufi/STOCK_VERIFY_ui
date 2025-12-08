@@ -8,16 +8,16 @@
  * - Multiple size variants
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ViewStyle,
   TouchableOpacity,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -25,19 +25,20 @@ import Animated, {
   withTiming,
   runOnJS,
   FadeInUp,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 import {
   modernColors,
   modernTypography,
   modernSpacing,
   modernBorderRadius,
   modernShadows,
-} from '../../styles/modernDesignSystem';
+} from "../../styles/modernDesignSystem";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
 
-type TrendDirection = 'up' | 'down' | 'neutral';
-type CardVariant = 'default' | 'gradient' | 'outline';
+type TrendDirection = "up" | "down" | "neutral";
+type CardVariant = "default" | "gradient" | "outline";
 
 interface QuickStatCardProps {
   title: string;
@@ -60,10 +61,13 @@ interface QuickStatCardProps {
   index?: number;
 }
 
-const trendConfig: Record<TrendDirection, { color: string; icon: keyof typeof Ionicons.glyphMap }> = {
-  up: { color: modernColors.success.main, icon: 'trending-up' },
-  down: { color: modernColors.error.main, icon: 'trending-down' },
-  neutral: { color: modernColors.text.tertiary, icon: 'remove' },
+const trendConfig: Record<
+  TrendDirection,
+  { color: string; icon: keyof typeof Ionicons.glyphMap }
+> = {
+  up: { color: modernColors.success.main, icon: "trending-up" },
+  down: { color: modernColors.error.main, icon: "trending-down" },
+  neutral: { color: modernColors.text.tertiary, icon: "remove" },
 };
 
 export const QuickStatCard: React.FC<QuickStatCardProps> = ({
@@ -73,7 +77,7 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
   icon,
   iconColor = modernColors.primary[400],
   trend,
-  variant = 'default',
+  variant = "default",
   gradientColors,
   onPress,
   suffix,
@@ -84,16 +88,22 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
 }) => {
   const scale = useSharedValue(1);
   const animatedValue = useSharedValue(0);
-  const [displayValue, setDisplayValue] = React.useState(typeof value === 'number' ? 0 : value);
+  const [displayValue, setDisplayValue] = React.useState(
+    typeof value === "number" ? 0 : value,
+  );
 
   // Animate counter
   useEffect(() => {
-    if (animate && typeof value === 'number') {
-      animatedValue.value = withTiming(value, { duration: 1000 }, (finished) => {
-        if (finished) {
-          runOnJS(setDisplayValue)(value);
-        }
-      });
+    if (animate && typeof value === "number") {
+      animatedValue.value = withTiming(
+        value,
+        { duration: 1000 },
+        (finished) => {
+          if (finished) {
+            runOnJS(setDisplayValue)(value);
+          }
+        },
+      );
 
       // Update display value during animation
       const interval = setInterval(() => {
@@ -106,7 +116,8 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
       setDisplayValue(value);
       return undefined;
     }
-  }, [value, animate, animatedValue]);  const handlePressIn = () => {
+  }, [value, animate, animatedValue]);
+  const handlePressIn = () => {
     scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
   };
 
@@ -122,7 +133,9 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
     <View style={styles.content}>
       {/* Icon */}
       {icon && (
-        <View style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}
+        >
           <Ionicons name={icon} size={24} color={iconColor} />
         </View>
       )}
@@ -132,24 +145,36 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
         <Text style={styles.title}>{title}</Text>
         <View style={styles.valueRow}>
           <Text style={styles.value}>
-            {prefix}{typeof displayValue === 'number' ? displayValue.toLocaleString() : displayValue}{suffix}
+            {prefix}
+            {typeof displayValue === "number"
+              ? displayValue.toLocaleString()
+              : displayValue}
+            {suffix}
           </Text>
         </View>
 
         {/* Subtitle */}
-        {subtitle && (
-          <Text style={styles.subtitle}>{subtitle}</Text>
-        )}
+        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
 
         {/* Trend */}
         {trend && (
-          <View style={[styles.trendContainer, { backgroundColor: `${trendConfig[trend.direction].color}15` }]}>
+          <View
+            style={[
+              styles.trendContainer,
+              { backgroundColor: `${trendConfig[trend.direction].color}15` },
+            ]}
+          >
             <Ionicons
               name={trendConfig[trend.direction].icon}
               size={12}
               color={trendConfig[trend.direction].color}
             />
-            <Text style={[styles.trendValue, { color: trendConfig[trend.direction].color }]}>
+            <Text
+              style={[
+                styles.trendValue,
+                { color: trendConfig[trend.direction].color },
+              ]}
+            >
               {trend.value}
             </Text>
             {trend.label && (
@@ -163,28 +188,36 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
 
   const containerStyle = [
     styles.container,
-    variant === 'outline' && styles.outlineContainer,
+    variant === "outline" && styles.outlineContainer,
     style,
   ];
 
-  const card = variant === 'gradient' ? (
-    <LinearGradient
-      colors={gradientColors as [string, string, ...string[]] || [modernColors.primary[600], modernColors.primary[500]] as [string, string]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.container, styles.gradientContainer, style]}
-    >
-      {renderContent()}
-    </LinearGradient>
-  ) : (
-    <View style={containerStyle}>
-      {renderContent()}
-    </View>
-  );
+  const card =
+    variant === "gradient" ? (
+      <LinearGradient
+        colors={
+          (gradientColors as [string, string, ...string[]]) ||
+          ([modernColors.primary[600], modernColors.primary[500]] as [
+            string,
+            string,
+          ])
+        }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.container, styles.gradientContainer, style]}
+      >
+        {renderContent()}
+      </LinearGradient>
+    ) : (
+      <View style={containerStyle}>{renderContent()}</View>
+    );
 
   if (onPress) {
     return (
-      <Animated.View entering={FadeInUp.delay(index * 75).springify()} style={animatedStyle}>
+      <Animated.View
+        entering={FadeInUp.delay(index * 75).springify()}
+        style={animatedStyle}
+      >
         <AnimatedTouchableOpacity
           onPress={onPress}
           onPressIn={handlePressIn}
@@ -206,32 +239,32 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(30, 41, 59, 0.6)',
+    backgroundColor: "rgba(30, 41, 59, 0.6)",
     borderRadius: modernBorderRadius.lg,
     padding: modernSpacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: "rgba(255, 255, 255, 0.08)",
     ...modernShadows.sm,
   },
   gradientContainer: {
     borderWidth: 0,
   },
   outlineContainer: {
-    backgroundColor: 'transparent',
-    borderColor: 'rgba(99, 102, 241, 0.3)',
+    backgroundColor: "transparent",
+    borderColor: "rgba(99, 102, 241, 0.3)",
     borderWidth: 1.5,
   },
   content: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: modernSpacing.md,
   },
   iconContainer: {
     width: 48,
     height: 48,
     borderRadius: modernBorderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   statsContainer: {
     flex: 1,
@@ -247,19 +280,19 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   valueRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+    flexDirection: "row",
+    alignItems: "baseline",
     gap: 4,
   },
   value: {
     ...modernTypography.h3,
     color: modernColors.text.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   trendContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -268,7 +301,7 @@ const styles = StyleSheet.create({
   },
   trendValue: {
     ...modernTypography.label.small,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   trendLabel: {
     ...modernTypography.label.small,

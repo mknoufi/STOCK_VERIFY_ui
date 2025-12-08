@@ -2,7 +2,7 @@
  * Button Component - Enhanced button with variants
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from "react";
 import {
   Text,
   ActivityIndicator,
@@ -10,28 +10,29 @@ import {
   TextStyle,
   Platform,
   TouchableOpacity,
-} from 'react-native';
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-} from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../hooks/useTheme';
-import { flags } from '../constants/flags';
+} from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../hooks/useTheme";
+import { flags } from "../constants/flags";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'danger';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "primary" | "secondary" | "outline" | "text" | "danger";
+  size?: "small" | "medium" | "large";
   disabled?: boolean;
   loading?: boolean;
   icon?: keyof typeof Ionicons.glyphMap;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -40,12 +41,12 @@ interface ButtonProps {
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'medium',
+  variant = "primary",
+  size = "medium",
   disabled = false,
   loading = false,
   icon,
-  iconPosition = 'left',
+  iconPosition = "left",
   fullWidth = false,
   style,
   textStyle,
@@ -90,9 +91,9 @@ export const Button: React.FC<ButtonProps> = ({
   const getButtonStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
       borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'row',
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row",
       gap: 8,
     };
 
@@ -112,12 +113,12 @@ export const Button: React.FC<ButtonProps> = ({
         backgroundColor: theme.colors.secondary,
       },
       outline: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
         borderWidth: 1,
         borderColor: theme.colors.primary,
       },
       text: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
       },
       danger: {
         backgroundColor: theme.colors.error,
@@ -128,14 +129,14 @@ export const Button: React.FC<ButtonProps> = ({
       ...baseStyle,
       ...sizeStyles[size],
       ...variantStyles[variant],
-      ...(fullWidth && { width: '100%' }),
+      ...(fullWidth && { width: "100%" }),
       ...(disabled && { opacity: 0.5 }),
     };
   };
 
   const getTextStyle = (): TextStyle => {
     const baseStyle: TextStyle = {
-      fontWeight: '600',
+      fontWeight: "600",
     };
 
     const sizeStyles = {
@@ -145,11 +146,11 @@ export const Button: React.FC<ButtonProps> = ({
     };
 
     const variantStyles: Record<string, TextStyle> = {
-      primary: { color: '#FFFFFF' },
-      secondary: { color: '#FFFFFF' },
+      primary: { color: "#FFFFFF" },
+      secondary: { color: "#FFFFFF" },
       outline: { color: theme.colors.primary },
       text: { color: theme.colors.primary },
-      danger: { color: '#FFFFFF' },
+      danger: { color: "#FFFFFF" },
     };
 
     return {
@@ -160,27 +161,28 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getIconColor = (): string => {
-    if (variant === 'outline' || variant === 'text') {
+    if (variant === "outline" || variant === "text") {
       return theme.colors.primary;
     }
-    return '#FFFFFF';
+    return "#FFFFFF";
   };
 
-  const buttonStyle = Platform.OS === 'web'
-    ? {
-      ...getButtonStyle(),
-      ...style,
-      WebkitUserSelect: 'none',
-      userSelect: 'none',
-      WebkitTouchCallout: 'none',
-      cursor: disabled || loading ? 'not-allowed' : 'pointer',
-    } as any
-    : [getButtonStyle(), style];
+  const buttonStyle =
+    Platform.OS === "web"
+      ? ({
+          ...getButtonStyle(),
+          ...style,
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTouchCallout: "none",
+          cursor: disabled || loading ? "not-allowed" : "pointer",
+        } as any)
+      : [getButtonStyle(), style];
 
   const buttonRef = useRef<any>(null);
 
   useEffect(() => {
-    if (Platform.OS === 'web' && buttonRef.current) {
+    if (Platform.OS === "web" && buttonRef.current) {
       const element = buttonRef.current;
 
       // Only prevent text selection, don't block clicks
@@ -198,12 +200,12 @@ export const Button: React.FC<ButtonProps> = ({
         }
       };
 
-      element.addEventListener('selectstart', handleSelectStart, true);
-      element.addEventListener('mouseup', handleMouseUp, false);
+      element.addEventListener("selectstart", handleSelectStart, true);
+      element.addEventListener("mouseup", handleMouseUp, false);
 
       return () => {
-        element.removeEventListener('selectstart', handleSelectStart, true);
-        element.removeEventListener('mouseup', handleMouseUp, false);
+        element.removeEventListener("selectstart", handleSelectStart, true);
+        element.removeEventListener("mouseup", handleMouseUp, false);
       };
     }
     return undefined;
@@ -219,52 +221,58 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || loading}
       activeOpacity={flags.enableAnimations ? 1 : 0.7}
       // Web-specific props as fallback
-      {...(Platform.OS === 'web' ? {
-        onClick: (e: any) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!disabled && !loading) {
-            onPress();
+      {...(Platform.OS === "web"
+        ? {
+            onClick: (e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!disabled && !loading) {
+                onPress();
+              }
+            },
+            onMouseDown: (e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+            },
+            onDoubleClick: (e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.getSelection) {
+                window.getSelection()?.removeAllRanges();
+              }
+            },
+            onContextMenu: (e: any) => {
+              e.preventDefault();
+            },
+            onSelectStart: (e: any) => {
+              e.preventDefault();
+            },
           }
-        },
-        onMouseDown: (e: any) => {
-          e.preventDefault();
-          e.stopPropagation();
-        },
-        onDoubleClick: (e: any) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (window.getSelection) {
-            window.getSelection()?.removeAllRanges();
-          }
-        },
-        onContextMenu: (e: any) => {
-          e.preventDefault();
-        },
-        onSelectStart: (e: any) => {
-          e.preventDefault();
-        },
-      } : {})}
+        : {})}
     >
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'outline' || variant === 'text' ? theme.colors.primary : '#FFFFFF'}
+          color={
+            variant === "outline" || variant === "text"
+              ? theme.colors.primary
+              : "#FFFFFF"
+          }
         />
       ) : (
         <>
-          {icon && iconPosition === 'left' && (
+          {icon && iconPosition === "left" && (
             <Ionicons
               name={icon}
-              size={size === 'small' ? 16 : size === 'medium' ? 20 : 24}
+              size={size === "small" ? 16 : size === "medium" ? 20 : 24}
               color={getIconColor()}
             />
           )}
           <Text style={[getTextStyle(), textStyle]}>{title}</Text>
-          {icon && iconPosition === 'right' && (
+          {icon && iconPosition === "right" && (
             <Ionicons
               name={icon}
-              size={size === 'small' ? 16 : size === 'medium' ? 20 : 24}
+              size={size === "small" ? 16 : size === "medium" ? 20 : 24}
               color={getIconColor()}
             />
           )}

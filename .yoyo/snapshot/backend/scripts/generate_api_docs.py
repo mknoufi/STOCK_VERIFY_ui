@@ -11,7 +11,7 @@ from typing import Dict, Any
 
 def generate_comprehensive_api_docs(app: FastAPI) -> Dict[str, Any]:
     """Generate comprehensive API documentation"""
-    
+
     # Base OpenAPI schema
     openapi_schema = get_openapi(
         title="Stock Verification System API",
@@ -75,7 +75,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
             }
         ]
     )
-    
+
     # Enhanced security schemes
     openapi_schema["components"]["securitySchemes"] = {
         "bearerAuth": {
@@ -85,16 +85,16 @@ All input data is validated using Pydantic models. Invalid data will return a 42
             "description": "JWT token obtained from /auth/login endpoint"
         }
     }
-    
+
     # Add comprehensive examples for each endpoint
     enhanced_paths = {}
-    
+
     for path, methods in openapi_schema.get("paths", {}).items():
         enhanced_paths[path] = {}
-        
+
         for method, operation in methods.items():
             enhanced_operation = operation.copy()
-            
+
             # Add examples based on endpoint
             if path == "/auth/register" and method == "post":
                 enhanced_operation.update({
@@ -170,7 +170,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                         }
                     }
                 })
-                
+
             elif path == "/auth/login" and method == "post":
                 enhanced_operation.update({
                     "summary": "Authenticate user and get access token",
@@ -220,7 +220,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                         }
                     }
                 })
-                
+
             elif path == "/api/items/" and method == "post":
                 enhanced_operation.update({
                     "summary": "Create new inventory item",
@@ -288,7 +288,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                         }
                     }
                 })
-                
+
             elif path.startswith("/api/items/") and method == "get":
                 if "{item_id}" in path:
                     enhanced_operation.update({
@@ -334,7 +334,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                             },
                             {
                                 "name": "limit",
-                                "in": "query", 
+                                "in": "query",
                                 "description": "Items per page",
                                 "schema": {"type": "integer", "default": 50, "minimum": 1, "maximum": 100}
                             },
@@ -370,7 +370,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                             }
                         ]
                     })
-                    
+
             elif path == "/api/verification/" and method == "post":
                 enhanced_operation.update({
                     "summary": "Create stock verification record",
@@ -429,11 +429,11 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                         }
                     }
                 })
-            
+
             enhanced_paths[path][method] = enhanced_operation
-    
+
     openapi_schema["paths"] = enhanced_paths
-    
+
     # Add comprehensive component schemas
     openapi_schema["components"]["schemas"].update({
         "UserCreate": {
@@ -468,7 +468,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                     "description": "User's first name"
                 },
                 "last_name": {
-                    "type": "string", 
+                    "type": "string",
                     "maxLength": 100,
                     "description": "User's last name"
                 },
@@ -479,7 +479,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                 }
             }
         },
-        
+
         "ItemCreate": {
             "type": "object",
             "required": ["barcode", "name", "category", "expected_stock"],
@@ -544,7 +544,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                 }
             }
         },
-        
+
         "VerificationCreate": {
             "type": "object",
             "required": ["item_id", "expected_count", "actual_count"],
@@ -587,7 +587,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                 }
             }
         },
-        
+
         "ErrorResponse": {
             "type": "object",
             "properties": {
@@ -616,7 +616,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
             }
         }
     })
-    
+
     # Add tags for organization
     openapi_schema["tags"] = [
         {
@@ -640,34 +640,34 @@ All input data is validated using Pydantic models. Invalid data will return a 42
             "description": "System health and status monitoring"
         }
     ]
-    
+
     return openapi_schema
 
 def save_api_documentation(app: FastAPI, output_dir: str = "/tmp/"):
     """Save API documentation in multiple formats"""
-    
+
     # Generate comprehensive documentation
     openapi_schema = generate_comprehensive_api_docs(app)
-    
+
     # Save as JSON
     with open(f"{output_dir}/api_documentation.json", "w") as f:
         json.dump(openapi_schema, f, indent=2)
-    
+
     # Save as YAML
     with open(f"{output_dir}/api_documentation.yaml", "w") as f:
         yaml.dump(openapi_schema, f, default_flow_style=False, sort_keys=False)
-    
+
     # Generate Markdown documentation
     markdown_doc = generate_markdown_documentation(openapi_schema)
     with open(f"{output_dir}/API_REFERENCE.md", "w") as f:
         f.write(markdown_doc)
-    
+
     print(f"API documentation saved to {output_dir}")
     return openapi_schema
 
 def generate_markdown_documentation(openapi_schema: Dict[str, Any]) -> str:
     """Generate Markdown API reference documentation"""
-    
+
     md_content = f"""# {openapi_schema['info']['title']}
 
 Version: {openapi_schema['info']['version']}
@@ -693,93 +693,93 @@ Get your token by calling the `/auth/login` endpoint.
 ## Endpoints
 
 """
-    
+
     # Group endpoints by tags
     endpoints_by_tag = {}
     for path, methods in openapi_schema.get("paths", {}).items():
         for method, operation in methods.items():
             tags = operation.get("tags", ["General"])
             tag = tags[0] if tags else "General"
-            
+
             if tag not in endpoints_by_tag:
                 endpoints_by_tag[tag] = []
-            
+
             endpoints_by_tag[tag].append({
                 "path": path,
                 "method": method.upper(),
                 "operation": operation
             })
-    
+
     # Generate markdown for each tag
     for tag, endpoints in endpoints_by_tag.items():
         md_content += f"### {tag}\n\n"
-        
+
         for endpoint in endpoints:
             path = endpoint["path"]
             method = endpoint["method"]
             operation = endpoint["operation"]
-            
+
             summary = operation.get("summary", f"{method} {path}")
             description = operation.get("description", "")
-            
+
             md_content += f"#### {method} {path}\n\n"
             md_content += f"**{summary}**\n\n"
-            
+
             if description:
                 md_content += f"{description}\n\n"
-            
+
             # Parameters
             parameters = operation.get("parameters", [])
             if parameters:
                 md_content += "**Parameters:**\n\n"
                 md_content += "| Name | Type | Required | Description |\n"
                 md_content += "|------|------|----------|-------------|\n"
-                
+
                 for param in parameters:
                     name = param.get("name", "")
                     param_type = param.get("schema", {}).get("type", "string")
                     required = "Yes" if param.get("required", False) else "No"
                     desc = param.get("description", "")
                     md_content += f"| {name} | {param_type} | {required} | {desc} |\n"
-                
+
                 md_content += "\n"
-            
+
             # Request body examples
             request_body = operation.get("requestBody", {})
             if request_body:
                 content = request_body.get("content", {}).get("application/json", {})
                 examples = content.get("examples", {})
-                
+
                 if examples:
                     md_content += "**Request Examples:**\n\n"
                     for example_name, example_data in examples.items():
                         summary = example_data.get("summary", example_name)
                         value = example_data.get("value", {})
-                        
+
                         md_content += f"*{summary}:*\n"
                         md_content += "```json\n"
                         md_content += json.dumps(value, indent=2)
                         md_content += "\n```\n\n"
-            
+
             # Response examples
             responses = operation.get("responses", {})
             if responses:
                 md_content += "**Responses:**\n\n"
-                
+
                 for status_code, response in responses.items():
                     description = response.get("description", "")
                     content = response.get("content", {}).get("application/json", {})
                     example = content.get("example")
-                    
+
                     md_content += f"**{status_code}** - {description}\n\n"
-                    
+
                     if example:
                         md_content += "```json\n"
                         md_content += json.dumps(example, indent=2)
                         md_content += "\n```\n\n"
-            
+
             md_content += "---\n\n"
-    
+
     return md_content
 
 if __name__ == "__main__":

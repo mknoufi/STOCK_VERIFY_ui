@@ -3,7 +3,7 @@
  * Handles light/dark mode, colors, fonts, and styling
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface ThemeColors {
   // Primary colors
@@ -60,113 +60,113 @@ export interface Theme {
 }
 
 export const lightTheme: Theme = {
-  name: 'light',
+  name: "light",
   dark: false,
   colors: {
     // Primary colors
-    primary: '#2196F3',
-    primaryLight: '#64B5F6',
-    primaryDark: '#1976D2',
-    secondary: '#03DAC6',
-    secondaryLight: '#4DD0E1',
-    secondaryDark: '#00ACC1',
+    primary: "#2196F3",
+    primaryLight: "#64B5F6",
+    primaryDark: "#1976D2",
+    secondary: "#03DAC6",
+    secondaryLight: "#4DD0E1",
+    secondaryDark: "#00ACC1",
 
     // Background colors
-    background: '#FFFFFF',
-    surface: '#F5F5F5',
-    surfaceDark: '#E0E0E0',
-    surfaceLight: '#FAFAFA',
-    card: '#FFFFFF',
+    background: "#FFFFFF",
+    surface: "#F5F5F5",
+    surfaceDark: "#E0E0E0",
+    surfaceLight: "#FAFAFA",
+    card: "#FFFFFF",
 
     // Text colors
-    text: '#212121',
-    textSecondary: '#757575',
-    textTertiary: '#9E9E9E',
-    textInverse: '#FFFFFF',
+    text: "#212121",
+    textSecondary: "#757575",
+    textTertiary: "#9E9E9E",
+    textInverse: "#FFFFFF",
 
     // Border & divider
-    border: '#E0E0E0',
-    divider: '#BDBDBD',
+    border: "#E0E0E0",
+    divider: "#BDBDBD",
 
     // Semantic colors
-    error: '#F44336',
-    errorLight: '#EF5350',
-    errorDark: '#D32F2F',
-    warning: '#FF9800',
-    warningLight: '#FFB74D',
-    warningDark: '#F57C00',
-    success: '#4CAF50',
-    successLight: '#66BB6A',
-    successDark: '#388E3C',
-    info: '#2196F3',
-    infoLight: '#42A5F5',
-    infoDark: '#1976D2',
+    error: "#F44336",
+    errorLight: "#EF5350",
+    errorDark: "#D32F2F",
+    warning: "#FF9800",
+    warningLight: "#FFB74D",
+    warningDark: "#F57C00",
+    success: "#4CAF50",
+    successLight: "#66BB6A",
+    successDark: "#388E3C",
+    info: "#2196F3",
+    infoLight: "#42A5F5",
+    infoDark: "#1976D2",
 
     // Accent & special
-    accent: '#FF4081',
-    disabled: '#BDBDBD',
-    placeholder: '#9E9E9E',
-    overlayPrimary: 'rgba(33, 150, 243, 0.1)',
-    overlay: 'rgba(0, 0, 0, 0.5)',
+    accent: "#FF4081",
+    disabled: "#BDBDBD",
+    placeholder: "#9E9E9E",
+    overlayPrimary: "rgba(33, 150, 243, 0.1)",
+    overlay: "rgba(0, 0, 0, 0.5)",
   },
 };
 
 export const darkTheme: Theme = {
-  name: 'dark',
+  name: "dark",
   dark: true,
   colors: {
     // Primary colors
-    primary: '#3B82F6',    // Blue 500
-    primaryLight: '#60A5FA', // Blue 400
-    primaryDark: '#2563EB', // Blue 600
-    secondary: '#10B981',  // Emerald 500
-    secondaryLight: '#34D399', // Emerald 400
-    secondaryDark: '#059669', // Emerald 600
+    primary: "#3B82F6", // Blue 500
+    primaryLight: "#60A5FA", // Blue 400
+    primaryDark: "#2563EB", // Blue 600
+    secondary: "#10B981", // Emerald 500
+    secondaryLight: "#34D399", // Emerald 400
+    secondaryDark: "#059669", // Emerald 600
 
     // Background colors
-    background: '#0F172A', // Slate 900
-    surface: '#1E293B',    // Slate 800
-    surfaceDark: '#020617', // Slate 950
-    surfaceLight: '#334155', // Slate 700
-    card: '#1E293B',       // Slate 800
+    background: "#0F172A", // Slate 900
+    surface: "#1E293B", // Slate 800
+    surfaceDark: "#020617", // Slate 950
+    surfaceLight: "#334155", // Slate 700
+    card: "#1E293B", // Slate 800
 
     // Text colors
-    text: '#F8FAFC',       // Slate 50
-    textSecondary: '#94A3B8', // Slate 400
-    textTertiary: '#64748B',  // Slate 500
-    textInverse: '#0F172A', // Slate 900
+    text: "#F8FAFC", // Slate 50
+    textSecondary: "#94A3B8", // Slate 400
+    textTertiary: "#64748B", // Slate 500
+    textInverse: "#0F172A", // Slate 900
 
     // Border & divider
-    border: '#334155',     // Slate 700
-    divider: '#475569',     // Slate 600
+    border: "#334155", // Slate 700
+    divider: "#475569", // Slate 600
 
     // Semantic colors
-    error: '#EF4444',      // Red 500
-    errorLight: '#F87171', // Red 400
-    errorDark: '#DC2626',  // Red 600
-    warning: '#F59E0B',    // Amber 500
-    warningLight: '#FBBF24', // Amber 400
-    warningDark: '#D97706', // Amber 600
-    success: '#10B981',    // Emerald 500
-    successLight: '#34D399', // Emerald 400
-    successDark: '#059669', // Emerald 600
-    info: '#3B82F6',       // Blue 500
-    infoLight: '#60A5FA',  // Blue 400
-    infoDark: '#2563EB',   // Blue 600
+    error: "#EF4444", // Red 500
+    errorLight: "#F87171", // Red 400
+    errorDark: "#DC2626", // Red 600
+    warning: "#F59E0B", // Amber 500
+    warningLight: "#FBBF24", // Amber 400
+    warningDark: "#D97706", // Amber 600
+    success: "#10B981", // Emerald 500
+    successLight: "#34D399", // Emerald 400
+    successDark: "#059669", // Emerald 600
+    info: "#3B82F6", // Blue 500
+    infoLight: "#60A5FA", // Blue 400
+    infoDark: "#2563EB", // Blue 600
 
     // Accent & special
-    accent: '#8B5CF6',     // Violet 500
-    disabled: '#475569',   // Slate 600
-    placeholder: '#64748B', // Slate 500
-    overlayPrimary: 'rgba(59, 130, 246, 0.1)',
-    overlay: 'rgba(15, 23, 42, 0.8)', // Slate 900 with opacity
+    accent: "#8B5CF6", // Violet 500
+    disabled: "#475569", // Slate 600
+    placeholder: "#64748B", // Slate 500
+    overlayPrimary: "rgba(59, 130, 246, 0.1)",
+    overlay: "rgba(15, 23, 42, 0.8)", // Slate 900 with opacity
   },
 };
 
 // Note: ThemeService defaults to darkTheme in class initialization
 // This line is removed as currentTheme is private
 
-const THEME_STORAGE_KEY = 'app_theme';
+const THEME_STORAGE_KEY = "app_theme";
 
 /**
  * Theme Service
@@ -190,7 +190,7 @@ export class ThemeService {
         this.currentTheme = darkTheme;
       }
     } catch (error) {
-      __DEV__ && console.error('Error loading theme:', error);
+      __DEV__ && console.error("Error loading theme:", error);
       // Fallback to dark theme on error
       this.currentTheme = darkTheme;
     }
@@ -211,10 +211,13 @@ export class ThemeService {
   static async setTheme(theme: Theme): Promise<void> {
     try {
       this.currentTheme = theme;
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, JSON.stringify({ dark: theme.dark }));
+      await AsyncStorage.setItem(
+        THEME_STORAGE_KEY,
+        JSON.stringify({ dark: theme.dark }),
+      );
       this.notifyListeners();
     } catch (error) {
-      __DEV__ && console.error('Error saving theme:', error);
+      __DEV__ && console.error("Error saving theme:", error);
     }
   }
 
@@ -248,7 +251,7 @@ export class ThemeService {
    * Notify listeners of theme change
    */
   private static notifyListeners(): void {
-    this.listeners.forEach(listener => listener(this.currentTheme));
+    this.listeners.forEach((listener) => listener(this.currentTheme));
   }
 
   /**
@@ -256,7 +259,7 @@ export class ThemeService {
    */
   static createCustomTheme(
     base: Theme,
-    overrides: Partial<ThemeColors>
+    overrides: Partial<ThemeColors>,
   ): Theme {
     return {
       ...base,
@@ -271,7 +274,7 @@ export class ThemeService {
    * Get color with opacity
    */
   static getColorWithOpacity(color: string, opacity: number): string {
-    const hex = color.replace('#', '');
+    const hex = color.replace("#", "");
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);

@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import Constants from 'expo-constants';
+import { useEffect, useState } from "react";
+import Constants from "expo-constants";
 
 export const useAppVersion = () => {
   const [appInfo, setAppInfo] = useState({
-    version: 'Unknown',
-    buildVersion: 'Unknown',
-    platform: 'Unknown',
-    appName: 'Stock Count',
+    version: "Unknown",
+    buildVersion: "Unknown",
+    platform: "Unknown",
+    appName: "Stock Count",
   });
 
   useEffect(() => {
@@ -16,10 +16,14 @@ export const useAppVersion = () => {
       const nativeBuildVersion = Constants.nativeBuildVersion;
 
       setAppInfo({
-        version: manifest?.version || nativeAppVersion || '1.0.0',
-        buildVersion: nativeBuildVersion || 'dev',
-        platform: Constants.platform?.ios ? 'iOS' : Constants.platform?.android ? 'Android' : 'Web',
-        appName: manifest?.name || 'Stock Count',
+        version: manifest?.version || nativeAppVersion || "1.0.0",
+        buildVersion: nativeBuildVersion || "dev",
+        platform: Constants.platform?.ios
+          ? "iOS"
+          : Constants.platform?.android
+            ? "Android"
+            : "Web",
+        appName: manifest?.name || "Stock Count",
       });
     };
 

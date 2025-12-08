@@ -118,4 +118,3 @@ const styles = StyleSheet.create({
     borderColor: '#334155',
   },
 });
-

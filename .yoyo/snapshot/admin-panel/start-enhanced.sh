@@ -41,7 +41,7 @@ done
 if [ ${#missing_packages[@]} -gt 0 ]; then
     echo "📥 Installing missing packages: ${missing_packages[*]}"
     $python_cmd -m pip install "${missing_packages[@]}"
-    
+
     if [ $? -ne 0 ]; then
         echo "❌ Error: Failed to install required packages"
         echo "💡 Try: pip install psutil"
@@ -53,14 +53,14 @@ fi
 if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null 2>&1; then
     echo "⚠️  Port 3000 is already in use"
     echo "🔧 Attempting to stop existing server..."
-    
+
     # Try to kill existing process
     pid=$(lsof -ti:3000)
     if [ ! -z "$pid" ]; then
         kill $pid 2>/dev/null
         sleep 2
     fi
-    
+
     # Check again
     if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null 2>&1; then
         echo "❌ Error: Could not free port 3000"

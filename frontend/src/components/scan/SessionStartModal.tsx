@@ -2,8 +2,16 @@
  * SessionStartModal Component
  * Modal for starting a scanning session with location details
  */
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet } from 'react-native';
+import React from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  Alert,
+  StyleSheet,
+} from "react-native";
 
 interface SessionStartModalProps {
   visible: boolean;
@@ -26,7 +34,7 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
     if (floorNo.trim()) {
       onStart();
     } else {
-      Alert.alert('Required', 'Please enter Floor number');
+      Alert.alert("Required", "Please enter Floor number");
     }
   };
 
@@ -40,7 +48,9 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Start Session</Text>
-          <Text style={styles.modalSubtitle}>Enter location details to begin</Text>
+          <Text style={styles.modalSubtitle}>
+            Enter location details to begin
+          </Text>
 
           <Text style={styles.modalLabel}>Floor Number</Text>
           <TextInput
@@ -61,7 +71,10 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
           />
 
           <TouchableOpacity
-            style={[styles.confirmButton, !floorNo.trim() && styles.buttonDisabled]}
+            style={[
+              styles.confirmButton,
+              !floorNo.trim() && styles.buttonDisabled,
+            ]}
             onPress={handleStart}
             disabled={!floorNo.trim()}
           >
@@ -76,53 +89,53 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "center",
     padding: 24,
   },
   modalContent: {
-    backgroundColor: '#1E293B',
+    backgroundColor: "#1E293B",
     borderRadius: 16,
     padding: 24,
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 8,
   },
   modalSubtitle: {
     fontSize: 14,
-    color: '#94A3B8',
+    color: "#94A3B8",
     marginBottom: 24,
   },
   modalLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#94A3B8',
+    fontWeight: "600",
+    color: "#94A3B8",
     marginBottom: 8,
     marginTop: 16,
   },
   input: {
-    backgroundColor: '#1E293B',
+    backgroundColor: "#1E293B",
     borderRadius: 12,
     padding: 16,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   confirmButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 24,
   },
   confirmButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   buttonDisabled: {
     opacity: 0.5,

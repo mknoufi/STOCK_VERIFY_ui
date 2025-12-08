@@ -54,7 +54,9 @@ export const getSyncStatus = async () => {
   };
 };
 
-export const syncOfflineQueue = async (options?: SyncOptions): Promise<SyncResult> => {
+export const syncOfflineQueue = async (
+  options?: SyncOptions,
+): Promise<SyncResult> => {
   if (isSyncing) {
     console.log("Sync already in progress, skipping");
     return { success: 0, failed: 0, total: 0, errors: [] };
@@ -137,7 +139,12 @@ export const syncOfflineQueue = async (options?: SyncOptions): Promise<SyncResul
     };
   } catch (error: any) {
     console.error("Sync process error:", error);
-    return { success: 0, failed: 0, total: 0, errors: [{ id: "general", error: error.message }] };
+    return {
+      success: 0,
+      failed: 0,
+      total: 0,
+      errors: [{ id: "general", error: error.message }],
+    };
   } finally {
     isSyncing = false;
   }

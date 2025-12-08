@@ -206,4 +206,3 @@ export const staffHomeColors = {
   warning: colors.warning,
   success: colors.success,
 };
-

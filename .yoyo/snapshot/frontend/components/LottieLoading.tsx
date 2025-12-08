@@ -23,7 +23,7 @@ export const LottieLoading: React.FC<LottieLoadingProps> = ({
   overlay = false,
 }) => {
   const theme = useTheme();
-  
+
   // Size mappings
   const sizeMap = {
     small: 60,
@@ -35,7 +35,7 @@ export const LottieLoading: React.FC<LottieLoadingProps> = ({
 
   return (
     <View style={[styles.container, overlay && styles.overlay]}>
-      {/* 
+      {/*
         To use actual Lottie animations:
         1. Download a Lottie JSON file from https://lottiefiles.com
         2. Place it in frontend/assets/animations/
@@ -86,4 +86,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

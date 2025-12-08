@@ -12,12 +12,12 @@ echo -e "${GREEN}🚀 Starting Stock Verify Development Environment...${NC}"
 kill_port() {
     local port=$1
     local name=$2
-    
+
     echo -e "${YELLOW}Checking port $port ($name)...${NC}"
-    
+
     # Find PID using lsof
     local pid=$(lsof -t -i:$port)
-    
+
     if [ -n "$pid" ]; then
         echo -e "${RED}Killing existing process on port $port (PID: $pid)${NC}"
         kill -9 $pid

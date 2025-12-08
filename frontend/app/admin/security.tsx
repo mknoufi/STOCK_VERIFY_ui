@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,10 +10,10 @@ import {
   Platform,
   Dimensions,
   RefreshControl,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { usePermissions } from '../../src/hooks/usePermissions';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { usePermissions } from "../../src/hooks/usePermissions";
 import {
   getSecuritySummary,
   getFailedLogins,
@@ -21,10 +21,10 @@ import {
   getSecuritySessions,
   getSecurityAuditLog,
   getIpTracking,
-} from '../../src/services/api';
+} from "../../src/services/api";
 
-const { width } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
+const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
 const isTablet = width > 768;
 
 export default function SecurityScreen() {
@@ -38,15 +38,17 @@ export default function SecurityScreen() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
   const [ipTracking, setIpTracking] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'summary' | 'failed' | 'suspicious' | 'sessions' | 'audit' | 'ips'>('summary');
+  const [activeTab, setActiveTab] = useState<
+    "summary" | "failed" | "suspicious" | "sessions" | "audit" | "ips"
+  >("summary");
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
-    if (!hasRole('admin')) {
+    if (!hasRole("admin")) {
       Alert.alert(
-        'Access Denied',
-        'You do not have permission to view the security dashboard.',
-        [{ text: 'OK', onPress: () => router.back() }]
+        "Access Denied",
+        "You do not have permission to view the security dashboard.",
+        [{ text: "OK", onPress: () => router.back() }],
       );
       return;
     }
@@ -66,17 +68,37 @@ export default function SecurityScreen() {
         setLoading(true);
       }
 
-      const [summaryRes, failedRes, suspiciousRes, sessionsRes, auditRes, ipRes] = await Promise.all([
+      const [
+        summaryRes,
+        failedRes,
+        suspiciousRes,
+        sessionsRes,
+        auditRes,
+        ipRes,
+      ] = await Promise.all([
         getSecuritySummary().catch(() => ({ success: false, data: null })),
-        getFailedLogins(50, 24).catch(() => ({ success: false, data: { failed_logins: [] } })),
+        getFailedLogins(50, 24).catch(() => ({
+          success: false,
+          data: { failed_logins: [] },
+        })),
         getSuspiciousActivity(24).catch(() => ({ success: false, data: null })),
-        getSecuritySessions(50, false).catch(() => ({ success: false, data: { sessions: [] } })),
-        getSecurityAuditLog(50, 24).catch(() => ({ success: false, data: { audit_logs: [] } })),
-        getIpTracking(24).catch(() => ({ success: false, data: { ip_tracking: [] } })),
+        getSecuritySessions(50, false).catch(() => ({
+          success: false,
+          data: { sessions: [] },
+        })),
+        getSecurityAuditLog(50, 24).catch(() => ({
+          success: false,
+          data: { audit_logs: [] },
+        })),
+        getIpTracking(24).catch(() => ({
+          success: false,
+          data: { ip_tracking: [] },
+        })),
       ]);
 
       if (summaryRes.success) setSummary(summaryRes.data);
-      if (failedRes.success) setFailedLogins(failedRes.data?.failed_logins || []);
+      if (failedRes.success)
+        setFailedLogins(failedRes.data?.failed_logins || []);
       if (suspiciousRes.success) setSuspiciousActivity(suspiciousRes.data);
       if (sessionsRes.success) setSessions(sessionsRes.data?.sessions || []);
       if (auditRes.success) setAuditLog(auditRes.data?.audit_logs || []);
@@ -85,7 +107,7 @@ export default function SecurityScreen() {
       setLastUpdate(new Date());
     } catch (error: any) {
       if (!isRefresh) {
-        Alert.alert('Error', error.message || 'Failed to load security data');
+        Alert.alert("Error", error.message || "Failed to load security data");
       }
     } finally {
       setLoading(false);
@@ -116,7 +138,9 @@ export default function SecurityScreen() {
           </View>
           <View style={styles.metricCard}>
             <Ionicons name="checkmark-circle" size={32} color="#4CAF50" />
-            <Text style={styles.metricValue}>{stats.successful_logins || 0}</Text>
+            <Text style={styles.metricValue}>
+              {stats.successful_logins || 0}
+            </Text>
             <Text style={styles.metricLabel}>Successful Logins</Text>
           </View>
           <View style={styles.metricCard}>
@@ -137,13 +161,21 @@ export default function SecurityScreen() {
             {summary.recent_events.map((event: any, index: number) => (
               <View key={index} style={styles.eventRow}>
                 <Ionicons
-                  name={event.action === 'login' ? 'log-in' : event.action === 'logout' ? 'log-out' : 'shield'}
+                  name={
+                    event.action === "login"
+                      ? "log-in"
+                      : event.action === "logout"
+                        ? "log-out"
+                        : "shield"
+                  }
                   size={20}
                   color="#007AFF"
                 />
                 <View style={styles.eventInfo}>
                   <Text style={styles.eventAction}>{event.action}</Text>
-                  <Text style={styles.eventUser}>{event.user} • {new Date(event.timestamp).toLocaleString()}</Text>
+                  <Text style={styles.eventUser}>
+                    {event.user} • {new Date(event.timestamp).toLocaleString()}
+                  </Text>
                 </View>
               </View>
             ))}
@@ -160,16 +192,21 @@ export default function SecurityScreen() {
         <Text style={styles.sectionTitle}>Failed Login Attempts</Text>
       </View>
       {failedLogins.length === 0 ? (
-        <Text style={styles.emptyText}>No failed login attempts in the last 24 hours</Text>
+        <Text style={styles.emptyText}>
+          No failed login attempts in the last 24 hours
+        </Text>
       ) : (
         <View style={styles.listContainer}>
           {failedLogins.map((login: any, index: number) => (
             <View key={index} style={styles.listItem}>
               <Ionicons name="close-circle" size={20} color="#f44336" />
               <View style={styles.listItemContent}>
-                <Text style={styles.listItemTitle}>{login.username || 'Unknown'}</Text>
+                <Text style={styles.listItemTitle}>
+                  {login.username || "Unknown"}
+                </Text>
                 <Text style={styles.listItemSubtitle}>
-                  {login.ip_address} • {login.error || 'Login failed'} • {new Date(login.timestamp).toLocaleString()}
+                  {login.ip_address} • {login.error || "Login failed"} •{" "}
+                  {new Date(login.timestamp).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -189,39 +226,55 @@ export default function SecurityScreen() {
           <Text style={styles.sectionTitle}>Suspicious Activity</Text>
         </View>
 
-        {suspiciousActivity.suspicious_ips && suspiciousActivity.suspicious_ips.length > 0 && (
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>Suspicious IP Addresses</Text>
-            {suspiciousActivity.suspicious_ips.map((item: any, index: number) => (
-              <View key={index} style={styles.suspiciousItem}>
-                <Ionicons name="globe" size={20} color="#FF9800" />
-                <View style={styles.suspiciousContent}>
-                  <Text style={styles.suspiciousTitle}>{item.ip_address}</Text>
-                  <Text style={styles.suspiciousSubtitle}>
-                    {item.count} failed attempts • {item.usernames?.length || 0} users • Last: {new Date(item.last_attempt).toLocaleString()}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        {suspiciousActivity.suspicious_ips &&
+          suspiciousActivity.suspicious_ips.length > 0 && (
+            <View style={styles.subsection}>
+              <Text style={styles.subsectionTitle}>
+                Suspicious IP Addresses
+              </Text>
+              {suspiciousActivity.suspicious_ips.map(
+                (item: any, index: number) => (
+                  <View key={index} style={styles.suspiciousItem}>
+                    <Ionicons name="globe" size={20} color="#FF9800" />
+                    <View style={styles.suspiciousContent}>
+                      <Text style={styles.suspiciousTitle}>
+                        {item.ip_address}
+                      </Text>
+                      <Text style={styles.suspiciousSubtitle}>
+                        {item.count} failed attempts •{" "}
+                        {item.usernames?.length || 0} users • Last:{" "}
+                        {new Date(item.last_attempt).toLocaleString()}
+                      </Text>
+                    </View>
+                  </View>
+                ),
+              )}
+            </View>
+          )}
 
-        {suspiciousActivity.suspicious_users && suspiciousActivity.suspicious_users.length > 0 && (
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>Suspicious Usernames</Text>
-            {suspiciousActivity.suspicious_users.map((item: any, index: number) => (
-              <View key={index} style={styles.suspiciousItem}>
-                <Ionicons name="person" size={20} color="#FF9800" />
-                <View style={styles.suspiciousContent}>
-                  <Text style={styles.suspiciousTitle}>{item.username}</Text>
-                  <Text style={styles.suspiciousSubtitle}>
-                    {item.count} failed attempts • {item.ips?.length || 0} IPs • Last: {new Date(item.last_attempt).toLocaleString()}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        {suspiciousActivity.suspicious_users &&
+          suspiciousActivity.suspicious_users.length > 0 && (
+            <View style={styles.subsection}>
+              <Text style={styles.subsectionTitle}>Suspicious Usernames</Text>
+              {suspiciousActivity.suspicious_users.map(
+                (item: any, index: number) => (
+                  <View key={index} style={styles.suspiciousItem}>
+                    <Ionicons name="person" size={20} color="#FF9800" />
+                    <View style={styles.suspiciousContent}>
+                      <Text style={styles.suspiciousTitle}>
+                        {item.username}
+                      </Text>
+                      <Text style={styles.suspiciousSubtitle}>
+                        {item.count} failed attempts • {item.ips?.length || 0}{" "}
+                        IPs • Last:{" "}
+                        {new Date(item.last_attempt).toLocaleString()}
+                      </Text>
+                    </View>
+                  </View>
+                ),
+              )}
+            </View>
+          )}
       </View>
     );
   };
@@ -240,9 +293,12 @@ export default function SecurityScreen() {
             <View key={index} style={styles.listItem}>
               <Ionicons name="person-circle" size={20} color="#007AFF" />
               <View style={styles.listItemContent}>
-                <Text style={styles.listItemTitle}>{session.username} ({session.role})</Text>
+                <Text style={styles.listItemTitle}>
+                  {session.username} ({session.role})
+                </Text>
                 <Text style={styles.listItemSubtitle}>
-                  {session.ip_address} • Created: {new Date(session.created_at).toLocaleString()}
+                  {session.ip_address} • Created:{" "}
+                  {new Date(session.created_at).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -259,7 +315,9 @@ export default function SecurityScreen() {
         <Text style={styles.sectionTitle}>Security Audit Log</Text>
       </View>
       {auditLog.length === 0 ? (
-        <Text style={styles.emptyText}>No audit log entries in the last 24 hours</Text>
+        <Text style={styles.emptyText}>
+          No audit log entries in the last 24 hours
+        </Text>
       ) : (
         <View style={styles.listContainer}>
           {auditLog.map((log: any, index: number) => (
@@ -268,7 +326,8 @@ export default function SecurityScreen() {
               <View style={styles.listItemContent}>
                 <Text style={styles.listItemTitle}>{log.action}</Text>
                 <Text style={styles.listItemSubtitle}>
-                  {log.user} • {log.ip_address} • {new Date(log.timestamp).toLocaleString()}
+                  {log.user} • {log.ip_address} •{" "}
+                  {new Date(log.timestamp).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -294,10 +353,12 @@ export default function SecurityScreen() {
               <View style={styles.listItemContent}>
                 <Text style={styles.listItemTitle}>{ip.ip_address}</Text>
                 <Text style={styles.listItemSubtitle}>
-                  {ip.total_attempts} attempts ({ip.successful_logins} success, {ip.failed_logins} failed) • {ip.unique_user_count} users
+                  {ip.total_attempts} attempts ({ip.successful_logins} success,{" "}
+                  {ip.failed_logins} failed) • {ip.unique_user_count} users
                 </Text>
                 <Text style={styles.listItemSubtitle}>
-                  First seen: {new Date(ip.first_seen).toLocaleString()} • Last seen: {new Date(ip.last_seen).toLocaleString()}
+                  First seen: {new Date(ip.first_seen).toLocaleString()} • Last
+                  seen: {new Date(ip.last_seen).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -328,7 +389,12 @@ export default function SecurityScreen() {
           {!isWeb && <Text style={styles.backButtonText}>Back</Text>}
         </TouchableOpacity>
         <View style={styles.titleContainer}>
-          <Ionicons name="shield-checkmark" size={28} color="#fff" style={styles.titleIcon} />
+          <Ionicons
+            name="shield-checkmark"
+            size={28}
+            color="#fff"
+            style={styles.titleIcon}
+          />
           <Text style={styles.title}>Security Dashboard</Text>
         </View>
         <TouchableOpacity
@@ -353,12 +419,12 @@ export default function SecurityScreen() {
         contentContainerStyle={styles.tabsContent}
       >
         {[
-          { id: 'summary', label: 'Summary', icon: 'stats-chart' },
-          { id: 'failed', label: 'Failed Logins', icon: 'close-circle' },
-          { id: 'suspicious', label: 'Suspicious', icon: 'warning' },
-          { id: 'sessions', label: 'Sessions', icon: 'people' },
-          { id: 'audit', label: 'Audit Log', icon: 'document-text' },
-          { id: 'ips', label: 'IP Tracking', icon: 'globe' },
+          { id: "summary", label: "Summary", icon: "stats-chart" },
+          { id: "failed", label: "Failed Logins", icon: "close-circle" },
+          { id: "suspicious", label: "Suspicious", icon: "warning" },
+          { id: "sessions", label: "Sessions", icon: "people" },
+          { id: "audit", label: "Audit Log", icon: "document-text" },
+          { id: "ips", label: "IP Tracking", icon: "globe" },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -368,9 +434,14 @@ export default function SecurityScreen() {
             <Ionicons
               name={tab.icon as any}
               size={18}
-              color={activeTab === tab.id ? '#007AFF' : '#666'}
+              color={activeTab === tab.id ? "#007AFF" : "#666"}
             />
-            <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab.id && styles.activeTabText,
+              ]}
+            >
               {tab.label}
             </Text>
           </TouchableOpacity>
@@ -379,18 +450,25 @@ export default function SecurityScreen() {
 
       <ScrollView
         style={styles.content}
-        contentContainerStyle={[styles.contentContainer, isWeb && styles.contentContainerWeb]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          isWeb && styles.contentContainerWeb,
+        ]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#007AFF" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#007AFF"
+          />
         }
         showsVerticalScrollIndicator={isWeb}
       >
-        {activeTab === 'summary' && renderSummary()}
-        {activeTab === 'failed' && renderFailedLogins()}
-        {activeTab === 'suspicious' && renderSuspiciousActivity()}
-        {activeTab === 'sessions' && renderSessions()}
-        {activeTab === 'audit' && renderAuditLog()}
-        {activeTab === 'ips' && renderIpTracking()}
+        {activeTab === "summary" && renderSummary()}
+        {activeTab === "failed" && renderFailedLogins()}
+        {activeTab === "suspicious" && renderSuspiciousActivity()}
+        {activeTab === "sessions" && renderSessions()}
+        {activeTab === "audit" && renderAuditLog()}
+        {activeTab === "ips" && renderIpTracking()}
 
         <View style={styles.footer}>
           <View style={styles.footerRow}>
@@ -412,62 +490,64 @@ export default function SecurityScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: "#0a0a0a",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0a0a0a",
   },
   loadingText: {
     marginTop: 10,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
-    paddingTop: Platform.OS === 'web' ? 20 : 16,
-    backgroundColor: '#1a1a1a',
+    paddingTop: Platform.OS === "web" ? 20 : 16,
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    ...(Platform.OS === 'web' ? {
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    } : {}),
+    borderBottomColor: "#333",
+    ...(Platform.OS === "web"
+      ? {
+          position: "sticky" as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        }
+      : {}),
   } as any,
   headerWeb: {
     paddingHorizontal: isWeb ? 32 : 16,
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 16,
     padding: 8,
     borderRadius: 8,
   },
   backButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 16,
     marginLeft: 8,
   },
   titleContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   titleIcon: {
     marginRight: 12,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   refreshButton: {
     padding: 8,
@@ -477,9 +557,9 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   tabsContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   tabsContent: {
     paddingHorizontal: 16,
@@ -487,28 +567,28 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
     marginRight: 8,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
     gap: 6,
   },
   activeTab: {
-    backgroundColor: '#007AFF20',
+    backgroundColor: "#007AFF20",
     borderWidth: 1,
-    borderColor: '#007AFF',
+    borderColor: "#007AFF",
   },
   tabText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   activeTabText: {
-    color: '#007AFF',
-    fontWeight: '700',
+    color: "#007AFF",
+    fontWeight: "700",
   },
   content: {
     flex: 1,
@@ -519,71 +599,71 @@ const styles = StyleSheet.create({
   },
   contentContainerWeb: {
     padding: isWeb ? 32 : 16,
-    maxWidth: isWeb ? 1400 : '100%',
-    alignSelf: 'center',
-    width: '100%',
+    maxWidth: isWeb ? 1400 : "100%",
+    alignSelf: "center",
+    width: "100%",
   },
   section: {
     marginBottom: 24,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
     gap: 12,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12,
   },
   metricCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderRadius: 16,
     padding: 20,
     flex: 1,
-    minWidth: isWeb && isTablet ? '22%' : '48%',
-    alignItems: 'center',
+    minWidth: isWeb && isTablet ? "22%" : "48%",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   metricValue: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginTop: 8,
   },
   metricLabel: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
     marginTop: 4,
-    textAlign: 'center',
+    textAlign: "center",
   },
   recentEvents: {
     marginTop: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   subsectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 12,
   },
   eventRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
     gap: 12,
   },
   eventInfo: {
@@ -591,26 +671,26 @@ const styles = StyleSheet.create({
   },
   eventAction: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-    textTransform: 'capitalize',
+    fontWeight: "600",
+    color: "#fff",
+    textTransform: "capitalize",
   },
   eventUser: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
     marginTop: 2,
   },
   listContainer: {
     gap: 8,
   },
   listItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#1a1a1a',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#1a1a1a",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
     gap: 12,
   },
   listItemContent: {
@@ -618,22 +698,22 @@ const styles = StyleSheet.create({
   },
   listItemTitle: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   listItemSubtitle: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
     marginTop: 4,
   },
   suspiciousItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FF980015',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#FF980015",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#FF980030',
+    borderColor: "#FF980030",
     marginBottom: 8,
     gap: 12,
   },
@@ -642,37 +722,37 @@ const styles = StyleSheet.create({
   },
   suspiciousTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#FF9800',
+    fontWeight: "700",
+    color: "#FF9800",
   },
   suspiciousSubtitle: {
     fontSize: 12,
-    color: '#aaa',
+    color: "#aaa",
     marginTop: 4,
   },
   subsection: {
     marginTop: 16,
   },
   emptyText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     padding: 32,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   footer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 24,
     paddingTop: 32,
     gap: 8,
   },
   footerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   footerText: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
 });

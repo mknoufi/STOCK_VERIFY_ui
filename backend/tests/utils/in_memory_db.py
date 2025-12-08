@@ -237,13 +237,14 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     """
 
     import backend.server as server_module
-    from backend.db.runtime import set_db, set_client
+    from backend.db.runtime import set_client, set_db
     from backend.services.runtime import set_refresh_token_service
 
     print("DEBUG: Imported server module")
 
     from typing import cast
-    from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorClient
+
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     fake_db = InMemoryDatabase()
     monkeypatch.setattr(server_module, "db", fake_db)
@@ -321,15 +322,15 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     set_cache_service(mock_cache)
 
     # Manually initialize verification API since lifespan might not run
-    from backend.api.item_verification_api import init_verification_api
     from backend.api.erp_api import init_erp_api
+    from backend.api.item_verification_api import init_verification_api
 
     init_verification_api(cast(AsyncIOMotorDatabase, fake_db))
     init_erp_api(cast(AsyncIOMotorDatabase, fake_db), mock_cache)
 
     # Initialize Session and Count Lines APIs
-    from backend.api.session_api import init_session_api
     from backend.api.count_lines_api import init_count_lines_api
+    from backend.api.session_api import init_session_api
 
     # Patch the server module's database and client
     server_module.db = cast(AsyncIOMotorDatabase, fake_db)

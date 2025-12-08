@@ -3,8 +3,8 @@
  * Integrates with AutoErrorFinder for comprehensive error recovery
  */
 
-import { AutoErrorFinder, RecoveryStats } from './autoErrorFinder';
-import { ErrorHandler } from './errorHandler';
+import { AutoErrorFinder, RecoveryStats } from "./autoErrorFinder";
+import { ErrorHandler } from "./errorHandler";
 
 export class AutoRecovery {
   /**
@@ -19,7 +19,7 @@ export class AutoRecovery {
       defaultValue?: T;
       context?: string;
       showAlert?: boolean;
-    } = {}
+    } = {},
   ): Promise<T> {
     const {
       maxRetries = 3,
@@ -43,19 +43,22 @@ export class AutoRecovery {
     }
 
     // Log error and show alert if needed
-    const error = recovery.error ? new Error(recovery.error) : new Error('Operation failed');
+    const error = recovery.error
+      ? new Error(recovery.error)
+      : new Error("Operation failed");
     const issue = AutoErrorFinder.detectRuntimeError(error, context);
 
     if (showAlert) {
-      ErrorHandler.showError(error, context || 'Operation Failed');
+      ErrorHandler.showError(error, context || "Operation Failed");
     }
 
-    __DEV__ && console.error('Auto recovery failed:', {
-      context,
-      retryCount: recovery.retryCount,
-      error: recovery.error,
-      issue,
-    });
+    __DEV__ &&
+      console.error("Auto recovery failed:", {
+        context,
+        retryCount: recovery.retryCount,
+        error: recovery.error,
+        issue,
+      });
 
     throw error;
   }
@@ -92,11 +95,11 @@ export class AutoRecovery {
    * Auto-fix detected issues
    */
   static autoFix(issues: any[]) {
-    const results = issues.map(issue => AutoErrorFinder.autoFix(issue));
+    const results = issues.map((issue) => AutoErrorFinder.autoFix(issue));
     return {
       total: issues.length,
-      fixed: results.filter(r => r.success).length,
-      failed: results.filter(r => !r.success).length,
+      fixed: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
       results,
     };
   }

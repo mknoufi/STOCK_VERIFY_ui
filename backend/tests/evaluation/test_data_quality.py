@@ -18,8 +18,8 @@ from typing import Any, Dict
 import pytest
 from bson import ObjectId
 
-from .metrics_collector import MetricsCollector
 from .evaluators import DataQualityEvaluator
+from .metrics_collector import MetricsCollector
 
 
 @pytest.fixture

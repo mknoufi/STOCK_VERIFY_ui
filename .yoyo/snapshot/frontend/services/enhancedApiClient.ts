@@ -80,7 +80,7 @@ class EnhancedApiClient {
   private handleError(error: any): StandardApiResponse<never> {
     if (error.response?.data) {
       const errorData = error.response.data;
-      
+
       // Check if it's already a standardized error response
       if (errorData.error) {
         return {
@@ -128,7 +128,7 @@ class EnhancedApiClient {
     enableDeduplication: boolean = true
   ): Promise<StandardApiResponse<T>> {
     const requestKey = requestDeduplication.generateKey(`${this.baseURL}${endpoint}`, params);
-    
+
     const requestFn = async () => {
       try {
         const response = await retryWithBackoff(
@@ -295,4 +295,3 @@ export const enhancedApiClient = new EnhancedApiClient('/api/v2');
 
 // Export class for custom instances
 export default EnhancedApiClient;
-

@@ -9,16 +9,16 @@
  * - Badge support
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
   Text,
   View,
   ViewStyle,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -26,18 +26,19 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 import {
   modernColors,
   modernTypography,
   modernSpacing,
   modernBorderRadius,
   modernShadows,
-} from '../../styles/modernDesignSystem';
+} from "../../styles/modernDesignSystem";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
 
-type FABSize = 'mini' | 'default' | 'extended';
+type FABSize = "mini" | "default" | "extended";
 
 interface FloatingActionButtonProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -47,27 +48,30 @@ interface FloatingActionButtonProps {
   gradientColors?: [string, string];
   pulse?: boolean;
   badge?: number | string;
-  position?: 'bottom-right' | 'bottom-center' | 'bottom-left';
+  position?: "bottom-right" | "bottom-center" | "bottom-left";
   disabled?: boolean;
   style?: ViewStyle;
   accessibilityLabel?: string;
 }
 
-const sizeConfig: Record<FABSize, { width: number; height: number; iconSize: number }> = {
+const sizeConfig: Record<
+  FABSize,
+  { width: number; height: number; iconSize: number }
+> = {
   mini: { width: 48, height: 48, iconSize: 20 },
   default: { width: 60, height: 60, iconSize: 26 },
-  extended: { width: 'auto' as any, height: 56, iconSize: 22 },
+  extended: { width: "auto" as any, height: 56, iconSize: 22 },
 };
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   icon,
   onPress,
   label,
-  size = 'default',
+  size = "default",
   gradientColors,
   pulse = false,
   badge,
-  position = 'bottom-right',
+  position = "bottom-right",
   disabled = false,
   style,
   accessibilityLabel,
@@ -75,7 +79,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   const scale = useSharedValue(1);
   const pulseScale = useSharedValue(1);
   const shadowOpacity = useSharedValue(0.3);
-  const config = sizeConfig[size === 'extended' && label ? 'extended' : size];
+  const config = sizeConfig[size === "extended" && label ? "extended" : size];
 
   // Pulse animation
   useEffect(() => {
@@ -108,30 +112,32 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: scale.value * pulseScale.value },
-    ],
+    transform: [{ scale: scale.value * pulseScale.value }],
   }));
 
   const getPositionStyle = (): ViewStyle => {
     switch (position) {
-      case 'bottom-center':
-        return { alignSelf: 'center' };
-      case 'bottom-left':
-        return { alignSelf: 'flex-start' };
+      case "bottom-center":
+        return { alignSelf: "center" };
+      case "bottom-left":
+        return { alignSelf: "flex-start" };
       default:
-        return { alignSelf: 'flex-end' };
+        return { alignSelf: "flex-end" };
     }
   };
 
   const buttonStyle: ViewStyle = {
-    width: size === 'extended' && label ? 'auto' : config.width,
+    width: size === "extended" && label ? "auto" : config.width,
     height: config.height,
-    borderRadius: size === 'extended' && label ? modernBorderRadius.xl : config.width / 2,
-    paddingHorizontal: size === 'extended' && label ? modernSpacing.lg : 0,
+    borderRadius:
+      size === "extended" && label ? modernBorderRadius.xl : config.width / 2,
+    paddingHorizontal: size === "extended" && label ? modernSpacing.lg : 0,
   };
 
-  const defaultGradient: [string, string] = [modernColors.primary[500], modernColors.primary[600]];
+  const defaultGradient: [string, string] = [
+    modernColors.primary[500],
+    modernColors.primary[600],
+  ];
   const colors = gradientColors || defaultGradient;
 
   return (
@@ -154,7 +160,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
             style={[styles.button, buttonStyle]}
           >
             <Ionicons name={icon} size={config.iconSize} color="#FFFFFF" />
-            {size === 'extended' && label && (
+            {size === "extended" && label && (
               <Text style={styles.label}>{label}</Text>
             )}
           </LinearGradient>
@@ -163,7 +169,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
           {badge !== undefined && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>
-                {typeof badge === 'number' && badge > 99 ? '99+' : badge}
+                {typeof badge === "number" && badge > 99 ? "99+" : badge}
               </Text>
             </View>
           )}
@@ -190,12 +196,12 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: 'relative',
+    position: "relative",
   },
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: modernSpacing.sm,
     ...modernShadows.lg,
   },
@@ -204,34 +210,34 @@ const styles = StyleSheet.create({
   },
   label: {
     ...modernTypography.button.medium,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
   badge: {
-    position: 'absolute',
+    position: "absolute",
     top: -4,
     right: -4,
     minWidth: 20,
     height: 20,
     borderRadius: 10,
     backgroundColor: modernColors.error.main,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 6,
     borderWidth: 2,
     borderColor: modernColors.background.default,
   },
   badgeText: {
     ...modernTypography.label.small,
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: "#FFFFFF",
+    fontWeight: "700",
     fontSize: 10,
   },
   glow: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
     opacity: 0.15,
     zIndex: -1,
   },

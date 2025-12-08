@@ -240,14 +240,14 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
 
     monkeypatch.setattr(server_module, "migration_manager", _NoOpMigrationManager())
     monkeypatch.setenv("RATE_LIMIT_ENABLED", "false")
-    
+
     # Mock SQL Connector
     from unittest.mock import MagicMock, AsyncMock
     mock_sql = MagicMock()
     mock_sql.connect.return_value = None
     mock_sql.test_connection.return_value = False
     monkeypatch.setattr(server_module, "sql_connector", mock_sql)
-    
+
     # Mock DatabaseHealthService
     mock_health = MagicMock()
     mock_health.start = MagicMock()
@@ -257,7 +257,7 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     # Patch the existing instance if it exists
     if hasattr(server_module, "database_health_service"):
         monkeypatch.setattr(server_module, "database_health_service", mock_health)
-    
+
     # Mock AutoSyncManager
     mock_auto_sync = MagicMock()
     mock_auto_sync.start = AsyncMock()
@@ -273,7 +273,7 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     monkeypatch.setattr(server_module, "ScheduledExportService", MagicMock(return_value=mock_export_service))
     if hasattr(server_module, "scheduled_export_service"):
         monkeypatch.setattr(server_module, "scheduled_export_service", mock_export_service)
-    
+
     # Mock CacheService to avoid Redis connection attempts
     from backend.services.cache_service import CacheService
     mock_cache = CacheService(redis_url=None) # Force in-memory
@@ -309,4 +309,3 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     _seed_user("admin", "admin123", "Administrator", "admin")
 
     return fake_db
-

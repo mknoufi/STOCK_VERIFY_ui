@@ -84,7 +84,10 @@ export default function ErrorLogsScreen() {
         if (pageNum === 1) {
           setErrors(response.errors || []);
         } else {
-          setErrors((prevErrors) => [...prevErrors, ...(response.errors || [])]);
+          setErrors((prevErrors) => [
+            ...prevErrors,
+            ...(response.errors || []),
+          ]);
         }
         setHasMore(response.pagination?.has_next || false);
       } catch {
@@ -190,23 +193,45 @@ export default function ErrorLogsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header title="Error Monitoring" leftIcon="arrow-back" onLeftPress={() => router.back()} />
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Header
+        title="Error Monitoring"
+        leftIcon="arrow-back"
+        onLeftPress={() => router.back()}
+      />
 
       <ScrollView
         style={styles.scrollView}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         {/* Statistics */}
         {stats && (
-          <View style={[styles.statsContainer, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>Error Statistics</Text>
+          <View
+            style={[
+              styles.statsContainer,
+              { backgroundColor: theme.colors.card },
+            ]}
+          >
+            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>
+              Error Statistics
+            </Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: theme.colors.primary }]}>
+                <Text
+                  style={[styles.statValue, { color: theme.colors.primary }]}
+                >
                   {stats.total || 0}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Total Errors
                 </Text>
               </View>
@@ -214,7 +239,12 @@ export default function ErrorLogsScreen() {
                 <Text style={[styles.statValue, { color: "#FF5252" }]}>
                   {stats.by_severity?.critical || 0}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Critical
                 </Text>
               </View>
@@ -222,7 +252,12 @@ export default function ErrorLogsScreen() {
                 <Text style={[styles.statValue, { color: "#FF5252" }]}>
                   {stats.by_severity?.error || 0}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Errors
                 </Text>
               </View>
@@ -230,13 +265,23 @@ export default function ErrorLogsScreen() {
                 <Text style={[styles.statValue, { color: "#FFC107" }]}>
                   {stats.unresolved || 0}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Unresolved
                 </Text>
               </View>
             </View>
             <View style={styles.recentContainer}>
-              <Text style={[styles.recentText, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.recentText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Last 24 hours: {stats.recent_24h || 0} errors
               </Text>
             </View>
@@ -244,8 +289,15 @@ export default function ErrorLogsScreen() {
         )}
 
         {/* Filters */}
-        <View style={[styles.filtersContainer, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.filterTitle, { color: theme.colors.text }]}>Filters</Text>
+        <View
+          style={[
+            styles.filtersContainer,
+            { backgroundColor: theme.colors.card },
+          ]}
+        >
+          <Text style={[styles.filterTitle, { color: theme.colors.text }]}>
+            Filters
+          </Text>
           <View style={styles.filterRow}>
             <TouchableOpacity
               style={[
@@ -255,7 +307,11 @@ export default function ErrorLogsScreen() {
               ]}
               onPress={() => setFilters({ ...filters, severity: "" })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>All</Text>
+              <Text
+                style={[styles.filterButtonText, { color: theme.colors.text }]}
+              >
+                All
+              </Text>
             </TouchableOpacity>
             {["critical", "error", "warning"].map((sev) => (
               <TouchableOpacity
@@ -267,7 +323,12 @@ export default function ErrorLogsScreen() {
                 ]}
                 onPress={() => setFilters({ ...filters, severity: sev })}
               >
-                <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
+                <Text
+                  style={[
+                    styles.filterButtonText,
+                    { color: theme.colors.text },
+                  ]}
+                >
                   {sev.charAt(0).toUpperCase() + sev.slice(1)}
                 </Text>
               </TouchableOpacity>
@@ -282,7 +343,9 @@ export default function ErrorLogsScreen() {
               ]}
               onPress={() => setFilters({ ...filters, resolved: undefined })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
+              <Text
+                style={[styles.filterButtonText, { color: theme.colors.text }]}
+              >
                 All Status
               </Text>
             </TouchableOpacity>
@@ -294,7 +357,9 @@ export default function ErrorLogsScreen() {
               ]}
               onPress={() => setFilters({ ...filters, resolved: false })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
+              <Text
+                style={[styles.filterButtonText, { color: theme.colors.text }]}
+              >
                 Unresolved
               </Text>
             </TouchableOpacity>
@@ -306,7 +371,11 @@ export default function ErrorLogsScreen() {
               ]}
               onPress={() => setFilters({ ...filters, resolved: true })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>Resolved</Text>
+              <Text
+                style={[styles.filterButtonText, { color: theme.colors.text }]}
+              >
+                Resolved
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -315,14 +384,25 @@ export default function ErrorLogsScreen() {
         {loading && errors.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.loadingText,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
               Loading error logs...
             </Text>
           </View>
         ) : errors.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="checkmark-circle" size={64} color={theme.colors.textSecondary} />
-            <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+            <Ionicons
+              name="checkmark-circle"
+              size={64}
+              color={theme.colors.textSecondary}
+            />
+            <Text
+              style={[styles.emptyText, { color: theme.colors.textSecondary }]}
+            >
               No errors found
             </Text>
           </View>
@@ -331,7 +411,10 @@ export default function ErrorLogsScreen() {
             {errors.map((error) => (
               <TouchableOpacity
                 key={error.id}
-                style={[styles.errorItem, { backgroundColor: theme.colors.card }]}
+                style={[
+                  styles.errorItem,
+                  { backgroundColor: theme.colors.card },
+                ]}
                 onPress={() => handleErrorClick(error)}
               >
                 <View style={styles.errorHeader}>
@@ -342,11 +425,16 @@ export default function ErrorLogsScreen() {
                       color={getSeverityColor(error.severity)}
                     />
                     <View style={styles.errorInfo}>
-                      <Text style={[styles.errorType, { color: theme.colors.text }]}>
+                      <Text
+                        style={[styles.errorType, { color: theme.colors.text }]}
+                      >
                         {error.error_type}
                       </Text>
                       <Text
-                        style={[styles.errorMessage, { color: theme.colors.textSecondary }]}
+                        style={[
+                          styles.errorMessage,
+                          { color: theme.colors.textSecondary },
+                        ]}
                         numberOfLines={1}
                       >
                         {error.error_message}
@@ -356,11 +444,17 @@ export default function ErrorLogsScreen() {
                   <View
                     style={[
                       styles.severityBadge,
-                      { backgroundColor: getSeverityColor(error.severity) + "20" },
+                      {
+                        backgroundColor:
+                          getSeverityColor(error.severity) + "20",
+                      },
                     ]}
                   >
                     <Text
-                      style={[styles.severityText, { color: getSeverityColor(error.severity) }]}
+                      style={[
+                        styles.severityText,
+                        { color: getSeverityColor(error.severity) },
+                      ]}
                     >
                       {error.severity}
                     </Text>
@@ -368,16 +462,31 @@ export default function ErrorLogsScreen() {
                 </View>
 
                 <View style={styles.errorMeta}>
-                  <Text style={[styles.errorMetaText, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.errorMetaText,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {formatTimestamp(error.timestamp)}
                   </Text>
                   {error.endpoint && (
-                    <Text style={[styles.errorMetaText, { color: theme.colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.errorMetaText,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
                       {error.method} {error.endpoint}
                     </Text>
                   )}
                   {error.user && (
-                    <Text style={[styles.errorMetaText, { color: theme.colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.errorMetaText,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
                       {error.user}
                     </Text>
                   )}
@@ -385,9 +494,14 @@ export default function ErrorLogsScreen() {
 
                 {error.resolved && (
                   <View style={styles.resolvedBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color="#00E676" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#00E676"
+                    />
                     <Text style={styles.resolvedText}>
-                      Resolved by {error.resolved_by} on {formatTimestamp(error.resolved_at!)}
+                      Resolved by {error.resolved_by} on{" "}
+                      {formatTimestamp(error.resolved_at!)}
                     </Text>
                   </View>
                 )}
@@ -396,7 +510,10 @@ export default function ErrorLogsScreen() {
 
             {hasMore && (
               <TouchableOpacity
-                style={[styles.loadMoreButton, { backgroundColor: theme.colors.primary }]}
+                style={[
+                  styles.loadMoreButton,
+                  { backgroundColor: theme.colors.primary },
+                ]}
                 onPress={loadMore}
                 disabled={loading}
               >
@@ -419,9 +536,16 @@ export default function ErrorLogsScreen() {
         onRequestClose={() => setShowDetailModal(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.card },
+            ]}
+          >
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Error Details</Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+                Error Details
+              </Text>
               <TouchableOpacity onPress={() => setShowDetailModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
@@ -430,49 +554,84 @@ export default function ErrorLogsScreen() {
             {selectedError && (
               <ScrollView style={styles.modalBody}>
                 <View style={styles.detailSection}>
-                  <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.detailLabel,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     Error Type
                   </Text>
-                  <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                  <Text
+                    style={[styles.detailValue, { color: theme.colors.text }]}
+                  >
                     {selectedError.error_type}
                   </Text>
                 </View>
 
                 <View style={styles.detailSection}>
-                  <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.detailLabel,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     Message
                   </Text>
-                  <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                  <Text
+                    style={[styles.detailValue, { color: theme.colors.text }]}
+                  >
                     {selectedError.error_message}
                   </Text>
                 </View>
 
                 {selectedError.error_code && (
                   <View style={styles.detailSection}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.detailLabel,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
                       Error Code
                     </Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                    <Text
+                      style={[styles.detailValue, { color: theme.colors.text }]}
+                    >
                       {selectedError.error_code}
                     </Text>
                   </View>
                 )}
 
                 <View style={styles.detailSection}>
-                  <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.detailLabel,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     Timestamp
                   </Text>
-                  <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                  <Text
+                    style={[styles.detailValue, { color: theme.colors.text }]}
+                  >
                     {formatTimestamp(selectedError.timestamp)}
                   </Text>
                 </View>
 
                 {selectedError.endpoint && (
                   <View style={styles.detailSection}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.detailLabel,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
                       Endpoint
                     </Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                    <Text
+                      style={[styles.detailValue, { color: theme.colors.text }]}
+                    >
                       {selectedError.method} {selectedError.endpoint}
                     </Text>
                   </View>
@@ -480,10 +639,17 @@ export default function ErrorLogsScreen() {
 
                 {selectedError.user && (
                   <View style={styles.detailSection}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.detailLabel,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
                       User
                     </Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                    <Text
+                      style={[styles.detailValue, { color: theme.colors.text }]}
+                    >
                       {selectedError.user} ({selectedError.role})
                     </Text>
                   </View>
@@ -491,11 +657,21 @@ export default function ErrorLogsScreen() {
 
                 {selectedError.stack_trace && (
                   <View style={styles.detailSection}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.detailLabel,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
                       Stack Trace
                     </Text>
                     <ScrollView style={styles.stackTraceContainer}>
-                      <Text style={[styles.stackTraceText, { color: theme.colors.text }]}>
+                      <Text
+                        style={[
+                          styles.stackTraceText,
+                          { color: theme.colors.text },
+                        ]}
+                      >
                         {selectedError.stack_trace}
                       </Text>
                     </ScrollView>
@@ -504,10 +680,17 @@ export default function ErrorLogsScreen() {
 
                 {selectedError.resolved && selectedError.resolution_note && (
                   <View style={styles.detailSection}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.detailLabel,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
                       Resolution Note
                     </Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                    <Text
+                      style={[styles.detailValue, { color: theme.colors.text }]}
+                    >
                       {selectedError.resolution_note}
                     </Text>
                   </View>
@@ -529,10 +712,17 @@ export default function ErrorLogsScreen() {
                 </TouchableOpacity>
               )}
               <TouchableOpacity
-                style={[styles.closeButton, { backgroundColor: theme.colors.background }]}
+                style={[
+                  styles.closeButton,
+                  { backgroundColor: theme.colors.background },
+                ]}
                 onPress={() => setShowDetailModal(false)}
               >
-                <Text style={[styles.closeButtonText, { color: theme.colors.text }]}>Close</Text>
+                <Text
+                  style={[styles.closeButtonText, { color: theme.colors.text }]}
+                >
+                  Close
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -547,22 +737,37 @@ export default function ErrorLogsScreen() {
         onRequestClose={() => setShowResolveModal(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.card },
+            ]}
+          >
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Resolve Error</Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+                Resolve Error
+              </Text>
               <TouchableOpacity onPress={() => setShowResolveModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.modalBody}>
-              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.detailLabel,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Resolution Note (Optional)
               </Text>
               <TextInput
                 style={[
                   styles.textInput,
-                  { backgroundColor: theme.colors.background, color: theme.colors.text },
+                  {
+                    backgroundColor: theme.colors.background,
+                    color: theme.colors.text,
+                  },
                 ]}
                 value={resolutionNote}
                 onChangeText={setResolutionNote}
@@ -584,18 +789,27 @@ export default function ErrorLogsScreen() {
                 ) : (
                   <>
                     <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                    <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
+                    <Text style={styles.resolveButtonText}>
+                      Mark as Resolved
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.closeButton, { backgroundColor: theme.colors.background }]}
+                style={[
+                  styles.closeButton,
+                  { backgroundColor: theme.colors.background },
+                ]}
                 onPress={() => {
                   setShowResolveModal(false);
                   setResolutionNote("");
                 }}
               >
-                <Text style={[styles.closeButtonText, { color: theme.colors.text }]}>Cancel</Text>
+                <Text
+                  style={[styles.closeButtonText, { color: theme.colors.text }]}
+                >
+                  Cancel
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

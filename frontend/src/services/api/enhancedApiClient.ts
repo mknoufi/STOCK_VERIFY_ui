@@ -3,9 +3,8 @@
  * Upgraded API client with retry logic, better error handling, and standardized responses
  */
 
-import api from '../httpClient';
-import { retryWithBackoff } from '../../utils/retry';
-
+import api from "../httpClient";
+import { retryWithBackoff } from "../../utils/retry";
 
 /**
  * Standardized API response type
@@ -42,7 +41,7 @@ export interface StandardPaginatedResponse<T> {
 class EnhancedApiClient {
   private baseURL: string;
 
-  constructor(baseURL: string = '/api/v2') {
+  constructor(baseURL: string = "/api/v2") {
     this.baseURL = baseURL;
   }
 
@@ -85,8 +84,9 @@ class EnhancedApiClient {
         return {
           success: false,
           error: {
-            code: errorData.error.code || 'UNKNOWN_ERROR',
-            message: errorData.error.message || error.message || 'An error occurred',
+            code: errorData.error.code || "UNKNOWN_ERROR",
+            message:
+              errorData.error.message || error.message || "An error occurred",
             details: errorData.error.details,
           },
           request_id: errorData.request_id,
@@ -97,8 +97,12 @@ class EnhancedApiClient {
       return {
         success: false,
         error: {
-          code: errorData.error_code || 'UNKNOWN_ERROR',
-          message: errorData.detail || errorData.message || error.message || 'An error occurred',
+          code: errorData.error_code || "UNKNOWN_ERROR",
+          message:
+            errorData.detail ||
+            errorData.message ||
+            error.message ||
+            "An error occurred",
           details: errorData.details || {},
         },
       };
@@ -108,8 +112,8 @@ class EnhancedApiClient {
     return {
       success: false,
       error: {
-        code: 'NETWORK_ERROR',
-        message: error.message || 'Network error occurred',
+        code: "NETWORK_ERROR",
+        message: error.message || "Network error occurred",
         details: {
           original_error: error.toString(),
         },
@@ -123,14 +127,14 @@ class EnhancedApiClient {
   async get<T>(
     endpoint: string,
     params?: Record<string, unknown>,
-    retries: number = 3
+    retries: number = 3,
   ): Promise<StandardApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.get(`${this.baseURL}${endpoint}`, { params });
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -145,14 +149,14 @@ class EnhancedApiClient {
   async post<T>(
     endpoint: string,
     data?: unknown,
-    retries: number = 3
+    retries: number = 3,
   ): Promise<StandardApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.post(`${this.baseURL}${endpoint}`, data);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -167,14 +171,14 @@ class EnhancedApiClient {
   async put<T>(
     endpoint: string,
     data?: unknown,
-    retries: number = 3
+    retries: number = 3,
   ): Promise<StandardApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.put(`${this.baseURL}${endpoint}`, data);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -189,14 +193,14 @@ class EnhancedApiClient {
   async patch<T>(
     endpoint: string,
     data?: unknown,
-    retries: number = 3
+    retries: number = 3,
   ): Promise<StandardApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.patch(`${this.baseURL}${endpoint}`, data);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -210,14 +214,14 @@ class EnhancedApiClient {
    */
   async delete<T>(
     endpoint: string,
-    retries: number = 3
+    retries: number = 3,
   ): Promise<StandardApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.delete(`${this.baseURL}${endpoint}`);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -236,45 +240,56 @@ class EnhancedApiClient {
       page_size?: number;
       [key: string]: unknown;
     },
-    retries: number = 3
+    retries: number = 3,
   ): Promise<StandardApiResponse<StandardPaginatedResponse<T>>> {
-    const response = await this.get<StandardPaginatedResponse<T>>(endpoint, params, retries);
+    const response = await this.get<StandardPaginatedResponse<T>>(
+      endpoint,
+      params,
+      retries,
+    );
     return response;
   }
 
   /**
    * Health check
    */
-  async healthCheck(): Promise<StandardApiResponse<{
-    status: string;
-    services: Record<string, {
+  async healthCheck(): Promise<
+    StandardApiResponse<{
       status: string;
-      details?: Record<string, unknown>;
-    }>;
-    timestamp: string;
-    version?: string;
-  }>> {
-    return this.get('/health');
+      services: Record<
+        string,
+        {
+          status: string;
+          details?: Record<string, unknown>;
+        }
+      >;
+      timestamp: string;
+      version?: string;
+    }>
+  > {
+    return this.get("/health");
   }
 
   /**
    * Connection pool status
    */
-  async getConnectionPoolStatus(): Promise<StandardApiResponse<{
-    status: string;
-    pool_size: number;
-    created: number;
-    available: number;
-    checked_out: number;
-    utilization: number;
-    metrics: Record<string, unknown>;
-  }>> {
-    return this.get('/connections/pool/status');
+  async getConnectionPoolStatus(): Promise<
+    StandardApiResponse<{
+      status: string;
+      pool_size: number;
+      created: number;
+      available: number;
+      checked_out: number;
+      utilization: number;
+      metrics: Record<string, unknown>;
+    }>
+  > {
+    return this.get("/connections/pool/status");
   }
 }
 
 // Export singleton instance
-export const enhancedApiClient = new EnhancedApiClient('/api/v2');
+export const enhancedApiClient = new EnhancedApiClient("/api/v2");
 
 // Export class for custom instances
 export default EnhancedApiClient;

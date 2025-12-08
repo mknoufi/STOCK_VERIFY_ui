@@ -159,7 +159,7 @@ async def update_item_master(
             update_doc["$set"]["uom"] = request.uom
 
         await db.erp_items.update_one({"item_code": item_code}, update_doc)
-        
+
         # Log the change
         await db.audit_logs.insert_one({
             "action": "MASTER_UPDATE",
@@ -212,7 +212,7 @@ async def verify_item(
         if request.verified_qty is not None:
             update_doc["$set"]["verified_qty"] = request.verified_qty
             update_doc["$set"]["variance"] = variance
-        
+
         # New fields
         if request.damaged_qty is not None:
             update_doc["$set"]["damaged_qty"] = request.damaged_qty
@@ -235,9 +235,9 @@ async def verify_item(
         await db.erp_items.update_one({"item_code": item_code}, update_doc)
 
         # Create variance record if there's a variance OR if we are just recording a verification
-        # We should probably record every verification event now, not just variances, 
+        # We should probably record every verification event now, not just variances,
         # to track the "Session" progress.
-        
+
         verification_log = {
             "item_code": item_code,
             "item_name": item.get("item_name", ""),
@@ -258,7 +258,7 @@ async def verify_item(
             "item_condition": request.item_condition,
             "serial_number": request.serial_number
         }
-        
+
         # Insert into verification_logs (new collection for full history)
         await db.verification_logs.insert_one(verification_log)
 
@@ -600,4 +600,3 @@ async def get_live_verifications(
         raise HTTPException(
             status_code=500, detail=f"Failed to get live verifications: {str(e)}"
         )
-

@@ -172,9 +172,11 @@ export default function ControlPanelScreen() {
 
   useEffect(() => {
     if (!hasRole("admin")) {
-      Alert.alert("Access Denied", "You do not have permission to access the control panel.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to access the control panel.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
 
@@ -182,7 +184,8 @@ export default function ControlPanelScreen() {
 
     const maxTimeout = setTimeout(() => {
       if (loading) {
-        __DEV__ && console.warn("Control panel loading timeout - forcing render");
+        __DEV__ &&
+          console.warn("Control panel loading timeout - forcing render");
         setLoading(false);
         if (!services) {
           setServices({
@@ -207,7 +210,10 @@ export default function ControlPanelScreen() {
     };
   }, [hasRole, router, loadData, loading, services]);
 
-  const handleServiceAction = async (service: string, action: "start" | "stop") => {
+  const handleServiceAction = async (
+    service: string,
+    action: "start" | "stop",
+  ) => {
     try {
       let response;
       if (action === "start") {
@@ -216,13 +222,18 @@ export default function ControlPanelScreen() {
         response = await stopService(service);
       }
       if (response?.data || response) {
-        Alert.alert("Success", response?.message || `${service} ${action} command issued`);
+        Alert.alert(
+          "Success",
+          response?.message || `${service} ${action} command issued`,
+        );
         setTimeout(() => loadData(), 2000);
       }
     } catch (error: any) {
       Alert.alert(
         "Error",
-        error.response?.data?.detail || error?.message || `Failed to ${action} ${service}`,
+        error.response?.data?.detail ||
+          error?.message ||
+          `Failed to ${action} ${service}`,
       );
     }
   };
@@ -272,12 +283,20 @@ export default function ControlPanelScreen() {
           <Text style={styles.serviceTitle}>{title}</Text>
         </View>
         <View
-          style={[styles.statusBadge, { backgroundColor: service.running ? "#4CAF50" : "#f44336" }]}
+          style={[
+            styles.statusBadge,
+            { backgroundColor: service.running ? "#4CAF50" : "#f44336" },
+          ]}
         >
           <View
-            style={[styles.statusDot, { backgroundColor: service.running ? "#fff" : "#fff" }]}
+            style={[
+              styles.statusDot,
+              { backgroundColor: service.running ? "#fff" : "#fff" },
+            ]}
           />
-          <Text style={styles.statusBadgeText}>{service.running ? "Running" : "Stopped"}</Text>
+          <Text style={styles.statusBadgeText}>
+            {service.running ? "Running" : "Stopped"}
+          </Text>
         </View>
       </View>
 
@@ -298,7 +317,9 @@ export default function ControlPanelScreen() {
           {service.uptime && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="time" size={16} color="#aaa" />
-              <Text style={styles.serviceDetailText}>Uptime: {formatUptime(service.uptime)}</Text>
+              <Text style={styles.serviceDetailText}>
+                Uptime: {formatUptime(service.uptime)}
+              </Text>
             </View>
           )}
           {service.url && (
@@ -308,7 +329,9 @@ export default function ControlPanelScreen() {
               activeOpacity={0.7}
             >
               <Ionicons name="link" size={16} color="#007AFF" />
-              <Text style={[styles.serviceDetailText, { color: "#007AFF" }] as any}>
+              <Text
+                style={[styles.serviceDetailText, { color: "#007AFF" }] as any}
+              >
                 {service.url}
               </Text>
               <Ionicons
@@ -340,10 +363,17 @@ export default function ControlPanelScreen() {
           ]}
           onPress={() => {
             if (!service.running) {
-              Alert.alert("Start Service", `Are you sure you want to start ${title}?`, [
-                { text: "Cancel", style: "cancel" },
-                { text: "Start", onPress: () => handleServiceAction(serviceKey, "start") },
-              ]);
+              Alert.alert(
+                "Start Service",
+                `Are you sure you want to start ${title}?`,
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Start",
+                    onPress: () => handleServiceAction(serviceKey, "start"),
+                  },
+                ],
+              );
             }
           }}
           disabled={service.running}
@@ -403,10 +433,19 @@ export default function ControlPanelScreen() {
           {!isWeb && <Text style={styles.backButtonText}>Back</Text>}
         </TouchableOpacity>
         <View style={styles.titleContainer}>
-          <Ionicons name="settings" size={28} color="#fff" style={styles.titleIcon} />
+          <Ionicons
+            name="settings"
+            size={28}
+            color="#fff"
+            style={styles.titleIcon}
+          />
           <Text style={styles.title}>Master Control Panel</Text>
         </View>
-        <TouchableOpacity style={styles.refreshButton} onPress={loadData} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.refreshButton}
+          onPress={loadData}
+          activeOpacity={0.7}
+        >
           <Ionicons
             name="refresh"
             size={24}
@@ -418,9 +457,16 @@ export default function ControlPanelScreen() {
 
       <ScrollView
         style={styles.content}
-        contentContainerStyle={[styles.contentContainer, isWeb && styles.contentContainerWeb]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          isWeb && styles.contentContainerWeb,
+        ]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={loadData} tintColor="#007AFF" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={loadData}
+            tintColor="#007AFF"
+          />
         }
         showsVerticalScrollIndicator={isWeb}
       >
@@ -438,14 +484,24 @@ export default function ControlPanelScreen() {
                 <Ionicons
                   name="heart"
                   size={24}
-                  color={healthScore >= 80 ? "#4CAF50" : healthScore >= 50 ? "#FF9800" : "#f44336"}
+                  color={
+                    healthScore >= 80
+                      ? "#4CAF50"
+                      : healthScore >= 50
+                        ? "#FF9800"
+                        : "#f44336"
+                  }
                 />
                 <Text
                   style={[
                     styles.quickStatValue,
                     {
                       color:
-                        healthScore >= 80 ? "#4CAF50" : healthScore >= 50 ? "#FF9800" : "#f44336",
+                        healthScore >= 80
+                          ? "#4CAF50"
+                          : healthScore >= 50
+                            ? "#FF9800"
+                            : "#f44336",
                     },
                   ]}
                 >
@@ -456,7 +512,9 @@ export default function ControlPanelScreen() {
             )}
             <View style={styles.quickStatCard}>
               <Ionicons name="people" size={24} color="#4CAF50" />
-              <Text style={styles.quickStatValue}>{systemStats.active_sessions || 0}</Text>
+              <Text style={styles.quickStatValue}>
+                {systemStats.active_sessions || 0}
+              </Text>
               <Text style={styles.quickStatLabel}>Active</Text>
             </View>
             <View style={styles.quickStatCard}>
@@ -472,7 +530,8 @@ export default function ControlPanelScreen() {
             <Ionicons name="warning" size={24} color="#ff9800" />
             <View style={styles.issuesContent}>
               <Text style={styles.issuesTitle}>
-                {issues.filter((i: any) => i.severity === "critical").length} Critical Issue(s)
+                {issues.filter((i: any) => i.severity === "critical").length}{" "}
+                Critical Issue(s)
               </Text>
               <Text style={styles.issuesText}>
                 {issues[0]?.message || "System issues detected"}
@@ -508,7 +567,13 @@ export default function ControlPanelScreen() {
                 "globe",
                 "#4CAF50",
               )}
-              {renderServiceCard("MongoDB", services.mongodb, "mongodb", "cube", "#13AA52")}
+              {renderServiceCard(
+                "MongoDB",
+                services.mongodb,
+                "mongodb",
+                "cube",
+                "#13AA52",
+              )}
               {renderServiceCard(
                 "SQL Server",
                 services.sql_server,
@@ -554,7 +619,10 @@ export default function ControlPanelScreen() {
               <Ionicons name="document-text" size={32} color="#9C27B0" />
               <Text style={styles.quickActionText}>Reports</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionCard} onPress={handleSqlConfig}>
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={handleSqlConfig}
+            >
               <Ionicons name="server" size={32} color="#FF9800" />
               <Text style={styles.quickActionText}>SQL Config</Text>
             </TouchableOpacity>
@@ -579,18 +647,24 @@ export default function ControlPanelScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="phone-portrait" size={24} color="#4CAF50" />
-              <Text style={styles.sectionTitle}>Active Devices ({devices.length})</Text>
+              <Text style={styles.sectionTitle}>
+                Active Devices ({devices.length})
+              </Text>
             </View>
             <View style={styles.devicesList}>
               {devices.slice(0, 5).map((device: any, index: number) => (
                 <View key={index} style={styles.deviceCard}>
                   <Ionicons
-                    name={device.platform === "web" ? "globe" : "phone-portrait"}
+                    name={
+                      device.platform === "web" ? "globe" : "phone-portrait"
+                    }
                     size={20}
                     color="#007AFF"
                   />
                   <View style={styles.deviceInfo}>
-                    <Text style={styles.deviceUser}>{device.user || "Unknown"}</Text>
+                    <Text style={styles.deviceUser}>
+                      {device.user || "Unknown"}
+                    </Text>
                     <Text style={styles.deviceDetails}>
                       {device.platform} • {device.ip_address}
                     </Text>
@@ -609,7 +683,9 @@ export default function ControlPanelScreen() {
         <View style={styles.footer}>
           <View style={styles.footerRow}>
             <Ionicons name="time" size={16} color="#666" />
-            <Text style={styles.footerText}>Last updated: {lastUpdate.toLocaleTimeString()}</Text>
+            <Text style={styles.footerText}>
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </Text>
           </View>
           <Text style={styles.footerText}>
             Auto-refresh every {AUTO_REFRESH_INTERVAL_MS / 1000} seconds

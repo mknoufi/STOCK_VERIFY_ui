@@ -96,7 +96,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.searchButton, !manualBarcode && styles.searchButtonDisabled]}
+            style={[
+              styles.searchButton,
+              !manualBarcode && styles.searchButtonDisabled,
+            ]}
             onPress={() => {
               onActivityReset?.();
               onBarcodeSubmit();
@@ -114,7 +117,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           <Ionicons name="search-outline" size={20} color="#3B82F6" />
           <Text style={styles.inputLabel}>Search Item Name</Text>
           {onVoiceSearch && (
-            <TouchableOpacity style={styles.voiceButton} onPress={onVoiceSearch}>
+            <TouchableOpacity
+              style={styles.voiceButton}
+              onPress={onVoiceSearch}
+            >
               <Ionicons
                 name={isListening ? "mic" : "mic-outline"}
                 size={20}
@@ -140,7 +146,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onSubmitEditing={onItemNameSubmit}
           />
           <TouchableOpacity
-            style={[styles.searchButton, !manualItemName && styles.searchButtonDisabled]}
+            style={[
+              styles.searchButton,
+              !manualItemName && styles.searchButtonDisabled,
+            ]}
             onPress={() => {
               onActivityReset?.();
               onItemNameSubmit();
@@ -155,7 +164,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
       {/* Search Results */}
       {showSearchResults && searchResults.length > 0 && (
         <View style={styles.searchResultsContainer}>
-          <Text style={styles.searchResultsTitle}>Search Results ({searchResults.length})</Text>
+          <Text style={styles.searchResultsTitle}>
+            Search Results ({searchResults.length})
+          </Text>
           <ScrollView
             style={styles.searchResultsScrollView}
             nestedScrollEnabled={true}
@@ -169,11 +180,17 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
               >
                 <View style={styles.searchResultContent}>
                   <Text style={styles.searchResultName}>{item.item_name}</Text>
-                  <Text style={styles.searchResultCode}>Code: {item.item_code}</Text>
+                  <Text style={styles.searchResultCode}>
+                    Code: {item.item_code}
+                  </Text>
                   {item.barcode && (
-                    <Text style={styles.searchResultBarcode}>Barcode: {item.barcode}</Text>
+                    <Text style={styles.searchResultBarcode}>
+                      Barcode: {item.barcode}
+                    </Text>
                   )}
-                  <Text style={styles.searchResultStock}>Stock: {item.stock_qty || 0}</Text>
+                  <Text style={styles.searchResultStock}>
+                    Stock: {item.stock_qty || 0}
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
               </TouchableOpacity>

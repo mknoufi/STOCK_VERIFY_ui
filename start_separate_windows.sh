@@ -73,4 +73,3 @@ echo "   • Frontend: Check Expo window for QR code"
 echo "   • To stop: Press Ctrl+C in each window"
 echo "   • Or run: ./stop.sh"
 echo ""
-

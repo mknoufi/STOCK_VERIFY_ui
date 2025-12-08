@@ -152,7 +152,10 @@ export class BatchOperationsService {
       errors: [],
     };
 
-    const processor = new BatchProcessor<{ line_id: string; counted_qty: number }>(10, 100);
+    const processor = new BatchProcessor<{
+      line_id: string;
+      counted_qty: number;
+    }>(10, 100);
 
     await processor.process(
       updates,

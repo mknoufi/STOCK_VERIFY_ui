@@ -129,23 +129,45 @@ export default function ActivityLogsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header title="Activity Logs" leftIcon="arrow-back" onLeftPress={() => router.back()} />
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Header
+        title="Activity Logs"
+        leftIcon="arrow-back"
+        onLeftPress={() => router.back()}
+      />
 
       <ScrollView
         style={styles.scrollView}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         {/* Statistics */}
         {stats && (
-          <View style={[styles.statsContainer, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>Statistics</Text>
+          <View
+            style={[
+              styles.statsContainer,
+              { backgroundColor: theme.colors.card },
+            ]}
+          >
+            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>
+              Statistics
+            </Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: theme.colors.primary }]}>
+                <Text
+                  style={[styles.statValue, { color: theme.colors.primary }]}
+                >
                   {stats.total || 0}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Total Activities
                 </Text>
               </View>
@@ -153,7 +175,12 @@ export default function ActivityLogsScreen() {
                 <Text style={[styles.statValue, { color: "#00E676" }]}>
                   {stats.by_status?.success || 0}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Success
                 </Text>
               </View>
@@ -161,7 +188,12 @@ export default function ActivityLogsScreen() {
                 <Text style={[styles.statValue, { color: "#FF5252" }]}>
                   {stats.by_status?.error || 0}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   Errors
                 </Text>
               </View>
@@ -173,21 +205,35 @@ export default function ActivityLogsScreen() {
         {loading && logs.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.loadingText,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
               Loading activity logs...
             </Text>
           </View>
         ) : logs.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="document-text" size={64} color={theme.colors.textSecondary} />
-            <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+            <Ionicons
+              name="document-text"
+              size={64}
+              color={theme.colors.textSecondary}
+            />
+            <Text
+              style={[styles.emptyText, { color: theme.colors.textSecondary }]}
+            >
               No activity logs found
             </Text>
           </View>
         ) : (
           <>
             {logs.map((log) => (
-              <View key={log.id} style={[styles.logItem, { backgroundColor: theme.colors.card }]}>
+              <View
+                key={log.id}
+                style={[styles.logItem, { backgroundColor: theme.colors.card }]}
+              >
                 <View style={styles.logHeader}>
                   <View style={styles.logHeaderLeft}>
                     <Ionicons
@@ -196,10 +242,17 @@ export default function ActivityLogsScreen() {
                       color={theme.colors.primary}
                     />
                     <View style={styles.logInfo}>
-                      <Text style={[styles.logAction, { color: theme.colors.text }]}>
+                      <Text
+                        style={[styles.logAction, { color: theme.colors.text }]}
+                      >
                         {log.action.replace("_", " ").toUpperCase()}
                       </Text>
-                      <Text style={[styles.logUser, { color: theme.colors.textSecondary }]}>
+                      <Text
+                        style={[
+                          styles.logUser,
+                          { color: theme.colors.textSecondary },
+                        ]}
+                      >
                         {log.user} ({log.role})
                       </Text>
                     </View>
@@ -210,18 +263,33 @@ export default function ActivityLogsScreen() {
                       { backgroundColor: getStatusColor(log.status) + "20" },
                     ]}
                   >
-                    <Text style={[styles.statusText, { color: getStatusColor(log.status) }]}>
+                    <Text
+                      style={[
+                        styles.statusText,
+                        { color: getStatusColor(log.status) },
+                      ]}
+                    >
                       {log.status}
                     </Text>
                   </View>
                 </View>
 
-                <Text style={[styles.logTimestamp, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.logTimestamp,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   {formatTimestamp(log.timestamp)}
                 </Text>
 
                 {log.entity_type && (
-                  <Text style={[styles.logEntity, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.logEntity,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {log.entity_type}: {log.entity_id || "N/A"}
                   </Text>
                 )}
@@ -234,7 +302,12 @@ export default function ActivityLogsScreen() {
                 )}
 
                 {Object.keys(log.details || {}).length > 0 && (
-                  <Text style={[styles.logDetails, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.logDetails,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {JSON.stringify(log.details, null, 2)}
                   </Text>
                 )}
@@ -243,7 +316,10 @@ export default function ActivityLogsScreen() {
 
             {hasMore && (
               <TouchableOpacity
-                style={[styles.loadMoreButton, { backgroundColor: theme.colors.primary }]}
+                style={[
+                  styles.loadMoreButton,
+                  { backgroundColor: theme.colors.primary },
+                ]}
                 onPress={loadMore}
                 disabled={loading}
               >

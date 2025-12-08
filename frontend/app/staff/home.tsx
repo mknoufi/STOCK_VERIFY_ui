@@ -114,7 +114,10 @@ export default function StaffHome() {
     const validation = validateSessionName(floorName, rackName);
 
     if (!validation.valid || !validation.value) {
-      Alert.alert("Invalid Input", validation.error || "Please enter valid Floor and Rack numbers");
+      Alert.alert(
+        "Invalid Input",
+        validation.error || "Please enter valid Floor and Rack numbers",
+      );
       return;
     }
 
@@ -376,7 +379,10 @@ export default function StaffHome() {
 
   // Calculate stats for dashboard
   const activeSessions = sessions.filter((s: any) => s.status === "active");
-  const totalItemsScanned = sessions.reduce((acc: number, s: any) => acc + (s.item_count || 0), 0);
+  const totalItemsScanned = sessions.reduce(
+    (acc: number, s: any) => acc + (s.item_count || 0),
+    0,
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderSessionItem = ({ item, index }: { item: any; index: number }) => (
@@ -396,7 +402,10 @@ export default function StaffHome() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient colors={["#0F172A", "#1E293B", "#0F172A"]} style={StyleSheet.absoluteFill} />
+      <LinearGradient
+        colors={["#0F172A", "#1E293B", "#0F172A"]}
+        style={StyleSheet.absoluteFill}
+      />
 
       {/* Premium App Header */}
       <PremiumHeader
@@ -430,7 +439,9 @@ export default function StaffHome() {
             <OnlineStatus />
             <View style={styles.syncInfo}>
               <Ionicons name="sync-outline" size={14} color="#64748B" />
-              <Text style={styles.syncText}>Last sync: {formatSyncTime(lastSyncTime)}</Text>
+              <Text style={styles.syncText}>
+                Last sync: {formatSyncTime(lastSyncTime)}
+              </Text>
             </View>
           </View>
 
@@ -441,7 +452,9 @@ export default function StaffHome() {
               value={activeSessions.length}
               icon="folder-open"
               iconColor="#10B981"
-              subtitle={activeSessions.length === 1 ? "In progress" : "In progress"}
+              subtitle={
+                activeSessions.length === 1 ? "In progress" : "In progress"
+              }
               index={0}
               style={styles.statCard}
             />
@@ -460,34 +473,41 @@ export default function StaffHome() {
           <View style={styles.section}>
             <BlurView intensity={20} tint="dark" style={styles.card}>
               <Text style={styles.sectionTitle}>📍 New Count Area</Text>
-              <Text style={styles.sectionSubtitle}>Enter floor and rack location to start stock counting</Text>
+              <Text style={styles.sectionSubtitle}>
+                Enter floor and rack location to start stock counting
+              </Text>
 
               {/* Count Mode Selector */}
               <Text style={styles.modeSelectorLabel}>Count Mode</Text>
               <View style={styles.modeSelector}>
-                {(["STANDARD", "BLIND", "STRICT"] as SessionType[]).map((type) => {
-                  const modeLabels = {
-                    STANDARD: "📊 Standard",
-                    BLIND: "🔒 Blind",
-                    STRICT: "✅ Strict",
-                  };
-                  return (
-                    <TouchableOpacity
-                      key={type}
-                      style={[styles.modeButton, sessionType === type && styles.modeButtonActive]}
-                      onPress={() => setSessionType(type)}
-                    >
-                      <Text
+                {(["STANDARD", "BLIND", "STRICT"] as SessionType[]).map(
+                  (type) => {
+                    const modeLabels = {
+                      STANDARD: "📊 Standard",
+                      BLIND: "🔒 Blind",
+                      STRICT: "✅ Strict",
+                    };
+                    return (
+                      <TouchableOpacity
+                        key={type}
                         style={[
-                          styles.modeButtonText,
-                          sessionType === type && styles.modeButtonTextActive,
+                          styles.modeButton,
+                          sessionType === type && styles.modeButtonActive,
                         ]}
+                        onPress={() => setSessionType(type)}
                       >
-                        {modeLabels[type]}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                        <Text
+                          style={[
+                            styles.modeButtonText,
+                            sessionType === type && styles.modeButtonTextActive,
+                          ]}
+                        >
+                          {modeLabels[type]}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  },
+                )}
               </View>
 
               <Text style={styles.inputSectionLabel}>📌 Location Details</Text>
@@ -526,9 +546,15 @@ export default function StaffHome() {
           {/* Active Sessions Section */}
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>📂 Your Active Areas</Text>
-            <Text style={styles.sectionSubtitle}>Continue counting where you left off</Text>
+            <Text style={styles.sectionSubtitle}>
+              Continue counting where you left off
+            </Text>
             {isLoadingSessions ? (
-              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+              <ActivityIndicator
+                size="large"
+                color={colors.primary}
+                style={{ marginTop: 20 }}
+              />
             ) : activeSessions.length > 0 ? (
               <View style={styles.listContent}>
                 {activeSessions.map((item: any, index: number) => (
@@ -540,8 +566,12 @@ export default function StaffHome() {
                     lastUpdated={new Date(item.created_at).toLocaleDateString()}
                     createdBy={item.created_by || user?.username}
                     itemCount={item.item_count || 0}
-                    onPress={() => handleResumeSession(item.session_id || item.id)}
-                    onResume={() => handleResumeSession(item.session_id || item.id)}
+                    onPress={() =>
+                      handleResumeSession(item.session_id || item.id)
+                    }
+                    onResume={() =>
+                      handleResumeSession(item.session_id || item.id)
+                    }
                     index={index}
                   />
                 ))}
@@ -550,7 +580,9 @@ export default function StaffHome() {
               <View style={styles.emptyState}>
                 <Text style={styles.emptyIcon}>📭</Text>
                 <Text style={styles.emptyTitle}>No Active Areas</Text>
-                <Text style={styles.emptyText}>Create a new count area above to get started!</Text>
+                <Text style={styles.emptyText}>
+                  Create a new count area above to get started!
+                </Text>
               </View>
             )}
           </View>
@@ -569,7 +601,7 @@ export default function StaffHome() {
               Alert.alert(
                 "No Active Area",
                 "Please create a new count area first by entering floor and rack details above.",
-                [{ text: "Got it", style: "default" }]
+                [{ text: "Got it", style: "default" }],
               );
             }
           }}

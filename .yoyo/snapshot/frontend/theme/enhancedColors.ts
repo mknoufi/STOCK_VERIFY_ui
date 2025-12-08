@@ -16,46 +16,46 @@ export interface SemanticColors {
   primaryHover: string;
   primaryActive: string;
   primaryDisabled: string;
-  
+
   // Secondary actions
   secondary: string;
   secondaryHover: string;
   secondaryActive: string;
-  
+
   // Status colors
   success: string;
   successLight: string;
   successDark: string;
-  
+
   error: string;
   errorLight: string;
   errorDark: string;
-  
+
   warning: string;
   warningLight: string;
   warningDark: string;
-  
+
   info: string;
   infoLight: string;
   infoDark: string;
-  
+
   // Neutral colors
   background: string;
   surface: string;
   surfaceVariant: string;
-  
+
   // Text colors
   text: string;
   textSecondary: string;
   textTertiary: string;
   textDisabled: string;
   textInverse: string;
-  
+
   // Border colors
   border: string;
   borderLight: string;
   borderDark: string;
-  
+
   // Overlay colors
   overlay: string;
   overlayLight: string;
@@ -76,10 +76,10 @@ export const getContrastRatio = (color1: string, color2: string): number => {
   // For production, use a proper color contrast library
   const luminance1 = getLuminance(color1);
   const luminance2 = getLuminance(color2);
-  
+
   const lighter = Math.max(luminance1, luminance2);
   const darker = Math.min(luminance1, luminance2);
-  
+
   return (lighter + 0.05) / (darker + 0.05);
 };
 
@@ -92,12 +92,12 @@ const getLuminance = (color: string): number => {
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
   const b = parseInt(hex.substring(4, 6), 16) / 255;
-  
+
   // Apply gamma correction
   const [rLinear, gLinear, bLinear] = [r, g, b].map(val => {
     return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
   });
-  
+
   return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
 };
 
@@ -127,49 +127,49 @@ export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors 
     primaryHover: adjustBrightness(baseColors.primary, -10),
     primaryActive: adjustBrightness(baseColors.primary, -20),
     primaryDisabled: adjustOpacity(baseColors.primary, 0.5),
-    
+
     // Secondary
     secondary: baseColors.secondary,
     secondaryHover: adjustBrightness(baseColors.secondary, -10),
     secondaryActive: adjustBrightness(baseColors.secondary, -20),
-    
+
     // Success
     success: baseColors.success,
     successLight: adjustBrightness(baseColors.success, 20),
     successDark: adjustBrightness(baseColors.success, -20),
-    
+
     // Error
     error: baseColors.error,
     errorLight: adjustBrightness(baseColors.error, 20),
     errorDark: adjustBrightness(baseColors.error, -20),
-    
+
     // Warning
     warning: baseColors.warning,
     warningLight: adjustBrightness(baseColors.warning, 20),
     warningDark: adjustBrightness(baseColors.warning, -20),
-    
+
     // Info
     info: baseColors.info,
     infoLight: adjustBrightness(baseColors.info, 20),
     infoDark: adjustBrightness(baseColors.info, -20),
-    
+
     // Background & Surface
     background: baseColors.background,
     surface: baseColors.surface,
     surfaceVariant: baseColors.surfaceDark || baseColors.surface,
-    
+
     // Text
     text: baseColors.text,
     textSecondary: baseColors.textSecondary,
     textTertiary: baseColors.textTertiary || baseColors.textSecondary,
     textDisabled: adjustOpacity(baseColors.text, 0.38),
     textInverse: baseColors.background,
-    
+
     // Border
     border: baseColors.border,
     borderLight: adjustOpacity(baseColors.border, 0.5),
     borderDark: adjustBrightness(baseColors.border, -20),
-    
+
     // Overlay
     overlay: baseColors.overlayPrimary || adjustOpacity(baseColors.primary, 0.1),
     overlayLight: adjustOpacity(baseColors.primary, 0.05),
@@ -206,4 +206,3 @@ const adjustOpacity = (color: string, opacity: number): string => {
 
 export const lightSemanticColors = generateSemanticColors(lightTheme.colors);
 export const darkSemanticColors = generateSemanticColors(darkTheme.colors);
-

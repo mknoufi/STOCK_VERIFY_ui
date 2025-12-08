@@ -156,7 +156,7 @@ class CacheService:
                 keys = []
                 async for key in self.redis_client.scan_iter(match=pattern):
                     keys.append(key)
-                
+
                 if keys:
                     return await self.redis_client.delete(*keys)
             except Exception as e:
@@ -217,7 +217,7 @@ class CacheService:
                     else 0
                 ),
             }
-            
+
     # Aliases for compatibility if needed, but better to update callers
     get_async = get
     set_async = set

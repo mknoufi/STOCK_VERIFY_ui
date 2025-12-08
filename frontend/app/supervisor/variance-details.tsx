@@ -12,7 +12,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../src/hooks/useTheme";
 import { ItemVerificationAPI } from "../../src/services/api/itemVerificationApi";
-import { spacing, typography, borderRadius, colors } from "../../src/styles/globalStyles";
+import {
+  spacing,
+  typography,
+  borderRadius,
+  colors,
+} from "../../src/styles/globalStyles";
 import { Button } from "../../src/components/Button";
 
 export default function VarianceDetailsScreen() {
@@ -68,14 +73,19 @@ export default function VarianceDetailsScreen() {
             try {
               setProcessing(true);
               if (itemDetails?.count_line_id) {
-                await ItemVerificationAPI.approveVariance(itemDetails.count_line_id);
+                await ItemVerificationAPI.approveVariance(
+                  itemDetails.count_line_id,
+                );
                 Alert.alert("Success", "Variance approved successfully");
                 router.back();
               } else {
                 throw new Error("Count line ID not found");
               }
             } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to approve variance");
+              Alert.alert(
+                "Error",
+                error.message || "Failed to approve variance",
+              );
             } finally {
               setProcessing(false);
             }
@@ -97,14 +107,19 @@ export default function VarianceDetailsScreen() {
             try {
               setProcessing(true);
               if (itemDetails?.count_line_id) {
-                await ItemVerificationAPI.requestRecount(itemDetails.count_line_id);
+                await ItemVerificationAPI.requestRecount(
+                  itemDetails.count_line_id,
+                );
                 Alert.alert("Success", "Recount requested successfully");
                 router.back();
               } else {
                 throw new Error("Count line ID not found");
               }
             } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to request recount");
+              Alert.alert(
+                "Error",
+                error.message || "Failed to request recount",
+              );
             } finally {
               setProcessing(false);
             }
@@ -117,7 +132,11 @@ export default function VarianceDetailsScreen() {
   if (loading) {
     return (
       <View
-        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: theme.colors.background },
+        ]}
       >
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
@@ -127,7 +146,11 @@ export default function VarianceDetailsScreen() {
   if (!itemDetails) {
     return (
       <View
-        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: theme.colors.background },
+        ]}
       >
         <Text style={{ color: theme.colors.text }}>Item not found</Text>
       </View>
@@ -135,12 +158,19 @@ export default function VarianceDetailsScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Variance Details</Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
+          Variance Details
+        </Text>
       </View>
 
       <ScrollView style={styles.content}>
@@ -148,13 +178,20 @@ export default function VarianceDetailsScreen() {
           <Text style={[styles.itemName, { color: theme.colors.text }]}>
             {itemDetails.item_name}
           </Text>
-          <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>
+          <Text
+            style={[styles.itemCode, { color: theme.colors.textSecondary }]}
+          >
             {itemDetails.item_code}
           </Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.statLabel,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 System Qty
               </Text>
               <Text style={[styles.statValue, { color: theme.colors.text }]}>
@@ -162,7 +199,12 @@ export default function VarianceDetailsScreen() {
               </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.statLabel,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Verified Qty
               </Text>
               <Text style={[styles.statValue, { color: theme.colors.text }]}>
@@ -170,13 +212,23 @@ export default function VarianceDetailsScreen() {
               </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.statLabel,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Variance
               </Text>
               <Text
                 style={[
                   styles.statValue,
-                  { color: itemDetails.variance !== 0 ? colors.error : colors.success },
+                  {
+                    color:
+                      itemDetails.variance !== 0
+                        ? colors.error
+                        : colors.success,
+                  },
                 ]}
               >
                 {itemDetails.variance > 0 ? "+" : ""}
@@ -191,7 +243,12 @@ export default function VarianceDetailsScreen() {
             Verification Details
           </Text>
           <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.detailLabel,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
               Verified By:
             </Text>
             <Text style={[styles.detailValue, { color: theme.colors.text }]}>
@@ -199,18 +256,31 @@ export default function VarianceDetailsScreen() {
             </Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Time:</Text>
+            <Text
+              style={[
+                styles.detailLabel,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
+              Time:
+            </Text>
             <Text style={[styles.detailValue, { color: theme.colors.text }]}>
               {new Date(itemDetails.verified_at).toLocaleString()}
             </Text>
           </View>
           {itemDetails.floor && (
             <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.detailLabel,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Location:
               </Text>
               <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                {itemDetails.floor} {itemDetails.rack ? `/ ${itemDetails.rack}` : ""}
+                {itemDetails.floor}{" "}
+                {itemDetails.rack ? `/ ${itemDetails.rack}` : ""}
               </Text>
             </View>
           )}

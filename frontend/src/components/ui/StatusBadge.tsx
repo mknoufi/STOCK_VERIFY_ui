@@ -8,28 +8,29 @@
  * - Size variants
  */
 
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { View, Text, StyleSheet, ViewStyle } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withSequence,
   withTiming,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 import {
   modernColors,
   modernBorderRadius,
-} from '../../styles/modernDesignSystem';
+} from "../../styles/modernDesignSystem";
 
-type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'primary';
-type BadgeSize = 'small' | 'medium' | 'large';
+type BadgeVariant =
+  | "success"
+  | "warning"
+  | "error"
+  | "info"
+  | "neutral"
+  | "primary";
+type BadgeSize = "small" | "medium" | "large";
 
 interface StatusBadgeProps {
   label: string;
@@ -40,46 +41,52 @@ interface StatusBadgeProps {
   style?: ViewStyle;
 }
 
-const variantColors: Record<BadgeVariant, { bg: string; text: string; glow: string; border: string }> = {
+const variantColors: Record<
+  BadgeVariant,
+  { bg: string; text: string; glow: string; border: string }
+> = {
   success: {
-    bg: 'rgba(16, 185, 129, 0.15)',
+    bg: "rgba(16, 185, 129, 0.15)",
     text: modernColors.success.light,
-    glow: 'rgba(16, 185, 129, 0.25)',
-    border: 'rgba(16, 185, 129, 0.35)',
+    glow: "rgba(16, 185, 129, 0.25)",
+    border: "rgba(16, 185, 129, 0.35)",
   },
   warning: {
-    bg: 'rgba(245, 158, 11, 0.15)',
+    bg: "rgba(245, 158, 11, 0.15)",
     text: modernColors.warning.light,
-    glow: 'rgba(245, 158, 11, 0.25)',
-    border: 'rgba(245, 158, 11, 0.35)',
+    glow: "rgba(245, 158, 11, 0.25)",
+    border: "rgba(245, 158, 11, 0.35)",
   },
   error: {
-    bg: 'rgba(239, 68, 68, 0.15)',
+    bg: "rgba(239, 68, 68, 0.15)",
     text: modernColors.error.light,
-    glow: 'rgba(239, 68, 68, 0.25)',
-    border: 'rgba(239, 68, 68, 0.35)',
+    glow: "rgba(239, 68, 68, 0.25)",
+    border: "rgba(239, 68, 68, 0.35)",
   },
   info: {
-    bg: 'rgba(59, 130, 246, 0.15)',
+    bg: "rgba(59, 130, 246, 0.15)",
     text: modernColors.info.light,
-    glow: 'rgba(59, 130, 246, 0.25)',
-    border: 'rgba(59, 130, 246, 0.35)',
+    glow: "rgba(59, 130, 246, 0.25)",
+    border: "rgba(59, 130, 246, 0.35)",
   },
   neutral: {
-    bg: 'rgba(148, 163, 184, 0.15)',
+    bg: "rgba(148, 163, 184, 0.15)",
     text: modernColors.text.secondary,
-    glow: 'rgba(148, 163, 184, 0.25)',
-    border: 'rgba(148, 163, 184, 0.35)',
+    glow: "rgba(148, 163, 184, 0.25)",
+    border: "rgba(148, 163, 184, 0.35)",
   },
   primary: {
-    bg: 'rgba(99, 102, 241, 0.15)',
+    bg: "rgba(99, 102, 241, 0.15)",
     text: modernColors.primary[400],
-    glow: 'rgba(99, 102, 241, 0.25)',
-    border: 'rgba(99, 102, 241, 0.35)',
+    glow: "rgba(99, 102, 241, 0.25)",
+    border: "rgba(99, 102, 241, 0.35)",
   },
 };
 
-const sizeStyles: Record<BadgeSize, { paddingH: number; paddingV: number; fontSize: number; iconSize: number }> = {
+const sizeStyles: Record<
+  BadgeSize,
+  { paddingH: number; paddingV: number; fontSize: number; iconSize: number }
+> = {
   small: { paddingH: 8, paddingV: 3, fontSize: 10, iconSize: 10 },
   medium: { paddingH: 10, paddingV: 4, fontSize: 11, iconSize: 12 },
   large: { paddingH: 14, paddingV: 6, fontSize: 12, iconSize: 14 },
@@ -87,8 +94,8 @@ const sizeStyles: Record<BadgeSize, { paddingH: number; paddingV: number; fontSi
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
   label,
-  variant = 'neutral',
-  size = 'medium',
+  variant = "neutral",
+  size = "medium",
   icon,
   pulse = false,
   style,
@@ -127,8 +134,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   }));
 
   const containerStyle: ViewStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: sizeConfig.paddingH / 2,
     paddingHorizontal: sizeConfig.paddingH,
     paddingVertical: sizeConfig.paddingV,
@@ -165,18 +172,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     );
   }
 
-  return (
-    <View style={[containerStyle, style]}>
-      {content}
-    </View>
-  );
+  return <View style={[containerStyle, style]}>{content}</View>;
 };
 
 const styles = StyleSheet.create({
   label: {
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
 });
 

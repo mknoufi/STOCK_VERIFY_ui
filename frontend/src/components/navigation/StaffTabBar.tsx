@@ -3,7 +3,7 @@
  * Mobile-only navigation (hidden on web)
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -11,11 +11,11 @@ import {
   TouchableOpacity,
   Platform,
   ViewStyle,
-} from 'react-native';
-import { useRouter, useSegments } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@/hooks/useTheme';
-import { layout, spacing, typography } from '../../styles/globalStyles';
+} from "react-native";
+import { useRouter, useSegments } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/hooks/useTheme";
+import { layout, spacing, typography } from "../../styles/globalStyles";
 
 interface TabItem {
   key: string;
@@ -27,22 +27,22 @@ interface TabItem {
 
 const STAFF_TABS: TabItem[] = [
   {
-    key: 'sessions',
-    label: 'Sessions',
-    icon: 'home',
-    route: '/staff/home',
+    key: "sessions",
+    label: "Sessions",
+    icon: "home",
+    route: "/staff/home",
   },
   {
-    key: 'scan',
-    label: 'Scan',
-    icon: 'scan',
-    route: '/staff/scan',
+    key: "scan",
+    label: "Scan",
+    icon: "scan",
+    route: "/staff/scan",
   },
   {
-    key: 'history',
-    label: 'History',
-    icon: 'time',
-    route: '/staff/history',
+    key: "history",
+    label: "History",
+    icon: "time",
+    route: "/staff/history",
   },
 ];
 
@@ -57,16 +57,19 @@ export const StaffTabBar: React.FC<StaffTabBarProps> = ({ style, testID }) => {
   const segments = useSegments();
 
   // Hide on web
-  if (Platform.OS === 'web') {
+  if (Platform.OS === "web") {
     return null;
   }
 
   // Determine active tab based on current route
-  const currentRoute = segments.join('/');
-  const activeTab = STAFF_TABS.find((tab) => {
-    const tabRoute = tab.route.replace(/^\//, ''); // Remove leading slash
-    return currentRoute === tabRoute || currentRoute.startsWith(tabRoute + '/');
-  })?.key || 'sessions';
+  const currentRoute = segments.join("/");
+  const activeTab =
+    STAFF_TABS.find((tab) => {
+      const tabRoute = tab.route.replace(/^\//, ""); // Remove leading slash
+      return (
+        currentRoute === tabRoute || currentRoute.startsWith(tabRoute + "/")
+      );
+    })?.key || "sessions";
 
   const handleTabPress = (tab: TabItem) => {
     if (activeTab !== tab.key) {
@@ -88,8 +91,12 @@ export const StaffTabBar: React.FC<StaffTabBarProps> = ({ style, testID }) => {
     >
       {STAFF_TABS.map((tab) => {
         const isActive = activeTab === tab.key;
-        const iconColor = isActive ? theme.colors.primary : theme.colors.textSecondary;
-        const labelColor = isActive ? theme.colors.primary : theme.colors.textSecondary;
+        const iconColor = isActive
+          ? theme.colors.primary
+          : theme.colors.textSecondary;
+        const labelColor = isActive
+          ? theme.colors.primary
+          : theme.colors.textSecondary;
 
         return (
           <TouchableOpacity
@@ -105,16 +112,28 @@ export const StaffTabBar: React.FC<StaffTabBarProps> = ({ style, testID }) => {
               <View style={styles.iconContainer}>
                 <Ionicons name={tab.icon} size={24} color={iconColor} />
                 {tab.badge !== undefined && tab.badge > 0 && (
-                  <View style={[styles.badge, { backgroundColor: theme.colors.error }]}>
+                  <View
+                    style={[
+                      styles.badge,
+                      { backgroundColor: theme.colors.error },
+                    ]}
+                  >
                     <Text style={styles.badgeText}>
-                      {tab.badge > 99 ? '99+' : tab.badge}
+                      {tab.badge > 99 ? "99+" : tab.badge}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={[styles.label, { color: labelColor }]}>{tab.label}</Text>
+              <Text style={[styles.label, { color: labelColor }]}>
+                {tab.label}
+              </Text>
               {isActive && (
-                <View style={[styles.indicator, { backgroundColor: theme.colors.primary }]} />
+                <View
+                  style={[
+                    styles.indicator,
+                    { backgroundColor: theme.colors.primary },
+                  ]}
+                />
               )}
             </View>
           </TouchableOpacity>
@@ -127,7 +146,7 @@ export const StaffTabBar: React.FC<StaffTabBarProps> = ({ style, testID }) => {
 const styles = StyleSheet.create({
   container: {
     height: layout.tabBarHeight,
-    flexDirection: 'row',
+    flexDirection: "row",
     borderTopWidth: 1,
     ...Platform.select({
       ios: {
@@ -137,45 +156,45 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: spacing.xs,
   },
   tabContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   iconContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: spacing.xs,
   },
   badge: {
-    position: 'absolute',
+    position: "absolute",
     top: -6,
     right: -8,
     minWidth: 16,
     height: 16,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 4,
     borderWidth: 2,
-    borderColor: '#FFFFFF', // Ensure badge is visible
+    borderColor: "#FFFFFF", // Ensure badge is visible
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 9,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   label: {
     ...typography.caption,
     fontSize: 11,
   },
   indicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -spacing.xs - 2,
-    left: '50%',
+    left: "50%",
     marginLeft: -12,
     width: 24,
     height: 3,

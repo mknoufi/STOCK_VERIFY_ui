@@ -2,52 +2,52 @@
 export const PremiumTheme = {
   // Colors
   colors: {
-    primary: '#007bff',
-    secondary: '#6c757d',
-    accent: '#28a745',
-    warning: '#ffc107',
-    danger: '#dc3545',
-    info: '#17a2b8',
-    success: '#28a745',
+    primary: "#007bff",
+    secondary: "#6c757d",
+    accent: "#28a745",
+    warning: "#ffc107",
+    danger: "#dc3545",
+    info: "#17a2b8",
+    success: "#28a745",
 
     // Background colors
     background: {
-      primary: '#ffffff',
-      secondary: '#f8f9fa',
-      dark: '#121212',
-      surface: '#ffffff',
+      primary: "#ffffff",
+      secondary: "#f8f9fa",
+      dark: "#121212",
+      surface: "#ffffff",
     },
 
     // Text colors
     text: {
-      primary: '#212529',
-      secondary: '#6c757d',
-      light: '#ffffff',
-      muted: '#868e96',
+      primary: "#212529",
+      secondary: "#6c757d",
+      light: "#ffffff",
+      muted: "#868e96",
     },
 
     // Border colors
     border: {
-      light: '#dee2e6',
-      medium: '#ced4da',
-      dark: '#343a40',
+      light: "#dee2e6",
+      medium: "#ced4da",
+      dark: "#343a40",
     },
 
     // Status colors
     status: {
-      active: '#28a745',
-      inactive: '#6c757d',
-      pending: '#ffc107',
-      error: '#dc3545',
+      active: "#28a745",
+      inactive: "#6c757d",
+      pending: "#ffc107",
+      error: "#dc3545",
     },
   },
 
   // Typography
   typography: {
     fontFamily: {
-      regular: 'System',
-      medium: 'System',
-      bold: 'System',
+      regular: "System",
+      medium: "System",
+      bold: "System",
     },
 
     fontSize: {
@@ -61,10 +61,10 @@ export const PremiumTheme = {
     },
 
     fontWeight: {
-      normal: '400',
-      medium: '500',
-      semibold: '600',
-      bold: '700',
+      normal: "400",
+      medium: "500",
+      semibold: "600",
+      bold: "700",
     },
 
     lineHeight: {
@@ -97,23 +97,23 @@ export const PremiumTheme = {
   // Shadows
   shadows: {
     sm: {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.22,
       shadowRadius: 2.22,
       elevation: 3,
     },
     md: {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 5,
     },
     lg: {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.30,
+      shadowOpacity: 0.3,
       shadowRadius: 4.65,
       elevation: 8,
     },
@@ -123,13 +123,13 @@ export const PremiumTheme = {
   components: {
     button: {
       primary: {
-        backgroundColor: '#007bff',
+        backgroundColor: "#007bff",
         borderRadius: 8,
         paddingVertical: 12,
         paddingHorizontal: 24,
       },
       secondary: {
-        backgroundColor: '#6c757d',
+        backgroundColor: "#6c757d",
         borderRadius: 8,
         paddingVertical: 12,
         paddingHorizontal: 24,
@@ -139,26 +139,26 @@ export const PremiumTheme = {
     input: {
       default: {
         borderWidth: 1,
-        borderColor: '#ced4da',
+        borderColor: "#ced4da",
         borderRadius: 8,
         paddingVertical: 12,
         paddingHorizontal: 16,
         fontSize: 16,
       },
       focused: {
-        borderColor: '#007bff',
+        borderColor: "#007bff",
         borderWidth: 2,
       },
     },
 
     card: {
       default: {
-        backgroundColor: '#ffffff',
+        backgroundColor: "#ffffff",
         borderRadius: 12,
         padding: 16,
         marginBottom: 16,
         ...{
-          shadowColor: '#000',
+          shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,

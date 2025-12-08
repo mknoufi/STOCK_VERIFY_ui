@@ -4,7 +4,13 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSyncStatus, forceSync, SyncResult } from "../services/syncService";
 import { useNetworkStore } from "../services/networkService";
@@ -84,7 +90,12 @@ export const SyncStatusBar: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, !syncStatus.isOnline && styles.offlineContainer]}>
+    <View
+      style={[
+        styles.container,
+        !syncStatus.isOnline && styles.offlineContainer,
+      ]}
+    >
       {/* Online indicator */}
       <View style={styles.statusRow}>
         <Ionicons
@@ -92,13 +103,17 @@ export const SyncStatusBar: React.FC = () => {
           size={16}
           color={syncStatus.isOnline ? "#4CAF50" : "#f44336"}
         />
-        <Text style={styles.statusText}>{syncStatus.isOnline ? "Online" : "Offline"}</Text>
+        <Text style={styles.statusText}>
+          {syncStatus.isOnline ? "Online" : "Offline"}
+        </Text>
       </View>
 
       {/* Queue count */}
       {syncStatus.queuedOperations > 0 && (
         <View style={styles.queueRow}>
-          <Text style={styles.queueText}>{syncStatus.queuedOperations} item(s) queued</Text>
+          <Text style={styles.queueText}>
+            {syncStatus.queuedOperations} item(s) queued
+          </Text>
         </View>
       )}
 
@@ -114,7 +129,9 @@ export const SyncStatusBar: React.FC = () => {
           ) : (
             <Ionicons name="sync" size={16} color="#fff" />
           )}
-          <Text style={styles.syncButtonText}>{isSyncing ? "Syncing..." : "Sync Now"}</Text>
+          <Text style={styles.syncButtonText}>
+            {isSyncing ? "Syncing..." : "Sync Now"}
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -122,7 +139,9 @@ export const SyncStatusBar: React.FC = () => {
       {syncResult && (
         <View style={styles.resultRow}>
           {syncResult.success > 0 && (
-            <Text style={styles.successText}>✓ {syncResult.success} synced</Text>
+            <Text style={styles.successText}>
+              ✓ {syncResult.success} synced
+            </Text>
           )}
           {syncResult.failed > 0 && (
             <Text style={styles.errorText}>✗ {syncResult.failed} failed</Text>

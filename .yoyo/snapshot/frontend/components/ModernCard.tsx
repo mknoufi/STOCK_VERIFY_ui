@@ -182,9 +182,9 @@ export const ModernCard: React.FC<ModernCardProps> = ({
             </View>
           </View>
         )}
-        
+
         <View style={styles.body}>{children}</View>
-        
+
         {footer && (
           <View style={styles.footer}>{footer}</View>
         )}
@@ -295,4 +295,3 @@ const styles = StyleSheet.create({
 });
 
 export default ModernCard;
-

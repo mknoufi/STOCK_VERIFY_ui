@@ -179,16 +179,16 @@ const chartConfigs = {
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initializing Enhanced Admin Dashboard...');
-    
+
     initializeTheme();
     initializeCharts();
     setupEventListeners();
     startDataCollection();
-    
+
     // Initial data load
     Promise.allSettled([
         refreshServices(),
-        refreshMetrics(), 
+        refreshMetrics(),
         refreshSecurityData(),
         refreshLogs()
     ]).then((results) => {
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Dashboard initialization failed:', error);
         showAlert('error', 'Initialization Failed', 'Some features may not work correctly');
     });
-        
+
     } catch (initError) {
         console.error('Critical initialization error:', initError);
         // Show fallback error message
@@ -234,7 +234,7 @@ function toggleTheme() {
     state.theme = state.theme === 'dark' ? 'light' : 'dark';
     localStorage.setItem('admin-theme', state.theme);
     initializeTheme();
-    
+
     // Refresh charts to apply theme colors
     if (typeof Chart !== 'undefined' && state.charts) {
         Object.values(state.charts).forEach(chart => {
@@ -247,7 +247,7 @@ function toggleTheme() {
             }
         });
     }
-    
+
     // Show theme change notification if alert function exists
     if (typeof showAlert === 'function') {
         showAlert('info', 'Theme Changed', `Switched to ${state.theme} theme`);
@@ -264,7 +264,7 @@ function initializeCharts() {
         state.chartsEnabled = false;
         return;
     }
-    
+
     try {
         // Metric cards charts
         ['cpu', 'memory', 'api'].forEach(metric => {
@@ -281,7 +281,7 @@ function initializeCharts() {
 
         // Analytics charts
         initializeAnalyticsCharts();
-        
+
         state.chartsEnabled = true;
         console.log('Charts initialized successfully');
     } catch (error) {
@@ -295,7 +295,7 @@ function initializeAnalyticsCharts() {
         console.debug('Chart.js not available, skipping analytics charts');
         return;
     }
-    
+
     try {
         // System Load Chart
         const systemLoadCtx = document.getElementById('systemLoadChart');
@@ -445,7 +445,7 @@ function initializeAnalyticsCharts() {
                 }
             }
         });
-        
+
         console.log('Analytics charts initialized successfully');\n    } catch (error) {\n        console.error('Analytics chart initialization failed:', error);\n    }\n}
 
 /**
@@ -459,7 +459,7 @@ function updateChart(chartName, newValue, label = null) {
         console.debug('Chart.js not available, skipping chart update');
         return;
     }
-    
+
     const chart = state.charts[chartName];
     if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length === 0) {
         console.debug(`Chart '${chartName}' not properly initialized`);
@@ -506,11 +506,11 @@ function setupEventListeners() {
     // Log filters
     const logServiceFilter = document.getElementById('logServiceFilter');
     const logLevelFilter = document.getElementById('logLevelFilter');
-    
+
     if (logServiceFilter) {
         logServiceFilter.addEventListener('change', filterLogs);
     }
-    
+
     if (logLevelFilter) {
         logLevelFilter.addEventListener('change', filterLogs);
     }
@@ -572,12 +572,12 @@ async function apiRequest(endpoint, options = {}) {
         if (typeof endpoint !== 'string') {
             throw new Error('Endpoint must be a string');
         }
-        
+
         /** @type {string} */
         const method = options.method || 'GET';
         /** @type {string} */
         const cacheKey = `${method}:${endpoint}`;
-        
+
         // Check response cache for GET requests
         if (method === 'GET') {
             const cached = responseCache.get(cacheKey);
@@ -585,17 +585,17 @@ async function apiRequest(endpoint, options = {}) {
                 return cached.data;
             }
         }
-        
+
         // Check for in-flight requests to prevent duplicates
         if (requestCache.has(cacheKey)) {
             return await requestCache.get(cacheKey);
         }
-        
+
         /** @type {string} */
         const baseUrl = endpoint.startsWith('/admin/control') ? CONFIG.ADMIN_API : CONFIG.API_BASE;
         /** @type {string} */
         const url = `${baseUrl}${endpoint}`;
-        
+
         /** @type {RequestInit} */
         const defaultOptions = {
             headers: {
@@ -632,13 +632,13 @@ async function apiRequest(endpoint, options = {}) {
                 // Clean up request cache
                 requestCache.delete(cacheKey);
             });
-        
+
         // Store in-flight request
         requestCache.set(cacheKey, requestPromise);
-        
+
         /** @type {any} */
         const result = await requestPromise;
-        
+
         // Cache GET responses
         if (method === 'GET' && result.success !== false) {
             responseCache.set(cacheKey, {
@@ -646,17 +646,17 @@ async function apiRequest(endpoint, options = {}) {
                 timestamp: Date.now()
             });
         }
-        
+
         return result;
-        
+
     } catch (error) {
         console.error(`API request error for ${endpoint}:`, error);
-        
+
         // Handle network errors gracefully
         if (error instanceof TypeError && error.message.includes('fetch')) {
             throw new Error('Network error: Unable to connect to server');
         }
-        
+
         throw error;
     }
 }
@@ -694,7 +694,7 @@ function updateServiceNode(serviceName, serviceData) {
         console.warn('Invalid service name provided to updateServiceNode');
         return;
     }
-    
+
     const node = document.getElementById(`${serviceName}Node`);
     const status = document.getElementById(`${serviceName}Status`);
     const metrics = document.getElementById(`${serviceName}Metrics`);
@@ -703,7 +703,7 @@ function updateServiceNode(serviceName, serviceData) {
         console.debug(`Service node not found for: ${serviceName}`);
         return;
     }
-    
+
     // Ensure serviceData is valid
     const safeServiceData = serviceData || {};
     const isRunning = Boolean(safeServiceData.running);
@@ -810,7 +810,7 @@ async function refreshSecurityData() {
     try {
         // Try to get real security data from backend
         let securityData = {};
-        
+
         try {
             const [summary, failedLogins, suspicious] = await Promise.all([
                 apiRequest('/admin/security/summary'),
@@ -853,7 +853,7 @@ async function refreshSecurityData() {
         const securityStatus = document.getElementById('securityStatus');
         if (securityStatus) {
             const isSecure = securityData.failedLogins < 5 && securityData.suspiciousActivity < 3;
-            securityStatus.innerHTML = isSecure 
+            securityStatus.innerHTML = isSecure
                 ? '<i class="fas fa-check-circle"></i><span>Secure</span>'
                 : '<i class="fas fa-exclamation-triangle"></i><span>Alert</span>';
             securityStatus.className = `security-status ${isSecure ? 'secure' : 'alert'}`;
@@ -911,7 +911,7 @@ async function refreshLogs() {
 
         // Try to get real logs from backend
         let logsData = [];
-        
+
         try {
             const response = await apiRequest(`/admin/control/logs/${serviceFilter}?lines=50&level=${levelFilter}`);
             logsData = response.data?.logs || response.logs || [];
@@ -922,7 +922,7 @@ async function refreshLogs() {
 
         // Update logs display
         updateLogsDisplay(logsData);
-        
+
         state.data.logs = logsData;
 
     } catch (error) {
@@ -998,18 +998,18 @@ function toggleAutoScroll() {
 async function startService(serviceName) {
     try {
         showAlert('info', 'Starting Service', `Starting ${serviceName}...`);
-        
-        const endpoint = serviceName === 'mongodb' 
+
+        const endpoint = serviceName === 'mongodb'
             ? '/mongodb/start'
             : '/start';
-            
+
         await apiRequest(endpoint, { method: 'POST' });
-        
+
         showAlert('success', 'Service Started', `${serviceName} started successfully`);
-        
+
         // Refresh services after a delay
         setTimeout(refreshServices, 2000);
-        
+
     } catch (error) {
         console.error(`Error starting ${serviceName}:`, error);
         showAlert('error', 'Start Failed', `Failed to start ${serviceName}: ${error.message}`);
@@ -1019,18 +1019,18 @@ async function startService(serviceName) {
 async function stopService(serviceName) {
     try {
         showAlert('info', 'Stopping Service', `Stopping ${serviceName}...`);
-        
-        const endpoint = serviceName === 'mongodb' 
+
+        const endpoint = serviceName === 'mongodb'
             ? '/mongodb/stop'
             : '/stop';
-            
+
         await apiRequest(endpoint, { method: 'POST' });
-        
+
         showAlert('success', 'Service Stopped', `${serviceName} stopped successfully`);
-        
+
         // Refresh services after a delay
         setTimeout(refreshServices, 2000);
-        
+
     } catch (error) {
         console.error(`Error stopping ${serviceName}:`, error);
         showAlert('error', 'Stop Failed', `Failed to stop ${serviceName}: ${error.message}`);
@@ -1044,14 +1044,14 @@ async function restartAllServices() {
 
     try {
         showAlert('info', 'Restarting Services', 'Restarting all services...');
-        
+
         await apiRequest('/restart', { method: 'POST' });
-        
+
         showAlert('success', 'Services Restarted', 'All services restarted successfully');
-        
+
         // Refresh services after a delay
         setTimeout(refreshServices, 5000);
-        
+
     } catch (error) {
         console.error('Error restarting services:', error);
         showAlert('error', 'Restart Failed', `Failed to restart services: ${error.message}`);
@@ -1066,12 +1066,12 @@ async function restartAllServices() {
 async function testSqlConnection() {
     try {
         showAlert('info', 'Testing Connection', 'Testing SQL Server connection...');
-        
+
         /** @type {HTMLElement|null} */
         const modal = document.getElementById('configModal');
         /** @type {Object} */
         let config = {};
-        
+
         if (modal && modal.style.display !== 'none') {
             /** @type {HTMLInputElement|null} */
             const hostInput = document.getElementById('sqlHost');
@@ -1083,22 +1083,22 @@ async function testSqlConnection() {
             const usernameInput = document.getElementById('sqlUsername');
             /** @type {HTMLInputElement|null} */
             const passwordInput = document.getElementById('sqlPassword');
-            
+
             // Validate inputs
             const host = hostInput?.value?.trim() || '';
             const portStr = portInput?.value?.trim() || '1433';
             const port = parseInt(portStr, 10);
-            
+
             if (!host) {
                 showAlert('error', 'Validation Error', 'Host is required');
                 return;
             }
-            
+
             if (isNaN(port) || port < 1 || port > 65535) {
                 showAlert('error', 'Validation Error', 'Port must be between 1 and 65535');
                 return;
             }
-            
+
             config = {
                 host,
                 port,
@@ -1132,7 +1132,7 @@ function showSqlConfig() {
     const modalOverlay = document.getElementById('modalOverlay');
     if (modalOverlay) {
         modalOverlay.classList.add('active');
-        
+
         // Load current config
         loadSqlConfig();
     }
@@ -1158,7 +1158,7 @@ async function loadSqlConfig() {
 function updateSystemHealth() {
     const healthElement = document.getElementById('systemHealth');
     const healthScoreElement = document.getElementById('healthScore');
-    
+
     if (!healthElement || !healthScoreElement) return;
 
     // Calculate health score based on services
@@ -1178,7 +1178,7 @@ function updateSystemHealth() {
     });
 
     // Calculate score (critical services worth 60%, optional 40%)
-    const score = (runningCritical / criticalServices.length) * 60 + 
+    const score = (runningCritical / criticalServices.length) * 60 +
                   (runningOptional / optionalServices.length) * 40;
 
     healthScoreElement.textContent = Math.round(score);
@@ -1202,7 +1202,7 @@ async function refreshAnalytics(timeRange = '1h') {
             const responseTimeChart = state.charts.responseTime;
             const endpoints = ['Auth', 'Items', 'Users', 'Reports', 'Sync'];
             const newData = endpoints.map(() => Math.floor(Math.random() * 300) + 50);
-            
+
             responseTimeChart.data.datasets[0].data = newData;
             responseTimeChart.update();
         }
@@ -1213,7 +1213,7 @@ async function refreshAnalytics(timeRange = '1h') {
             const success = Math.floor(Math.random() * 10) + 90; // 90-100%
             const clientErrors = Math.floor(Math.random() * 5) + 1; // 1-6%
             const serverErrors = 100 - success - clientErrors;
-            
+
             errorRateChart.data.datasets[0].data = [success, clientErrors, serverErrors];
             errorRateChart.update();
         }
@@ -1222,10 +1222,10 @@ async function refreshAnalytics(timeRange = '1h') {
         if (state.charts.dbPerformance) {
             const dbChart = state.charts.dbPerformance;
             // Simulate some variation in performance metrics
-            dbChart.data.datasets[0].data = dbChart.data.datasets[0].data.map(val => 
+            dbChart.data.datasets[0].data = dbChart.data.datasets[0].data.map(val =>
                 Math.max(60, Math.min(100, val + (Math.random() - 0.5) * 10))
             );
-            dbChart.data.datasets[1].data = dbChart.data.datasets[1].data.map(val => 
+            dbChart.data.datasets[1].data = dbChart.data.datasets[1].data.map(val =>
                 Math.max(60, Math.min(100, val + (Math.random() - 0.5) * 10))
             );
             dbChart.update();
@@ -1293,7 +1293,7 @@ function dismissAlert(alertId) {
             }
         }, 300);
     }
-    
+
     // Remove from alerts array
     state.alerts = state.alerts.filter(alert => alert.id !== alertId);
     updateAlertBadge();
@@ -1320,7 +1320,7 @@ function toggleAlerts() {
     if (alertButton) {
         alertButton.classList.toggle('disabled', !state.alertsEnabled);
     }
-    
+
     if (typeof showAlert === 'function' && state.alertsEnabled) {
         showAlert('info', 'Alerts Enabled', 'System notifications are now active');
     }
@@ -1333,11 +1333,11 @@ function refreshAllData() {
     if (typeof showAlert === 'function') {
         showAlert('info', 'Refreshing Data', 'Updating all dashboard components...');
     }
-    
+
     Promise.allSettled([
         refreshServices(),
         refreshMetrics(),
-        refreshSecurityData(), 
+        refreshSecurityData(),
         refreshLogs(),
         refreshAnalytics()
     ]).then((results) => {
@@ -1372,10 +1372,10 @@ function dismissAlert(alertId) {
 function updateAlertBadge() {
     const alertBadge = document.getElementById('alertBadge');
     if (alertBadge) {
-        const recentAlerts = state.alerts.filter(alert => 
+        const recentAlerts = state.alerts.filter(alert =>
             Date.now() - alert.timestamp < 300000 // 5 minutes
         ).length;
-        
+
         alertBadge.textContent = recentAlerts;
         alertBadge.style.display = recentAlerts > 0 ? 'flex' : 'none';
     }
@@ -1387,7 +1387,7 @@ function toggleAlerts() {
     if (alertsToggle) {
         alertsToggle.style.opacity = state.alertsEnabled ? '1' : '0.5';
     }
-    
+
     showAlert('info', 'Alert System', `Alerts ${state.alertsEnabled ? 'enabled' : 'disabled'}`);
 }
 

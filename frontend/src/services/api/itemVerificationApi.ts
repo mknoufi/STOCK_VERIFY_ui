@@ -131,7 +131,8 @@ export class ItemVerificationAPI {
       return response.data;
     } catch (error: unknown) {
       __DEV__ && console.error("Verification failed:", error);
-      const errorMessage = error instanceof Error ? error.message : "Verification failed";
+      const errorMessage =
+        error instanceof Error ? error.message : "Verification failed";
       throw new Error(errorMessage);
     }
   }
@@ -139,22 +140,28 @@ export class ItemVerificationAPI {
   /**
    * Get filtered items
    */
-  static async getFilteredItems(params: FilteredItemsParams): Promise<FilteredItemsResponse> {
+  static async getFilteredItems(
+    params: FilteredItemsParams,
+  ): Promise<FilteredItemsResponse> {
     try {
       const queryParams = new URLSearchParams();
 
       if (params.category) queryParams.append("category", params.category);
-      if (params.subcategory) queryParams.append("subcategory", params.subcategory);
+      if (params.subcategory)
+        queryParams.append("subcategory", params.subcategory);
       if (params.floor) queryParams.append("floor", params.floor);
       if (params.rack) queryParams.append("rack", params.rack);
       if (params.warehouse) queryParams.append("warehouse", params.warehouse);
       if (params.uom_code) queryParams.append("uom_code", params.uom_code);
-      if (params.verified !== undefined) queryParams.append("verified", params.verified.toString());
+      if (params.verified !== undefined)
+        queryParams.append("verified", params.verified.toString());
       if (params.search) queryParams.append("search", params.search);
       if (params.limit) queryParams.append("limit", params.limit.toString());
       if (params.skip) queryParams.append("skip", params.skip.toString());
 
-      const response = await api.get(`/api/v2/erp/items/filtered?${queryParams.toString()}`);
+      const response = await api.get(
+        `/api/v2/erp/items/filtered?${queryParams.toString()}`,
+      );
       return response.data;
     } catch (error: any) {
       __DEV__ && console.error("Get filtered items failed:", error);
@@ -175,16 +182,21 @@ export class ItemVerificationAPI {
       const queryParams = new URLSearchParams();
 
       if (params.category) queryParams.append("category", params.category);
-      if (params.subcategory) queryParams.append("subcategory", params.subcategory);
+      if (params.subcategory)
+        queryParams.append("subcategory", params.subcategory);
       if (params.floor) queryParams.append("floor", params.floor);
       if (params.rack) queryParams.append("rack", params.rack);
       if (params.warehouse) queryParams.append("warehouse", params.warehouse);
-      if (params.verified !== undefined) queryParams.append("verified", params.verified.toString());
+      if (params.verified !== undefined)
+        queryParams.append("verified", params.verified.toString());
       if (params.search) queryParams.append("search", params.search);
 
-      const response = await api.get(`/api/v2/erp/items/export/csv?${queryParams.toString()}`, {
-        responseType: "blob",
-      });
+      const response = await api.get(
+        `/api/v2/erp/items/export/csv?${queryParams.toString()}`,
+        {
+          responseType: "blob",
+        },
+      );
       return response.data;
     } catch (error: any) {
       __DEV__ && console.error("CSV export failed:", error);
@@ -208,7 +220,11 @@ export class ItemVerificationAPI {
     search?: string;
     limit?: number;
     skip?: number;
-  }): Promise<{ success: boolean; variances: VarianceItem[]; pagination: any }> {
+  }): Promise<{
+    success: boolean;
+    variances: VarianceItem[];
+    pagination: any;
+  }> {
     try {
       const queryParams = new URLSearchParams();
 
@@ -220,7 +236,9 @@ export class ItemVerificationAPI {
       if (params.limit) queryParams.append("limit", params.limit.toString());
       if (params.skip) queryParams.append("skip", params.skip.toString());
 
-      const response = await api.get(`/api/v2/erp/items/variances?${queryParams.toString()}`);
+      const response = await api.get(
+        `/api/v2/erp/items/variances?${queryParams.toString()}`,
+      );
       return response.data;
     } catch (error: any) {
       __DEV__ && console.error("Get variances failed:", error);
@@ -258,8 +276,12 @@ export class ItemVerificationAPI {
   /**
    * Get live verifications
    */
-  static async getLiveVerifications(limit: number = 10): Promise<LiveVerification[]> {
-    const response = await api.get(`/api/verification/live-feed?limit=${limit}`);
+  static async getLiveVerifications(
+    limit: number = 10,
+  ): Promise<LiveVerification[]> {
+    const response = await api.get(
+      `/api/verification/live-feed?limit=${limit}`,
+    );
     return response.data;
   }
 
@@ -280,16 +302,26 @@ export class ItemVerificationAPI {
   /**
    * Approve a variance (Supervisor)
    */
-  static async approveVariance(countLineId: string, notes?: string): Promise<any> {
-    const response = await api.put(`/api/count-lines/${countLineId}/approve`, { notes });
+  static async approveVariance(
+    countLineId: string,
+    notes?: string,
+  ): Promise<any> {
+    const response = await api.put(`/api/count-lines/${countLineId}/approve`, {
+      notes,
+    });
     return response.data;
   }
 
   /**
    * Request a recount / Reject a count (Supervisor)
    */
-  static async requestRecount(countLineId: string, notes?: string): Promise<any> {
-    const response = await api.put(`/api/count-lines/${countLineId}/reject`, { notes });
+  static async requestRecount(
+    countLineId: string,
+    notes?: string,
+  ): Promise<any> {
+    const response = await api.put(`/api/count-lines/${countLineId}/reject`, {
+      notes,
+    });
     return response.data;
   }
 
@@ -319,7 +351,10 @@ export class ItemVerificationAPI {
   /**
    * Get variance details for a specific item in a session
    */
-  static async getVarianceDetails(itemCode: string, sessionId: string): Promise<any> {
+  static async getVarianceDetails(
+    itemCode: string,
+    sessionId: string,
+  ): Promise<any> {
     try {
       // First try to find the count line
       const response = await api.get(`/api/count-lines`, {
@@ -330,7 +365,11 @@ export class ItemVerificationAPI {
         },
       });
 
-      if (response.data && response.data.items && response.data.items.length > 0) {
+      if (
+        response.data &&
+        response.data.items &&
+        response.data.items.length > 0
+      ) {
         const countLine = response.data.items[0];
         // Map to expected format if needed, or return as is
         // The UI expects: item_code, item_name, system_qty, verified_qty, variance, etc.

@@ -2,7 +2,7 @@ export interface User {
   id: string;
   username: string;
   full_name: string;
-  role: 'staff' | 'supervisor' | 'admin';
+  role: "staff" | "supervisor" | "admin";
   email?: string;
   is_active: boolean;
   permissions: string[];

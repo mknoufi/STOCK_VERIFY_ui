@@ -41,4 +41,3 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
     };
   }, [shortcuts]);
 }
-

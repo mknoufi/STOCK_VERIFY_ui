@@ -1,32 +1,34 @@
-import { useColorScheme } from 'react-native';
+import { useColorScheme } from "react-native";
 
 export const useTheme = () => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   const theme = {
-    theme: colorScheme || 'light',
+    theme: colorScheme || "light",
     isDark,
     colors: {
-      primary: '#007bff',
-      secondary: '#6c757d',
-      background: isDark ? '#121212' : '#ffffff',
-      surface: isDark ? '#1e1e1e' : '#f8f9fa',
-      text: isDark ? '#ffffff' : '#212529',
-      textSecondary: isDark ? '#cccccc' : '#6c757d',
-      textPrimary: isDark ? '#ffffff' : '#212529',
-      textTertiary: isDark ? '#888888' : '#6c757d',
-      border: isDark ? '#333333' : '#dee2e6',
-      borderLight: isDark ? '#444444' : '#e9ecef',
-      error: '#dc3545',
-      success: '#28a745',
-      warning: '#ffc107',
-      info: '#17a2b8',
-      surfaceDark: isDark ? '#1e1e1e' : '#343a40',
-      card: isDark ? '#1e1e1e' : '#ffffff',
-      placeholder: isDark ? '#666666' : '#999999',
-      disabled: isDark ? '#555555' : '#cccccc',
-      overlayPrimary: isDark ? 'rgba(13, 110, 253, 0.1)' : 'rgba(0, 123, 255, 0.1)',
+      primary: "#007bff",
+      secondary: "#6c757d",
+      background: isDark ? "#121212" : "#ffffff",
+      surface: isDark ? "#1e1e1e" : "#f8f9fa",
+      text: isDark ? "#ffffff" : "#212529",
+      textSecondary: isDark ? "#cccccc" : "#6c757d",
+      textPrimary: isDark ? "#ffffff" : "#212529",
+      textTertiary: isDark ? "#888888" : "#6c757d",
+      border: isDark ? "#333333" : "#dee2e6",
+      borderLight: isDark ? "#444444" : "#e9ecef",
+      error: "#dc3545",
+      success: "#28a745",
+      warning: "#ffc107",
+      info: "#17a2b8",
+      surfaceDark: isDark ? "#1e1e1e" : "#343a40",
+      card: isDark ? "#1e1e1e" : "#ffffff",
+      placeholder: isDark ? "#666666" : "#999999",
+      disabled: isDark ? "#555555" : "#cccccc",
+      overlayPrimary: isDark
+        ? "rgba(13, 110, 253, 0.1)"
+        : "rgba(0, 123, 255, 0.1)",
     },
     spacing: {
       xs: 4,
@@ -46,10 +48,10 @@ export const useTheme = () => {
         xxl: 24,
       },
       fontWeight: {
-        normal: 'normal' as const,
-        medium: '500' as const,
-        semibold: '600' as const,
-        bold: 'bold' as const,
+        normal: "normal" as const,
+        medium: "500" as const,
+        semibold: "600" as const,
+        bold: "bold" as const,
       },
       lineHeight: {
         tight: 1.2,
@@ -59,47 +61,47 @@ export const useTheme = () => {
       // Typography presets for common use
       caption: {
         fontSize: 12,
-        fontWeight: '400' as const,
+        fontWeight: "400" as const,
         lineHeight: 1.5,
       },
       body: {
         fontSize: 14,
-        fontWeight: '400' as const,
+        fontWeight: "400" as const,
         lineHeight: 1.5,
       },
       bodySmall: {
         fontSize: 12,
-        fontWeight: '400' as const,
+        fontWeight: "400" as const,
         lineHeight: 1.4,
       },
       h1: {
         fontSize: 32,
-        fontWeight: '700' as const,
+        fontWeight: "700" as const,
         lineHeight: 1.2,
       },
       h2: {
         fontSize: 28,
-        fontWeight: '700' as const,
+        fontWeight: "700" as const,
         lineHeight: 1.2,
       },
       h3: {
         fontSize: 24,
-        fontWeight: '600' as const,
+        fontWeight: "600" as const,
         lineHeight: 1.3,
       },
       h4: {
         fontSize: 20,
-        fontWeight: '600' as const,
+        fontWeight: "600" as const,
         lineHeight: 1.3,
       },
       h5: {
         fontSize: 18,
-        fontWeight: '600' as const,
+        fontWeight: "600" as const,
         lineHeight: 1.4,
       },
       h6: {
         fontSize: 16,
-        fontWeight: '600' as const,
+        fontWeight: "600" as const,
         lineHeight: 1.4,
       },
     },

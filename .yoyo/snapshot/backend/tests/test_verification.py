@@ -21,10 +21,10 @@ async def test_verify_item_with_damage_types(async_client: AsyncClient, test_db,
 
     # 2. Verify item with damage types
     # Scenario: 5 Good, 2 Returnable Damage, 3 Non-Returnable Damage
-    # Total Assets = 5 + 2 = 7 (Non-returnable is usually excluded from assets or handled differently, 
+    # Total Assets = 5 + 2 = 7 (Non-returnable is usually excluded from assets or handled differently,
     # but based on previous code: variance = (verified_qty + damaged_qty) - system_qty)
     # Variance = (5 + 2) - 10 = -3
-    
+
     payload = {
         "verified": True,
         "verified_qty": 5.0,
@@ -75,13 +75,13 @@ async def test_verify_item_calculation_logic(async_client: AsyncClient, test_db,
         "verified": False
     })
 
-    # Scenario: 
+    # Scenario:
     # Verified (Good): 90
     # Returnable Damage: 5
     # Non-Returnable Damage: 2
     # Total Counted for Variance = 90 + 5 = 95
     # Variance = 95 - 100 = -5
-    
+
     payload = {
         "verified": True,
         "verified_qty": 90.0,

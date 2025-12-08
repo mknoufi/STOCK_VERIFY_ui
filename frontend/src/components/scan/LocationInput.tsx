@@ -2,8 +2,8 @@
  * LocationInput Component
  * Input fields for warehouse location (Floor, Rack, Mark/Label)
  */
-import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 
 interface LocationInputProps {
   floorNo: string;
@@ -21,8 +21,8 @@ interface LocationInputProps {
 
 export const LocationInput: React.FC<LocationInputProps> = ({
   floorNo,
-  rackNo = '',
-  shelfNo = '',
+  rackNo = "",
+  shelfNo = "",
   markLocation,
   onFloorChange,
   onRackChange,
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 12,
   },
   locationGrid: {
@@ -130,16 +130,16 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#94A3B8',
+    fontWeight: "600",
+    color: "#94A3B8",
   },
   locationInput: {
-    backgroundColor: '#1E293B',
+    backgroundColor: "#1E293B",
     borderRadius: 8,
     padding: 12,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
 });

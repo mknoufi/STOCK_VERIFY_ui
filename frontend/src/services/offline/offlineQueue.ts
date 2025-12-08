@@ -1,18 +1,18 @@
-import type { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios";
 // import apiClient from './httpClient';
-import { storage } from '../storage/asyncStorageService';
-import { useNetworkStore } from '../../store/networkStore';
-import { flags } from '../../constants/flags';
-import { toastService } from '../utils/toastService';
-import { onlineManager } from '@tanstack/react-query';
+import { storage } from "../storage/asyncStorageService";
+import { useNetworkStore } from "../../store/networkStore";
+import { flags } from "../../constants/flags";
+import { toastService } from "../utils/toastService";
+import { onlineManager } from "@tanstack/react-query";
 
 // NOTE: This module is entirely gated by flags.enableOfflineQueue
 // It safely no-ops when the flag is false.
 
-const STORAGE_KEY = 'offlineQueue:v1';
-const CONFLICTS_KEY = 'offlineQueue:conflicts:v1';
+const STORAGE_KEY = "offlineQueue:v1";
+const CONFLICTS_KEY = "offlineQueue:conflicts:v1";
 
-export type QueueMethod = 'post' | 'put' | 'patch' | 'delete';
+export type QueueMethod = "post" | "put" | "patch" | "delete";
 
 export interface QueuedMutation {
   id: string;
@@ -30,7 +30,9 @@ function generateId(): string {
 }
 
 async function loadQueue(): Promise<QueuedMutation[]> {
-  const list = await storage.get<QueuedMutation[]>(STORAGE_KEY, { defaultValue: [] });
+  const list = await storage.get<QueuedMutation[]>(STORAGE_KEY, {
+    defaultValue: [],
+  });
   return Array.isArray(list) ? list : [];
 }
 
@@ -39,7 +41,8 @@ async function saveQueue(queue: QueuedMutation[]): Promise<void> {
 }
 
 async function addConflict(item: QueuedMutation, detail?: any): Promise<void> {
-  const existing = (await storage.get<any[]>(CONFLICTS_KEY, { defaultValue: [] })) || [];
+  const existing =
+    (await storage.get<any[]>(CONFLICTS_KEY, { defaultValue: [] })) || [];
   const record = { ...item, detail, resolved: false, timestamp: Date.now() };
   existing.push(record);
   await storage.set(CONFLICTS_KEY, existing, { silent: true });
@@ -48,15 +51,17 @@ async function addConflict(item: QueuedMutation, detail?: any): Promise<void> {
 function isMutatingMethod(method?: string): method is QueueMethod {
   if (!method) return false;
   const m = method.toLowerCase();
-  return m === 'post' || m === 'put' || m === 'patch' || m === 'delete';
+  return m === "post" || m === "put" || m === "patch" || m === "delete";
 }
 
-export async function enqueueMutation(config: AxiosRequestConfig): Promise<QueuedMutation> {
+export async function enqueueMutation(
+  config: AxiosRequestConfig,
+): Promise<QueuedMutation> {
   const queue = await loadQueue();
   const item: QueuedMutation = {
     id: generateId(),
-    method: (config.method || 'post').toLowerCase() as QueueMethod,
-    url: config.url || '/',
+    method: (config.method || "post").toLowerCase() as QueueMethod,
+    url: config.url || "/",
     data: config.data,
     params: config.params,
     headers: config.headers as Record<string, string> | undefined,
@@ -70,7 +75,9 @@ export async function enqueueMutation(config: AxiosRequestConfig): Promise<Queue
 
 let flushing = false;
 
-export async function flushOfflineQueue(client: AxiosInstance): Promise<{ processed: number; remaining: number; }> {
+export async function flushOfflineQueue(
+  client: AxiosInstance,
+): Promise<{ processed: number; remaining: number }> {
   if (!flags.enableOfflineQueue) return { processed: 0, remaining: 0 };
   if (flushing) return { processed: 0, remaining: (await loadQueue()).length };
 
@@ -138,14 +145,23 @@ export function startOfflineQueue(client: AxiosInstance): void {
       const online = state.isOnline && (state.isInternetReachable ?? true);
       onlineManager.setOnline(online);
       if (online && !flushing) {
-        flushOfflineQueue(client).then((res) => {
-          if (__DEV__ && (res.processed > 0 || res.remaining >= 0)) {
-            __DEV__ && console.log(`OfflineQueue: flushed processed=${res.processed} remaining=${res.remaining}`);
-          }
-          if (res.processed > 0) {
-            try { toastService.showSuccess(`Synced ${res.processed} queued change(s)`); } catch { }
-          }
-        }).catch(() => { });
+        flushOfflineQueue(client)
+          .then((res) => {
+            if (__DEV__ && (res.processed > 0 || res.remaining >= 0)) {
+              __DEV__ &&
+                console.log(
+                  `OfflineQueue: flushed processed=${res.processed} remaining=${res.remaining}`,
+                );
+            }
+            if (res.processed > 0) {
+              try {
+                toastService.showSuccess(
+                  `Synced ${res.processed} queued change(s)`,
+                );
+              } catch {}
+            }
+          })
+          .catch(() => {});
       }
     });
   }
@@ -157,12 +173,14 @@ export function startOfflineQueue(client: AxiosInstance): void {
   }
 
   // Try initial flush
-  flushOfflineQueue(client).catch(() => { });
+  flushOfflineQueue(client).catch(() => {});
 }
 
 export function stopOfflineQueue(): void {
   if (unsubscribeNetwork) {
-    try { unsubscribeNetwork(); } catch { }
+    try {
+      unsubscribeNetwork();
+    } catch {}
     unsubscribeNetwork = null;
   }
 }
@@ -174,7 +192,7 @@ export function attachOfflineQueueInterceptors(client: AxiosInstance): void {
     (response) => response,
     async (error) => {
       const cfg: AxiosRequestConfig = error.config || {};
-      const method = (cfg.method || '').toLowerCase();
+      const method = (cfg.method || "").toLowerCase();
 
       // Only handle mutating requests
       if (!isMutatingMethod(method)) {
@@ -189,11 +207,16 @@ export function attachOfflineQueueInterceptors(client: AxiosInstance): void {
       if (!online || isNetworkError) {
         const item = await enqueueMutation(cfg);
         if (__DEV__) {
-          __DEV__ && console.warn('OfflineQueue: queued mutation', { id: item.id, method: item.method, url: item.url });
+          __DEV__ &&
+            console.warn("OfflineQueue: queued mutation", {
+              id: item.id,
+              method: item.method,
+              url: item.url,
+            });
         }
         try {
-          toastService.showInfo('Saved offline. Will sync when online.');
-        } catch { }
+          toastService.showInfo("Saved offline. Will sync when online.");
+        } catch {}
         // Resolve with a synthetic response to unblock UI if desired, otherwise reject
         // Here we reject so callers can decide how to reflect queued state
         return Promise.reject(error);

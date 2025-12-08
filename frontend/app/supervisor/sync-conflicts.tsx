@@ -40,16 +40,22 @@ export default function SyncConflictsScreen() {
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<string>("pending");
-  const [selectedConflicts, setSelectedConflicts] = useState<Set<string>>(new Set());
+  const [selectedConflicts, setSelectedConflicts] = useState<Set<string>>(
+    new Set(),
+  );
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedConflict, setSelectedConflict] = useState<SyncConflict | null>(null);
+  const [selectedConflict, setSelectedConflict] = useState<SyncConflict | null>(
+    null,
+  );
   const [resolutionNote, setResolutionNote] = useState("");
 
   useEffect(() => {
     if (!hasPermission("sync.resolve_conflict")) {
-      Alert.alert("Access Denied", "You do not have permission to resolve sync conflicts.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to resolve sync conflicts.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadConflicts();
@@ -119,7 +125,10 @@ export default function SyncConflictsScreen() {
               loadConflicts();
               loadStats();
             } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to resolve conflicts");
+              Alert.alert(
+                "Error",
+                error.message || "Failed to resolve conflicts",
+              );
             }
           },
         },
@@ -163,11 +172,15 @@ export default function SyncConflictsScreen() {
         <View style={styles.conflictData}>
           <View style={styles.dataColumn}>
             <Text style={styles.dataLabel}>Local Value:</Text>
-            <Text style={styles.dataValue}>{JSON.stringify(conflict.local_value)}</Text>
+            <Text style={styles.dataValue}>
+              {JSON.stringify(conflict.local_value)}
+            </Text>
           </View>
           <View style={styles.dataColumn}>
             <Text style={styles.dataLabel}>Server Value:</Text>
-            <Text style={styles.dataValue}>{JSON.stringify(conflict.server_value)}</Text>
+            <Text style={styles.dataValue}>
+              {JSON.stringify(conflict.server_value)}
+            </Text>
           </View>
         </View>
 
@@ -198,7 +211,10 @@ export default function SyncConflictsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Sync Conflicts</Text>
@@ -214,11 +230,15 @@ export default function SyncConflictsScreen() {
             <Text style={styles.statLabel}>Total</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: "#FFC107" }]}>{stats.pending || 0}</Text>
+            <Text style={[styles.statValue, { color: "#FFC107" }]}>
+              {stats.pending || 0}
+            </Text>
             <Text style={styles.statLabel}>Pending</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: "#00E676" }]}>{stats.resolved || 0}</Text>
+            <Text style={[styles.statValue, { color: "#00E676" }]}>
+              {stats.resolved || 0}
+            </Text>
             <Text style={styles.statLabel}>Resolved</Text>
           </View>
         </View>
@@ -228,7 +248,10 @@ export default function SyncConflictsScreen() {
         {["pending", "resolved", "all"].map((status) => (
           <TouchableOpacity
             key={status}
-            style={[styles.filterButton, filterStatus === status && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              filterStatus === status && styles.filterButtonActive,
+            ]}
             onPress={() => setFilterStatus(status)}
           >
             <Text
@@ -245,7 +268,9 @@ export default function SyncConflictsScreen() {
 
       {selectedConflicts.size > 0 && (
         <View style={styles.batchActions}>
-          <Text style={styles.batchText}>{selectedConflicts.size} selected</Text>
+          <Text style={styles.batchText}>
+            {selectedConflicts.size} selected
+          </Text>
           <TouchableOpacity
             style={[styles.batchButton, { backgroundColor: "#00E676" }]}
             onPress={() => handleBatchResolve("accept_server")}
@@ -286,8 +311,12 @@ export default function SyncConflictsScreen() {
 
             {selectedConflict && (
               <>
-                <Text style={styles.modalLabel}>Item: {selectedConflict.item_code}</Text>
-                <Text style={styles.modalLabel}>Type: {selectedConflict.conflict_type}</Text>
+                <Text style={styles.modalLabel}>
+                  Item: {selectedConflict.item_code}
+                </Text>
+                <Text style={styles.modalLabel}>
+                  Type: {selectedConflict.conflict_type}
+                </Text>
 
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSectionTitle}>Local Value:</Text>
@@ -315,14 +344,18 @@ export default function SyncConflictsScreen() {
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={[styles.modalButton, { backgroundColor: "#00E676" }]}
-                    onPress={() => handleResolve(selectedConflict._id, "accept_server")}
+                    onPress={() =>
+                      handleResolve(selectedConflict._id, "accept_server")
+                    }
                   >
                     <Text style={styles.modalButtonText}>Accept Server</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.modalButton, { backgroundColor: "#007AFF" }]}
-                    onPress={() => handleResolve(selectedConflict._id, "accept_local")}
+                    onPress={() =>
+                      handleResolve(selectedConflict._id, "accept_local")
+                    }
                   >
                     <Text style={styles.modalButtonText}>Accept Local</Text>
                   </TouchableOpacity>

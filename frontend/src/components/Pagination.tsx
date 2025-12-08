@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 interface PaginationProps {
   currentPage: number;
@@ -49,7 +49,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     return (
       <View style={styles.container}>
         <Text style={styles.infoText}>
-          Showing {totalItems} {totalItems === 1 ? 'item' : 'items'}
+          Showing {totalItems} {totalItems === 1 ? "item" : "items"}
         </Text>
       </View>
     );
@@ -63,21 +63,37 @@ export const Pagination: React.FC<PaginationProps> = ({
 
       <View style={styles.controls}>
         <TouchableOpacity
-          style={[styles.button, (currentPage === 1 || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === 1 || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handleFirst}
           disabled={currentPage === 1 || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === 1 || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === 1 || isLoading) && styles.buttonTextDisabled,
+            ]}
+          >
             ««
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, (currentPage === 1 || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === 1 || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handlePrevious}
           disabled={currentPage === 1 || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === 1 || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === 1 || isLoading) && styles.buttonTextDisabled,
+            ]}
+          >
             «
           </Text>
         </TouchableOpacity>
@@ -89,21 +105,39 @@ export const Pagination: React.FC<PaginationProps> = ({
         </View>
 
         <TouchableOpacity
-          style={[styles.button, (currentPage === totalPages || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === totalPages || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handleNext}
           disabled={currentPage === totalPages || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === totalPages || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === totalPages || isLoading) &&
+                styles.buttonTextDisabled,
+            ]}
+          >
             »
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, (currentPage === totalPages || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === totalPages || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handleLast}
           disabled={currentPage === totalPages || isLoading}
         >
-          <Text style={[styles.buttonText, (currentPage === totalPages || isLoading) && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.buttonText,
+              (currentPage === totalPages || isLoading) &&
+                styles.buttonTextDisabled,
+            ]}
+          >
             »»
           </Text>
         </TouchableOpacity>
@@ -116,56 +150,56 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: "#e0e0e0",
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
   button: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     borderRadius: 4,
     minWidth: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   buttonTextDisabled: {
-    color: '#999',
+    color: "#999",
   },
   pageInfo: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     minWidth: 100,
-    alignItems: 'center',
+    alignItems: "center",
   },
   pageText: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    color: "#333",
+    fontWeight: "500",
   },
 });

@@ -4,7 +4,7 @@
  * Based on Material Design 3 color system
  */
 
-import { lightTheme, darkTheme, ThemeColors } from '../services/themeService';
+import { lightTheme, darkTheme, ThemeColors } from "../services/themeService";
 
 // ==========================================
 // SEMANTIC COLOR TOKENS
@@ -88,13 +88,13 @@ export const getContrastRatio = (color1: string, color2: string): number => {
  */
 const getLuminance = (color: string): number => {
   // Convert hex to RGB
-  const hex = color.replace('#', '');
+  const hex = color.replace("#", "");
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
   const b = parseInt(hex.substring(4, 6), 16) / 255;
 
   // Apply gamma correction
-  const [rLinear = 0, gLinear = 0, bLinear = 0] = [r, g, b].map(val => {
+  const [rLinear = 0, gLinear = 0, bLinear = 0] = [r, g, b].map((val) => {
     return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
   });
 
@@ -104,7 +104,11 @@ const getLuminance = (color: string): number => {
 /**
  * Check if color meets WCAG AA contrast requirements
  */
-export const meetsWCAGAA = (foreground: string, background: string, isLargeText = false): boolean => {
+export const meetsWCAGAA = (
+  foreground: string,
+  background: string,
+  isLargeText = false,
+): boolean => {
   const ratio = getContrastRatio(foreground, background);
   return isLargeText ? ratio >= 3 : ratio >= 4.5;
 };
@@ -112,7 +116,11 @@ export const meetsWCAGAA = (foreground: string, background: string, isLargeText 
 /**
  * Check if color meets WCAG AAA contrast requirements
  */
-export const meetsWCAGAAA = (foreground: string, background: string, isLargeText = false): boolean => {
+export const meetsWCAGAAA = (
+  foreground: string,
+  background: string,
+  isLargeText = false,
+): boolean => {
   const ratio = getContrastRatio(foreground, background);
   return isLargeText ? ratio >= 4.5 : ratio >= 7;
 };
@@ -120,21 +128,24 @@ export const meetsWCAGAAA = (foreground: string, background: string, isLargeText
 /**
  * Generate semantic colors from base theme
  */
-export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors => {
+export const generateSemanticColors = (
+  baseColors: ThemeColors,
+): SemanticColors => {
   // Helper to safely get color with fallback
-  const getColor = (key: string, fallback: string): string => baseColors[key] ?? fallback;
-  
-  const primary = getColor('primary', '#007bff');
-  const secondary = getColor('secondary', '#6c757d');
-  const success = getColor('success', '#28a745');
-  const error = getColor('error', '#dc3545');
-  const warning = getColor('warning', '#ffc107');
-  const info = getColor('info', '#17a2b8');
-  const background = getColor('background', '#ffffff');
-  const surface = getColor('surface', '#f8f9fa');
-  const text = getColor('text', '#212529');
-  const textSecondary = getColor('textSecondary', '#6c757d');
-  const border = getColor('border', '#dee2e6');
+  const getColor = (key: string, fallback: string): string =>
+    baseColors[key] ?? fallback;
+
+  const primary = getColor("primary", "#007bff");
+  const secondary = getColor("secondary", "#6c757d");
+  const success = getColor("success", "#28a745");
+  const error = getColor("error", "#dc3545");
+  const warning = getColor("warning", "#ffc107");
+  const info = getColor("info", "#17a2b8");
+  const background = getColor("background", "#ffffff");
+  const surface = getColor("surface", "#f8f9fa");
+  const text = getColor("text", "#212529");
+  const textSecondary = getColor("textSecondary", "#6c757d");
+  const border = getColor("border", "#dee2e6");
 
   return {
     // Primary
@@ -171,12 +182,12 @@ export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors 
     // Background & Surface
     background: background,
     surface: surface,
-    surfaceVariant: getColor('surfaceDark', surface),
+    surfaceVariant: getColor("surfaceDark", surface),
 
     // Text
     text: text,
     textSecondary: textSecondary,
-    textTertiary: getColor('textTertiary', textSecondary),
+    textTertiary: getColor("textTertiary", textSecondary),
     textDisabled: adjustOpacity(text, 0.38),
     textInverse: background,
 
@@ -186,7 +197,7 @@ export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors 
     borderDark: adjustBrightness(border, -20),
 
     // Overlay
-    overlay: getColor('overlayPrimary', adjustOpacity(primary, 0.1)),
+    overlay: getColor("overlayPrimary", adjustOpacity(primary, 0.1)),
     overlayLight: adjustOpacity(primary, 0.05),
     overlayDark: adjustOpacity(primary, 0.2),
   };
@@ -196,19 +207,19 @@ export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors 
  * Adjust brightness of a color
  */
 const adjustBrightness = (color: string, percent: number): string => {
-  const hex = color.replace('#', '');
+  const hex = color.replace("#", "");
   const num = parseInt(hex, 16);
   const r = Math.max(0, Math.min(255, ((num >> 16) & 0xff) + percent));
   const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + percent));
   const b = Math.max(0, Math.min(255, (num & 0xff) + percent));
-  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 };
 
 /**
  * Adjust opacity of a color (returns rgba)
  */
 const adjustOpacity = (color: string, opacity: number): string => {
-  const hex = color.replace('#', '');
+  const hex = color.replace("#", "");
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);

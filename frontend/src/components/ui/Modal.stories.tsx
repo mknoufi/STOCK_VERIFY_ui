@@ -4,51 +4,52 @@
  * Documentation and examples for the Modal component
  */
 
-import type { Meta, StoryObj } from '@storybook/react';
-import { Modal } from './Modal';
-import { View, Text, StyleSheet } from 'react-native';
-import { Button } from '../Button';
-import { useState } from 'react';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Modal } from "./Modal";
+import { View, Text, StyleSheet } from "react-native";
+import { Button } from "../Button";
+import { useState } from "react";
 
 const meta: Meta<typeof Modal> = {
-  title: 'Components/Modal',
+  title: "Components/Modal",
   component: Modal,
   parameters: {
     docs: {
       description: {
-        component: 'Modern modal dialog component with backdrop, animations, and customizable sizes. Supports web and native platforms.',
+        component:
+          "Modern modal dialog component with backdrop, animations, and customizable sizes. Supports web and native platforms.",
       },
     },
   },
   argTypes: {
     visible: {
-      control: 'boolean',
-      description: 'Control modal visibility',
+      control: "boolean",
+      description: "Control modal visibility",
     },
     title: {
-      control: 'text',
-      description: 'Modal title',
+      control: "text",
+      description: "Modal title",
     },
     size: {
-      control: 'select',
-      options: ['small', 'medium', 'large', 'fullscreen'],
-      description: 'Modal size',
+      control: "select",
+      options: ["small", "medium", "large", "fullscreen"],
+      description: "Modal size",
     },
     animationType: {
-      control: 'select',
-      options: ['slide', 'fade', 'none'],
-      description: 'Animation type',
+      control: "select",
+      options: ["slide", "fade", "none"],
+      description: "Animation type",
     },
     showCloseButton: {
-      control: 'boolean',
-      description: 'Show close button',
+      control: "boolean",
+      description: "Show close button",
     },
     closeOnBackdropPress: {
-      control: 'boolean',
-      description: 'Close when backdrop is pressed',
+      control: "boolean",
+      description: "Close when backdrop is pressed",
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -65,11 +66,7 @@ const ModalWrapper = ({ children, ...props }: any) => {
         onPress={() => setVisible(true)}
         style={styles.openButton}
       />
-      <Modal
-        {...props}
-        visible={visible}
-        onClose={() => setVisible(false)}
-      >
+      <Modal {...props} visible={visible} onClose={() => setVisible(false)}>
         {children}
       </Modal>
     </View>
@@ -126,8 +123,12 @@ export const Fullscreen: Story = {
   render: () => (
     <ModalWrapper title="Fullscreen Modal" size="fullscreen">
       <View style={styles.fullscreenContent}>
-        <Text style={styles.fullscreenText}>This modal takes up the full screen.</Text>
-        <Text style={styles.fullscreenText}>Useful for complex forms or detailed views.</Text>
+        <Text style={styles.fullscreenText}>
+          This modal takes up the full screen.
+        </Text>
+        <Text style={styles.fullscreenText}>
+          Useful for complex forms or detailed views.
+        </Text>
       </View>
     </ModalWrapper>
   ),
@@ -139,19 +140,20 @@ export const ComplexContent: Story = {
     <ModalWrapper title="Confirm Action">
       <View style={styles.complexContent}>
         <Text style={styles.message}>
-          Are you sure you want to delete this item? This action cannot be undone.
+          Are you sure you want to delete this item? This action cannot be
+          undone.
         </Text>
         <View style={styles.buttonRow}>
           <Button
             title="Cancel"
             variant="outline"
-            onPress={() => { }}
+            onPress={() => {}}
             style={styles.button}
           />
           <Button
             title="Delete"
             variant="danger"
-            onPress={() => { }}
+            onPress={() => {}}
             style={styles.button}
           />
         </View>
@@ -164,7 +166,10 @@ export const ComplexContent: Story = {
 export const WithoutCloseButton: Story = {
   render: () => (
     <ModalWrapper title="No Close Button" showCloseButton={false}>
-      <Text>This modal doesn&apos;t have a close button. Use backdrop press or custom action to close.</Text>
+      <Text>
+        This modal doesn&apos;t have a close button. Use backdrop press or
+        custom action to close.
+      </Text>
     </ModalWrapper>
   ),
 };
@@ -199,9 +204,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     marginTop: 8,
   },
   button: {
@@ -209,13 +214,13 @@ const styles = StyleSheet.create({
   },
   fullscreenContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   fullscreenText: {
     fontSize: 18,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 12,
   },
 });

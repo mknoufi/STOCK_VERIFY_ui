@@ -25,7 +25,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         """Handle GET requests"""
         parsed_path = urlparse(self.path)
-        
+
         # API endpoints
         if parsed_path.path == '/api/status':
             self.handle_status()
@@ -63,7 +63,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         """Handle POST requests"""
         parsed_path = urlparse(self.path)
-        
+
         if parsed_path.path == '/api/start':
             self.handle_start()
         elif parsed_path.path == '/api/stop':
@@ -151,7 +151,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
             if self.is_port_in_use(8081):
                 return {'running': True, 'pid': None, 'port': 8081}
         return {'running': False, 'pid': None, 'port': 8081}
-    
+
     def is_port_in_use(self, port):
         """Check if a port is in use"""
         try:
@@ -179,7 +179,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
         """Get service logs with input validation"""
         params = parse_qs(query_string)
         service = params.get('service', ['all'])[0]
-        
+
         # Validate service parameter to prevent path traversal
         allowed_services = ['backend', 'frontend', 'all', 'mongodb', 'admin']
         if service not in allowed_services:
@@ -188,7 +188,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                 'error': f'Invalid service. Allowed: {", ".join(allowed_services)}'
             }, 400)
             return
-        
+
         logs = []
         try:
             if service == 'backend':
@@ -197,7 +197,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                 log_file = Path(__file__).parent.parent / 'frontend.log'
             else:
                 log_file = None
-            
+
             if log_file and log_file.exists():
                 # Validate file path to prevent directory traversal
                 if log_file.resolve().parent != Path(__file__).parent.parent.resolve():
@@ -209,16 +209,16 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                 logs = [f'[{service}] Logs not available']
         except Exception as e:
             logs = [f'[{service}] Error reading logs: {str(e)}']
-        
+
         self.send_json_response({'success': True, 'logs': logs})
-    
+
     def handle_network_info(self):
         """Get network information for QR code"""
         try:
             import socket
             hostname = socket.gethostname()
             local_ip = socket.gethostbyname(hostname)
-            
+
             # Try to get actual local IP (not 127.0.0.1)
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -227,7 +227,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                 s.close()
             except:
                 pass
-            
+
             self.send_json_response({
                 'local_ip': local_ip,
                 'hostname': hostname
@@ -238,7 +238,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                 'hostname': 'localhost',
                 'error': str(e)
             })
-    
+
     def _check_auth(self):
         """Basic authentication check"""
         auth_header = self.headers.get('Authorization', '')
@@ -246,7 +246,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
             return False
         # In production, validate the token properly
         return len(auth_header) > 7  # Basic check
-    
+
     def handle_execute_command(self):
         """Execute terminal command safely with authentication"""
         # Check authentication for sensitive operations
@@ -256,7 +256,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                 'error': 'Authentication required'
             }, 401)
             return
-            
+
         try:
             content_length = int(self.headers.get('Content-Length', 0))
             if content_length > 5000:  # Limit payload size
@@ -265,17 +265,17 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                     'error': 'Request too large'
                 }, 400)
                 return
-                
+
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
-            
+
             service = data.get('service', '')
             command = data.get('command', '').strip()
-            
+
             if not command:
                 self.send_json_response({'success': False, 'error': 'No command provided'})
                 return
-            
+
             # Whitelist of safe commands
             safe_commands = {
                 'frontend': [
@@ -291,35 +291,35 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                     'echo', 'env', 'which', 'whereis'
                 ]
             }
-            
+
             # Check if command is safe
             command_parts = command.split()
             if not command_parts:
                 self.send_json_response({'success': False, 'error': 'Invalid command'})
                 return
-            
+
             base_command = command_parts[0]
             allowed = safe_commands.get(service, [])
-            
+
             # Block dangerous commands
-            dangerous = ['rm', 'del', 'delete', 'format', 'mkfs', 'dd', 'sudo', 'su', 
+            dangerous = ['rm', 'del', 'delete', 'format', 'mkfs', 'dd', 'sudo', 'su',
                         'shutdown', 'reboot', 'killall', 'pkill', '>', '>>', '|', '&',
                         '&&', '||', ';', '`', '$', '(', ')', '{', '}']
-            
+
             if any(danger in command for danger in dangerous):
                 self.send_json_response({
-                    'success': False, 
+                    'success': False,
                     'error': 'Command contains dangerous operations and is blocked for security'
                 })
                 return
-            
+
             if base_command not in allowed:
                 self.send_json_response({
                     'success': False,
                     'error': f'Command "{base_command}" is not allowed. Allowed commands: {", ".join(allowed[:5])}...'
                 })
                 return
-            
+
             # Execute command
             try:
                 result = subprocess.run(
@@ -330,7 +330,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                     timeout=10,
                     cwd=str(Path(__file__).parent.parent / service) if service in ['frontend', 'backend'] else None
                 )
-                
+
                 output = result.stdout + result.stderr
                 self.send_json_response({
                     'success': True,
@@ -388,7 +388,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
         import time
         time.sleep(2)
         self.handle_start()
-    
+
     def handle_mongodb_start(self):
         """Start MongoDB"""
         project_root = Path(__file__).parent.parent
@@ -402,14 +402,14 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
                 import os
                 mongod_path = '/opt/homebrew/bin/mongod'
                 if os.path.exists(mongod_path):
-                    subprocess.Popen([mongod_path, '--dbpath', os.path.expanduser('~/data/db')], 
+                    subprocess.Popen([mongod_path, '--dbpath', os.path.expanduser('~/data/db')],
                                    cwd=str(project_root), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     self.send_json_response({'success': True, 'message': 'MongoDB started'})
                 else:
                     self.send_json_response({'success': False, 'message': 'MongoDB not found. Please install MongoDB.'}, status=500)
         except Exception as e:
             self.send_json_response({'success': False, 'message': str(e)}, status=500)
-    
+
     def handle_mongodb_stop(self):
         """Stop MongoDB"""
         try:
@@ -460,7 +460,7 @@ class AdminPanelHandler(http.server.SimpleHTTPRequestHandler):
 def main():
     """Start the admin panel server"""
     os.chdir(ADMIN_PANEL_DIR)
-    
+
     # Check if port is already in use
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -471,11 +471,11 @@ def main():
         print(f"✅ Admin panel is likely already running at http://localhost:{PORT}")
         print(f"   If not, kill the process using: lsof -ti:{PORT} | xargs kill")
         return
-    
+
     # Create server with SO_REUSEADDR
     class ReusableTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
-    
+
     with ReusableTCPServer(("", PORT), AdminPanelHandler) as httpd:
         print(f"🚀 Admin Panel running at http://localhost:{PORT}")
         print(f"📁 Serving from: {ADMIN_PANEL_DIR}")
@@ -488,4 +488,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

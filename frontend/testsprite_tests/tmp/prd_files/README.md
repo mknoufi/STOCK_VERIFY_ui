@@ -2,10 +2,10 @@
 
 ## 📚 Documentation (v2.1)
 
-* **[Codebase Memory](docs/codebase_memory_v2.1.md)**: Architecture, Tech Stack, and Data Models.
-* **[Cursor Rules](docs/STOCK_VERIFY_2.1_cursor_rules.md)**: AI behavior and coding standards.
-* **[Verified Coding Policy](docs/verified_coding_policy.md)**: Testing and verification requirements.
-* **[Changelog](docs/CHANGELOG.md)**: Version history.
+- **[Codebase Memory](docs/codebase_memory_v2.1.md)**: Architecture, Tech Stack, and Data Models.
+- **[Cursor Rules](docs/STOCK_VERIFY_2.1_cursor_rules.md)**: AI behavior and coding standards.
+- **[Verified Coding Policy](docs/verified_coding_policy.md)**: Testing and verification requirements.
+- **[Changelog](docs/CHANGELOG.md)**: Version history.
 
 ---
 
@@ -33,9 +33,9 @@ npx expo start
 
 ## ⚙️ Configuration
 
-* **Backend Port**: 8000 (Default)
-* **SQL Server**: configured in `backend/config.py` (Default: `192.168.1.109`)
-* **Frontend**: Expo SDK 54 (Stable)
+- **Backend Port**: 8000 (Default)
+- **SQL Server**: configured in `backend/config.py` (Default: `192.168.1.109`)
+- **Frontend**: Expo SDK 54 (Stable)
 
 ## 🧹 Maintenance
 
@@ -52,3 +52,4 @@ lsof -ti :8081,19000,19001,19002,19006 | xargs kill -9
 ```
 
 # Here are your Instructions
+```

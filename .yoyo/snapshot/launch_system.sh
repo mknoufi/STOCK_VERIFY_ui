@@ -21,7 +21,7 @@ echo "✅ Admin Panel started (PID: $ADMIN_PID) - http://localhost:3000/dashboar
 cd ..
 sleep 3
 
-echo "🔧 Starting Backend API Server..."  
+echo "🔧 Starting Backend API Server..."
 cd backend
 
 # Start backend server in background

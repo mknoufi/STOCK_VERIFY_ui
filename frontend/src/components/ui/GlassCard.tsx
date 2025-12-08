@@ -9,7 +9,12 @@ interface GlassCardProps {
   tint?: "light" | "dark" | "default";
 }
 
-export const GlassCard = ({ children, style, intensity = 20, tint = "dark" }: GlassCardProps) => {
+export const GlassCard = ({
+  children,
+  style,
+  intensity = 20,
+  tint = "dark",
+}: GlassCardProps) => {
   return (
     <View style={[styles.container, style]}>
       <BlurView intensity={intensity} tint={tint} style={styles.blur}>

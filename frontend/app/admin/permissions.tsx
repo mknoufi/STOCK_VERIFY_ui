@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,32 +8,32 @@ import {
   ActivityIndicator,
   TextInput,
   Alert,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { usePermissions } from '../../src/hooks/usePermissions';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { usePermissions } from "../../src/hooks/usePermissions";
 import {
   getAvailablePermissions,
   getUserPermissions,
   addUserPermissions,
   removeUserPermissions,
-} from '../../src/services/api';
+} from "../../src/services/api";
 
 export default function PermissionsScreen() {
   const router = useRouter();
   const { hasRole } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [availablePermissions, setAvailablePermissions] = useState<any>(null);
-  const [selectedUsername, setSelectedUsername] = useState('');
+  const [selectedUsername, setSelectedUsername] = useState("");
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Check if user has admin permissions
   useEffect(() => {
-    if (!hasRole('admin')) {
+    if (!hasRole("admin")) {
       Alert.alert(
-        'Access Denied',
-        'You do not have permission to access this screen.',
-        [{ text: 'OK', onPress: () => router.back() }]
+        "Access Denied",
+        "You do not have permission to access this screen.",
+        [{ text: "OK", onPress: () => router.back() }],
       );
     }
   }, [hasRole, router]);
@@ -49,7 +49,7 @@ export default function PermissionsScreen() {
       const response = await getAvailablePermissions();
       setAvailablePermissions(response.data);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load permissions');
+      Alert.alert("Error", error.message || "Failed to load permissions");
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export default function PermissionsScreen() {
       setUserPermissions(response.data.permissions || []);
       setSelectedUsername(username);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load user permissions');
+      Alert.alert("Error", error.message || "Failed to load user permissions");
       setUserPermissions([]);
     } finally {
       setLoading(false);
@@ -71,16 +71,16 @@ export default function PermissionsScreen() {
 
   const handleAddUserPermission = async (permission: string) => {
     if (!selectedUsername) {
-      Alert.alert('Error', 'Please enter a username first');
+      Alert.alert("Error", "Please enter a username first");
       return;
     }
 
     try {
       await addUserPermissions(selectedUsername, [permission]);
-      Alert.alert('Success', 'Permission added successfully');
+      Alert.alert("Success", "Permission added successfully");
       loadUserPermissions(selectedUsername);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to add permission');
+      Alert.alert("Error", error.message || "Failed to add permission");
     }
   };
 
@@ -89,10 +89,10 @@ export default function PermissionsScreen() {
 
     try {
       await removeUserPermissions(selectedUsername, [permission]);
-      Alert.alert('Success', 'Permission removed successfully');
+      Alert.alert("Success", "Permission removed successfully");
       loadUserPermissions(selectedUsername);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to remove permission');
+      Alert.alert("Error", error.message || "Failed to remove permission");
     }
   };
 
@@ -107,8 +107,8 @@ export default function PermissionsScreen() {
           (cat) =>
             cat.toLowerCase().includes(searchQuery.toLowerCase()) ||
             categories[cat].some((p: string) =>
-              p.toLowerCase().includes(searchQuery.toLowerCase())
-            )
+              p.toLowerCase().includes(searchQuery.toLowerCase()),
+            ),
         )
       : categoryKeys;
 
@@ -116,7 +116,7 @@ export default function PermissionsScreen() {
       const permissions = categories[category];
       const filteredPermissions = searchQuery
         ? permissions.filter((p: string) =>
-            p.toLowerCase().includes(searchQuery.toLowerCase())
+            p.toLowerCase().includes(searchQuery.toLowerCase()),
           )
         : permissions;
 
@@ -125,7 +125,7 @@ export default function PermissionsScreen() {
       return (
         <View key={category} style={styles.categoryContainer}>
           <Text style={styles.categoryTitle}>
-            {category.toUpperCase().replace('_', ' ')}
+            {category.toUpperCase().replace("_", " ")}
           </Text>
           {filteredPermissions.map((permission: string) => {
             const hasPermission = userPermissions.includes(permission);
@@ -145,7 +145,7 @@ export default function PermissionsScreen() {
                     }
                   >
                     <Text style={styles.buttonText}>
-                      {hasPermission ? 'Remove' : 'Add'}
+                      {hasPermission ? "Remove" : "Add"}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -212,7 +212,8 @@ export default function PermissionsScreen() {
           </Text>
           {selectedUsername && (
             <Text style={styles.statsText}>
-              User &quot;{selectedUsername}&quot;: {userPermissions.length} permissions
+              User &quot;{selectedUsername}&quot;: {userPermissions.length}{" "}
+              permissions
             </Text>
           )}
         </View>
@@ -226,113 +227,113 @@ export default function PermissionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: "#0a0a0a",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0a0a0a",
   },
   loadingText: {
     marginTop: 10,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   backButton: {
     marginRight: 16,
   },
   backButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 16,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   controlPanel: {
     padding: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 8,
     marginTop: 12,
   },
   inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   input: {
     flex: 1,
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
+    backgroundColor: "#2a2a2a",
+    color: "#fff",
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
   },
   loadButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 12,
     borderRadius: 8,
     marginLeft: 8,
   },
   loadButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
   },
   stats: {
     padding: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   statsText: {
-    color: '#aaa',
+    color: "#aaa",
     fontSize: 14,
     marginBottom: 4,
   },
   categoryContainer: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   categoryTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4CAF50',
+    fontWeight: "bold",
+    color: "#4CAF50",
     marginBottom: 12,
   },
   permissionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
     borderRadius: 8,
     marginBottom: 8,
   },
   permissionText: {
     flex: 1,
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
   },
   permissionButton: {
@@ -341,14 +342,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   addButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   removeButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: "#f44336",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

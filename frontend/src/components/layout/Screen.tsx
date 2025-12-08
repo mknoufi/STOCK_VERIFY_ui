@@ -3,7 +3,7 @@
  * Handles safe area insets, consistent padding, and scroll behavior
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   StyleSheet,
@@ -12,11 +12,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-} from 'react-native';
-import { useTheme } from '@/hooks/useTheme';
-import { layout } from '../../styles/globalStyles';
+} from "react-native";
+import { useTheme } from "@/hooks/useTheme";
+import { layout } from "../../styles/globalStyles";
 
-export type ScreenVariant = 'default' | 'scrollable' | 'fullscreen';
+export type ScreenVariant = "default" | "scrollable" | "fullscreen";
 
 interface ScreenProps {
   children: React.ReactNode;
@@ -32,11 +32,11 @@ interface ScreenProps {
 
 export const Screen: React.FC<ScreenProps> = ({
   children,
-  variant = 'default',
+  variant = "default",
   padding = layout.screenPadding,
   backgroundColor,
-  scrollEnabled = variant === 'scrollable',
-  keyboardAvoiding = Platform.OS !== 'web',
+  scrollEnabled = variant === "scrollable",
+  keyboardAvoiding = Platform.OS !== "web",
   style,
   contentContainerStyle,
   testID,
@@ -45,7 +45,7 @@ export const Screen: React.FC<ScreenProps> = ({
   const bgColor = backgroundColor || theme.colors.background;
 
   // Fullscreen variant (for scanner, modals)
-  if (variant === 'fullscreen') {
+  if (variant === "fullscreen") {
     return (
       <View
         style={[styles.fullscreen, { backgroundColor: bgColor }, style]}
@@ -74,12 +74,12 @@ export const Screen: React.FC<ScreenProps> = ({
       </ScrollView>
     );
 
-    if (keyboardAvoiding && Platform.OS !== 'web') {
+    if (keyboardAvoiding && Platform.OS !== "web") {
       return (
         <KeyboardAvoidingView
           style={styles.keyboardAvoiding}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
           {content}
         </KeyboardAvoidingView>
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   fullscreen: {
     flex: 1,
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,

@@ -15,7 +15,7 @@ echo -e "${YELLOW}🛑 Stopping Stock Verify Application...${NC}"
 kill_port() {
     local port=$1
     local pid=$(lsof -ti :$port 2>/dev/null)
-    
+
     if [ ! -z "$pid" ]; then
         echo -e "${YELLOW}   Killing process on port $port (PID: $pid)...${NC}"
         kill -9 $pid 2>/dev/null
@@ -78,4 +78,3 @@ else
     echo -e "${YELLOW}⚠️  Some ports may still be in use. You may need to manually kill processes.${NC}"
     echo -e "${YELLOW}   Run: lsof -ti :PORT | xargs kill -9${NC}"
 fi
-

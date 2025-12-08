@@ -12,7 +12,7 @@ export interface EnrichmentData {
   hsn_code?: string;
   barcode?: string;
   location?: string;
-  condition?: 'good' | 'damaged' | 'obsolete' | 'excellent' | 'fair';
+  condition?: "good" | "damaged" | "obsolete" | "excellent" | "fair";
   notes?: string;
 }
 
@@ -49,40 +49,40 @@ export interface EnrichedItem {
   category: string;
   subcategory?: string;
   warehouse: string;
-  
+
   // Quantity tracking
-  stock_qty: number;                // Current qty in SQL Server
-  sql_server_qty: number;           // Synced qty from SQL Server
-  last_verified_qty?: number;       // Counted qty by staff
+  stock_qty: number; // Current qty in SQL Server
+  sql_server_qty: number; // Synced qty from SQL Server
+  last_verified_qty?: number; // Counted qty by staff
   last_synced: string;
   qty_changed_at?: string;
   qty_change_delta?: number;
-  
+
   // Enrichment data
   serial_number?: string;
   mrp?: number;
   hsn_code?: string;
   barcode: string;
   location?: string;
-  condition?: 'good' | 'damaged' | 'obsolete' | 'excellent' | 'fair';
-  
+  condition?: "good" | "damaged" | "obsolete" | "excellent" | "fair";
+
   // Data completeness
   data_complete: boolean;
   completion_percentage: number;
   missing_fields: string[];
-  
+
   // Enrichment tracking
   last_enriched_at?: string;
   enriched_by?: string;
   enriched_by_name?: string;
   enrichment_history: EnrichmentHistoryEntry[];
-  
+
   // Verification
   verified?: boolean;
   verified_by?: string;
   verified_at?: string;
-  verification_status?: 'pending' | 'in_progress' | 'completed';
-  
+  verification_status?: "pending" | "in_progress" | "completed";
+
   // Metadata
   created_at: string;
   updated_at: string;
@@ -216,7 +216,6 @@ export interface QtyCheckResult {
   previous_qty?: number;
   delta?: number;
   updated: boolean;
-  source: 'sql_server' | 'mongodb_cache';
+  source: "sql_server" | "mongodb_cache";
   message: string;
 }
-

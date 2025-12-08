@@ -1,6 +1,6 @@
 /**
  * Input Component Stories
- * 
+ *
  * Documentation and examples for the Input component
  */
 
@@ -94,7 +94,7 @@ export const WithRightIcon: Story = {
   render: () => {
     const [value, setValue] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    
+
     return (
       <Input
         label="Password"
@@ -169,4 +169,3 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 });
-

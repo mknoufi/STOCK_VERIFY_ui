@@ -3,10 +3,14 @@
  * Fully functional pie chart for analytics
  */
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
-import { modernColors, modernTypography, modernSpacing } from '../../styles/modernDesignSystem';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import Svg, { G, Path, Text as SvgText } from "react-native-svg";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
 const CHART_SIZE = 200;
 const RADIUS = 80;
@@ -65,8 +69,8 @@ export const PieChart: React.FC<PieChartProps> = ({
       `M ${CENTER_X} ${CENTER_Y}`,
       `L ${x1} ${y1}`,
       `A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-      'Z',
-    ].join(' ');
+      "Z",
+    ].join(" ");
 
     // Label position
     const labelAngle = (startAngle + angle / 2) * (Math.PI / 180);
@@ -141,18 +145,18 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.sm,
   },
   chartWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    flexWrap: "wrap",
   },
   legend: {
     marginLeft: modernSpacing.lg,
     gap: modernSpacing.sm,
   },
   legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: modernSpacing.sm,
     marginBottom: modernSpacing.xs,
   },
@@ -172,8 +176,8 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     height: CHART_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.elevated,
     borderRadius: 8,
   },

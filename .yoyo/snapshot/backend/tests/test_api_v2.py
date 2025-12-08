@@ -30,16 +30,16 @@ class TestAPIv2Health:
     async def test_health_check_v2(self, async_client):
         """Test basic health check endpoint"""
         response = await async_client.get("/api/v2/health/")
-        
+
         assert response.status_code == 200
         data = response.json()
-        
+
         # Check standardized response format
         assert "success" in data
         assert data["success"] is True
         assert "data" in data
         assert "timestamp" in data
-        
+
         # Check health data structure
         health_data = data["data"]
         assert "status" in health_data
@@ -50,15 +50,15 @@ class TestAPIv2Health:
     async def test_detailed_health_check_v2(self, async_client, auth_headers):
         """Test detailed health check endpoint (requires auth)"""
         response = await async_client.get("/api/v2/health/detailed", headers=auth_headers)
-        
+
         assert response.status_code == 200
         data = response.json()
-        
+
         # Check standardized response format
         assert "success" in data
         assert data["success"] is True
         assert "data" in data
-        
+
         # Check detailed health data
         health_data = data["data"]
         assert "timestamp" in health_data
@@ -72,14 +72,14 @@ class TestAPIv2ConnectionStatus:
     async def test_connection_pool_status(self, async_client, auth_headers):
         """Test connection pool status endpoint"""
         response = await async_client.get("/api/v2/connections/pool/status", headers=auth_headers)
-        
+
         # May return 200 or error if pool not initialized
         assert response.status_code in [200, 500]
-        
+
         if response.status_code == 200:
             data = response.json()
             assert "success" in data
-            
+
             if data["success"]:
                 pool_data = data["data"]
                 assert "status" in pool_data
@@ -93,10 +93,10 @@ class TestAPIv2ConnectionStatus:
     async def test_connection_pool_stats(self, async_client, auth_headers):
         """Test connection pool stats endpoint"""
         response = await async_client.get("/api/v2/connections/pool/stats", headers=auth_headers)
-        
+
         # May return 200 or error if pool not initialized
         assert response.status_code in [200, 500]
-        
+
         if response.status_code == 200:
             data = response.json()
             assert "success" in data
@@ -105,7 +105,7 @@ class TestAPIv2ConnectionStatus:
     async def test_connection_pool_health_check(self, async_client, auth_headers):
         """Test manual health check trigger"""
         response = await async_client.post("/api/v2/connections/pool/health-check", headers=auth_headers)
-        
+
         # May return 200 or error if pool not initialized
         assert response.status_code in [200, 500]
 
@@ -117,14 +117,14 @@ class TestAPIv2Metrics:
     async def test_pool_metrics(self, async_client, auth_headers):
         """Test pool metrics endpoint"""
         response = await async_client.get("/api/v2/metrics/pool", headers=auth_headers)
-        
+
         # May return 200 or error if pool not initialized
         assert response.status_code in [200, 500]
-        
+
         if response.status_code == 200:
             data = response.json()
             assert "success" in data
-            
+
             if data["success"]:
                 metrics = data["data"]
                 assert "pool_size" in metrics or "status" in metrics
@@ -133,15 +133,15 @@ class TestAPIv2Metrics:
     async def test_system_metrics(self, async_client, auth_headers):
         """Test system metrics endpoint"""
         response = await async_client.get("/api/v2/metrics/system", headers=auth_headers)
-        
+
         assert response.status_code == 200
         data = response.json()
-        
+
         # Check standardized response format
         assert "success" in data
         assert data["success"] is True
         assert "data" in data
-        
+
         metrics = data["data"]
         assert "timestamp" in metrics
         assert "services" in metrics
@@ -157,18 +157,18 @@ class TestAPIv2Items:
             "/api/v2/items/?page=1&page_size=10",
             headers=auth_headers
         )
-        
+
         # May return 200 or 401/500 depending on setup
         assert response.status_code in [200, 401, 500]
-        
+
         if response.status_code == 200:
             data = response.json()
-            
+
             # Check standardized response format
             assert "success" in data
             assert data["success"] is True
             assert "data" in data
-            
+
             # Check paginated response structure
             paginated_data = data["data"]
             assert "items" in paginated_data
@@ -186,10 +186,10 @@ class TestAPIv2Items:
             "/api/v2/items/?search=test&page=1&page_size=5",
             headers=auth_headers
         )
-        
+
         # May return 200 or 401/500 depending on setup
         assert response.status_code in [200, 401, 500]
-        
+
         if response.status_code == 200:
             data = response.json()
             assert "success" in data
@@ -205,18 +205,18 @@ class TestAPIv2Sessions:
             "/api/v2/sessions/?page=1&page_size=10",
             headers=auth_headers
         )
-        
+
         # May return 200 or 401/500 depending on setup
         assert response.status_code in [200, 401, 500]
-        
+
         if response.status_code == 200:
             data = response.json()
-            
+
             # Check standardized response format
             assert "success" in data
             assert data["success"] is True
             assert "data" in data
-            
+
             # Check paginated response structure
             paginated_data = data["data"]
             assert "items" in paginated_data
@@ -232,7 +232,7 @@ class TestAPIv2ErrorHandling:
     async def test_unauthorized_access(self, async_client):
         """Test that protected endpoints require authentication"""
         response = await async_client.get("/api/v2/health/detailed")
-        
+
         # Should return 401 or 403
         assert response.status_code in [401, 403]
 
@@ -243,11 +243,10 @@ class TestAPIv2ErrorHandling:
             "/api/v2/items/?page=0&page_size=0",
             headers=auth_headers
         )
-        
+
         # Should return 422 (validation error) or 200 with defaults
         assert response.status_code in [200, 422]
 
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-

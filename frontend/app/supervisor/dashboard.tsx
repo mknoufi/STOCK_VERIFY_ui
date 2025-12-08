@@ -73,7 +73,9 @@ export default function SupervisorDashboard() {
   const [isMRPUpdating, setIsMRPUpdating] = useState(false);
 
   // Filter States
-  const [filterStatus, setFilterStatus] = useState<"ALL" | "OPEN" | "CLOSED" | "RECONCILE">("ALL");
+  const [filterStatus, setFilterStatus] = useState<
+    "ALL" | "OPEN" | "CLOSED" | "RECONCILE"
+  >("ALL");
   const [sortBy, setSortBy] = useState<"date" | "variance" | "items">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
@@ -82,7 +84,9 @@ export default function SupervisorDashboard() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   // Bulk Operations State
-  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
+  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(
+    new Set(),
+  );
 
   const loadData = React.useCallback(
     async (page = 1) => {
@@ -95,17 +99,22 @@ export default function SupervisorDashboard() {
         let filteredSessions = sessionsRes.data;
 
         if (filterStatus !== "ALL") {
-          filteredSessions = filteredSessions.filter((s: Session) => s.status === filterStatus);
+          filteredSessions = filteredSessions.filter(
+            (s: Session) => s.status === filterStatus,
+          );
         }
 
         filteredSessions.sort((a: Session, b: Session) => {
           let comparison = 0;
           switch (sortBy) {
             case "date":
-              comparison = new Date(a.started_at).getTime() - new Date(b.started_at).getTime();
+              comparison =
+                new Date(a.started_at).getTime() -
+                new Date(b.started_at).getTime();
               break;
             case "variance":
-              comparison = Math.abs(a.total_variance) - Math.abs(b.total_variance);
+              comparison =
+                Math.abs(a.total_variance) - Math.abs(b.total_variance);
               break;
             case "items":
               comparison = a.total_items - b.total_items;
@@ -127,8 +136,10 @@ export default function SupervisorDashboard() {
             acc.totalItems += session.total_items || 0;
             acc.totalVariance += session.total_variance || 0;
 
-            if ((session.total_variance || 0) > 0) acc.positiveVariance += session.total_variance;
-            if ((session.total_variance || 0) < 0) acc.negativeVariance += session.total_variance;
+            if ((session.total_variance || 0) > 0)
+              acc.positiveVariance += session.total_variance;
+            if ((session.total_variance || 0) < 0)
+              acc.negativeVariance += session.total_variance;
 
             if (Math.abs(session.total_variance) > 1000) acc.highRiskSessions++; // Example threshold
 
@@ -149,7 +160,9 @@ export default function SupervisorDashboard() {
         );
 
         newStats.avgVariancePerSession =
-          newStats.totalSessions > 0 ? newStats.totalVariance / newStats.totalSessions : 0;
+          newStats.totalSessions > 0
+            ? newStats.totalVariance / newStats.totalSessions
+            : 0;
 
         setStats(newStats);
       } catch {
@@ -264,7 +277,9 @@ export default function SupervisorDashboard() {
     setSelectedSessions(new Set());
   };
 
-  const handleBulkOperation = async (operation: "close" | "reconcile" | "export") => {
+  const handleBulkOperation = async (
+    operation: "close" | "reconcile" | "export",
+  ) => {
     if (selectedSessions.size === 0) return;
 
     Alert.alert(
@@ -281,7 +296,10 @@ export default function SupervisorDashboard() {
                 operation,
                 session_ids: Array.from(selectedSessions),
               });
-              Alert.alert("Success", `Bulk ${operation} completed successfully`);
+              Alert.alert(
+                "Success",
+                `Bulk ${operation} completed successfully`,
+              );
               setShowBulkModal(false);
               clearSelection();
               loadData();
@@ -317,12 +335,18 @@ export default function SupervisorDashboard() {
               <Text style={styles.actionButtonText}>Watchtower</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={() => setShowMRPModal(true)}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setShowMRPModal(true)}
+            >
               <Ionicons name="pricetag-outline" size={24} color="#4CAF50" />
               <Text style={styles.actionButtonText}>Update MRP</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={() => setShowFilterModal(true)}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setShowFilterModal(true)}
+            >
               <Ionicons name="filter-outline" size={24} color="#2196F3" />
               <Text style={styles.actionButtonText}>Filter</Text>
               {filterStatus !== "ALL" && (
@@ -340,12 +364,17 @@ export default function SupervisorDashboard() {
               <Text style={styles.actionButtonText}>Analytics</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={() => setShowBulkModal(true)}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setShowBulkModal(true)}
+            >
               <Ionicons name="layers-outline" size={24} color="#9C27B0" />
               <Text style={styles.actionButtonText}>Bulk Ops</Text>
               {selectedSessions.size > 0 && (
                 <View style={styles.actionBadge}>
-                  <Text style={styles.actionBadgeText}>{selectedSessions.size}</Text>
+                  <Text style={styles.actionBadgeText}>
+                    {selectedSessions.size}
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -357,7 +386,11 @@ export default function SupervisorDashboard() {
       <ScrollView
         style={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#4CAF50"
+          />
         }
       >
         {/* Stats Grid */}
@@ -369,7 +402,9 @@ export default function SupervisorDashboard() {
           </View>
           <View style={styles.statCard}>
             <Ionicons name="alert-circle-outline" size={24} color="#FF5252" />
-            <Text style={styles.statValue}>{stats.totalVariance.toFixed(0)}</Text>
+            <Text style={styles.statValue}>
+              {stats.totalVariance.toFixed(0)}
+            </Text>
             <Text style={styles.statLabel}>Total Variance</Text>
           </View>
           <View style={styles.statCard}>
@@ -399,7 +434,9 @@ export default function SupervisorDashboard() {
             <View style={styles.emptyContainer}>
               <Ionicons name="folder-open-outline" size={48} color="#333" />
               <Text style={styles.emptyText}>No sessions found</Text>
-              <Text style={styles.emptySubtext}>Start a new session to see it here</Text>
+              <Text style={styles.emptySubtext}>
+                Start a new session to see it here
+              </Text>
             </View>
           ) : (
             sessions.map((session) => (
@@ -407,8 +444,10 @@ export default function SupervisorDashboard() {
                 key={session.id}
                 style={[
                   styles.sessionCard,
-                  selectedSessions.has(session.id) && styles.sessionCardSelected,
-                  Math.abs(session.total_variance) > 1000 && styles.sessionCardHighRisk,
+                  selectedSessions.has(session.id) &&
+                    styles.sessionCardSelected,
+                  Math.abs(session.total_variance) > 1000 &&
+                    styles.sessionCardHighRisk,
                 ]}
                 onPress={() => router.push(`/supervisor/session/${session.id}`)}
                 onLongPress={() => toggleSessionSelection(session.id)}
@@ -417,23 +456,40 @@ export default function SupervisorDashboard() {
                   {selectedSessions.size > 0 && (
                     <View style={styles.sessionCheckbox}>
                       <Ionicons
-                        name={selectedSessions.has(session.id) ? "checkbox" : "square-outline"}
+                        name={
+                          selectedSessions.has(session.id)
+                            ? "checkbox"
+                            : "square-outline"
+                        }
                         size={24}
-                        color={selectedSessions.has(session.id) ? "#4CAF50" : "#888"}
+                        color={
+                          selectedSessions.has(session.id) ? "#4CAF50" : "#888"
+                        }
                       />
                     </View>
                   )}
                   <View style={styles.sessionContent}>
                     <View style={styles.sessionHeader}>
                       <View>
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                          <Text style={styles.sessionWarehouse}>{session.warehouse}</Text>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <Text style={styles.sessionWarehouse}>
+                            {session.warehouse}
+                          </Text>
                           {session.type && session.type !== "STANDARD" && (
                             <View
                               style={{
                                 paddingHorizontal: 6,
                                 paddingVertical: 2,
-                                backgroundColor: session.type === "BLIND" ? "#9C27B0" : "#F44336",
+                                backgroundColor:
+                                  session.type === "BLIND"
+                                    ? "#9C27B0"
+                                    : "#F44336",
                                 borderRadius: 4,
                               }}
                             >
@@ -471,20 +527,28 @@ export default function SupervisorDashboard() {
                     </View>
 
                     <Text style={styles.sessionDate}>
-                      Started: {new Date(session.started_at).toLocaleDateString()}
+                      Started:{" "}
+                      {new Date(session.started_at).toLocaleDateString()}
                     </Text>
 
                     <View style={styles.sessionStats}>
                       <View style={styles.statItem}>
                         <Ionicons name="cube-outline" size={16} color="#888" />
-                        <Text style={styles.statText}>{session.total_items} items</Text>
+                        <Text style={styles.statText}>
+                          {session.total_items} items
+                        </Text>
                       </View>
                       <View style={styles.statItem}>
-                        <Ionicons name="analytics-outline" size={16} color="#888" />
+                        <Ionicons
+                          name="analytics-outline"
+                          size={16}
+                          color="#888"
+                        />
                         <Text
                           style={[
                             styles.statText,
-                            Math.abs(session.total_variance) > 0 && styles.varianceText,
+                            Math.abs(session.total_variance) > 0 &&
+                              styles.varianceText,
                           ]}
                         >
                           Var: {session.total_variance}
@@ -532,7 +596,11 @@ export default function SupervisorDashboard() {
                 onSubmitEditing={handleSearchMRP}
               />
               <TouchableOpacity onPress={handleSearchMRP}>
-                <Ionicons name="arrow-forward-circle" size={28} color="#4CAF50" />
+                <Ionicons
+                  name="arrow-forward-circle"
+                  size={28}
+                  color="#4CAF50"
+                />
               </TouchableOpacity>
             </View>
 
@@ -549,21 +617,39 @@ export default function SupervisorDashboard() {
                         onPress={() => setSelectedItemForMRP(item)}
                       >
                         <View style={styles.mrpResultContent}>
-                          <Text style={styles.mrpResultName}>{item.item_name}</Text>
-                          <Text style={styles.mrpResultCode}>{item.item_code}</Text>
-                          <Text style={styles.mrpResultBarcode}>{item.barcode}</Text>
-                          <Text style={styles.mrpResultMRP}>Current MRP: ₹{item.mrp}</Text>
+                          <Text style={styles.mrpResultName}>
+                            {item.item_name}
+                          </Text>
+                          <Text style={styles.mrpResultCode}>
+                            {item.item_code}
+                          </Text>
+                          <Text style={styles.mrpResultBarcode}>
+                            {item.barcode}
+                          </Text>
+                          <Text style={styles.mrpResultMRP}>
+                            Current MRP: ₹{item.mrp}
+                          </Text>
                         </View>
-                        <Ionicons name="create-outline" size={24} color="#4CAF50" />
+                        <Ionicons
+                          name="create-outline"
+                          size={24}
+                          color="#4CAF50"
+                        />
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
                 ) : (
                   <View>
                     <View style={styles.selectedItemCard}>
-                      <Text style={styles.selectedItemName}>{selectedItemForMRP.item_name}</Text>
-                      <Text style={styles.selectedItemCode}>{selectedItemForMRP.item_code}</Text>
-                      <Text style={styles.selectedItemBarcode}>{selectedItemForMRP.barcode}</Text>
+                      <Text style={styles.selectedItemName}>
+                        {selectedItemForMRP.item_name}
+                      </Text>
+                      <Text style={styles.selectedItemCode}>
+                        {selectedItemForMRP.item_code}
+                      </Text>
+                      <Text style={styles.selectedItemBarcode}>
+                        {selectedItemForMRP.barcode}
+                      </Text>
                       <Text style={styles.selectedItemCurrentMRP}>
                         Current MRP: ₹{selectedItemForMRP.mrp}
                       </Text>
@@ -597,7 +683,9 @@ export default function SupervisorDashboard() {
                         {isMRPUpdating ? (
                           <ActivityIndicator size="small" color="#fff" />
                         ) : (
-                          <Text style={styles.mrpUpdateButtonText}>Update MRP</Text>
+                          <Text style={styles.mrpUpdateButtonText}>
+                            Update MRP
+                          </Text>
                         )}
                       </TouchableOpacity>
                     </View>
@@ -632,7 +720,10 @@ export default function SupervisorDashboard() {
                 {["ALL", "OPEN", "CLOSED", "RECONCILE"].map((status) => (
                   <TouchableOpacity
                     key={status}
-                    style={[styles.filterChip, filterStatus === status && styles.filterChipActive]}
+                    style={[
+                      styles.filterChip,
+                      filterStatus === status && styles.filterChipActive,
+                    ]}
                     onPress={() => setFilterStatus(status as any)}
                   >
                     <Text
@@ -652,12 +743,19 @@ export default function SupervisorDashboard() {
               <View style={styles.filterChipContainer}>
                 {[
                   { key: "date", label: "Date", icon: "calendar-outline" },
-                  { key: "variance", label: "Variance", icon: "analytics-outline" },
+                  {
+                    key: "variance",
+                    label: "Variance",
+                    icon: "analytics-outline",
+                  },
                   { key: "items", label: "Items", icon: "cube-outline" },
                 ].map((option) => (
                   <TouchableOpacity
                     key={option.key}
-                    style={[styles.filterChip, sortBy === option.key && styles.filterChipActive]}
+                    style={[
+                      styles.filterChip,
+                      sortBy === option.key && styles.filterChipActive,
+                    ]}
                     onPress={() => setSortBy(option.key as any)}
                   >
                     <Ionicons
@@ -775,76 +873,134 @@ export default function SupervisorDashboard() {
             {analyticsLoading ? (
               <View style={styles.analyticsLoadingContainer}>
                 <ActivityIndicator size="large" color="#4CAF50" />
-                <Text style={styles.analyticsLoadingText}>Loading analytics...</Text>
+                <Text style={styles.analyticsLoadingText}>
+                  Loading analytics...
+                </Text>
               </View>
             ) : analyticsData ? (
               <ScrollView style={styles.modalScrollContent}>
                 {/* Enhanced Stats Grid */}
-                <Text style={styles.analyticsSectionTitle}>Comprehensive Statistics</Text>
+                <Text style={styles.analyticsSectionTitle}>
+                  Comprehensive Statistics
+                </Text>
                 <View style={styles.analyticsGrid}>
                   <View style={styles.analyticsCard}>
                     <Ionicons name="folder-outline" size={24} color="#4CAF50" />
-                    <Text style={styles.analyticsValue}>{stats.totalSessions}</Text>
+                    <Text style={styles.analyticsValue}>
+                      {stats.totalSessions}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Total Sessions</Text>
                   </View>
                   <View style={styles.analyticsCard}>
                     <Ionicons name="time-outline" size={24} color="#FF9800" />
-                    <Text style={styles.analyticsValue}>{stats.openSessions}</Text>
+                    <Text style={styles.analyticsValue}>
+                      {stats.openSessions}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Open</Text>
                   </View>
                   <View style={styles.analyticsCard}>
-                    <Ionicons name="checkmark-done-outline" size={24} color="#4CAF50" />
-                    <Text style={styles.analyticsValue}>{stats.closedSessions}</Text>
+                    <Ionicons
+                      name="checkmark-done-outline"
+                      size={24}
+                      color="#4CAF50"
+                    />
+                    <Text style={styles.analyticsValue}>
+                      {stats.closedSessions}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Closed</Text>
                   </View>
                   <View style={styles.analyticsCard}>
-                    <Ionicons name="shield-checkmark-outline" size={24} color="#2196F3" />
-                    <Text style={styles.analyticsValue}>{stats.reconciledSessions}</Text>
+                    <Ionicons
+                      name="shield-checkmark-outline"
+                      size={24}
+                      color="#2196F3"
+                    />
+                    <Text style={styles.analyticsValue}>
+                      {stats.reconciledSessions}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Reconciled</Text>
                   </View>
                   <View style={styles.analyticsCard}>
                     <Ionicons name="cube-outline" size={24} color="#2196F3" />
-                    <Text style={styles.analyticsValue}>{stats.totalItems}</Text>
+                    <Text style={styles.analyticsValue}>
+                      {stats.totalItems}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Items Counted</Text>
                   </View>
                   <View style={styles.analyticsCard}>
-                    <Ionicons name="analytics-outline" size={24} color="#FF5252" />
-                    <Text style={styles.analyticsValue}>{stats.totalVariance.toFixed(0)}</Text>
+                    <Ionicons
+                      name="analytics-outline"
+                      size={24}
+                      color="#FF5252"
+                    />
+                    <Text style={styles.analyticsValue}>
+                      {stats.totalVariance.toFixed(0)}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Total Variance</Text>
                   </View>
                   <View style={styles.analyticsCard}>
-                    <Ionicons name="trending-up-outline" size={24} color="#4CAF50" />
-                    <Text style={styles.analyticsValue}>{stats.positiveVariance}</Text>
+                    <Ionicons
+                      name="trending-up-outline"
+                      size={24}
+                      color="#4CAF50"
+                    />
+                    <Text style={styles.analyticsValue}>
+                      {stats.positiveVariance}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Positive Var.</Text>
                   </View>
                   <View style={styles.analyticsCard}>
-                    <Ionicons name="trending-down-outline" size={24} color="#FF5252" />
-                    <Text style={styles.analyticsValue}>{stats.negativeVariance}</Text>
+                    <Ionicons
+                      name="trending-down-outline"
+                      size={24}
+                      color="#FF5252"
+                    />
+                    <Text style={styles.analyticsValue}>
+                      {stats.negativeVariance}
+                    </Text>
                     <Text style={styles.analyticsLabel}>Negative Var.</Text>
                   </View>
                   <View style={styles.analyticsCard}>
-                    <Ionicons name="calculator-outline" size={24} color="#FFC107" />
+                    <Ionicons
+                      name="calculator-outline"
+                      size={24}
+                      color="#FFC107"
+                    />
                     <Text style={styles.analyticsValue}>
                       {stats.avgVariancePerSession.toFixed(1)}
                     </Text>
                     <Text style={styles.analyticsLabel}>Avg. Variance</Text>
                   </View>
                   <View style={styles.analyticsCard}>
-                    <Ionicons name="warning-outline" size={24} color="#FF5252" />
-                    <Text style={styles.analyticsValue}>{stats.highRiskSessions}</Text>
+                    <Ionicons
+                      name="warning-outline"
+                      size={24}
+                      color="#FF5252"
+                    />
+                    <Text style={styles.analyticsValue}>
+                      {stats.highRiskSessions}
+                    </Text>
                     <Text style={styles.analyticsLabel}>High Risk</Text>
                   </View>
                 </View>
 
                 {/* Variance by Warehouse */}
-                <Text style={styles.analyticsSectionTitle}>Variance by Warehouse</Text>
+                <Text style={styles.analyticsSectionTitle}>
+                  Variance by Warehouse
+                </Text>
                 <View style={styles.analyticsListContainer}>
                   {Object.entries(analyticsData.varianceByWarehouse || {}).map(
                     ([warehouse, variance]: [string, any]) => (
                       <View key={warehouse} style={styles.analyticsListItem}>
                         <View style={styles.analyticsListLeft}>
-                          <Ionicons name="business-outline" size={20} color="#4CAF50" />
-                          <Text style={styles.analyticsListText}>{warehouse}</Text>
+                          <Ionicons
+                            name="business-outline"
+                            size={20}
+                            color="#4CAF50"
+                          />
+                          <Text style={styles.analyticsListText}>
+                            {warehouse}
+                          </Text>
                         </View>
                         <Text
                           style={[
@@ -860,13 +1016,19 @@ export default function SupervisorDashboard() {
                 </View>
 
                 {/* Items by Staff */}
-                <Text style={styles.analyticsSectionTitle}>Items Counted by Staff</Text>
+                <Text style={styles.analyticsSectionTitle}>
+                  Items Counted by Staff
+                </Text>
                 <View style={styles.analyticsListContainer}>
                   {Object.entries(analyticsData.itemsByStaff || {}).map(
                     ([staff, items]: [string, any]) => (
                       <View key={staff} style={styles.analyticsListItem}>
                         <View style={styles.analyticsListLeft}>
-                          <Ionicons name="person-outline" size={20} color="#2196F3" />
+                          <Ionicons
+                            name="person-outline"
+                            size={20}
+                            color="#2196F3"
+                          />
                           <Text style={styles.analyticsListText}>{staff}</Text>
                         </View>
                         <Text style={styles.analyticsListValue}>{items}</Text>
@@ -876,14 +1038,20 @@ export default function SupervisorDashboard() {
                 </View>
 
                 {/* Sessions by Date */}
-                <Text style={styles.analyticsSectionTitle}>Sessions by Date</Text>
+                <Text style={styles.analyticsSectionTitle}>
+                  Sessions by Date
+                </Text>
                 <View style={styles.analyticsListContainer}>
                   {Object.entries(analyticsData.sessionsByDate || {})
                     .slice(0, 10)
                     .map(([date, count]: [string, any]) => (
                       <View key={date} style={styles.analyticsListItem}>
                         <View style={styles.analyticsListLeft}>
-                          <Ionicons name="calendar-outline" size={20} color="#FFC107" />
+                          <Ionicons
+                            name="calendar-outline"
+                            size={20}
+                            color="#FFC107"
+                          />
                           <Text style={styles.analyticsListText}>{date}</Text>
                         </View>
                         <Text style={styles.analyticsListValue}>{count}</Text>
@@ -913,13 +1081,21 @@ export default function SupervisorDashboard() {
             </View>
 
             <View style={styles.bulkStatsContainer}>
-              <Text style={styles.bulkStatsText}>{selectedSessions.size} session(s) selected</Text>
+              <Text style={styles.bulkStatsText}>
+                {selectedSessions.size} session(s) selected
+              </Text>
               <View style={styles.bulkQuickActions}>
-                <TouchableOpacity style={styles.bulkQuickButton} onPress={selectAllSessions}>
+                <TouchableOpacity
+                  style={styles.bulkQuickButton}
+                  onPress={selectAllSessions}
+                >
                   <Ionicons name="checkbox-outline" size={20} color="#4CAF50" />
                   <Text style={styles.bulkQuickButtonText}>Select All</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.bulkQuickButton} onPress={clearSelection}>
+                <TouchableOpacity
+                  style={styles.bulkQuickButton}
+                  onPress={clearSelection}
+                >
                   <Ionicons name="close-outline" size={20} color="#FF5252" />
                   <Text style={styles.bulkQuickButtonText}>Clear All</Text>
                 </TouchableOpacity>
@@ -935,12 +1111,17 @@ export default function SupervisorDashboard() {
                 disabled={selectedSessions.size === 0}
               >
                 <View style={styles.bulkOperationIcon}>
-                  <Ionicons name="lock-closed-outline" size={32} color="#FF9800" />
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={32}
+                    color="#FF9800"
+                  />
                 </View>
                 <View style={styles.bulkOperationContent}>
                   <Text style={styles.bulkOperationTitle}>Close Sessions</Text>
                   <Text style={styles.bulkOperationDescription}>
-                    Mark selected sessions as closed. No further counting allowed.
+                    Mark selected sessions as closed. No further counting
+                    allowed.
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={24} color="#888" />
@@ -952,10 +1133,16 @@ export default function SupervisorDashboard() {
                 disabled={selectedSessions.size === 0}
               >
                 <View style={styles.bulkOperationIcon}>
-                  <Ionicons name="checkmark-done-outline" size={32} color="#4CAF50" />
+                  <Ionicons
+                    name="checkmark-done-outline"
+                    size={32}
+                    color="#4CAF50"
+                  />
                 </View>
                 <View style={styles.bulkOperationContent}>
-                  <Text style={styles.bulkOperationTitle}>Reconcile Sessions</Text>
+                  <Text style={styles.bulkOperationTitle}>
+                    Reconcile Sessions
+                  </Text>
                   <Text style={styles.bulkOperationDescription}>
                     Mark selected sessions as reconciled and finalized.
                   </Text>
@@ -993,7 +1180,9 @@ export default function SupervisorDashboard() {
               ) : (
                 <View style={styles.bulkSelectedList}>
                   {Array.from(selectedSessions).map((sessionId) => {
-                    const session = sessions.find((s: any) => s.id === sessionId) as any;
+                    const session = sessions.find(
+                      (s: any) => s.id === sessionId,
+                    ) as any;
                     if (!session) return null;
                     return (
                       <View key={sessionId} style={styles.bulkSelectedItem}>
@@ -1003,13 +1192,21 @@ export default function SupervisorDashboard() {
                           </Text>
                           <Text style={styles.bulkSelectedItemSubtitle}>
                             {session.started_at
-                              ? new Date(session.started_at).toLocaleDateString()
+                              ? new Date(
+                                  session.started_at,
+                                ).toLocaleDateString()
                               : "N/A"}{" "}
                             • {session.status || "N/A"}
                           </Text>
                         </View>
-                        <TouchableOpacity onPress={() => toggleSessionSelection(sessionId)}>
-                          <Ionicons name="close-circle" size={24} color="#FF5252" />
+                        <TouchableOpacity
+                          onPress={() => toggleSessionSelection(sessionId)}
+                        >
+                          <Ionicons
+                            name="close-circle"
+                            size={24}
+                            color="#FF5252"
+                          />
                         </TouchableOpacity>
                       </View>
                     );

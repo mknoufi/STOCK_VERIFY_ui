@@ -3,7 +3,7 @@
 ## Authentication Use Cases
 
 ### UC-001: User Login
-**Actor:** Staff, Supervisor, Admin  
+**Actor:** Staff, Supervisor, Admin
 **Flow:**
 1. Open app → Login screen
 2. Enter credentials
@@ -17,7 +17,7 @@
 ---
 
 ### UC-002: Role-Based Navigation
-**Actor:** System  
+**Actor:** System
 **Flow:**
 1. Extract role from JWT
 2. Filter navigation based on role
@@ -31,7 +31,7 @@
 ## Stock Verification Use Cases
 
 ### UC-003: Barcode Scanning
-**Actor:** Staff  
+**Actor:** Staff
 **Flow:**
 1. Navigate to Scan screen
 2. Activate scanner
@@ -44,7 +44,7 @@
 ---
 
 ### UC-004: Quantity Verification
-**Actor:** Staff  
+**Actor:** Staff
 **Flow:**
 1. Enter counted quantity
 2. Enter damage quantities (optional)
@@ -59,7 +59,7 @@
 ---
 
 ### UC-005: Serial Number Entry
-**Actor:** Staff  
+**Actor:** Staff
 **Flow:**
 1. Detect serial requirement
 2. Enter serial numbers
@@ -74,7 +74,7 @@
 ## Session Management Use Cases
 
 ### UC-006: Create Session
-**Actor:** Staff, Supervisor  
+**Actor:** Staff, Supervisor
 **Flow:**
 1. Navigate to create session
 2. Select warehouse
@@ -87,7 +87,7 @@
 ---
 
 ### UC-007: View Session Details
-**Actor:** Supervisor  
+**Actor:** Supervisor
 **Flow:**
 1. Navigate to sessions
 2. Select session
@@ -102,7 +102,7 @@
 ## Variance Tracking Use Cases
 
 ### UC-008: View Variances
-**Actor:** Supervisor  
+**Actor:** Supervisor
 **Flow:**
 1. Navigate to Variances
 2. View all variances
@@ -117,7 +117,7 @@
 ## Offline Use Cases
 
 ### UC-009: Offline Operation
-**Actor:** Staff  
+**Actor:** Staff
 **Flow:**
 1. Continue scanning offline
 2. Queue operations locally
@@ -129,7 +129,7 @@
 ---
 
 ### UC-010: Auto-Sync
-**Actor:** System  
+**Actor:** System
 **Flow:**
 1. Detect network restored
 2. Sync offline queue
@@ -143,7 +143,7 @@
 ## Export Use Cases
 
 ### UC-011: CSV Export
-**Actor:** Supervisor, Admin  
+**Actor:** Supervisor, Admin
 **Flow:**
 1. Navigate to Items/Variances
 2. Apply filters
@@ -158,7 +158,7 @@
 ## Search & Filter Use Cases
 
 ### UC-012: Item Search
-**Actor:** Staff, Supervisor  
+**Actor:** Staff, Supervisor
 **Flow:**
 1. Enter search query
 2. Real-time results
@@ -170,7 +170,7 @@
 ---
 
 ### UC-013: Advanced Filtering
-**Actor:** Supervisor  
+**Actor:** Supervisor
 **Flow:**
 1. Apply filters
 2. Combine multiple filters

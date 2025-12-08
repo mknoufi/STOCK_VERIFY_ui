@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, TouchableOpacity, SafeAreaView, Dimensions, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  SafeAreaView,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
@@ -39,7 +50,7 @@ export default function LoginScreen() {
     Alert.alert(
       "Reset Password",
       "Please contact your administrator to reset your password.",
-      [{ text: "OK", style: "default" }]
+      [{ text: "OK", style: "default" }],
     );
   };
 
@@ -81,7 +92,10 @@ export default function LoginScreen() {
 
   const logoStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: logoScale.value }, { rotate: `${logoRotate.value}deg` }],
+      transform: [
+        { scale: logoScale.value },
+        { rotate: `${logoRotate.value}deg` },
+      ],
     };
   });
 
@@ -149,13 +163,18 @@ export default function LoginScreen() {
             </Animated.View>
 
             {/* Login Form Card */}
-            <Animated.View entering={FadeInUp.delay(400).springify()} style={styles.formContainer}>
+            <Animated.View
+              entering={FadeInUp.delay(400).springify()}
+              style={styles.formContainer}
+            >
               <BlurView intensity={25} tint="dark" style={styles.blurContainer}>
                 <View style={styles.form}>
                   {/* Form Header */}
                   <View style={styles.formHeader}>
                     <Text style={styles.formTitle}>Welcome Back</Text>
-                    <Text style={styles.formSubtitle}>Sign in to your account</Text>
+                    <Text style={styles.formSubtitle}>
+                      Sign in to your account
+                    </Text>
                   </View>
 
                   {/* Input Fields */}
@@ -196,8 +215,15 @@ export default function LoginScreen() {
                       accessibilityState={{ checked: rememberMe }}
                       accessibilityLabel="Remember my username"
                     >
-                      <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                        {rememberMe && <Ionicons name="checkmark" size={12} color="#FFF" />}
+                      <View
+                        style={[
+                          styles.checkbox,
+                          rememberMe && styles.checkboxChecked,
+                        ]}
+                      >
+                        {rememberMe && (
+                          <Ionicons name="checkmark" size={12} color="#FFF" />
+                        )}
                       </View>
                       <Text style={styles.rememberMeText}>Remember me</Text>
                     </TouchableOpacity>
@@ -207,7 +233,9 @@ export default function LoginScreen() {
                       activeOpacity={0.7}
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                      <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                      <Text style={styles.forgotPasswordText}>
+                        Forgot Password?
+                      </Text>
                     </TouchableOpacity>
                   </View>
 
@@ -224,15 +252,24 @@ export default function LoginScreen() {
 
                   {/* Security Notice */}
                   <View style={styles.securityNotice}>
-                    <Ionicons name="shield-checkmark-outline" size={14} color="#64748B" />
-                    <Text style={styles.securityText}>Secured with 256-bit encryption</Text>
+                    <Ionicons
+                      name="shield-checkmark-outline"
+                      size={14}
+                      color="#64748B"
+                    />
+                    <Text style={styles.securityText}>
+                      Secured with 256-bit encryption
+                    </Text>
                   </View>
                 </View>
               </BlurView>
             </Animated.View>
 
             {/* Footer - Version Info */}
-            <Animated.View entering={FadeInUp.delay(600).springify()} style={styles.footer}>
+            <Animated.View
+              entering={FadeInUp.delay(600).springify()}
+              style={styles.footer}
+            >
               <Text style={styles.versionText}>Version {APP_VERSION}</Text>
               <View style={styles.footerDivider} />
               <Text style={styles.copyrightText}>© 2025 Stock Verify</Text>

@@ -99,4 +99,3 @@ export function formatErrorForLogging(error: unknown): string {
     .replace(/token[=:]\s*\S+/gi, 'token=***')
     .replace(/secret[=:]\s*\S+/gi, 'secret=***');
 }
-

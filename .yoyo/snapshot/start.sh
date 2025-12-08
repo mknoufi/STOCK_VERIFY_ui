@@ -16,7 +16,7 @@ echo -e "${GREEN}🚀 Starting Stock Verify Application...${NC}"
 check_and_kill_port() {
     local port=$1
     local pid=$(lsof -ti :$port 2>/dev/null)
-    
+
     if [ ! -z "$pid" ]; then
         echo -e "${YELLOW}⚠️  Port $port is busy (PID: $pid)${NC}"
         read -p "Kill process on port $port? (y/n): " -n 1 -r
@@ -77,4 +77,3 @@ EOF
 
 echo -e "${GREEN}✅ Both servers started in separate Terminal windows!${NC}"
 echo -e "${YELLOW}💡 To stop servers, run: ./stop.sh${NC}"
-

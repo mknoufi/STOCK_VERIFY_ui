@@ -15,7 +15,7 @@ Server Components are the foundation of React 19 applications. They enable autom
 async function DataFeature() {
   const data = await fetch('https://api.example.com/data');
   const json = await data.json();
-  
+
   return (
     <div>
       {json.map(item => (
@@ -73,7 +73,7 @@ Server Actions provide a type-safe way to handle form submissions and data mutat
 // FormFeature.tsx
 async function submitForm(formData: FormData) {
   'use server';
-  
+
   const data = Object.fromEntries(formData);
   await db.features.create(data);
 }
@@ -140,5 +140,5 @@ Key Patterns
 - Use Metadata API for dynamic SEO tags
 - Implement proper semantic HTML structure
 - Utilize Server Components for SEO-critical content
-- Structure routes for optimal crawlability 
+- Structure routes for optimal crawlability
 ```

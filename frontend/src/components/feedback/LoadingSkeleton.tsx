@@ -1,8 +1,14 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, DimensionValue } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
-import { useTheme } from '../../hooks/useTheme';
-import { flags } from '../../constants/flags';
+import React, { useEffect } from "react";
+import { View, StyleSheet, DimensionValue } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
+import { useTheme } from "../../hooks/useTheme";
+import { flags } from "../../constants/flags";
 
 interface SkeletonProps {
   width?: DimensionValue;
@@ -12,7 +18,7 @@ interface SkeletonProps {
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
-  width = '100%',
+  width = "100%",
   height = 20,
   borderRadius = 4,
   style,
@@ -23,9 +29,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   useEffect(() => {
     if (flags.enableAnimations) {
       progress.value = withRepeat(
-        withSequence(withTiming(1, { duration: 1000 }), withTiming(0, { duration: 1000 })),
+        withSequence(
+          withTiming(1, { duration: 1000 }),
+          withTiming(0, { duration: 1000 }),
+        ),
         -1,
-        false
+        false,
       );
     } else {
       progress.value = 0.25;
@@ -61,7 +70,12 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
           <Skeleton width={60} height={60} borderRadius={8} />
           <View style={styles.listItemContent}>
             <Skeleton width="70%" height={16} borderRadius={4} />
-            <Skeleton width="50%" height={14} borderRadius={4} style={{ marginTop: 8 }} />
+            <Skeleton
+              width="50%"
+              height={14}
+              borderRadius={4}
+              style={{ marginTop: 8 }}
+            />
           </View>
         </View>
       ))}
@@ -77,8 +91,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   listItemContent: {
     flex: 1,

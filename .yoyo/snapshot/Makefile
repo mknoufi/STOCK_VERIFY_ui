@@ -89,4 +89,3 @@ clean:
 	find . -type d -name ".mypy_cache" -exec rm -r {} + 2>/dev/null || true
 	find . -type d -name "node_modules" -prune -o -type d -name ".next" -exec rm -r {} + 2>/dev/null || true
 	@echo "✅ Cleanup complete!"
-

@@ -4,47 +4,47 @@
  * Documentation and examples for the SearchAutocomplete component
  */
 
-import type { Meta, StoryObj } from '@storybook/react';
-import { SearchAutocomplete } from './forms/SearchAutocomplete';
-import { View, StyleSheet } from 'react-native';
-import { useState } from 'react';
+import type { Meta, StoryObj } from "@storybook/react";
+import { SearchAutocomplete } from "./forms/SearchAutocomplete";
+import { View, StyleSheet } from "react-native";
+import { useState } from "react";
 
 const meta: Meta<typeof SearchAutocomplete> = {
-  title: 'Components/SearchAutocomplete',
+  title: "Components/SearchAutocomplete",
   component: SearchAutocomplete,
   parameters: {
     docs: {
       description: {
-        component: 'Enhanced search component with dropdown suggestions, debounced search, and barcode scanning support. Shows results after minimum character threshold.',
+        component:
+          "Enhanced search component with dropdown suggestions, debounced search, and barcode scanning support. Shows results after minimum character threshold.",
       },
     },
   },
   argTypes: {
     placeholder: {
-      control: 'text',
-      description: 'Placeholder text',
+      control: "text",
+      description: "Placeholder text",
     },
     minChars: {
-      control: { type: 'number', min: 1, max: 10, step: 1 },
-      description: 'Minimum characters before search',
+      control: { type: "number", min: 1, max: 10, step: 1 },
+      description: "Minimum characters before search",
     },
     showIcon: {
-      control: 'boolean',
-      description: 'Show search icon',
+      control: "boolean",
+      description: "Show search icon",
     },
     autoFocus: {
-      control: 'boolean',
-      description: 'Auto-focus input on mount',
+      control: "boolean",
+      description: "Auto-focus input on mount",
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
 type Story = StoryObj<typeof SearchAutocomplete>;
 
 // Mock search results for stories
-
 
 // Wrapper component for interactive stories
 const SearchWrapper = (args: any) => {
@@ -56,15 +56,17 @@ const SearchWrapper = (args: any) => {
         {...args}
         onSelectItem={(item) => {
           setSelectedItem(item);
-          console.log('Selected:', item);
+          console.log("Selected:", item);
         }}
         onBarcodeScan={(barcode) => {
-          console.log('Barcode scanned:', barcode);
+          console.log("Barcode scanned:", barcode);
         }}
       />
       {selectedItem && (
         <View style={styles.result}>
-          <span>Selected: {selectedItem.item_name} ({selectedItem.item_code})</span>
+          <span>
+            Selected: {selectedItem.item_name} ({selectedItem.item_code})
+          </span>
         </View>
       )}
     </View>
@@ -75,7 +77,7 @@ const SearchWrapper = (args: any) => {
 export const Default: Story = {
   render: (args) => <SearchWrapper {...args} />,
   args: {
-    placeholder: 'Search by name, code, or barcode (min 4 chars)',
+    placeholder: "Search by name, code, or barcode (min 4 chars)",
     minChars: 4,
     showIcon: true,
     autoFocus: false,
@@ -86,7 +88,7 @@ export const Default: Story = {
 export const CustomPlaceholder: Story = {
   render: (args) => <SearchWrapper {...args} />,
   args: {
-    placeholder: 'Type to search items...',
+    placeholder: "Type to search items...",
     minChars: 3,
     showIcon: true,
   },
@@ -96,7 +98,7 @@ export const CustomPlaceholder: Story = {
 export const WithoutIcon: Story = {
   render: (args) => <SearchWrapper {...args} />,
   args: {
-    placeholder: 'Search items...',
+    placeholder: "Search items...",
     showIcon: false,
     minChars: 4,
   },
@@ -106,7 +108,7 @@ export const WithoutIcon: Story = {
 export const AutoFocus: Story = {
   render: (args) => <SearchWrapper {...args} />,
   args: {
-    placeholder: 'Search...',
+    placeholder: "Search...",
     autoFocus: true,
     minChars: 4,
   },
@@ -116,7 +118,7 @@ export const AutoFocus: Story = {
 export const MinimumCharacters: Story = {
   render: (args) => <SearchWrapper {...args} />,
   args: {
-    placeholder: 'Type at least 3 characters...',
+    placeholder: "Type at least 3 characters...",
     minChars: 3,
     showIcon: true,
   },
@@ -125,12 +127,12 @@ export const MinimumCharacters: Story = {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    width: '100%',
+    width: "100%",
   },
   result: {
     marginTop: 16,
     padding: 12,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     borderRadius: 8,
   },
 });

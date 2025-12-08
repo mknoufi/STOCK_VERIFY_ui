@@ -25,10 +25,15 @@ export interface FormValidationResult<TValues extends Record<string, any>> {
   errors: Partial<Record<keyof TValues & string, string>>;
   touched: Partial<Record<keyof TValues & string, boolean>>;
   isSubmitting: boolean;
-  setValue: (name: keyof TValues & string, value: TValues[keyof TValues]) => void;
+  setValue: (
+    name: keyof TValues & string,
+    value: TValues[keyof TValues],
+  ) => void;
   setFieldTouched: (name: keyof TValues & string, touched: boolean) => void;
   setFieldError: (name: keyof TValues & string, error?: string) => void;
-  handleSubmit: (callback: (values: TValues) => void | Promise<void>) => () => Promise<void>;
+  handleSubmit: (
+    callback: (values: TValues) => void | Promise<void>,
+  ) => () => Promise<void>;
 }
 
 const getRuleMessage = (rule?: ValidationRule): string | undefined => {
@@ -53,15 +58,22 @@ export function useFormValidation<TValues extends Record<string, any>>(
   }, [configs]);
 
   const [values, setValues] = useState<TValues>(initialValues);
-  const [errors, setErrors] = useState<FormValidationResult<TValues>["errors"]>({});
-  const [touched, setTouched] = useState<FormValidationResult<TValues>["touched"]>({});
+  const [errors, setErrors] = useState<FormValidationResult<TValues>["errors"]>(
+    {},
+  );
+  const [touched, setTouched] = useState<
+    FormValidationResult<TValues>["touched"]
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const configMap = useMemo(() => {
-    return configs.reduce<Record<string, FieldConfig<TValues>>>((acc, config) => {
-      acc[config.name] = config;
-      return acc;
-    }, {});
+    return configs.reduce<Record<string, FieldConfig<TValues>>>(
+      (acc, config) => {
+        acc[config.name] = config;
+        return acc;
+      },
+      {},
+    );
   }, [configs]);
 
   const validateField = useCallback(
@@ -74,8 +86,15 @@ export function useFormValidation<TValues extends Record<string, any>>(
       const trimmedValue = typeof value === "string" ? value.trim() : value;
 
       if (rules.required) {
-        if (trimmedValue === "" || trimmedValue === undefined || trimmedValue === null) {
-          return getRuleMessage(rules.required) ?? `${config.label ?? name} is required`;
+        if (
+          trimmedValue === "" ||
+          trimmedValue === undefined ||
+          trimmedValue === null
+        ) {
+          return (
+            getRuleMessage(rules.required) ??
+            `${config.label ?? name} is required`
+          );
         }
       }
 
@@ -119,51 +138,53 @@ export function useFormValidation<TValues extends Record<string, any>>(
     return validationErrors;
   }, [configMap, validateField, values]);
 
-  const setValue = useCallback<FormValidationResult<TValues>["setValue"]>((name, value) => {
-    setValues((prev) => ({
+  const setValue = useCallback<FormValidationResult<TValues>["setValue"]>(
+    (name, value) => {
+      setValues((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    },
+    [],
+  );
+
+  const setFieldTouched = useCallback<
+    FormValidationResult<TValues>["setFieldTouched"]
+  >((name, isFieldTouched) => {
+    setTouched((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: isFieldTouched,
     }));
   }, []);
 
-  const setFieldTouched = useCallback<FormValidationResult<TValues>["setFieldTouched"]>(
-    (name, isFieldTouched) => {
-      setTouched((prev) => ({
-        ...prev,
-        [name]: isFieldTouched,
-      }));
-    },
-    [],
-  );
+  const setFieldError = useCallback<
+    FormValidationResult<TValues>["setFieldError"]
+  >((name, errorMessage) => {
+    setErrors((prev) => ({
+      ...prev,
+      [name]: errorMessage,
+    }));
+  }, []);
 
-  const setFieldError = useCallback<FormValidationResult<TValues>["setFieldError"]>(
-    (name, errorMessage) => {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: errorMessage,
-      }));
-    },
-    [],
-  );
-
-  const handleSubmit: FormValidationResult<TValues>["handleSubmit"] = useCallback(
-    (callback) => {
-      return async () => {
-        setIsSubmitting(true);
-        const validationErrors = validateAll();
-        if (Object.keys(validationErrors).length > 0) {
-          setIsSubmitting(false);
-          return;
-        }
-        try {
-          await callback(values);
-        } finally {
-          setIsSubmitting(false);
-        }
-      };
-    },
-    [validateAll, values],
-  );
+  const handleSubmit: FormValidationResult<TValues>["handleSubmit"] =
+    useCallback(
+      (callback) => {
+        return async () => {
+          setIsSubmitting(true);
+          const validationErrors = validateAll();
+          if (Object.keys(validationErrors).length > 0) {
+            setIsSubmitting(false);
+            return;
+          }
+          try {
+            await callback(values);
+          } finally {
+            setIsSubmitting(false);
+          }
+        };
+      },
+      [validateAll, values],
+    );
 
   return {
     values,

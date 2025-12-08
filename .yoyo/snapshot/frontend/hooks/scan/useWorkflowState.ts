@@ -64,4 +64,3 @@ export const useWorkflowState = () => {
     updateSerialInput,
   };
 };
-

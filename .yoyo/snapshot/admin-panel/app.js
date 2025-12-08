@@ -59,15 +59,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     generateQRCode();
     refreshErrors();
-    
+
     // Auto-refresh status every 5 seconds
     statusInterval = setInterval(checkAllServices, 5000);
-    
+
     // Auto-refresh logs every 2 seconds
     logInterval = setInterval(() => {
         refreshLogs();
     }, 2000);
-    
+
     // Store interval IDs to clean up later
     activeIntervals.push(
         setInterval(refreshErrors, 3000),
@@ -79,13 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(updateTerminalViews, 2000),
         setInterval(refreshLiveActivity, 5000)
     );
-    
+
     // Update terminal views
     updateTerminalViews();
-    
+
     // Load live activity
     refreshLiveActivity();
-    
+
     // Verify all button functions exist
     setTimeout(() => {
         const allFunctionsExist = verifyButtonFunctions();
@@ -146,9 +146,9 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     sidebarVisible = !sidebarVisible;
     sidebar.style.display = sidebarVisible ? 'block' : 'none';
-    
+
     const btn = document.getElementById('toggleSidebar');
-    btn.innerHTML = sidebarVisible 
+    btn.innerHTML = sidebarVisible
         ? '<i class="fas fa-qrcode"></i> QR Code'
         : '<i class="fas fa-qrcode"></i> Show QR';
 }
@@ -161,7 +161,7 @@ function toggleSidebar() {
 async function checkAllServices() {
     /** @type {Array<Promise<any>>} */
     const checks = [];
-    
+
     /**
      * Add timeout wrapper for promises
      * @param {Promise<any>} promise - Promise to wrap
@@ -171,18 +171,18 @@ async function checkAllServices() {
     const withTimeout = (promise, timeoutMs = 5000) => {
         return Promise.race([
             promise,
-            new Promise((_, reject) => 
+            new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Timeout')), timeoutMs)
             )
         ]);
     };
-    
+
     try {
         // Run checks with timeout protection
         checks.push(withTimeout(checkMongoDB().catch(e => console.debug('MongoDB check failed:', e))));
         checks.push(withTimeout(checkBackend().catch(e => console.debug('Backend check failed:', e))));
         checks.push(withTimeout(checkFrontend().catch(e => console.debug('Frontend check failed:', e))));
-        
+
         await Promise.allSettled(checks);
         updateGlobalStatus();
         updateExpoStatus();
@@ -206,11 +206,11 @@ async function checkMongoDB() {
             if (response.ok) {
                 const data = await response.json();
                 const mongodb = data.data?.mongodb || {};
-                
+
                 const status = document.getElementById('mongodbStatus');
                 const pid = document.getElementById('mongodbPid');
                 const connection = document.getElementById('mongodbConnection');
-                
+
                 if (mongodb.running) {
                     status.textContent = 'Running';
                     status.className = 'status-badge running';
@@ -233,16 +233,16 @@ async function checkMongoDB() {
         } catch (e) {
             console.debug('Backend API check failed, trying admin API');
         }
-        
+
         // Fallback to admin panel API
         const response = await fetch(`${ADMIN_API}/status`);
         const data = await response.json();
         const mongodb = data.mongodb || {};
-        
+
         const status = document.getElementById('mongodbStatus');
         const pid = document.getElementById('mongodbPid');
         const connection = document.getElementById('mongodbConnection');
-        
+
         if (mongodb.running) {
             status.textContent = 'Running';
             status.className = 'status-badge running';
@@ -277,11 +277,11 @@ async function checkBackend() {
             if (response.ok) {
                 const data = await response.json();
                 const backend = data.data?.backend || {};
-                
+
                 const status = document.getElementById('backendStatus');
                 const pid = document.getElementById('backendPid');
                 const port = document.getElementById('backendPort');
-                
+
                 if (backend.running) {
                     status.textContent = 'Running';
                     status.className = 'status-badge running';
@@ -303,16 +303,16 @@ async function checkBackend() {
         } catch (e) {
             console.debug('Backend API check failed, trying admin API');
         }
-        
+
         // Fallback to admin panel API
         const response = await fetch(`${ADMIN_API}/status`);
         const data = await response.json();
         const backend = data.backend || {};
-        
+
         const status = document.getElementById('backendStatus');
         const pid = document.getElementById('backendPid');
         const port = document.getElementById('backendPort');
-        
+
         if (backend.running) {
             status.textContent = 'Running';
             status.className = 'status-badge running';
@@ -350,11 +350,11 @@ async function checkFrontend() {
                 frontend = await checkPortOpen(8081);
             }
         }
-        
+
         const status = document.getElementById('frontendStatus');
         const pid = document.getElementById('frontendPid');
         const port = document.getElementById('frontendPort');
-        
+
         if (frontend.running || frontend.status === 'running' || frontend.is_running || frontend.portOpen) {
             status.textContent = 'Running';
             status.className = 'status-badge running';
@@ -402,9 +402,9 @@ function updateGlobalStatus() {
     const mongodb = document.getElementById('mongodbStatus').textContent;
     const backend = document.getElementById('backendStatus').textContent;
     const frontend = document.getElementById('frontendStatus').textContent;
-    
+
     const indicator = document.getElementById('globalStatus');
-    
+
     if (mongodb === 'Running' && backend === 'Running' && frontend === 'Running') {
         indicator.innerHTML = '<i class="fas fa-circle"></i> All Services Running';
         indicator.className = 'status-indicator active';
@@ -439,7 +439,7 @@ async function startService(service) {
         showNotification('Invalid service name', 'error');
         return;
     }
-    
+
     try {
         /** @type {string} */
         let endpoint;
@@ -448,7 +448,7 @@ async function startService(service) {
         } else {
             endpoint = `${API_BASE}/admin/control/services/${service}/start`;
         }
-        
+
         /** @type {Response} */
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -456,7 +456,7 @@ async function startService(service) {
                 'Authorization': `Bearer ${localStorage.getItem('admin_token') || ''}`
             }
         });
-        
+
         if (response.ok) {
             /** @type {any} */
             const data = await response.json();
@@ -482,14 +482,14 @@ async function stopService(service) {
         } else {
             endpoint = `${API_BASE}/admin/control/services/${service}/stop`;
         }
-        
+
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('admin_token') || ''}`
             }
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             showNotification(data.message || `${service} stopped successfully`, 'success');
@@ -538,7 +538,7 @@ async function refreshLogs() {
     const service = document.getElementById('logServiceSelect').value;
     const levelFilter = document.getElementById('logLevelFilter').value;
     const logsContent = document.getElementById('logsContent');
-    
+
     try {
         let logs = [];
         try {
@@ -558,7 +558,7 @@ async function refreshLogs() {
                 logs = [`[${new Date().toLocaleTimeString()}] Logs not available for ${service}`];
             }
         }
-        
+
         // Filter by level
         if (levelFilter !== 'all') {
             logs = logs.filter(log => {
@@ -566,13 +566,13 @@ async function refreshLogs() {
                 return level === levelFilter;
             });
         }
-        
+
         if (logs.length === 0) {
             logs = [`[${new Date().toLocaleTimeString()}] No logs available for ${service}`];
         }
-        
+
         displayLogs(logs);
-        
+
         // Extract errors from logs
         extractErrorsFromLogs(logs, service);
     } catch (error) {
@@ -586,38 +586,38 @@ async function refreshLogs() {
  */
 function displayLogs(logs) {
     const logsContent = getCachedElement('logsContent');
-    
+
     if (!logsContent) {
         console.error('Log content element not found');
         return;
     }
-    
+
     if (!Array.isArray(logs) || logs.length === 0) {
         logsContent.innerHTML = '<p class="empty-state">No logs available</p>';
         return;
     }
-    
+
     try {
         // Limit logs to prevent performance issues
         const maxLogs = 500;
         const displayLogs = logs.length > maxLogs ? logs.slice(-maxLogs) : logs;
-        
+
         // Use DocumentFragment for better performance
         const fragment = document.createDocumentFragment();
-        
+
         displayLogs.forEach(log => {
             if (typeof log !== 'string') return;
-            
+
             const logEntry = document.createElement('div');
             logEntry.className = `log-entry ${detectLogLevel(log)}`;
             logEntry.textContent = log; // Use textContent for safety
             fragment.appendChild(logEntry);
         });
-        
+
         // Clear and append new content efficiently
         logsContent.innerHTML = '';
         logsContent.appendChild(fragment);
-        
+
         // Auto-scroll to bottom if enabled
         if (autoScroll) {
             requestAnimationFrame(() => {
@@ -646,17 +646,17 @@ function extractErrorsFromLogs(logs, service) {
             // Normalize error message for deduplication
             const normalizedMessage = normalizeErrorMessage(log);
             const errorKey = `${service}:${level}:${normalizedMessage}`;
-            
+
             // Check if this is a duplicate error
             const existingError = errorDeduplication.get(errorKey);
             const now = Date.now();
-            
+
             if (existingError) {
                 // Update count and last occurrence
                 existingError.count = (existingError.count || 1) + 1;
                 existingError.lastOccurrence = now;
                 existingError.timestamp = new Date().toISOString();
-                
+
                 // Update the error in the errors array
                 const errorIndex = errors.findIndex(e => e.id === existingError.id);
                 if (errorIndex !== -1) {
@@ -675,10 +675,10 @@ function extractErrorsFromLogs(logs, service) {
                     firstOccurrence: now,
                     lastOccurrence: now
                 };
-                
+
                 errors.push(error);
                 errorDeduplication.set(errorKey, error);
-                
+
                 // Keep only last 200 errors
                 if (errors.length > 200) {
                     const removed = errors.shift();
@@ -687,7 +687,7 @@ function extractErrorsFromLogs(logs, service) {
             }
         }
     });
-    
+
     updateErrorDashboard();
 }
 
@@ -700,7 +700,7 @@ function normalizeErrorMessage(message) {
     if (typeof message !== 'string' || !message) {
         return 'Unknown error';
     }
-    
+
     // Remove timestamps, IDs, and other variable parts
     /** @type {string} */
     let normalized = message
@@ -710,7 +710,7 @@ function normalizeErrorMessage(message) {
         .replace(/\(\d+\)/g, '') // Remove error codes like (0)
         .replace(/0x[\da-f]+/gi, '') // Remove hex addresses
         .trim();
-    
+
     // Extract key error message (first 150 chars of meaningful content)
     /** @type {string} */
     const keyParts = normalized.split(':').slice(-2).join(':').trim();
@@ -727,11 +727,11 @@ function updateErrorDashboard() {
     const errorCount = errors.filter(e => e.level === 'error').length;
     const warningCount = errors.filter(e => e.level === 'warning').length;
     const criticalCount = errors.filter(e => e.level === 'critical').length;
-    
+
     document.getElementById('errorCount').textContent = errorCount;
     document.getElementById('warningCount').textContent = warningCount;
     document.getElementById('criticalCount').textContent = criticalCount;
-    
+
     // Animate stat cards if count changed
     if (errorCount > 0) {
         document.getElementById('errorCount').parentElement.parentElement.style.animation = 'pulse 0.5s';
@@ -742,24 +742,24 @@ function updateErrorDashboard() {
     if (criticalCount > 0) {
         document.getElementById('criticalCount').parentElement.parentElement.style.animation = 'pulse 0.5s';
     }
-    
+
     filterErrors();
 }
 
 function filterErrors() {
     const serviceFilter = document.getElementById('errorServiceFilter').value;
     const levelFilter = document.getElementById('errorLevelFilter').value;
-    
+
     let filtered = errors;
-    
+
     if (serviceFilter !== 'all') {
         filtered = filtered.filter(e => e.service === serviceFilter);
     }
-    
+
     if (levelFilter !== 'all') {
         filtered = filtered.filter(e => e.level === levelFilter);
     }
-    
+
     displayErrors(filtered);
 }
 
@@ -770,17 +770,17 @@ function filterErrors() {
 function displayErrors(errorList) {
     /** @type {HTMLElement|null} */
     const errorListEl = document.getElementById('errorList');
-    
+
     if (!errorListEl) {
         console.error('Error list element not found');
         return;
     }
-    
+
     if (!Array.isArray(errorList) || errorList.length === 0) {
         errorListEl.innerHTML = '<p class="empty-state">No errors detected</p>';
         return;
     }
-    
+
     // Validate error objects
     /** @type {Array<{service: string, level: string, message: string, timestamp: string, count?: number}>} */
     const validErrors = errorList.filter(error => {
@@ -788,14 +788,14 @@ function displayErrors(errorList) {
             console.warn('Invalid error object:', error);
             return false;
         }
-        if (typeof error.service !== 'string' || typeof error.level !== 'string' || 
+        if (typeof error.service !== 'string' || typeof error.level !== 'string' ||
             typeof error.message !== 'string' || typeof error.timestamp !== 'string') {
             console.warn('Error object missing required string properties:', error);
             return false;
         }
         return true;
     });
-    
+
     // Sort by count (most frequent first) or timestamp (newest first)
     errorList.sort((a, b) => {
         if (a.count && b.count && a.count !== b.count) {
@@ -803,14 +803,14 @@ function displayErrors(errorList) {
         }
         return new Date(b.timestamp) - new Date(a.timestamp); // Newest first
     });
-    
+
     errorListEl.innerHTML = errorList.slice(0, 30).map((error, index) => {
         const time = new Date(error.timestamp).toLocaleTimeString();
         const count = error.count || 1;
         const countBadge = count > 1 ? `<span class="error-count-badge">${count}x</span>` : '';
         const shortMessage = error.normalizedMessage || error.message;
         const fullMessage = error.message || shortMessage;
-        
+
         return `
             <div class="error-item ${error.level}" data-error-id="${error.id}">
                 <div class="error-item-header">
@@ -831,7 +831,7 @@ function displayErrors(errorList) {
             </div>
         `;
     }).join('');
-    
+
     // Store error list for copy functions
     window.currentErrorList = errorList;
 }
@@ -853,14 +853,14 @@ function clearErrors() {
 // QR Code
 async function generateQRCode() {
     const container = document.getElementById('qrCodeContainer');
-    
+
     try {
         const expoUrl = await getExpoURL();
         document.getElementById('expoUrl').textContent = expoUrl;
-        
+
         // Clear container
         container.innerHTML = '';
-        
+
         // Generate QR code using QRCode.js
         if (typeof QRCode !== 'undefined') {
             QRCode.toCanvas(container, expoUrl, {
@@ -905,7 +905,7 @@ async function getExpoURL() {
         const response = await fetch(`${ADMIN_API}/status`);
         const data = await response.json();
         const frontend = data.frontend || {};
-        
+
         if (frontend.running && frontend.port) {
             // Try to get local IP
             try {
@@ -1045,7 +1045,7 @@ function showNotification(message, type = 'info') {
         console.error('Notification message must be a string:', message);
         return;
     }
-    
+
     // Throttle identical notifications
     const notificationKey = `${type}:${message}`;
     const lastShown = notificationThrottle.get(notificationKey);
@@ -1053,7 +1053,7 @@ function showNotification(message, type = 'info') {
         return; // Skip duplicate notification
     }
     notificationThrottle.set(notificationKey, Date.now());
-    
+
     // Clean up old throttle entries
     const cutoff = Date.now() - NOTIFICATION_THROTTLE_TIME * 2;
     for (const [key, timestamp] of notificationThrottle.entries()) {
@@ -1061,23 +1061,23 @@ function showNotification(message, type = 'info') {
             notificationThrottle.delete(key);
         }
     }
-    
+
     /** @type {string[]} */
     const validTypes = ['info', 'success', 'warning', 'error'];
     if (!validTypes.includes(type)) {
         console.warn('Invalid notification type:', type);
         type = 'info';
     }
-    
+
     const toast = getCachedElement('toast');
     if (!toast) {
         console.error('Toast element not found');
         return;
     }
-    
+
     toast.textContent = message;
     toast.className = `toast ${type} show`;
-    
+
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
@@ -1093,28 +1093,28 @@ function toggleLiveView(view) {
     } else if (view === 'backend') {
         liveViewState.backend = !liveViewState.backend;
     }
-    
+
     updateLiveViewPanels();
 }
 
 function updateLiveViewPanels() {
     const frontendPanel = document.getElementById('frontendViewPanel');
     const backendPanel = document.getElementById('backendViewPanel');
-    
+
     if (liveViewState.frontend) {
         frontendPanel.classList.add('active');
         checkFrameLoad('frontend');
     } else {
         frontendPanel.classList.remove('active');
     }
-    
+
     if (liveViewState.backend) {
         backendPanel.classList.add('active');
         checkFrameLoad('backend');
     } else {
         backendPanel.classList.remove('active');
     }
-    
+
     // Update button states
     document.getElementById('frontendViewBtn').classList.toggle('active', liveViewState.frontend);
     document.getElementById('backendViewBtn').classList.toggle('active', liveViewState.backend);
@@ -1123,13 +1123,13 @@ function updateLiveViewPanels() {
 function checkFrameLoad(service) {
     const frame = document.getElementById(`${service}Frame`);
     const overlay = document.getElementById(`${service}Overlay`);
-    
+
     if (frame && overlay) {
         frame.onload = () => {
             overlay.classList.add('hidden');
             updateLiveViewStatus(service);
         };
-        
+
         frame.onerror = () => {
             overlay.classList.remove('hidden');
             overlay.innerHTML = `
@@ -1137,7 +1137,7 @@ function checkFrameLoad(service) {
                 <p>Failed to load ${service}</p>
             `;
         };
-        
+
         // Show overlay initially
         overlay.classList.remove('hidden');
     }
@@ -1146,14 +1146,14 @@ function checkFrameLoad(service) {
 function refreshLiveView(service) {
     const frame = document.getElementById(`${service}Frame`);
     const overlay = document.getElementById(`${service}Overlay`);
-    
+
     if (frame && overlay) {
         overlay.classList.remove('hidden');
         overlay.innerHTML = `
             <i class="fas fa-spinner fa-spin"></i>
             <p>Refreshing ${service}...</p>
         `;
-        
+
         // Force reload
         const src = frame.src;
         frame.src = '';
@@ -1166,7 +1166,7 @@ function refreshLiveView(service) {
 function updateLiveViewStatus(service) {
     const statusEl = document.getElementById(`${service}LiveStatus`);
     if (!statusEl) return;
-    
+
     // Check if service is running
     let isRunning = false;
     if (service === 'frontend') {
@@ -1174,7 +1174,7 @@ function updateLiveViewStatus(service) {
     } else if (service === 'backend') {
         isRunning = document.getElementById('backendStatus').textContent === 'Running';
     }
-    
+
     if (isRunning) {
         statusEl.innerHTML = '<i class="fas fa-circle"></i> Running';
         statusEl.className = 'live-status running';
@@ -1188,10 +1188,10 @@ function openFullscreen(service) {
     const modal = document.getElementById('fullscreenModal');
     const frame = document.getElementById('fullscreenFrame');
     const title = document.getElementById('fullscreenTitle');
-    
+
     let src = '';
     let serviceName = '';
-    
+
     if (service === 'frontend') {
         src = 'http://localhost:8081';
         serviceName = 'Frontend';
@@ -1199,7 +1199,7 @@ function openFullscreen(service) {
         src = 'http://localhost:8000/docs';
         serviceName = 'Backend API Docs';
     }
-    
+
     title.textContent = serviceName;
     frame.src = src;
     modal.classList.add('show');
@@ -1217,32 +1217,32 @@ function checkNewErrors() {
     const currentErrors = errors.filter(e => e.level === 'error').length;
     const currentWarnings = errors.filter(e => e.level === 'warning').length;
     const currentCritical = errors.filter(e => e.level === 'critical').length;
-    
+
     // Check for new errors
     if (currentErrors > lastErrorCount.error) {
-        const newErrors = errors.filter(e => 
-            e.level === 'error' && 
+        const newErrors = errors.filter(e =>
+            e.level === 'error' &&
             (Date.now() - new Date(e.timestamp).getTime()) < 5000
         );
         newErrors.forEach(error => showErrorNotification(error));
     }
-    
+
     if (currentWarnings > lastErrorCount.warning) {
-        const newWarnings = errors.filter(e => 
-            e.level === 'warning' && 
+        const newWarnings = errors.filter(e =>
+            e.level === 'warning' &&
             (Date.now() - new Date(e.timestamp).getTime()) < 5000
         );
         newWarnings.forEach(error => showErrorNotification(error));
     }
-    
+
     if (currentCritical > lastErrorCount.critical) {
-        const newCritical = errors.filter(e => 
-            e.level === 'critical' && 
+        const newCritical = errors.filter(e =>
+            e.level === 'critical' &&
             (Date.now() - new Date(e.timestamp).getTime()) < 5000
         );
         newCritical.forEach(error => showErrorNotification(error));
     }
-    
+
     lastErrorCount = {
         error: currentErrors,
         warning: currentWarnings,
@@ -1253,21 +1253,21 @@ function checkNewErrors() {
 function showErrorNotification(error) {
     // Don't show notifications for duplicate errors (only show once per unique error)
     const errorKey = `${error.service}:${error.level}:${error.normalizedMessage || normalizeErrorMessage(error.message)}`;
-    
+
     // Only show notification if this is a new error or if count reached threshold
     if (error.count && error.count > 1 && error.count % 10 !== 0) {
         return; // Skip if it's a duplicate and not at threshold
     }
-    
+
     const panel = document.getElementById('errorNotificationPanel');
     const list = document.getElementById('errorNotificationList');
-    
+
     // Add to notification list
     const notification = document.createElement('div');
     notification.className = `error-notification-item ${error.level}`;
     const countBadge = error.count > 1 ? `<span class="error-count-badge">${error.count}x</span>` : '';
     const shortMessage = error.normalizedMessage || error.message;
-    
+
     notification.innerHTML = `
         <div class="error-notification-item-header">
             <div class="error-header-left">
@@ -1279,17 +1279,17 @@ function showErrorNotification(error) {
         <div class="error-notification-message">${escapeHtml(shortMessage.substring(0, 150))}</div>
         ${error.count > 5 ? `<div class="error-count-info">⚠️ This error has occurred ${error.count} times</div>` : ''}
     `;
-    
+
     list.insertBefore(notification, list.firstChild);
-    
+
     // Limit to 10 notifications
     while (list.children.length > 10) {
         list.removeChild(list.lastChild);
     }
-    
+
     // Show panel
     panel.classList.add('show');
-    
+
     // Auto-hide after 15 seconds (longer for repeated errors)
     const hideDelay = error.count > 10 ? 20000 : 15000;
     setTimeout(() => {
@@ -1303,10 +1303,10 @@ function showErrorNotification(error) {
             }
         }, 300);
     }, hideDelay);
-    
+
     // Show toast notification for critical errors or high-frequency errors
     if (error.level === 'critical' || (error.count && error.count > 20)) {
-        const message = error.count > 1 
+        const message = error.count > 1
             ? `Repeated ${error.level} in ${error.service} (${error.count}x): ${shortMessage.substring(0, 40)}...`
             : `${error.level} in ${error.service}: ${shortMessage.substring(0, 50)}...`;
         showNotification(message, 'error');
@@ -1324,13 +1324,13 @@ function copyError(index) {
         showNotification('Error not found', 'error');
         return;
     }
-    
+
     const error = window.currentErrorList[index];
     const errorText = formatErrorForCopy(error);
-    
+
     navigator.clipboard.writeText(errorText).then(() => {
         showNotification('Error copied to clipboard', 'success');
-        
+
         // Visual feedback
         const errorItems = document.querySelectorAll('.error-item');
         if (errorItems[index]) {
@@ -1348,22 +1348,22 @@ function copyError(index) {
 function copyAllErrors() {
     const serviceFilter = document.getElementById('errorServiceFilter').value;
     const levelFilter = document.getElementById('errorLevelFilter').value;
-    
+
     let filtered = errors;
-    
+
     if (serviceFilter !== 'all') {
         filtered = filtered.filter(e => e.service === serviceFilter);
     }
-    
+
     if (levelFilter !== 'all') {
         filtered = filtered.filter(e => e.level === levelFilter);
     }
-    
+
     if (filtered.length === 0) {
         showNotification('No errors to copy', 'warning');
         return;
     }
-    
+
     // Sort by count (most frequent first)
     filtered.sort((a, b) => {
         if (a.count && b.count && a.count !== b.count) {
@@ -1371,14 +1371,14 @@ function copyAllErrors() {
         }
         return new Date(b.timestamp) - new Date(a.timestamp);
     });
-    
+
     const errorText = filtered.map((error, index) => {
         return formatErrorForCopy(error, index + 1);
     }).join('\n\n' + '='.repeat(80) + '\n\n');
-    
+
     const header = `STOCK_VERIFY Error Report\nGenerated: ${new Date().toLocaleString()}\nTotal Errors: ${filtered.length}\n${'='.repeat(80)}\n\n`;
     const fullText = header + errorText;
-    
+
     navigator.clipboard.writeText(fullText).then(() => {
         showNotification(`Copied ${filtered.length} error(s) to clipboard`, 'success');
     }).catch(err => {
@@ -1391,7 +1391,7 @@ function formatErrorForCopy(error, number = null) {
     const count = error.count || 1;
     const time = new Date(error.timestamp).toLocaleString();
     const fullMessage = error.message || error.normalizedMessage || '';
-    
+
     let text = '';
     if (number) {
         text += `Error #${number}\n`;
@@ -1401,29 +1401,29 @@ function formatErrorForCopy(error, number = null) {
     text += `Count: ${count} occurrence(s)\n`;
     text += `Time: ${time}\n`;
     text += `Message:\n${fullMessage}`;
-    
+
     return text;
 }
 
 function exportErrors() {
     const serviceFilter = document.getElementById('errorServiceFilter').value;
     const levelFilter = document.getElementById('errorLevelFilter').value;
-    
+
     let filtered = errors;
-    
+
     if (serviceFilter !== 'all') {
         filtered = filtered.filter(e => e.service === serviceFilter);
     }
-    
+
     if (levelFilter !== 'all') {
         filtered = filtered.filter(e => e.level === levelFilter);
     }
-    
+
     if (filtered.length === 0) {
         showNotification('No errors to export', 'warning');
         return;
     }
-    
+
     // Sort by count (most frequent first)
     filtered.sort((a, b) => {
         if (a.count && b.count && a.count !== b.count) {
@@ -1431,14 +1431,14 @@ function exportErrors() {
         }
         return new Date(b.timestamp) - new Date(a.timestamp);
     });
-    
+
     const errorText = filtered.map((error, index) => {
         return formatErrorForCopy(error, index + 1);
     }).join('\n\n' + '='.repeat(80) + '\n\n');
-    
+
     const header = `STOCK_VERIFY Error Report\nGenerated: ${new Date().toLocaleString()}\nTotal Errors: ${filtered.length}\nFilter: Service=${serviceFilter}, Level=${levelFilter}\n${'='.repeat(80)}\n\n`;
     const fullText = header + errorText;
-    
+
     const blob = new Blob([fullText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1446,7 +1446,7 @@ function exportErrors() {
     a.download = `errors-${new Date().toISOString().split('T')[0]}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     showNotification(`Exported ${filtered.length} error(s)`, 'success');
 }
 
@@ -1460,26 +1460,26 @@ function toggleTerminalView(view) {
     } else if (view === 'backend') {
         terminalViewState.backend = !terminalViewState.backend;
     }
-    
+
     updateTerminalPanels();
 }
 
 function updateTerminalPanels() {
     const frontendPanel = document.getElementById('frontendTerminalPanel');
     const backendPanel = document.getElementById('backendTerminalPanel');
-    
+
     if (frontendPanel) {
         frontendPanel.classList.toggle('active', terminalViewState.frontend);
     }
     if (backendPanel) {
         backendPanel.classList.toggle('active', terminalViewState.backend);
     }
-    
+
     // Update button states
     const frontendBtn = document.getElementById('frontendTerminalBtn');
     const backendBtn = document.getElementById('backendTerminalBtn');
     const bothBtn = document.getElementById('bothTerminalBtn');
-    
+
     if (frontendBtn) frontendBtn.classList.toggle('active', terminalViewState.frontend);
     if (backendBtn) backendBtn.classList.toggle('active', terminalViewState.backend);
     if (bothBtn) bothBtn.classList.toggle('active', terminalViewState.frontend && terminalViewState.backend);
@@ -1497,9 +1497,9 @@ async function updateTerminalViews() {
 async function updateTerminalOutput(service) {
     const terminalContent = document.getElementById(`${service}TerminalContent`);
     const terminalStatus = document.getElementById(`${service}TerminalStatus`);
-    
+
     if (!terminalContent) return;
-    
+
     try {
         let logs = [];
         try {
@@ -1519,26 +1519,26 @@ async function updateTerminalOutput(service) {
                 logs = [`[${new Date().toLocaleTimeString()}] Logs not available for ${service}`];
             }
         }
-        
+
         // Update terminal output
         if (logs.length > 0) {
             const newLogs = logs.slice(terminalOutputs[service].length);
             terminalOutputs[service] = logs;
-            
+
             // Add new lines
             newLogs.forEach(log => {
                 addTerminalLine(service, log);
             });
-            
+
             // Update status
             if (terminalStatus) {
                 const isRunning = document.getElementById(`${service}Status`)?.textContent === 'Running';
-                terminalStatus.innerHTML = isRunning 
+                terminalStatus.innerHTML = isRunning
                     ? '<i class="fas fa-circle"></i> Running'
                     : '<i class="fas fa-circle"></i> Stopped';
                 terminalStatus.className = `terminal-status ${isRunning ? 'running' : 'stopped'}`;
             }
-            
+
             // Auto-scroll
             if (terminalAutoScroll[service]) {
                 terminalContent.scrollTop = terminalContent.scrollHeight;
@@ -1552,10 +1552,10 @@ async function updateTerminalOutput(service) {
 function addTerminalLine(service, log, levelOverride = null) {
     const terminalContent = document.getElementById(`${service}TerminalContent`);
     if (!terminalContent) return;
-    
+
     const level = levelOverride || detectLogLevel(log);
     const prompt = service === 'frontend' ? 'frontend@expo:~$' : 'backend@fastapi:~$';
-    
+
     // Remove timestamp and service tags for cleaner display (unless it's a command)
     let cleanLog = log;
     if (!log.startsWith('$ ')) {
@@ -1565,10 +1565,10 @@ function addTerminalLine(service, log, levelOverride = null) {
             .replace(/ERROR:|WARNING:|CRITICAL:/gi, '')
             .trim();
     }
-    
+
     const line = document.createElement('div');
     line.className = `terminal-line ${level}`;
-    
+
     // Color code based on level
     let textColor = '';
     if (level === 'error' || level === 'critical') {
@@ -1580,19 +1580,19 @@ function addTerminalLine(service, log, levelOverride = null) {
     } else {
         textColor = '#c9d1d9';
     }
-    
+
     line.innerHTML = `
         <span class="terminal-prompt">${prompt}</span>
         <span class="terminal-text" style="color: ${textColor}">${escapeHtml(cleanLog)}</span>
     `;
-    
+
     terminalContent.appendChild(line);
-    
+
     // Limit to last 500 lines
     while (terminalContent.children.length > 500) {
         terminalContent.removeChild(terminalContent.firstChild);
     }
-    
+
     // Auto-scroll if enabled
     if (terminalAutoScroll[service]) {
         terminalContent.scrollTop = terminalContent.scrollHeight;
@@ -1611,16 +1611,16 @@ function toggleTerminalAutoScroll(service) {
 function copyTerminalOutput(service) {
     const terminalContent = document.getElementById(`${service}TerminalContent`);
     if (!terminalContent) return;
-    
+
     const lines = Array.from(terminalContent.querySelectorAll('.terminal-line'))
         .map(line => line.textContent)
         .join('\n');
-    
+
     if (!lines.trim()) {
         showNotification('No output to copy', 'warning');
         return;
     }
-    
+
     navigator.clipboard.writeText(lines).then(() => {
         showNotification(`${service} terminal output copied`, 'success');
     }).catch(err => {
@@ -1668,10 +1668,10 @@ function clearTerminals() {
     if (confirm('Clear all terminal outputs?')) {
         terminalOutputs.frontend = [];
         terminalOutputs.backend = [];
-        
+
         const frontendContent = document.getElementById('frontendTerminalContent');
         const backendContent = document.getElementById('backendTerminalContent');
-        
+
         if (frontendContent) {
             frontendContent.innerHTML = `
                 <div class="terminal-line">
@@ -1680,7 +1680,7 @@ function clearTerminals() {
                 </div>
             `;
         }
-        
+
         if (backendContent) {
             backendContent.innerHTML = `
                 <div class="terminal-line">
@@ -1689,7 +1689,7 @@ function clearTerminals() {
                 </div>
             `;
         }
-        
+
         showNotification('Terminals cleared', 'success');
     }
 }
@@ -1704,19 +1704,19 @@ function handleTerminalKeyPress(event, service) {
 async function executeTerminalCommand(service) {
     const input = document.getElementById(`${service}TerminalInput`);
     const command = input.value.trim();
-    
+
     if (!command) {
         return;
     }
-    
+
     // Show command in terminal
     const prompt = service === 'frontend' ? 'frontend@expo:~$' : 'backend@fastapi:~$';
     addTerminalLine(service, `$ ${command}`, 'info');
-    
+
     // Clear input
     input.value = '';
     input.disabled = true;
-    
+
     try {
         const response = await fetch(`${ADMIN_API}/execute-command`, {
             method: 'POST',
@@ -1728,9 +1728,9 @@ async function executeTerminalCommand(service) {
                 command: command
             })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             // Show output
             if (data.output) {
@@ -1741,7 +1741,7 @@ async function executeTerminalCommand(service) {
                     }
                 });
             }
-            
+
             if (data.exit_code !== 0) {
                 addTerminalLine(service, `Command exited with code ${data.exit_code}`, 'warning');
             }
@@ -1792,14 +1792,14 @@ function verifyButtonFunctions() {
         'closeErrorNotifications': typeof closeErrorNotifications !== 'undefined',
         'refreshLiveActivity': typeof refreshLiveActivity !== 'undefined'
     };
-    
+
     const missing = Object.entries(functions).filter(([name, exists]) => !exists);
-    
+
     if (missing.length > 0) {
         console.warn('Missing functions:', missing.map(([name]) => name));
         return false;
     }
-    
+
     return true;
 }
 
@@ -1909,7 +1909,7 @@ async function loadLiveVerifications() {
                             </div>
                             <div class="activity-item-details">
                                 <span><i class="fas fa-user"></i> ${escapeHtml(verification.verified_by)}</span>
-                                ${verification.floor || verification.rack 
+                                ${verification.floor || verification.rack
                                     ? `<span><i class="fas fa-location-arrow"></i> ${[verification.floor, verification.rack].filter(Boolean).join(' / ')}</span>`
                                     : ''}
                                 <span class="activity-time">${formatTimeAgo(verification.verified_at)}</span>
@@ -1937,17 +1937,17 @@ async function loadLiveVerifications() {
  */
 function formatTimeAgo(timestamp) {
     if (!timestamp) return 'Unknown';
-    
+
     /** @type {Date} */
     const date = new Date(timestamp);
     /** @type {Date} */
     const now = new Date();
-    
+
     // Validate date
     if (isNaN(date.getTime())) {
         return 'Invalid date';
     }
-    
+
     /** @type {number} */
     const diffMs = now.getTime() - date.getTime();
     /** @type {number} */
@@ -1963,4 +1963,3 @@ function formatTimeAgo(timestamp) {
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleString();
 }
-

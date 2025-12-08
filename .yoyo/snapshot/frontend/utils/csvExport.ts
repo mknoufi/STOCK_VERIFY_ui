@@ -118,4 +118,3 @@ export const exportVariancesToCSV = (variances: any[]): string => {
 
   return convertToCSV(csvData, headers);
 };
-

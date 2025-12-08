@@ -32,4 +32,3 @@ export const ITEM_CONDITION_OPTIONS: { value: string; label: string }[] = [
   { value: 'packaging_damaged', label: 'Packaging Damaged' },
   { value: 'slow_moving', label: 'Slow Moving' },
 ];
-

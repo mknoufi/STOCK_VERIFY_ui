@@ -6,65 +6,81 @@ Note: _This is purely the output of the chat conversation and does not contain a
 
 ✅ STOCK_VERIFY 2.1 – UPGRADE TO-DO LIST
 📂 1. Repository Preparation
-#	Task	Description	Responsible
-1.1	Create archive folder	/docs/archive/old_docs/ to store previous rule and memory docs.	DevOps
-1.2	Move old docs	Move all STOCK_VERIFY Codebase Memory.md, Cursor Rules.md, Prompt Framework.md etc. to archive.	DevOps
-1.3	Pull latest main branch	Ensure you’re on the most up-to-date baseline before adding v2.1 files.	All
+
+# Task Description Responsible
+
+1.1 Create archive folder /docs/archive/old_docs/ to store previous rule and memory docs. DevOps
+1.2 Move old docs Move all STOCK_VERIFY Codebase Memory.md, Cursor Rules.md, Prompt Framework.md etc. to archive. DevOps
+1.3 Pull latest main branch Ensure you’re on the most up-to-date baseline before adding v2.1 files. All
 🧾 2. Documentation Update
-#	Task	Description	Output
-2.1	Add new governance files	Copy these into /docs/:
+
+# Task Description Output
+
+2.1 Add new governance files Copy these into /docs/:
 • STOCK_VERIFY_2.1_cursor_rules.md
 • codebase_memory_v2.1.md
 • verified_coding_policy.md
-• upgrade_prompt_framework.md	Unified documentation suite
-2.2	Link in README	Update root README.md → add links to new /docs files.	Maintained documentation index
-2.3	Add CHANGELOG.md	Create /docs/CHANGELOG.md if missing. Start with “v2.1 Governance Framework Established.”	Version traceability
+• upgrade_prompt_framework.md Unified documentation suite
+2.2 Link in README Update root README.md → add links to new /docs files. Maintained documentation index
+2.3 Add CHANGELOG.md Create /docs/CHANGELOG.md if missing. Start with “v2.1 Governance Framework Established.” Version traceability
 ⚙️ 3. Automation & Cleanup
-#	Task	Description	Script / Tool
-3.1	Create cleanup script	/scripts/cleanup_old_docs.py to archive old docs automatically.	Python
-3.2	Run pre-commit setup	Add pre-commit config enforcing lint/type/test rules.	pre-commit install
-3.3	Update GitHub Actions	Extend CI workflow to:
+
+# Task Description Script / Tool
+
+3.1 Create cleanup script /scripts/cleanup_old_docs.py to archive old docs automatically. Python
+3.2 Run pre-commit setup Add pre-commit config enforcing lint/type/test rules. pre-commit install
+3.3 Update GitHub Actions Extend CI workflow to:
 • run pytest
 • run npm run lint && npm run test
-• verify coverage ≥ 90 %.	.github/workflows/ci.yml
-3.4	Enable auto-diagnostics	Ensure /backend/services/auto_diagnosis.py runs nightly.	CRON / systemd
+• verify coverage ≥ 90 %. .github/workflows/ci.yml
+3.4 Enable auto-diagnostics Ensure /backend/services/auto_diagnosis.py runs nightly. CRON / systemd
 🧠 4. Dependency & Environment Verification
-#	Task	Description	Check Command
-4.1	Freeze dependencies	Lock verified versions in requirements.txt and package.json.	pip freeze / npm ls
-4.2	Run compatibility check	Confirm FastAPI, Motor, PyODBC, React Native, Expo versions match memory.	Manual check
-4.3	Validate environment vars	Ensure .env has Mongo, SQL, JWT keys defined.	DevOps
+
+# Task Description Check Command
+
+4.1 Freeze dependencies Lock verified versions in requirements.txt and package.json. pip freeze / npm ls
+4.2 Run compatibility check Confirm FastAPI, Motor, PyODBC, React Native, Expo versions match memory. Manual check
+4.3 Validate environment vars Ensure .env has Mongo, SQL, JWT keys defined. DevOps
 🧩 5. Testing & QA
-#	Task	Description	Command
-5.1	Backend Unit Tests	pytest --cov=backend — must reach ≥ 90 %.	✅
-5.2	Frontend Unit Tests	npm run test and npm run test:coverage.	✅
-5.3	Integration Flow Test	Verify SQL → Mongo → App using mock data.	docker-compose
-5.4	Security Verification Script	Run /backend/tests/verify_security_api.py.	✅
-5.5	Load Test (LAN)	Simulate 20 users scanning simultaneously.	Locust/k6
-5.6	Manual QA	Test drag-drop layout, user preferences, sync dashboard.	QA Team
+
+# Task Description Command
+
+5.1 Backend Unit Tests pytest --cov=backend — must reach ≥ 90 %. ✅
+5.2 Frontend Unit Tests npm run test and npm run test:coverage. ✅
+5.3 Integration Flow Test Verify SQL → Mongo → App using mock data. docker-compose
+5.4 Security Verification Script Run /backend/tests/verify_security_api.py. ✅
+5.5 Load Test (LAN) Simulate 20 users scanning simultaneously. Locust/k6
+5.6 Manual QA Test drag-drop layout, user preferences, sync dashboard. QA Team
 🧰 6. Frontend & Feature Upgrades
-#	Feature	Action	Status
-6.1	User Settings	Add per-user field order, visibility, and theme persistence in MongoDB.	Planned
-6.2	Drag & Resize UI	Implement Reanimated + GestureHandler for layout customization.	Planned
-6.3	Theme System 2.0	Use Tailwind variants; light/dark/premium modes.	Planned
-6.4	Field Mapping UI	Build visual SQL→Mongo field mapping tool in Admin Panel.	Planned
-6.5	Reporting Dashboard	Add variance %, discrepancy trend charts (Chart.js).	Planned
+
+# Feature Action Status
+
+6.1 User Settings Add per-user field order, visibility, and theme persistence in MongoDB. Planned
+6.2 Drag & Resize UI Implement Reanimated + GestureHandler for layout customization. Planned
+6.3 Theme System 2.0 Use Tailwind variants; light/dark/premium modes. Planned
+6.4 Field Mapping UI Build visual SQL→Mongo field mapping tool in Admin Panel. Planned
+6.5 Reporting Dashboard Add variance %, discrepancy trend charts (Chart.js). Planned
 🔒 7. Security & Compliance
-#	Task	Description	Owner
-7.1	JWT refresh verification	Ensure short-lived tokens rotate properly.	Backend Dev
-7.2	Audit hash chain	Add SHA-256 linkage in activity_logs.	Backend Dev
-7.3	Failed login alerting	Send admin notification on repeated login failures.	Backend Dev
-7.4	Review roles & permissions	Confirm Admin/Supervisor/Staff separation logic.	QA
+
+# Task Description Owner
+
+7.1 JWT refresh verification Ensure short-lived tokens rotate properly. Backend Dev
+7.2 Audit hash chain Add SHA-256 linkage in activity_logs. Backend Dev
+7.3 Failed login alerting Send admin notification on repeated login failures. Backend Dev
+7.4 Review roles & permissions Confirm Admin/Supervisor/Staff separation logic. QA
 🧾 8. Documentation Maintenance
-#	Task	Description	Responsible
-8.1	Keep codebase memory updated	Update codebase_memory_v2.1.md after any model or stack change.	Lead Dev
-8.2	Review verified coding policy	Ensure test coverage and diagnostics compliance every quarter.	QA Lead
-8.3	Archive superseded docs	Future outdated docs → move to /docs/archive/old_docs/.	DevOps
+
+# Task Description Responsible
+
+8.1 Keep codebase memory updated Update codebase_memory_v2.1.md after any model or stack change. Lead Dev
+8.2 Review verified coding policy Ensure test coverage and diagnostics compliance every quarter. QA Lead
+8.3 Archive superseded docs Future outdated docs → move to /docs/archive/old_docs/. DevOps
 🧩 9. Release Management
-Step	Action
-9.1	Tag version v2.1 once governance framework integrated.
-9.2	Merge dev → main only after all tests green.
-9.3	Backup MongoDB + configs.
-9.4	Document deployment in /docs/DEPLOYMENT_GUIDE.md.
+Step Action
+9.1 Tag version v2.1 once governance framework integrated.
+9.2 Merge dev → main only after all tests green.
+9.3 Backup MongoDB + configs.
+9.4 Document deployment in /docs/DEPLOYMENT_GUIDE.md.
 🚀 10. Future Enhancements (v2.2+ Roadmap)
 ✅ Role-based UI customization (already planned)
 🧠 Smart discrepancy prediction (AI pattern analysis)
@@ -72,21 +88,27 @@ Step	Action
 🔔 Push notifications for anomalies
 📊 Custom report builder (drag-drop metrics)
 📋 Quick Command Summary
+
 # Archive old docs
+
 python scripts/cleanup_old_docs.py
 
 # Run all tests
+
 pytest --cov=backend
 npm run test
 
 # Lint & Type Check
+
 flake8 backend
 npm run lint && npm run type-check
 
 # Build Frontend
+
 npm run web
 
 # Verify Health
+
 curl http://localhost:8001/health/detailed
 ✅ Once all above steps complete, you will have:
 A fully clean, governed STOCK_VERIFY_2.1 repository
@@ -94,433 +116,433 @@ Unified verified documentation
 Locked dependencies
 CI/CD + diagnostics automation
 
-*Listed directory [STOCK_VERIFY_2-db-maped](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped) *
+_Listed directory [STOCK_VERIFY_2-db-maped](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Listed directory [docs](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs) *
+_Listed directory [docs](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs) _
 
-*Listed directory [archive](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/archive) *
+_Listed directory [archive](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/archive) _
 
-*Searched filesystem*
+_Searched filesystem_
 
-*Searched filesystem*
+_Searched filesystem_
 
-*Searched filesystem*
+_Searched filesystem_
 
-*Listed directory [old_docs](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/archive/old_docs) *
+_Listed directory [old_docs](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/archive/old_docs) _
 
-*User accepted the command `git status`*
+_User accepted the command `git status`_
 
-*User accepted the command `git pull origin main`*
+_User accepted the command `git pull origin main`_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [STOCK_VERIFY_2.1_cursor_rules.md](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/STOCK_VERIFY_2.1_cursor_rules.md) *
+_Viewed [STOCK_VERIFY_2.1_cursor_rules.md](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/STOCK_VERIFY_2.1_cursor_rules.md) _
 
-*Viewed [codebase_memory_v2.1.md](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/codebase_memory_v2.1.md) *
+_Viewed [codebase_memory_v2.1.md](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/docs/codebase_memory_v2.1.md) _
 
-*Viewed [README.md](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/README.md) *
+_Viewed [README.md](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/README.md) _
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 
 This is a system-generated message that is sent due to the user's review policy. Proceed with the decision that you think is the most optimal here.
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `python scripts/cleanup_old_docs.py`*
+_User accepted the command `python scripts/cleanup_old_docs.py`_
 
-*Viewed [ci.yml](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/.github/workflows/ci.yml) *
+_Viewed [ci.yml](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/.github/workflows/ci.yml) _
 
-*Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) *
+_Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Viewed [requirements.txt](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/requirements.txt) *
+_Viewed [requirements.txt](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/requirements.txt) _
 
-*Viewed [package.json](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/package.json) *
+_Viewed [package.json](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/package.json) _
 
-*User accepted the command `pip freeze`*
+_User accepted the command `pip freeze`_
 
-*Listed directory [backend](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend) *
+_Listed directory [backend](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `pip show pyodbc pydantic`*
+_User accepted the command `pip show pyodbc pydantic`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `python backend/scripts/validate_env.py`*
+_User accepted the command `python backend/scripts/validate_env.py`_
 
-*User accepted the command `pip show pyodbc pydantic`*
+_User accepted the command `pip show pyodbc pydantic`_
 
-*Checked command status*
+_Checked command status_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [config.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/config.py) *
+_Viewed [config.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/config.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest tests/ -v --tb=short --cov=backend --cov-report=term --cov-fail-under=90`*
+_User accepted the command `pytest tests/ -v --tb=short --cov=backend --cov-report=term --cov-fail-under=90`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `python backend/tests/verify_security_api.py`*
+_User accepted the command `python backend/tests/verify_security_api.py`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `npm run test`*
+_User accepted the command `npm run test`_
 
-*Viewed [server.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/server.py) *
+_Viewed [server.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/server.py) _
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [server.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/server.py) *
+_Viewed [server.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/server.py) _
 
-*Viewed [security_api.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/api/security_api.py) *
+_Viewed [security_api.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/api/security_api.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `python backend/tests/verify_security_api.py`*
+_User accepted the command `python backend/tests/verify_security_api.py`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `python backend/tests/verify_integration_flow.py`*
+_User accepted the command `python backend/tests/verify_integration_flow.py`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `python backend/tests/verify_integration_flow.py`*
+_User accepted the command `python backend/tests/verify_integration_flow.py`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `python backend/tests/verify_integration_flow.py`*
+_User accepted the command `python backend/tests/verify_integration_flow.py`_
 
-*Listed directory [app](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app) *
+_Listed directory [app](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app) _
 
-*Checked command status*
+_Checked command status_
 
-*Listed directory [staff](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff) *
+_Listed directory [staff](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Listed directory [scan](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan) *
+_Listed directory [scan](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Viewed [tsconfig.json](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/tsconfig.json) *
+_Viewed [tsconfig.json](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/tsconfig.json) _
 
-*User accepted the command `ls -F frontend/services/api.ts`*
+_User accepted the command `ls -F frontend/services/api.ts`_
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `npx tsc --noEmit`*
+_User accepted the command `npx tsc --noEmit`_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [scan.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/types/scan.ts) *
+_Viewed [scan.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/types/scan.ts) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `npx tsc --noEmit`*
+_User accepted the command `npx tsc --noEmit`_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [test_error.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/test_error.ts) *
+_Viewed [test_error.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/test_error.ts) _
 
-*Viewed [login.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/login.tsx) *
+_Viewed [login.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/login.tsx) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `rm frontend/app/staff/test_error.ts`*
+_User accepted the command `rm frontend/app/staff/test_error.ts`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest --cov=. --cov-report=term-missing`*
+_User accepted the command `pytest --cov=. --cov-report=term-missing`_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) *
+_Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest tests/test_auto_diagnosis.py`*
+_User accepted the command `pytest tests/test_auto_diagnosis.py`_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [result_types.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/utils/result_types.py) *
+_Viewed [result_types.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/utils/result_types.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest tests/test_auto_diagnosis.py`*
+_User accepted the command `pytest tests/test_auto_diagnosis.py`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest tests/test_auto_diagnosis.py`*
+_User accepted the command `pytest tests/test_auto_diagnosis.py`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `pytest --cov=services/auto_diagnosis tests/test_auto_diagnosis.py --cov-report=term-missing`*
+_User accepted the command `pytest --cov=services/auto_diagnosis tests/test_auto_diagnosis.py --cov-report=term-missing`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `pytest --cov=services.auto_diagnosis tests/test_auto_diagnosis.py --cov-report=term-missing`*
+_User accepted the command `pytest --cov=services.auto_diagnosis tests/test_auto_diagnosis.py --cov-report=term-missing`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `pytest --cov=backend.services.auto_diagnosis backend/tests/test_auto_diagnosis.py --cov-report=term-missing`*
+_User accepted the command `pytest --cov=backend.services.auto_diagnosis backend/tests/test_auto_diagnosis.py --cov-report=term-missing`_
 
-*Checked command status*
+_Checked command status_
 
-*Listed directory [services](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services) *
+_Listed directory [services](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services) _
 
-*Listed directory [core](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/core) *
+_Listed directory [core](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/core) _
 
-*Listed directory [backend](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend) *
+_Listed directory [backend](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend) _
 
-*Viewed [error_handler_with_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/utils/error_handler_with_diagnosis.py) *
+_Viewed [error_handler_with_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/utils/error_handler_with_diagnosis.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest tests/test_error_handler_with_diagnosis.py`*
+_User accepted the command `pytest tests/test_error_handler_with_diagnosis.py`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `pytest --cov=backend.utils.error_handler_with_diagnosis backend/tests/test_error_handler_with_diagnosis.py --cov-report=term-missing`*
+_User accepted the command `pytest --cov=backend.utils.error_handler_with_diagnosis backend/tests/test_error_handler_with_diagnosis.py --cov-report=term-missing`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest tests/test_error_handler_with_diagnosis.py`*
+_User accepted the command `pytest tests/test_error_handler_with_diagnosis.py`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `pytest --cov=backend.utils.error_handler_with_diagnosis backend/tests/test_error_handler_with_diagnosis.py --cov-report=term-missing`*
+_User accepted the command `pytest --cov=backend.utils.error_handler_with_diagnosis backend/tests/test_error_handler_with_diagnosis.py --cov-report=term-missing`_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) *
+_Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) _
 
-*Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) *
+_Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) _
 
-*Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) *
+_Viewed [auto_diagnosis.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/services/auto_diagnosis.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `pytest tests/test_auto_diagnosis.py tests/test_error_handler_with_diagnosis.py`*
+_User accepted the command `pytest tests/test_auto_diagnosis.py tests/test_error_handler_with_diagnosis.py`_
 
-*Checked command status*
+_Checked command status_
 
-*User accepted the command `npm run preflight`*
+_User accepted the command `npm run preflight`_
 
-*Checked command status*
+_Checked command status_
 
-*Viewed [package.json](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/package.json) *
+_Viewed [package.json](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/package.json) _
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 
 PROCEED
 
-*Listed directory [app](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app) *
+_Listed directory [app](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app) _
 
-*Listed directory [staff](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff) *
+_Listed directory [staff](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Listed directory [components](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components) *
+_Listed directory [components](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components) _
 
-*Listed directory [scan](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan) *
+_Listed directory [scan](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan) _
 
-*Viewed [BarcodeScanner.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan/BarcodeScanner.tsx) *
+_Viewed [BarcodeScanner.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan/BarcodeScanner.tsx) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 
 This is a system-generated message that is sent due to the user's review policy. Proceed with the decision that you think is the most optimal here.
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `npm run typecheck`*
+_User accepted the command `npm run typecheck`_
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) *
+_Viewed [scan.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/app/staff/scan.tsx) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `npm run typecheck`*
+_User accepted the command `npm run typecheck`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `npm run typecheck`*
+_User accepted the command `npm run typecheck`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 
 PROCEED
 
-*Viewed [task.md](file:///Users/noufi1/.gemini/antigravity/brain/cf9c688a-dc82-4845-9f98-223a5e2cc4cf/task.md) *
+_Viewed [task.md](file:///Users/noufi1/.gemini/antigravity/brain/cf9c688a-dc82-4845-9f98-223a5e2cc4cf/task.md) _
 
-*Viewed [LocationInput.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan/LocationInput.tsx) *
+_Viewed [LocationInput.tsx](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/components/scan/LocationInput.tsx) _
 
-*Viewed [scan.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/types/scan.ts) *
+_Viewed [scan.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/types/scan.ts) _
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Grep searched codebase*
+_Grep searched codebase_
 
-*Viewed [useItemState.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/hooks/scan/useItemState.ts) *
+_Viewed [useItemState.ts](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/frontend/hooks/scan/useItemState.ts) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 
 This is a system-generated message that is sent due to the user's review policy. Proceed with the decision that you think is the most optimal here.
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*User accepted the command `npm run typecheck`*
+_User accepted the command `npm run typecheck`_
 
-*Checked command status*
+_Checked command status_
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 
 REMAING
 
-*Viewed [task.md](file:///Users/noufi1/.gemini/antigravity/brain/cf9c688a-dc82-4845-9f98-223a5e2cc4cf/task.md) *
+_Viewed [task.md](file:///Users/noufi1/.gemini/antigravity/brain/cf9c688a-dc82-4845-9f98-223a5e2cc4cf/task.md) _
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 
 This is a system-generated message that is sent due to the user's review policy. Proceed with the decision that you think is the most optimal here.
 
-*Viewed [server.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/server.py) *
+_Viewed [server.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/server.py) _
 
-*Viewed [health.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/api/health.py) *
+_Viewed [health.py](file:///Users/noufi1/cursor%20new/STOCK_VERIFY_2-db-maped/backend/api/health.py) _
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Searched filesystem*
+_Searched filesystem_
 
-*Edited relevant file*
+_Edited relevant file_
 
-*Edited relevant file*
+_Edited relevant file_
 
 ### User Input
 

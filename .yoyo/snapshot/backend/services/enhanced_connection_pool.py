@@ -97,20 +97,20 @@ class EnhancedSQLServerConnectionPool:
     def _create_connection_with_retry(self) -> pyodbc.Connection:
         """Create a new connection with retry logic"""
         last_error = None
-        
+
         for attempt in range(1, self.retry_attempts + 1):
             try:
                 start_time = time.time()
                 conn_str = self._build_connection_string()
                 conn = pyodbc.connect(conn_str, timeout=self.timeout)
-                
+
                 connection_time = time.time() - start_time
                 self._metrics.connection_times.append(connection_time)
-                
+
                 # Keep only last 100 connection times for average calculation
                 if len(self._metrics.connection_times) > 100:
                     self._metrics.connection_times = self._metrics.connection_times[-100:]
-                
+
                 # Update average
                 self._metrics.average_connection_time = sum(self._metrics.connection_times) / len(self._metrics.connection_times)
 
@@ -139,7 +139,7 @@ class EnhancedSQLServerConnectionPool:
 
                 logger.debug(f"Created optimized connection (attempt {attempt}). Pool size: {self._created}")
                 return conn
-                
+
             except Exception as e:
                 last_error = str(e)
                 with self._lock:
@@ -147,7 +147,7 @@ class EnhancedSQLServerConnectionPool:
                     self._metrics.total_retries += 1
                     self._metrics.last_error = last_error
                     self._metrics.last_error_time = datetime.now()
-                
+
                 if attempt < self.retry_attempts:
                     wait_time = self.retry_delay * (2 ** (attempt - 1))  # Exponential backoff
                     logger.warning(f"Connection attempt {attempt} failed: {last_error}. Retrying in {wait_time:.2f}s...")
@@ -156,7 +156,7 @@ class EnhancedSQLServerConnectionPool:
                     logger.error(f"Failed to create connection after {self.retry_attempts} attempts: {last_error}")
                     self._update_health_status()
                     raise ConnectionError(f"Failed to create connection after {self.retry_attempts} attempts: {last_error}") from e
-        
+
         raise ConnectionError(f"Failed to create connection: {last_error}")
 
     def _create_connection(self) -> pyodbc.Connection:
@@ -167,7 +167,7 @@ class EnhancedSQLServerConnectionPool:
         """Pre-create initial connections"""
         initial_size = min(self.pool_size, 3)
         successful = 0
-        
+
         for i in range(initial_size):
             try:
                 conn = self._create_connection()
@@ -177,7 +177,7 @@ class EnhancedSQLServerConnectionPool:
                     successful += 1
             except Exception as e:
                 logger.warning(f"Failed to pre-create connection {i+1}/{initial_size}: {str(e)}")
-        
+
         if successful > 0:
             logger.info(f"Initialized connection pool with {successful}/{initial_size} connections")
         else:
@@ -195,7 +195,7 @@ class EnhancedSQLServerConnectionPool:
         """Update health status based on recent errors"""
         if self._metrics.last_error_time:
             time_since_error = (datetime.now() - self._metrics.last_error_time).total_seconds()
-            
+
             # If errors occurred recently, mark as degraded/unhealthy
             if time_since_error < 60:  # Last minute
                 error_rate = self._metrics.total_errors / max(self._metrics.total_created, 1)
@@ -371,7 +371,7 @@ class EnhancedSQLServerConnectionPool:
             except Exception as e:
                 health_status["connection_test"] = f"failed: {str(e)}"
                 health_status["status"] = "unhealthy"
-            
+
             self._last_health_check = datetime.now()
 
         return health_status
@@ -408,7 +408,7 @@ class EnhancedSQLServerConnectionPool:
         """Close all connections in the pool"""
         self._shutdown = True
         closed_count = 0
-        
+
         while not self._pool.empty():
             try:
                 conn, _ = self._pool.get_nowait()
@@ -423,4 +423,3 @@ class EnhancedSQLServerConnectionPool:
             self._metrics.total_closed += closed_count
 
         logger.info(f"Closed {closed_count} connections from pool")
-

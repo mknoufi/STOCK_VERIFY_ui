@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 
 type Props = {
   children: React.ReactNode;
@@ -10,27 +10,49 @@ type Props = {
   onRightAction?: () => void;
 };
 
-const Action = ({ label, color, onPress }: { label: string; color: string; onPress?: () => void }) => (
-  <TouchableOpacity style={[styles.action, { backgroundColor: color }]} onPress={onPress}>
+const Action = ({
+  label,
+  color,
+  onPress,
+}: {
+  label: string;
+  color: string;
+  onPress?: () => void;
+}) => (
+  <TouchableOpacity
+    style={[styles.action, { backgroundColor: color }]}
+    onPress={onPress}
+  >
     <Text style={styles.actionText}>{label}</Text>
   </TouchableOpacity>
 );
 
-export const SwipeableRow: React.FC<Props> = ({ children, leftLabel = 'Left', rightLabel = 'Right', onLeftAction, onRightAction }) => {
+export const SwipeableRow: React.FC<Props> = ({
+  children,
+  leftLabel = "Left",
+  rightLabel = "Right",
+  onLeftAction,
+  onRightAction,
+}) => {
   const renderLeft = () => (
-    <View style={[styles.actionsContainer, { justifyContent: 'flex-start' }]}>
+    <View style={[styles.actionsContainer, { justifyContent: "flex-start" }]}>
       <Action label={leftLabel} color="#4CAF50" onPress={onLeftAction} />
     </View>
   );
 
   const renderRight = () => (
-    <View style={[styles.actionsContainer, { justifyContent: 'flex-end' }]}>
+    <View style={[styles.actionsContainer, { justifyContent: "flex-end" }]}>
       <Action label={rightLabel} color="#FF5252" onPress={onRightAction} />
     </View>
   );
 
   return (
-    <Swipeable renderLeftActions={renderLeft} renderRightActions={renderRight} overshootLeft={false} overshootRight={false}>
+    <Swipeable
+      renderLeftActions={renderLeft}
+      renderRightActions={renderRight}
+      overshootLeft={false}
+      overshootRight={false}
+    >
       {children}
     </Swipeable>
   );
@@ -39,8 +61,8 @@ export const SwipeableRow: React.FC<Props> = ({ children, leftLabel = 'Left', ri
 const styles = StyleSheet.create({
   actionsContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   action: {
     paddingHorizontal: 16,
@@ -49,8 +71,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   actionText: {
-    color: '#fff',
-    fontWeight: '700',
+    color: "#fff",
+    fontWeight: "700",
   },
 });
 

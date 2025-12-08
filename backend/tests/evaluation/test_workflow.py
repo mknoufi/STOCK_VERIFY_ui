@@ -19,8 +19,8 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
-from .metrics_collector import MetricsCollector
 from .evaluators import WorkflowEvaluator
+from .metrics_collector import MetricsCollector
 
 
 @pytest.fixture

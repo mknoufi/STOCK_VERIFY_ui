@@ -3,25 +3,25 @@
  * Includes AdminSidebar (web/tablet) or Drawer (mobile), AppHeader, and Screen
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
   Dimensions,
   ViewStyle,
   TouchableOpacity,
-} from 'react-native';
-import { useSegments } from 'expo-router';
-import { Screen } from './Screen';
-import { AppHeader } from '../navigation/AppHeader';
-import { AdminSidebar } from '../navigation/AdminSidebar';
-import { layout, breakpoints } from '../../styles/globalStyles';
+} from "react-native";
+import { useSegments } from "expo-router";
+import { Screen } from "./Screen";
+import { AppHeader } from "../navigation/AppHeader";
+import { AdminSidebar } from "../navigation/AdminSidebar";
+import { layout, breakpoints } from "../../styles/globalStyles";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
   title?: string;
   headerActions?: {
-    icon: keyof typeof import('@expo/vector-icons').Ionicons.glyphMap;
+    icon: keyof typeof import("@expo/vector-icons").Ionicons.glyphMap;
     label: string;
     onPress: () => void;
     badge?: number;
@@ -39,7 +39,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const rawSegments = useSegments();
   const segments = Array.isArray(rawSegments) ? rawSegments : [];
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
   const isMobile = width < breakpoints.tablet;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -47,15 +47,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   // Auto-detect title from route if not provided
   const screenTitle =
     title ||
-    ((segments[1] as string | undefined) === 'control-panel'
-      ? 'Control Panel'
-      : (segments[1] as string | undefined) === 'metrics'
-        ? 'Metrics'
-        : (segments[1] as string | undefined) === 'permissions'
-          ? 'Permissions'
-          : (segments[1] as string | undefined) === 'security'
-            ? 'Security'
-            : 'Admin');
+    ((segments[1] as string | undefined) === "control-panel"
+      ? "Control Panel"
+      : (segments[1] as string | undefined) === "metrics"
+        ? "Metrics"
+        : (segments[1] as string | undefined) === "permissions"
+          ? "Permissions"
+          : (segments[1] as string | undefined) === "security"
+            ? "Security"
+            : "Admin");
 
   // On mobile, sidebar becomes a drawer
   if (isMobile) {
@@ -66,8 +66,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           showBack={false}
           actions={[
             {
-              icon: 'menu',
-              label: 'Open menu',
+              icon: "menu",
+              label: "Open menu",
               onPress: () => setDrawerOpen(true),
             },
             ...headerActions,
@@ -101,7 +101,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         style={[
           styles.content,
           {
-            marginLeft: sidebarCollapsed ? layout.sidebarCollapsedWidth : layout.sidebarWidth,
+            marginLeft: sidebarCollapsed
+              ? layout.sidebarCollapsedWidth
+              : layout.sidebarWidth,
           },
         ]}
       >
@@ -110,8 +112,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           showBack={false}
           actions={[
             {
-              icon: sidebarCollapsed ? 'chevron-forward' : 'chevron-back',
-              label: sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar',
+              icon: sidebarCollapsed ? "chevron-forward" : "chevron-back",
+              label: sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar",
               onPress: () => setSidebarCollapsed(!sidebarCollapsed),
             },
             ...headerActions,
@@ -128,7 +130,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   content: {
     flex: 1,
@@ -137,7 +139,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   drawerOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -146,10 +148,10 @@ const styles = StyleSheet.create({
   },
   drawerBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   drawer: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,

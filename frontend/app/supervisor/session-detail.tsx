@@ -29,7 +29,9 @@ export default function SessionDetail() {
   const [toVerifyLines, setToVerifyLines] = React.useState<any[]>([]);
   const [verifiedLines, setVerifiedLines] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [activeTab, setActiveTab] = React.useState<"toVerify" | "verified">("toVerify");
+  const [activeTab, setActiveTab] = React.useState<"toVerify" | "verified">(
+    "toVerify",
+  );
   const [verifying, setVerifying] = React.useState<string | null>(null);
 
   const loadData = React.useCallback(async () => {
@@ -115,7 +117,10 @@ export default function SessionDetail() {
       <View style={styles.container}>
         <StatusBar style="light" />
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Session Details</Text>
@@ -135,7 +140,10 @@ export default function SessionDetail() {
     <View style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Session Details</Text>
@@ -154,7 +162,9 @@ export default function SessionDetail() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Status:</Text>
-            <Text style={[styles.infoValue, styles.statusValue]}>{session.status}</Text>
+            <Text style={[styles.infoValue, styles.statusValue]}>
+              {session.status}
+            </Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Items:</Text>
@@ -162,7 +172,12 @@ export default function SessionDetail() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Total Variance:</Text>
-            <Text style={[styles.infoValue, session.total_variance !== 0 && styles.varianceValue]}>
+            <Text
+              style={[
+                styles.infoValue,
+                session.total_variance !== 0 && styles.varianceValue,
+              ]}
+            >
               {session.total_variance.toFixed(2)}
             </Text>
           </View>
@@ -201,7 +216,12 @@ export default function SessionDetail() {
               size={20}
               color={activeTab === "toVerify" ? "#fff" : "#888"}
             />
-            <Text style={[styles.tabText, activeTab === "toVerify" && styles.tabTextActive]}>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "toVerify" && styles.tabTextActive,
+              ]}
+            >
               To Verify ({toVerifyLines.length})
             </Text>
           </TouchableOpacity>
@@ -214,7 +234,12 @@ export default function SessionDetail() {
               size={20}
               color={activeTab === "verified" ? "#fff" : "#888"}
             />
-            <Text style={[styles.tabText, activeTab === "verified" && styles.tabTextActive]}>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "verified" && styles.tabTextActive,
+              ]}
+            >
               Verified ({verifiedLines.length})
             </Text>
           </TouchableOpacity>
@@ -224,12 +249,16 @@ export default function SessionDetail() {
         {currentLines.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons
-              name={activeTab === "toVerify" ? "list-outline" : "checkmark-circle"}
+              name={
+                activeTab === "toVerify" ? "list-outline" : "checkmark-circle"
+              }
               size={64}
               color="#888"
             />
             <Text style={styles.emptyText}>
-              {activeTab === "toVerify" ? "No items to verify" : "No verified items"}
+              {activeTab === "toVerify"
+                ? "No items to verify"
+                : "No verified items"}
             </Text>
           </View>
         ) : (
@@ -248,12 +277,26 @@ export default function SessionDetail() {
                   <Text style={styles.lineName}>{line.item_name}</Text>
                   <View style={styles.badgeContainer}>
                     {line.verified && (
-                      <View style={[styles.verifiedBadge, { backgroundColor: "#00E676" }]}>
-                        <Ionicons name="checkmark-circle" size={14} color="#fff" />
+                      <View
+                        style={[
+                          styles.verifiedBadge,
+                          { backgroundColor: "#00E676" },
+                        ]}
+                      >
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={14}
+                          color="#fff"
+                        />
                         <Text style={styles.badgeText}>Verified</Text>
                       </View>
                     )}
-                    <View style={[styles.lineBadge, { backgroundColor: statusColor }]}>
+                    <View
+                      style={[
+                        styles.lineBadge,
+                        { backgroundColor: statusColor },
+                      ]}
+                    >
                       <Text style={styles.badgeText}>{line.status}</Text>
                     </View>
                   </View>
@@ -272,24 +315,36 @@ export default function SessionDetail() {
                   </View>
                   <View style={styles.qtyItem}>
                     <Text style={styles.qtyLabel}>Variance</Text>
-                    <Text style={[styles.qtyValue, { color: varianceColor }]}>{line.variance}</Text>
+                    <Text style={[styles.qtyValue, { color: varianceColor }]}>
+                      {line.variance}
+                    </Text>
                   </View>
                 </View>
 
                 {line.variance_reason && (
                   <View style={styles.reasonBox}>
-                    <Text style={styles.reasonLabel}>Reason: {line.variance_reason}</Text>
+                    <Text style={styles.reasonLabel}>
+                      Reason: {line.variance_reason}
+                    </Text>
                     {line.variance_note && (
-                      <Text style={styles.reasonNote}>{line.variance_note}</Text>
+                      <Text style={styles.reasonNote}>
+                        {line.variance_note}
+                      </Text>
                     )}
                   </View>
                 )}
 
-                {line.remark && <Text style={styles.remark}>Remark: {line.remark}</Text>}
+                {line.remark && (
+                  <Text style={styles.remark}>Remark: {line.remark}</Text>
+                )}
 
                 {line.verified && line.verified_by && (
                   <View style={styles.verifiedInfo}>
-                    <Ionicons name="checkmark-circle" size={16} color="#00E676" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#00E676"
+                    />
                     <Text style={styles.verifiedInfoText}>
                       Verified by {line.verified_by} on{" "}
                       {new Date(line.verified_at).toLocaleString()}
@@ -319,7 +374,10 @@ export default function SessionDetail() {
 
                   {activeTab === "toVerify" && !line.verified && (
                     <TouchableOpacity
-                      style={[styles.verifyButton, verifying === line.id && styles.buttonDisabled]}
+                      style={[
+                        styles.verifyButton,
+                        verifying === line.id && styles.buttonDisabled,
+                      ]}
                       onPress={() => handleVerifyStock(line.id)}
                       disabled={verifying === line.id}
                     >
@@ -327,8 +385,14 @@ export default function SessionDetail() {
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
                         <>
-                          <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-                          <Text style={styles.actionButtonText}>Verify Stock</Text>
+                          <Ionicons
+                            name="checkmark-circle-outline"
+                            size={20}
+                            color="#fff"
+                          />
+                          <Text style={styles.actionButtonText}>
+                            Verify Stock
+                          </Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -347,7 +411,11 @@ export default function SessionDetail() {
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
                         <>
-                          <Ionicons name="close-circle-outline" size={20} color="#fff" />
+                          <Ionicons
+                            name="close-circle-outline"
+                            size={20}
+                            color="#fff"
+                          />
                           <Text style={styles.actionButtonText}>Unverify</Text>
                         </>
                       )}

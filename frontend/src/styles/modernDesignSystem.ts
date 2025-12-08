@@ -11,7 +11,7 @@
  * - Better accessibility support
  */
 
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform } from "react-native";
 
 // ==========================================
 // MODERN COLOR PALETTE
@@ -20,130 +20,130 @@ import { StyleSheet, Platform } from 'react-native';
 export const modernColors = {
   // Primary Brand Colors - Vibrant Blue
   primary: {
-    50: '#EFF6FF',
-    100: '#DBEAFE',
-    200: '#BFDBFE',
-    300: '#93C5FD',
-    400: '#60A5FA',
-    500: '#3B82F6', // Main primary
-    600: '#2563EB',
-    700: '#1D4ED8',
-    800: '#1E40AF',
-    900: '#1E3A8A',
+    50: "#EFF6FF",
+    100: "#DBEAFE",
+    200: "#BFDBFE",
+    300: "#93C5FD",
+    400: "#60A5FA",
+    500: "#3B82F6", // Main primary
+    600: "#2563EB",
+    700: "#1D4ED8",
+    800: "#1E40AF",
+    900: "#1E3A8A",
   },
 
   // Secondary - Emerald Green
   secondary: {
-    50: '#ECFDF5',
-    100: '#D1FAE5',
-    200: '#A7F3D0',
-    300: '#6EE7B7',
-    400: '#34D399',
-    500: '#10B981', // Main secondary
-    600: '#059669',
-    700: '#047857',
-    800: '#065F46',
-    900: '#064E3B',
+    50: "#ECFDF5",
+    100: "#D1FAE5",
+    200: "#A7F3D0",
+    300: "#6EE7B7",
+    400: "#34D399",
+    500: "#10B981", // Main secondary
+    600: "#059669",
+    700: "#047857",
+    800: "#065F46",
+    900: "#064E3B",
   },
 
   // Accent - Purple
   accent: {
-    50: '#F5F3FF',
-    100: '#EDE9FE',
-    200: '#DDD6FE',
-    300: '#C4B5FD',
-    400: '#A78BFA',
-    500: '#8B5CF6',
-    600: '#7C3AED',
-    700: '#6D28D9',
-    800: '#5B21B6',
-    900: '#4C1D95',
+    50: "#F5F3FF",
+    100: "#EDE9FE",
+    200: "#DDD6FE",
+    300: "#C4B5FD",
+    400: "#A78BFA",
+    500: "#8B5CF6",
+    600: "#7C3AED",
+    700: "#6D28D9",
+    800: "#5B21B6",
+    900: "#4C1D95",
   },
 
   // Neutral Grays - Dark Mode Optimized
   neutral: {
-    50: '#F9FAFB',
-    100: '#F3F4F6',
-    200: '#E5E7EB',
-    300: '#D1D5DB',
-    400: '#9CA3AF',
-    500: '#6B7280',
-    600: '#4B5563',
-    700: '#374151',
-    800: '#1F2937',
-    900: '#111827',
-    950: '#030712',
+    50: "#F9FAFB",
+    100: "#F3F4F6",
+    200: "#E5E7EB",
+    300: "#D1D5DB",
+    400: "#9CA3AF",
+    500: "#6B7280",
+    600: "#4B5563",
+    700: "#374151",
+    800: "#1F2937",
+    900: "#111827",
+    950: "#030712",
   },
 
   // Semantic Colors
   success: {
-    light: '#D1FAE5',
-    main: '#10B981',
-    dark: '#059669',
-    contrast: '#FFFFFF',
+    light: "#D1FAE5",
+    main: "#10B981",
+    dark: "#059669",
+    contrast: "#FFFFFF",
   },
 
   error: {
-    light: '#FEE2E2',
-    main: '#EF4444',
-    dark: '#DC2626',
-    contrast: '#FFFFFF',
+    light: "#FEE2E2",
+    main: "#EF4444",
+    dark: "#DC2626",
+    contrast: "#FFFFFF",
   },
 
   warning: {
-    light: '#FEF3C7',
-    main: '#F59E0B',
-    dark: '#D97706',
-    contrast: '#111827',
+    light: "#FEF3C7",
+    main: "#F59E0B",
+    dark: "#D97706",
+    contrast: "#111827",
   },
 
   info: {
-    light: '#DBEAFE',
-    main: '#3B82F6',
-    dark: '#2563EB',
-    contrast: '#FFFFFF',
+    light: "#DBEAFE",
+    main: "#3B82F6",
+    dark: "#2563EB",
+    contrast: "#FFFFFF",
   },
 
   // Background Colors (Dark Mode)
   background: {
-    default: '#0F172A',      // Slate 900
-    paper: '#1E293B',        // Slate 800
-    elevated: '#334155',     // Slate 700
-    overlay: 'rgba(15, 23, 42, 0.8)',
-    glass: 'rgba(30, 41, 59, 0.7)', // Glassmorphism
+    default: "#0F172A", // Slate 900
+    paper: "#1E293B", // Slate 800
+    elevated: "#334155", // Slate 700
+    overlay: "rgba(15, 23, 42, 0.8)",
+    glass: "rgba(30, 41, 59, 0.7)", // Glassmorphism
   },
 
   // Text Colors
   text: {
-    primary: '#F8FAFC',      // Slate 50
-    secondary: '#94A3B8',    // Slate 400
-    tertiary: '#64748B',     // Slate 500
-    disabled: '#475569',     // Slate 600
-    inverse: '#0F172A',      // Slate 900
-    link: '#60A5FA',         // Blue 400
-    linkHover: '#93C5FD',    // Blue 300
+    primary: "#F8FAFC", // Slate 50
+    secondary: "#94A3B8", // Slate 400
+    tertiary: "#64748B", // Slate 500
+    disabled: "#475569", // Slate 600
+    inverse: "#0F172A", // Slate 900
+    link: "#60A5FA", // Blue 400
+    linkHover: "#93C5FD", // Blue 300
   },
 
   // Border Colors
   border: {
-    light: '#334155',        // Slate 700
-    medium: '#475569',       // Slate 600
-    dark: '#64748B',         // Slate 500
-    focus: '#3B82F6',        // Blue 500
-    error: '#EF4444',        // Red 500
+    light: "#334155", // Slate 700
+    medium: "#475569", // Slate 600
+    dark: "#64748B", // Slate 500
+    focus: "#3B82F6", // Blue 500
+    error: "#EF4444", // Red 500
   },
 
   // Gradient Definitions
   gradients: {
-    primary: ['#3B82F6', '#2563EB', '#1D4ED8'],
-    secondary: ['#10B981', '#059669', '#047857'],
-    accent: ['#8B5CF6', '#7C3AED', '#6D28D9'],
-    dark: ['#1E293B', '#0F172A', '#020617'],
-    surface: ['#334155', '#1E293B', '#0F172A'],
-    success: ['#10B981', '#059669'],
-    warning: ['#F59E0B', '#D97706'],
-    error: ['#EF4444', '#DC2626'],
-    glass: ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)'],
+    primary: ["#3B82F6", "#2563EB", "#1D4ED8"],
+    secondary: ["#10B981", "#059669", "#047857"],
+    accent: ["#8B5CF6", "#7C3AED", "#6D28D9"],
+    dark: ["#1E293B", "#0F172A", "#020617"],
+    surface: ["#334155", "#1E293B", "#0F172A"],
+    success: ["#10B981", "#059669"],
+    warning: ["#F59E0B", "#D97706"],
+    error: ["#EF4444", "#DC2626"],
+    glass: ["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.05)"],
   },
 };
 
@@ -156,19 +156,19 @@ export const modernTypography = {
   display: {
     large: {
       fontSize: 57,
-      fontWeight: '700' as const,
+      fontWeight: "700" as const,
       lineHeight: 64,
       letterSpacing: -0.5,
     },
     medium: {
       fontSize: 45,
-      fontWeight: '700' as const,
+      fontWeight: "700" as const,
       lineHeight: 52,
       letterSpacing: -0.5,
     },
     small: {
       fontSize: 36,
-      fontWeight: '700' as const,
+      fontWeight: "700" as const,
       lineHeight: 44,
       letterSpacing: -0.5,
     },
@@ -177,37 +177,37 @@ export const modernTypography = {
   // Headings
   h1: {
     fontSize: 32,
-    fontWeight: '700' as const,
+    fontWeight: "700" as const,
     lineHeight: 40,
     letterSpacing: -0.5,
   },
   h2: {
     fontSize: 28,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 36,
     letterSpacing: 0,
   },
   h3: {
     fontSize: 24,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 32,
     letterSpacing: 0,
   },
   h4: {
     fontSize: 20,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 28,
     letterSpacing: 0.15,
   },
   h5: {
     fontSize: 18,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 24,
     letterSpacing: 0.15,
   },
   h6: {
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 24,
     letterSpacing: 0.15,
   },
@@ -216,19 +216,19 @@ export const modernTypography = {
   body: {
     large: {
       fontSize: 18,
-      fontWeight: '400' as const,
+      fontWeight: "400" as const,
       lineHeight: 28,
       letterSpacing: 0.15,
     },
     medium: {
       fontSize: 16,
-      fontWeight: '400' as const,
+      fontWeight: "400" as const,
       lineHeight: 24,
       letterSpacing: 0.15,
     },
     small: {
       fontSize: 14,
-      fontWeight: '400' as const,
+      fontWeight: "400" as const,
       lineHeight: 20,
       letterSpacing: 0.25,
     },
@@ -238,19 +238,19 @@ export const modernTypography = {
   label: {
     large: {
       fontSize: 14,
-      fontWeight: '500' as const,
+      fontWeight: "500" as const,
       lineHeight: 20,
       letterSpacing: 0.1,
     },
     medium: {
       fontSize: 12,
-      fontWeight: '500' as const,
+      fontWeight: "500" as const,
       lineHeight: 16,
       letterSpacing: 0.5,
     },
     small: {
       fontSize: 11,
-      fontWeight: '500' as const,
+      fontWeight: "500" as const,
       lineHeight: 16,
       letterSpacing: 0.5,
     },
@@ -260,19 +260,19 @@ export const modernTypography = {
   button: {
     large: {
       fontSize: 16,
-      fontWeight: '600' as const,
+      fontWeight: "600" as const,
       lineHeight: 24,
       letterSpacing: 0.5,
     },
     medium: {
       fontSize: 14,
-      fontWeight: '600' as const,
+      fontWeight: "600" as const,
       lineHeight: 20,
       letterSpacing: 0.5,
     },
     small: {
       fontSize: 12,
-      fontWeight: '600' as const,
+      fontWeight: "600" as const,
       lineHeight: 16,
       letterSpacing: 0.5,
     },
@@ -281,10 +281,10 @@ export const modernTypography = {
   // Overline (Uppercase Labels)
   overline: {
     fontSize: 10,
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     lineHeight: 16,
     letterSpacing: 1.5,
-    textTransform: 'uppercase' as const,
+    textTransform: "uppercase" as const,
   },
 };
 
@@ -314,9 +314,9 @@ export const modernSpacing = {
   md: 16,
   lg: 24,
   xl: 32,
-  '2xl': 48,
-  '3xl': 64,
-  '4xl': 80,
+  "2xl": 48,
+  "3xl": 64,
+  "4xl": 80,
 
   // Component-specific spacing
   screenPadding: 24,
@@ -339,8 +339,8 @@ export const modernBorderRadius = {
   md: 12,
   lg: 16,
   xl: 20,
-  '2xl': 24,
-  '3xl': 32,
+  "2xl": 24,
+  "3xl": 32,
   full: 9999,
 
   // Component-specific
@@ -357,7 +357,7 @@ export const modernBorderRadius = {
 
 export const modernShadows = {
   none: {
-    shadowColor: 'transparent',
+    shadowColor: "transparent",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0,
     shadowRadius: 0,
@@ -365,7 +365,7 @@ export const modernShadows = {
   },
 
   xs: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -373,7 +373,7 @@ export const modernShadows = {
   },
 
   sm: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -381,7 +381,7 @@ export const modernShadows = {
   },
 
   md: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -389,7 +389,7 @@ export const modernShadows = {
   },
 
   lg: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
@@ -397,7 +397,7 @@ export const modernShadows = {
   },
 
   xl: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.25,
     shadowRadius: 24,
@@ -438,10 +438,10 @@ export const modernAnimations = {
 
   // Easing functions
   easing: {
-    linear: 'linear',
-    easeIn: 'ease-in',
-    easeOut: 'ease-out',
-    easeInOut: 'ease-in-out',
+    linear: "linear",
+    easeIn: "ease-in",
+    easeOut: "ease-out",
+    easeInOut: "ease-in-out",
     // React Native Reanimated easings
     spring: {
       damping: 15,
@@ -470,24 +470,24 @@ export const modernAnimations = {
 
 export const glassmorphism = {
   light: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderColor: "rgba(255, 255, 255, 0.2)",
     borderWidth: 1,
-    backdropFilter: 'blur(10px)',
+    backdropFilter: "blur(10px)",
   },
 
   medium: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderColor: "rgba(255, 255, 255, 0.25)",
     borderWidth: 1,
-    backdropFilter: 'blur(15px)',
+    backdropFilter: "blur(15px)",
   },
 
   dark: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
     borderWidth: 1,
-    backdropFilter: 'blur(20px)',
+    backdropFilter: "blur(20px)",
   },
 };
 
@@ -498,8 +498,8 @@ export const glassmorphism = {
 export const modernLayout = {
   // Safe areas
   safeArea: {
-    top: Platform.OS === 'ios' ? 44 : 24,
-    bottom: Platform.OS === 'ios' ? 34 : 0,
+    top: Platform.OS === "ios" ? 44 : 24,
+    bottom: Platform.OS === "ios" ? 34 : 0,
   },
 
   // Component heights
@@ -518,7 +518,7 @@ export const modernLayout = {
 
   // Container widths
   containerMaxWidth: {
-    mobile: '100%',
+    mobile: "100%",
     tablet: 768,
     desktop: 1200,
     wide: 1440,
@@ -549,8 +549,8 @@ export const accessibility = {
   focusRingOffset: 2,
   focusRingColor: modernColors.primary[500],
   highContrast: {
-    text: '#FFFFFF',
-    background: '#000000',
+    text: "#FFFFFF",
+    background: "#000000",
   },
 };
 
@@ -564,7 +564,7 @@ export const breakpoints = {
   md: 768,
   lg: 1024,
   xl: 1280,
-  '2xl': 1536,
+  "2xl": 1536,
 };
 
 // ==========================================
@@ -580,8 +580,8 @@ export const modernCommonStyles = StyleSheet.create({
 
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.default,
   },
 
@@ -612,15 +612,15 @@ export const modernCommonStyles = StyleSheet.create({
     borderRadius: modernBorderRadius.card,
     padding: modernSpacing.cardPadding,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
 
   // Buttons
   button: {
     borderRadius: modernBorderRadius.button,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     gap: modernSpacing.sm,
     minHeight: modernLayout.buttonHeight.medium,
     paddingHorizontal: modernSpacing.buttonPadding,
@@ -635,13 +635,13 @@ export const modernCommonStyles = StyleSheet.create({
   },
 
   buttonOutline: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 2,
     borderColor: modernColors.primary[500],
   },
 
   buttonGhost: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
 
   // Inputs
@@ -689,11 +689,11 @@ export const modernCommonStyles = StyleSheet.create({
   gapXl: { gap: modernSpacing.xl },
 
   // Flex helpers
-  row: { flexDirection: 'row' },
-  column: { flexDirection: 'column' },
-  center: { justifyContent: 'center', alignItems: 'center' },
-  spaceBetween: { justifyContent: 'space-between' },
-  spaceAround: { justifyContent: 'space-around' },
+  row: { flexDirection: "row" },
+  column: { flexDirection: "column" },
+  center: { justifyContent: "center", alignItems: "center" },
+  spaceBetween: { justifyContent: "space-between" },
+  spaceAround: { justifyContent: "space-around" },
   flex1: { flex: 1 },
 });
 

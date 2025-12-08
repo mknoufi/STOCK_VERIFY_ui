@@ -10,4 +10,3 @@ const EnhancedTextInput = React.forwardRef<any, EnhancedTextInputProps>((props, 
 EnhancedTextInput.displayName = 'EnhancedTextInput';
 
 export default EnhancedTextInput;
-

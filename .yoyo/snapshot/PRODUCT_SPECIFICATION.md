@@ -1,8 +1,8 @@
 # STOCK_VERIFY Product Specification Document
 
-**Version:** 2.0  
-**Last Updated:** 2025-01-12  
-**Status:** Production Ready  
+**Version:** 2.0
+**Last Updated:** 2025-01-12
+**Status:** Production Ready
 **Target ERPNext Version:** v15+
 
 ---

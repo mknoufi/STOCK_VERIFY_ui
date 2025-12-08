@@ -4,8 +4,8 @@
  * Based on Material Design 3 typography scale
  */
 
-import { TextStyle } from 'react-native';
-import { typography } from './designTokens';
+import { TextStyle } from "react-native";
+import { typography } from "./designTokens";
 
 // ==========================================
 // TEXT STYLES
@@ -42,28 +42,28 @@ export interface TextStyles {
 export const createTextStyles = (
   textColor: string,
   textSecondary: string,
-  textTertiary: string
+  textTertiary: string,
 ): TextStyles => {
   return {
     // Headings
     h1: {
-      fontSize: typography.fontSize['4xl'],
+      fontSize: typography.fontSize["4xl"],
       fontWeight: typography.fontWeight.bold,
-      lineHeight: typography.fontSize['4xl'] * typography.lineHeight.tight,
+      lineHeight: typography.fontSize["4xl"] * typography.lineHeight.tight,
       letterSpacing: typography.letterSpacing.tight,
       color: textColor,
     },
     h2: {
-      fontSize: typography.fontSize['3xl'],
+      fontSize: typography.fontSize["3xl"],
       fontWeight: typography.fontWeight.bold,
-      lineHeight: typography.fontSize['3xl'] * typography.lineHeight.tight,
+      lineHeight: typography.fontSize["3xl"] * typography.lineHeight.tight,
       letterSpacing: typography.letterSpacing.tight,
       color: textColor,
     },
     h3: {
-      fontSize: typography.fontSize['2xl'],
+      fontSize: typography.fontSize["2xl"],
       fontWeight: typography.fontWeight.bold,
-      lineHeight: typography.fontSize['2xl'] * typography.lineHeight.normal,
+      lineHeight: typography.fontSize["2xl"] * typography.lineHeight.normal,
       letterSpacing: typography.letterSpacing.normal,
       color: textColor,
     },
@@ -150,7 +150,7 @@ export const createTextStyles = (
       fontWeight: typography.fontWeight.semibold,
       lineHeight: typography.fontSize.base * typography.lineHeight.normal,
       letterSpacing: typography.letterSpacing.wide,
-      textTransform: 'uppercase' as const,
+      textTransform: "uppercase" as const,
     },
 
     // Overline (small uppercase text)
@@ -159,7 +159,7 @@ export const createTextStyles = (
       fontWeight: typography.fontWeight.medium,
       lineHeight: typography.fontSize.xs * typography.lineHeight.normal,
       letterSpacing: typography.letterSpacing.widest,
-      textTransform: 'uppercase' as const,
+      textTransform: "uppercase" as const,
       color: textSecondary,
     },
   };
@@ -179,21 +179,27 @@ export const getFontSize = (size: keyof typeof typography.fontSize): number => {
 /**
  * Get font weight from typography scale
  */
-export const getFontWeight = (weight: keyof typeof typography.fontWeight): string => {
+export const getFontWeight = (
+  weight: keyof typeof typography.fontWeight,
+): string => {
   return typography.fontWeight[weight];
 };
 
 /**
  * Get line height multiplier
  */
-export const getLineHeight = (multiplier: keyof typeof typography.lineHeight): number => {
+export const getLineHeight = (
+  multiplier: keyof typeof typography.lineHeight,
+): number => {
   return typography.lineHeight[multiplier];
 };
 
 /**
  * Get letter spacing
  */
-export const getLetterSpacing = (spacing: keyof typeof typography.letterSpacing): number => {
+export const getLetterSpacing = (
+  spacing: keyof typeof typography.letterSpacing,
+): number => {
   return typography.letterSpacing[spacing];
 };
 

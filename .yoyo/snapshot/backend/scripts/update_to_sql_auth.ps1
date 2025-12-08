@@ -15,7 +15,7 @@ if (Test-Path $envFile) {
         Write-Host "Set it with: `$env:SQL_SERVER_PASSWORD='your-password'" -ForegroundColor Yellow
         exit 1
     }
-    
+
     $content = $content -replace "SQL_SERVER_HOST=.*", "SQL_SERVER_HOST=192.168.1.109"
     $content = $content -replace "SQL_SERVER_PORT=.*", "SQL_SERVER_PORT=1433"
     $content = $content -replace "SQL_SERVER_DATABASE=.*", "SQL_SERVER_DATABASE=E_MART_KITCHEN_CARE"
@@ -42,7 +42,7 @@ if (Test-Path $envFile) {
         Write-Host "Set it with: `$env:SQL_SERVER_PASSWORD='your-password'" -ForegroundColor Yellow
         exit 1
     }
-    
+
     $envContent = @"
 SQL_SERVER_HOST=192.168.1.109
 SQL_SERVER_PORT=1433

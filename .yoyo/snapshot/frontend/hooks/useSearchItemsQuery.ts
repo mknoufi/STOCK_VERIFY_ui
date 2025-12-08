@@ -27,4 +27,3 @@ export const useSearchItemsQuery = ({
     placeholderData: (previousData) => previousData, // Keep previous results while searching
   });
 };
-

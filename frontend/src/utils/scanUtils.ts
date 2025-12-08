@@ -1,21 +1,17 @@
-import { Item, NormalizedMrpVariant } from '../types/scan';
+import { Item, NormalizedMrpVariant } from "../types/scan";
 
-export const normalizeSerialValue = (input: string) => (input ? input.trim().toUpperCase() : '');
+export const normalizeSerialValue = (input: string) =>
+  input ? input.trim().toUpperCase() : "";
 
 export const toNumericMrp = (value: unknown): number | null => {
   if (value === undefined || value === null) {
     return null;
   }
 
-  if (typeof value === 'object' && value !== null) {
+  if (typeof value === "object" && value !== null) {
     const obj = value as Record<string, unknown>;
     const candidate =
-      obj.value ??
-      obj.mrp ??
-      obj.amount ??
-      obj.price ??
-      obj.rate ??
-      null;
+      obj.value ?? obj.mrp ?? obj.amount ?? obj.price ?? obj.rate ?? null;
 
     if (candidate !== null && candidate !== undefined) {
       return toNumericMrp(candidate);
@@ -24,7 +20,8 @@ export const toNumericMrp = (value: unknown): number | null => {
     return null;
   }
 
-  const numericValue = typeof value === 'number' ? value : parseFloat(String(value));
+  const numericValue =
+    typeof value === "number" ? value : parseFloat(String(value));
   if (Number.isNaN(numericValue)) {
     return null;
   }
@@ -34,12 +31,14 @@ export const toNumericMrp = (value: unknown): number | null => {
 export const formatMrpValue = (value: unknown) => {
   const numericValue = toNumericMrp(value);
   if (numericValue === null) {
-    return '';
+    return "";
   }
   return numericValue.toString();
 };
 
-export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null => {
+export const normalizeMrpVariant = (
+  input: unknown,
+): NormalizedMrpVariant | null => {
   const numericValue = toNumericMrp(input);
   if (numericValue === null) {
     return null;
@@ -47,15 +46,31 @@ export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null
 
   const roundedValue = Number(numericValue.toFixed(2));
 
-  if (input && typeof input === 'object' && input !== null) {
+  if (input && typeof input === "object" && input !== null) {
     const obj = input as Record<string, unknown>;
     return {
-      id: typeof obj.id === 'string' ? obj.id : undefined,
+      id: typeof obj.id === "string" ? obj.id : undefined,
       value: roundedValue,
-      barcode: typeof obj.barcode === 'string' ? obj.barcode : typeof obj.variant_barcode === 'string' ? obj.variant_barcode : undefined,
-      label: typeof obj.label === 'string' ? obj.label : typeof obj.title === 'string' ? obj.title : undefined,
-      source: typeof obj.source === 'string' ? obj.source : typeof obj.mrp_source === 'string' ? obj.mrp_source : undefined,
-      item_condition: typeof obj.item_condition === 'string' ? obj.item_condition : undefined,
+      barcode:
+        typeof obj.barcode === "string"
+          ? obj.barcode
+          : typeof obj.variant_barcode === "string"
+            ? obj.variant_barcode
+            : undefined,
+      label:
+        typeof obj.label === "string"
+          ? obj.label
+          : typeof obj.title === "string"
+            ? obj.title
+            : undefined,
+      source:
+        typeof obj.source === "string"
+          ? obj.source
+          : typeof obj.mrp_source === "string"
+            ? obj.mrp_source
+            : undefined,
+      item_condition:
+        typeof obj.item_condition === "string" ? obj.item_condition : undefined,
     };
   }
 
@@ -64,7 +79,9 @@ export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null
   };
 };
 
-export const getNormalizedMrpVariants = (item: Item | null | undefined): NormalizedMrpVariant[] => {
+export const getNormalizedMrpVariants = (
+  item: Item | null | undefined,
+): NormalizedMrpVariant[] => {
   if (!item) {
     return [];
   }
@@ -76,7 +93,7 @@ export const getNormalizedMrpVariants = (item: Item | null | undefined): Normali
       return;
     }
 
-    const key = `${normalized.value.toFixed(2)}|${normalized.barcode ?? ''}`;
+    const key = `${normalized.value.toFixed(2)}|${normalized.barcode ?? ""}`;
     if (!seen.has(key)) {
       seen.set(key, normalized);
       return;
@@ -108,7 +125,7 @@ export const getNormalizedMrpVariants = (item: Item | null | undefined): Normali
 
 export const getDefaultMrpForItem = (item: Item | null | undefined): string => {
   if (!item) {
-    return '';
+    return "";
   }
 
   if (Array.isArray(item?.mrp_history) && item.mrp_history.length > 0) {
@@ -132,21 +149,21 @@ export const getDefaultMrpForItem = (item: Item | null | undefined): string => {
     }
   }
 
-  return '';
+  return "";
 };
 
 export const SERIAL_REQUIREMENT_LABELS: Record<string, string> = {
-  optional: 'Serial capture optional',
-  single: 'One serial number required',
-  required: 'One serial number required',
-  dual: 'Two serial numbers required',
+  optional: "Serial capture optional",
+  single: "One serial number required",
+  required: "One serial number required",
+  dual: "Two serial numbers required",
 };
 
 export const ITEM_CONDITION_OPTIONS: { value: string; label: string }[] = [
-  { value: 'good', label: 'Good' },
-  { value: 'damaged', label: 'Damaged' },
-  { value: 'aging', label: 'Aging' },
-  { value: 'expired', label: 'Expired' },
-  { value: 'packaging_damaged', label: 'Packaging Damaged' },
-  { value: 'slow_moving', label: 'Slow Moving' },
+  { value: "good", label: "Good" },
+  { value: "damaged", label: "Damaged" },
+  { value: "aging", label: "Aging" },
+  { value: "expired", label: "Expired" },
+  { value: "packaging_damaged", label: "Packaging Damaged" },
+  { value: "slow_moving", label: "Slow Moving" },
 ];

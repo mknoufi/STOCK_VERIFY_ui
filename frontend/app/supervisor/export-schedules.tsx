@@ -39,7 +39,9 @@ export default function ExportSchedulesScreen() {
   const [loading, setLoading] = useState(true);
   const [schedules, setSchedules] = useState<ExportSchedule[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<ExportSchedule | null>(null);
+  const [editingSchedule, setEditingSchedule] = useState<ExportSchedule | null>(
+    null,
+  );
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -49,9 +51,11 @@ export default function ExportSchedulesScreen() {
 
   useEffect(() => {
     if (!hasPermission("export.schedule")) {
-      Alert.alert("Access Denied", "You do not have permission to access export schedules.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to access export schedules.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadSchedules();
@@ -75,7 +79,12 @@ export default function ExportSchedulesScreen() {
       await createExportSchedule(formData);
       Alert.alert("Success", "Export schedule created successfully");
       setModalVisible(false);
-      setFormData({ name: "", description: "", frequency: "daily", format: "excel" });
+      setFormData({
+        name: "",
+        description: "",
+        frequency: "daily",
+        format: "excel",
+      });
       loadSchedules();
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to create export schedule");
@@ -90,7 +99,12 @@ export default function ExportSchedulesScreen() {
       Alert.alert("Success", "Export schedule updated successfully");
       setModalVisible(false);
       setEditingSchedule(null);
-      setFormData({ name: "", description: "", frequency: "daily", format: "excel" });
+      setFormData({
+        name: "",
+        description: "",
+        frequency: "daily",
+        format: "excel",
+      });
       loadSchedules();
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to update export schedule");
@@ -98,22 +112,29 @@ export default function ExportSchedulesScreen() {
   };
 
   const handleDeleteSchedule = async (scheduleId: string) => {
-    Alert.alert("Confirm Delete", "Are you sure you want to delete this export schedule?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteExportSchedule(scheduleId);
-            Alert.alert("Success", "Export schedule deleted successfully");
-            loadSchedules();
-          } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to delete export schedule");
-          }
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this export schedule?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteExportSchedule(scheduleId);
+              Alert.alert("Success", "Export schedule deleted successfully");
+              loadSchedules();
+            } catch (error: any) {
+              Alert.alert(
+                "Error",
+                error.message || "Failed to delete export schedule",
+              );
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const handleTriggerSchedule = async (scheduleId: string) => {
@@ -127,7 +148,12 @@ export default function ExportSchedulesScreen() {
 
   const openCreateModal = () => {
     setEditingSchedule(null);
-    setFormData({ name: "", description: "", frequency: "daily", format: "excel" });
+    setFormData({
+      name: "",
+      description: "",
+      frequency: "daily",
+      format: "excel",
+    });
     setModalVisible(true);
   };
 
@@ -146,15 +172,26 @@ export default function ExportSchedulesScreen() {
     <View key={schedule._id} style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>{schedule.name}</Text>
-        <View style={[styles.badge, schedule.enabled ? styles.badgeActive : styles.badgeInactive]}>
-          <Text style={styles.badgeText}>{schedule.enabled ? "Enabled" : "Disabled"}</Text>
+        <View
+          style={[
+            styles.badge,
+            schedule.enabled ? styles.badgeActive : styles.badgeInactive,
+          ]}
+        >
+          <Text style={styles.badgeText}>
+            {schedule.enabled ? "Enabled" : "Disabled"}
+          </Text>
         </View>
       </View>
 
-      {schedule.description && <Text style={styles.cardDescription}>{schedule.description}</Text>}
+      {schedule.description && (
+        <Text style={styles.cardDescription}>{schedule.description}</Text>
+      )}
 
       <View style={styles.cardDetails}>
-        <Text style={styles.cardDetailText}>Frequency: {schedule.frequency}</Text>
+        <Text style={styles.cardDetailText}>
+          Frequency: {schedule.frequency}
+        </Text>
         <Text style={styles.cardDetailText}>Format: {schedule.format}</Text>
         {schedule.next_run && (
           <Text style={styles.cardDetailText}>
@@ -200,7 +237,10 @@ export default function ExportSchedulesScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Export Schedules</Text>
@@ -247,7 +287,9 @@ export default function ExportSchedulesScreen() {
               placeholder="Description (optional)"
               placeholderTextColor="#666"
               value={formData.description}
-              onChangeText={(text) => setFormData({ ...formData, description: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, description: text })
+              }
               multiline
             />
 
@@ -265,7 +307,8 @@ export default function ExportSchedulesScreen() {
                   <Text
                     style={[
                       styles.optionButtonText,
-                      formData.frequency === freq && styles.optionButtonTextSelected,
+                      formData.frequency === freq &&
+                        styles.optionButtonTextSelected,
                     ]}
                   >
                     {freq.charAt(0).toUpperCase() + freq.slice(1)}
@@ -288,7 +331,8 @@ export default function ExportSchedulesScreen() {
                   <Text
                     style={[
                       styles.optionButtonText,
-                      formData.format === fmt && styles.optionButtonTextSelected,
+                      formData.format === fmt &&
+                        styles.optionButtonTextSelected,
                     ]}
                   >
                     {fmt.toUpperCase()}
@@ -307,9 +351,13 @@ export default function ExportSchedulesScreen() {
 
               <TouchableOpacity
                 style={[styles.modalButton, styles.modalButtonPrimary]}
-                onPress={editingSchedule ? handleUpdateSchedule : handleCreateSchedule}
+                onPress={
+                  editingSchedule ? handleUpdateSchedule : handleCreateSchedule
+                }
               >
-                <Text style={styles.modalButtonText}>{editingSchedule ? "Update" : "Create"}</Text>
+                <Text style={styles.modalButtonText}>
+                  {editingSchedule ? "Update" : "Create"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

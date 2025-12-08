@@ -22,11 +22,11 @@ Documentation: <update paths>
 
 ## 🧠 Behavior Rules
 
-1. Always read `codebase_memory_v2.1.md` before modifying logic.  
-2. Confirm existence before creating files.  
-3. Delete only after dependency check.  
-4. Document all changes.  
-5. Update `CHANGELOG.md` after success.  
+1. Always read `codebase_memory_v2.1.md` before modifying logic.
+2. Confirm existence before creating files.
+3. Delete only after dependency check.
+4. Document all changes.
+5. Update `CHANGELOG.md` after success.
 
 ---
 
@@ -58,8 +58,8 @@ Each verified AI-assisted commit must use:
 
 After upgrade completion:
 
-- `codebase_memory_v2.1.md` updated  
-- `verified_coding_policy.md` validated  
-- `CHANGELOG.md` entry added  
+- `codebase_memory_v2.1.md` updated
+- `verified_coding_policy.md` validated
+- `CHANGELOG.md` entry added
 
 ---

@@ -19,18 +19,18 @@ kill_port() {
     local port=$1
     local service_name=$2
     local pid=$(lsof -ti:$port 2>/dev/null)
-    
+
     if [ ! -z "$pid" ]; then
         echo -e "${YELLOW}🔧 Stopping $service_name (Port $port, PID: $pid)${NC}"
         kill $pid 2>/dev/null
         sleep 2
-        
+
         # Force kill if still running
         if kill -0 $pid 2>/dev/null; then
             echo -e "${RED}⚠️  Force killing $service_name${NC}"
             kill -9 $pid 2>/dev/null
         fi
-        
+
         echo -e "${GREEN}✅ $service_name stopped${NC}"
     else
         echo -e "${BLUE}ℹ️  $service_name not running on port $port${NC}"
@@ -41,25 +41,25 @@ kill_port() {
 kill_by_pid_file() {
     local pid_file=$1
     local service_name=$2
-    
+
     if [ -f "$pid_file" ]; then
         local pid=$(cat "$pid_file")
         if kill -0 $pid 2>/dev/null; then
             echo -e "${YELLOW}🔧 Stopping $service_name (PID: $pid)${NC}"
             kill $pid 2>/dev/null
             sleep 2
-            
-            # Force kill if still running  
+
+            # Force kill if still running
             if kill -0 $pid 2>/dev/null; then
                 echo -e "${RED}⚠️  Force killing $service_name${NC}"
                 kill -9 $pid 2>/dev/null
             fi
-            
+
             echo -e "${GREEN}✅ $service_name stopped${NC}"
         else
             echo -e "${BLUE}ℹ️  $service_name process not found${NC}"
         fi
-        
+
         rm -f "$pid_file"
     else
         echo -e "${BLUE}ℹ️  No PID file found for $service_name${NC}"

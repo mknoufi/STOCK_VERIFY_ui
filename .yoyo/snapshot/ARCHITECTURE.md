@@ -1,7 +1,7 @@
 # STOCK_VERIFY Architecture Documentation
 
-**Version:** 1.0  
-**Last Updated:** 2025-01-12  
+**Version:** 1.0
+**Last Updated:** 2025-01-12
 **Purpose:** Context seed for Cursor AI to understand system architecture
 
 ## System Overview
@@ -147,4 +147,3 @@ Frontend (display/edit)
 - Authentication flow (JWT validation)
 - ERPNext integration boundaries (read-only, sync logic)
 - Mobile-first UI patterns (responsive, touch-friendly)
-

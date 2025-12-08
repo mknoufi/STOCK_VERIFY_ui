@@ -797,7 +797,7 @@ class StockVerifyClient:
             'notes': notes,
             'status': 'verified' if actual_count == item['expected_stock'] else 'discrepancy'
         }
-        
+
         response = requests.post(
             f'{self.base_url}/api/verification/',
             json=verification_data,
@@ -811,7 +811,7 @@ class StockVerifyClient:
 ## Support and Resources
 
 - **API Status Page**: https://status.stockverify.example.com
-- **Developer Portal**: https://developers.stockverify.example.com  
+- **Developer Portal**: https://developers.stockverify.example.com
 - **Support Email**: api-support@stockverify.example.com
 - **Rate Limit Headers**: All responses include `X-RateLimit-*` headers
 - **API Versioning**: Use `Accept: application/vnd.stockverify.v2+json` header for version pinning

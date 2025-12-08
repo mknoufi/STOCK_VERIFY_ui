@@ -44,7 +44,7 @@ show_status() {
     local component="$1"
     local status="$2"
     local details="$3"
-    
+
     case "$status" in
         "HEALTHY")
             echo -e "${GREEN}✅ $component: HEALTHY${NC} $details"
@@ -70,9 +70,9 @@ check_service_health() {
     local service_name="$1"
     local url="$2"
     local port="$3"
-    
+
     echo -e "${BLUE}🔍 Checking $service_name...${NC}"
-    
+
     # Check if port is listening
     if lsof -i :$port 2>/dev/null | grep -q LISTEN; then
         # Check HTTP response if URL provided
@@ -100,7 +100,7 @@ check_service_health() {
 # Function to check database health
 check_database_health() {
     echo -e "${BLUE}🗄️  Checking Database Health...${NC}"
-    
+
     # MongoDB health check
     if command -v mongo >/dev/null 2>&1; then
         if mongo --eval "db.runCommand('ping')" --quiet stock_verification >/dev/null 2>&1; then
@@ -109,12 +109,12 @@ check_database_health() {
             if echo "$db_stats" | grep -q '"ok" : 1'; then
                 local db_size=$(mongo stock_verification --eval "Math.round(db.stats().dataSize/1024/1024)" --quiet 2>/dev/null)
                 show_status "MongoDB" "HEALTHY" "(Database size: ${db_size}MB)"
-                
+
                 # Check collection counts
                 local items_count=$(mongo stock_verification --eval "db.items.count()" --quiet 2>/dev/null)
                 local users_count=$(mongo stock_verification --eval "db.users.count()" --quiet 2>/dev/null)
                 local verifications_count=$(mongo stock_verification --eval "db.verifications.count()" --quiet 2>/dev/null)
-                
+
                 echo "  📊 Items: $items_count | Users: $users_count | Verifications: $verifications_count"
                 log_with_timestamp "INFO" "Database counts - Items: $items_count, Users: $users_count, Verifications: $verifications_count"
             else
@@ -126,7 +126,7 @@ check_database_health() {
     else
         show_status "MongoDB" "UNKNOWN" "(mongo client not available)"
     fi
-    
+
     # Redis health check
     if command -v redis-cli >/dev/null 2>&1; then
         if redis-cli ping 2>/dev/null | grep -q "PONG"; then
@@ -144,7 +144,7 @@ check_database_health() {
 # Function to check system resources
 check_system_resources() {
     echo -e "${BLUE}💾 Checking System Resources...${NC}"
-    
+
     # CPU Usage
     local cpu_usage=$(top -l 1 2>/dev/null | grep "CPU usage" | awk '{print $3}' | sed 's/%//' || echo "0")
     if (( $(echo "$cpu_usage > 80" | bc -l 2>/dev/null || echo "0") )); then
@@ -154,7 +154,7 @@ check_system_resources() {
     else
         show_status "CPU Usage" "HEALTHY" "(${cpu_usage}%)"
     fi
-    
+
     # Memory Usage
     local mem_info=$(vm_stat 2>/dev/null || free 2>/dev/null || echo "unavailable")
     if [ "$mem_info" != "unavailable" ]; then
@@ -165,11 +165,11 @@ check_system_resources() {
             local pages_active=$(vm_stat | grep "Pages active" | awk '{print $3}' | sed 's/\.//')
             local pages_inactive=$(vm_stat | grep "Pages inactive" | awk '{print $3}' | sed 's/\.//')
             local pages_wired=$(vm_stat | grep "Pages wired down" | awk '{print $4}' | sed 's/\.//')
-            
+
             local total_pages=$((pages_free + pages_active + pages_inactive + pages_wired))
             local used_pages=$((pages_active + pages_inactive + pages_wired))
             local mem_usage_percent=$((used_pages * 100 / total_pages))
-            
+
             if [ $mem_usage_percent -gt 90 ]; then
                 show_status "Memory Usage" "CRITICAL" "(${mem_usage_percent}% - critical)"
             elif [ $mem_usage_percent -gt 80 ]; then
@@ -191,7 +191,7 @@ check_system_resources() {
     else
         show_status "Memory Usage" "UNKNOWN" "(Unable to determine)"
     fi
-    
+
     # Disk Usage
     local disk_usage=$(df / 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//' || echo "0")
     if [ $disk_usage -gt 90 ]; then
@@ -206,7 +206,7 @@ check_system_resources() {
 # Function to check API endpoints
 check_api_endpoints() {
     echo -e "${BLUE}🌐 Checking API Endpoints...${NC}"
-    
+
     local endpoints=(
         "/health/:Health Check"
         "/docs:API Documentation"
@@ -214,11 +214,11 @@ check_api_endpoints() {
         "/api/erp/items:Items Management"
         "/api/sessions:Session Management"
     )
-    
+
     for endpoint_info in "${endpoints[@]}"; do
         local endpoint=$(echo "$endpoint_info" | cut -d: -f1)
         local description=$(echo "$endpoint_info" | cut -d: -f2)
-        
+
         local response=$(curl -s -w "%{http_code}" -o /dev/null --connect-timeout 3 "$BACKEND_URL$endpoint" 2>/dev/null)
         case "$response" in
             "200"|"201"|"401"|"405") # 401/405 expected for protected/method endpoints
@@ -240,25 +240,25 @@ check_api_endpoints() {
 # Function to check log files
 check_log_files() {
     echo -e "${BLUE}📋 Checking Log Files...${NC}"
-    
+
     local log_locations=(
         "logs/app.log:Application Logs"
         "logs/error.log:Error Logs"
         "/var/log/nginx/access.log:Nginx Access"
         "/var/log/nginx/error.log:Nginx Errors"
     )
-    
+
     for log_info in "${log_locations[@]}"; do
         local log_path=$(echo "$log_info" | cut -d: -f1)
         local log_name=$(echo "$log_info" | cut -d: -f2)
-        
+
         if [ -f "$log_path" ]; then
             local log_size=$(stat -f%z "$log_path" 2>/dev/null || stat -c%s "$log_path" 2>/dev/null || echo "0")
             local size_mb=$((log_size / 1024 / 1024))
-            
+
             # Check for recent errors
             local recent_errors=$(tail -n 100 "$log_path" 2>/dev/null | grep -i error | wc -l | tr -d ' ')
-            
+
             if [ $size_mb -gt 100 ]; then
                 show_status "$log_name" "WARNING" "(${size_mb}MB - large file)"
             elif [ $recent_errors -gt 5 ]; then
@@ -275,37 +275,37 @@ check_log_files() {
 # Function to run performance tests
 run_performance_tests() {
     echo -e "${BLUE}⚡ Running Performance Tests...${NC}"
-    
+
     # API Response Time Test
     echo "Testing API response times..."
     local total_time=0
     local test_count=5
-    
+
     for i in $(seq 1 $test_count); do
         local response_time=$(curl -w "%{time_total}" -s -o /dev/null --connect-timeout 5 "$BACKEND_URL/health" 2>/dev/null)
         total_time=$(echo "$total_time + $response_time" | bc -l 2>/dev/null || echo "0")
     done
-    
+
     local avg_response_time=$(echo "scale=3; $total_time / $test_count" | bc -l 2>/dev/null || echo "0")
-    
+
     if (( $(echo "$avg_response_time > 2.0" | bc -l 2>/dev/null || echo "0") )); then
         show_status "API Response Time" "WARNING" "(Avg: ${avg_response_time}s - slow)"
     else
         show_status "API Response Time" "HEALTHY" "(Avg: ${avg_response_time}s)"
     fi
-    
+
     # Concurrent Request Test
     echo "Testing concurrent request handling..."
     local concurrent_start=$(date +%s.%N 2>/dev/null || date +%s)
-    
+
     for i in {1..10}; do
         curl -s "$BACKEND_URL/health" > /dev/null &
     done
     wait
-    
+
     local concurrent_end=$(date +%s.%N 2>/dev/null || date +%s)
     local concurrent_time=$(echo "$concurrent_end - $concurrent_start" | bc -l 2>/dev/null || echo "1")
-    
+
     if (( $(echo "$concurrent_time > 5.0" | bc -l 2>/dev/null || echo "0") )); then
         show_status "Concurrent Requests" "WARNING" "(${concurrent_time}s for 10 requests)"
     else
@@ -317,7 +317,7 @@ run_performance_tests() {
 generate_health_report() {
     local report_file="/tmp/system_health_report.json"
     local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    
+
     cat > "$report_file" << EOF
 {
     "timestamp": "$timestamp",
@@ -354,58 +354,58 @@ EOF
 # Main execution
 main() {
     local start_time=$(date +%s)
-    
+
     # Service Health Checks
     echo -e "${PURPLE}=== SERVICE HEALTH CHECKS ===${NC}"
     check_service_health "Backend API" "$BACKEND_URL/health/" "8000"
     check_service_health "Admin Panel" "$ADMIN_URL" "3000"
     echo ""
-    
+
     # Database Health Checks
     echo -e "${PURPLE}=== DATABASE HEALTH CHECKS ===${NC}"
     check_database_health
     echo ""
-    
+
     # System Resource Checks
     echo -e "${PURPLE}=== SYSTEM RESOURCE CHECKS ===${NC}"
     check_system_resources
     echo ""
-    
+
     # API Endpoint Checks
     echo -e "${PURPLE}=== API ENDPOINT CHECKS ===${NC}"
     check_api_endpoints
     echo ""
-    
+
     # Log File Checks
     echo -e "${PURPLE}=== LOG FILE CHECKS ===${NC}"
     check_log_files
     echo ""
-    
+
     # Performance Tests
     echo -e "${PURPLE}=== PERFORMANCE TESTS ===${NC}"
     run_performance_tests
     echo ""
-    
+
     # Generate Report
     generate_health_report
-    
+
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
-    
+
     echo ""
     echo -e "${BLUE}=================================${NC}"
     echo -e "${BLUE}Health Check Complete (${duration}s)${NC}"
     echo -e "${BLUE}=================================${NC}"
-    
+
     # Summary
     local healthy_count=$(grep -c "HEALTHY" "$LOG_FILE" || echo "0")
     local warning_count=$(grep -c "WARNING" "$LOG_FILE" || echo "0")
     local critical_count=$(grep -c "CRITICAL" "$LOG_FILE" || echo "0")
-    
+
     echo -e "${GREEN}✅ Healthy: $healthy_count${NC}"
     echo -e "${YELLOW}⚠️  Warnings: $warning_count${NC}"
     echo -e "${RED}❌ Critical: $critical_count${NC}"
-    
+
     if [ $critical_count -eq 0 ] && [ $warning_count -eq 0 ]; then
         echo -e "${GREEN}🎉 System is fully operational!${NC}"
         return 0

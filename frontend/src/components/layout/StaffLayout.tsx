@@ -3,13 +3,13 @@
  * Includes AppHeader, Screen, and StaffTabBar (mobile)
  */
 
-import React from 'react';
-import { View, StyleSheet, Platform, ViewStyle } from 'react-native';
-import { useSegments } from 'expo-router';
-import { Screen } from './Screen';
-import { AppHeader } from '../navigation/AppHeader';
-import { StaffTabBar } from '../navigation/StaffTabBar';
-import { layout } from '../../styles/globalStyles';
+import React from "react";
+import { View, StyleSheet, Platform, ViewStyle } from "react-native";
+import { useSegments } from "expo-router";
+import { Screen } from "./Screen";
+import { AppHeader } from "../navigation/AppHeader";
+import { StaffTabBar } from "../navigation/StaffTabBar";
+import { layout } from "../../styles/globalStyles";
 
 interface StaffLayoutProps {
   children: React.ReactNode;
@@ -19,14 +19,14 @@ interface StaffLayoutProps {
   showFAB?: boolean;
   fabAction?: () => void;
   headerActions?: {
-    icon: keyof typeof import('@expo/vector-icons').Ionicons.glyphMap;
+    icon: keyof typeof import("@expo/vector-icons").Ionicons.glyphMap;
     label: string;
     onPress: () => void;
     badge?: number;
   }[];
   style?: ViewStyle;
   testID?: string;
-  screenVariant?: 'default' | 'scrollable' | 'fullscreen';
+  screenVariant?: "default" | "scrollable" | "fullscreen";
   backgroundColor?: string;
 }
 
@@ -38,26 +38,26 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({
   headerActions = [],
   style,
   testID,
-  screenVariant = 'scrollable',
+  screenVariant = "scrollable",
   backgroundColor,
 }) => {
   const rawSegments = useSegments();
   const segments = Array.isArray(rawSegments) ? rawSegments : [];
-  const isMobile = Platform.OS !== 'web';
+  const isMobile = Platform.OS !== "web";
 
   // Auto-detect title from route if not provided
   const screenTitle =
     title ||
-    (segments[1] === 'home'
-      ? 'Sessions'
-      : segments[1] === 'scan'
-        ? 'Scan'
-        : segments[1] === 'history'
-          ? 'History'
-          : 'Staff');
+    (segments[1] === "home"
+      ? "Sessions"
+      : segments[1] === "scan"
+        ? "Scan"
+        : segments[1] === "history"
+          ? "History"
+          : "Staff");
 
   // Show back button if not on home screen
-  const showBack = segments[1] !== 'home' && segments[1] !== undefined;
+  const showBack = segments[1] !== "home" && segments[1] !== undefined;
 
   return (
     <View style={[styles.container, style]} testID={testID}>
@@ -67,7 +67,11 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({
         showUser={true}
         actions={headerActions}
       />
-      <Screen variant={screenVariant} style={styles.screen} backgroundColor={backgroundColor}>
+      <Screen
+        variant={screenVariant}
+        style={styles.screen}
+        backgroundColor={backgroundColor}
+      >
         {children}
       </Screen>
       {isMobile && <StaffTabBar />}
@@ -86,11 +90,11 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
-    paddingBottom: Platform.OS !== 'web' ? layout.tabBarHeight : 0,
+    paddingBottom: Platform.OS !== "web" ? layout.tabBarHeight : 0,
   },
   fabContainer: {
-    position: 'absolute',
-    bottom: Platform.OS !== 'web' ? layout.tabBarHeight + 16 : 16,
+    position: "absolute",
+    bottom: Platform.OS !== "web" ? layout.tabBarHeight + 16 : 16,
     right: 16,
     zIndex: 100,
   },

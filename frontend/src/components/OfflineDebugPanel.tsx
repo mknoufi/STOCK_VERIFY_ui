@@ -1,6 +1,17 @@
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
-import { getCacheStats, clearAllCache, getOfflineQueue } from "../services/offline/offlineStorage";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
+import {
+  getCacheStats,
+  clearAllCache,
+  getOfflineQueue,
+} from "../services/offline/offlineStorage";
 import { syncOfflineQueue } from "../services/api";
 import { useNetworkStore } from "../store/networkStore";
 
@@ -47,19 +58,23 @@ export const OfflineDebugPanel: React.FC = () => {
   };
 
   const handleClearCache = async () => {
-    Alert.alert("Clear Cache", "Are you sure you want to clear all offline data?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Clear",
-        style: "destructive",
-        onPress: async () => {
-          await clearAllCache();
-          await loadStats();
-          setSyncResult(null);
-          Alert.alert("Success", "Cache cleared successfully");
+    Alert.alert(
+      "Clear Cache",
+      "Are you sure you want to clear all offline data?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: async () => {
+            await clearAllCache();
+            await loadStats();
+            setSyncResult(null);
+            Alert.alert("Success", "Cache cleared successfully");
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const handleViewQueue = async () => {
@@ -76,7 +91,9 @@ export const OfflineDebugPanel: React.FC = () => {
         <Text style={styles.sectionTitle}>Network Status</Text>
         <View style={styles.row}>
           <Text style={styles.label}>Status:</Text>
-          <Text style={[styles.value, { color: isOnline ? "#4CAF50" : "#FF6B6B" }]}>
+          <Text
+            style={[styles.value, { color: isOnline ? "#4CAF50" : "#FF6B6B" }]}
+          >
             {isOnline ? "Online" : "Offline"}
           </Text>
         </View>
@@ -103,7 +120,10 @@ export const OfflineDebugPanel: React.FC = () => {
         <View style={styles.row}>
           <Text style={styles.label}>Queued Operations:</Text>
           <Text
-            style={[styles.value, { color: stats.queuedOperations > 0 ? "#FFA500" : "#4CAF50" }]}
+            style={[
+              styles.value,
+              { color: stats.queuedOperations > 0 ? "#FFA500" : "#4CAF50" },
+            ]}
           >
             {stats.queuedOperations}
           </Text>
@@ -111,7 +131,9 @@ export const OfflineDebugPanel: React.FC = () => {
         <View style={styles.row}>
           <Text style={styles.label}>Last Sync:</Text>
           <Text style={styles.value}>
-            {stats.lastSync ? new Date(stats.lastSync).toLocaleString() : "Never"}
+            {stats.lastSync
+              ? new Date(stats.lastSync).toLocaleString()
+              : "Never"}
           </Text>
         </View>
       </View>
@@ -120,7 +142,9 @@ export const OfflineDebugPanel: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Last Sync Result</Text>
           {syncResult.error ? (
-            <Text style={[styles.value, { color: "#FF6B6B" }]}>Error: {syncResult.error}</Text>
+            <Text style={[styles.value, { color: "#FF6B6B" }]}>
+              Error: {syncResult.error}
+            </Text>
           ) : (
             <>
               <View style={styles.row}>
@@ -129,11 +153,15 @@ export const OfflineDebugPanel: React.FC = () => {
               </View>
               <View style={styles.row}>
                 <Text style={styles.label}>Success:</Text>
-                <Text style={[styles.value, { color: "#4CAF50" }]}>{syncResult.success}</Text>
+                <Text style={[styles.value, { color: "#4CAF50" }]}>
+                  {syncResult.success}
+                </Text>
               </View>
               <View style={styles.row}>
                 <Text style={styles.label}>Failed:</Text>
-                <Text style={[styles.value, { color: "#FF6B6B" }]}>{syncResult.failed}</Text>
+                <Text style={[styles.value, { color: "#FF6B6B" }]}>
+                  {syncResult.failed}
+                </Text>
               </View>
             </>
           )}
@@ -150,14 +178,22 @@ export const OfflineDebugPanel: React.FC = () => {
           onPress={handleSync}
           disabled={!isOnline || syncing}
         >
-          <Text style={styles.buttonText}>{syncing ? "Syncing..." : "Sync Now"}</Text>
+          <Text style={styles.buttonText}>
+            {syncing ? "Syncing..." : "Sync Now"}
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, styles.viewButton]} onPress={handleViewQueue}>
+        <TouchableOpacity
+          style={[styles.button, styles.viewButton]}
+          onPress={handleViewQueue}
+        >
           <Text style={styles.buttonText}>View Queue</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={handleClearCache}>
+        <TouchableOpacity
+          style={[styles.button, styles.clearButton]}
+          onPress={handleClearCache}
+        >
           <Text style={styles.buttonText}>Clear Cache</Text>
         </TouchableOpacity>
       </View>

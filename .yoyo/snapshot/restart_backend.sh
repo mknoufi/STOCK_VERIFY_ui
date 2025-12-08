@@ -35,7 +35,7 @@ sleep 5
 echo "🧪 Testing backend..."
 if curl -s -f http://localhost:8001/health >/dev/null 2>&1; then
     echo "✅ Backend is running and responding!"
-    echo "🌐 Local: http://localhost:8001" 
+    echo "🌐 Local: http://localhost:8001"
     echo "📚 Docs: http://localhost:8001/docs"
     echo "📱 Mobile: http://192.168.1.32:8001"
     echo ""
@@ -44,7 +44,7 @@ else
     echo "❌ Backend not responding"
     echo "📋 Check logs:"
     echo "   tail -f logs/backend.log"
-    
+
     if [ -f "logs/backend.log" ]; then
         echo ""
         echo "--- Last 15 lines of backend log ---"

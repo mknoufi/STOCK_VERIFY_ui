@@ -3,12 +3,22 @@
  * Fully functional chart component for analytics
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
-import Svg, { Polyline, Circle, Line, Text as SvgText, G } from 'react-native-svg';
-import { modernColors, modernTypography, modernSpacing } from '../../styles/modernDesignSystem';
+import React from "react";
+import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
+import Svg, {
+  Polyline,
+  Circle,
+  Line,
+  Text as SvgText,
+  G,
+} from "react-native-svg";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;
 const CHART_HEIGHT = 200;
 const PADDING = 20;
@@ -73,7 +83,6 @@ export const LineChart: React.FC<LineChartProps> = ({
 
   // Generate polyline path
 
-
   // Generate grid lines
   const gridLines = [];
   const gridSteps = 5;
@@ -85,9 +94,11 @@ export const LineChart: React.FC<LineChartProps> = ({
 
   // Generate x-axis labels
   const xLabels = data
-    .filter((_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1)
+    .filter(
+      (_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1,
+    )
     .map((point, i) => ({
-      x: PADDING + (data.indexOf(point) * scaleX),
+      x: PADDING + data.indexOf(point) * scaleX,
       label: String(point.x),
     }));
 
@@ -145,7 +156,7 @@ export const LineChart: React.FC<LineChartProps> = ({
 
           {/* Chart line */}
           <Polyline
-            points={points.map((p) => `${p.x},${p.y}`).join(' ')}
+            points={points.map((p) => `${p.x},${p.y}`).join(" ")}
             fill="none"
             stroke={color}
             strokeWidth="3"
@@ -166,7 +177,7 @@ export const LineChart: React.FC<LineChartProps> = ({
                   strokeWidth="2"
                 />
                 {/* Tooltip on hover (web only) */}
-                {Platform.OS === 'web' && (
+                {Platform.OS === "web" && (
                   <SvgText
                     x={point.x}
                     y={point.y - 10}
@@ -216,19 +227,19 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.xs,
   },
   chartContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   xAxisLabel: {
     ...modernTypography.body.small,
     color: modernColors.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: modernSpacing.xs,
   },
   emptyState: {
     height: CHART_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.elevated,
     borderRadius: 8,
   },

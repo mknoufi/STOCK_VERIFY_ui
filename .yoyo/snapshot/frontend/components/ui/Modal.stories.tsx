@@ -1,6 +1,6 @@
 /**
  * Modal Component Stories
- * 
+ *
  * Documentation and examples for the Modal component
  */
 
@@ -57,12 +57,12 @@ type Story = StoryObj<typeof Modal>;
 // Interactive wrapper for stories
 const ModalWrapper = ({ children, ...props }: any) => {
   const [visible, setVisible] = useState(props.visible || false);
-  
+
   return (
     <View>
-      <Button 
-        title="Open Modal" 
-        onPress={() => setVisible(true)} 
+      <Button
+        title="Open Modal"
+        onPress={() => setVisible(true)}
         style={styles.openButton}
       />
       <Modal
@@ -142,16 +142,16 @@ export const ComplexContent: Story = {
           Are you sure you want to delete this item? This action cannot be undone.
         </Text>
         <View style={styles.buttonRow}>
-          <Button 
-            title="Cancel" 
-            variant="outline" 
-            onPress={() => {}} 
+          <Button
+            title="Cancel"
+            variant="outline"
+            onPress={() => {}}
             style={styles.button}
           />
-          <Button 
-            title="Delete" 
-            variant="danger" 
-            onPress={() => {}} 
+          <Button
+            title="Delete"
+            variant="danger"
+            onPress={() => {}}
             style={styles.button}
           />
         </View>
@@ -219,4 +219,3 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 });
-

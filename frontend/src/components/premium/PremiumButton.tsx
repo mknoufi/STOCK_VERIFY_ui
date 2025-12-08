@@ -3,10 +3,10 @@
  * Re-exports ModernButton with consistent naming for premium UI components
  */
 
-import React from 'react';
-import { ViewStyle, TextStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ModernButton, ButtonVariant, ButtonSize } from '../ModernButton';
+import React from "react";
+import { ViewStyle, TextStyle } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { ModernButton, ButtonVariant, ButtonSize } from "../ModernButton";
 
 interface PremiumButtonProps {
   title: string;
@@ -16,7 +16,7 @@ interface PremiumButtonProps {
   disabled?: boolean;
   loading?: boolean;
   icon?: keyof typeof Ionicons.glyphMap;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;

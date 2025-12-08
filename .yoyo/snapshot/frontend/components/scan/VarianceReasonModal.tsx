@@ -136,4 +136,3 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 });
-

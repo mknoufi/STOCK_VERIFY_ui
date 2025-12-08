@@ -51,14 +51,14 @@ if (typeof updateSystemHealth !== 'function') {
                 // Simple health calculation
                 const services = ['mongodb', 'backend', 'frontend'];
                 let runningCount = 0;
-                
+
                 services.forEach(service => {
                     const statusElement = document.getElementById(`${service}Status`);
                     if (statusElement && statusElement.textContent.includes('Running')) {
                         runningCount++;
                     }
                 });
-                
+
                 const healthScore = Math.round((runningCount / services.length) * 100);
                 healthElement.textContent = healthScore;
             }
@@ -77,9 +77,9 @@ if (typeof updateAnalyticsCards !== 'function') {
             responseTime: Math.floor(Math.random() * 200) + 100,
             uptime: 99.9 - Math.random() * 0.5
         };
-        
+
         const analyticsData = { ...defaults, ...data };
-        
+
         Object.entries({
             'totalRequests': analyticsData.requests,
             'totalErrors': analyticsData.errors,
@@ -101,7 +101,7 @@ if (typeof updateTrafficChart !== 'function') {
             console.debug('Chart.js not available for traffic chart');
             return;
         }
-        
+
         try {
             const traffic = Math.floor(Math.random() * 100) + 20;
             if (typeof updateChart === 'function') {
@@ -136,7 +136,7 @@ if (typeof state !== 'undefined') {
         state.chartsEnabled = typeof Chart !== 'undefined';
         console.log('✅ Added missing chartsEnabled state property');
     }
-    
+
     if (!Array.isArray(state.alerts)) {
         state.alerts = [];
         console.log('✅ Initialized alerts array');
@@ -150,22 +150,22 @@ if (typeof Chart !== 'undefined' && typeof updateChart !== 'function') {
             console.debug(`Chart '${chartName}' not available`);
             return;
         }
-        
+
         try {
             const chart = window.state.charts[chartName];
             const dataset = chart.data.datasets[0];
             const labels = chart.data.labels;
-            
+
             if (typeof newValue === 'number' && !isNaN(newValue)) {
                 dataset.data.push(newValue);
                 labels.push(label || new Date().toLocaleTimeString());
-                
+
                 const maxPoints = (window.CONFIG && window.CONFIG.CHART_POINTS) || 50;
                 if (dataset.data.length > maxPoints) {
                     dataset.data.shift();
                     labels.shift();
                 }
-                
+
                 chart.update('none');
             }
         } catch (error) {

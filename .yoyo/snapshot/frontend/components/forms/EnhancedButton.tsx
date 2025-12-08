@@ -8,4 +8,3 @@ const EnhancedButton: React.FC<EnhancedButtonProps> = (props) => {
 };
 
 export default EnhancedButton;
-

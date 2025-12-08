@@ -15,13 +15,13 @@ Usage:
     pytest backend/tests/evaluation/ -v -m data_quality
 """
 
-from .metrics_collector import MetricsCollector, EvaluationReport
 from .evaluators import (
     APIPerformanceEvaluator,
     BusinessLogicEvaluator,
     DataQualityEvaluator,
     WorkflowEvaluator,
 )
+from .metrics_collector import EvaluationReport, MetricsCollector
 
 __all__ = [
     "MetricsCollector",

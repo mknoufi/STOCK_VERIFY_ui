@@ -2,8 +2,8 @@
  * useScanState Hook
  * Manages scanner state (barcode scanning, manual entry, etc.)
  */
-import { useState, useCallback } from 'react';
-import { ScannerMode } from '@/types/scan';
+import { useState, useCallback } from "react";
+import { ScannerMode } from "@/types/scan";
 
 interface ScannerState {
   showScanner: boolean;
@@ -19,13 +19,13 @@ interface ScannerState {
 
 const initialState: ScannerState = {
   showScanner: false,
-  manualBarcode: '',
-  manualItemName: '',
-  lastScannedBarcode: '',
+  manualBarcode: "",
+  manualItemName: "",
+  lastScannedBarcode: "",
   scanTimestamp: 0,
-  scanFeedback: '',
+  scanFeedback: "",
   continuousScanMode: false,
-  scannerMode: 'item',
+  scannerMode: "item",
   serialScanTargetId: null,
 };
 

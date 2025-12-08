@@ -2,7 +2,7 @@
 
 This document captures actionable takeaways from four external repositories and how they can enhance our Expo React Native + FastAPI + MongoDB/SQL project. Each section includes fit assessment, concrete integration ideas, and guardrails aligned with our architecture.
 
- 
+
 ## GibsonAI/Memori
 
 - Purpose: Memory-centric patterns (user/context "memories", retrieval).
@@ -14,7 +14,7 @@ This document captures actionable takeaways from four external repositories and 
   - UI: Flag-gated notes panel under supervisor/staff routes; lazy-loaded.
 - Guardrails: Keep ERP writes in Mongo; enforce JWT (`Depends(get_current_user)`); follow `API_CONTRACTS.md` error shape.
 
- 
+
 ## justjavac/free-programming-books-zh_CN
 
 - Purpose: Curated Chinese-language programming resource links.
@@ -24,7 +24,7 @@ This document captures actionable takeaways from four external repositories and 
   - Provide localized help entry points; keep it out of production build unless enabled via flag.
 - Guardrails: Avoid large static bundles; respect licensing; link rather than mirror.
 
- 
+
 ## storybookjs/storybook
 
 - Purpose: Component playground, visual regression, and UI documentation.
@@ -35,7 +35,7 @@ This document captures actionable takeaways from four external repositories and 
   - Use snapshots and visual checks in CI; ensure Storybook code is excluded from production build.
 - Guardrails: Keep strictly dev-only; ensure Expo compatibility; respect feature flags.
 
- 
+
 ## enaqx/awesome-react
 
 - Purpose: Curated ecosystem references (performance, testing, accessibility, patterns).
@@ -46,21 +46,21 @@ This document captures actionable takeaways from four external repositories and 
   - Accessibility: Ensure RN components use accessibility props and labels where relevant.
 - Guardrails: Do not add libraries without a clear need; treat as ongoing reference.
 
- 
+
 ## Immediate Recommendations
 
 - Adopt Storybook (dev-only) to stabilize and iterate on UI components faster.
 - Prototype a Memori-inspired "Notes" feature strictly in MongoDB, flag-gated, and offline-aware.
 - Optional: Add a lightweight Help page linking to external learning resources (Chinese list and others).
 
- 
+
 ## Feature Flags to Introduce
 
 - `enableNotes`: Toggle the notes module and UI.
 - `enableStorybook`: Dev-only flag to run Storybook without affecting production.
 - `enableHelpResources`: Toggle the Help page that links to external resources.
 
- 
+
 ## Quick Implementation Outline (Notes)
 
 - Backend: Add `notes` router under `/api/notes` with JWT, CRUD in MongoDB.

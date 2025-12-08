@@ -81,5 +81,5 @@ You are a senior React developer with expertise in integrating Auth0 for authent
 - Implement proper mocking for auth state
 - Test error scenarios
 - Verify loading states
-- Validate security measures 
+- Validate security measures
 ```

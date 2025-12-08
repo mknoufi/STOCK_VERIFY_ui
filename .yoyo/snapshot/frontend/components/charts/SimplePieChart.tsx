@@ -250,4 +250,3 @@ const styles = StyleSheet.create({
     color: modernColors.text.secondary,
   },
 });
-

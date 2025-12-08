@@ -10,7 +10,9 @@ try {
   // Attempt MMKV init; will throw if TurboModules not enabled
   storage = new MMKV();
 } catch {
-  console.warn("[MMKV] New architecture not enabled; falling back to AsyncStorage");
+  console.warn(
+    "[MMKV] New architecture not enabled; falling back to AsyncStorage",
+  );
   storage = null;
 }
 

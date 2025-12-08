@@ -9,23 +9,23 @@
  * - Better shadows and borders
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ViewStyle,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-} from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
 import {
   modernColors,
   modernSpacing,
@@ -33,13 +33,19 @@ import {
   modernShadows,
   modernTypography,
   modernAnimations,
-} from '../styles/modernDesignSystem';
+} from "../styles/modernDesignSystem";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-export type CardVariant = 'default' | 'elevated' | 'glass' | 'gradient' | 'outlined';
-export type CardElevation = 'none' | 'sm' | 'md' | 'lg';
+export type CardVariant =
+  | "default"
+  | "elevated"
+  | "glass"
+  | "gradient"
+  | "outlined";
+export type CardElevation = "none" | "sm" | "md" | "lg";
 
 interface ModernCardProps {
   children: React.ReactNode;
@@ -61,8 +67,8 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   title,
   subtitle,
   onPress,
-  variant = 'default',
-  elevation = 'md',
+  variant = "default",
+  elevation = "md",
   padding = modernSpacing.cardPadding,
   style,
   gradientColors,
@@ -112,7 +118,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
     const baseStyle: ViewStyle = {
       borderRadius: modernBorderRadius.card,
       padding,
-      overflow: 'hidden' as const,
+      overflow: "hidden" as const,
     };
 
     // Elevation shadows
@@ -136,12 +142,12 @@ export const ModernCard: React.FC<ModernCardProps> = ({
         ...elevationShadows[elevation],
       },
       glass: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: "rgba(255, 255, 255, 0.1)",
       },
       gradient: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
       },
       outlined: {
         backgroundColor: modernColors.background.paper,
@@ -172,21 +178,15 @@ export const ModernCard: React.FC<ModernCardProps> = ({
               </View>
             )}
             <View style={styles.headerText}>
-              {title && (
-                <Text style={styles.title}>{title}</Text>
-              )}
-              {subtitle && (
-                <Text style={styles.subtitle}>{subtitle}</Text>
-              )}
+              {title && <Text style={styles.title}>{title}</Text>}
+              {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
             </View>
           </View>
         )}
 
         <View style={styles.body}>{children}</View>
 
-        {footer && (
-          <View style={styles.footer}>{footer}</View>
-        )}
+        {footer && <View style={styles.footer}>{footer}</View>}
       </View>
     );
   };
@@ -196,7 +196,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
     const cardStyle = [getCardStyles(), style];
     const Component = onPress ? AnimatedTouchableOpacity : AnimatedView;
 
-    if (variant === 'gradient') {
+    if (variant === "gradient") {
       const colors = gradientColors || modernColors.gradients.surface;
       return (
         <Component
@@ -218,7 +218,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       );
     }
 
-    if (variant === 'glass') {
+    if (variant === "glass") {
       return (
         <Component
           onPress={onPress}
@@ -255,8 +255,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: modernSpacing.md,
   },
   iconContainer: {

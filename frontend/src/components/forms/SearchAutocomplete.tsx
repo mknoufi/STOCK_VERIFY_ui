@@ -3,7 +3,7 @@
  * Enhanced search with dropdown suggestions after 4 characters
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -13,11 +13,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Keyboard,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
-import { searchItems, SearchResult } from '../../services/enhancedSearchService';
-import { useStableDebouncedCallback } from '../../hooks/useDebouncedCallback';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
+import {
+  searchItems,
+  SearchResult,
+} from "../../services/enhancedSearchService";
+import { useStableDebouncedCallback } from "../../hooks/useDebouncedCallback";
 
 interface SearchAutocompleteProps {
   onSelectItem: (item: SearchResult) => void;
@@ -31,13 +34,13 @@ interface SearchAutocompleteProps {
 export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   onSelectItem,
   onBarcodeScan,
-  placeholder = 'Search by name, code, or barcode (min 4 chars)',
+  placeholder = "Search by name, code, or barcode (min 4 chars)",
   minChars = 4,
   showIcon = true,
   autoFocus = false,
 }) => {
   const theme = useTheme();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -46,28 +49,31 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   const listRef = useRef<FlatList>(null);
 
   // Search function
-  const performSearch = React.useCallback(async (searchQuery: string) => {
-    if (!searchQuery || searchQuery.trim().length < minChars) {
-      setResults([]);
-      setShowDropdown(false);
-      setIsSearching(false);
-      return;
-    }
+  const performSearch = React.useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery || searchQuery.trim().length < minChars) {
+        setResults([]);
+        setShowDropdown(false);
+        setIsSearching(false);
+        return;
+      }
 
-    setIsSearching(true);
-    setShowDropdown(true);
+      setIsSearching(true);
+      setShowDropdown(true);
 
-    try {
-      const response = await searchItems({ query: searchQuery });
-      setResults(response.items);
-      setSelectedIndex(-1);
-    } catch (error) {
-      __DEV__ && console.error('Search error:', error);
-      setResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [minChars]);
+      try {
+        const response = await searchItems({ query: searchQuery });
+        setResults(response.items);
+        setSelectedIndex(-1);
+      } catch (error) {
+        __DEV__ && console.error("Search error:", error);
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [minChars],
+  );
 
   // Debounced search using stable hook
   const debouncedSearch = useStableDebouncedCallback(performSearch, 300);
@@ -82,7 +88,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
     // If it's a numeric barcode (6+ digits), trigger barcode scan
     if (/^\d{6,}$/.test(text.trim()) && onBarcodeScan) {
       onBarcodeScan(text.trim());
-      setQuery('');
+      setQuery("");
       setResults([]);
       setShowDropdown(false);
       return;
@@ -99,20 +105,26 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
 
   const handleSelectItem = (item: SearchResult) => {
     onSelectItem(item);
-    setQuery('');
+    setQuery("");
     setResults([]);
     setShowDropdown(false);
     Keyboard.dismiss();
   };
 
   const handleClear = () => {
-    setQuery('');
+    setQuery("");
     setResults([]);
     setShowDropdown(false);
     inputRef.current?.focus();
   };
 
-  const renderResultItem = ({ item, index }: { item: SearchResult; index: number }) => {
+  const renderResultItem = ({
+    item,
+    index,
+  }: {
+    item: SearchResult;
+    index: number;
+  }) => {
     const isSelected = index === selectedIndex;
     const matchType = item.matchType;
 
@@ -122,9 +134,9 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           styles.resultItem,
           {
             backgroundColor: isSelected
-              ? theme.colors.primary + '15' // Subtle highlight
+              ? theme.colors.primary + "15" // Subtle highlight
               : theme.colors.surface,
-            borderColor: isSelected ? theme.colors.primary : 'transparent',
+            borderColor: isSelected ? theme.colors.primary : "transparent",
           },
         ]}
         onPress={() => handleSelectItem(item)}
@@ -139,36 +151,82 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             >
               {item.item_name}
             </Text>
-            {matchType === 'exact' && (
-              <View style={[styles.matchBadge, { backgroundColor: theme.colors.success + '20', borderColor: theme.colors.success }]}>
-                <Text style={[styles.matchBadgeText, { color: theme.colors.success }]}>Exact</Text>
+            {matchType === "exact" && (
+              <View
+                style={[
+                  styles.matchBadge,
+                  {
+                    backgroundColor: theme.colors.success + "20",
+                    borderColor: theme.colors.success,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.matchBadgeText,
+                    { color: theme.colors.success },
+                  ]}
+                >
+                  Exact
+                </Text>
               </View>
             )}
-            {matchType === 'partial' && (
-              <View style={[styles.matchBadge, { backgroundColor: theme.colors.info + '20', borderColor: theme.colors.info }]}>
-                <Text style={[styles.matchBadgeText, { color: theme.colors.info }]}>Match</Text>
+            {matchType === "partial" && (
+              <View
+                style={[
+                  styles.matchBadge,
+                  {
+                    backgroundColor: theme.colors.info + "20",
+                    borderColor: theme.colors.info,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.matchBadgeText, { color: theme.colors.info }]}
+                >
+                  Match
+                </Text>
               </View>
             )}
           </View>
 
           {/* Primary Details: Location and Stock */}
           <View style={styles.primaryDetailsRow}>
-            {(item.floor || item.rack) ? (
+            {item.floor || item.rack ? (
               <View style={styles.detailChip}>
-                <Ionicons name="location-sharp" size={14} color={theme.colors.primary} />
+                <Ionicons
+                  name="location-sharp"
+                  size={14}
+                  color={theme.colors.primary}
+                />
                 <Text style={[styles.detailText, { color: theme.colors.text }]}>
-                  {[item.floor, item.rack].filter(Boolean).join(' / ')}
+                  {[item.floor, item.rack].filter(Boolean).join(" / ")}
                 </Text>
               </View>
             ) : (
               <View style={[styles.detailChip, { opacity: 0.5 }]}>
-                <Ionicons name="location-outline" size={14} color={theme.colors.textSecondary} />
-                <Text style={[styles.detailText, { color: theme.colors.textSecondary }]}>No Loc</Text>
+                <Ionicons
+                  name="location-outline"
+                  size={14}
+                  color={theme.colors.textSecondary}
+                />
+                <Text
+                  style={[
+                    styles.detailText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  No Loc
+                </Text>
               </View>
             )}
 
             <View style={styles.detailChip}>
-              <Ionicons name="cube-outline" size={14} color={theme.colors.secondary} />
+              <Ionicons
+                name="cube-outline"
+                size={14}
+                color={theme.colors.secondary}
+              />
               <Text style={[styles.detailText, { color: theme.colors.text }]}>
                 Qty: {item.stock_qty}
               </Text>
@@ -176,7 +234,11 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
 
             {(item.mrp ?? 0) > 0 && (
               <View style={styles.detailChip}>
-                <Ionicons name="pricetag-outline" size={14} color={theme.colors.success} />
+                <Ionicons
+                  name="pricetag-outline"
+                  size={14}
+                  color={theme.colors.success}
+                />
                 <Text style={[styles.detailText, { color: theme.colors.text }]}>
                   ₹{item.mrp}
                 </Text>
@@ -186,15 +248,30 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
 
           {/* Secondary Details: Code, Barcode, Category */}
           <View style={styles.secondaryDetailsRow}>
-            <Text style={[styles.metaText, { color: theme.colors.textSecondary }]}>
+            <Text
+              style={[styles.metaText, { color: theme.colors.textSecondary }]}
+            >
               Code: {item.item_code}
             </Text>
             {item.barcode && (
               <>
-                <Text style={[styles.metaDivider, { color: theme.colors.border }]}>|</Text>
+                <Text
+                  style={[styles.metaDivider, { color: theme.colors.border }]}
+                >
+                  |
+                </Text>
                 <View style={styles.metaWithIcon}>
-                  <Ionicons name="barcode-outline" size={12} color={theme.colors.textSecondary} />
-                  <Text style={[styles.metaText, { color: theme.colors.textSecondary }]}>
+                  <Ionicons
+                    name="barcode-outline"
+                    size={12}
+                    color={theme.colors.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.metaText,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {item.barcode}
                   </Text>
                 </View>
@@ -202,8 +279,18 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             )}
             {item.category && (
               <>
-                <Text style={[styles.metaDivider, { color: theme.colors.border }]}>|</Text>
-                <Text style={[styles.metaText, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+                <Text
+                  style={[styles.metaDivider, { color: theme.colors.border }]}
+                >
+                  |
+                </Text>
+                <Text
+                  style={[
+                    styles.metaText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                  numberOfLines={1}
+                >
                   {item.category}
                 </Text>
               </>
@@ -228,7 +315,9 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           styles.inputContainer,
           {
             backgroundColor: theme.colors.surface,
-            borderColor: showDropdown ? theme.colors.primary : theme.colors.border,
+            borderColor: showDropdown
+              ? theme.colors.primary
+              : theme.colors.border,
             shadowColor: theme.colors.primary,
             shadowOpacity: showDropdown ? 0.2 : 0,
           },
@@ -238,7 +327,9 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           <Ionicons
             name="search"
             size={20}
-            color={showDropdown ? theme.colors.primary : theme.colors.placeholder}
+            color={
+              showDropdown ? theme.colors.primary : theme.colors.placeholder
+            }
             style={styles.searchIcon}
           />
         )}
@@ -270,7 +361,11 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             onPress={handleClear}
             activeOpacity={0.7}
           >
-            <Ionicons name="close-circle" size={20} color={theme.colors.placeholder} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={theme.colors.placeholder}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -282,22 +377,33 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             {
               backgroundColor: theme.colors.surface, // Match surface for seamless look
               borderColor: theme.colors.border,
-              shadowColor: '#000',
+              shadowColor: "#000",
             },
           ]}
         >
           {isSearching ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
-              <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.loadingText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Searching...
               </Text>
             </View>
           ) : results.length > 0 ? (
             <>
               <View style={styles.resultsHeader}>
-                <Text style={[styles.resultsHeaderText, { color: theme.colors.textSecondary }]}>
-                  FOUND {results.length} {results.length === 1 ? 'ITEM' : 'ITEMS'}
+                <Text
+                  style={[
+                    styles.resultsHeaderText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  FOUND {results.length}{" "}
+                  {results.length === 1 ? "ITEM" : "ITEMS"}
                 </Text>
               </View>
               <FlatList
@@ -314,19 +420,40 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             </>
           ) : query.trim().length >= minChars ? (
             <View style={styles.noResultsContainer}>
-              <View style={[styles.noResultsIconCircle, { backgroundColor: theme.colors.background }]}>
-                <Ionicons name="search-outline" size={32} color={theme.colors.placeholder} />
+              <View
+                style={[
+                  styles.noResultsIconCircle,
+                  { backgroundColor: theme.colors.background },
+                ]}
+              >
+                <Ionicons
+                  name="search-outline"
+                  size={32}
+                  color={theme.colors.placeholder}
+                />
               </View>
-              <Text style={[styles.noResultsText, { color: theme.colors.text }]}>
+              <Text
+                style={[styles.noResultsText, { color: theme.colors.text }]}
+              >
                 No items found
               </Text>
-              <Text style={[styles.noResultsHint, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.noResultsHint,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Try searching by a different code or name
               </Text>
             </View>
           ) : (
             <View style={styles.minCharsContainer}>
-              <Text style={[styles.minCharsText, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.minCharsText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Type {minChars}+ characters...
               </Text>
             </View>
@@ -339,13 +466,13 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
+    position: "relative",
     zIndex: 1000,
     marginBottom: 8,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderRadius: 12, // More rounded
     paddingHorizontal: 14,
@@ -361,7 +488,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 0,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   loadingIcon: {
     marginLeft: 8,
@@ -371,7 +498,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   dropdown: {
-    position: 'absolute', // Ensure it floats over content
+    position: "absolute", // Ensure it floats over content
     top: 56, // Just below input
     left: 0,
     right: 0,
@@ -382,39 +509,39 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
-    overflow: 'hidden', // Clip content to border radius
+    overflow: "hidden", // Clip content to border radius
   },
   loadingContainer: {
     padding: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
   },
   loadingText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   resultsHeader: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderBottomColor: "rgba(255,255,255,0.05)",
+    backgroundColor: "rgba(0,0,0,0.2)",
   },
   resultsHeaderText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 1,
   },
   resultsList: {
     maxHeight: 400,
   },
   resultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: "rgba(255,255,255,0.05)",
     borderLeftWidth: 3, // Accent border on selection
   },
   resultContent: {
@@ -422,15 +549,15 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   resultHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingRight: 8,
   },
   resultName: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.3,
   },
   matchBadge: {
@@ -442,19 +569,19 @@ const styles = StyleSheet.create({
   },
   matchBadgeText: {
     fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    textTransform: "uppercase",
   },
   primaryDetailsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
     gap: 8,
   },
   detailChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -462,23 +589,23 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   secondaryDetailsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
     gap: 6,
     marginTop: 2,
   },
   metaWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   metaText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   metaDivider: {
     fontSize: 10,
@@ -487,32 +614,32 @@ const styles = StyleSheet.create({
   },
   noResultsContainer: {
     padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
   },
   noResultsIconCircle: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 8,
   },
   noResultsText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   noResultsHint: {
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
   minCharsContainer: {
     padding: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
   minCharsText: {
     fontSize: 14,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });

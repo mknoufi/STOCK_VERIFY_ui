@@ -3,14 +3,14 @@
  * Handles data export to CSV, Excel, and JSON formats
  */
 
-import { Paths, File } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import { Alert } from 'react-native';
+import { Paths, File } from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import { Alert } from "react-native";
 
 export interface ExportOptions {
   filename?: string;
   headers?: string[];
-  format?: 'csv' | 'json' | 'txt';
+  format?: "csv" | "json" | "txt";
 }
 
 export class ExportService {
@@ -19,39 +19,43 @@ export class ExportService {
    */
   static async exportToCSV(
     data: any[],
-    options: ExportOptions = {}
+    options: ExportOptions = {},
   ): Promise<void> {
     try {
       if (!data || data.length === 0) {
-        throw new Error('No data to export');
+        throw new Error("No data to export");
       }
 
       const filename = options.filename || `export_${Date.now()}.csv`;
       const headers = options.headers || Object.keys(data[0]);
 
       // Generate CSV content
-      let csvContent = headers.join(',') + '\n';
+      let csvContent = headers.join(",") + "\n";
 
       data.forEach((row) => {
         const values = headers.map((header) => {
           const value = row[header];
           // Escape commas and quotes in CSV
           if (value === null || value === undefined) {
-            return '';
+            return "";
           }
           const stringValue = String(value).replace(/"/g, '""');
-          if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+          if (
+            stringValue.includes(",") ||
+            stringValue.includes("\n") ||
+            stringValue.includes('"')
+          ) {
             return `"${stringValue}"`;
           }
           return stringValue;
         });
-        csvContent += values.join(',') + '\n';
+        csvContent += values.join(",") + "\n";
       });
 
-      await this.saveAndShareFile(csvContent, filename, 'text/csv');
+      await this.saveAndShareFile(csvContent, filename, "text/csv");
     } catch (error: any) {
-      __DEV__ && console.error('CSV export error:', error);
-      Alert.alert('Export Error', error.message || 'Failed to export CSV');
+      __DEV__ && console.error("CSV export error:", error);
+      Alert.alert("Export Error", error.message || "Failed to export CSV");
       throw error;
     }
   }
@@ -61,20 +65,20 @@ export class ExportService {
    */
   static async exportToJSON(
     data: any[],
-    options: ExportOptions = {}
+    options: ExportOptions = {},
   ): Promise<void> {
     try {
       if (!data || data.length === 0) {
-        throw new Error('No data to export');
+        throw new Error("No data to export");
       }
 
       const filename = options.filename || `export_${Date.now()}.json`;
       const jsonContent = JSON.stringify(data, null, 2);
 
-      await this.saveAndShareFile(jsonContent, filename, 'application/json');
+      await this.saveAndShareFile(jsonContent, filename, "application/json");
     } catch (error: any) {
-      __DEV__ && console.error('JSON export error:', error);
-      Alert.alert('Export Error', error.message || 'Failed to export JSON');
+      __DEV__ && console.error("JSON export error:", error);
+      Alert.alert("Export Error", error.message || "Failed to export JSON");
       throw error;
     }
   }
@@ -84,30 +88,30 @@ export class ExportService {
    */
   static async exportToText(
     data: any[],
-    options: ExportOptions = {}
+    options: ExportOptions = {},
   ): Promise<void> {
     try {
       if (!data || data.length === 0) {
-        throw new Error('No data to export');
+        throw new Error("No data to export");
       }
 
       const filename = options.filename || `export_${Date.now()}.txt`;
       const headers = options.headers || Object.keys(data[0]);
 
-      let textContent = headers.join('\t') + '\n';
+      let textContent = headers.join("\t") + "\n";
 
       data.forEach((row) => {
         const values = headers.map((header) => {
           const value = row[header];
-          return value === null || value === undefined ? '' : String(value);
+          return value === null || value === undefined ? "" : String(value);
         });
-        textContent += values.join('\t') + '\n';
+        textContent += values.join("\t") + "\n";
       });
 
-      await this.saveAndShareFile(textContent, filename, 'text/plain');
+      await this.saveAndShareFile(textContent, filename, "text/plain");
     } catch (error: any) {
-      __DEV__ && console.error('Text export error:', error);
-      Alert.alert('Export Error', error.message || 'Failed to export text');
+      __DEV__ && console.error("Text export error:", error);
+      Alert.alert("Export Error", error.message || "Failed to export text");
       throw error;
     }
   }
@@ -116,7 +120,17 @@ export class ExportService {
    * Export sessions to CSV
    */
   static async exportSessions(sessions: any[]): Promise<void> {
-    const headers = ['id', 'warehouse', 'staff_user', 'staff_name', 'status', 'started_at', 'closed_at', 'total_items', 'total_variance'];
+    const headers = [
+      "id",
+      "warehouse",
+      "staff_user",
+      "staff_name",
+      "status",
+      "started_at",
+      "closed_at",
+      "total_items",
+      "total_variance",
+    ];
     await this.exportToCSV(sessions, {
       filename: `sessions_${Date.now()}.csv`,
       headers,
@@ -128,7 +142,7 @@ export class ExportService {
    */
   static async exportSessionsWithDetails(sessions: any[]): Promise<void> {
     try {
-      __DEV__ && console.log('📊 [Export] Exporting sessions with details...');
+      __DEV__ && console.log("📊 [Export] Exporting sessions with details...");
 
       // Transform sessions into detailed rows
       const detailedData: any[] = [];
@@ -149,16 +163,16 @@ export class ExportService {
       });
 
       const headers = [
-        'session_id',
-        'warehouse',
-        'staff_name',
-        'status',
-        'started_at',
-        'closed_at',
-        'total_items',
-        'total_variance',
-        'counted_items',
-        'pending_items',
+        "session_id",
+        "warehouse",
+        "staff_name",
+        "status",
+        "started_at",
+        "closed_at",
+        "total_items",
+        "total_variance",
+        "counted_items",
+        "pending_items",
       ];
 
       await this.exportToCSV(detailedData, {
@@ -166,9 +180,14 @@ export class ExportService {
         headers,
       });
 
-      __DEV__ && console.log('✅ [Export] Sessions with details exported successfully');
+      __DEV__ &&
+        console.log("✅ [Export] Sessions with details exported successfully");
     } catch (error: any) {
-      __DEV__ && console.error('❌ [Export] Failed to export sessions with details:', error);
+      __DEV__ &&
+        console.error(
+          "❌ [Export] Failed to export sessions with details:",
+          error,
+        );
       throw error;
     }
   }
@@ -178,7 +197,7 @@ export class ExportService {
    */
   static async exportVarianceReport(sessions: any[]): Promise<void> {
     try {
-      __DEV__ && console.log('📊 [Export] Exporting variance report...');
+      __DEV__ && console.log("📊 [Export] Exporting variance report...");
 
       const varianceData = sessions.map((session: any) => ({
         session_id: session.id,
@@ -189,21 +208,25 @@ export class ExportService {
         total_items: session.total_items || 0,
         counted_items: session.counted_items || 0,
         total_variance: session.total_variance || 0,
-        variance_percentage: session.total_items > 0
-          ? ((Math.abs(session.total_variance || 0) / session.total_items) * 100).toFixed(2)
-          : '0',
+        variance_percentage:
+          session.total_items > 0
+            ? (
+                (Math.abs(session.total_variance || 0) / session.total_items) *
+                100
+              ).toFixed(2)
+            : "0",
       }));
 
       const headers = [
-        'session_id',
-        'warehouse',
-        'staff_name',
-        'status',
-        'started_at',
-        'total_items',
-        'counted_items',
-        'total_variance',
-        'variance_percentage',
+        "session_id",
+        "warehouse",
+        "staff_name",
+        "status",
+        "started_at",
+        "total_items",
+        "counted_items",
+        "total_variance",
+        "variance_percentage",
       ];
 
       await this.exportToCSV(varianceData, {
@@ -211,9 +234,11 @@ export class ExportService {
         headers,
       });
 
-      __DEV__ && console.log('✅ [Export] Variance report exported successfully');
+      __DEV__ &&
+        console.log("✅ [Export] Variance report exported successfully");
     } catch (error: any) {
-      __DEV__ && console.error('❌ [Export] Failed to export variance report:', error);
+      __DEV__ &&
+        console.error("❌ [Export] Failed to export variance report:", error);
       throw error;
     }
   }
@@ -223,34 +248,51 @@ export class ExportService {
    */
   static async exportSummaryReport(sessions: any[]): Promise<void> {
     try {
-      __DEV__ && console.log('📊 [Export] Exporting summary report...');
+      __DEV__ && console.log("📊 [Export] Exporting summary report...");
 
       // Calculate summary statistics
       const totalSessions = sessions.length;
-      const openSessions = sessions.filter((s: any) => s.status === 'OPEN').length;
-      const closedSessions = sessions.filter((s: any) => s.status === 'CLOSED').length;
-      const reconciledSessions = sessions.filter((s: any) => s.status === 'RECONCILE').length;
-      const totalItems = sessions.reduce((sum: number, s: any) => sum + (s.total_items || 0), 0);
-      const totalVariance = sessions.reduce((sum: number, s: any) => sum + Math.abs(s.total_variance || 0), 0);
+      const openSessions = sessions.filter(
+        (s: any) => s.status === "OPEN",
+      ).length;
+      const closedSessions = sessions.filter(
+        (s: any) => s.status === "CLOSED",
+      ).length;
+      const reconciledSessions = sessions.filter(
+        (s: any) => s.status === "RECONCILE",
+      ).length;
+      const totalItems = sessions.reduce(
+        (sum: number, s: any) => sum + (s.total_items || 0),
+        0,
+      );
+      const totalVariance = sessions.reduce(
+        (sum: number, s: any) => sum + Math.abs(s.total_variance || 0),
+        0,
+      );
 
       const summaryData = [
-        { metric: 'Total Sessions', value: totalSessions },
-        { metric: 'Open Sessions', value: openSessions },
-        { metric: 'Closed Sessions', value: closedSessions },
-        { metric: 'Reconciled Sessions', value: reconciledSessions },
-        { metric: 'Total Items Counted', value: totalItems },
-        { metric: 'Total Variance', value: totalVariance.toFixed(2) },
-        { metric: 'Average Variance per Session', value: (totalVariance / totalSessions || 0).toFixed(2) },
+        { metric: "Total Sessions", value: totalSessions },
+        { metric: "Open Sessions", value: openSessions },
+        { metric: "Closed Sessions", value: closedSessions },
+        { metric: "Reconciled Sessions", value: reconciledSessions },
+        { metric: "Total Items Counted", value: totalItems },
+        { metric: "Total Variance", value: totalVariance.toFixed(2) },
+        {
+          metric: "Average Variance per Session",
+          value: (totalVariance / totalSessions || 0).toFixed(2),
+        },
       ];
 
       await this.exportToCSV(summaryData, {
         filename: `summary_report_${Date.now()}.csv`,
-        headers: ['metric', 'value'],
+        headers: ["metric", "value"],
       });
 
-      __DEV__ && console.log('✅ [Export] Summary report exported successfully');
+      __DEV__ &&
+        console.log("✅ [Export] Summary report exported successfully");
     } catch (error: any) {
-      __DEV__ && console.error('❌ [Export] Failed to export summary report:', error);
+      __DEV__ &&
+        console.error("❌ [Export] Failed to export summary report:", error);
       throw error;
     }
   }
@@ -260,22 +302,22 @@ export class ExportService {
    */
   static async exportCountLines(countLines: any[]): Promise<void> {
     const headers = [
-      'id',
-      'session_id',
-      'item_code',
-      'item_name',
-      'barcode',
-      'erp_qty',
-      'counted_qty',
-      'variance',
-      'variance_reason',
-      'variance_note',
-      'remark',
-      'counted_by',
-      'counted_at',
-      'status',
-      'approved_by',
-      'approved_at',
+      "id",
+      "session_id",
+      "item_code",
+      "item_name",
+      "barcode",
+      "erp_qty",
+      "counted_qty",
+      "variance",
+      "variance_reason",
+      "variance_note",
+      "remark",
+      "counted_by",
+      "counted_at",
+      "status",
+      "approved_by",
+      "approved_at",
     ];
     await this.exportToCSV(countLines, {
       filename: `count_lines_${Date.now()}.csv`,
@@ -288,15 +330,15 @@ export class ExportService {
    */
   static async exportItems(items: any[]): Promise<void> {
     const headers = [
-      'item_code',
-      'item_name',
-      'barcode',
-      'stock_qty',
-      'mrp',
-      'category',
-      'warehouse',
-      'uom_code',
-      'uom_name',
+      "item_code",
+      "item_name",
+      "barcode",
+      "stock_qty",
+      "mrp",
+      "category",
+      "warehouse",
+      "uom_code",
+      "uom_name",
     ];
     await this.exportToCSV(items, {
       filename: `items_${Date.now()}.csv`,
@@ -310,7 +352,7 @@ export class ExportService {
   private static async saveAndShareFile(
     content: string,
     filename: string,
-    mimeType: string
+    mimeType: string,
   ): Promise<void> {
     try {
       // Use new expo-file-system v19 API
@@ -329,14 +371,12 @@ export class ExportService {
         });
       } else {
         // Fallback: show alert with file location
-        Alert.alert(
-          'Export Complete',
-          `File saved to: ${file.uri}`,
-          [{ text: 'OK' }]
-        );
+        Alert.alert("Export Complete", `File saved to: ${file.uri}`, [
+          { text: "OK" },
+        ]);
       }
     } catch (error: any) {
-      __DEV__ && console.error('File save/share error:', error);
+      __DEV__ && console.error("File save/share error:", error);
       throw new Error(`Failed to save or share file: ${error.message}`);
     }
   }

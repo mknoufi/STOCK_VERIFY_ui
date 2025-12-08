@@ -25,7 +25,10 @@ export default function Index() {
             router.replace("/welcome");
             return;
           }
-          if (Platform.OS === "web" && (user.role === "supervisor" || user.role === "admin")) {
+          if (
+            Platform.OS === "web" &&
+            (user.role === "supervisor" || user.role === "admin")
+          ) {
             router.replace("/admin/metrics" as any);
           } else if (user.role === "supervisor" || user.role === "admin") {
             router.replace("/supervisor/dashboard" as any);
@@ -40,7 +43,10 @@ export default function Index() {
   }, [user, router]);
 
   return (
-    <LinearGradient colors={["#0F172A", "#1E293B", "#334155"]} style={styles.container}>
+    <LinearGradient
+      colors={["#0F172A", "#1E293B", "#334155"]}
+      style={styles.container}
+    >
       <StatusBar style="light" />
       <ActivityIndicator color="#3B82F6" size="large" />
     </LinearGradient>

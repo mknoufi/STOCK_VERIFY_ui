@@ -1,12 +1,14 @@
-import React from 'react';
-import { Input } from './Input';
+import React from "react";
+import { Input } from "./Input";
 
 export type EnhancedTextInputProps = React.ComponentProps<typeof Input>;
 
-const EnhancedTextInput = React.forwardRef<any, EnhancedTextInputProps>((props, ref) => {
-  return <Input {...props} ref={ref} />;
-});
+const EnhancedTextInput = React.forwardRef<any, EnhancedTextInputProps>(
+  (props, ref) => {
+    return <Input {...props} ref={ref} />;
+  },
+);
 
-EnhancedTextInput.displayName = 'EnhancedTextInput';
+EnhancedTextInput.displayName = "EnhancedTextInput";
 
 export default EnhancedTextInput;

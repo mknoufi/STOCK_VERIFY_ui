@@ -4,15 +4,7 @@ Comprehensive test suite for the Result type implementation.
 
 import pytest
 
-from backend.utils.result import (
-    Fail,
-    Left,
-    Ok,
-    Result,
-    Right,
-    UnwrapError,
-    result_function,
-)
+from backend.utils.result import Fail, Left, Ok, Result, Right, UnwrapError, result_function
 
 
 # Test data

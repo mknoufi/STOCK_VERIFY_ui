@@ -3,12 +3,16 @@
  * Fully functional bar chart for analytics
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { Rect, Line, Text as SvgText, G } from 'react-native-svg';
-import { modernColors, modernTypography, modernSpacing } from '../../styles/modernDesignSystem';
+import React from "react";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
+import Svg, { Rect, Line, Text as SvgText, G } from "react-native-svg";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;
 const CHART_HEIGHT = 200;
 const PADDING = 20;
@@ -163,13 +167,13 @@ const styles = StyleSheet.create({
     marginBottom: modernSpacing.sm,
   },
   chartContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyState: {
     height: CHART_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: modernColors.background.elevated,
     borderRadius: 8,
   },

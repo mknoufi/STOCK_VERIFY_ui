@@ -6,8 +6,13 @@
 export interface CodeIssue {
   file_path: string;
   line_number: number;
-  issue_type: 'syntax_error' | 'broken_function' | 'missing_import' | 'runtime_error' | 'type_error';
-  severity: 'critical' | 'warning' | 'info';
+  issue_type:
+    | "syntax_error"
+    | "broken_function"
+    | "missing_import"
+    | "runtime_error"
+    | "type_error";
+  severity: "critical" | "warning" | "info";
   message: string;
   suggestion?: string;
   auto_fixable: boolean;
@@ -18,7 +23,7 @@ export interface BrokenFunction {
   function_name: string;
   line_number: number;
   issues: string[];
-  severity: 'critical' | 'warning' | 'info';
+  severity: "critical" | "warning" | "info";
   recovery_action?: string;
 }
 
@@ -57,34 +62,44 @@ export class AutoErrorFinder {
    */
   static detectRuntimeError(error: any, context?: string): CodeIssue {
     const errorMessage = error?.message || String(error);
-    const stack = error?.stack || '';
+    const stack = error?.stack || "";
 
     // Categorize error
-    let issueType: CodeIssue['issue_type'] = 'runtime_error';
-    let severity: CodeIssue['severity'] = 'warning';
+    let issueType: CodeIssue["issue_type"] = "runtime_error";
+    let severity: CodeIssue["severity"] = "warning";
     let suggestion: string | undefined;
 
-    if (errorMessage.includes('Cannot read property') || errorMessage.includes('undefined')) {
-      issueType = 'type_error';
-      severity = 'critical';
-      suggestion = 'Check if object/variable is properly initialized before accessing properties';
-    } else if (errorMessage.includes('Network') || errorMessage.includes('fetch')) {
-      issueType = 'runtime_error';
-      severity = 'warning';
-      suggestion = 'Check network connection and API endpoint availability';
-    } else if (errorMessage.includes('TypeError') || errorMessage.includes('type')) {
-      issueType = 'type_error';
-      severity = 'critical';
-      suggestion = 'Check variable types and ensure correct data format';
+    if (
+      errorMessage.includes("Cannot read property") ||
+      errorMessage.includes("undefined")
+    ) {
+      issueType = "type_error";
+      severity = "critical";
+      suggestion =
+        "Check if object/variable is properly initialized before accessing properties";
+    } else if (
+      errorMessage.includes("Network") ||
+      errorMessage.includes("fetch")
+    ) {
+      issueType = "runtime_error";
+      severity = "warning";
+      suggestion = "Check network connection and API endpoint availability";
+    } else if (
+      errorMessage.includes("TypeError") ||
+      errorMessage.includes("type")
+    ) {
+      issueType = "type_error";
+      severity = "critical";
+      suggestion = "Check variable types and ensure correct data format";
     }
 
     // Extract line number from stack if available
     const lineMatch = stack.match(/:\d+:\d+/);
-    const lineNumber = lineMatch ? parseInt(lineMatch[0].split(':')[1]) : 0;
+    const lineNumber = lineMatch ? parseInt(lineMatch[0].split(":")[1]) : 0;
 
     // Extract file path from stack
     const fileMatch = stack.match(/([^\/]+\.tsx?)/);
-    const filePath = fileMatch ? fileMatch[0] : context || 'unknown';
+    const filePath = fileMatch ? fileMatch[0] : context || "unknown";
 
     return {
       file_path: filePath,
@@ -93,7 +108,7 @@ export class AutoErrorFinder {
       severity,
       message: errorMessage,
       suggestion,
-      auto_fixable: issueType === 'type_error',
+      auto_fixable: issueType === "type_error",
     };
   }
 
@@ -104,34 +119,33 @@ export class AutoErrorFinder {
     functionName: string,
     error: any,
     filePath: string,
-    lineNumber: number
+    lineNumber: number,
   ): BrokenFunction {
     const errorMessage = error?.message || String(error);
     const issues: string[] = [];
 
     // Analyze error to determine issues
-    if (errorMessage.includes('undefined')) {
-      issues.push('Function references undefined variable or property');
+    if (errorMessage.includes("undefined")) {
+      issues.push("Function references undefined variable or property");
     }
-    if (errorMessage.includes('Cannot read')) {
-      issues.push('Function tries to access property on null/undefined');
+    if (errorMessage.includes("Cannot read")) {
+      issues.push("Function tries to access property on null/undefined");
     }
-    if (errorMessage.includes('TypeError')) {
-      issues.push('Type mismatch in function parameters or return value');
+    if (errorMessage.includes("TypeError")) {
+      issues.push("Type mismatch in function parameters or return value");
     }
-    if (errorMessage.includes('is not a function')) {
-      issues.push('Function call on non-function object');
+    if (errorMessage.includes("is not a function")) {
+      issues.push("Function call on non-function object");
     }
 
-    const severity: BrokenFunction['severity'] =
-      issues.length > 2 ? 'critical' :
-        issues.length > 0 ? 'warning' : 'info';
+    const severity: BrokenFunction["severity"] =
+      issues.length > 2 ? "critical" : issues.length > 0 ? "warning" : "info";
 
     let recoveryAction: string | undefined;
-    if (issues.some(i => i.includes('undefined'))) {
-      recoveryAction = 'Add null/undefined checks before accessing properties';
-    } else if (issues.some(i => i.includes('Type'))) {
-      recoveryAction = 'Add type validation for function parameters';
+    if (issues.some((i) => i.includes("undefined"))) {
+      recoveryAction = "Add null/undefined checks before accessing properties";
+    } else if (issues.some((i) => i.includes("Type"))) {
+      recoveryAction = "Add type validation for function parameters";
     }
 
     return {
@@ -155,8 +169,13 @@ export class AutoErrorFinder {
       fallback?: () => Promise<T>;
       defaultValue?: T;
       context?: string;
-    } = {}
-  ): Promise<{ result: T | null; success: boolean; error?: string; retryCount: number }> {
+    } = {},
+  ): Promise<{
+    result: T | null;
+    success: boolean;
+    error?: string;
+    retryCount: number;
+  }> {
     const {
       maxRetries = 3,
       retryDelay = 1000,
@@ -176,7 +195,8 @@ export class AutoErrorFinder {
         if (retryCount > 0) {
           this.recoveryStats.successful_recoveries++;
           this.recoveryStats.retry_count += retryCount;
-          __DEV__ && console.log(`✅ Auto-recovered after ${retryCount} retries`);
+          __DEV__ &&
+            console.log(`✅ Auto-recovered after ${retryCount} retries`);
         }
 
         this.recoveryStats.total_recoveries++;
@@ -193,7 +213,7 @@ export class AutoErrorFinder {
         // Wait before retry (exponential backoff)
         if (retryCount < maxRetries) {
           const delay = retryDelay * Math.pow(2, retryCount - 1);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -202,22 +222,27 @@ export class AutoErrorFinder {
     if (fallback) {
       try {
         this.recoveryStats.fallback_used++;
-        __DEV__ && console.log('🔄 Using fallback operation');
+        __DEV__ && console.log("🔄 Using fallback operation");
         const result = await fallback();
         this.recoveryStats.successful_recoveries++;
         this.updateSuccessRate();
         return { result, success: true, retryCount };
       } catch (error: any) {
-        __DEV__ && console.error('❌ Fallback also failed:', error);
+        __DEV__ && console.error("❌ Fallback also failed:", error);
         this.recoveryStats.failed_recoveries++;
         this.updateSuccessRate();
-        return { result: null, success: false, error: error.message, retryCount };
+        return {
+          result: null,
+          success: false,
+          error: error.message,
+          retryCount,
+        };
       }
     }
 
     // Use default value
     if (defaultValue !== undefined) {
-      __DEV__ && console.log('📋 Using default value');
+      __DEV__ && console.log("📋 Using default value");
       this.recoveryStats.successful_recoveries++;
       this.updateSuccessRate();
       return { result: defaultValue, success: true, retryCount };
@@ -229,7 +254,7 @@ export class AutoErrorFinder {
     return {
       result: null,
       success: false,
-      error: lastError?.message || 'Recovery failed',
+      error: lastError?.message || "Recovery failed",
       retryCount,
     };
   }
@@ -240,7 +265,7 @@ export class AutoErrorFinder {
   private static recordError(error: any, retryCount: number, context?: string) {
     this.errorHistory.push({
       error: error?.message || String(error),
-      type: error?.constructor?.name || 'UnknownError',
+      type: error?.constructor?.name || "UnknownError",
       retry_count: retryCount,
       timestamp: Date.now(),
       context: context || {},
@@ -258,7 +283,8 @@ export class AutoErrorFinder {
   private static updateSuccessRate() {
     const total = this.recoveryStats.total_recoveries;
     const successful = this.recoveryStats.successful_recoveries;
-    this.recoveryStats.success_rate = total > 0 ? (successful / total) * 100 : 0;
+    this.recoveryStats.success_rate =
+      total > 0 ? (successful / total) * 100 : 0;
   }
 
   /**
@@ -280,7 +306,7 @@ export class AutoErrorFinder {
    */
   static clearHistory() {
     this.errorHistory = [];
-    __DEV__ && console.log('📋 Error history cleared');
+    __DEV__ && console.log("📋 Error history cleared");
   }
 
   /**
@@ -290,16 +316,16 @@ export class AutoErrorFinder {
     const issues: CodeIssue[] = [];
 
     // Check for common runtime issues
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // Check if required APIs are available
       if (!window.fetch) {
         issues.push({
-          file_path: 'runtime',
+          file_path: "runtime",
           line_number: 0,
-          issue_type: 'runtime_error',
-          severity: 'critical',
-          message: 'Fetch API not available',
-          suggestion: 'Use polyfill or alternative HTTP client',
+          issue_type: "runtime_error",
+          severity: "critical",
+          message: "Fetch API not available",
+          suggestion: "Use polyfill or alternative HTTP client",
           auto_fixable: false,
         });
       }
@@ -313,17 +339,20 @@ export class AutoErrorFinder {
    */
   static autoFix(issue: CodeIssue): { success: boolean; message: string } {
     if (!issue.auto_fixable) {
-      return { success: false, message: 'Issue is not auto-fixable' };
+      return { success: false, message: "Issue is not auto-fixable" };
     }
 
     // Add auto-fix logic here
-    if (issue.issue_type === 'type_error' && issue.message.includes('undefined')) {
+    if (
+      issue.issue_type === "type_error" &&
+      issue.message.includes("undefined")
+    ) {
       return {
         success: true,
-        message: 'Added null check - verify fix is correct',
+        message: "Added null check - verify fix is correct",
       };
     }
 
-    return { success: false, message: 'Auto-fix not available for this issue' };
+    return { success: false, message: "Auto-fix not available for this issue" };
   }
 }

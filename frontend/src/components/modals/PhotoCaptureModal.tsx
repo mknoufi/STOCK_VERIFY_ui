@@ -3,7 +3,7 @@
  * Modal for capturing photos using the device camera
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -14,15 +14,15 @@ import {
   ActivityIndicator,
   Image,
   Alert,
-} from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { Ionicons } from "@expo/vector-icons";
 import {
   modernColors,
   modernTypography,
   modernSpacing,
   modernBorderRadius,
-} from '../../styles/modernDesignSystem';
+} from "../../styles/modernDesignSystem";
 
 interface PhotoCaptureModalProps {
   visible: boolean;
@@ -36,7 +36,7 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
   visible,
   onClose,
   onCapture,
-  title = 'Capture Photo',
+  title = "Capture Photo",
   testID,
 }) => {
   const [permission, requestPermission] = useCameraPermissions();
@@ -59,8 +59,8 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
         setCapturedPhoto(photo.uri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to capture photo. Please try again.');
-      console.error('Photo capture error:', error);
+      Alert.alert("Error", "Failed to capture photo. Please try again.");
+      console.error("Photo capture error:", error);
     } finally {
       setIsCapturing(false);
     }
@@ -98,10 +98,7 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
         <SafeAreaView style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={handleClose}
-            >
+            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
               <Ionicons
                 name="close"
                 size={24}
@@ -142,10 +139,7 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleClose}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Ionicons
               name="close"
               size={24}
@@ -163,11 +157,7 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
               resizeMode="cover"
             />
           ) : (
-            <CameraView
-              ref={cameraRef}
-              style={styles.camera}
-              facing="back"
-            >
+            <CameraView ref={cameraRef} style={styles.camera} facing="back">
               {isCapturing && (
                 <View style={styles.capturingOverlay}>
                   <ActivityIndicator size="large" color="#fff" />
@@ -218,9 +208,9 @@ const styles = StyleSheet.create({
     backgroundColor: modernColors.background.default,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: modernSpacing.md,
     paddingVertical: modernSpacing.sm,
   },
@@ -233,14 +223,14 @@ const styles = StyleSheet.create({
   },
   permissionContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: modernSpacing.xl,
   },
   permissionText: {
     ...modernTypography.body.medium,
     color: modernColors.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: modernSpacing.md,
     marginBottom: modernSpacing.xl,
   },
@@ -252,11 +242,11 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: {
     ...modernTypography.button.medium,
-    color: '#fff',
+    color: "#fff",
   },
   cameraContainer: {
     flex: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: modernBorderRadius.lg,
     marginHorizontal: modernSpacing.md,
   },
@@ -268,14 +258,14 @@ const styles = StyleSheet.create({
   },
   capturingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: modernSpacing.xl,
     gap: modernSpacing.md,
   },
@@ -284,8 +274,8 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     backgroundColor: modernColors.background.paper,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 4,
     borderColor: modernColors.primary[500],
   },
@@ -296,8 +286,8 @@ const styles = StyleSheet.create({
     backgroundColor: modernColors.primary[500],
   },
   controlButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: modernSpacing.lg,
     paddingVertical: modernSpacing.md,
     borderRadius: modernBorderRadius.md,
@@ -311,7 +301,7 @@ const styles = StyleSheet.create({
   },
   controlButtonText: {
     ...modernTypography.button.medium,
-    color: '#fff',
+    color: "#fff",
   },
 });
 

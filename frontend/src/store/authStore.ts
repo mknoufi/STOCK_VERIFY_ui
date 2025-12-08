@@ -17,7 +17,11 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialized: boolean;
-  login: (username: string, password: string, rememberMe?: boolean) => Promise<boolean>;
+  login: (
+    username: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => Promise<boolean>;
   setUser: (user: User) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
@@ -33,7 +37,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   isInitialized: false,
 
-  login: async (username: string, password: string, _rememberMe?: boolean): Promise<boolean> => {
+  login: async (
+    username: string,
+    password: string,
+    _rememberMe?: boolean,
+  ): Promise<boolean> => {
     set({ isLoading: true });
     try {
       const response = await apiClient.post("/api/auth/login", {
@@ -45,7 +53,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         const { access_token, user } = response.data.data;
 
         // Store token for subsequent requests
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+        apiClient.defaults.headers.common["Authorization"] =
+          `Bearer ${access_token}`;
         await storage.setItem(TOKEN_STORAGE_KEY, access_token);
         await storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
 
@@ -96,7 +105,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (storedUser && storedToken) {
         const user = JSON.parse(storedUser) as User;
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        apiClient.defaults.headers.common["Authorization"] =
+          `Bearer ${storedToken}`;
         set({
           user,
           isAuthenticated: true,

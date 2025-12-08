@@ -57,4 +57,3 @@
     "source=${localWorkspaceFolder}/.devcontainer/.bashrc,target=/home/vscode/.bashrc,type=bind,consistency=cached"
   ]
 }
-

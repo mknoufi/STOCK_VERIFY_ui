@@ -19,18 +19,18 @@ export interface TextStyles {
   h4: TextStyle;
   h5: TextStyle;
   h6: TextStyle;
-  
+
   // Body text
   body: TextStyle;
   bodyLarge: TextStyle;
   bodySmall: TextStyle;
-  
+
   // Labels & Captions
   label: TextStyle;
   labelLarge: TextStyle;
   labelSmall: TextStyle;
   caption: TextStyle;
-  
+
   // Special
   button: TextStyle;
   overline: TextStyle;
@@ -88,7 +88,7 @@ export const createTextStyles = (
       letterSpacing: typography.letterSpacing.wide,
       color: textColor,
     },
-    
+
     // Body text
     body: {
       fontSize: typography.fontSize.base,
@@ -111,7 +111,7 @@ export const createTextStyles = (
       letterSpacing: typography.letterSpacing.normal,
       color: textColor,
     },
-    
+
     // Labels
     label: {
       fontSize: typography.fontSize.sm,
@@ -134,7 +134,7 @@ export const createTextStyles = (
       letterSpacing: typography.letterSpacing.wider,
       color: textSecondary,
     },
-    
+
     // Caption
     caption: {
       fontSize: typography.fontSize.xs,
@@ -143,7 +143,7 @@ export const createTextStyles = (
       letterSpacing: typography.letterSpacing.normal,
       color: textTertiary,
     },
-    
+
     // Button text
     button: {
       fontSize: typography.fontSize.base,
@@ -152,7 +152,7 @@ export const createTextStyles = (
       letterSpacing: typography.letterSpacing.wide,
       textTransform: 'uppercase' as const,
     },
-    
+
     // Overline (small uppercase text)
     overline: {
       fontSize: typography.fontSize.xs,
@@ -208,4 +208,3 @@ export default {
   getLineHeight,
   getLetterSpacing,
 };
-

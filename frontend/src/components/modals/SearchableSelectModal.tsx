@@ -3,7 +3,7 @@
  * Modal with searchable dropdown for selecting options
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,14 +15,14 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   modernColors,
   modernTypography,
   modernSpacing,
   modernBorderRadius,
-} from '../../styles/modernDesignSystem';
+} from "../../styles/modernDesignSystem";
 
 interface SearchableSelectModalProps {
   visible: boolean;
@@ -39,11 +39,11 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
   onClose,
   onSelect,
   options,
-  title = 'Select Option',
-  placeholder = 'Search...',
+  title = "Select Option",
+  placeholder = "Search...",
   testID,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Filter options based on search query
   const filteredOptions = useMemo(() => {
@@ -51,21 +51,19 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
       return options;
     }
     const query = searchQuery.toLowerCase();
-    return options.filter((option) =>
-      option.toLowerCase().includes(query)
-    );
+    return options.filter((option) => option.toLowerCase().includes(query));
   }, [options, searchQuery]);
 
   // Handle option selection
   const handleSelect = (option: string) => {
     onSelect(option);
-    setSearchQuery('');
+    setSearchQuery("");
     onClose();
   };
 
   // Handle close
   const handleClose = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     onClose();
   };
 
@@ -94,7 +92,7 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
     >
       <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
         >
           {/* Header */}
@@ -133,7 +131,7 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity
-                onPress={() => setSearchQuery('')}
+                onPress={() => setSearchQuery("")}
                 style={styles.clearButton}
               >
                 <Ionicons
@@ -179,9 +177,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: modernSpacing.md,
     paddingVertical: modernSpacing.sm,
     borderBottomWidth: 1,
@@ -195,8 +193,8 @@ const styles = StyleSheet.create({
     padding: modernSpacing.xs,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: modernColors.background.paper,
     borderRadius: modernBorderRadius.md,
     marginHorizontal: modernSpacing.md,
@@ -223,9 +221,9 @@ const styles = StyleSheet.create({
     paddingBottom: modernSpacing.xl,
   },
   optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: modernSpacing.md,
     paddingHorizontal: modernSpacing.sm,
     borderBottomWidth: 1,
@@ -237,9 +235,9 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: modernSpacing['2xl'],
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: modernSpacing["2xl"],
   },
   emptyText: {
     ...modernTypography.body.medium,

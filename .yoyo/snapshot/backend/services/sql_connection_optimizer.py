@@ -60,7 +60,7 @@ class SQLConnectionOptimizer:
             connect_timeout=self.connect_timeout,
             command_timeout=self.command_timeout
         )
-        
+
         logger.info("SQL connection string optimized using shared utility")
         return self.connection_string
 

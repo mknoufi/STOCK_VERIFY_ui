@@ -11,12 +11,13 @@ Tests for business logic correctness including:
 Run with: pytest backend/tests/evaluation/test_business_logic.py -v
 """
 
-import pytest
 from dataclasses import dataclass
 from typing import Tuple
 
-from .metrics_collector import MetricsCollector
+import pytest
+
 from .evaluators import BusinessLogicEvaluator
+from .metrics_collector import MetricsCollector
 
 
 @pytest.fixture

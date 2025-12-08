@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { ThemeService, Theme } from '../services/themeService';
+import { create } from "zustand";
+import { mmkvStorage } from "../services/mmkvStorage";
+import { ThemeService, Theme } from "../services/themeService";
 
 export interface Settings {
   // Theme
   darkMode: boolean;
-  theme: 'light' | 'dark' | 'auto';
+  theme: "light" | "dark" | "auto";
 
   // Notifications
   notificationsEnabled: boolean;
@@ -29,14 +29,14 @@ export interface Settings {
   scannerTimeout: number;
 
   // Display
-  fontSize: 'small' | 'medium' | 'large';
+  fontSize: "small" | "medium" | "large";
   showItemImages: boolean;
   showItemPrices: boolean;
   showItemStock: boolean;
 
   // Data
-  exportFormat: 'csv' | 'json';
-  backupFrequency: 'daily' | 'weekly' | 'monthly' | 'never';
+  exportFormat: "csv" | "json";
+  backupFrequency: "daily" | "weekly" | "monthly" | "never";
 
   // Security
   requireAuth: boolean;
@@ -51,7 +51,7 @@ export interface Settings {
 
 const DEFAULT_SETTINGS: Settings = {
   darkMode: false,
-  theme: 'auto',
+  theme: "auto",
   notificationsEnabled: true,
   notificationSound: true,
   notificationBadge: true,
@@ -65,12 +65,12 @@ const DEFAULT_SETTINGS: Settings = {
   scannerSound: true,
   scannerAutoSubmit: true,
   scannerTimeout: 30,
-  fontSize: 'medium',
+  fontSize: "medium",
   showItemImages: true,
   showItemPrices: true,
   showItemStock: true,
-  exportFormat: 'csv',
-  backupFrequency: 'weekly',
+  exportFormat: "csv",
+  backupFrequency: "weekly",
   requireAuth: true,
   sessionTimeout: 30,
   biometricAuth: false,
@@ -92,36 +92,36 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setSetting: (key, value) => {
     const newSettings = { ...get().settings, [key]: value };
     set({ settings: newSettings });
-    
+
     // Persist to storage
-    mmkvStorage.setItem('app_settings', JSON.stringify(newSettings));
+    mmkvStorage.setItem("app_settings", JSON.stringify(newSettings));
 
     // Handle side effects
-    if (key === 'theme') {
+    if (key === "theme") {
       ThemeService.setTheme(value as Theme);
     }
   },
 
   resetSettings: async () => {
     set({ settings: DEFAULT_SETTINGS });
-    mmkvStorage.setItem('app_settings', JSON.stringify(DEFAULT_SETTINGS));
+    mmkvStorage.setItem("app_settings", JSON.stringify(DEFAULT_SETTINGS));
     ThemeService.setTheme(DEFAULT_SETTINGS.theme as Theme);
   },
 
   loadSettings: async () => {
     try {
-      const storedSettings = mmkvStorage.getItem('app_settings');
+      const storedSettings = mmkvStorage.getItem("app_settings");
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings);
         // Merge with defaults to handle new keys
         const mergedSettings = { ...DEFAULT_SETTINGS, ...parsedSettings };
         set({ settings: mergedSettings });
-        
+
         // Apply theme
         ThemeService.setTheme(mergedSettings.theme);
       }
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      console.error("Failed to load settings:", error);
     }
   },
 }));

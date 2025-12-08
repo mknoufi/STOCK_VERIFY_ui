@@ -2,13 +2,13 @@
  * Version Check Service
  * Provides app version checking and upgrade notification functionality
  */
-import api from './httpClient';
+import api from "./httpClient";
 
 export interface VersionCheckResult {
   is_compatible: boolean;
   is_latest: boolean;
   update_available: boolean;
-  update_type: 'major' | 'minor' | 'patch' | null;
+  update_type: "major" | "minor" | "patch" | null;
   client_version: string;
   minimum_version: string;
   current_version: string;
@@ -25,15 +25,15 @@ export interface VersionCheckResult {
  * and if updates are available
  */
 export const checkVersion = async (
-  clientVersion: string
+  clientVersion: string,
 ): Promise<VersionCheckResult> => {
   try {
-    const response = await api.get<VersionCheckResult>('/version/check', {
+    const response = await api.get<VersionCheckResult>("/version/check", {
       params: { client_version: clientVersion },
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Version check error:', error);
+    __DEV__ && console.error("Version check error:", error);
 
     // Return a safe default that doesn't force updates on error
     return {
@@ -42,11 +42,11 @@ export const checkVersion = async (
       update_available: false,
       update_type: null,
       client_version: clientVersion,
-      minimum_version: '1.0.0',
+      minimum_version: "1.0.0",
       current_version: clientVersion,
       force_update: false,
       timestamp: new Date().toISOString(),
-      error: error.message || 'Version check failed',
+      error: error.message || "Version check failed",
     };
   }
 };
@@ -61,10 +61,10 @@ export const getBackendVersion = async (): Promise<{
   build_time: string;
 }> => {
   try {
-    const response = await api.get('/version');
+    const response = await api.get("/version");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get backend version error:', error);
+    __DEV__ && console.error("Get backend version error:", error);
     throw error;
   }
 };

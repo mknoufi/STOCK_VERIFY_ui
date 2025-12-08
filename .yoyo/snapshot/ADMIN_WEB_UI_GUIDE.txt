@@ -78,4 +78,3 @@ Requires: Admin role
 - generateReport()
 - getSystemIssues()
 - getSystemHealthScore()
-

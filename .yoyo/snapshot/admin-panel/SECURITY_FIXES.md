@@ -82,7 +82,7 @@
    ```bash
    # Test CORS restrictions
    curl -H "Origin: http://malicious-site.com" http://localhost:3000/api/status
-   
+
    # Test rate limiting
    for i in {1..5}; do curl -X POST http://localhost:3000/api/execute-command; done
    ```
@@ -92,7 +92,7 @@
    # Test server startup
    ./start.sh
    ./start-enhanced.sh
-   
+
    # Test API endpoints
    curl http://localhost:3000/api/status
    curl http://localhost:3000/api/qr

@@ -106,10 +106,7 @@ class EvaluationRunner:
         evaluation_type: str,
     ) -> Dict[str, Any]:
         """Run standalone evaluation without pytest (for quick checks)."""
-        from .evaluators import (
-            BusinessLogicEvaluator,
-            DataQualityEvaluator,
-        )
+        from .evaluators import BusinessLogicEvaluator, DataQualityEvaluator
 
         self.collector.start_evaluation()
 

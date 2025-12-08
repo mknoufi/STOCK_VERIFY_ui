@@ -91,7 +91,7 @@ damageQty: '',
 ### 8. Remove Rack Field Requirement (Lines 2006, 2008, 2014)
 **Change validation to not require rack**
 
-### 9. Make MRP Optional 
+### 9. Make MRP Optional
 **Remove MRP validation/requirement**
 
 ### 10. Add Damage Quantity Toggle and Input (After Serial Number Toggle around line 2630)

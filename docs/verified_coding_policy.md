@@ -1,7 +1,7 @@
 # Verified Coding Policy
 
-**Version:** 2.1  
-**Last- **Frontend:** Expo ~54 (Stable) - *Do not upgrade to v55 until stable release*25-11-30  
+**Version:** 2.1
+**Last- **Frontend:** Expo ~54 (Stable) - *Do not upgrade to v55 until stable release*25-11-30
 
 ---
 
@@ -9,11 +9,11 @@
 
 Ensure that every line of code, whether human or AI-generated, is:
 
-- Verified against official documentation  
-- Type-safe  
-- Dependency-matched  
-- Error-free  
-- Fully tested  
+- Verified against official documentation
+- Type-safe
+- Dependency-matched
+- Error-free
+- Fully tested
 
 ---
 

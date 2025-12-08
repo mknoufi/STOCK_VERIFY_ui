@@ -1,6 +1,6 @@
 /**
  * Button Component Stories
- * 
+ *
  * Documentation and examples for the Button component
  */
 
@@ -205,4 +205,3 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 });
-

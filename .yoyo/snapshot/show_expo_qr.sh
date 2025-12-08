@@ -22,4 +22,3 @@ echo ""
 
 # Start Expo with QR code display
 npx expo start --clear
-

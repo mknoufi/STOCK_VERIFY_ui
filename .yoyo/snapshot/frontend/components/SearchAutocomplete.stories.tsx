@@ -1,6 +1,6 @@
 /**
  * SearchAutocomplete Component Stories
- * 
+ *
  * Documentation and examples for the SearchAutocomplete component
  */
 
@@ -138,4 +138,3 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 });
-

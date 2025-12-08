@@ -3,10 +3,10 @@
  * Re-exports ModernCard with consistent naming for premium UI components
  */
 
-import React from 'react';
-import { ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ModernCard, CardVariant, CardElevation } from '../ModernCard';
+import React from "react";
+import { ViewStyle } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { ModernCard, CardVariant, CardElevation } from "../ModernCard";
 
 interface PremiumCardProps {
   children: React.ReactNode;

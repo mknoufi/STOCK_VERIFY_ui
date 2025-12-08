@@ -4,7 +4,7 @@
  * Supports Expo Metro bundler (8081) and Expo Web (19006, 19000-19002)
  */
 
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
 // Common Expo ports
 const EXPO_PORTS = [19006, 19000, 19001, 19002, 8081];
@@ -30,14 +30,17 @@ export const detectFrontendPort = async (): Promise<number | null> => {
   portDetectionAttempted = true;
 
   // On web, try to detect from window location
-  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
     const port = window.location.port;
     if (port) {
       const portNum = parseInt(port, 10);
       if (!isNaN(portNum) && portNum > 0) {
         cachedPort = portNum;
         if (__DEV__) {
-          __DEV__ && console.log(`📡 Detected frontend port from window.location: ${cachedPort}`);
+          __DEV__ &&
+            console.log(
+              `📡 Detected frontend port from window.location: ${cachedPort}`,
+            );
         }
         return cachedPort;
       }
@@ -49,7 +52,7 @@ export const detectFrontendPort = async (): Promise<number | null> => {
   for (const port of EXPO_PORTS) {
     try {
       const response = await fetch(`http://localhost:${port}`, {
-        method: 'HEAD',
+        method: "HEAD",
         signal: AbortSignal.timeout(1000), // 1 second timeout
       });
 
@@ -67,7 +70,7 @@ export const detectFrontendPort = async (): Promise<number | null> => {
   }
 
   // Fallback: Use default web port for web platform
-  if (Platform.OS === 'web') {
+  if (Platform.OS === "web") {
     cachedPort = DEFAULT_WEB_PORT;
     if (__DEV__) {
       __DEV__ && console.log(`📡 Using default web port: ${cachedPort}`);
@@ -92,7 +95,7 @@ export const getFrontendPortSync = (): number => {
   }
 
   // On web, try to get from window location
-  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
     const port = window.location.port;
     if (port) {
       const portNum = parseInt(port, 10);
@@ -104,7 +107,7 @@ export const getFrontendPortSync = (): number => {
   }
 
   // Return default based on platform
-  return Platform.OS === 'web' ? DEFAULT_WEB_PORT : METRO_PORT;
+  return Platform.OS === "web" ? DEFAULT_WEB_PORT : METRO_PORT;
 };
 
 /**

@@ -4,11 +4,17 @@
  * Enhanced with theme support and better error handling
  */
 
-import React, { Component, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ThemeService } from '../services/themeService';
-import { errorReporter } from '../services/errorRecovery';
+import React, { Component, ReactNode } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { ThemeService } from "../services/themeService";
+import { errorReporter } from "../services/errorRecovery";
 
 interface Props {
   children: ReactNode;
@@ -53,13 +59,13 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: any) {
     // Safely report error
     try {
-      if (errorReporter && typeof errorReporter.report === 'function') {
-        errorReporter.report(error, 'ErrorBoundary', {
+      if (errorReporter && typeof errorReporter.report === "function") {
+        errorReporter.report(error, "ErrorBoundary", {
           componentStack: errorInfo?.componentStack,
         });
       }
     } catch (reportError) {
-      console.error('Error reporting failed:', reportError);
+      console.error("Error reporting failed:", reportError);
     }
 
     this.setState({
@@ -82,7 +88,7 @@ export class ErrorBoundary extends Component<Props, State> {
         try {
           return this.props.fallback(this.state.error!, this.state.errorInfo);
         } catch (fallbackError) {
-          console.error('Fallback render failed:', fallbackError);
+          console.error("Fallback render failed:", fallbackError);
           // Continue to default error UI
         }
       }
@@ -92,26 +98,54 @@ export class ErrorBoundary extends Component<Props, State> {
       const theme = currentTheme || this.theme;
 
       return (
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
           <ScrollView contentContainerStyle={styles.content}>
-            <Ionicons name="warning-outline" size={64} color={theme.colors.error} />
+            <Ionicons
+              name="warning-outline"
+              size={64}
+              color={theme.colors.error}
+            />
             <Text style={[styles.title, { color: theme.colors.text }]}>
               Something went wrong
             </Text>
-            <Text style={[styles.message, { color: theme.colors.textSecondary }]}>
-              {this.state.error?.message || 'An unexpected error occurred'}
+            <Text
+              style={[styles.message, { color: theme.colors.textSecondary }]}
+            >
+              {this.state.error?.message || "An unexpected error occurred"}
             </Text>
 
             {__DEV__ && this.state.error && (
-              <View style={[styles.details, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.detailsTitle, { color: theme.colors.text }]}>
+              <View
+                style={[
+                  styles.details,
+                  { backgroundColor: theme.colors.surface },
+                ]}
+              >
+                <Text
+                  style={[styles.detailsTitle, { color: theme.colors.text }]}
+                >
                   Error Details:
                 </Text>
-                <Text style={[styles.detailsText, { color: theme.colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.detailsText,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
                   {this.state.error.toString()}
                 </Text>
                 {this.state.errorInfo?.componentStack && (
-                  <Text style={[styles.detailsText, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.detailsText,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {this.state.errorInfo.componentStack}
                   </Text>
                 )}
@@ -122,7 +156,9 @@ export class ErrorBoundary extends Component<Props, State> {
               style={[styles.button, { backgroundColor: theme.colors.primary }]}
               onPress={this.handleReset}
             >
-              <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Try Again</Text>
+              <Text style={[styles.buttonText, { color: "#FFFFFF" }]}>
+                Try Again
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -139,20 +175,20 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 16,
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   message: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
     paddingHorizontal: 16,
   },
@@ -160,17 +196,17 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 24,
-    width: '100%',
+    width: "100%",
     maxHeight: 300,
   },
   detailsTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
   },
   detailsText: {
     fontSize: 12,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   button: {
     paddingHorizontal: 24,
@@ -180,7 +216,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

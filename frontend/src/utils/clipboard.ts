@@ -3,8 +3,8 @@
  * Provides copy to clipboard functionality
  */
 
-import * as Clipboard from 'expo-clipboard';
-import { Platform } from 'react-native';
+import * as Clipboard from "expo-clipboard";
+import { Platform } from "react-native";
 
 /**
  * Copy text to clipboard
@@ -12,11 +12,14 @@ import { Platform } from 'react-native';
  * @param showAlert Whether to show success alert
  * @returns Promise<boolean>
  */
-export const copyToClipboard = async (text: string, showAlert: boolean = true): Promise<boolean> => {
+export const copyToClipboard = async (
+  text: string,
+  showAlert: boolean = true,
+): Promise<boolean> => {
   try {
     await Clipboard.setStringAsync(text);
 
-    if (showAlert && Platform.OS !== 'web') {
+    if (showAlert && Platform.OS !== "web") {
       // On mobile, you might want to show a toast instead
       // For now, we'll use a simple feedback
       return true;
@@ -24,7 +27,7 @@ export const copyToClipboard = async (text: string, showAlert: boolean = true): 
 
     return true;
   } catch (error) {
-    __DEV__ && console.error('Failed to copy to clipboard:', error);
+    __DEV__ && console.error("Failed to copy to clipboard:", error);
     return false;
   }
 };
@@ -38,7 +41,7 @@ export const getFromClipboard = async (): Promise<string | null> => {
     const text = await Clipboard.getStringAsync();
     return text || null;
   } catch (error) {
-    __DEV__ && console.error('Failed to get from clipboard:', error);
+    __DEV__ && console.error("Failed to get from clipboard:", error);
     return null;
   }
 };

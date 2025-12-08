@@ -3,7 +3,7 @@
  * Collapsible on mobile (drawer), always visible on web/tablet
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -13,12 +13,17 @@ import {
   Platform,
   Dimensions,
   ViewStyle,
-} from 'react-native';
-import { useRouter, useSegments } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
-import { useAuthStore } from '../../store/authStore';
-import { layout, spacing, typography, breakpoints } from '../../styles/globalStyles';
+} from "react-native";
+import { useRouter, useSegments } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
+import { useAuthStore } from "../../store/authStore";
+import {
+  layout,
+  spacing,
+  typography,
+  breakpoints,
+} from "../../styles/globalStyles";
 
 interface SidebarItem {
   key: string;
@@ -35,76 +40,76 @@ interface SidebarGroup {
 
 const SUPERVISOR_GROUPS: SidebarGroup[] = [
   {
-    title: 'Overview',
+    title: "Overview",
     items: [
       {
-        key: 'dashboard',
-        label: 'Dashboard',
-        icon: 'grid',
-        route: '/supervisor/dashboard',
+        key: "dashboard",
+        label: "Dashboard",
+        icon: "grid",
+        route: "/supervisor/dashboard",
       },
       {
-        key: 'sessions',
-        label: 'Sessions',
-        icon: 'cube',
-        route: '/supervisor/session-detail',
+        key: "sessions",
+        label: "Sessions",
+        icon: "cube",
+        route: "/supervisor/session-detail",
       },
     ],
   },
   {
-    title: 'Monitoring',
+    title: "Monitoring",
     items: [
       {
-        key: 'activity-logs',
-        label: 'Activity Logs',
-        icon: 'list',
-        route: '/supervisor/activity-logs',
+        key: "activity-logs",
+        label: "Activity Logs",
+        icon: "list",
+        route: "/supervisor/activity-logs",
       },
       {
-        key: 'error-logs',
-        label: 'Error Logs',
-        icon: 'warning',
-        route: '/supervisor/error-logs',
+        key: "error-logs",
+        label: "Error Logs",
+        icon: "warning",
+        route: "/supervisor/error-logs",
       },
       {
-        key: 'sync-conflicts',
-        label: 'Sync Conflicts',
-        icon: 'sync',
-        route: '/supervisor/sync-conflicts',
+        key: "sync-conflicts",
+        label: "Sync Conflicts",
+        icon: "sync",
+        route: "/supervisor/sync-conflicts",
       },
     ],
   },
   {
-    title: 'Exports',
+    title: "Exports",
     items: [
       {
-        key: 'export-schedules',
-        label: 'Export Schedules',
-        icon: 'calendar',
-        route: '/supervisor/export-schedules',
+        key: "export-schedules",
+        label: "Export Schedules",
+        icon: "calendar",
+        route: "/supervisor/export-schedules",
       },
       {
-        key: 'export-results',
-        label: 'Export Results',
-        icon: 'document',
-        route: '/supervisor/export-results',
+        key: "export-results",
+        label: "Export Results",
+        icon: "document",
+        route: "/supervisor/export-results",
       },
     ],
   },
   {
-    title: 'Settings',
+    title: "Settings",
     items: [
       {
-        key: 'settings',
-        label: 'Settings',
-        icon: 'settings',
-        route: '/supervisor/settings',
+        key: "settings",
+        label: "Settings",
+        icon: "settings",
+        route: "/supervisor/settings",
       },
       {
-        key: 'db-mapping',
-        label: 'DB Mapping',
-        icon: 'server',
-        route: '/supervisor/db-mapping',
+        key: "db-mapping",
+        label: "DB Mapping",
+        icon: "server",
+        route: "/supervisor/db-mapping",
       },
     ],
   },
@@ -127,19 +132,21 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
   const router = useRouter();
   const segments = useSegments();
   const { user, logout } = useAuthStore();
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
   const isMobile = width < breakpoints.tablet;
 
   // On mobile, show as drawer (controlled by parent)
   // On web/tablet, show as persistent sidebar
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(SUPERVISOR_GROUPS.map((g) => g.title))
+    new Set(SUPERVISOR_GROUPS.map((g) => g.title)),
   );
 
-  const currentRoute = segments.join('/');
+  const currentRoute = segments.join("/");
   const isActive = (route: string) => {
-    const routePath = route.replace(/^\//, '');
-    return currentRoute === routePath || currentRoute.startsWith(routePath + '/');
+    const routePath = route.replace(/^\//, "");
+    return (
+      currentRoute === routePath || currentRoute.startsWith(routePath + "/")
+    );
   };
 
   const handleItemPress = (item: SidebarItem) => {
@@ -156,7 +163,9 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
     setExpandedGroups(newExpanded);
   };
 
-  const sidebarWidth = collapsed ? layout.sidebarCollapsedWidth : layout.sidebarWidth;
+  const sidebarWidth = collapsed
+    ? layout.sidebarCollapsedWidth
+    : layout.sidebarWidth;
 
   if (isMobile && !collapsed) {
     // On mobile, sidebar is handled by drawer component
@@ -176,19 +185,35 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
       ]}
       testID={testID}
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* User Profile Section */}
         {!collapsed && (
-          <View style={[styles.profileSection, { borderBottomColor: theme.colors.border }]}>
+          <View
+            style={[
+              styles.profileSection,
+              { borderBottomColor: theme.colors.border },
+            ]}
+          >
             <View style={styles.profileAvatar}>
               <Ionicons name="person" size={24} color={theme.colors.primary} />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={[styles.profileName, { color: theme.colors.text }]} numberOfLines={1}>
-                {user?.full_name || 'User'}
+              <Text
+                style={[styles.profileName, { color: theme.colors.text }]}
+                numberOfLines={1}
+              >
+                {user?.full_name || "User"}
               </Text>
-              <Text style={[styles.profileRole, { color: theme.colors.textSecondary }]}>
-                {user?.role === 'admin' ? 'Administrator' : 'Supervisor'}
+              <Text
+                style={[
+                  styles.profileRole,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                {user?.role === "admin" ? "Administrator" : "Supervisor"}
               </Text>
             </View>
           </View>
@@ -206,11 +231,16 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
                   onPress={() => toggleGroup(group.title)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.groupTitle, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.groupTitle,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {group.title}
                   </Text>
                   <Ionicons
-                    name={isExpanded ? 'chevron-down' : 'chevron-forward'}
+                    name={isExpanded ? "chevron-down" : "chevron-forward"}
                     size={16}
                     color={theme.colors.textSecondary}
                   />
@@ -221,8 +251,12 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
                 <View style={styles.groupItems}>
                   {group.items.map((item) => {
                     const active = isActive(item.route);
-                    const iconColor = active ? theme.colors.primary : theme.colors.textSecondary;
-                    const bgColor = active ? (theme.colors.overlayPrimary || 'rgba(76, 175, 80, 0.1)') : 'transparent';
+                    const iconColor = active
+                      ? theme.colors.primary
+                      : theme.colors.textSecondary;
+                    const bgColor = active
+                      ? theme.colors.overlayPrimary || "rgba(76, 175, 80, 0.1)"
+                      : "transparent";
 
                     return (
                       <TouchableOpacity
@@ -238,23 +272,34 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
                         accessibilityState={{ selected: active }}
                         accessibilityLabel={item.label}
                       >
-                        <Ionicons name={item.icon} size={20} color={iconColor} />
+                        <Ionicons
+                          name={item.icon}
+                          size={20}
+                          color={iconColor}
+                        />
                         {!collapsed && (
                           <>
                             <Text
                               style={[
                                 styles.itemLabel,
-                                { color: active ? theme.colors.primary : theme.colors.text },
+                                {
+                                  color: active
+                                    ? theme.colors.primary
+                                    : theme.colors.text,
+                                },
                               ]}
                             >
                               {item.label}
                             </Text>
                             {item.badge !== undefined && item.badge > 0 && (
                               <View
-                                style={[styles.itemBadge, { backgroundColor: theme.colors.error }]}
+                                style={[
+                                  styles.itemBadge,
+                                  { backgroundColor: theme.colors.error },
+                                ]}
                               >
                                 <Text style={styles.itemBadgeText}>
-                                  {item.badge > 99 ? '99+' : item.badge}
+                                  {item.badge > 99 ? "99+" : item.badge}
                                 </Text>
                               </View>
                             )}
@@ -279,8 +324,14 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Logout"
         >
-          <Ionicons name="log-out-outline" size={20} color={theme.colors.error} />
-          <Text style={[styles.logoutLabel, { color: theme.colors.error }]}>Logout</Text>
+          <Ionicons
+            name="log-out-outline"
+            size={20}
+            color={theme.colors.error}
+          />
+          <Text style={[styles.logoutLabel, { color: theme.colors.error }]}>
+            Logout
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -289,21 +340,23 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: '100%',
+    height: "100%",
     borderRightWidth: 1,
-    ...(Platform.OS === 'web' ? {
-      position: 'fixed' as const,
-      left: 0,
-      top: 0,
-      bottom: 0,
-    } : {}),
+    ...(Platform.OS === "web"
+      ? {
+          position: "fixed" as const,
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }
+      : {}),
   } as any,
   scrollView: {
     flex: 1,
   },
   profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.md,
     borderBottomWidth: 1,
     marginBottom: spacing.sm,
@@ -312,9 +365,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(76, 175, 80, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: spacing.sm,
   },
   profileInfo: {
@@ -322,7 +375,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     ...typography.bodyMedium,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   profileRole: {
     ...typography.caption,
@@ -332,9 +385,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   groupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
@@ -346,8 +399,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   item: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     marginHorizontal: spacing.xs,
@@ -365,24 +418,24 @@ const styles = StyleSheet.create({
     minWidth: 18,
     height: 18,
     borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 4,
   },
   itemBadgeText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 9,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.md,
     borderTopWidth: 1,
     gap: spacing.sm,
   },
   logoutLabel: {
     ...typography.bodySmall,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

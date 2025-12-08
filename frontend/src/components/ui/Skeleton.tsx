@@ -3,24 +3,24 @@
  * Safe, non-breaking addition for loading states
  */
 
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
-import { useTheme } from '../../hooks/useTheme';
+import React, { useEffect, useRef } from "react";
+import { View, StyleSheet, Animated, ViewStyle } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 interface SkeletonProps {
   width?: number | string;
   height?: number;
   borderRadius?: number;
   style?: ViewStyle;
-  variant?: 'text' | 'circular' | 'rectangular';
+  variant?: "text" | "circular" | "rectangular";
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
-  width = '100%',
+  width = "100%",
   height = 20,
   borderRadius = 4,
   style,
-  variant = 'rectangular',
+  variant = "rectangular",
 }) => {
   const theme = useTheme();
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -38,7 +38,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
           duration: 1000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     animation.start();
     return () => animation.stop();
@@ -51,13 +51,13 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   const getVariantStyle = (): ViewStyle => {
     switch (variant) {
-      case 'circular':
+      case "circular":
         return {
           width: height,
           height,
           borderRadius: height / 2,
         };
-      case 'text':
+      case "text":
         return {
           height,
           borderRadius: borderRadius || 4,
@@ -77,7 +77,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       style={[
         styles.skeleton,
         {
-          width: typeof width === 'string' ? width : width,
+          width: typeof width === "string" ? width : width,
           height: variantStyle.height,
           borderRadius: variantStyle.borderRadius,
           backgroundColor: theme.colors.surface,
@@ -98,7 +98,7 @@ interface SkeletonTextProps {
 export const SkeletonText: React.FC<SkeletonTextProps> = ({
   lines = 3,
   lineHeight = 16,
-  lastLineWidth = '60%',
+  lastLineWidth = "60%",
 }) => {
   return (
     <View>
@@ -106,7 +106,7 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
         <Skeleton
           key={index}
           height={lineHeight}
-          width={index === lines - 1 ? lastLineWidth : '100%'}
+          width={index === lines - 1 ? lastLineWidth : "100%"}
           style={{ marginBottom: 8 }}
           variant="text"
         />
@@ -117,6 +117,6 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
 
 const styles = StyleSheet.create({
   skeleton: {
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 });

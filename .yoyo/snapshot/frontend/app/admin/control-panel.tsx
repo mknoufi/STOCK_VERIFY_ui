@@ -67,10 +67,10 @@ export default function ControlPanelScreen() {
       );
       return;
     }
-    
+
     // Load data with timeout safety
     loadData();
-    
+
     // Safety: Force loading to false after 10 seconds max
     const maxTimeout = setTimeout(() => {
       if (loading) {
@@ -93,7 +93,7 @@ export default function ControlPanelScreen() {
         loadData();
       }
     }, 10000);
-    
+
     return () => {
       clearTimeout(maxTimeout);
       clearInterval(interval);
@@ -104,12 +104,12 @@ export default function ControlPanelScreen() {
   const loadData = async () => {
     try {
       setRefreshing(true);
-      
+
       // Add timeout wrapper for API calls
       const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> => {
         return Promise.race([
           promise,
-          new Promise<T>((_, reject) => 
+          new Promise<T>((_, reject) =>
             setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
           ),
         ]);
@@ -139,7 +139,7 @@ export default function ControlPanelScreen() {
       if (statsRes.status === 'fulfilled' && statsRes.value?.data) {
         setSystemStats(statsRes.value.data);
       }
-      
+
       setLastUpdate(new Date());
     } catch (error: any) {
       console.error('Control panel loadData error:', error);

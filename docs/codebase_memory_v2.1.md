@@ -1,7 +1,7 @@
 # STOCK_VERIFY_2.1 Codebase Memory
 
-**Version:** 2.1  
-**Generated:** 2025-11-30  
+**Version:** 2.1
+**Generated:** 2025-11-30
 **Purpose:** Canonical technical memory for STOCK_VERIFY 2.1 architecture, stacks, flows, and data models.
 
 ---

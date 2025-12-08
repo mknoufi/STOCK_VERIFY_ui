@@ -38,20 +38,20 @@ async def get_sessions_v2(
     """
     try:
         from backend.server import db
-        
+
         # Build query
         query = {}
         if status:
             query["status"] = status
-        
+
         # Get total count
         total = await db.sessions.count_documents(query)
-        
+
         # Get paginated sessions
         skip = (page - 1) * page_size
         sessions_cursor = db.sessions.find(query).sort("created_at", -1).skip(skip).limit(page_size)
         sessions = await sessions_cursor.to_list(length=page_size)
-        
+
         # Convert to response models
         session_responses = [
             SessionResponse(
@@ -65,22 +65,21 @@ async def get_sessions_v2(
             )
             for session in sessions
         ]
-        
+
         paginated_response = PaginatedResponse.create(
             items=session_responses,
             total=total,
             page=page,
             page_size=page_size,
         )
-        
+
         return ApiResponse.success_response(
             data=paginated_response,
             message=f"Retrieved {len(session_responses)} sessions",
         )
-        
+
     except Exception as e:
         return ApiResponse.error_response(
             error_code="SESSIONS_FETCH_ERROR",
             error_message=f"Failed to fetch sessions: {str(e)}",
         )
-

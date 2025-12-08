@@ -2,12 +2,9 @@
  * useVersionCheck Hook
  * Provides version checking and upgrade notification functionality
  */
-import { useCallback, useEffect, useState, useRef } from 'react';
-import { useAppVersion } from './useAppVersion';
-import {
-  checkVersion,
-  VersionCheckResult,
-} from '../services/versionService';
+import { useCallback, useEffect, useState, useRef } from "react";
+import { useAppVersion } from "./useAppVersion";
+import { checkVersion, VersionCheckResult } from "../services/versionService";
 
 export interface UseVersionCheckOptions {
   /** Check version on mount, default true */
@@ -40,7 +37,7 @@ export interface UseVersionCheckResult {
 }
 
 export const useVersionCheck = (
-  options: UseVersionCheckOptions = {}
+  options: UseVersionCheckOptions = {},
 ): UseVersionCheckResult => {
   const {
     checkOnMount = true,
@@ -51,7 +48,7 @@ export const useVersionCheck = (
 
   const { version: clientVersion } = useAppVersion();
   const [versionInfo, setVersionInfo] = useState<VersionCheckResult | null>(
-    null
+    null,
   );
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,45 +59,51 @@ export const useVersionCheck = (
   // (which may change reference even if the version string is identical).
   const prevVersionRef = useRef<string | undefined>(undefined);
 
-  const checkForUpdates = useCallback(async (): Promise<VersionCheckResult | null> => {
-    if (!clientVersion || clientVersion === 'Unknown') {
-      __DEV__ && console.log('Version check skipped: client version not available');
-      return null;
-    }
-
-    setIsChecking(true);
-    setError(null);
-
-    try {
-      const result = await checkVersion(clientVersion);
-      setVersionInfo(result);
-
-      // Handle force update
-      if (result.force_update && onForceUpdate) {
-        onForceUpdate(result);
+  const checkForUpdates =
+    useCallback(async (): Promise<VersionCheckResult | null> => {
+      if (!clientVersion || clientVersion === "Unknown") {
+        __DEV__ &&
+          console.log("Version check skipped: client version not available");
+        return null;
       }
 
-      // Handle optional update available
-      if (result.update_available && !result.force_update && onUpdateAvailable) {
-        onUpdateAvailable(result);
-      }
+      setIsChecking(true);
+      setError(null);
 
-      // Clear dismissed state on new check with different version
-      if (result.current_version !== prevVersionRef.current) {
-        setIsDismissed(false);
-      }
-      prevVersionRef.current = result.current_version;
+      try {
+        const result = await checkVersion(clientVersion);
+        setVersionInfo(result);
 
-      return result;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to check for updates';
-      setError(errorMessage);
-      __DEV__ && console.error('Version check failed:', err);
-      return null;
-    } finally {
-      setIsChecking(false);
-    }
-  }, [clientVersion, onForceUpdate, onUpdateAvailable]);
+        // Handle force update
+        if (result.force_update && onForceUpdate) {
+          onForceUpdate(result);
+        }
+
+        // Handle optional update available
+        if (
+          result.update_available &&
+          !result.force_update &&
+          onUpdateAvailable
+        ) {
+          onUpdateAvailable(result);
+        }
+
+        // Clear dismissed state on new check with different version
+        if (result.current_version !== prevVersionRef.current) {
+          setIsDismissed(false);
+        }
+        prevVersionRef.current = result.current_version;
+
+        return result;
+      } catch (err: any) {
+        const errorMessage = err.message || "Failed to check for updates";
+        setError(errorMessage);
+        __DEV__ && console.error("Version check failed:", err);
+        return null;
+      } finally {
+        setIsChecking(false);
+      }
+    }, [clientVersion, onForceUpdate, onUpdateAvailable]);
 
   const dismissUpdate = useCallback(() => {
     setIsDismissed(true);
@@ -108,7 +111,7 @@ export const useVersionCheck = (
 
   // Check on mount
   useEffect(() => {
-    if (checkOnMount && clientVersion && clientVersion !== 'Unknown') {
+    if (checkOnMount && clientVersion && clientVersion !== "Unknown") {
       checkForUpdates();
     }
   }, [checkOnMount, clientVersion, checkForUpdates]);

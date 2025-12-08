@@ -148,11 +148,17 @@ export class BackupService {
 
       // Restore cache data
       if (backupData.cache.items) {
-        await AsyncStorage.setItem("items_cache", JSON.stringify(backupData.cache.items));
+        await AsyncStorage.setItem(
+          "items_cache",
+          JSON.stringify(backupData.cache.items),
+        );
       }
 
       if (backupData.cache.sessions) {
-        await AsyncStorage.setItem("sessions_cache", JSON.stringify(backupData.cache.sessions));
+        await AsyncStorage.setItem(
+          "sessions_cache",
+          JSON.stringify(backupData.cache.sessions),
+        );
       }
 
       if (backupData.cache.countLines) {
@@ -167,7 +173,10 @@ export class BackupService {
       }
 
       if (backupData.analytics) {
-        await AsyncStorage.setItem("analytics_data", JSON.stringify(backupData.analytics));
+        await AsyncStorage.setItem(
+          "analytics_data",
+          JSON.stringify(backupData.analytics),
+        );
       }
 
       __DEV__ && console.log("Backup restored successfully");

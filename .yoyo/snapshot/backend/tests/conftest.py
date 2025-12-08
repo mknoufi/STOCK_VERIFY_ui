@@ -66,7 +66,7 @@ def test_db(monkeypatch) -> InMemoryDatabase:
 async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None]:
     """Provide an async client for API testing."""
     from backend.server import app
-    
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
@@ -76,7 +76,7 @@ async def mongo_client() -> AsyncGenerator[AsyncIOMotorClient, None]:
     """Provide MongoDB test client."""
     client = AsyncIOMotorClient(os.getenv('MONGO_URL'))
     yield client
-    
+
     # Cleanup test database
     await client.drop_database(os.getenv('DB_NAME'))
     client.close()
@@ -87,7 +87,7 @@ async def test_cache() -> AsyncGenerator[CacheService, None]:
     """Provide cache service for testing."""
     cache = CacheService(redis_url=os.getenv('REDIS_URL'), default_ttl=60)
     yield cache
-    
+
     # Clear test cache
     await cache.clear_pattern("*")
 
@@ -115,19 +115,19 @@ def mock_sql_connection():
 async def authenticated_headers(test_db: InMemoryDatabase) -> dict:
     """Provide authentication headers for API testing."""
     from backend.auth.jwt_provider import encode
-    
+
     # Find the test user seeded by setup_server_with_in_memory_db
     user = await test_db.users.find_one({"username": "staff1"})
     if not user:
         # Fallback if seeding didn't work or changed
         user = {"username": "testuser", "role": "admin"}
-        
+
     token = encode(
         {"sub": user["username"], "role": user["role"]},
         os.getenv("JWT_SECRET"),
         algorithm=os.getenv("JWT_ALGORITHM")
     )
-    
+
     return {"Authorization": f"Bearer {token}"}
 
 

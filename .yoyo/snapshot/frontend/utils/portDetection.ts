@@ -52,7 +52,7 @@ export const detectFrontendPort = async (): Promise<number | null> => {
         method: 'HEAD',
         signal: AbortSignal.timeout(1000), // 1 second timeout
       });
-      
+
       if (response.ok || response.status < 500) {
         cachedPort = port;
         if (__DEV__) {
@@ -138,4 +138,3 @@ export default {
   getFrontendURL,
   getFrontendURLSync,
 };
-

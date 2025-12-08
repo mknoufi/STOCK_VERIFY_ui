@@ -29,19 +29,26 @@ export class ValidationService {
   /**
    * Validate field
    */
-  static validateField(value: any, rule: ValidationRule, fieldName: string): string | null {
+  static validateField(
+    value: any,
+    rule: ValidationRule,
+    fieldName: string,
+  ): string | null {
     // Required check
-    if (rule.required && (!value || (typeof value === 'string' && !value.trim()))) {
+    if (
+      rule.required &&
+      (!value || (typeof value === "string" && !value.trim()))
+    ) {
       return `${fieldName} is required`;
     }
 
     // Skip other checks if value is empty (unless required)
-    if (!value || (typeof value === 'string' && !value.trim())) {
+    if (!value || (typeof value === "string" && !value.trim())) {
       return null;
     }
 
     // String length checks
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       if (rule.minLength && value.length < rule.minLength) {
         return `${fieldName} must be at least ${rule.minLength} characters`;
       }
@@ -52,13 +59,17 @@ export class ValidationService {
     }
 
     // Pattern check
-    if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
+    if (
+      rule.pattern &&
+      typeof value === "string" &&
+      !rule.pattern.test(value)
+    ) {
       return `${fieldName} format is invalid`;
     }
 
     // Number range checks
-    if (typeof value === 'number' || !isNaN(Number(value))) {
-      const numValue = typeof value === 'number' ? value : Number(value);
+    if (typeof value === "number" || !isNaN(Number(value))) {
+      const numValue = typeof value === "number" ? value : Number(value);
 
       if (rule.min !== undefined && numValue < rule.min) {
         return `${fieldName} must be at least ${rule.min}`;
@@ -82,7 +93,7 @@ export class ValidationService {
    */
   static validateForm(
     data: Record<string, any>,
-    rules: Record<string, ValidationRule>
+    rules: Record<string, ValidationRule>,
   ): ValidationResult {
     const errors: Record<string, string> = {};
 
@@ -103,25 +114,25 @@ export class ValidationService {
    * Sanitize string
    */
   static sanitizeString(value: string): string {
-    if (typeof value !== 'string') {
-      return String(value || '');
+    if (typeof value !== "string") {
+      return String(value || "");
     }
 
     return value
       .trim()
-      .replace(/[<>]/g, '') // Remove HTML tags
-      .replace(/\s+/g, ' '); // Normalize whitespace
+      .replace(/[<>]/g, "") // Remove HTML tags
+      .replace(/\s+/g, " "); // Normalize whitespace
   }
 
   /**
    * Sanitize number
    */
   static sanitizeNumber(value: any): number | null {
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       return isNaN(value) ? null : value;
     }
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       const num = parseFloat(value);
       return isNaN(num) ? null : num;
     }
@@ -138,13 +149,13 @@ export class ValidationService {
     // If numeric and less than 6 digits, pad with leading zeros
     if (trimmed.match(/^\d+$/)) {
       if (trimmed.length < 6) {
-        return trimmed.padStart(6, '0');
+        return trimmed.padStart(6, "0");
       }
       // If more than 6 digits, try trimming leading zeros first
       if (trimmed.length > 6) {
-        const trimmedNoZeros = trimmed.replace(/^0+/, '');
+        const trimmedNoZeros = trimmed.replace(/^0+/, "");
         if (trimmedNoZeros.length <= 6) {
-          return trimmedNoZeros.padStart(6, '0');
+          return trimmedNoZeros.padStart(6, "0");
         }
       }
     }
@@ -155,9 +166,13 @@ export class ValidationService {
   /**
    * Validate barcode format
    */
-  static validateBarcode(barcode: string): { valid: boolean; error?: string; normalized?: string } {
+  static validateBarcode(barcode: string): {
+    valid: boolean;
+    error?: string;
+    normalized?: string;
+  } {
     if (!barcode || !barcode.trim()) {
-      return { valid: false, error: 'Barcode cannot be empty' };
+      return { valid: false, error: "Barcode cannot be empty" };
     }
 
     const trimmed = barcode.trim();
@@ -165,7 +180,7 @@ export class ValidationService {
     // Numeric barcode (6-digit manual barcode)
     if (/^\d+$/.test(trimmed)) {
       if (trimmed.length > 20) {
-        return { valid: false, error: 'Barcode is too long (max 20 digits)' };
+        return { valid: false, error: "Barcode is too long (max 20 digits)" };
       }
       // Normalize to 6 digits
       const normalized = this.normalizeBarcode(trimmed);
@@ -175,12 +190,18 @@ export class ValidationService {
     // Alphanumeric barcode
     if (/^[A-Za-z0-9]+$/.test(trimmed)) {
       if (trimmed.length > 50) {
-        return { valid: false, error: 'Barcode is too long (max 50 characters)' };
+        return {
+          valid: false,
+          error: "Barcode is too long (max 50 characters)",
+        };
       }
       return { valid: true, normalized: trimmed };
     }
 
-    return { valid: false, error: 'Invalid barcode format. Use only letters and numbers.' };
+    return {
+      valid: false,
+      error: "Invalid barcode format. Use only letters and numbers.",
+    };
   }
 
   /**
@@ -196,25 +217,29 @@ export class ValidationService {
    */
   static validatePhone(phone: string): boolean {
     const phoneRegex = /^\+?[\d\s\-()]+$/;
-    return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10;
+    return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 10;
   }
 
   /**
    * Validate quantity
    */
-  static validateQuantity(qty: any): { valid: boolean; error?: string; value?: number } {
+  static validateQuantity(qty: any): {
+    valid: boolean;
+    error?: string;
+    value?: number;
+  } {
     const num = this.sanitizeNumber(qty);
 
     if (num === null) {
-      return { valid: false, error: 'Quantity must be a number' };
+      return { valid: false, error: "Quantity must be a number" };
     }
 
     if (num < 0) {
-      return { valid: false, error: 'Quantity cannot be negative' };
+      return { valid: false, error: "Quantity cannot be negative" };
     }
 
     if (num > 999999) {
-      return { valid: false, error: 'Quantity is too large' };
+      return { valid: false, error: "Quantity is too large" };
     }
 
     return { valid: true, value: num };
@@ -237,8 +262,8 @@ export const ValidationRules = {
     min: 0,
     max: 999999,
     custom: (value: any) => {
-      const num = typeof value === 'number' ? value : parseFloat(value);
-      return isNaN(num) ? 'Quantity must be a number' : null;
+      const num = typeof value === "number" ? value : parseFloat(value);
+      return isNaN(num) ? "Quantity must be a number" : null;
     },
   } as ValidationRule,
 

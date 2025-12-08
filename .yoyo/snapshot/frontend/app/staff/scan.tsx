@@ -291,7 +291,7 @@ export default function ScanScreen() {
   // Use extracted hooks for state management
   const { scannerState, updateScannerState } = useScanState();
   const { photoState, updatePhotoState, addPhoto, removePhoto } = usePhotoState();
-  
+
   const photoCameraRef = React.useRef<any>(null);
   const barcodeScanHistoryRef = React.useRef<Map<string, number[]>>(new Map());
 

@@ -2,8 +2,8 @@
  * Modal Components - Exports
  */
 
-export { SearchableSelectModal } from './SearchableSelectModal';
-export type { SearchableSelectModalProps } from './SearchableSelectModal';
+export { SearchableSelectModal } from "./SearchableSelectModal";
+export type { SearchableSelectModalProps } from "./SearchableSelectModal";
 
-export { PhotoCaptureModal } from './PhotoCaptureModal';
-export type { PhotoCaptureModalProps } from './PhotoCaptureModal';
+export { PhotoCaptureModal } from "./PhotoCaptureModal";
+export type { PhotoCaptureModalProps } from "./PhotoCaptureModal";

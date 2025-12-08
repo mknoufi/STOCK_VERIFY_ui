@@ -26,7 +26,10 @@ const FeatureCard = ({
   title: string;
   delay: number;
 }) => (
-  <Animated.View entering={FadeInDown.delay(delay).springify()} style={styles.featureWrapper}>
+  <Animated.View
+    entering={FadeInDown.delay(delay).springify()}
+    style={styles.featureWrapper}
+  >
     <BlurView intensity={20} tint="light" style={styles.featureCard}>
       <View style={styles.iconCircle}>
         <Ionicons name={icon} size={24} color={colors.primary} />
@@ -46,8 +49,13 @@ export default function WelcomeScreen() {
   React.useEffect(() => {
     if (!isLoading && user) {
       __DEV__ &&
-        console.log("🔄 [WELCOME] User already logged in, redirecting:", { role: user.role });
-      if (Platform.OS === "web" && (user.role === "supervisor" || user.role === "admin")) {
+        console.log("🔄 [WELCOME] User already logged in, redirecting:", {
+          role: user.role,
+        });
+      if (
+        Platform.OS === "web" &&
+        (user.role === "supervisor" || user.role === "admin")
+      ) {
         router.replace("/admin/metrics" as any);
       } else if (user.role === "supervisor" || user.role === "admin") {
         router.replace("/supervisor/dashboard" as any);
@@ -65,7 +73,10 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient colors={["#121212", "#0A0A0A", "#000000"]} style={StyleSheet.absoluteFill} />
+      <LinearGradient
+        colors={["#121212", "#0A0A0A", "#000000"]}
+        style={StyleSheet.absoluteFill}
+      />
 
       {/* Decorative Background Elements */}
       <View style={styles.decorativeCircle1} />
@@ -73,7 +84,10 @@ export default function WelcomeScreen() {
 
       <View style={[styles.content, { maxWidth: isDesktop ? 600 : "100%" }]}>
         {/* Header Section */}
-        <Animated.View entering={FadeInUp.duration(1000).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInUp.duration(1000).springify()}
+          style={styles.header}
+        >
           <View style={styles.logoContainer}>
             <LinearGradient
               colors={gradients.primary}
@@ -95,13 +109,24 @@ export default function WelcomeScreen() {
 
         {/* Features Grid */}
         <View style={styles.featuresContainer}>
-          <FeatureCard icon="barcode-outline" title="Smart Scanning" delay={400} />
+          <FeatureCard
+            icon="barcode-outline"
+            title="Smart Scanning"
+            delay={400}
+          />
           <FeatureCard icon="sync-outline" title="Live Sync" delay={600} />
-          <FeatureCard icon="stats-chart-outline" title="Analytics" delay={800} />
+          <FeatureCard
+            icon="stats-chart-outline"
+            title="Analytics"
+            delay={800}
+          />
         </View>
 
         {/* Action Buttons */}
-        <Animated.View entering={FadeInDown.delay(1000).springify()} style={styles.actions}>
+        <Animated.View
+          entering={FadeInDown.delay(1000).springify()}
+          style={styles.actions}
+        >
           <TouchableOpacity
             onPress={() => handlePress("/login")}
             activeOpacity={0.9}

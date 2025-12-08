@@ -4,7 +4,7 @@
 # =================================================
 # Starts all components of the Stock Verification System
 # - Enhanced Admin Panel (Port 3000)
-# - Backend API (Port 8001) 
+# - Backend API (Port 8001)
 # - Frontend Development Server (Port 8081)
 
 echo "🚀 STOCK VERIFICATION SYSTEM - COMPLETE STARTUP"
@@ -126,7 +126,7 @@ echo -e "${BLUE}   📱 Frontend: http://localhost:8081${NC}"
 
 # Save PIDs for cleanup
 echo "$ADMIN_PID" > logs/admin.pid
-echo "$BACKEND_PID" > logs/backend.pid  
+echo "$BACKEND_PID" > logs/backend.pid
 echo "$FRONTEND_PID" > logs/frontend.pid
 
 sleep 3
@@ -137,7 +137,7 @@ echo -e "${GREEN}===================================================${NC}"
 echo ""
 echo -e "${PURPLE}🔗 SERVICE URLS:${NC}"
 echo -e "${CYAN}📊 Enhanced Admin Dashboard: http://localhost:3000/dashboard.html${NC}"
-echo -e "${CYAN}🔧 Legacy Admin Panel:      http://localhost:3000/index.html${NC}"  
+echo -e "${CYAN}🔧 Legacy Admin Panel:      http://localhost:3000/index.html${NC}"
 echo -e "${CYAN}🌐 Backend API:             http://localhost:8001${NC}"
 echo -e "${CYAN}📚 API Documentation:       http://localhost:8001/docs${NC}"
 echo -e "${CYAN}📱 Frontend Web:            http://localhost:8081${NC}"

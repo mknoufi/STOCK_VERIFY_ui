@@ -40,10 +40,7 @@ from httpx import ASGITransport, AsyncClient  # noqa: E402
 # Import app and test utilities
 try:
     from backend.server import app
-    from backend.tests.utils.in_memory_db import (
-        InMemoryDatabase,
-        setup_server_with_in_memory_db,
-    )
+    from backend.tests.utils.in_memory_db import InMemoryDatabase, setup_server_with_in_memory_db
 except ImportError:
     # Fallback for when tests are run in isolation
     app = None

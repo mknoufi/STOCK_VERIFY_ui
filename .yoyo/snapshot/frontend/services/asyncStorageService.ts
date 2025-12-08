@@ -29,11 +29,11 @@ export class AsyncStorageService {
    */
   private handleStorageError(operation: string, key: string, error: any): void {
     const errorMessage = `AsyncStorage ${operation} failed for key '${key}': ${error.message || error}`;
-    
+
     if (this.debugMode) {
       console.error(errorMessage, error);
     }
-    
+
     // Store error for debugging
     this.setItem('lastStorageError', {
       operation,
@@ -47,10 +47,10 @@ export class AsyncStorageService {
    * Set item with enhanced error handling and options
    */
   async setItem(
-    key: string, 
-    value: any, 
-    options: { 
-      expires?: number; 
+    key: string,
+    value: any,
+    options: {
+      expires?: number;
       silent?: boolean;
       showAlert?: boolean;
     } = {}
@@ -65,19 +65,19 @@ export class AsyncStorageService {
 
       const serialized = JSON.stringify(item);
       await AsyncStorage.setItem(key, serialized);
-      
+
       if (this.debugMode && !options.silent) {
         console.log(`✅ AsyncStorage: Set '${key}'`, value);
       }
-      
+
       return true;
     } catch (error) {
       this.handleStorageError('setItem', key, error);
-      
+
       if (options.showAlert && !options.silent) {
         Alert.alert('Storage Error', `Failed to save ${key}. Please try again.`);
       }
-      
+
       return false;
     }
   }
@@ -86,8 +86,8 @@ export class AsyncStorageService {
    * Get item with automatic expiration check
    */
   async getItem<T = any>(
-    key: string, 
-    options: { 
+    key: string,
+    options: {
       defaultValue?: T;
       silent?: boolean;
       ignoreExpiration?: boolean;
@@ -95,7 +95,7 @@ export class AsyncStorageService {
   ): Promise<T | null> {
     try {
       const serialized = await AsyncStorage.getItem(key);
-      
+
       if (serialized === null) {
         if (this.debugMode && !options.silent) {
           console.log(`📭 AsyncStorage: '${key}' not found`);
@@ -114,7 +114,7 @@ export class AsyncStorageService {
         // Construct a wrapper for the raw value
         item = { key, value: serialized };
       }
-      
+
       // Check expiration (only if it was a valid StorageItem with expires)
       if (!options.ignoreExpiration && item.expires && Date.now() > item.expires) {
         if (this.debugMode && !options.silent) {
@@ -127,7 +127,7 @@ export class AsyncStorageService {
       if (this.debugMode && !options.silent) {
         console.log(`📦 AsyncStorage: Got '${key}'`, item.value);
       }
-      
+
       return item.value;
     } catch (error) {
       this.handleStorageError('getItem', key, error);
@@ -141,11 +141,11 @@ export class AsyncStorageService {
   async removeItem(key: string, options: { silent?: boolean } = {}): Promise<boolean> {
     try {
       await AsyncStorage.removeItem(key);
-      
+
       if (this.debugMode && !options.silent) {
         console.log(`🗑️ AsyncStorage: Removed '${key}'`);
       }
-      
+
       return true;
     } catch (error) {
       this.handleStorageError('removeItem', key, error);
@@ -178,9 +178,9 @@ export class AsyncStorageService {
             'This will remove all stored data. Are you sure?',
             [
               { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-              { 
-                text: 'Clear All', 
-                style: 'destructive', 
+              {
+                text: 'Clear All',
+                style: 'destructive',
                 onPress: async () => {
                   try {
                     await AsyncStorage.clear();
@@ -216,11 +216,11 @@ export class AsyncStorageService {
   async getAllKeys(filter?: string): Promise<string[]> {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      
+
       if (filter) {
         return keys.filter(key => key.includes(filter));
       }
-      
+
       return [...keys]; // Convert readonly array to mutable array
     } catch (error) {
       this.handleStorageError('getAllKeys', 'ALL', error);
@@ -235,12 +235,12 @@ export class AsyncStorageService {
     try {
       const keyValuePairs = await AsyncStorage.multiGet(keys);
       const result: Record<string, any> = {};
-      
+
       keyValuePairs.forEach(([key, value]) => {
         if (value !== null) {
           try {
             const item: StorageItem = JSON.parse(value);
-            
+
             // Check expiration
             if (item.expires && Date.now() > item.expires) {
               this.removeItem(key, { silent: true });
@@ -255,7 +255,7 @@ export class AsyncStorageService {
           result[key] = null;
         }
       });
-      
+
       return result;
     } catch (error) {
       this.handleStorageError('getMultiple', keys.join(','), error);
@@ -276,13 +276,13 @@ export class AsyncStorageService {
         };
         return [key, JSON.stringify(item)] as [string, string];
       });
-      
+
       await AsyncStorage.multiSet(preparedItems);
-      
+
       if (this.debugMode) {
         console.log(`✅ AsyncStorage: Set ${items.length} items`);
       }
-      
+
       return true;
     } catch (error) {
       this.handleStorageError('setMultiple', `${items.length} items`, error);
@@ -298,7 +298,7 @@ export class AsyncStorageService {
       const keys = await this.getAllKeys();
       const values = await AsyncStorage.multiGet(keys);
       const expiredKeys: string[] = [];
-      
+
       values.forEach(([key, value]) => {
         if (value) {
           try {
@@ -311,15 +311,15 @@ export class AsyncStorageService {
           }
         }
       });
-      
+
       if (expiredKeys.length > 0) {
         await AsyncStorage.multiRemove(expiredKeys);
-        
+
         if (this.debugMode) {
           console.log(`🧹 AsyncStorage: Cleaned up ${expiredKeys.length} expired items`);
         }
       }
-      
+
       return expiredKeys.length;
     } catch (error) {
       this.handleStorageError('cleanupExpired', 'ALL', error);
@@ -339,15 +339,15 @@ export class AsyncStorageService {
     try {
       const keys = await this.getAllKeys();
       const values = await AsyncStorage.multiGet(keys);
-      
+
       let totalSize = 0;
       let oldestTimestamp: number | undefined;
       let newestTimestamp: number | undefined;
-      
+
       values.forEach(([, value]) => {
         if (value) {
           totalSize += value.length;
-          
+
           try {
             const item: StorageItem = JSON.parse(value);
             if (item.timestamp) {
@@ -363,7 +363,7 @@ export class AsyncStorageService {
           }
         }
       });
-      
+
       return {
         totalKeys: keys.length,
         approximateSize: totalSize,

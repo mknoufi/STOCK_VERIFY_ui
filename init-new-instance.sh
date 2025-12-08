@@ -57,7 +57,13 @@ echo "-----------------------------------"
 JWT_SECRET=$(openssl rand -base64 32)
 JWT_REFRESH_SECRET=$(openssl rand -base64 32)
 
-print_success "JWT secrets generated successfully"
+# Validate secret length (base64 of 32 bytes should be ~44 chars)
+if [ ${#JWT_SECRET} -lt 32 ] || [ ${#JWT_REFRESH_SECRET} -lt 32 ]; then
+    print_error "Generated secrets are too short. Please try again."
+    exit 1
+fi
+
+print_success "JWT secrets generated successfully (length: ${#JWT_SECRET} chars)"
 echo ""
 
 # Step 3: Create environment files
@@ -149,10 +155,21 @@ if [ -f backend/requirements.txt ]; then
     fi
     
     print_info "Activating virtual environment and installing packages..."
-    source venv/bin/activate
+    # Portable activation - works with bash, zsh, etc.
+    if [ -f venv/bin/activate ]; then
+        . venv/bin/activate
+    elif [ -f venv/Scripts/activate ]; then
+        # Windows compatibility
+        . venv/Scripts/activate
+    else
+        print_error "Could not find virtual environment activation script"
+        cd ..
+        exit 1
+    fi
+    
     pip install --quiet --upgrade pip
     pip install --quiet -r requirements.txt
-    deactivate
+    deactivate 2>/dev/null || true
     cd ..
     print_success "Backend dependencies installed"
 else
@@ -168,7 +185,7 @@ echo "-----------------------------------"
 if [ -f frontend/package.json ]; then
     cd frontend
     print_info "This may take a few minutes..."
-    npm install --quiet
+    npm install --loglevel=warn
     cd ..
     print_success "Frontend dependencies installed"
 else

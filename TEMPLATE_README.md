@@ -184,7 +184,7 @@ Before deploying to production:
 ## 📦 Production Deployment
 
 For production deployment instructions, see:
-- `.yoyo/snapshot/DEPLOYMENT_GUIDE.md` - Comprehensive deployment guide
+- Check `docs/` directory for deployment guides
 - `docker-compose.yml` - Docker configuration
 - `nginx/` - Nginx reverse proxy configuration
 

@@ -336,7 +336,15 @@ class SQLServerConnector:
         if not cursor.description or not row:
             return {}
         columns = [column[0] for column in cursor.description]
-        return dict(zip(columns, row))
+        result = dict(zip(columns, row))
+
+        # Synthesize image URL if item_name exists
+        if "item_name" in result and result["item_name"]:
+            # Use placehold.co for dynamic placeholder
+            safe_name = result["item_name"].replace(" ", "+")
+            result["image_url"] = f"https://placehold.co/400x400/e2e8f0/1e293b?text={safe_name}"
+
+        return result
 
     def get_item_by_barcode(self, barcode: str) -> Optional[Dict[str, Any]]:
         """

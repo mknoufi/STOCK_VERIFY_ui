@@ -13,10 +13,9 @@ Run with: pytest backend/tests/evaluation/test_data_quality.py -v
 
 import random
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import pytest
-import pytest_asyncio
 from bson import ObjectId
 
 from .metrics_collector import MetricsCollector
@@ -137,7 +136,8 @@ class TestDataCompleteness:
 
         required_fields = self.REQUIRED_FIELDS["sessions"]
         complete = sum(
-            1 for doc in documents
+            1
+            for doc in documents
             if all(field in doc and doc[field] is not None for field in required_fields)
         )
 
@@ -159,7 +159,8 @@ class TestDataCompleteness:
 
         required_fields = self.REQUIRED_FIELDS["erp_items"]
         complete = sum(
-            1 for doc in documents
+            1
+            for doc in documents
             if all(field in doc and doc[field] is not None for field in required_fields)
         )
 
@@ -176,13 +177,13 @@ class TestDataFormatValidation:
     def test_barcode_format(self, collector: MetricsCollector):
         """Test barcode format validation."""
         test_barcodes = [
-            ("123456", True),           # Valid 6-digit
-            ("1234567890123", True),    # Valid EAN-13
-            ("12345678", True),         # Valid 8-digit
-            ("ABC123", True),           # Valid alphanumeric
-            ("", False),                # Invalid empty
-            ("12345", False),           # Too short (< 6)
-            ("12", False),              # Too short
+            ("123456", True),  # Valid 6-digit
+            ("1234567890123", True),  # Valid EAN-13
+            ("12345678", True),  # Valid 8-digit
+            ("ABC123", True),  # Valid alphanumeric
+            ("", False),  # Invalid empty
+            ("12345", False),  # Too short (< 6)
+            ("12", False),  # Too short
         ]
 
         def is_valid_barcode(barcode: str) -> bool:
@@ -205,14 +206,14 @@ class TestDataFormatValidation:
     def test_quantity_format(self, collector: MetricsCollector):
         """Test quantity format validation."""
         test_quantities = [
-            (0, True),          # Valid zero
-            (1, True),          # Valid positive int
-            (100, True),        # Valid positive int
-            (10.5, True),       # Valid decimal
-            (-1, False),        # Invalid negative
-            (-0.5, False),      # Invalid negative decimal
-            (float('inf'), False),  # Invalid infinity
-            (float('nan'), False),  # Invalid NaN
+            (0, True),  # Valid zero
+            (1, True),  # Valid positive int
+            (100, True),  # Valid positive int
+            (10.5, True),  # Valid decimal
+            (-1, False),  # Invalid negative
+            (-0.5, False),  # Invalid negative decimal
+            (float("inf"), False),  # Invalid infinity
+            (float("nan"), False),  # Invalid NaN
         ]
 
         import math
@@ -241,12 +242,12 @@ class TestDataFormatValidation:
         now = datetime.now()
 
         test_dates = [
-            (now, True),                    # Valid datetime
+            (now, True),  # Valid datetime
             (now - timedelta(days=30), True),  # Valid past date
-            (now + timedelta(days=1), True),   # Valid future date
-            ("2024-01-01", False),          # String not datetime
-            (None, False),                  # None
-            (0, False),                     # Not datetime
+            (now + timedelta(days=1), True),  # Valid future date
+            ("2024-01-01", False),  # String not datetime
+            (None, False),  # None
+            (0, False),  # Not datetime
         ]
 
         def is_valid_date(date) -> bool:
@@ -307,8 +308,10 @@ class TestSyncConsistency:
             erp_item = erp_map.get(mongo_item["item_code"])
             if erp_item:
                 # Check key fields match
-                if (mongo_item["item_name"] == erp_item["item_name"] and
-                    mongo_item["stock"] == erp_item["stock"]):
+                if (
+                    mongo_item["item_name"] == erp_item["item_name"]
+                    and mongo_item["stock"] == erp_item["stock"]
+                ):
                     consistent += 1
 
         consistency_rate = consistent / total
@@ -380,16 +383,18 @@ class TestFullDataQualityEvaluation:
     ):
         """Run complete data quality evaluation."""
         # Run evaluation (without real DB)
-        results = await data_evaluator.evaluate(
+        await data_evaluator.evaluate(
             mongo_db=None,
             sql_connection=None,
             sample_size=100,
         )
 
         # Generate report
-        report = collector.finish_evaluation(metadata={
-            "test_type": "data_quality_evaluation",
-        })
+        report = collector.finish_evaluation(
+            metadata={
+                "test_type": "data_quality_evaluation",
+            }
+        )
 
         # Print summary
         report.print_summary()

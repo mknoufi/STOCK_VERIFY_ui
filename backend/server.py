@@ -27,6 +27,10 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from backend.api import (
+    auth,
+    supervisor_pin,
+)
 from backend.api.admin_control_api import admin_control_router  # noqa: E402
 from backend.api.auth import router as auth_router  # noqa: E402
 from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
@@ -66,7 +70,7 @@ from backend.services.batch_operations import BatchOperationsService  # noqa: E4
 from backend.services.cache_service import CacheService  # noqa: E402
 
 # Production services
-from backend.services.connection_pool import SQLServerConnectionPool  # noqa: E402
+# from backend.services.connection_pool import SQLServerConnectionPool  # Legacy pool removed
 from backend.services.database_health import DatabaseHealthService  # noqa: E402
 from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
 from backend.services.error_log import ErrorLogService  # noqa: E402
@@ -298,34 +302,25 @@ if (
 ):
     try:
         # Try to use enhanced connection pool first
-        try:
-            from backend.services.enhanced_connection_pool import EnhancedSQLServerConnectionPool
+        from backend.services.enhanced_connection_pool import EnhancedSQLServerConnectionPool
 
-            connection_pool = EnhancedSQLServerConnectionPool(
-                host=settings.SQL_SERVER_HOST,
-                port=settings.SQL_SERVER_PORT,
-                database=settings.SQL_SERVER_DATABASE,
-                user=getattr(settings, "SQL_SERVER_USER", None),
-                password=getattr(settings, "SQL_SERVER_PASSWORD", None),
-                pool_size=getattr(settings, "POOL_SIZE", 10),
-                max_overflow=getattr(settings, "MAX_OVERFLOW", 5),
-                retry_attempts=getattr(settings, "CONNECTION_RETRY_ATTEMPTS", 3),
-                retry_delay=getattr(settings, "CONNECTION_RETRY_DELAY", 1.0),
-                health_check_interval=getattr(settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60),
-            )
-            logging.info("✓ Enhanced connection pool initialized")
-        except ImportError:
-            # Fallback to standard connection pool
-            connection_pool = SQLServerConnectionPool(
-                host=settings.SQL_SERVER_HOST,
-                port=settings.SQL_SERVER_PORT,
-                database=settings.SQL_SERVER_DATABASE,
-                user=getattr(settings, "SQL_SERVER_USER", None),
-                password=getattr(settings, "SQL_SERVER_PASSWORD", None),
-                pool_size=getattr(settings, "POOL_SIZE", 10),
-                max_overflow=getattr(settings, "MAX_OVERFLOW", 5),
-            )
-            logging.info("✓ Connection pool initialized (standard)")
+        connection_pool = EnhancedSQLServerConnectionPool(
+            host=settings.SQL_SERVER_HOST,
+            port=settings.SQL_SERVER_PORT,
+            database=settings.SQL_SERVER_DATABASE,
+            user=getattr(settings, "SQL_SERVER_USER", None),
+            password=getattr(settings, "SQL_SERVER_PASSWORD", None),
+            pool_size=getattr(settings, "POOL_SIZE", 10),
+            max_overflow=getattr(settings, "MAX_OVERFLOW", 5),
+            retry_attempts=getattr(settings, "CONNECTION_RETRY_ATTEMPTS", 3),
+            retry_delay=getattr(settings, "CONNECTION_RETRY_DELAY", 1.0),
+            health_check_interval=getattr(settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60),
+        )
+        logging.info("✓ Enhanced connection pool initialized")
+    except ImportError as e:
+        logging.error(f"Failed to import enhanced connection pool: {str(e)}")
+        # Raise error since we don't have a fallback anymore
+        raise e
     except Exception as e:
         logging.warning(f"Connection pool initialization failed: {str(e)}")
 
@@ -872,8 +867,13 @@ try:
 
     app.include_router(notes_router, prefix="/api")  # Notes feature
     app.include_router(sync_conflicts_router, prefix="/api")  # Sync conflicts feature
+
+    # Register the new batch sync router
+    from backend.api.sync import router as batch_sync_router
+
+    app.include_router(batch_sync_router, prefix="/api/sync", tags=["sync"])
 except Exception as _e:
-    logger.warning(f"Notes API router not available: {_e}")
+    logger.warning(f"Feature API router not available: {_e}")
 
 # Import and include Enrichment API router
 if enrichment_router:
@@ -882,6 +882,19 @@ if enrichment_router:
         logger.info("✓ Enrichment API router registered")
     except Exception as _e:
         logger.warning(f"Enrichment API router not available: {_e}")
+
+# Include API v2 router (upgraded endpoints)
+try:
+    from backend.api.v2 import v2_router
+
+    app.include_router(v2_router)
+    logger.info("✓ API v2 router registered")
+except Exception as e:
+    logger.warning(f"API v2 router not available: {e}")
+
+# Register routers with clear prefixes
+app.include_router(auth.router, prefix="/api", tags=["Authentication"])
+app.include_router(supervisor_pin.router, prefix="/api", tags=["Supervisor"])
 
 # Include API v2 router (upgraded endpoints)
 try:
@@ -935,7 +948,9 @@ class CorrectionReason(BaseModel):
 
 
 class PhotoProof(BaseModel):
-    photo_base64: str
+    id: Optional[str] = None
+    url: Optional[str] = None  # This will hold the base64 string from frontend
+    photo_base64: Optional[str] = None  # Keep for backward compatibility if needed
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     description: Optional[str] = None
 
@@ -952,6 +967,7 @@ class CountLineCreate(BaseModel):
     item_code: str
     counted_qty: float
     damaged_qty: Optional[float] = 0
+    damage_included: Optional[bool] = None
     item_condition: Optional[str] = None
     floor_no: Optional[str] = None
     rack_no: Optional[str] = None
@@ -968,6 +984,8 @@ class CountLineCreate(BaseModel):
     correction_reason: Optional[CorrectionReason] = None
     photo_proofs: Optional[List[PhotoProof]] = None
     correction_metadata: Optional[CorrectionMetadata] = None
+    category_correction: Optional[str] = None
+    subcategory_correction: Optional[str] = None
 
 
 class Session(BaseModel):
@@ -976,6 +994,7 @@ class Session(BaseModel):
     staff_user: str
     staff_name: str
     status: str = "OPEN"  # OPEN, RECONCILE, CLOSED
+    type: str = "STANDARD"  # STANDARD, BLIND, STRICT
     started_at: datetime = Field(default_factory=datetime.utcnow)
     closed_at: Optional[datetime] = None
     total_items: int = 0
@@ -984,6 +1003,7 @@ class Session(BaseModel):
 
 class SessionCreate(BaseModel):
     warehouse: str
+    type: Optional[str] = "STANDARD"
 
 
 class UnknownItem(BaseModel):
@@ -1567,7 +1587,9 @@ async def create_session(
         warehouse=warehouse,
         staff_user=current_user["username"],
         staff_name=current_user["full_name"],
+        type=session_data.type or "STANDARD",
     )
+
     await db.sessions.insert_one(session.model_dump())
 
     # Log activity

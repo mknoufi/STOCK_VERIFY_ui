@@ -125,10 +125,17 @@ async def check_sql_server():
 
         print(f"\nERP Tables found: {len(tables)}")
         if tables:
+            allowed_tables = {"Products", "ProductBase", "ProductGroups", "ProductBarcodes"}
             for table in tables:
-                cursor.execute(f"SELECT COUNT(*) FROM [{table[0]}]")
+                table_name = table[0]
+                if table_name not in allowed_tables:
+                    print(f"  ⚠ Skipping unknown table: {table_name}")
+                    continue
+
+                # Safe query - table_name is validated against allowlist
+                cursor.execute(f"SELECT COUNT(*) FROM [{table_name}]")
                 count = cursor.fetchone()[0]
-                print(f"  - {table[0]}: {count} rows")
+                print(f"  - {table_name}: {count} rows")
         else:
             print("  ⚠ No ERP tables found (Products, ProductBase, ProductGroups, ProductBarcodes)")
 

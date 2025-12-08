@@ -1,14 +1,14 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { storage } from '../storage/asyncStorageService';
-import { levenshteinDistance } from '../../utils/algorithms';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storage } from "../storage/asyncStorageService";
+import { levenshteinDistance } from "../../utils/algorithms";
 
 const STORAGE_KEYS = {
-  ITEMS_CACHE: 'items_cache',
-  OFFLINE_QUEUE: 'offline_queue',
-  SESSIONS_CACHE: 'sessions_cache',
-  COUNT_LINES_CACHE: 'count_lines_cache',
-  LAST_SYNC: 'last_sync',
-  USER_DATA: 'user_data',
+  ITEMS_CACHE: "items_cache",
+  OFFLINE_QUEUE: "offline_queue",
+  SESSIONS_CACHE: "sessions_cache",
+  COUNT_LINES_CACHE: "count_lines_cache",
+  LAST_SYNC: "last_sync",
+  USER_DATA: "user_data",
 };
 
 export interface CachedItem {
@@ -23,7 +23,7 @@ export interface CachedItem {
 
 export interface OfflineQueueItem {
   id: string;
-  type: 'count_line' | 'session' | 'unknown_item';
+  type: "count_line" | "session" | "unknown_item";
   data: any;
   timestamp: string;
   retries: number;
@@ -52,7 +52,7 @@ export interface CachedCountLine {
 }
 
 // Item Cache Operations
-export const cacheItem = async (item: Omit<CachedItem, 'cached_at'>) => {
+export const cacheItem = async (item: Omit<CachedItem, "cached_at">) => {
   try {
     const cachedItem: CachedItem = {
       ...item,
@@ -68,7 +68,7 @@ export const cacheItem = async (item: Omit<CachedItem, 'cached_at'>) => {
     await storage.set(STORAGE_KEYS.ITEMS_CACHE, updatedCache);
     return cachedItem;
   } catch (error) {
-    __DEV__ && console.error('Error caching item:', error);
+    __DEV__ && console.error("Error caching item:", error);
     throw error;
   }
 };
@@ -85,7 +85,7 @@ export const getItemFromCache = async (itemCode: string): Promise<CachedItem | n
     const cache = await getItemsCache();
     return cache[itemCode] || null;
   } catch (error) {
-    __DEV__ && console.error('Error getting item from cache:', error);
+    __DEV__ && console.error("Error getting item from cache:", error);
     return null;
   }
 };
@@ -98,9 +98,9 @@ export const searchItemsInCache = async (query: string): Promise<CachedItem[]> =
     const lowerQuery = query.toLowerCase();
 
     return items.filter((item) => {
-      const code = item.item_code.toLowerCase();
-      const name = item.item_name.toLowerCase();
-      const barcode = item.barcode.toLowerCase();
+      const code = (item.item_code || "").toLowerCase();
+      const name = (item.item_name || "").toLowerCase();
+      const barcode = (item.barcode || "").toLowerCase();
 
       // Direct includes check (fast path)
       if (code.includes(lowerQuery) || name.includes(lowerQuery) || barcode.includes(lowerQuery)) {
@@ -118,7 +118,7 @@ export const searchItemsInCache = async (query: string): Promise<CachedItem[]> =
       return false;
     });
   } catch (error) {
-    __DEV__ && console.error('Error searching items in cache:', error);
+    __DEV__ && console.error("Error searching items in cache:", error);
     return [];
   }
 };
@@ -127,12 +127,12 @@ export const clearItemsCache = async () => {
   try {
     await storage.remove(STORAGE_KEYS.ITEMS_CACHE);
   } catch (error) {
-    __DEV__ && console.error('Error clearing items cache:', error);
+    __DEV__ && console.error("Error clearing items cache:", error);
   }
 };
 
 // Offline Queue Operations
-export const addToOfflineQueue = async (type: OfflineQueueItem['type'], data: any) => {
+export const addToOfflineQueue = async (type: OfflineQueueItem["type"], data: any) => {
   try {
     const queue = await getOfflineQueue();
     const queueItem: OfflineQueueItem = {
@@ -147,7 +147,7 @@ export const addToOfflineQueue = async (type: OfflineQueueItem['type'], data: an
     await storage.set(STORAGE_KEYS.OFFLINE_QUEUE, queue);
     return queueItem;
   } catch (error) {
-    __DEV__ && console.error('Error adding to offline queue:', error);
+    __DEV__ && console.error("Error adding to offline queue:", error);
     throw error;
   }
 };
@@ -159,7 +159,7 @@ export const getOfflineQueue = async (): Promise<OfflineQueueItem[]> => {
     });
     return queue ?? [];
   } catch (error) {
-    __DEV__ && console.error('Error getting offline queue:', error);
+    __DEV__ && console.error("Error getting offline queue:", error);
     return [];
   }
 };
@@ -170,7 +170,17 @@ export const removeFromOfflineQueue = async (id: string) => {
     const updatedQueue = queue.filter((item) => item.id !== id);
     await storage.set(STORAGE_KEYS.OFFLINE_QUEUE, updatedQueue);
   } catch (error) {
-    __DEV__ && console.error('Error removing from offline queue:', error);
+    __DEV__ && console.error("Error removing from offline queue:", error);
+  }
+};
+
+export const removeManyFromOfflineQueue = async (ids: string[]) => {
+  try {
+    const queue = await getOfflineQueue();
+    const updatedQueue = queue.filter((item) => !ids.includes(item.id));
+    await storage.set(STORAGE_KEYS.OFFLINE_QUEUE, updatedQueue);
+  } catch (error) {
+    __DEV__ && console.error("Error removing many from offline queue:", error);
   }
 };
 
@@ -178,11 +188,11 @@ export const updateQueueItemRetries = async (id: string) => {
   try {
     const queue = await getOfflineQueue();
     const updatedQueue = queue.map((item) =>
-      item.id === id ? { ...item, retries: item.retries + 1 } : item
+      item.id === id ? { ...item, retries: item.retries + 1 } : item,
     );
     await storage.set(STORAGE_KEYS.OFFLINE_QUEUE, updatedQueue);
   } catch (error) {
-    __DEV__ && console.error('Error updating queue item retries:', error);
+    __DEV__ && console.error("Error updating queue item retries:", error);
   }
 };
 
@@ -190,12 +200,12 @@ export const clearOfflineQueue = async () => {
   try {
     await storage.remove(STORAGE_KEYS.OFFLINE_QUEUE);
   } catch (error) {
-    __DEV__ && console.error('Error clearing offline queue:', error);
+    __DEV__ && console.error("Error clearing offline queue:", error);
   }
 };
 
 // Session Cache Operations
-export const cacheSession = async (session: Omit<CachedSession, 'cached_at'>) => {
+export const cacheSession = async (session: Omit<CachedSession, "cached_at">) => {
   try {
     const cachedSession: CachedSession = {
       ...session,
@@ -211,7 +221,7 @@ export const cacheSession = async (session: Omit<CachedSession, 'cached_at'>) =>
     await storage.set(STORAGE_KEYS.SESSIONS_CACHE, updatedCache);
     return cachedSession;
   } catch (error) {
-    __DEV__ && console.error('Error caching session:', error);
+    __DEV__ && console.error("Error caching session:", error);
     throw error;
   }
 };
@@ -223,7 +233,7 @@ export const getSessionsCache = async (): Promise<Record<string, CachedSession>>
     });
     return cache ?? {};
   } catch (error) {
-    __DEV__ && console.error('Error getting sessions cache:', error);
+    __DEV__ && console.error("Error getting sessions cache:", error);
     return {};
   }
 };
@@ -233,13 +243,13 @@ export const getSessionFromCache = async (sessionId: string): Promise<CachedSess
     const cache = await getSessionsCache();
     return cache[sessionId] || null;
   } catch (error) {
-    __DEV__ && console.error('Error getting session from cache:', error);
+    __DEV__ && console.error("Error getting session from cache:", error);
     return null;
   }
 };
 
 // Count Lines Cache Operations
-export const cacheCountLine = async (countLine: Omit<CachedCountLine, 'cached_at'>) => {
+export const cacheCountLine = async (countLine: Omit<CachedCountLine, "cached_at">) => {
   try {
     const cachedCountLine: CachedCountLine = {
       ...countLine,
@@ -265,7 +275,7 @@ export const cacheCountLine = async (countLine: Omit<CachedCountLine, 'cached_at
     await storage.set(STORAGE_KEYS.COUNT_LINES_CACHE, updatedCache);
     return cachedCountLine;
   } catch (error) {
-    __DEV__ && console.error('Error caching count line:', error);
+    __DEV__ && console.error("Error caching count line:", error);
     throw error;
   }
 };
@@ -274,23 +284,23 @@ export const getCountLinesCache = async (): Promise<Record<string, CachedCountLi
   try {
     const cache = await storage.get<Record<string, CachedCountLine[]>>(
       STORAGE_KEYS.COUNT_LINES_CACHE,
-      { defaultValue: {} }
+      { defaultValue: {} },
     );
     return cache ?? {};
   } catch (error) {
-    __DEV__ && console.error('Error getting count lines cache:', error);
+    __DEV__ && console.error("Error getting count lines cache:", error);
     return {};
   }
 };
 
 export const getCountLinesBySessionFromCache = async (
-  sessionId: string
+  sessionId: string,
 ): Promise<CachedCountLine[]> => {
   try {
     const cache = await getCountLinesCache();
     return cache[sessionId] || [];
   } catch (error) {
-    __DEV__ && console.error('Error getting count lines by session from cache:', error);
+    __DEV__ && console.error("Error getting count lines by session from cache:", error);
     return [];
   }
 };
@@ -300,7 +310,7 @@ export const updateLastSync = async () => {
   try {
     await storage.set(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
   } catch (error) {
-    __DEV__ && console.error('Error updating last sync:', error);
+    __DEV__ && console.error("Error updating last sync:", error);
   }
 };
 
@@ -308,7 +318,7 @@ export const getLastSync = async (): Promise<string | null> => {
   try {
     return await storage.get(STORAGE_KEYS.LAST_SYNC);
   } catch (error) {
-    __DEV__ && console.error('Error getting last sync:', error);
+    __DEV__ && console.error("Error getting last sync:", error);
     return null;
   }
 };
@@ -324,7 +334,7 @@ export const clearAllCache = async () => {
       STORAGE_KEYS.LAST_SYNC,
     ]);
   } catch (error) {
-    __DEV__ && console.error('Error clearing all cache:', error);
+    __DEV__ && console.error("Error clearing all cache:", error);
   }
 };
 
@@ -343,18 +353,19 @@ export const getCacheStats = async () => {
       sessionsCount: Object.keys(sessionsCache).length,
       countLinesCount: Object.values(countLinesCache).reduce(
         (total, lines) => total + lines.length,
-        0
+        0,
       ),
       lastSync,
       cacheSizeKB: Math.round(
         (JSON.stringify(itemsCache).length +
           JSON.stringify(offlineQueue).length +
           JSON.stringify(sessionsCache).length +
-          JSON.stringify(countLinesCache).length) / 1024
+          JSON.stringify(countLinesCache).length) /
+          1024,
       ),
     };
   } catch (error) {
-    __DEV__ && console.error('Error getting cache stats:', error);
+    __DEV__ && console.error("Error getting cache stats:", error);
     return {
       itemsCount: 0,
       queuedOperations: 0,

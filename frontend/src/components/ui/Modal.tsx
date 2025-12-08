@@ -3,7 +3,7 @@
  * Safe, non-breaking addition to component library
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   Modal as RNModal,
   View,
@@ -15,27 +15,27 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   ViewStyle,
-} from 'react-native';
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSpring,
   Easing,
-} from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/useTheme';
-import { BlurView } from 'expo-blur';
+} from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
+import { BlurView } from "expo-blur";
 
-interface ModalProps {
+export interface ModalProps {
   visible: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
   showCloseButton?: boolean;
   closeOnBackdropPress?: boolean;
-  size?: 'small' | 'medium' | 'large' | 'fullscreen';
-  animationType?: 'slide' | 'fade' | 'none';
+  size?: "small" | "medium" | "large" | "fullscreen";
+  animationType?: "slide" | "fade" | "none";
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -45,8 +45,8 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   showCloseButton = true,
   closeOnBackdropPress = true,
-  size = 'medium',
-  animationType = 'fade',
+  size = "medium",
+  animationType = "fade",
 }) => {
   const theme = useTheme();
 
@@ -57,14 +57,14 @@ export const Modal: React.FC<ModalProps> = ({
 
   // Prevent body scroll on web when modal is open
   useEffect(() => {
-    if (Platform.OS === 'web' && visible) {
-      document.body.style.overflow = 'hidden';
-    } else if (Platform.OS === 'web') {
-      document.body.style.overflow = 'unset';
+    if (Platform.OS === "web" && visible) {
+      document.body.style.overflow = "hidden";
+    } else if (Platform.OS === "web") {
+      document.body.style.overflow = "unset";
     }
     return () => {
-      if (Platform.OS === 'web') {
-        document.body.style.overflow = 'unset';
+      if (Platform.OS === "web") {
+        document.body.style.overflow = "unset";
       }
     };
   }, [visible]);
@@ -109,12 +109,12 @@ export const Modal: React.FC<ModalProps> = ({
 
   // Animated modal style
   const modalAnimatedStyle = useAnimatedStyle(() => {
-    if (animationType === 'slide') {
+    if (animationType === "slide") {
       return {
         opacity: opacity.value,
         transform: [{ translateY: translateY.value }, { scale: scale.value }],
       };
-    } else if (animationType === 'fade') {
+    } else if (animationType === "fade") {
       return {
         opacity: opacity.value,
         transform: [{ scale: scale.value }],
@@ -126,29 +126,24 @@ export const Modal: React.FC<ModalProps> = ({
   });
 
   const sizeStyles: Record<string, ViewStyle> = {
-    small: { width: '80%' as const, maxWidth: 400 },
-    medium: { width: '90%' as const, maxWidth: 600 },
-    large: { width: '95%' as const, maxWidth: 900 },
-    fullscreen: { width: '100%' as const, height: '100%' as const },
+    small: { width: "80%" as const, maxWidth: 400 },
+    medium: { width: "90%" as const, maxWidth: 600 },
+    large: { width: "95%" as const, maxWidth: 900 },
+    fullscreen: { width: "100%" as const, height: "100%" as const },
   };
 
   return (
-    <RNModal
-      visible={visible}
-      transparent
-      animationType={animationType}
-      onRequestClose={onClose}
-    >
+    <RNModal visible={visible} transparent animationType={animationType} onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={closeOnBackdropPress ? onClose : undefined}>
         <Animated.View style={[styles.backdrop, backdropAnimatedStyle]}>
-          {Platform.OS !== 'web' ? (
+          {Platform.OS !== "web" ? (
             <BlurView intensity={20} style={StyleSheet.absoluteFill} />
           ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.5)" }]} />
           )}
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
               style={styles.container}
             >
               <Animated.View
@@ -163,16 +158,9 @@ export const Modal: React.FC<ModalProps> = ({
                 ]}
               >
                 {(title || showCloseButton) && (
-                  <View
-                    style={[
-                      styles.header,
-                      { borderBottomColor: theme.colors.border },
-                    ]}
-                  >
+                  <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
                     {title && (
-                      <Text style={[styles.title, { color: theme.colors.text }]}>
-                        {title}
-                      </Text>
+                      <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
                     )}
                     {showCloseButton && (
                       <TouchableOpacity
@@ -180,11 +168,7 @@ export const Modal: React.FC<ModalProps> = ({
                         style={styles.closeButton}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
-                        <Ionicons
-                          name="close"
-                          size={24}
-                          color={theme.colors.textSecondary}
-                        />
+                        <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
                       </TouchableOpacity>
                     )}
                   </View>
@@ -208,26 +192,26 @@ export const Modal: React.FC<ModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
   },
   modal: {
     borderRadius: 16,
     borderWidth: 1,
-    maxHeight: '90%',
+    maxHeight: "90%",
     ...Platform.select({
       web: {
-        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+        boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
       },
       default: {
         elevation: 8,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -235,15 +219,15 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     flex: 1,
   },
   closeButton: {

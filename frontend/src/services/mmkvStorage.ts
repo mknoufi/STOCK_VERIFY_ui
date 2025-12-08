@@ -1,6 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MMKV } from 'react-native-mmkv';
-import { flags } from '../constants/flags';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MMKV } from "react-native-mmkv";
 
 // MMKV 3.x requires TurboModules (new architecture). Expo Go often runs
 // without the new architecture. Safely fall back to AsyncStorage.
@@ -10,8 +9,8 @@ const memory = new Map<string, string>();
 try {
   // Attempt MMKV init; will throw if TurboModules not enabled
   storage = new MMKV();
-} catch (e) {
-  console.warn('[MMKV] New architecture not enabled; falling back to AsyncStorage');
+} catch {
+  console.warn("[MMKV] New architecture not enabled; falling back to AsyncStorage");
   storage = null;
 }
 

@@ -14,13 +14,13 @@ Run with: pytest backend/tests/evaluation/test_api_performance.py -v
 import asyncio
 import random
 import time
-from typing import Dict, List
+from typing import Dict
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
-from .metrics_collector import MetricsCollector, MetricCategory
+from .metrics_collector import MetricsCollector
 from .evaluators import APIPerformanceEvaluator
 
 
@@ -87,7 +87,7 @@ class TestAPILatency:
 
         for _ in range(10):
             start = time.time()
-            response = await async_client.post(
+            await async_client.post(
                 "/api/auth/login",
                 json={"username": user_data["username"], "password": user_data["password"]},
             )
@@ -119,7 +119,7 @@ class TestAPILatency:
 
             for _ in range(10):
                 start = time.time()
-                response = await async_client.get(endpoint, headers=authenticated_headers)
+                await async_client.get(endpoint, headers=authenticated_headers)
                 latency = (time.time() - start) * 1000
                 latencies.append(latency)
 
@@ -150,7 +150,7 @@ class TestAPIThroughput:
         total_time = time.time() - start_time
 
         # Calculate metrics
-        latencies = [r[0] * 1000 for r in results]
+        [r[0] * 1000 for r in results]
         success_count = sum(1 for r in results if r[1] == 200)
         throughput = len(results) / total_time
 
@@ -159,7 +159,9 @@ class TestAPIThroughput:
         collector.record_success_rate("concurrent", success_count / len(results), threshold=0.95)
 
         assert throughput > 5.0, f"Throughput {throughput} req/s is too low"
-        assert success_count == concurrent_requests, f"Only {success_count}/{concurrent_requests} succeeded"
+        assert success_count == concurrent_requests, (
+            f"Only {success_count}/{concurrent_requests} succeeded"
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.performance
@@ -178,7 +180,7 @@ class TestAPIThroughput:
         total_requests = 0
 
         for batch in range(batches):
-            batch_start = time.time()
+            time.time()
 
             for _ in range(requests_per_batch):
                 start = time.time()
@@ -315,17 +317,19 @@ class TestFullAPIEvaluation:
                 auth_headers = {"Authorization": f"Bearer {token}"}
 
         # Run full evaluation
-        results = await api_evaluator.evaluate(
+        await api_evaluator.evaluate(
             client=async_client,
             auth_headers=auth_headers,
             iterations=10,
         )
 
         # Generate report
-        report = collector.finish_evaluation(metadata={
-            "test_type": "full_api_evaluation",
-            "iterations": 10,
-        })
+        report = collector.finish_evaluation(
+            metadata={
+                "test_type": "full_api_evaluation",
+                "iterations": 10,
+            }
+        )
 
         # Print summary
         report.print_summary()

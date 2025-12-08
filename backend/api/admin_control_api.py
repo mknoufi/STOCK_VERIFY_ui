@@ -152,8 +152,8 @@ async def _get_mongodb_status() -> ServiceStatus:
                 "url": "mongodb://localhost:27017",
                 "status": "connected",
             }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Direct MongoDB check failed, falling back to PortDetector: {e}")
 
     mongo_status = PortDetector.get_mongo_status()
     running_flag = mongo_status.get("is_running")
@@ -169,7 +169,8 @@ async def _get_mongodb_status() -> ServiceStatus:
 def _test_sql_connection() -> Optional[bool]:
     try:
         return sql_connector.test_connection()
-    except Exception:
+    except Exception as e:
+        logger.error(f"SQL connection test failed: {e}")
         return False
 
 

@@ -69,7 +69,7 @@ export class EnhancedDatabaseAPI {
         params.append('include_metadata', options.include_metadata.toString());
       }
 
-      const response = await api.get(`/v2/erp/items/barcode/${encodeURIComponent(barcode)}/enhanced?${params}`);
+      const response = await api.get(`/api/v2/erp/items/barcode/${encodeURIComponent(barcode)}/enhanced?${params}`);
       return response.data;
 
     } catch (error: any) {
@@ -99,7 +99,7 @@ export class EnhancedDatabaseAPI {
       if (params.filters?.warehouse) queryParams.append('warehouse', params.filters.warehouse);
       if (params.filters?.stock_level) queryParams.append('stock_level', params.filters.stock_level);
 
-      const response = await api.get(`/v2/erp/items/search/advanced?${queryParams}`);
+      const response = await api.get(`/api/v2/erp/items/search/advanced?${queryParams}`);
       return response.data;
 
     } catch (error: any) {
@@ -113,7 +113,7 @@ export class EnhancedDatabaseAPI {
    */
   static async getDatabaseHealth(): Promise<DatabaseHealth> {
     try {
-      const response = await api.get('/v2/erp/items/database/status');
+      const response = await api.get('/api/v2/erp/items/database/status');
       return response.data;
 
     } catch (error: any) {
@@ -127,7 +127,7 @@ export class EnhancedDatabaseAPI {
    */
   static async getPerformanceStats(): Promise<any> {
     try {
-      const response = await api.get('/v2/erp/items/performance/stats');
+      const response = await api.get('/api/v2/erp/items/performance/stats');
       return response.data;
 
     } catch (error: any) {
@@ -141,7 +141,7 @@ export class EnhancedDatabaseAPI {
    */
   static async syncItemsRealtime(itemCodes?: string[]): Promise<any> {
     try {
-      const response = await api.post('/v2/erp/items/sync/realtime', {
+      const response = await api.post('/api/v2/erp/items/sync/realtime', {
         item_codes: itemCodes
       });
       return response.data;
@@ -157,7 +157,7 @@ export class EnhancedDatabaseAPI {
    */
   static async optimizeDatabase(): Promise<any> {
     try {
-      const response = await api.post('/v2/erp/items/database/optimize');
+      const response = await api.post('/api/v2/erp/items/database/optimize');
       return response.data;
 
     } catch (error: any) {

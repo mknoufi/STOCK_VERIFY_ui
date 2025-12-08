@@ -180,15 +180,11 @@ async def get_table_columns(
             conn.close()
 
 
-print("DEBUG: Importing api_mapping module")
-
-
 @router.get("/current")
 async def get_current_mapping():
     """
     Get current mapping configuration
     """
-    print("DEBUG: Accessing get_current_mapping endpoint")
     try:
         from backend.db_mapping_config import get_active_mapping
 

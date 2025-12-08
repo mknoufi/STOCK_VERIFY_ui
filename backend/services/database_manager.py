@@ -106,7 +106,8 @@ class DatabaseManager:
                 try:
                     count = await self.mongo_db[collection].count_documents({})
                     collections_info[collection] = count
-                except Exception:
+                except Exception as e:
+                    logger.error(f"Error counting documents in {collection}: {e}")
                     collections_info[collection] = -1  # Error getting count
 
             response_time = (time.time() - start) * 1000
@@ -246,7 +247,8 @@ class DatabaseManager:
                 try:
                     indexes = await self.mongo_db[collection].list_indexes().to_list(None)
                     index_info[collection] = [idx["name"] for idx in indexes]
-                except Exception:
+                except Exception as e:
+                    logger.error(f"Error listing indexes for {collection}: {e}")
                     index_info[collection] = ["error"]
 
             return index_info

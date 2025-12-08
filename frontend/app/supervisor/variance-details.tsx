@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,16 +7,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Header } from '../../src/components/layout/Header';
-import { useTheme } from '../../src/hooks/useTheme';
-import { verifyStock, unverifyStock } from '../../src/services/api/api';
-import { ItemVerificationAPI } from '../../src/services/api/itemVerificationApi';
-import { useToast } from '../../src/components/feedback/ToastProvider';
-import { spacing, typography, borderRadius, colors } from '../../src/styles/globalStyles';
-import { Button } from '../../src/components/Button';
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../src/hooks/useTheme";
+import { ItemVerificationAPI } from "../../src/services/api/itemVerificationApi";
+import { spacing, typography, borderRadius, colors } from "../../src/styles/globalStyles";
+import { Button } from "../../src/components/Button";
 
 export default function VarianceDetailsScreen() {
   const { itemCode } = useLocalSearchParams();
@@ -25,8 +22,6 @@ export default function VarianceDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [itemDetails, setItemDetails] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
-
-
 
   const loadDetails = React.useCallback(async () => {
     try {
@@ -40,17 +35,17 @@ export default function VarianceDetailsScreen() {
       // Better approach: Add getVarianceDetails to ItemVerificationAPI
       const response = await ItemVerificationAPI.getVariances({
         search: itemCode as string,
-        limit: 1
+        limit: 1,
       });
 
       if (response.variances && response.variances.length > 0) {
         setItemDetails(response.variances[0]);
       } else {
-        Alert.alert('Error', 'Item details not found');
+        Alert.alert("Error", "Item details not found");
         router.back();
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load details');
+      Alert.alert("Error", error.message || "Failed to load details");
     } finally {
       setLoading(false);
     }
@@ -62,66 +57,68 @@ export default function VarianceDetailsScreen() {
 
   const handleApprove = async () => {
     Alert.alert(
-      'Confirm Approval',
-      'Are you sure you want to approve this variance? This will update the system stock.',
+      "Confirm Approval",
+      "Are you sure you want to approve this variance? This will update the system stock.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Approve',
-          style: 'destructive',
+          text: "Approve",
+          style: "destructive",
           onPress: async () => {
             try {
               setProcessing(true);
               if (itemDetails?.count_line_id) {
                 await ItemVerificationAPI.approveVariance(itemDetails.count_line_id);
-                Alert.alert('Success', 'Variance approved successfully');
+                Alert.alert("Success", "Variance approved successfully");
                 router.back();
               } else {
-                throw new Error('Count line ID not found');
+                throw new Error("Count line ID not found");
               }
             } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to approve variance');
+              Alert.alert("Error", error.message || "Failed to approve variance");
             } finally {
               setProcessing(false);
             }
           },
         },
-      ]
+      ],
     );
   };
 
   const handleRecount = async () => {
     Alert.alert(
-      'Request Recount',
-      'This will flag the item for recount and remove the current verification status.',
+      "Request Recount",
+      "This will flag the item for recount and remove the current verification status.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Request Recount',
+          text: "Request Recount",
           onPress: async () => {
             try {
               setProcessing(true);
               if (itemDetails?.count_line_id) {
                 await ItemVerificationAPI.requestRecount(itemDetails.count_line_id);
-                Alert.alert('Success', 'Recount requested successfully');
+                Alert.alert("Success", "Recount requested successfully");
                 router.back();
               } else {
-                throw new Error('Count line ID not found');
+                throw new Error("Count line ID not found");
               }
             } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to request recount');
+              Alert.alert("Error", error.message || "Failed to request recount");
             } finally {
               setProcessing(false);
             }
           },
         },
-      ]
+      ],
     );
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+      >
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
@@ -129,7 +126,9 @@ export default function VarianceDetailsScreen() {
 
   if (!itemDetails) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+      >
         <Text style={{ color: theme.colors.text }}>Item not found</Text>
       </View>
     );
@@ -146,32 +145,58 @@ export default function VarianceDetailsScreen() {
 
       <ScrollView style={styles.content}>
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.itemName, { color: theme.colors.text }]}>{itemDetails.item_name}</Text>
-          <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>{itemDetails.item_code}</Text>
+          <Text style={[styles.itemName, { color: theme.colors.text }]}>
+            {itemDetails.item_name}
+          </Text>
+          <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>
+            {itemDetails.item_code}
+          </Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>System Qty</Text>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{itemDetails.system_qty}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                System Qty
+              </Text>
+              <Text style={[styles.statValue, { color: theme.colors.text }]}>
+                {itemDetails.system_qty}
+              </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Verified Qty</Text>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{itemDetails.verified_qty}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                Verified Qty
+              </Text>
+              <Text style={[styles.statValue, { color: theme.colors.text }]}>
+                {itemDetails.verified_qty}
+              </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Variance</Text>
-              <Text style={[styles.statValue, { color: itemDetails.variance !== 0 ? colors.error : colors.success }]}>
-                {itemDetails.variance > 0 ? '+' : ''}{itemDetails.variance}
+              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
+                Variance
+              </Text>
+              <Text
+                style={[
+                  styles.statValue,
+                  { color: itemDetails.variance !== 0 ? colors.error : colors.success },
+                ]}
+              >
+                {itemDetails.variance > 0 ? "+" : ""}
+                {itemDetails.variance}
               </Text>
             </View>
           </View>
         </View>
 
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Verification Details</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Verification Details
+          </Text>
           <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Verified By:</Text>
-            <Text style={[styles.detailValue, { color: theme.colors.text }]}>{itemDetails.verified_by}</Text>
+            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+              Verified By:
+            </Text>
+            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+              {itemDetails.verified_by}
+            </Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Time:</Text>
@@ -181,9 +206,11 @@ export default function VarianceDetailsScreen() {
           </View>
           {itemDetails.floor && (
             <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Location:</Text>
+              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
+                Location:
+              </Text>
               <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                {itemDetails.floor} {itemDetails.rack ? `/ ${itemDetails.rack}` : ''}
+                {itemDetails.floor} {itemDetails.rack ? `/ ${itemDetails.rack}` : ""}
               </Text>
             </View>
           )}
@@ -214,15 +241,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   backButton: {
     marginRight: spacing.md,
@@ -238,7 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     marginBottom: spacing.md,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -252,14 +279,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: "#eee",
     paddingTop: spacing.md,
   },
   statItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   statLabel: {
     ...typography.caption,
@@ -273,8 +300,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: spacing.sm,
   },
   detailLabel: {
@@ -282,10 +309,10 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   actionsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
     marginTop: spacing.lg,
     marginBottom: spacing.xl,

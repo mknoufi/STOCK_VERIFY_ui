@@ -2,10 +2,18 @@
  * ItemSearch Component
  * Search autocomplete for finding items by name or barcode
  */
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { SearchResult } from '../../services/enhancedSearchService';
+import React from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { SearchResult } from "../../services/enhancedSearchService";
 
 interface ItemSearchProps {
   manualBarcode: string;
@@ -24,6 +32,7 @@ interface ItemSearchProps {
   onClearSearch?: () => void;
   onSearchResultSelect: (item: SearchResult) => void;
   onActivityReset?: () => void;
+  onBulkEntry?: () => void;
 }
 
 export const ItemSearch: React.FC<ItemSearchProps> = ({
@@ -42,12 +51,21 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
   onScan,
   onSearchResultSelect,
   onActivityReset,
+  onBulkEntry,
 }) => {
   // Removed unused handlers
 
   return (
     <View style={styles.manualEntryContainer}>
-      <Text style={styles.manualEntryTitle}>Scan or Search Item</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.manualEntryTitle}>Scan or Search Item</Text>
+        {onBulkEntry && (
+          <TouchableOpacity onPress={onBulkEntry} style={styles.bulkButton}>
+            <Ionicons name="list-outline" size={20} color="#3B82F6" />
+            <Text style={styles.bulkButtonText}>Bulk Entry</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Barcode Input */}
       <View style={styles.inputGroup}>
@@ -73,10 +91,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onSubmitEditing={onBarcodeSubmit}
           />
           {onScan && (
-            <TouchableOpacity
-              style={styles.scanButton}
-              onPress={onScan}
-            >
+            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
               <Ionicons name="scan-outline" size={20} color="#fff" />
             </TouchableOpacity>
           )}
@@ -101,9 +116,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           {onVoiceSearch && (
             <TouchableOpacity style={styles.voiceButton} onPress={onVoiceSearch}>
               <Ionicons
-                name={isListening ? 'mic' : 'mic-outline'}
+                name={isListening ? "mic" : "mic-outline"}
                 size={20}
-                color={isListening ? '#FF5722' : '#3B82F6'}
+                color={isListening ? "#FF5722" : "#3B82F6"}
               />
             </TouchableOpacity>
           )}
@@ -148,7 +163,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           >
             {searchResults.map((item, index) => (
               <TouchableOpacity
-                key={`search-result-${index}-${item.item_code || 'no-code'}-${item.barcode || 'no-barcode'}`}
+                key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
                 style={styles.searchResultItem}
                 onPress={() => onSearchResultSelect(item)}
               >
@@ -183,86 +198,108 @@ const styles = StyleSheet.create({
   },
   manualEntryTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 16,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  bulkButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(59, 130, 246, 0.3)",
+  },
+  bulkButtonText: {
+    color: "#3B82F6",
+    fontSize: 14,
+    fontWeight: "600",
   },
   inputGroup: {
     marginBottom: 16,
   },
   inputLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 8,
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#94A3B8',
+    fontWeight: "600",
+    color: "#94A3B8",
     flex: 1,
   },
   voiceButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 12,
     padding: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   combinedInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1E293B',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1E293B",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
   manualInput: {
     flex: 1,
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     paddingVertical: 12,
     paddingRight: 8,
   },
   scanButton: {
     padding: 8,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
     borderRadius: 8,
     marginLeft: 4,
   },
   searchButton: {
     padding: 8,
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 8,
     marginLeft: 8,
   },
   searchButtonDisabled: {
     opacity: 0.5,
-    backgroundColor: '#334155',
+    backgroundColor: "#334155",
   },
   searchButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   inputDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 16,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#334155',
+    backgroundColor: "#334155",
   },
   orText: {
     marginHorizontal: 16,
-    color: '#94A3B8',
+    color: "#94A3B8",
     fontSize: 14,
   },
   searchResultsContainer: {
-    backgroundColor: '#1E293B',
+    backgroundColor: "#1E293B",
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
@@ -270,18 +307,18 @@ const styles = StyleSheet.create({
   },
   searchResultsTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 12,
   },
   searchResultsScrollView: {
     maxHeight: 250,
   },
   searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#252525',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#252525",
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
@@ -291,35 +328,35 @@ const styles = StyleSheet.create({
   },
   searchResultName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 4,
   },
   searchResultCode: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: "#94A3B8",
     marginBottom: 2,
   },
   searchResultBarcode: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: "#94A3B8",
     marginBottom: 2,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   searchResultStock: {
     fontSize: 12,
-    color: '#3B82F6',
+    color: "#3B82F6",
     marginTop: 4,
   },
   searchingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
     padding: 16,
   },
   searchingText: {
-    color: '#94A3B8',
+    color: "#94A3B8",
     fontSize: 14,
   },
 });

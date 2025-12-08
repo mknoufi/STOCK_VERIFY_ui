@@ -2,7 +2,7 @@
  * Error Logs Screen - View application errors and exceptions for monitoring
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,13 +13,18 @@ import {
   RefreshControl,
   Modal,
   TextInput,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Header } from '../../src/components/layout/Header';
-import { useTheme } from '../../src/hooks/useTheme';
-import { getErrorLogs, clearErrorLogs, getErrorStats, getErrorDetail, resolveError } from '../../src/services/api/api';
-import { useToast } from '../../src/components/feedback/ToastProvider';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Header } from "../../src/components/layout/Header";
+import { useTheme } from "../../src/hooks/useTheme";
+import {
+  getErrorLogs,
+  getErrorStats,
+  getErrorDetail,
+  resolveError,
+} from "../../src/services/api/api";
+import { useToast } from "../../src/components/feedback/ToastProvider";
 
 interface ErrorLog {
   id: string;
@@ -57,46 +62,47 @@ export default function ErrorLogsScreen() {
   const [selectedError, setSelectedError] = useState<ErrorLog | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showResolveModal, setShowResolveModal] = useState(false);
-  const [resolutionNote, setResolutionNote] = useState('');
+  const [resolutionNote, setResolutionNote] = useState("");
   const [resolving, setResolving] = useState(false);
   const [filters, setFilters] = useState({
-    severity: '',
+    severity: "",
     resolved: undefined as boolean | undefined,
   });
 
-
-
-  const loadErrors = React.useCallback(async (pageNum: number = 1) => {
-    try {
-      setLoading(pageNum === 1);
-      const response = await getErrorLogs(
-        pageNum,
-        50,
-        filters.severity || undefined,
-        undefined,
-        undefined,
-        filters.resolved
-      );
-      if (pageNum === 1) {
-        setErrors(response.errors || []);
-      } else {
-        setErrors(prevErrors => [...prevErrors, ...(response.errors || [])]);
+  const loadErrors = React.useCallback(
+    async (pageNum: number = 1) => {
+      try {
+        setLoading(pageNum === 1);
+        const response = await getErrorLogs(
+          pageNum,
+          50,
+          filters.severity || undefined,
+          undefined,
+          undefined,
+          filters.resolved,
+        );
+        if (pageNum === 1) {
+          setErrors(response.errors || []);
+        } else {
+          setErrors((prevErrors) => [...prevErrors, ...(response.errors || [])]);
+        }
+        setHasMore(response.pagination?.has_next || false);
+      } catch {
+        show("Failed to load error logs", "error");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-      setHasMore(response.pagination?.has_next || false);
-    } catch (error: any) {
-      show('Failed to load error logs', 'error');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filters, show]);
+    },
+    [filters, show],
+  );
 
   const loadStats = React.useCallback(async () => {
     try {
       const statsData = await getErrorStats();
       setStats(statsData);
     } catch (error: any) {
-      console.error('Failed to load stats:', error);
+      console.error("Failed to load stats:", error);
     }
   }, []);
 
@@ -126,27 +132,7 @@ export default function ErrorLogsScreen() {
       setSelectedError(detail);
       setShowDetailModal(true);
     } catch (error: any) {
-      show(`Failed to load error details: ${error.message}`, 'error');
-    }
-  };
-
-  const handleClearLogs = async () => {
-    try {
-      await clearErrorLogs();
-      show('Error logs cleared', 'success');
-      handleRefresh(); // Refresh logs after clearing
-    } catch (error: any) {
-      show('Failed to clear error logs', 'error');
-    }
-  };
-
-  const handleResolveError = async (id: string) => {
-    try {
-      await resolveError(id);
-      show('Error marked as resolved', 'success');
-      handleRefresh(); // Refresh logs after resolving
-    } catch (error: any) {
-      show('Failed to resolve error', 'error');
+      show(`Failed to load error details: ${error.message}`, "error");
     }
   };
 
@@ -156,13 +142,13 @@ export default function ErrorLogsScreen() {
     try {
       setResolving(true);
       await resolveError(selectedError.id, resolutionNote);
-      show('Error marked as resolved', 'success');
+      show("Error marked as resolved", "success");
       setShowResolveModal(false);
       setShowDetailModal(false);
-      setResolutionNote('');
+      setResolutionNote("");
       handleRefresh();
     } catch (error: any) {
-      show(`Failed to resolve error: ${error.message}`, 'error');
+      show(`Failed to resolve error: ${error.message}`, "error");
     } finally {
       setResolving(false);
     }
@@ -175,14 +161,14 @@ export default function ErrorLogsScreen() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical':
-        return '#FF5252';
-      case 'error':
-        return '#FF5252';
-      case 'warning':
-        return '#FFC107';
-      case 'info':
-        return '#2196F3';
+      case "critical":
+        return "#FF5252";
+      case "error":
+        return "#FF5252";
+      case "warning":
+        return "#FFC107";
+      case "info":
+        return "#2196F3";
       default:
         return theme.colors.textSecondary;
     }
@@ -190,39 +176,31 @@ export default function ErrorLogsScreen() {
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical':
-        return 'alert-circle';
-      case 'error':
-        return 'close-circle';
-      case 'warning':
-        return 'warning';
-      case 'info':
-        return 'information-circle';
+      case "critical":
+        return "alert-circle";
+      case "error":
+        return "close-circle";
+      case "warning":
+        return "warning";
+      case "info":
+        return "information-circle";
       default:
-        return 'ellipse';
+        return "ellipse";
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header
-        title="Error Monitoring"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
+      <Header title="Error Monitoring" leftIcon="arrow-back" onLeftPress={() => router.back()} />
 
       <ScrollView
         style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {/* Statistics */}
         {stats && (
           <View style={[styles.statsContainer, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>
-              Error Statistics
-            </Text>
+            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>Error Statistics</Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: theme.colors.primary }]}>
@@ -233,7 +211,7 @@ export default function ErrorLogsScreen() {
                 </Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: '#FF5252' }]}>
+                <Text style={[styles.statValue, { color: "#FF5252" }]}>
                   {stats.by_severity?.critical || 0}
                 </Text>
                 <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
@@ -241,7 +219,7 @@ export default function ErrorLogsScreen() {
                 </Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: '#FF5252' }]}>
+                <Text style={[styles.statValue, { color: "#FF5252" }]}>
                   {stats.by_severity?.error || 0}
                 </Text>
                 <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
@@ -249,7 +227,7 @@ export default function ErrorLogsScreen() {
                 </Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: '#FFC107' }]}>
+                <Text style={[styles.statValue, { color: "#FFC107" }]}>
                   {stats.unresolved || 0}
                 </Text>
                 <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
@@ -273,21 +251,19 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.severity === '' && styles.filterButtonActive
+                filters.severity === "" && styles.filterButtonActive,
               ]}
-              onPress={() => setFilters({ ...filters, severity: '' })}
+              onPress={() => setFilters({ ...filters, severity: "" })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-                All
-              </Text>
+              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>All</Text>
             </TouchableOpacity>
-            {['critical', 'error', 'warning'].map((sev) => (
+            {["critical", "error", "warning"].map((sev) => (
               <TouchableOpacity
                 key={sev}
                 style={[
                   styles.filterButton,
                   { backgroundColor: theme.colors.background },
-                  filters.severity === sev && styles.filterButtonActive
+                  filters.severity === sev && styles.filterButtonActive,
                 ]}
                 onPress={() => setFilters({ ...filters, severity: sev })}
               >
@@ -302,7 +278,7 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.resolved === undefined && styles.filterButtonActive
+                filters.resolved === undefined && styles.filterButtonActive,
               ]}
               onPress={() => setFilters({ ...filters, resolved: undefined })}
             >
@@ -314,7 +290,7 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.resolved === false && styles.filterButtonActive
+                filters.resolved === false && styles.filterButtonActive,
               ]}
               onPress={() => setFilters({ ...filters, resolved: false })}
             >
@@ -326,13 +302,11 @@ export default function ErrorLogsScreen() {
               style={[
                 styles.filterButton,
                 { backgroundColor: theme.colors.background },
-                filters.resolved === true && styles.filterButtonActive
+                filters.resolved === true && styles.filterButtonActive,
               ]}
               onPress={() => setFilters({ ...filters, resolved: true })}
             >
-              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-                Resolved
-              </Text>
+              <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>Resolved</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -371,7 +345,10 @@ export default function ErrorLogsScreen() {
                       <Text style={[styles.errorType, { color: theme.colors.text }]}>
                         {error.error_type}
                       </Text>
-                      <Text style={[styles.errorMessage, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+                      <Text
+                        style={[styles.errorMessage, { color: theme.colors.textSecondary }]}
+                        numberOfLines={1}
+                      >
                         {error.error_message}
                       </Text>
                     </View>
@@ -379,14 +356,11 @@ export default function ErrorLogsScreen() {
                   <View
                     style={[
                       styles.severityBadge,
-                      { backgroundColor: getSeverityColor(error.severity) + '20' },
+                      { backgroundColor: getSeverityColor(error.severity) + "20" },
                     ]}
                   >
                     <Text
-                      style={[
-                        styles.severityText,
-                        { color: getSeverityColor(error.severity) },
-                      ]}
+                      style={[styles.severityText, { color: getSeverityColor(error.severity) }]}
                     >
                       {error.severity}
                     </Text>
@@ -447,9 +421,7 @@ export default function ErrorLogsScreen() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Error Details
-              </Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Error Details</Text>
               <TouchableOpacity onPress={() => setShowDetailModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
@@ -546,7 +518,7 @@ export default function ErrorLogsScreen() {
             <View style={styles.modalFooter}>
               {selectedError && !selectedError.resolved && (
                 <TouchableOpacity
-                  style={[styles.resolveButton, { backgroundColor: '#00E676' }]}
+                  style={[styles.resolveButton, { backgroundColor: "#00E676" }]}
                   onPress={() => {
                     setShowDetailModal(false);
                     setShowResolveModal(true);
@@ -577,9 +549,7 @@ export default function ErrorLogsScreen() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Resolve Error
-              </Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Resolve Error</Text>
               <TouchableOpacity onPress={() => setShowResolveModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
@@ -590,7 +560,10 @@ export default function ErrorLogsScreen() {
                 Resolution Note (Optional)
               </Text>
               <TextInput
-                style={[styles.textInput, { backgroundColor: theme.colors.background, color: theme.colors.text }]}
+                style={[
+                  styles.textInput,
+                  { backgroundColor: theme.colors.background, color: theme.colors.text },
+                ]}
                 value={resolutionNote}
                 onChangeText={setResolutionNote}
                 placeholder="Enter resolution notes..."
@@ -602,7 +575,7 @@ export default function ErrorLogsScreen() {
 
             <View style={styles.modalFooter}>
               <TouchableOpacity
-                style={[styles.resolveButton, { backgroundColor: '#00E676' }]}
+                style={[styles.resolveButton, { backgroundColor: "#00E676" }]}
                 onPress={handleResolve}
                 disabled={resolving}
               >
@@ -619,7 +592,7 @@ export default function ErrorLogsScreen() {
                 style={[styles.closeButton, { backgroundColor: theme.colors.background }]}
                 onPress={() => {
                   setShowResolveModal(false);
-                  setResolutionNote('');
+                  setResolutionNote("");
                 }}
               >
                 <Text style={[styles.closeButtonText, { color: theme.colors.text }]}>Cancel</Text>
@@ -646,37 +619,37 @@ const styles = StyleSheet.create({
   },
   statsTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 16,
   },
   statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    flexWrap: "wrap",
   },
   statItem: {
-    alignItems: 'center',
-    minWidth: '22%',
+    alignItems: "center",
+    minWidth: "22%",
     marginBottom: 12,
   },
   statValue: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   recentContainer: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#333',
+    borderTopColor: "#333",
   },
   recentText: {
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
   filtersContainer: {
     margin: 16,
@@ -686,12 +659,12 @@ const styles = StyleSheet.create({
   },
   filterTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 12,
   },
   filterRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     marginBottom: 12,
   },
@@ -701,15 +674,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   filterButtonActive: {
-    backgroundColor: '#00E676',
+    backgroundColor: "#00E676",
   },
   filterButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   loadingContainer: {
     padding: 32,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 12,
@@ -717,7 +690,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     padding: 64,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyText: {
     marginTop: 16,
@@ -730,14 +703,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   errorHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 8,
   },
   errorHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
     gap: 12,
   },
@@ -746,7 +719,7 @@ const styles = StyleSheet.create({
   },
   errorType: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   errorMessage: {
@@ -759,12 +732,12 @@ const styles = StyleSheet.create({
   },
   severityText: {
     fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
   errorMeta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12,
     marginTop: 8,
   },
@@ -772,49 +745,49 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   resolvedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
     padding: 8,
-    backgroundColor: 'rgba(0, 230, 118, 0.1)',
+    backgroundColor: "rgba(0, 230, 118, 0.1)",
     borderRadius: 8,
     gap: 8,
   },
   resolvedText: {
     fontSize: 12,
-    color: '#00E676',
+    color: "#00E676",
   },
   loadMoreButton: {
     margin: 16,
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loadMoreText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "flex-end",
   },
   modalContent: {
-    maxHeight: '90%',
+    maxHeight: "90%",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   modalBody: {
     maxHeight: 500,
@@ -825,58 +798,58 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 12,
     marginBottom: 4,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   detailValue: {
     fontSize: 14,
   },
   stackTraceContainer: {
     maxHeight: 200,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
   },
   stackTraceText: {
     fontSize: 11,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   modalFooter: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 20,
   },
   resolveButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 12,
     borderRadius: 8,
     gap: 8,
   },
   resolveButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   closeButton: {
     flex: 1,
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   closeButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
     borderRadius: 8,
     padding: 12,
     marginTop: 8,
     minHeight: 100,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
 });

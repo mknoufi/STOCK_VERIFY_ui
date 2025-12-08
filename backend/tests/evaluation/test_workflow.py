@@ -13,7 +13,7 @@ Run with: pytest backend/tests/evaluation/test_workflow.py -v
 
 import random
 import time
-from typing import Dict, Optional
+from typing import Dict
 
 import pytest
 import pytest_asyncio
@@ -415,9 +415,7 @@ class TestAdminWorkflow:
 
         duration = time.time() - start_time
 
-        collector.record_workflow_completion(
-            "admin_dashboard", steps_completed / 4, threshold=0.75
-        )
+        collector.record_workflow_completion("admin_dashboard", steps_completed / 4, threshold=0.75)
         collector.record_workflow_duration("admin_dashboard", duration, threshold=5.0)
 
         assert steps_completed >= 2
@@ -457,15 +455,17 @@ class TestFullWorkflowEvaluation:
                 auth_headers = {"Authorization": f"Bearer {token}"}
 
         # Run evaluation
-        results = await workflow_evaluator.evaluate(
+        await workflow_evaluator.evaluate(
             client=async_client,
             auth_headers=auth_headers,
         )
 
         # Generate report
-        report = collector.finish_evaluation(metadata={
-            "test_type": "workflow_evaluation",
-        })
+        report = collector.finish_evaluation(
+            metadata={
+                "test_type": "workflow_evaluation",
+            }
+        )
 
         # Print summary
         report.print_summary()

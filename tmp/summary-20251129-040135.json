@@ -1,4 +1,0 @@
-{
-  "summary": "User asked to start frontend/backend/mongo, but guardrails restrict me to CI/test commands; informed user I cannot run start scripts and requested they collect runtime logs instead.",
-  "current_status": "Still blocked on diagnosing runtime errors until user runs the services locally and shares logs or approves an allowed diagnostic command."
-}

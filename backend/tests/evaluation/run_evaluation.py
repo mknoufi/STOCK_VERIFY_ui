@@ -23,7 +23,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .metrics_collector import MetricsCollector, EvaluationReport, MetricCategory
+from .metrics_collector import MetricsCollector
 
 
 class EvaluationRunner:
@@ -46,17 +46,20 @@ class EvaluationRunner:
         """Run pytest with specific markers and capture results."""
         marker_expr = " or ".join(markers)
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             "backend/tests/evaluation/",
             "-v" if verbose else "-q",
-            f"-m", marker_expr,
+            "-m",
+            marker_expr,
             "--tb=short",
             "-x",  # Stop on first failure for efficiency
         ]
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"🧪 Running {name} Evaluation")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Command: {' '.join(cmd)}")
 
         start_time = datetime.now()
@@ -110,9 +113,9 @@ class EvaluationRunner:
 
         self.collector.start_evaluation()
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"🧪 Running Standalone {evaluation_type} Evaluation")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         if evaluation_type == "business_logic":
             evaluator = BusinessLogicEvaluator(self.collector)
@@ -127,10 +130,12 @@ class EvaluationRunner:
         else:
             results = {}
 
-        report = self.collector.finish_evaluation(metadata={
-            "type": evaluation_type,
-            "standalone": True,
-        })
+        report = self.collector.finish_evaluation(
+            metadata={
+                "type": evaluation_type,
+                "standalone": True,
+            }
+        )
 
         report.print_summary()
 
@@ -264,53 +269,60 @@ class EvaluationRunner:
 
 def main():
     """Main entry point for CLI."""
-    parser = argparse.ArgumentParser(
-        description="Stock Verify Evaluation Runner"
-    )
+    parser = argparse.ArgumentParser(description="Stock Verify Evaluation Runner")
 
     parser.add_argument(
-        "--all", "-a",
+        "--all",
+        "-a",
         action="store_true",
         help="Run all evaluations",
     )
     parser.add_argument(
-        "--performance", "-p",
+        "--performance",
+        "-p",
         action="store_true",
         help="Run API performance evaluation",
     )
     parser.add_argument(
-        "--business-logic", "-b",
+        "--business-logic",
+        "-b",
         action="store_true",
         help="Run business logic evaluation",
     )
     parser.add_argument(
-        "--data-quality", "-d",
+        "--data-quality",
+        "-d",
         action="store_true",
         help="Run data quality evaluation",
     )
     parser.add_argument(
-        "--workflow", "-w",
+        "--workflow",
+        "-w",
         action="store_true",
         help="Run workflow evaluation",
     )
     parser.add_argument(
-        "--standalone", "-s",
+        "--standalone",
+        "-s",
         action="store_true",
         help="Run standalone evaluation (no pytest)",
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Verbose output",
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=str,
         default="backend/tests/evaluation/reports",
         help="Output directory for reports",
     )
     parser.add_argument(
-        "--format", "-f",
+        "--format",
+        "-f",
         choices=["json", "md"],
         default="json",
         help="Report format",
@@ -332,10 +344,14 @@ def main():
             }
 
             if args.business_logic or args.all:
-                results["evaluations"]["business_logic"] = await runner.run_standalone_evaluation("business_logic")
+                results["evaluations"]["business_logic"] = await runner.run_standalone_evaluation(
+                    "business_logic"
+                )
 
             if args.data_quality or args.all:
-                results["evaluations"]["data_quality"] = await runner.run_standalone_evaluation("data_quality")
+                results["evaluations"]["data_quality"] = await runner.run_standalone_evaluation(
+                    "data_quality"
+                )
 
             return results
 

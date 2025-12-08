@@ -8,16 +8,15 @@ Contains evaluators for:
 - Workflow Completion
 """
 
-import asyncio
 import logging
 import os
 import random
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
-from .metrics_collector import MetricsCollector, MetricCategory
+from .metrics_collector import MetricsCollector
 
 
 class BaseEvaluator(ABC):
@@ -45,10 +44,10 @@ class APIPerformanceEvaluator(BaseEvaluator):
 
     # Default thresholds
     LATENCY_THRESHOLDS = {
-        "health": 50.0,      # Health check should be very fast
-        "login": 200.0,      # Auth can be slower
-        "search": 150.0,     # Search should be reasonably fast
-        "create": 300.0,     # Create operations can be slower
+        "health": 50.0,  # Health check should be very fast
+        "login": 200.0,  # Auth can be slower
+        "search": 150.0,  # Search should be reasonably fast
+        "create": 300.0,  # Create operations can be slower
         "default": 200.0,
     }
 
@@ -70,10 +69,16 @@ class APIPerformanceEvaluator(BaseEvaluator):
         # Define endpoints to test
         endpoints = [
             ("health", "GET", "/health", None, False),
-            ("login", "POST", "/api/auth/login", {
-                "username": os.getenv("TEST_USER", "test"),
-                "password": os.getenv("TEST_PASSWORD", "test")
-            }, False),
+            (
+                "login",
+                "POST",
+                "/api/auth/login",
+                {
+                    "username": os.getenv("TEST_USER", "test"),
+                    "password": os.getenv("TEST_PASSWORD", "test"),
+                },
+                False,
+            ),
             ("items_search", "GET", "/api/v2/erp/items?search=test", None, True),
             ("sessions_list", "GET", "/api/sessions", None, True),
         ]
@@ -161,6 +166,7 @@ class BusinessLogicEvaluator(BaseEvaluator):
     @dataclass
     class VarianceTestCase:
         """Test case for variance calculation."""
+
         erp_qty: float
         counted_qty: float
         damaged_qty: float
@@ -221,7 +227,9 @@ class BusinessLogicEvaluator(BaseEvaluator):
 
         accuracy = correct / total if total > 0 else 0
         self.collector.record_accuracy(
-            "variance_calculation", accuracy, threshold=1.0  # Must be 100% accurate
+            "variance_calculation",
+            accuracy,
+            threshold=1.0,  # Must be 100% accurate
         )
 
         return {
@@ -260,9 +268,7 @@ class BusinessLogicEvaluator(BaseEvaluator):
                 correct += 1
 
         accuracy = correct / len(test_cases)
-        self.collector.record_accuracy(
-            "session_transitions", accuracy, threshold=1.0
-        )
+        self.collector.record_accuracy("session_transitions", accuracy, threshold=1.0)
 
         return {
             "total_cases": len(test_cases),
@@ -290,9 +296,7 @@ class BusinessLogicEvaluator(BaseEvaluator):
                 correct += 1
 
         accuracy = correct / len(test_cases)
-        self.collector.record_accuracy(
-            "count_aggregation", accuracy, threshold=1.0
-        )
+        self.collector.record_accuracy("count_aggregation", accuracy, threshold=1.0)
 
         return {
             "total_cases": len(test_cases),
@@ -323,9 +327,7 @@ class DataQualityEvaluator(BaseEvaluator):
         results = {}
 
         # Evaluate data completeness
-        results["completeness"] = await self._evaluate_completeness(
-            mongo_db, sample_size
-        )
+        results["completeness"] = await self._evaluate_completeness(mongo_db, sample_size)
 
         # Evaluate data consistency (if both DBs available)
         if mongo_db and sql_connection:
@@ -334,9 +336,7 @@ class DataQualityEvaluator(BaseEvaluator):
             )
 
         # Evaluate data format
-        results["format_validation"] = await self._evaluate_format_validation(
-            mongo_db, sample_size
-        )
+        results["format_validation"] = await self._evaluate_format_validation(mongo_db, sample_size)
 
         return results
 
@@ -374,9 +374,7 @@ class DataQualityEvaluator(BaseEvaluator):
                         complete += 1
 
                 completeness = complete / len(docs)
-                self.collector.record_completeness(
-                    collection, completeness, threshold=0.95
-                )
+                self.collector.record_completeness(collection, completeness, threshold=0.95)
 
                 results[collection] = {
                     "total": len(docs),
@@ -398,9 +396,7 @@ class DataQualityEvaluator(BaseEvaluator):
             completeness = random.uniform(0.95, 1.0)
             complete = int(sample_size * completeness)
 
-            self.collector.record_completeness(
-                collection, completeness, threshold=0.95
-            )
+            self.collector.record_completeness(collection, completeness, threshold=0.95)
 
             results[collection] = {
                 "total": sample_size,
@@ -422,9 +418,7 @@ class DataQualityEvaluator(BaseEvaluator):
         # For now, return simulated results
 
         consistency_rate = random.uniform(0.98, 1.0)
-        self.collector.record_consistency(
-            "erp_sync", consistency_rate, threshold=0.99
-        )
+        self.collector.record_consistency("erp_sync", consistency_rate, threshold=0.99)
 
         return {
             "checked_records": sample_size,
@@ -456,9 +450,7 @@ class DataQualityEvaluator(BaseEvaluator):
                     valid_count += 1
 
         accuracy = valid_count / total_checks if total_checks > 0 else 0
-        self.collector.record_accuracy(
-            "data_format", accuracy, threshold=0.95
-        )
+        self.collector.record_accuracy("data_format", accuracy, threshold=0.95)
 
         return {
             "total_checks": total_checks,
@@ -490,9 +482,7 @@ class WorkflowEvaluator(BaseEvaluator):
         results["auth_workflow"] = await self._evaluate_auth_workflow(client)
 
         # Evaluate session workflow
-        results["session_workflow"] = await self._evaluate_session_workflow(
-            client, auth_headers
-        )
+        results["session_workflow"] = await self._evaluate_session_workflow(client, auth_headers)
 
         # Evaluate verification workflow
         results["verification_workflow"] = await self._evaluate_verification_workflow(
@@ -547,12 +537,8 @@ class WorkflowEvaluator(BaseEvaluator):
         duration = time.time() - start_time
         completion_rate = steps_completed / total_steps
 
-        self.collector.record_workflow_completion(
-            "auth", completion_rate, threshold=1.0
-        )
-        self.collector.record_workflow_duration(
-            "auth", duration, threshold=5.0
-        )
+        self.collector.record_workflow_completion("auth", completion_rate, threshold=1.0)
+        self.collector.record_workflow_duration("auth", duration, threshold=5.0)
 
         return {
             "steps_completed": steps_completed,
@@ -625,11 +611,11 @@ class WorkflowEvaluator(BaseEvaluator):
         completion_rate = steps_completed / total_steps
 
         self.collector.record_workflow_completion(
-            "session", completion_rate, threshold=0.25  # Lower threshold for test env
+            "session",
+            completion_rate,
+            threshold=0.25,  # Lower threshold for test env
         )
-        self.collector.record_workflow_duration(
-            "session", duration, threshold=10.0
-        )
+        self.collector.record_workflow_duration("session", duration, threshold=10.0)
 
         return {
             "steps_completed": steps_completed,
@@ -677,12 +663,8 @@ class WorkflowEvaluator(BaseEvaluator):
         duration = time.time() - start_time
         completion_rate = steps_completed / total_steps
 
-        self.collector.record_workflow_completion(
-            "verification", completion_rate, threshold=0.90
-        )
-        self.collector.record_workflow_duration(
-            "verification", duration, threshold=5.0
-        )
+        self.collector.record_workflow_completion("verification", completion_rate, threshold=0.90)
+        self.collector.record_workflow_duration("verification", duration, threshold=5.0)
 
         return {
             "steps_completed": steps_completed,
@@ -697,12 +679,8 @@ class WorkflowEvaluator(BaseEvaluator):
         completion = random.randint(steps - 1, steps)
         duration = random.uniform(0.5, 3.0)
 
-        self.collector.record_workflow_completion(
-            name, completion / steps, threshold=0.90
-        )
-        self.collector.record_workflow_duration(
-            name, duration, threshold=10.0
-        )
+        self.collector.record_workflow_completion(name, completion / steps, threshold=0.90)
+        self.collector.record_workflow_duration(name, duration, threshold=10.0)
 
         return {
             "steps_completed": completion,

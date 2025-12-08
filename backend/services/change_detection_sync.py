@@ -1,6 +1,6 @@
 """
 Change Detection Sync Service
-Syncs specific fields (item_name, MannualBarcode, MRP) from Products table
+Syncs specific fields (item_name, AutoBarcode, MRP) from Products table
 with change detection to only update changed items
 
 This module uses the Result pattern for error handling to make error states
@@ -31,7 +31,7 @@ SyncStats = Dict[str, Any]
 class ChangeDetectionSyncService:
     """
     Service to sync specific product fields with change detection
-    Tracks changes in ERP Products table for: ProductName, MannualBarcode, MRP
+    Tracks changes in ERP Products table for: ProductName, AutoBarcode (6-digit), MRP
     """
 
     def __init__(
@@ -118,7 +118,6 @@ class ChangeDetectionSyncService:
                     P.ProductCode as item_code,
                     COALESCE(PB.RefItemName, P.ProductName) as item_name,
                     CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    PB.MannualBarcode as manual_barcode,
                     COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
                     PB.Stock as stock_qty,
                     COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
@@ -126,18 +125,19 @@ class ChangeDetectionSyncService:
                 INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
                 WHERE P.IsActive = 1
                   AND PB.AutoBarcode IS NOT NULL
+                  AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
+                  AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
                   AND (COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) > ? OR PB.ModifiedDate > ?)
                 ORDER BY P.ProductCode
             """
         else:
-            # First sync - get all active products
+            # First sync - get all active products with 6-digit AutoBarcode
             return """
                 SELECT DISTINCT
                     P.ProductID as item_id,
                     P.ProductCode as item_code,
                     COALESCE(PB.RefItemName, P.ProductName) as item_name,
                     CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    PB.MannualBarcode as manual_barcode,
                     COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
                     PB.Stock as stock_qty,
                     COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
@@ -145,6 +145,8 @@ class ChangeDetectionSyncService:
                 INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
                 WHERE P.IsActive = 1
                   AND PB.AutoBarcode IS NOT NULL
+                  AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
+                  AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
                 ORDER BY P.ProductCode
             """
 
@@ -172,8 +174,8 @@ class ChangeDetectionSyncService:
 
                 update_data = {
                     "item_name": change.get("item_name"),
-                    "barcode": change.get("MannualBarcode", change.get("barcode")),
-                    "mrp": change.get("MRP"),
+                    "barcode": change.get("barcode"),  # AutoBarcode (6-digit)
+                    "mrp": change.get("mrp"),
                     "last_updated": datetime.utcnow(),
                 }
 

@@ -1,5 +1,38 @@
 # Admin Control Panel
 
+## 🚀 New React Admin Panel (v2.0)
+
+The admin panel has been migrated to a modern React + TypeScript application.
+
+### Getting Started
+
+1. Install dependencies:
+   ```bash
+   cd admin-panel
+   npm install
+   ```
+
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+
+### Project Structure
+
+- `src/pages`: Application pages (Analytics, Dashboard, etc.)
+- `src/components`: Reusable UI components
+- `src/services`: API integration
+- `src/types`: TypeScript definitions
+
+---
+
+## Legacy Admin Panel (v1.0)
+
 A secure web-based admin panel for managing STOCK_VERIFY services with enhanced security features.
 
 ## 🆕 Recent Security Updates

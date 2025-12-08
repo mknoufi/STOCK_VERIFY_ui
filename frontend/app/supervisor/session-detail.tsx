@@ -1,12 +1,25 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Header } from '../../src/components/layout/Header';
-import { useTheme } from '../../src/hooks/useTheme';
-import { getSession, getCountLines, approveCountLine, rejectCountLine, updateSessionStatus, verifyStock, unverifyStock } from '../../src/services/api/api';
-import { StatusBar } from 'expo-status-bar';
-import { useToast } from '../../src/components/feedback/ToastProvider';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  getSession,
+  getCountLines,
+  approveCountLine,
+  rejectCountLine,
+  updateSessionStatus,
+  verifyStock,
+  unverifyStock,
+} from "../../src/services/api/api";
+import { StatusBar } from "expo-status-bar";
+import { useToast } from "../../src/components/feedback/ToastProvider";
 
 export default function SessionDetail() {
   const { sessionId } = useLocalSearchParams();
@@ -16,10 +29,8 @@ export default function SessionDetail() {
   const [toVerifyLines, setToVerifyLines] = React.useState<any[]>([]);
   const [verifiedLines, setVerifiedLines] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [activeTab, setActiveTab] = React.useState<'toVerify' | 'verified'>('toVerify');
+  const [activeTab, setActiveTab] = React.useState<"toVerify" | "verified">("toVerify");
   const [verifying, setVerifying] = React.useState<string | null>(null);
-
-
 
   const loadData = React.useCallback(async () => {
     try {
@@ -27,13 +38,13 @@ export default function SessionDetail() {
       const [sessionData, toVerifyData, verifiedData] = await Promise.all([
         getSession(sessionId as string),
         getCountLines(sessionId as string, 1, 100, false), // Not verified
-        getCountLines(sessionId as string, 1, 100, true),  // Verified
+        getCountLines(sessionId as string, 1, 100, true), // Verified
       ]);
       setSession(sessionData);
       setToVerifyLines(toVerifyData?.items || []);
       setVerifiedLines(verifiedData?.items || []);
     } catch {
-      show('Failed to load session data', 'error');
+      show("Failed to load session data", "error");
     } finally {
       setLoading(false);
     }
@@ -47,9 +58,9 @@ export default function SessionDetail() {
     try {
       await approveCountLine(lineId);
       await loadData();
-      show('Count line approved', 'success');
+      show("Count line approved", "success");
     } catch {
-      show('Failed to approve', 'error');
+      show("Failed to approve", "error");
     }
   };
 
@@ -57,9 +68,9 @@ export default function SessionDetail() {
     try {
       await rejectCountLine(lineId);
       await loadData();
-      show('Count line rejected', 'success');
+      show("Count line rejected", "success");
     } catch {
-      show('Failed to reject', 'error');
+      show("Failed to reject", "error");
     }
   };
 
@@ -68,9 +79,9 @@ export default function SessionDetail() {
       setVerifying(lineId);
       await verifyStock(lineId);
       await loadData();
-      show('Stock verified', 'success');
+      show("Stock verified", "success");
     } catch {
-      show('Failed to verify stock', 'error');
+      show("Failed to verify stock", "error");
     } finally {
       setVerifying(null);
     }
@@ -81,9 +92,9 @@ export default function SessionDetail() {
       setVerifying(lineId);
       await unverifyStock(lineId);
       await loadData();
-      show('Verification removed', 'success');
+      show("Verification removed", "success");
     } catch {
-      show('Failed to remove verification', 'error');
+      show("Failed to remove verification", "error");
     } finally {
       setVerifying(null);
     }
@@ -93,9 +104,9 @@ export default function SessionDetail() {
     try {
       await updateSessionStatus(sessionId as string, newStatus);
       await loadData();
-      show(`Session status updated to ${newStatus} `, 'success');
+      show(`Session status updated to ${newStatus} `, "success");
     } catch {
-      show('Failed to update status', 'error');
+      show("Failed to update status", "error");
     }
   };
 
@@ -118,7 +129,7 @@ export default function SessionDetail() {
     );
   }
 
-  const currentLines = activeTab === 'toVerify' ? toVerifyLines : verifiedLines;
+  const currentLines = activeTab === "toVerify" ? toVerifyLines : verifiedLines;
 
   return (
     <View style={styles.container}>
@@ -157,22 +168,22 @@ export default function SessionDetail() {
           </View>
         </View>
 
-        {session.status === 'OPEN' && (
+        {session.status === "OPEN" && (
           <View style={styles.actionButtons}>
             <TouchableOpacity
               style={styles.reconcileButton}
-              onPress={() => handleUpdateStatus('RECONCILE')}
+              onPress={() => handleUpdateStatus("RECONCILE")}
             >
               <Text style={styles.buttonText}>Move to Reconcile</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {session.status === 'RECONCILE' && (
+        {session.status === "RECONCILE" && (
           <View style={styles.actionButtons}>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => handleUpdateStatus('CLOSED')}
+              onPress={() => handleUpdateStatus("CLOSED")}
             >
               <Text style={styles.buttonText}>Close Session</Text>
             </TouchableOpacity>
@@ -182,40 +193,28 @@ export default function SessionDetail() {
         {/* Tab Selection */}
         <View style={styles.tabContainer}>
           <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'toVerify' && styles.tabActive
-            ]}
-            onPress={() => setActiveTab('toVerify')}
+            style={[styles.tab, activeTab === "toVerify" && styles.tabActive]}
+            onPress={() => setActiveTab("toVerify")}
           >
             <Ionicons
               name="list-outline"
               size={20}
-              color={activeTab === 'toVerify' ? '#fff' : '#888'}
+              color={activeTab === "toVerify" ? "#fff" : "#888"}
             />
-            <Text style={[
-              styles.tabText,
-              activeTab === 'toVerify' && styles.tabTextActive
-            ]}>
+            <Text style={[styles.tabText, activeTab === "toVerify" && styles.tabTextActive]}>
               To Verify ({toVerifyLines.length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'verified' && styles.tabActive
-            ]}
-            onPress={() => setActiveTab('verified')}
+            style={[styles.tab, activeTab === "verified" && styles.tabActive]}
+            onPress={() => setActiveTab("verified")}
           >
             <Ionicons
               name="checkmark-circle-outline"
               size={20}
-              color={activeTab === 'verified' ? '#fff' : '#888'}
+              color={activeTab === "verified" ? "#fff" : "#888"}
             />
-            <Text style={[
-              styles.tabText,
-              activeTab === 'verified' && styles.tabTextActive
-            ]}>
+            <Text style={[styles.tabText, activeTab === "verified" && styles.tabTextActive]}>
               Verified ({verifiedLines.length})
             </Text>
           </TouchableOpacity>
@@ -225,20 +224,23 @@ export default function SessionDetail() {
         {currentLines.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons
-              name={activeTab === 'toVerify' ? 'list-outline' : 'checkmark-circle'}
+              name={activeTab === "toVerify" ? "list-outline" : "checkmark-circle"}
               size={64}
               color="#888"
             />
             <Text style={styles.emptyText}>
-              {activeTab === 'toVerify'
-                ? 'No items to verify'
-                : 'No verified items'}
+              {activeTab === "toVerify" ? "No items to verify" : "No verified items"}
             </Text>
           </View>
         ) : (
           currentLines.map((line: any) => {
-            const varianceColor = line.variance === 0 ? '#00E676' : '#FF5252';
-            const statusColor = line.status === 'approved' ? '#00E676' : line.status === 'rejected' ? '#FF5252' : '#FFC107';
+            const varianceColor = line.variance === 0 ? "#00E676" : "#FF5252";
+            const statusColor =
+              line.status === "approved"
+                ? "#00E676"
+                : line.status === "rejected"
+                  ? "#FF5252"
+                  : "#FFC107";
 
             return (
               <View key={line.id} style={styles.lineCard}>
@@ -246,7 +248,7 @@ export default function SessionDetail() {
                   <Text style={styles.lineName}>{line.item_name}</Text>
                   <View style={styles.badgeContainer}>
                     {line.verified && (
-                      <View style={[styles.verifiedBadge, { backgroundColor: '#00E676' }]}>
+                      <View style={[styles.verifiedBadge, { backgroundColor: "#00E676" }]}>
                         <Ionicons name="checkmark-circle" size={14} color="#fff" />
                         <Text style={styles.badgeText}>Verified</Text>
                       </View>
@@ -270,9 +272,7 @@ export default function SessionDetail() {
                   </View>
                   <View style={styles.qtyItem}>
                     <Text style={styles.qtyLabel}>Variance</Text>
-                    <Text style={[styles.qtyValue, { color: varianceColor }]}>
-                      {line.variance}
-                    </Text>
+                    <Text style={[styles.qtyValue, { color: varianceColor }]}>{line.variance}</Text>
                   </View>
                 </View>
 
@@ -285,21 +285,20 @@ export default function SessionDetail() {
                   </View>
                 )}
 
-                {line.remark && (
-                  <Text style={styles.remark}>Remark: {line.remark}</Text>
-                )}
+                {line.remark && <Text style={styles.remark}>Remark: {line.remark}</Text>}
 
                 {line.verified && line.verified_by && (
                   <View style={styles.verifiedInfo}>
                     <Ionicons name="checkmark-circle" size={16} color="#00E676" />
                     <Text style={styles.verifiedInfoText}>
-                      Verified by {line.verified_by} on {new Date(line.verified_at).toLocaleString()}
+                      Verified by {line.verified_by} on{" "}
+                      {new Date(line.verified_at).toLocaleString()}
                     </Text>
                   </View>
                 )}
 
                 <View style={styles.lineActions}>
-                  {line.status === 'pending' && (
+                  {line.status === "pending" && (
                     <>
                       <TouchableOpacity
                         style={styles.approveButton}
@@ -318,7 +317,7 @@ export default function SessionDetail() {
                     </>
                   )}
 
-                  {activeTab === 'toVerify' && !line.verified && (
+                  {activeTab === "toVerify" && !line.verified && (
                     <TouchableOpacity
                       style={[styles.verifyButton, verifying === line.id && styles.buttonDisabled]}
                       onPress={() => handleVerifyStock(line.id)}
@@ -335,9 +334,12 @@ export default function SessionDetail() {
                     </TouchableOpacity>
                   )}
 
-                  {activeTab === 'verified' && line.verified && (
+                  {activeTab === "verified" && line.verified && (
                     <TouchableOpacity
-                      style={[styles.unverifyButton, verifying === line.id && styles.buttonDisabled]}
+                      style={[
+                        styles.unverifyButton,
+                        verifying === line.id && styles.buttonDisabled,
+                      ]}
                       onPress={() => handleUnverifyStock(line.id)}
                       disabled={verifying === line.id}
                     >
@@ -364,23 +366,23 @@ export default function SessionDetail() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: "#121212",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
     paddingTop: 60,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   content: {
     flex: 1,
@@ -388,138 +390,138 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     marginTop: 12,
   },
   sessionInfo: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
-    shadowColor: '#000',
+    borderColor: "#333",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
   infoLabel: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
   },
   infoValue: {
     fontSize: 14,
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   statusValue: {
-    color: '#FF9800',
+    color: "#FF9800",
   },
   varianceValue: {
-    color: '#FF5252',
+    color: "#FF5252",
   },
   actionButtons: {
     marginBottom: 16,
   },
   reconcileButton: {
-    backgroundColor: '#FF9800',
+    backgroundColor: "#FF9800",
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   closeButton: {
-    backgroundColor: '#00E676',
+    backgroundColor: "#00E676",
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#1E1E1E',
+    flexDirection: "row",
+    backgroundColor: "#1E1E1E",
     borderRadius: 16,
     padding: 4,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 12,
     borderRadius: 8,
     gap: 8,
   },
   tabActive: {
-    backgroundColor: '#00E676',
+    backgroundColor: "#00E676",
   },
   tabText: {
     fontSize: 14,
-    color: '#888',
-    fontWeight: '600',
+    color: "#888",
+    fontWeight: "600",
   },
   tabTextActive: {
-    color: '#fff',
+    color: "#fff",
   },
   emptyContainer: {
     padding: 64,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyText: {
-    color: '#888',
+    color: "#888",
     fontSize: 16,
     marginTop: 16,
   },
   lineCard: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#333',
-    shadowColor: '#000',
+    borderColor: "#333",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   lineHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   lineName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     flex: 1,
   },
   badgeContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -531,116 +533,116 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   badgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   lineCode: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
     marginBottom: 12,
   },
   qtyRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
   qtyItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   qtyLabel: {
     fontSize: 12,
-    color: '#888',
+    color: "#888",
     marginBottom: 4,
   },
   qtyValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   reasonBox: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
   },
   reasonLabel: {
     fontSize: 14,
-    color: '#FF9800',
-    fontWeight: 'bold',
+    color: "#FF9800",
+    fontWeight: "bold",
     marginBottom: 4,
   },
   reasonNote: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
   },
   remark: {
     fontSize: 14,
-    color: '#888',
-    fontStyle: 'italic',
+    color: "#888",
+    fontStyle: "italic",
     marginBottom: 8,
   },
   verifiedInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
     padding: 8,
-    backgroundColor: 'rgba(0, 230, 118, 0.1)',
+    backgroundColor: "rgba(0, 230, 118, 0.1)",
     borderRadius: 8,
     gap: 8,
   },
   verifiedInfoText: {
     fontSize: 12,
-    color: '#00E676',
+    color: "#00E676",
   },
   lineActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 12,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   approveButton: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#00E676',
+    flexDirection: "row",
+    backgroundColor: "#00E676",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     minWidth: 100,
   },
   rejectButton: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#FF5252',
+    flexDirection: "row",
+    backgroundColor: "#FF5252",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     minWidth: 100,
   },
   verifyButton: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#2196F3',
+    flexDirection: "row",
+    backgroundColor: "#2196F3",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     minWidth: 120,
   },
   unverifyButton: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#FF9800',
+    flexDirection: "row",
+    backgroundColor: "#FF9800",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     minWidth: 120,
   },
@@ -648,8 +650,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   actionButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

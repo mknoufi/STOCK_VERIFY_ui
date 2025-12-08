@@ -9,7 +9,7 @@ import asyncio
 import os
 import sys
 from pathlib import Path
-from typing import AsyncGenerator, Dict
+from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
@@ -23,17 +23,19 @@ for path in (str(BACKEND_DIR), str(PROJECT_ROOT)):
         sys.path.insert(0, path)
 
 # Test environment setup
-os.environ.update({
-    "TESTING": "true",
-    "MONGO_URL": "mongodb://localhost:27017/stock_count_test",
-    "DB_NAME": "stock_count_test",
-    "JWT_SECRET": "test-jwt-secret-key-for-testing-only",
-    "JWT_ALGORITHM": "HS256",
-    "RATE_LIMIT_PER_MINUTE": "1000",
-    "LOG_LEVEL": "WARNING",  # Reduce noise during tests
-})
+os.environ.update(
+    {
+        "TESTING": "true",
+        "MONGO_URL": "mongodb://localhost:27017/stock_count_test",
+        "DB_NAME": "stock_count_test",
+        "JWT_SECRET": "test-jwt-secret-key-for-testing-only",
+        "JWT_ALGORITHM": "HS256",
+        "RATE_LIMIT_PER_MINUTE": "1000",
+        "LOG_LEVEL": "WARNING",  # Reduce noise during tests
+    }
+)
 
-from httpx import ASGITransport, AsyncClient
+from httpx import ASGITransport, AsyncClient  # noqa: E402
 
 # Import app and test utilities
 try:
@@ -71,10 +73,7 @@ async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None
     if app is None:
         pytest.skip("FastAPI app not available")
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
 
@@ -82,17 +81,10 @@ async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None
 def pytest_configure(config):
     """Configure custom markers for evaluation tests."""
     config.addinivalue_line(
-        "markers", "performance: marks tests as performance evaluation (deselect with '-m \"not performance\"')"
+        "markers",
+        "performance: marks tests as performance evaluation (deselect with '-m \"not performance\"')",
     )
-    config.addinivalue_line(
-        "markers", "business_logic: marks tests as business logic evaluation"
-    )
-    config.addinivalue_line(
-        "markers", "data_quality: marks tests as data quality evaluation"
-    )
-    config.addinivalue_line(
-        "markers", "workflow: marks tests as workflow evaluation"
-    )
-    config.addinivalue_line(
-        "markers", "security: marks tests as security evaluation"
-    )
+    config.addinivalue_line("markers", "business_logic: marks tests as business logic evaluation")
+    config.addinivalue_line("markers", "data_quality: marks tests as data quality evaluation")
+    config.addinivalue_line("markers", "workflow: marks tests as workflow evaluation")
+    config.addinivalue_line("markers", "security: marks tests as security evaluation")

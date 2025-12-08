@@ -475,3 +475,87 @@ async def get_count_lines_route(
         page_size=page_size,
         verified=verified,
     )
+
+
+@router.delete("/count-lines/{line_id}")
+async def delete_count_line(
+    line_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+):
+    """Delete a count line (requires supervisor override)."""
+    # Double check permissions (safeguard, though frontend should have verified PIN)
+    if current_user["role"] not in ["supervisor", "admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+
+    db = _get_db_client()
+
+    try:
+        # Find the line first to get details for logging
+        # Check by 'id' (UUID string) or '_id' (ObjectId)
+        count_line = await db.count_lines.find_one({"id": line_id})
+        if not count_line:
+            try:
+                count_line = await db.count_lines.find_one({"_id": ObjectId(line_id)})
+            except Exception:
+                pass
+
+        if not count_line:
+            raise HTTPException(status_code=404, detail="Count line not found")
+
+        # Delete the line
+        result = await db.count_lines.delete_one({"_id": count_line["_id"]})
+
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Count line not found")
+
+        # Re-calculate session stats
+        try:
+            pipeline: List[Dict[str, Any]] = [
+                {"$match": {"session_id": count_line["session_id"]}},
+                {
+                    "$group": {
+                        "_id": None,
+                        "total_items": {"$sum": 1},
+                        "total_variance": {"$sum": "$variance"},
+                    }
+                },
+            ]
+            stats = await db.count_lines.aggregate(pipeline).to_list(1)
+
+            update_data = {
+                "total_items": stats[0]["total_items"] if stats else 0,
+                "total_variance": stats[0]["total_variance"] if stats else 0,
+            }
+
+            await db.sessions.update_one(
+                {"id": count_line["session_id"]},
+                {"$set": update_data},
+            )
+        except Exception as e:
+            logger.error(f"Failed to update session stats after delete: {str(e)}")
+
+        # Log the activity
+        if _activity_log_service:
+            await _activity_log_service.log_activity(
+                user=current_user["username"],
+                role=current_user["role"],
+                action="delete_count_line",
+                entity_type="count_line",
+                entity_id=str(count_line.get("id", line_id)),
+                details={
+                    "item_code": count_line.get("item_code"),
+                    "session_id": count_line.get("session_id"),
+                    "counted_qty": count_line.get("counted_qty"),
+                },
+                ip_address=request.client.host if request and request.client else None,
+                user_agent=request.headers.get("user-agent") if request else None,
+            )
+
+        return {"success": True, "message": "Count line deleted successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting count line {line_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

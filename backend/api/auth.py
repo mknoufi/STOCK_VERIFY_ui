@@ -286,8 +286,8 @@ async def _check_login_rate_limit(client_ip: str) -> Optional[Result[Any, Except
         if hasattr(rate_limit_result, "unwrap_err"):
             try:
                 err = rate_limit_result.unwrap_err()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Failed to unwrap rate limit error: {e}")
         if err is None:
             err = getattr(rate_limit_result, "err", None)
         if err is None:
@@ -428,8 +428,8 @@ async def _migrate_legacy_password(db: Any, user: Dict[str, Any], password: str)
                     "$unset": {"password": ""},
                 },
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Failed to migrate legacy password for user {user.get('_id')}: {e}")
 
 
 def _build_login_response(tokens: Dict[str, Any], user: Dict[str, Any]) -> Dict[str, Any]:

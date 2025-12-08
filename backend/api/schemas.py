@@ -40,6 +40,7 @@ class ERPItem(BaseModel):
     verified_at: Optional[datetime] = None
     last_scanned_at: Optional[datetime] = None
     manual_barcode: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class UserInfo(BaseModel):
@@ -95,6 +96,7 @@ class CountLineCreate(BaseModel):
     item_code: str
     counted_qty: float
     damaged_qty: Optional[float] = 0
+    damage_included: Optional[bool] = None
     item_condition: Optional[str] = None
     floor_no: Optional[str] = None
     rack_no: Optional[str] = None
@@ -111,6 +113,8 @@ class CountLineCreate(BaseModel):
     correction_reason: Optional[CorrectionReason] = None
     photo_proofs: Optional[List[PhotoProof]] = None
     correction_metadata: Optional[CorrectionMetadata] = None
+    category_correction: Optional[str] = None
+    subcategory_correction: Optional[str] = None
 
 
 class Session(BaseModel):

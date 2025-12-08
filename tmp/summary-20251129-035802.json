@@ -1,4 +1,0 @@
-{
-  "summary": "Could not run frontend/backend start scripts because project guardrails restrict commands to the listed CI/test utilities; informed user and requested runtime logs or command approval so errors can be diagnosed.",
-  "current_status": "Blocked: need user-provided Expo Go runtime error details or permission to run specific start commands within policy constraints."
-}

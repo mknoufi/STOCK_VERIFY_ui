@@ -2,7 +2,7 @@
  * Variance List Screen
  * Displays all items with variances (verified qty != system qty)
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,24 +12,19 @@ import {
   RefreshControl,
   Alert,
   Platform,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Header } from '../../src/components/layout/Header';
-import { useTheme } from '../../src/hooks/useTheme';
-import { useToast } from '../../src/components/feedback/ToastProvider';
-import { ItemVerificationAPI, VarianceItem } from '../../src/services/api/itemVerificationApi';
-import { ItemFilters, FilterValues } from '../../src/components/ItemFilters';
-import { exportVariancesToCSV, downloadCSV } from '../../src/utils/csvExport';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+} from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../src/hooks/useTheme";
+import { ItemVerificationAPI, VarianceItem } from "../../src/services/api/itemVerificationApi";
+import { ItemFilters, FilterValues } from "../../src/components/ItemFilters";
+import { exportVariancesToCSV, downloadCSV } from "../../src/utils/csvExport";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 const getLocalFileUri = (filename: string) => {
-  const baseDir =
-    FileSystem.Paths?.document?.uri ??
-    FileSystem.Paths?.cache?.uri ??
-    '';
+  const baseDir = FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
   return `${baseDir}${filename}`;
 };
 
@@ -46,40 +41,41 @@ export default function VariancesScreen() {
     skip: 0,
   });
 
+  const loadVariances = React.useCallback(
+    async (reset = false) => {
+      try {
+        if (reset) {
+          setLoading(true);
+          setPagination((prev) => ({ ...prev, skip: 0 }));
+        }
 
+        const skip = reset ? 0 : pagination.skip;
+        const response = await ItemVerificationAPI.getVariances({
+          category: filters.category,
+          floor: filters.floor,
+          rack: filters.rack,
+          warehouse: filters.warehouse,
+          limit: pagination.limit,
+          skip,
+        });
 
-  const loadVariances = React.useCallback(async (reset = false) => {
-    try {
-      if (reset) {
-        setLoading(true);
-        setPagination((prev) => ({ ...prev, skip: 0 }));
+        if (reset) {
+          setVariances(response.variances);
+        } else {
+          setVariances((prev) => [...prev, ...response.variances]);
+        }
+
+        setPagination(response.pagination);
+      } catch (error: any) {
+        // Error logged via error handler
+        Alert.alert("Error", error.message || "Failed to load variances");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      const skip = reset ? 0 : pagination.skip;
-      const response = await ItemVerificationAPI.getVariances({
-        category: filters.category,
-        floor: filters.floor,
-        rack: filters.rack,
-        warehouse: filters.warehouse,
-        limit: pagination.limit,
-        skip,
-      });
-
-      if (reset) {
-        setVariances(response.variances);
-      } else {
-        setVariances((prev) => [...prev, ...response.variances]);
-      }
-
-      setPagination(response.pagination);
-    } catch (error: any) {
-      // Error logged via error handler
-      Alert.alert('Error', error.message || 'Failed to load variances');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filters, pagination.limit, pagination.skip]);
+    },
+    [filters, pagination.limit, pagination.skip],
+  );
 
   useEffect(() => {
     loadVariances(true);
@@ -103,7 +99,7 @@ export default function VariancesScreen() {
   const handleExportCSV = async () => {
     try {
       if (variances.length === 0) {
-        Alert.alert('No Data', 'There are no variances to export');
+        Alert.alert("No Data", "There are no variances to export");
         return;
       }
 
@@ -123,59 +119,58 @@ export default function VariancesScreen() {
       }
 
       const csvContent = exportVariancesToCSV(allVariances);
-      const filename = `variances_${new Date().toISOString().split('T')[0]}.csv`;
+      const filename = `variances_${new Date().toISOString().split("T")[0]}.csv`;
 
-      if (Platform.OS === 'web') {
+      if (Platform.OS === "web") {
         downloadCSV(csvContent, filename);
-        Alert.alert('Success', 'CSV file downloaded');
+        Alert.alert("Success", "CSV file downloaded");
       } else {
         // For mobile, save to file system and share
         const fileUri = getLocalFileUri(filename);
         await FileSystem.writeAsStringAsync(fileUri, csvContent, {
-          encoding: 'utf8',
+          encoding: "utf8",
         });
 
         if (await Sharing.isAvailableAsync()) {
           await Sharing.shareAsync(fileUri);
         } else {
-          Alert.alert('Success', `File saved to: ${fileUri}`);
+          Alert.alert("Success", `File saved to: ${fileUri}`);
         }
       }
     } catch (error: any) {
       // Error logged via error handler
-      Alert.alert('Error', error.message || 'Failed to export CSV');
+      Alert.alert("Error", error.message || "Failed to export CSV");
     }
   };
 
   const renderVarianceItem = ({ item }: { item: VarianceItem }) => {
-    const varianceColor = item.variance > 0 ? '#00E676' : '#FF5252';
-    const varianceSign = item.variance > 0 ? '+' : '';
+    const varianceColor = item.variance > 0 ? "#00E676" : "#FF5252";
+    const varianceSign = item.variance > 0 ? "+" : "";
 
     return (
       <TouchableOpacity
         style={[styles.varianceCard, { backgroundColor: theme.colors.card }]}
         onPress={() => {
           router.push({
-            pathname: '/supervisor/variance-details',
+            pathname: "/supervisor/variance-details",
             params: {
               itemCode: item.item_code,
-              sessionId: item.session_id || 'current'
-            }
+              sessionId: item.session_id || "current",
+            },
           });
         }}
       >
         <View style={styles.varianceHeader}>
           <View style={styles.varianceHeaderLeft}>
-            <Text style={[styles.itemName, { color: theme.colors.text }]}>
-              {item.item_name}
-            </Text>
+            <Text style={[styles.itemName, { color: theme.colors.text }]}>{item.item_name}</Text>
             <Text style={[styles.itemCode, { color: theme.colors.textSecondary }]}>
               {item.item_code}
             </Text>
           </View>
           <View style={[styles.varianceBadge, { backgroundColor: varianceColor }]}>
             <Text style={styles.varianceBadgeText}>
-              {varianceSign}{item.variance.toFixed(2)}
+              {varianceSign}
+              {item.variance.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -204,7 +199,7 @@ export default function VariancesScreen() {
             <View style={styles.locationRow}>
               <Ionicons name="location" size={14} color={theme.colors.textSecondary} />
               <Text style={[styles.locationText, { color: theme.colors.textSecondary }]}>
-                {[item.floor, item.rack].filter(Boolean).join(' / ')}
+                {[item.floor, item.rack].filter(Boolean).join(" / ")}
               </Text>
             </View>
           )}
@@ -229,7 +224,9 @@ export default function VariancesScreen() {
 
   if (loading && variances.length === 0) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}
+      >
         <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
           Loading variances...
@@ -241,15 +238,10 @@ export default function VariancesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Item Variances
-        </Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Item Variances</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity
             style={styles.exportButton}
@@ -264,11 +256,7 @@ export default function VariancesScreen() {
         </View>
       </View>
 
-      <ItemFilters
-        onFilterChange={setFilters}
-        showVerifiedFilter={false}
-        showSearch={false}
-      />
+      <ItemFilters onFilterChange={setFilters} showVerifiedFilter={false} showSearch={false} />
 
       {variances.length === 0 ? (
         <View style={styles.centered}>
@@ -286,9 +274,7 @@ export default function VariancesScreen() {
           renderItem={renderVarianceItem}
           keyExtractor={(item, index) => `${item.item_code}-${item.verified_at}-${index}`}
           contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
@@ -308,15 +294,15 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   backButton: {
     marginRight: 12,
@@ -324,11 +310,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   exportButton: {
@@ -344,16 +330,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   varianceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   varianceHeaderLeft: {
@@ -361,7 +347,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   itemCode: {
@@ -372,18 +358,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     minWidth: 60,
-    alignItems: 'center',
+    alignItems: "center",
   },
   varianceBadgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   varianceDetails: {
     gap: 8,
   },
   qtyRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 16,
     marginBottom: 8,
   },
@@ -396,11 +382,11 @@ const styles = StyleSheet.create({
   },
   qtyValue: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   locationText: {
@@ -410,8 +396,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   verificationInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     marginTop: 4,
   },
@@ -424,7 +410,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "500",
     marginTop: 16,
   },
   emptySubtext: {

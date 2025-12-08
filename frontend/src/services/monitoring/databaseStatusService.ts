@@ -37,7 +37,7 @@ export interface DatabaseSyncStatus {
  */
 export const getDatabaseStatus = async (): Promise<DatabaseStatus> => {
   try {
-    const response = await api.get('/erp/config');
+    const response = await api.get('/api/erp/config');
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error('Error fetching database status:', error);
@@ -92,7 +92,7 @@ export const testDatabaseConnection = async (): Promise<{
   message: string;
 }> => {
   try {
-    const response = await api.post('/erp/test');
+    const response = await api.post('/api/erp/test');
     return response.data;
   } catch (error: any) {
     return {

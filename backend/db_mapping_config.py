@@ -11,6 +11,10 @@ TABLE_MAPPINGS = {
     "warehouses": "Warehouses",
     "uom": "UnitOfMeasures",
     "stock_flow": "StockFlow",
+    "categories": "ProductGroups",
+    "subcategories": "ProductCategory",
+    "gst_categories": "GSTCategory",
+    "departments": "Departments",
 }
 
 # Column mappings for Products table
@@ -21,7 +25,10 @@ PRODUCTS_COLUMN_MAP = {
     "stock_qty": "Stock",
     "uom_code": "BasicUnitID",
     "uom_name": "UnitName",  # From UnitOfMeasures join
-    "category": "ProductGroupID",
+    "category": "ProductGroupID",  # FK to ProductGroups
+    "subcategory": "ProductCategoryID",  # FK to ProductCategory
+    "hsn_code": "HSNCode",
+    "gst_category_id": "GSTTaxCategoryID",  # FK to GSTCategory
     "location": "WarehouseID",
     "item_id": "ProductID",
 }
@@ -31,8 +38,8 @@ BATCH_COLUMN_MAP = {
     "batch_id": "ProductBatchID",
     "item_code": "ProductID",
     "batch_no": "BatchNo",
-    "barcode": "MannualBarcode",
-    "auto_barcode": "AutoBarcode",
+    "barcode": "AutoBarcode",  # Use AutoBarcode (6-digit) as primary barcode
+    # "manual_barcode": "MannualBarcode",  # Removed - not used
     "mfg_date": "MfgDate",
     "expiry_date": "ExpiryDate",
     "stock_qty": "Stock",
@@ -48,70 +55,109 @@ SQL_TEMPLATES = {
             P.ProductID as item_id,
             P.ProductCode as item_code,
             P.ProductName as item_name,
-            COALESCE(PB.MannualBarcode, P.ProductCode) as barcode,
+            CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
             PB.ProductBatchID as batch_id,
             PB.BatchNo as batch_no,
             PB.MfgDate as mfg_date,
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
+            PB.MRP as mrp,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
+            PG.GroupName as category,
+            PC.ProductCategoryName as subcategory,
+            P.HSNCode as hsn_code,
+            GST.GSTCategoryName as gst_category,
+            COALESCE(GST.Sales_SGSTPerc, 0) + COALESCE(GST.Sales_CGSTPerc, 0) as gst_percent,
+            GST.Sales_SGSTPerc as sgst_percent,
+            GST.Sales_CGSTPerc as cgst_percent,
+            GST.Sales_IGSTPerc as igst_percent,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-        LEFT JOIN dbo.ProductBarcodes PBC ON PB.ProductBatchID = PBC.ProductBatchID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
+        LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
+        LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
+        LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE PBC.Barcode = %s
-           OR PB.MannualBarcode = %s
-           OR P.ProductCode = %s
-           OR CAST(PB.AutoBarcode AS VARCHAR(50)) = %s
+        WHERE CAST(PB.AutoBarcode AS VARCHAR(50)) = %s
+          AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
+          AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
     """,
     "get_item_by_code": """
         SELECT DISTINCT
             P.ProductID as item_id,
             P.ProductCode as item_code,
             P.ProductName as item_name,
-            COALESCE(PB.MannualBarcode, P.ProductCode) as barcode,
+            CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
             PB.ProductBatchID as batch_id,
             PB.BatchNo as batch_no,
             PB.MfgDate as mfg_date,
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
+            PB.MRP as mrp,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
+            PG.GroupName as category,
+            PC.ProductCategoryName as subcategory,
+            P.HSNCode as hsn_code,
+            GST.GSTCategoryName as gst_category,
+            COALESCE(GST.Sales_SGSTPerc, 0) + COALESCE(GST.Sales_CGSTPerc, 0) as gst_percent,
+            GST.Sales_SGSTPerc as sgst_percent,
+            GST.Sales_CGSTPerc as cgst_percent,
+            GST.Sales_IGSTPerc as igst_percent,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
+        LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
+        LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
+        LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
         WHERE P.ProductCode = %s
+          AND PB.AutoBarcode IS NOT NULL
+          AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
     """,
     "get_all_items": """
         SELECT DISTINCT TOP 1000
             P.ProductID as item_id,
             P.ProductCode as item_code,
             P.ProductName as item_name,
-            COALESCE(PB.MannualBarcode, P.ProductCode) as barcode,
+            CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
             PB.ProductBatchID as batch_id,
             PB.BatchNo as batch_no,
             PB.MfgDate as mfg_date,
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
+            PB.MRP as mrp,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
+            PG.GroupName as category,
+            PC.ProductCategoryName as subcategory,
+            P.HSNCode as hsn_code,
+            GST.GSTCategoryName as gst_category,
+            COALESCE(GST.Sales_SGSTPerc, 0) + COALESCE(GST.Sales_CGSTPerc, 0) as gst_percent,
+            GST.Sales_SGSTPerc as sgst_percent,
+            GST.Sales_CGSTPerc as cgst_percent,
+            GST.Sales_IGSTPerc as igst_percent,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
+        LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
+        LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
+        LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
         WHERE P.IsActive = 1
+          AND PB.AutoBarcode IS NOT NULL
+          AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
+          AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
         ORDER BY P.ProductName
     """,
     "search_items": """
@@ -119,25 +165,39 @@ SQL_TEMPLATES = {
             P.ProductID as item_id,
             P.ProductCode as item_code,
             P.ProductName as item_name,
-            COALESCE(PB.MannualBarcode, P.ProductCode) as barcode,
+            CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
             PB.ProductBatchID as batch_id,
             PB.BatchNo as batch_no,
             PB.MfgDate as mfg_date,
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
+            PB.MRP as mrp,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
+            PG.GroupName as category,
+            PC.ProductCategoryName as subcategory,
+            P.HSNCode as hsn_code,
+            GST.GSTCategoryName as gst_category,
+            COALESCE(GST.Sales_SGSTPerc, 0) + COALESCE(GST.Sales_CGSTPerc, 0) as gst_percent,
+            GST.Sales_SGSTPerc as sgst_percent,
+            GST.Sales_CGSTPerc as cgst_percent,
+            GST.Sales_IGSTPerc as igst_percent,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
+        LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
+        LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
+        LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
         WHERE (P.ProductName LIKE %s
            OR P.ProductCode LIKE %s
-           OR P.ItemAlias LIKE %s)
+           OR CAST(PB.AutoBarcode AS VARCHAR(50)) LIKE %s)
           AND P.IsActive = 1
+          AND PB.AutoBarcode IS NOT NULL
+          AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
     """,
     "get_item_batches": """
         SELECT

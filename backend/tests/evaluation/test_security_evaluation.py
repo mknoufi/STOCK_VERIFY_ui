@@ -9,15 +9,9 @@ database uses mock authentication that bypasses real JWT validation.
 These tests are designed to run against a real or staging environment.
 """
 
-import asyncio
 import os
-import re
-import time
-from datetime import datetime
-from typing import Dict, List
 
 import pytest
-import pytest_asyncio
 
 pytestmark = pytest.mark.security
 
@@ -36,8 +30,7 @@ class TestAuthenticationSecurity:
         responses = []
         for i in range(20):
             response = await async_client.post(
-                "/api/auth/login",
-                json={"email": f"test{i}@example.com", "password": "wrong"}
+                "/api/auth/login", json={"email": f"test{i}@example.com", "password": "wrong"}
             )
             responses.append(response.status_code)
 
@@ -45,11 +38,11 @@ class TestAuthenticationSecurity:
         # If all responses are 401 (unauthorized), rate limiting may not be enforced
         # If we see 429, rate limiting is working
         rate_limited = 429 in responses
-        unauthorized = 401 in responses
 
         # Either rate limiting should kick in, or all should be unauthorized
-        assert rate_limited or all(r == 401 for r in responses), \
+        assert rate_limited or all(r == 401 for r in responses), (
             "Login should either rate limit or reject all invalid attempts"
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(IS_MOCKED_AUTH, reason="Mock auth always succeeds")
@@ -67,8 +60,11 @@ class TestAuthenticationSecurity:
             else:
                 response = await async_client.post(endpoint, json={})
 
-            assert response.status_code in [401, 403, 422], \
-                f"{endpoint} should require authentication, got {response.status_code}"
+            assert response.status_code in [
+                401,
+                403,
+                422,
+            ], f"{endpoint} should require authentication, got {response.status_code}"
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(IS_MOCKED_AUTH, reason="Mock auth always succeeds")
@@ -83,26 +79,28 @@ class TestAuthenticationSecurity:
 
         for token in invalid_tokens:
             response = await async_client.get(
-                "/api/sessions",
-                headers={"Authorization": f"Bearer {token}"}
+                "/api/sessions", headers={"Authorization": f"Bearer {token}"}
             )
-            assert response.status_code in [401, 403, 422], \
-                f"Invalid token should be rejected: {token[:20]}..."
+            assert response.status_code in [
+                401,
+                403,
+                422,
+            ], f"Invalid token should be rejected: {token[:20]}..."
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(IS_MOCKED_AUTH, reason="Mock auth always succeeds")
     async def test_expired_token_rejected(self, async_client, test_db):
         """Test that expired tokens are rejected."""
         # Use a known expired token (expired in the past)
-        expired_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxfQ.signature"
-
-        response = await async_client.get(
-            "/api/sessions",
-            headers={"Authorization": f"Bearer {expired_token}"}
+        expired_token = (
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxfQ.signature"
         )
 
-        assert response.status_code in [401, 403], \
-            "Expired token should be rejected"
+        response = await async_client.get(
+            "/api/sessions", headers={"Authorization": f"Bearer {expired_token}"}
+        )
+
+        assert response.status_code in [401, 403], "Expired token should be rejected"
 
 
 class TestInputValidation:
@@ -125,12 +123,11 @@ class TestInputValidation:
             response = await async_client.get(
                 "/api/items/search",
                 params={"q": payload},
-                headers={"Authorization": "Bearer test-token"}
+                headers={"Authorization": "Bearer test-token"},
             )
 
             # Should not return 500 (internal server error from SQL error)
-            assert response.status_code != 500, \
-                f"SQL injection should be handled safely: {payload}"
+            assert response.status_code != 500, f"SQL injection should be handled safely: {payload}"
 
     @pytest.mark.asyncio
     async def test_xss_prevention_in_responses(self, async_client, test_db):
@@ -146,16 +143,17 @@ class TestInputValidation:
             response = await async_client.get(
                 "/api/items/search",
                 params={"q": payload},
-                headers={"Authorization": "Bearer test-token"}
+                headers={"Authorization": "Bearer test-token"},
             )
 
             if response.status_code == 200:
                 content = response.text
                 # Check that script tags are not reflected directly
-                assert "<script>" not in content.lower() or \
-                       "&lt;script&gt;" in content or \
-                       response.headers.get("content-type", "").startswith("application/json"), \
-                    f"XSS payload should be sanitized: {payload}"
+                assert (
+                    "<script>" not in content.lower()
+                    or "&lt;script&gt;" in content
+                    or response.headers.get("content-type", "").startswith("application/json")
+                ), f"XSS payload should be sanitized: {payload}"
 
     @pytest.mark.asyncio
     async def test_path_traversal_prevention(self, async_client, test_db):
@@ -171,8 +169,11 @@ class TestInputValidation:
             response = await async_client.get(f"/api/{payload}")
 
             # Should return 404 (not found) or 400 (bad request), not actual file content
-            assert response.status_code in [400, 404, 422], \
-                f"Path traversal should be blocked: {payload}"
+            assert response.status_code in [
+                400,
+                404,
+                422,
+            ], f"Path traversal should be blocked: {payload}"
 
     @pytest.mark.asyncio
     async def test_large_payload_rejection(self, async_client, test_db):
@@ -182,14 +183,11 @@ class TestInputValidation:
 
         try:
             response = await async_client.post(
-                "/api/sessions",
-                json=large_payload,
-                headers={"Authorization": "Bearer test-token"}
+                "/api/sessions", json=large_payload, headers={"Authorization": "Bearer test-token"}
             )
 
             # Should reject or handle gracefully
-            assert response.status_code in [400, 413, 422, 500], \
-                "Large payload should be rejected"
+            assert response.status_code in [400, 413, 422, 500], "Large payload should be rejected"
         except Exception:
             # Exception during request is acceptable for oversized payloads
             pass
@@ -218,8 +216,7 @@ class TestHeaderSecurity:
         # X-Content-Type-Options should be nosniff
         content_type_options = response.headers.get("x-content-type-options")
         if content_type_options:
-            assert content_type_options == "nosniff", \
-                "X-Content-Type-Options should be 'nosniff'"
+            assert content_type_options == "nosniff", "X-Content-Type-Options should be 'nosniff'"
 
     @pytest.mark.asyncio
     async def test_frame_options(self, async_client, test_db):
@@ -228,8 +225,10 @@ class TestHeaderSecurity:
 
         frame_options = response.headers.get("x-frame-options")
         if frame_options:
-            assert frame_options in ["DENY", "SAMEORIGIN"], \
-                "X-Frame-Options should be DENY or SAMEORIGIN"
+            assert frame_options in [
+                "DENY",
+                "SAMEORIGIN",
+            ], "X-Frame-Options should be DENY or SAMEORIGIN"
 
     @pytest.mark.asyncio
     async def test_content_security_policy(self, async_client, test_db):
@@ -240,8 +239,9 @@ class TestHeaderSecurity:
         # CSP is optional but recommended
         if csp:
             # Should have at least default-src directive
-            assert "default-src" in csp or "script-src" in csp, \
+            assert "default-src" in csp or "script-src" in csp, (
                 "CSP should have restrictive directives"
+            )
 
 
 class TestSessionSecurity:
@@ -252,8 +252,7 @@ class TestSessionSecurity:
         """Test that session tokens are of sufficient length."""
         # Create a session and check token length
         response = await async_client.post(
-            "/api/auth/login",
-            json={"email": "admin@test.com", "password": "password123"}
+            "/api/auth/login", json={"email": "admin@test.com", "password": "password123"}
         )
 
         if response.status_code == 200:
@@ -261,22 +260,19 @@ class TestSessionSecurity:
             token = data.get("access_token", "")
 
             # JWT tokens should be at least 100 characters
-            assert len(token) >= 100, \
-                "Session token should be sufficiently long"
+            assert len(token) >= 100, "Session token should be sufficiently long"
 
     @pytest.mark.asyncio
     async def test_session_fixation_prevention(self, async_client, test_db):
         """Test that session IDs change on login."""
         # First login
         response1 = await async_client.post(
-            "/api/auth/login",
-            json={"email": "admin@test.com", "password": "password123"}
+            "/api/auth/login", json={"email": "admin@test.com", "password": "password123"}
         )
 
         # Second login with same credentials
         response2 = await async_client.post(
-            "/api/auth/login",
-            json={"email": "admin@test.com", "password": "password123"}
+            "/api/auth/login", json={"email": "admin@test.com", "password": "password123"}
         )
 
         if response1.status_code == 200 and response2.status_code == 200:
@@ -284,16 +280,14 @@ class TestSessionSecurity:
             token2 = response2.json().get("access_token", "")
 
             # Tokens should be different (new token on each login)
-            assert token1 != token2, \
-                "New login should generate new token"
+            assert token1 != token2, "New login should generate new token"
 
     @pytest.mark.asyncio
     async def test_logout_invalidates_token(self, async_client, test_db):
         """Test that logout invalidates the session."""
         # Login first
         login_response = await async_client.post(
-            "/api/auth/login",
-            json={"email": "admin@test.com", "password": "password123"}
+            "/api/auth/login", json={"email": "admin@test.com", "password": "password123"}
         )
 
         if login_response.status_code != 200:
@@ -303,15 +297,11 @@ class TestSessionSecurity:
 
         # Logout
         logout_response = await async_client.post(
-            "/api/auth/logout",
-            headers={"Authorization": f"Bearer {token}"}
+            "/api/auth/logout", headers={"Authorization": f"Bearer {token}"}
         )
 
         # Try to use the token after logout
-        verify_response = await async_client.get(
-            "/api/sessions",
-            headers={"Authorization": f"Bearer {token}"}
-        )
+        await async_client.get("/api/sessions", headers={"Authorization": f"Bearer {token}"})
 
         # If logout endpoint exists and works, token should be invalid
         if logout_response.status_code == 200:
@@ -337,11 +327,7 @@ class TestPasswordSecurity:
         for password in weak_passwords:
             response = await async_client.post(
                 "/api/auth/register",
-                json={
-                    "email": "test@example.com",
-                    "password": password,
-                    "name": "Test User"
-                }
+                json={"email": "test@example.com", "password": password, "name": "Test User"},
             )
 
             # Weak passwords should be rejected (400 or 422)
@@ -361,17 +347,19 @@ class TestPasswordSecurity:
 
         for endpoint in endpoints:
             response = await async_client.get(
-                endpoint,
-                headers={"Authorization": "Bearer test-token"}
+                endpoint, headers={"Authorization": "Bearer test-token"}
             )
 
             if response.status_code == 200:
                 content = response.text.lower()
 
                 # Check that password fields don't contain actual values
-                assert '"password":' not in content or '"password":null' in content or \
-                       '"password":""' in content or '"password": null' in content, \
-                    f"Password should not be returned in {endpoint}"
+                assert (
+                    '"password":' not in content
+                    or '"password":null' in content
+                    or '"password":""' in content
+                    or '"password": null' in content
+                ), f"Password should not be returned in {endpoint}"
 
 
 class TestRateLimiting:
@@ -393,8 +381,9 @@ class TestRateLimiting:
         # Rate limiting is optional but recommended
         if not rate_limited:
             # All requests succeeded, which is okay for low-volume
-            assert all(r == 200 for r in responses), \
+            assert all(r == 200 for r in responses), (
                 "API should either rate limit or accept all requests"
+            )
 
     @pytest.mark.asyncio
     async def test_rate_limit_headers(self, async_client, test_db):
@@ -411,8 +400,7 @@ class TestRateLimiting:
         ]
 
         has_rate_limit_headers = any(
-            h in [k.lower() for k in response.headers.keys()]
-            for h in rate_limit_headers
+            h in [k.lower() for k in response.headers.keys()] for h in rate_limit_headers
         )
 
         if not has_rate_limit_headers:
@@ -432,18 +420,19 @@ class TestErrorHandling:
             content = response.text
 
             # Should not contain Python stack traces
-            assert "Traceback (most recent call last)" not in content, \
+            assert "Traceback (most recent call last)" not in content, (
                 "Stack traces should not be exposed"
-            assert "File \"" not in content or response.headers.get("content-type", "").startswith("application/json"), \
-                "File paths should not be exposed in errors"
+            )
+            assert 'File "' not in content or response.headers.get("content-type", "").startswith(
+                "application/json"
+            ), "File paths should not be exposed in errors"
 
     @pytest.mark.asyncio
     async def test_generic_error_messages(self, async_client, test_db):
         """Test that error messages don't expose sensitive information."""
         # Try invalid login
         response = await async_client.post(
-            "/api/auth/login",
-            json={"email": "admin@test.com", "password": "wrong_password"}
+            "/api/auth/login", json={"email": "admin@test.com", "password": "wrong_password"}
         )
 
         if response.status_code == 401:
@@ -451,5 +440,6 @@ class TestErrorHandling:
             message = str(data.get("detail", "")).lower()
 
             # Should not indicate whether email exists
-            assert "user not found" not in message or "invalid" in message, \
+            assert "user not found" not in message or "invalid" in message, (
                 "Error should not reveal if user exists"
+            )

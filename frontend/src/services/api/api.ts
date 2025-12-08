@@ -2,10 +2,10 @@
  * API service layer: network-aware endpoints with offline fallbacks and caching.
  * Most functions prefer online calls and transparently fall back to cache.
  */
-import { useNetworkStore } from '../../store/networkStore';
-import api from '../httpClient';
-import { retryWithBackoff } from '../../utils/retry';
-import { validateBarcode, normalizeBarcode } from '../../utils/validation';
+import { useNetworkStore } from "../../store/networkStore";
+import api from "../httpClient";
+import { retryWithBackoff } from "../../utils/retry";
+import { validateBarcode } from "../../utils/validation";
 import {
   addToOfflineQueue,
   cacheItem,
@@ -15,7 +15,7 @@ import {
   getSessionFromCache,
   cacheCountLine,
   getCountLinesBySessionFromCache,
-} from '../offline/offlineStorage';
+} from "../offline/offlineStorage";
 
 // Check if online - simplified logic for better reliability
 export const isOnline = () => {
@@ -23,16 +23,17 @@ export const isOnline = () => {
   const online = state.isOnline && state.isInternetReachable !== false;
 
   // Debug logging
-  __DEV__ && console.log('🌐 Network Status Check:', {
-    isOnline: state.isOnline,
-    isInternetReachable: state.isInternetReachable,
-    connectionType: state.connectionType,
-    result: online
-  });
+  __DEV__ &&
+    console.log("🌐 Network Status Check:", {
+      isOnline: state.isOnline,
+      isInternetReachable: state.isInternetReachable,
+      connectionType: state.connectionType,
+      result: online,
+    });
 
   // If network state is unknown or null, assume online (fail-safe for API calls)
   if (state.isOnline === undefined || state.isOnline === null) {
-    __DEV__ && console.log('🌐 Network state unknown, assuming ONLINE for API calls');
+    __DEV__ && console.log("🌐 Network state unknown, assuming ONLINE for API calls");
     return true;
   }
 
@@ -40,42 +41,52 @@ export const isOnline = () => {
 };
 
 // Create session (with offline support)
-export const createSession = async (warehouse: string) => {
+// Create session (with offline support)
+export const createSession = async (params: string | { warehouse: string; type?: string }) => {
+  const warehouse = typeof params === "string" ? params : params.warehouse;
+  const sessionType = typeof params !== "string" ? params.type : undefined;
+
   try {
     if (!isOnline()) {
       // Create offline session
       const offlineSession = {
         session_id: `offline_${Date.now()}`,
         warehouse,
-        status: 'active',
-        created_by: 'offline_user',
+        type: sessionType || "general", // Default to general if not specified
+        status: "active",
+        created_by: "offline_user",
         created_at: new Date().toISOString(),
       };
 
       await cacheSession(offlineSession);
-      await addToOfflineQueue('session', offlineSession);
+      await addToOfflineQueue("session", offlineSession);
 
       return offlineSession;
     }
 
-    const response = await api.post('/sessions', { warehouse });
+    const payload = {
+      warehouse,
+      ...(sessionType && { type: sessionType }),
+    };
+
+    const response = await api.post("/api/sessions", payload);
     await cacheSession(response.data);
     return response.data;
   } catch (error) {
     // Use warn instead of error to avoid blocking the UI with LogBox since we have a fallback
-    __DEV__ && console.warn('Error creating session (switching to offline mode):', error);
+    __DEV__ && console.warn("Error creating session (switching to offline mode):", error);
 
     // Fallback to offline mode
     const offlineSession = {
       session_id: `offline_${Date.now()}`,
       warehouse,
-      status: 'active',
-      created_by: 'offline_user',
+      status: "active",
+      created_by: "offline_user",
       created_at: new Date().toISOString(),
     };
 
     await cacheSession(offlineSession);
-    await addToOfflineQueue('session', offlineSession);
+    await addToOfflineQueue("session", offlineSession);
 
     return offlineSession;
   }
@@ -115,7 +126,7 @@ export const getSessions = async (page: number = 1, pageSize: number = 20) => {
     const validPage = Math.max(1, Math.floor(Number(page)) || 1);
     const validPageSize = Math.max(1, Math.min(100, Math.floor(Number(pageSize)) || 20));
 
-    const response = await api.get('/sessions', {
+    const response = await api.get("/api/sessions", {
       params: {
         page: validPage,
         page_size: validPageSize,
@@ -145,7 +156,7 @@ export const getSessions = async (page: number = 1, pageSize: number = 20) => {
       pagination,
     };
   } catch (error) {
-    __DEV__ && console.error('Error getting sessions:', error);
+    __DEV__ && console.error("Error getting sessions:", error);
 
     // Fallback to cache
     const cache = await getSessionsCache();
@@ -179,24 +190,42 @@ export const getSession = async (sessionId: string) => {
       return await getSessionFromCache(sessionId);
     }
 
-    const response = await api.get(`/sessions/${sessionId}`);
+    const response = await api.get(`/api/sessions/${sessionId}`);
     await cacheSession(response.data);
     return response.data;
   } catch (error) {
-    __DEV__ && console.error('Error getting session:', error);
+    __DEV__ && console.error("Error getting session:", error);
 
     // Fallback to cache
+    // Fallback to cache
     return await getSessionFromCache(sessionId);
+  }
+};
+
+// Get Rack Progress
+export const getRackProgress = async (sessionId: string) => {
+  try {
+    if (!isOnline()) {
+      // TODO: Implement offline calculation if possible, or return empty
+      return { data: [] };
+    }
+    // Note: The backend response wrapper puts the actual array in data.data
+    const response = await api.get(`/api/v2/sessions/${sessionId}/rack-progress`);
+    // Return just the data part which is the array of racks
+    return response.data;
+  } catch (error) {
+    __DEV__ && console.error("Error getting rack progress:", error);
+    return { data: [] };
   }
 };
 
 // Bulk close sessions
 export const bulkCloseSessions = async (sessionIds: string[]) => {
   try {
-    const response = await api.post('/sessions/bulk/close', sessionIds);
+    const response = await api.post("/api/sessions/bulk/close", sessionIds);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Bulk close sessions error:', error);
+    __DEV__ && console.error("Bulk close sessions error:", error);
     throw error;
   }
 };
@@ -204,23 +233,23 @@ export const bulkCloseSessions = async (sessionIds: string[]) => {
 // Bulk reconcile sessions
 export const bulkReconcileSessions = async (sessionIds: string[]) => {
   try {
-    const response = await api.post('/sessions/bulk/reconcile', sessionIds);
+    const response = await api.post("/api/sessions/bulk/reconcile", sessionIds);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Bulk reconcile sessions error:', error);
+    __DEV__ && console.error("Bulk reconcile sessions error:", error);
     throw error;
   }
 };
 
 // Bulk export sessions
-export const bulkExportSessions = async (sessionIds: string[], format: string = 'excel') => {
+export const bulkExportSessions = async (sessionIds: string[], format: string = "excel") => {
   try {
-    const response = await api.post('/sessions/bulk/export', sessionIds, {
-      params: { format }
+    const response = await api.post("/api/sessions/bulk/export", sessionIds, {
+      params: { format },
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Bulk export sessions error:', error);
+    __DEV__ && console.error("Bulk export sessions error:", error);
     throw error;
   }
 };
@@ -228,10 +257,10 @@ export const bulkExportSessions = async (sessionIds: string[], format: string = 
 // Get sessions analytics (aggregated server-side)
 export const getSessionsAnalytics = async () => {
   try {
-    const response = await api.get('/sessions/analytics');
+    const response = await api.get("/api/sessions/analytics");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get sessions analytics error:', error);
+    __DEV__ && console.error("Get sessions analytics error:", error);
     throw error;
   }
 };
@@ -246,7 +275,7 @@ export const getItemByBarcode = async (barcode: string, retryCount: number = 3) 
   // Validate and normalize barcode before making API call
   const validation = validateBarcode(barcode);
   if (!validation.valid || !validation.value) {
-    throw new Error(validation.error || 'Invalid barcode format');
+    throw new Error(validation.error || "Invalid barcode format");
   }
 
   // Use normalized barcode if available (6-digit format for numeric barcodes)
@@ -256,29 +285,32 @@ export const getItemByBarcode = async (barcode: string, retryCount: number = 3) 
 
   // Check if offline first - only use cache if truly offline
   if (!isOnline()) {
-    __DEV__ && console.log('📱 Offline mode - searching cache');
+    __DEV__ && console.log("📱 Offline mode - searching cache");
     try {
       const items = await searchItemsInCache(trimmedBarcode);
       if (items.length > 0) {
-        __DEV__ && console.log('✅ Found in cache:', items[0]?.item_code);
+        __DEV__ && console.log("✅ Found in cache:", items[0]?.item_code);
         return items[0];
       }
-      throw new Error('Item not found in offline cache. Connect to internet to search server.');
+      throw new Error("Item not found in offline cache. Connect to internet to search server.");
     } catch {
-      throw new Error('Offline: Item not found in cache. Connect to internet to search server.');
+      throw new Error("Offline: Item not found in cache. Connect to internet to search server.");
     }
   }
 
   // Online - try API first, then cache as fallback
   try {
-    __DEV__ && console.log('🌐 Online mode - calling API');
+    __DEV__ && console.log("🌐 Online mode - calling API");
 
     // Direct API call with retry
     // Use enhanced v2 endpoint for better performance and metadata
-    const response = await retryWithBackoff(() => api.get(`/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`), {
-      retries: retryCount,
-      backoffMs: 1000,
-    });
+    const response = await retryWithBackoff(
+      () => api.get(`/api/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`),
+      {
+        retries: retryCount,
+        backoffMs: 1000,
+      },
+    );
 
     // Handle v2 response format { item: ..., metadata: ... }
     const itemData = response.data.item || response.data;
@@ -291,7 +323,7 @@ export const getItemByBarcode = async (barcode: string, retryCount: number = 3) 
       itemData.id = itemData._id;
     }
 
-    __DEV__ && console.log('✅ Found via API:', itemData.item_code);
+    __DEV__ && console.log("✅ Found via API:", itemData.item_code);
 
     // Cache the item for future offline use
     try {
@@ -304,38 +336,41 @@ export const getItemByBarcode = async (barcode: string, retryCount: number = 3) 
         current_stock: itemData.current_stock || itemData.stock_qty, // Handle field name difference
       });
     } catch (cacheError) {
-      __DEV__ && console.warn('Failed to cache item:', cacheError);
+      __DEV__ && console.warn("Failed to cache item:", cacheError);
       // Don't fail the whole operation for cache errors
     }
 
     return itemData;
-
   } catch (apiError: any) {
-    __DEV__ && console.error('❌ API call failed:', apiError.message);
+    __DEV__ && console.error("❌ API call failed:", apiError.message);
 
     // Only fallback to cache if API fails
-    __DEV__ && console.log('🔄 API failed, trying cache fallback');
+    __DEV__ && console.log("🔄 API failed, trying cache fallback");
     try {
       const items = await searchItemsInCache(trimmedBarcode);
       if (items.length > 0) {
-        __DEV__ && console.log('✅ Found in cache fallback:', items[0]?.item_code);
+        __DEV__ && console.log("✅ Found in cache fallback:", items[0]?.item_code);
         return items[0];
       }
 
       // Cache is empty too
-      throw new Error('Item not found in cache');
-    } catch (cacheError) {
-      __DEV__ && console.error('❌ Cache fallback also failed:', cacheError);
+      throw new Error("Item not found in cache");
+    } catch (cacheError: any) {
+      if (cacheError.message !== "Item not found in cache") {
+        __DEV__ && console.error("❌ Cache fallback also failed:", cacheError);
+      } else {
+        __DEV__ && console.log("ℹ️ Item not found in cache either");
+      }
 
       // Provide helpful error message
       if (apiError.response?.status === 404) {
         throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
-      } else if (apiError.code === 'ECONNABORTED' || apiError.message?.includes('timeout')) {
-        throw new Error('Connection timeout. Check your internet connection.');
-      } else if (apiError.code === 'ECONNREFUSED' || !apiError.response) {
-        throw new Error('Cannot connect to server. Check if backend is running.');
+      } else if (apiError.code === "ECONNABORTED" || apiError.message?.includes("timeout")) {
+        throw new Error("Connection timeout. Check your internet connection.");
+      } else if (apiError.code === "ECONNREFUSED" || !apiError.response) {
+        throw new Error("Cannot connect to server. Check if backend is running.");
       } else {
-        throw new Error(`Barcode lookup failed: ${apiError.message || 'Unknown error'}`);
+        throw new Error(`Barcode lookup failed: ${apiError.message || "Unknown error"}`);
       }
     }
   }
@@ -350,7 +385,9 @@ export const searchItems = async (query: string) => {
     }
 
     // Use enhanced v2 search endpoint
-    const response = await api.get(`/v2/erp/items/search/advanced?query=${encodeURIComponent(query)}`);
+    const response = await api.get(
+      `/api/v2/erp/items/search/advanced?query=${encodeURIComponent(query)}`,
+    );
 
     // Handle v2 response format
     const items = response.data.items || [];
@@ -381,13 +418,13 @@ export const searchItems = async (query: string) => {
 
     return mappedItems;
   } catch (error) {
-    __DEV__ && console.error('Error searching items:', error);
+    __DEV__ && console.error("Error searching items:", error);
 
     // Fallback to cache
     try {
       return await searchItemsInCache(query);
     } catch (fallbackError) {
-      __DEV__ && console.error('Cache fallback error:', fallbackError);
+      __DEV__ && console.error("Cache fallback error:", fallbackError);
       return [];
     }
   }
@@ -405,16 +442,16 @@ export const createCountLine = async (countData: any) => {
       };
 
       await cacheCountLine(offlineCountLine);
-      await addToOfflineQueue('count_line', offlineCountLine);
+      await addToOfflineQueue("count_line", offlineCountLine);
 
       return offlineCountLine;
     }
 
-    const response = await api.post('/count-lines', countData);
+    const response = await api.post("/api/count-lines", countData);
     await cacheCountLine(response.data);
     return response.data;
   } catch (error) {
-    __DEV__ && console.error('Error creating count line:', error);
+    __DEV__ && console.error("Error creating count line:", error);
 
     // Fallback to offline mode
     const offlineCountLine = {
@@ -424,7 +461,7 @@ export const createCountLine = async (countData: any) => {
     };
 
     await cacheCountLine(offlineCountLine);
-    await addToOfflineQueue('count_line', offlineCountLine);
+    await addToOfflineQueue("count_line", offlineCountLine);
 
     return offlineCountLine;
   }
@@ -435,7 +472,7 @@ export const getCountLines = async (
   sessionId: string,
   page: number = 1,
   pageSize: number = 50,
-  verified?: boolean
+  verified?: boolean,
 ) => {
   try {
     if (!isOnline()) {
@@ -453,7 +490,7 @@ export const getCountLines = async (
             total_pages: 1,
             has_next: false,
             has_prev: false,
-          }
+          },
         };
       }
       return {
@@ -465,11 +502,11 @@ export const getCountLines = async (
           total_pages: 1,
           has_next: false,
           has_prev: false,
-        }
+        },
       };
     }
 
-    let url = `/count-lines/session/${sessionId}?page=${page}&page_size=${pageSize}`;
+    let url = `/api/count-lines/session/${sessionId}?page=${page}&page_size=${pageSize}`;
     if (verified !== undefined) {
       url += `&verified=${verified}`;
     }
@@ -490,7 +527,7 @@ export const getCountLines = async (
 
     return response.data;
   } catch (error) {
-    __DEV__ && console.error('Error getting count lines:', error);
+    __DEV__ && console.error("Error getting count lines:", error);
 
     // Fallback to cache
     const cachedLines = await getCountLinesBySessionFromCache(sessionId);
@@ -505,7 +542,7 @@ export const getCountLines = async (
           total_pages: 1,
           has_next: false,
           has_prev: false,
-        }
+        },
       };
     }
     return {
@@ -517,7 +554,7 @@ export const getCountLines = async (
         total_pages: 1,
         has_next: false,
         has_prev: false,
-      }
+      },
     };
   }
 };
@@ -532,10 +569,10 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
       return { already_counted: itemLines.length > 0, count_lines: itemLines };
     }
 
-    const response = await api.get(`/count-lines/check/${sessionId}/${itemCode}`);
+    const response = await api.get(`/api/count-lines/check/${sessionId}/${itemCode}`);
     return response.data;
   } catch (error) {
-    __DEV__ && console.error('Error checking item counted:', error);
+    __DEV__ && console.error("Error checking item counted:", error);
 
     // Fallback to cache
     const cachedLines = await getCountLinesBySessionFromCache(sessionId);
@@ -547,23 +584,25 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
 // Add quantity to existing count line
 export const addQuantityToCountLine = async (lineId: string, additionalQty: number) => {
   try {
-    const response = await api.patch(`/count-lines/${lineId}/add-quantity?additional_qty=${additionalQty}`);
+    const response = await api.patch(
+      `/api/count-lines/${lineId}/add-quantity?additional_qty=${additionalQty}`,
+    );
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Error adding quantity to count line:', error);
+    __DEV__ && console.error("Error adding quantity to count line:", error);
     throw error;
   }
 };
 
 // Get variance reasons
 export const getVarianceReasons = async () => {
-  const response = await api.get('/variance-reasons');
+  const response = await api.get("/api/variance-reasons");
   // Handle wrapped response format
   if (response.data && response.data.reasons && Array.isArray(response.data.reasons)) {
     return response.data.reasons.map((r: any) => ({
       ...r,
       code: r.id || r.code,
-      label: r.label || r.name
+      label: r.label || r.name,
     }));
   }
   return response.data;
@@ -571,19 +610,19 @@ export const getVarianceReasons = async () => {
 
 // Approve count line
 export const approveCountLine = async (lineId: string) => {
-  const response = await api.put(`/count-lines/${lineId}/approve`);
+  const response = await api.put(`/api/count-lines/${lineId}/approve`);
   return response.data;
 };
 
 // Reject count line
 export const rejectCountLine = async (lineId: string) => {
-  const response = await api.put(`/count-lines/${lineId}/reject`);
+  const response = await api.put(`/api/count-lines/${lineId}/reject`);
   return response.data;
 };
 
 // Update session status
 export const updateSessionStatus = async (sessionId: string, status: string) => {
-  const response = await api.put(`/sessions/${sessionId}/status?status=${status}`);
+  const response = await api.put(`/api/sessions/${sessionId}/status?status=${status}`);
   return response.data;
 };
 
@@ -591,15 +630,15 @@ export const updateSessionStatus = async (sessionId: string, status: string) => 
 export const createUnknownItem = async (itemData: any) => {
   try {
     if (!isOnline()) {
-      await addToOfflineQueue('unknown_item', itemData);
+      await addToOfflineQueue("unknown_item", itemData);
       return { success: true, offline: true };
     }
 
-    const response = await api.post('/unknown-items', itemData);
+    const response = await api.post("/api/unknown-items", itemData);
     return response.data;
   } catch (error) {
-    __DEV__ && console.error('Error creating unknown item:', error);
-    await addToOfflineQueue('unknown_item', itemData);
+    __DEV__ && console.error("Error creating unknown item:", error);
+    await addToOfflineQueue("unknown_item", itemData);
     return { success: true, offline: true };
   }
 };
@@ -612,23 +651,30 @@ export const registerUser = async (userData: {
   employee_id?: string;
   phone?: string;
 }) => {
-  const response = await api.post('/auth/register', userData);
+  const response = await api.post("/api/auth/register", userData);
   return response.data;
 };
 
 // Refresh item stock from ERP
 export const refreshItemStock = async (itemCode: string) => {
   try {
-    const response = await api.post(`/erp/items/${encodeURIComponent(itemCode)}/refresh-stock`);
+    const response = await api.post(`/api/erp/items/${encodeURIComponent(itemCode)}/refresh-stock`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Refresh stock error:', error);
+    __DEV__ && console.error("Refresh stock error:", error);
     throw error;
   }
 };
 
 // Database Mapping API
-export const getAvailableTables = async (host: string, port: number, database: string, user?: string, password?: string, schema: string = 'dbo') => {
+export const getAvailableTables = async (
+  host: string,
+  port: number,
+  database: string,
+  user?: string,
+  password?: string,
+  schema: string = "dbo",
+) => {
   try {
     const params = new URLSearchParams({
       host,
@@ -636,18 +682,26 @@ export const getAvailableTables = async (host: string, port: number, database: s
       database,
       schema,
     });
-    if (user) params.append('user', user);
-    if (password) params.append('password', password);
+    if (user) params.append("user", user);
+    if (password) params.append("password", password);
 
-    const response = await api.get(`/mapping/tables?${params.toString()}`);
+    const response = await api.get(`/api/mapping/tables?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get tables error:', error);
+    __DEV__ && console.error("Get tables error:", error);
     throw error;
   }
 };
 
-export const getTableColumns = async (host: string, port: number, database: string, tableName: string, user?: string, password?: string, schema: string = 'dbo') => {
+export const getTableColumns = async (
+  host: string,
+  port: number,
+  database: string,
+  tableName: string,
+  user?: string,
+  password?: string,
+  schema: string = "dbo",
+) => {
   try {
     const params = new URLSearchParams({
       host,
@@ -656,51 +710,58 @@ export const getTableColumns = async (host: string, port: number, database: stri
       table_name: tableName,
       schema,
     });
-    if (user) params.append('user', user);
-    if (password) params.append('password', password);
+    if (user) params.append("user", user);
+    if (password) params.append("password", password);
 
-    const response = await api.get(`/mapping/columns?${params.toString()}`);
+    const response = await api.get(`/api/mapping/columns?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get columns error:', error);
+    __DEV__ && console.error("Get columns error:", error);
     throw error;
   }
 };
 
 export const getCurrentMapping = async () => {
   try {
-    const response = await api.get('/mapping/current');
+    const response = await api.get("/api/mapping/current");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get current mapping error:', error);
+    __DEV__ && console.error("Get current mapping error:", error);
     throw error;
   }
 };
 
-export const testMapping = async (config: any, host: string, port: number, database: string, user?: string, password?: string) => {
+export const testMapping = async (
+  config: any,
+  host: string,
+  port: number,
+  database: string,
+  user?: string,
+  password?: string,
+) => {
   try {
     const params = new URLSearchParams({
       host,
       port: port.toString(),
       database,
     });
-    if (user) params.append('user', user);
-    if (password) params.append('password', password);
+    if (user) params.append("user", user);
+    if (password) params.append("password", password);
 
-    const response = await api.post(`/mapping/test?${params.toString()}`, config);
+    const response = await api.post(`/api/mapping/test?${params.toString()}`, config);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Test mapping error:', error);
+    __DEV__ && console.error("Test mapping error:", error);
     throw error;
   }
 };
 
 export const saveMapping = async (config: any) => {
   try {
-    const response = await api.post('/mapping/save', config);
+    const response = await api.post("/api/mapping/save", config);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Save mapping error:', error);
+    __DEV__ && console.error("Save mapping error:", error);
     throw error;
   }
 };
@@ -708,7 +769,7 @@ export const saveMapping = async (config: any) => {
 // Sync offline queue (enhanced version in syncService.ts)
 export const syncOfflineQueue = async (options?: any) => {
   // Import sync service dynamically
-  const syncService = await import('../syncService');
+  const syncService = await import("../syncService");
   return await syncService.syncOfflineQueue(options);
 };
 
@@ -720,44 +781,75 @@ export const getActivityLogs = async (
   action?: string,
   status?: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       page_size: pageSize.toString(),
     });
-    if (user) params.append('user', user);
-    if (action) params.append('action', action);
-    if (status) params.append('status_filter', status);
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
+    if (user) params.append("user", user);
+    if (action) params.append("action", action);
+    if (status) params.append("status_filter", status);
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
 
-    __DEV__ && console.log('🔍 [Activity Logs] Fetching activity logs:', {
-      page,
-      pageSize,
-      filters: { user, action, status, startDate, endDate },
-      url: `/activity-logs?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log("🔍 [Activity Logs] Fetching activity logs:", {
+        page,
+        pageSize,
+        filters: { user, action, status, startDate, endDate },
+        url: `/api/activity-logs?${params.toString()}`,
+      });
 
-    const response = await api.get(`/activity-logs?${params.toString()}`);
+    const response = await api.get(`/api/activity-logs?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Activity Logs] Success:', {
-      totalActivities: response.data?.pagination?.total || 0,
-      page: response.data?.pagination?.page || page,
-      activitiesReturned: response.data?.activities?.length || 0
-    });
+    __DEV__ &&
+      __DEV__ &&
+      console.log("✅ [Activity Logs] Success:", {
+        activitiesReturned: response.data?.activities?.length || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Activity Logs] Error fetching activity logs:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { page, pageSize, user, action, status, startDate, endDate }
-    });
+    __DEV__ &&
+      console.error("❌ [Activity Logs] Error fetching activity logs:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { page, pageSize, user, action, status, startDate, endDate },
+      });
+    throw error;
+  }
+};
+
+// Verify Supervisor PIN
+export const verifyPin = async (data: {
+  supervisor_username: string;
+  pin: string;
+  action: string;
+  reason: string;
+  staff_username: string;
+  entity_id?: string;
+}) => {
+  try {
+    const response = await api.post("/api/supervisor/verify-pin", data);
+    return response.data;
+  } catch (error: any) {
+    __DEV__ && console.error("Verify PIN error:", error);
+    throw error;
+  }
+};
+
+// Delete Count Line (Authorized)
+export const deleteCountLine = async (lineId: string) => {
+  try {
+    const response = await api.delete(`/api/count-lines/${lineId}`);
+    return response.data;
+  } catch (error: any) {
+    __DEV__ && console.error("Delete count line error:", error);
     throw error;
   }
 };
@@ -765,33 +857,36 @@ export const getActivityLogs = async (
 export const getActivityStats = async (startDate?: string, endDate?: string) => {
   try {
     const params = new URLSearchParams();
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
 
-    __DEV__ && console.log('📊 [Activity Stats] Fetching statistics:', {
-      filters: { startDate, endDate },
-      url: `/activity-logs/stats?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log("📊 [Activity Stats] Fetching statistics:", {
+        filters: { startDate, endDate },
+        url: `/api/activity-logs/stats?${params.toString()}`,
+      });
 
-    const response = await api.get(`/activity-logs/stats?${params.toString()}`);
+    const response = await api.get(`/api/activity-logs/stats?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Activity Stats] Success:', {
-      total: response.data?.total || 0,
-      successCount: response.data?.by_status?.success || 0,
-      errorCount: response.data?.by_status?.error || 0,
-      warningCount: response.data?.by_status?.warning || 0
-    });
+    __DEV__ &&
+      console.log("✅ [Activity Stats] Success:", {
+        total: response.data?.total || 0,
+        successCount: response.data?.by_status?.success || 0,
+        errorCount: response.data?.by_status?.error || 0,
+        warningCount: response.data?.by_status?.warning || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Activity Stats] Error fetching statistics:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { startDate, endDate }
-    });
+    __DEV__ &&
+      console.error("❌ [Activity Stats] Error fetching statistics:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { startDate, endDate },
+      });
     throw error;
   }
 };
@@ -805,45 +900,48 @@ export const getErrorLogs = async (
   endpoint?: string,
   resolved?: boolean,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       page_size: pageSize.toString(),
     });
-    if (severity) params.append('severity', severity);
-    if (errorType) params.append('error_type', errorType);
-    if (endpoint) params.append('endpoint', endpoint);
-    if (resolved !== undefined) params.append('resolved', resolved.toString());
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
+    if (severity) params.append("severity", severity);
+    if (errorType) params.append("error_type", errorType);
+    if (endpoint) params.append("endpoint", endpoint);
+    if (resolved !== undefined) params.append("resolved", resolved.toString());
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
 
-    __DEV__ && console.log('🔍 [Error Logs] Fetching error logs:', {
-      page,
-      pageSize,
-      filters: { severity, errorType, endpoint, resolved, startDate, endDate },
-      url: `/error-logs?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log("🔍 [Error Logs] Fetching error logs:", {
+        page,
+        pageSize,
+        filters: { severity, errorType, endpoint, resolved, startDate, endDate },
+        url: `/api/error-logs?${params.toString()}`,
+      });
 
-    const response = await api.get(`/error-logs?${params.toString()}`);
+    const response = await api.get(`/api/error-logs?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Error Logs] Success:', {
-      totalErrors: response.data?.pagination?.total || 0,
-      page: response.data?.pagination?.page || page,
-      errorsReturned: response.data?.errors?.length || 0
-    });
+    __DEV__ &&
+      console.log("✅ [Error Logs] Success:", {
+        totalErrors: response.data?.pagination?.total || 0,
+        page: response.data?.pagination?.page || page,
+        errorsReturned: response.data?.errors?.length || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Error Logs] Error fetching error logs:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { page, pageSize, severity, errorType, endpoint, resolved, startDate, endDate }
-    });
+    __DEV__ &&
+      console.error("❌ [Error Logs] Error fetching error logs:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { page, pageSize, severity, errorType, endpoint, resolved, startDate, endDate },
+      });
     throw error;
   }
 };
@@ -851,82 +949,87 @@ export const getErrorLogs = async (
 export const getErrorStats = async (startDate?: string, endDate?: string) => {
   try {
     const params = new URLSearchParams();
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
 
-    __DEV__ && console.log('📊 [Error Stats] Fetching statistics:', {
-      filters: { startDate, endDate },
-      url: `/error-logs/stats?${params.toString()}`
-    });
+    __DEV__ &&
+      console.log("📊 [Error Stats] Fetching statistics:", {
+        filters: { startDate, endDate },
+        url: `/api/error-logs/stats?${params.toString()}`,
+      });
 
-    const response = await api.get(`/error-logs/stats?${params.toString()}`);
+    const response = await api.get(`/api/error-logs/stats?${params.toString()}`);
 
-    __DEV__ && console.log('✅ [Error Stats] Success:', {
-      total: response.data?.total || 0,
-      criticalCount: response.data?.by_severity?.critical || 0,
-      errorCount: response.data?.by_severity?.error || 0,
-      warningCount: response.data?.by_severity?.warning || 0
-    });
+    __DEV__ &&
+      console.log("✅ [Error Stats] Success:", {
+        total: response.data?.total || 0,
+        criticalCount: response.data?.by_severity?.critical || 0,
+        errorCount: response.data?.by_severity?.error || 0,
+        warningCount: response.data?.by_severity?.warning || 0,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Error Stats] Error fetching statistics:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-      filters: { startDate, endDate }
-    });
+    __DEV__ &&
+      console.error("❌ [Error Stats] Error fetching statistics:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+        filters: { startDate, endDate },
+      });
     throw error;
   }
 };
 
 export const getErrorDetail = async (errorId: string) => {
   try {
-    __DEV__ && console.log('🔍 [Error Detail] Fetching error details:', { errorId });
+    __DEV__ && console.log("🔍 [Error Detail] Fetching error details:", { errorId });
 
-    const response = await api.get(`/error-logs/${errorId}`);
+    const response = await api.get(`/api/error-logs/${errorId}`);
 
-    __DEV__ && console.log('✅ [Error Detail] Success:', {
-      errorId,
-      severity: response.data?.severity,
-      errorType: response.data?.error_type,
-      timestamp: response.data?.timestamp
-    });
+    __DEV__ &&
+      console.log("✅ [Error Detail] Success:", {
+        errorId,
+        severity: response.data?.severity,
+        errorType: response.data?.error_type,
+        timestamp: response.data?.timestamp,
+      });
 
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('❌ [Error Detail] Error fetching error details:', {
-      errorId,
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data
-    });
+    __DEV__ &&
+      console.error("❌ [Error Detail] Error fetching error details:", {
+        errorId,
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        data: error.response?.data,
+      });
     throw error;
   }
 };
 
 export const resolveError = async (errorId: string, resolutionNote?: string) => {
   try {
-    const response = await api.put(`/error-logs/${errorId}/resolve`, {
+    const response = await api.put(`/api/error-logs/${errorId}/resolve`, {
       resolution_note: resolutionNote,
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Resolve error error:', error);
+    __DEV__ && console.error("Resolve error error:", error);
     throw error;
   }
 };
 
 export const clearErrorLogs = async () => {
   try {
-    const response = await api.delete('/error-logs');
+    const response = await api.delete("/api/error-logs");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Clear error logs error:', error);
+    __DEV__ && console.error("Clear error logs error:", error);
     throw error;
   }
 };
@@ -934,10 +1037,10 @@ export const clearErrorLogs = async () => {
 // ERP Configuration
 export const getERPConfig = async () => {
   try {
-    const response = await api.get('/erp/config');
+    const response = await api.get("/api/erp/config");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get ERP config error:', error);
+    __DEV__ && console.error("Get ERP config error:", error);
     throw error;
   }
 };
@@ -945,20 +1048,20 @@ export const getERPConfig = async () => {
 // Stock Verification
 export const verifyStock = async (countLineId: string) => {
   try {
-    const response = await api.put(`/count-lines/${countLineId}/verify`);
+    const response = await api.put(`/api/count-lines/${countLineId}/verify`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Verify stock error:', error);
+    __DEV__ && console.error("Verify stock error:", error);
     throw error;
   }
 };
 
 export const unverifyStock = async (countLineId: string) => {
   try {
-    const response = await api.put(`/count-lines/${countLineId}/unverify`);
+    const response = await api.put(`/api/count-lines/${countLineId}/unverify`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Unverify stock error:', error);
+    __DEV__ && console.error("Unverify stock error:", error);
     throw error;
   }
 };
@@ -969,50 +1072,50 @@ export const unverifyStock = async (countLineId: string) => {
 
 export const getAvailablePermissions = async () => {
   try {
-    const response = await api.get('/permissions/available');
+    const response = await api.get("/api/permissions/available");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get available permissions error:', error);
+    __DEV__ && console.error("Get available permissions error:", error);
     throw error;
   }
 };
 
 export const getRolePermissions = async (role: string) => {
   try {
-    const response = await api.get(`/permissions/roles/${role}`);
+    const response = await api.get(`/api/permissions/roles/${role}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get role permissions error:', error);
+    __DEV__ && console.error("Get role permissions error:", error);
     throw error;
   }
 };
 
 export const getUserPermissions = async (username: string) => {
   try {
-    const response = await api.get(`/permissions/users/${username}`);
+    const response = await api.get(`/api/permissions/users/${username}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get user permissions error:', error);
+    __DEV__ && console.error("Get user permissions error:", error);
     throw error;
   }
 };
 
 export const addUserPermissions = async (username: string, permissions: string[]) => {
   try {
-    const response = await api.post(`/permissions/users/${username}/add`, { permissions });
+    const response = await api.post(`/api/permissions/users/${username}/add`, { permissions });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Add user permissions error:', error);
+    __DEV__ && console.error("Add user permissions error:", error);
     throw error;
   }
 };
 
 export const removeUserPermissions = async (username: string, permissions: string[]) => {
   try {
-    const response = await api.post(`/permissions/users/${username}/remove`, { permissions });
+    const response = await api.post(`/api/permissions/users/${username}/remove`, { permissions });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Remove user permissions error:', error);
+    __DEV__ && console.error("Remove user permissions error:", error);
     throw error;
   }
 };
@@ -1024,91 +1127,96 @@ export const removeUserPermissions = async (username: string, permissions: strin
 export const getExportSchedules = async (enabled?: boolean) => {
   try {
     const params = new URLSearchParams();
-    if (enabled !== undefined) params.append('enabled', enabled.toString());
+    if (enabled !== undefined) params.append("enabled", enabled.toString());
 
-    const response = await api.get(`/exports/schedules?${params.toString()}`);
+    const response = await api.get(`/api/exports/schedules?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get export schedules error:', error);
+    __DEV__ && console.error("Get export schedules error:", error);
     throw error;
   }
 };
 
 export const getExportSchedule = async (scheduleId: string) => {
   try {
-    const response = await api.get(`/exports/schedules/${scheduleId}`);
+    const response = await api.get(`/api/exports/schedules/${scheduleId}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get export schedule error:', error);
+    __DEV__ && console.error("Get export schedule error:", error);
     throw error;
   }
 };
 
 export const createExportSchedule = async (scheduleData: any) => {
   try {
-    const response = await api.post('/exports/schedules', scheduleData);
+    const response = await api.post("/api/exports/schedules", scheduleData);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Create export schedule error:', error);
+    __DEV__ && console.error("Create export schedule error:", error);
     throw error;
   }
 };
 
 export const updateExportSchedule = async (scheduleId: string, scheduleData: any) => {
   try {
-    const response = await api.put(`/exports/schedules/${scheduleId}`, scheduleData);
+    const response = await api.put(`/api/exports/schedules/${scheduleId}`, scheduleData);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Update export schedule error:', error);
+    __DEV__ && console.error("Update export schedule error:", error);
     throw error;
   }
 };
 
 export const deleteExportSchedule = async (scheduleId: string) => {
   try {
-    const response = await api.delete(`/exports/schedules/${scheduleId}`);
+    const response = await api.delete(`/api/exports/schedules/${scheduleId}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Delete export schedule error:', error);
+    __DEV__ && console.error("Delete export schedule error:", error);
     throw error;
   }
 };
 
 export const triggerExportSchedule = async (scheduleId: string) => {
   try {
-    const response = await api.post(`/exports/schedules/${scheduleId}/trigger`);
+    const response = await api.post(`/api/exports/schedules/${scheduleId}/trigger`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Trigger export schedule error:', error);
+    __DEV__ && console.error("Trigger export schedule error:", error);
     throw error;
   }
 };
 
-export const getExportResults = async (scheduleId?: string, status?: string, page: number = 1, pageSize: number = 50) => {
+export const getExportResults = async (
+  scheduleId?: string,
+  status?: string,
+  page: number = 1,
+  pageSize: number = 50,
+) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       page_size: pageSize.toString(),
     });
-    if (scheduleId) params.append('schedule_id', scheduleId);
-    if (status) params.append('status', status);
+    if (scheduleId) params.append("schedule_id", scheduleId);
+    if (status) params.append("status", status);
 
-    const response = await api.get(`/exports/results?${params.toString()}`);
+    const response = await api.get(`/api/exports/results?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get export results error:', error);
+    __DEV__ && console.error("Get export results error:", error);
     throw error;
   }
 };
 
 export const downloadExportResult = async (resultId: string) => {
   try {
-    const response = await api.get(`/exports/results/${resultId}/download`, {
-      responseType: 'blob',
+    const response = await api.get(`/api/exports/results/${resultId}/download`, {
+      responseType: "blob",
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Download export result error:', error);
+    __DEV__ && console.error("Download export result error:", error);
     throw error;
   }
 };
@@ -1117,66 +1225,79 @@ export const downloadExportResult = async (resultId: string) => {
 // SYNC CONFLICTS API
 // ==========================================
 
-export const getSyncConflicts = async (status?: string, sessionId?: string, page: number = 1, pageSize: number = 50) => {
+export const getSyncConflicts = async (
+  status?: string,
+  sessionId?: string,
+  page: number = 1,
+  pageSize: number = 50,
+) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       page_size: pageSize.toString(),
     });
-    if (status) params.append('status', status);
-    if (sessionId) params.append('session_id', sessionId);
+    if (status) params.append("status", status);
+    if (sessionId) params.append("session_id", sessionId);
 
-    const response = await api.get(`/sync/conflicts?${params.toString()}`);
+    const response = await api.get(`/api/sync/conflicts?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get sync conflicts error:', error);
+    __DEV__ && console.error("Get sync conflicts error:", error);
     throw error;
   }
 };
 
 export const getSyncConflictDetail = async (conflictId: string) => {
   try {
-    const response = await api.get(`/sync/conflicts/${conflictId}`);
+    const response = await api.get(`/api/sync/conflicts/${conflictId}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get sync conflict detail error:', error);
+    __DEV__ && console.error("Get sync conflict detail error:", error);
     throw error;
   }
 };
 
-export const resolveSyncConflict = async (conflictId: string, resolution: string, resolutionNote?: string) => {
+export const resolveSyncConflict = async (
+  conflictId: string,
+  resolution: string,
+  resolutionNote?: string,
+) => {
   try {
-    const response = await api.post(`/sync/conflicts/${conflictId}/resolve`, {
+    const response = await api.post(`/api/sync/conflicts/${conflictId}/resolve`, {
       resolution,
       resolution_note: resolutionNote,
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Resolve sync conflict error:', error);
+    __DEV__ && console.error("Resolve sync conflict error:", error);
     throw error;
   }
 };
 
-export const batchResolveSyncConflicts = async (conflictIds: string[], resolution: string, resolutionNote?: string) => {
+export const batchResolveSyncConflicts = async (
+  conflictIds: string[],
+  resolution: string,
+  resolutionNote?: string,
+) => {
   try {
-    const response = await api.post('/sync/conflicts/batch-resolve', {
+    const response = await api.post("/api/sync/conflicts/batch-resolve", {
       conflict_ids: conflictIds,
       resolution,
       resolution_note: resolutionNote,
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Batch resolve sync conflicts error:', error);
+    __DEV__ && console.error("Batch resolve sync conflicts error:", error);
     throw error;
   }
 };
 
 export const getSyncConflictStats = async () => {
   try {
-    const response = await api.get('/sync/conflicts/stats');
+    const response = await api.get("/api/sync/conflicts/stats");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get sync conflict stats error:', error);
+    __DEV__ && console.error("Get sync conflict stats error:", error);
     throw error;
   }
 };
@@ -1187,30 +1308,30 @@ export const getSyncConflictStats = async () => {
 
 export const getMetrics = async () => {
   try {
-    const response = await api.get('/metrics');
+    const response = await api.get("/api/metrics");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get metrics error:', error);
+    __DEV__ && console.error("Get metrics error:", error);
     throw error;
   }
 };
 
 export const getMetricsHealth = async () => {
   try {
-    const response = await api.get('/metrics/health');
+    const response = await api.get("/api/metrics/health");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get metrics health error:', error);
+    __DEV__ && console.error("Get metrics health error:", error);
     throw error;
   }
 };
 
 export const getMetricsStats = async () => {
   try {
-    const response = await api.get('/metrics/stats');
+    const response = await api.get("/api/metrics/stats");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get metrics stats error:', error);
+    __DEV__ && console.error("Get metrics stats error:", error);
     throw error;
   }
 };
@@ -1218,30 +1339,30 @@ export const getMetricsStats = async () => {
 // Sync Status API
 export const getSyncStatus = async () => {
   try {
-    const response = await api.get('/sync/status');
+    const response = await api.get("/api/sync/status");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get sync status error:', error);
+    __DEV__ && console.error("Get sync status error:", error);
     throw error;
   }
 };
 
 export const getSyncStats = async () => {
   try {
-    const response = await api.get('/sync/stats');
+    const response = await api.get("/api/sync/stats");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get sync stats error:', error);
+    __DEV__ && console.error("Get sync stats error:", error);
     throw error;
   }
 };
 
 export const triggerManualSync = async () => {
   try {
-    const response = await api.post('/sync/trigger');
+    const response = await api.post("/api/sync/trigger");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Trigger manual sync error:', error);
+    __DEV__ && console.error("Trigger manual sync error:", error);
     throw error;
   }
 };
@@ -1249,17 +1370,17 @@ export const triggerManualSync = async () => {
 // Admin Control Panel API
 export const getServicesStatus = async () => {
   try {
-    const response = await api.get('/admin/control/services/status');
+    const response = await api.get("/api/admin/control/services/status");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get services status error:', error);
+    __DEV__ && console.error("Get services status error:", error);
     throw error;
   }
 };
 
 export const startService = async (service: string) => {
   try {
-    const response = await api.post(`/admin/control/services/${service}/start`);
+    const response = await api.post(`/api/admin/control/services/${service}/start`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error(`Start ${service} error:`, error);
@@ -1269,7 +1390,7 @@ export const startService = async (service: string) => {
 
 export const stopService = async (service: string) => {
   try {
-    const response = await api.post(`/admin/control/services/${service}/stop`);
+    const response = await api.post(`/api/admin/control/services/${service}/stop`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error(`Stop ${service} error:`, error);
@@ -1279,37 +1400,42 @@ export const stopService = async (service: string) => {
 
 export const getSystemIssues = async () => {
   try {
-    const response = await api.get('/admin/control/system/issues');
+    const response = await api.get("/api/admin/control/system/issues");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get system issues error:', error);
+    __DEV__ && console.error("Get system issues error:", error);
     throw error;
   }
 };
 
 export const getLoginDevices = async () => {
   try {
-    const response = await api.get('/admin/control/devices');
+    const response = await api.get("/api/admin/control/devices");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get login devices error:', error);
+    __DEV__ && console.error("Get login devices error:", error);
     throw error;
   }
 };
 
 export const getAvailableReports = async () => {
   try {
-    const response = await api.get('/admin/control/reports/available');
+    const response = await api.get("/api/admin/control/reports/available");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get available reports error:', error);
+    __DEV__ && console.error("Get available reports error:", error);
     throw error;
   }
 };
 
-export const generateReport = async (reportId: string, format: string = 'json', startDate?: string, endDate?: string) => {
+export const generateReport = async (
+  reportId: string,
+  format: string = "json",
+  startDate?: string,
+  endDate?: string,
+) => {
   try {
-    const response = await api.post('/admin/control/reports/generate', {
+    const response = await api.post("/api/admin/control/reports/generate", {
       report_id: reportId,
       format,
       start_date: startDate,
@@ -1317,7 +1443,7 @@ export const generateReport = async (reportId: string, format: string = 'json', 
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Generate report error:', error);
+    __DEV__ && console.error("Generate report error:", error);
     throw error;
   }
 };
@@ -1325,61 +1451,61 @@ export const generateReport = async (reportId: string, format: string = 'json', 
 export const getServiceLogs = async (service: string, lines: number = 100, level?: string) => {
   try {
     const params = new URLSearchParams({ lines: lines.toString() });
-    if (level) params.append('level', level);
-    const response = await api.get(`/admin/control/logs/${service}?${params.toString()}`);
+    if (level) params.append("level", level);
+    const response = await api.get(`/api/admin/control/logs/${service}?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get service logs error:', error);
+    __DEV__ && console.error("Get service logs error:", error);
     throw error;
   }
 };
 
 export const getSqlServerConfig = async () => {
   try {
-    const response = await api.get('/admin/control/sql-server/config');
+    const response = await api.get("/api/admin/control/sql-server/config");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get SQL Server config error:', error);
+    __DEV__ && console.error("Get SQL Server config error:", error);
     throw error;
   }
 };
 
 export const updateSqlServerConfig = async (config: any) => {
   try {
-    const response = await api.post('/admin/control/sql-server/config', config);
+    const response = await api.post("/api/admin/control/sql-server/config", config);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Update SQL Server config error:', error);
+    __DEV__ && console.error("Update SQL Server config error:", error);
     throw error;
   }
 };
 
 export const testSqlServerConnection = async (config?: any) => {
   try {
-    const response = await api.post('/admin/control/sql-server/test', config || {});
+    const response = await api.post("/api/admin/control/sql-server/test", config || {});
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Test SQL Server connection error:', error);
+    __DEV__ && console.error("Test SQL Server connection error:", error);
     throw error;
   }
 };
 
 export const getSystemHealthScore = async () => {
   try {
-    const response = await api.get('/admin/control/system/health-score');
+    const response = await api.get("/api/admin/control/system/health-score");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get system health score error:', error);
+    __DEV__ && console.error("Get system health score error:", error);
     throw error;
   }
 };
 
 export const getSystemStats = async () => {
   try {
-    const response = await api.get('/admin/control/system/stats');
+    const response = await api.get("/api/admin/control/system/stats");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get system stats error:', error);
+    __DEV__ && console.error("Get system stats error:", error);
     throw error;
   }
 };
@@ -1387,73 +1513,85 @@ export const getSystemStats = async () => {
 // Security Dashboard API
 export const getSecuritySummary = async () => {
   try {
-    const response = await api.get('/admin/security/summary');
+    const response = await api.get("/api/admin/security/summary");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get security summary error:', error);
+    __DEV__ && console.error("Get security summary error:", error);
     throw error;
   }
 };
 
-export const getFailedLogins = async (limit: number = 100, hours: number = 24, username?: string, ipAddress?: string) => {
+export const getFailedLogins = async (
+  limit: number = 100,
+  hours: number = 24,
+  username?: string,
+  ipAddress?: string,
+) => {
   try {
     const params = new URLSearchParams({ limit: limit.toString(), hours: hours.toString() });
-    if (username) params.append('username', username);
-    if (ipAddress) params.append('ip_address', ipAddress);
-    const response = await api.get(`/admin/security/failed-logins?${params.toString()}`);
+    if (username) params.append("username", username);
+    if (ipAddress) params.append("ip_address", ipAddress);
+    const response = await api.get(`/api/admin/security/failed-logins?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get failed logins error:', error);
+    __DEV__ && console.error("Get failed logins error:", error);
     throw error;
   }
 };
 
 export const getSuspiciousActivity = async (hours: number = 24) => {
   try {
-    const response = await api.get(`/admin/security/suspicious-activity?hours=${hours}`);
+    const response = await api.get(`/api/admin/security/suspicious-activity?hours=${hours}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get suspicious activity error:', error);
+    __DEV__ && console.error("Get suspicious activity error:", error);
     throw error;
   }
 };
 
 export const getSecuritySessions = async (limit: number = 100, activeOnly: boolean = false) => {
   try {
-    const response = await api.get(`/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`);
+    const response = await api.get(
+      `/api/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`,
+    );
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get security sessions error:', error);
+    __DEV__ && console.error("Get security sessions error:", error);
     throw error;
   }
 };
 
-export const getSecurityAuditLog = async (limit: number = 100, hours: number = 24, action?: string, user?: string) => {
+export const getSecurityAuditLog = async (
+  limit: number = 100,
+  hours: number = 24,
+  action?: string,
+  user?: string,
+) => {
   try {
     const params = new URLSearchParams({ limit: limit.toString(), hours: hours.toString() });
-    if (action) params.append('action', action);
-    if (user) params.append('user', user);
-    const response = await api.get(`/admin/security/audit-log?${params.toString()}`);
+    if (action) params.append("action", action);
+    if (user) params.append("user", user);
+    const response = await api.get(`/api/admin/security/audit-log?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get security audit log error:', error);
+    __DEV__ && console.error("Get security audit log error:", error);
     throw error;
   }
 };
 
 export const getIpTracking = async (hours: number = 24) => {
   try {
-    const response = await api.get(`/admin/security/ip-tracking?hours=${hours}`);
+    const response = await api.get(`/api/admin/security/ip-tracking?hours=${hours}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get IP tracking error:', error);
+    __DEV__ && console.error("Get IP tracking error:", error);
     throw error;
   }
 };
 
 export const clearServiceLogs = async (service: string) => {
   try {
-    const response = await api.post('/admin/control/logs/clear', null, { params: { service } });
+    const response = await api.post("/api/admin/control/logs/clear", null, { params: { service } });
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error(`Clear ${service} logs error:`, error);
@@ -1464,40 +1602,40 @@ export const clearServiceLogs = async (service: string) => {
 // SQL Server Connection API
 export const getSQLStatus = async () => {
   try {
-    const response = await api.get('/admin/sql/status');
+    const response = await api.get("/api/admin/sql/status");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get SQL status error:', error);
+    __DEV__ && console.error("Get SQL status error:", error);
     throw error;
   }
 };
 
 export const testSQLConnection = async (config: any) => {
   try {
-    const response = await api.post('/admin/sql/test', config);
+    const response = await api.post("/api/admin/sql/test", config);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Test SQL connection error:', error);
+    __DEV__ && console.error("Test SQL connection error:", error);
     throw error;
   }
 };
 
 export const configureSQLConnection = async (config: any) => {
   try {
-    const response = await api.post('/admin/sql/configure', config);
+    const response = await api.post("/api/admin/sql/configure", config);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Configure SQL connection error:', error);
+    __DEV__ && console.error("Configure SQL connection error:", error);
     throw error;
   }
 };
 
 export const getSQLConnectionHistory = async () => {
   try {
-    const response = await api.get('/admin/sql/history');
+    const response = await api.get("/api/admin/sql/history");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get SQL connection history error:', error);
+    __DEV__ && console.error("Get SQL connection history error:", error);
     throw error;
   }
 };
@@ -1505,30 +1643,30 @@ export const getSQLConnectionHistory = async () => {
 // Master Settings API
 export const getSystemParameters = async () => {
   try {
-    const response = await api.get('/admin/settings/parameters');
+    const response = await api.get("/api/admin/settings/parameters");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get system parameters error:', error);
+    __DEV__ && console.error("Get system parameters error:", error);
     throw error;
   }
 };
 
 export const updateSystemParameters = async (parameters: any) => {
   try {
-    const response = await api.put('/admin/settings/parameters', parameters);
+    const response = await api.put("/api/admin/settings/parameters", parameters);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Update system parameters error:', error);
+    __DEV__ && console.error("Update system parameters error:", error);
     throw error;
   }
 };
 
 export const getSettingsCategories = async () => {
   try {
-    const response = await api.get('/admin/settings/categories');
+    const response = await api.get("/api/admin/settings/categories");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get settings categories error:', error);
+    __DEV__ && console.error("Get settings categories error:", error);
     throw error;
   }
 };
@@ -1536,10 +1674,10 @@ export const getSettingsCategories = async () => {
 export const resetSettingsToDefaults = async (category?: string) => {
   try {
     const params = category ? { category } : {};
-    const response = await api.post('/admin/settings/reset', null, { params });
+    const response = await api.post("/api/admin/settings/reset", null, { params });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Reset settings error:', error);
+    __DEV__ && console.error("Reset settings error:", error);
     throw error;
   }
 };
@@ -1547,20 +1685,20 @@ export const resetSettingsToDefaults = async (category?: string) => {
 // Settings API
 export const getSystemSettings = async () => {
   try {
-    const response = await api.get('/admin/settings/parameters');
+    const response = await api.get("/api/admin/settings/parameters");
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get system settings error:', error);
+    __DEV__ && console.error("Get system settings error:", error);
     throw error;
   }
 };
 
 export const updateSystemSettings = async (settings: any) => {
   try {
-    const response = await api.put('/admin/settings/parameters', settings);
+    const response = await api.put("/api/admin/settings/parameters", settings);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Update system settings error:', error);
+    __DEV__ && console.error("Update system settings error:", error);
     throw error;
   }
 };
@@ -1681,20 +1819,20 @@ export const settingsApi = {
 // Advanced Analytics API
 export const getVarianceTrend = async (days: number = 30) => {
   try {
-    const response = await api.get(`/variance/trend?days=${days}`);
+    const response = await api.get(`/api/variance/trend?days=${days}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get variance trend error:', error);
+    __DEV__ && console.error("Get variance trend error:", error);
     throw error;
   }
 };
 
 export const getStaffPerformance = async (days: number = 30) => {
   try {
-    const response = await api.get(`/metrics/staff-performance?days=${days}`);
+    const response = await api.get(`/api/metrics/staff-performance?days=${days}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get staff performance error:', error);
+    __DEV__ && console.error("Get staff performance error:", error);
     throw error;
   }
 };
@@ -1703,113 +1841,142 @@ export const getStaffPerformance = async (days: number = 30) => {
 // DYNAMIC FIELDS API
 // ==========================================
 
-export const getFieldDefinitions = async (enabledOnly: boolean = true, visibleOnly: boolean = false) => {
+export const getFieldDefinitions = async (
+  enabledOnly: boolean = true,
+  visibleOnly: boolean = false,
+) => {
   try {
     const params = new URLSearchParams({
       enabled_only: enabledOnly.toString(),
       visible_only: visibleOnly.toString(),
     });
-    const response = await api.get(`/dynamic-fields/definitions?${params.toString()}`);
+    const response = await api.get(`/api/dynamic-fields/definitions?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get field definitions error:', error);
+    __DEV__ && console.error("Get field definitions error:", error);
     throw error;
   }
 };
 
 export const createFieldDefinition = async (fieldData: any) => {
   try {
-    const response = await api.post('/dynamic-fields/definitions', fieldData);
+    const response = await api.post("/api/dynamic-fields/definitions", fieldData);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Create field definition error:', error);
+    __DEV__ && console.error("Create field definition error:", error);
     throw error;
   }
 };
 
 export const updateFieldDefinition = async (fieldId: string, updates: any) => {
   try {
-    const response = await api.put(`/dynamic-fields/definitions/${fieldId}`, updates);
+    const response = await api.put(`/api/dynamic-fields/definitions/${fieldId}`, updates);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Update field definition error:', error);
+    __DEV__ && console.error("Update field definition error:", error);
     throw error;
   }
 };
 
 export const deleteFieldDefinition = async (fieldId: string) => {
   try {
-    const response = await api.delete(`/dynamic-fields/definitions/${fieldId}`);
+    const response = await api.delete(`/api/dynamic-fields/definitions/${fieldId}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Delete field definition error:', error);
+    __DEV__ && console.error("Delete field definition error:", error);
     throw error;
   }
 };
 
 export const setFieldValue = async (itemCode: string, fieldName: string, value: any) => {
   try {
-    const response = await api.post('/dynamic-fields/values', {
+    const response = await api.post("/api/dynamic-fields/values", {
       item_code: itemCode,
       field_name: fieldName,
       value,
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Set field value error:', error);
+    __DEV__ && console.error("Set field value error:", error);
     throw error;
   }
 };
 
 export const setBulkFieldValues = async (itemCodes: string[], fieldValues: Record<string, any>) => {
   try {
-    const response = await api.post('/dynamic-fields/values/bulk', {
+    const response = await api.post("/api/dynamic-fields/values/bulk", {
       item_codes: itemCodes,
       field_values: fieldValues,
     });
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Set bulk field values error:', error);
+    __DEV__ && console.error("Set bulk field values error:", error);
     throw error;
   }
 };
 
 export const getItemFieldValues = async (itemCode: string) => {
   try {
-    const response = await api.get(`/dynamic-fields/values/${itemCode}`);
+    const response = await api.get(`/api/dynamic-fields/values/${itemCode}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get item field values error:', error);
+    __DEV__ && console.error("Get item field values error:", error);
     throw error;
   }
 };
 
-export const getItemsWithFields = async (fieldName?: string, fieldValue?: string, limit: number = 100, skip: number = 0) => {
+export const getItemsWithFields = async (
+  fieldName?: string,
+  fieldValue?: string,
+  limit: number = 100,
+  skip: number = 0,
+) => {
   try {
     const params = new URLSearchParams({
       limit: limit.toString(),
       skip: skip.toString(),
     });
-    if (fieldName) params.append('field_name', fieldName);
-    if (fieldValue) params.append('field_value', fieldValue);
+    if (fieldName) params.append("field_name", fieldName);
+    if (fieldValue) params.append("field_value", fieldValue);
 
-    const response = await api.get(`/dynamic-fields/items?${params.toString()}`);
+    const response = await api.get(`/api/dynamic-fields/items?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get items with fields error:', error);
+    __DEV__ && console.error("Get items with fields error:", error);
     throw error;
   }
 };
 
 export const getFieldStatistics = async (fieldName: string) => {
   try {
-    const response = await api.get(`/dynamic-fields/statistics/${fieldName}`);
+    const response = await api.get(`/api/dynamic-fields/statistics/${fieldName}`);
     return response.data;
   } catch (error: any) {
-    __DEV__ && console.error('Get field statistics error:', error);
+    __DEV__ && console.error("Get field statistics error:", error);
     throw error;
   }
 };
 
-
 export default api;
+
+// Batch sync offline queue
+export const syncBatch = async (operations: any[]) => {
+  try {
+    const response = await api.post("/api/sync/batch", { operations });
+    return response.data;
+  } catch (error: any) {
+    __DEV__ && console.error("Sync batch error:", error);
+    throw error;
+  }
+};
+
+// Get Watchtower stats
+export const getWatchtowerStats = async () => {
+  try {
+    const response = await api.get("/api/v2/sessions/watchtower");
+    return response.data;
+  } catch (error: any) {
+    __DEV__ && console.error("Get watchtower stats error:", error);
+    throw error;
+  }
+};

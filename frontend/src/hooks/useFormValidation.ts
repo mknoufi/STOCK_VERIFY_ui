@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
 type ValidationRule =
   | string
@@ -35,26 +35,26 @@ const getRuleMessage = (rule?: ValidationRule): string | undefined => {
   if (!rule) {
     return undefined;
   }
-  if (typeof rule === 'string') {
+  if (typeof rule === "string") {
     return rule;
   }
   return rule.message;
 };
 
 export function useFormValidation<TValues extends Record<string, any>>(
-  configs: FieldConfig<TValues>[]
+  configs: FieldConfig<TValues>[],
 ): FormValidationResult<TValues> {
   const initialValues = useMemo(() => {
     return configs.reduce((acc, config) => {
       const name = config.name as keyof TValues;
-      acc[name] = (config.defaultValue ?? '') as TValues[typeof name];
+      acc[name] = (config.defaultValue ?? "") as TValues[typeof name];
       return acc;
     }, {} as TValues);
   }, [configs]);
 
   const [values, setValues] = useState<TValues>(initialValues);
-  const [errors, setErrors] = useState<FormValidationResult<TValues>['errors']>({});
-  const [touched, setTouched] = useState<FormValidationResult<TValues>['touched']>({});
+  const [errors, setErrors] = useState<FormValidationResult<TValues>["errors"]>({});
+  const [touched, setTouched] = useState<FormValidationResult<TValues>["touched"]>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const configMap = useMemo(() => {
@@ -71,17 +71,17 @@ export function useFormValidation<TValues extends Record<string, any>>(
         return undefined;
       }
       const { rules } = config;
-      const trimmedValue = typeof value === 'string' ? value.trim() : value;
+      const trimmedValue = typeof value === "string" ? value.trim() : value;
 
       if (rules.required) {
-        if (trimmedValue === '' || trimmedValue === undefined || trimmedValue === null) {
+        if (trimmedValue === "" || trimmedValue === undefined || trimmedValue === null) {
           return getRuleMessage(rules.required) ?? `${config.label ?? name} is required`;
         }
       }
 
       if (
         rules.minLength &&
-        typeof trimmedValue === 'string' &&
+        typeof trimmedValue === "string" &&
         trimmedValue.length < rules.minLength.value
       ) {
         return rules.minLength.message;
@@ -89,7 +89,7 @@ export function useFormValidation<TValues extends Record<string, any>>(
 
       if (
         rules.pattern &&
-        typeof trimmedValue === 'string' &&
+        typeof trimmedValue === "string" &&
         !rules.pattern.value.test(trimmedValue)
       ) {
         return rules.pattern.message;
@@ -104,12 +104,12 @@ export function useFormValidation<TValues extends Record<string, any>>(
 
       return undefined;
     },
-    [configMap]
+    [configMap],
   );
 
   const validateAll = useCallback(() => {
-    const validationErrors: FormValidationResult<TValues>['errors'] = {};
-    (Object.keys(configMap) as Array<keyof TValues & string>).forEach((name) => {
+    const validationErrors: FormValidationResult<TValues>["errors"] = {};
+    (Object.keys(configMap) as (keyof TValues & string)[]).forEach((name) => {
       const errorMessage = validateField(name, values[name]);
       if (errorMessage) {
         validationErrors[name] = errorMessage;
@@ -119,34 +119,34 @@ export function useFormValidation<TValues extends Record<string, any>>(
     return validationErrors;
   }, [configMap, validateField, values]);
 
-  const setValue = useCallback<FormValidationResult<TValues>['setValue']>((name, value) => {
+  const setValue = useCallback<FormValidationResult<TValues>["setValue"]>((name, value) => {
     setValues((prev) => ({
       ...prev,
       [name]: value,
     }));
   }, []);
 
-  const setFieldTouched = useCallback<FormValidationResult<TValues>['setFieldTouched']>(
+  const setFieldTouched = useCallback<FormValidationResult<TValues>["setFieldTouched"]>(
     (name, isFieldTouched) => {
       setTouched((prev) => ({
         ...prev,
         [name]: isFieldTouched,
       }));
     },
-    []
+    [],
   );
 
-  const setFieldError = useCallback<FormValidationResult<TValues>['setFieldError']>(
+  const setFieldError = useCallback<FormValidationResult<TValues>["setFieldError"]>(
     (name, errorMessage) => {
       setErrors((prev) => ({
         ...prev,
         [name]: errorMessage,
       }));
     },
-    []
+    [],
   );
 
-  const handleSubmit: FormValidationResult<TValues>['handleSubmit'] = useCallback(
+  const handleSubmit: FormValidationResult<TValues>["handleSubmit"] = useCallback(
     (callback) => {
       return async () => {
         setIsSubmitting(true);
@@ -162,7 +162,7 @@ export function useFormValidation<TValues extends Record<string, any>>(
         }
       };
     },
-    [validateAll, values]
+    [validateAll, values],
   );
 
   return {

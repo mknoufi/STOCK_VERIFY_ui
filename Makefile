@@ -35,7 +35,7 @@ python-format:
 
 python-typecheck:
 	@echo "Running Python type checker..."
-	cd backend && mypy . --ignore-missing-imports --python-version=3.10 || true
+	mypy backend --ignore-missing-imports --python-version=3.10 || true
 
 # Node.js frontend targets
 .PHONY: node-ci node-test node-lint node-typecheck

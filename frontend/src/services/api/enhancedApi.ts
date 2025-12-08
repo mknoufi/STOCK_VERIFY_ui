@@ -58,7 +58,7 @@ export class EnhancedApiService {
     return this.withLoading(
       `barcode-${barcode}`,
       async () => {
-        const response = await api.get(`/erp/items/barcode/${encodeURIComponent(barcode)}`);
+        const response = await api.get(`/api/erp/items/barcode/${encodeURIComponent(barcode)}`);
         return response.data;
       },
       { cache: true, cacheTtl: 600000 } // Cache for 10 minutes
@@ -72,7 +72,7 @@ export class EnhancedApiService {
     return this.withLoading(
       `sessions-${page}`,
       async () => {
-        const response = await api.get(`/sessions?page=${page}&page_size=${pageSize}`);
+        const response = await api.get(`/api/sessions?page=${page}&page_size=${pageSize}`);
         return response.data;
       },
       { cache: false } // Don't cache session data (changes frequently)

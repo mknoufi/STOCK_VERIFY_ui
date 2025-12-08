@@ -1,5 +1,4 @@
-import axios from 'axios';
-import apiClient from '../httpClient';
+import apiClient from "../httpClient";
 
 export interface Note {
   id?: string;
@@ -11,12 +10,12 @@ export interface Note {
 }
 
 export async function listNotes(params?: { q?: string; page?: number; pageSize?: number }) {
-  const res = await apiClient.get('/api/notes', { params });
+  const res = await apiClient.get("/api/notes", { params });
   return res.data;
 }
 
 export async function createNote(note: Note) {
-  const res = await apiClient.post('/api/notes', note);
+  const res = await apiClient.post("/api/notes", note);
   return res.data;
 }
 

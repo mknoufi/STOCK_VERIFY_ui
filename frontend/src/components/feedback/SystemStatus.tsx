@@ -23,7 +23,7 @@ export const SystemStatus: React.FC = () => {
     const checkHealth = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/health');
+            const response = await api.get('/api/health');
             setStatus(response.data);
         } catch {
             setStatus({

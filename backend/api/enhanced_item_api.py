@@ -244,9 +244,11 @@ def _build_relevance_stage(query: str) -> Dict[str, Any]:
 def _build_match_conditions(
     query: str,
     search_fields: List[str],
-    category: Optional[str],
-    warehouse: Optional[str],
-    stock_level: Optional[str],
+    category: Optional[str] = None,
+    warehouse: Optional[str] = None,
+    floor: Optional[str] = None,
+    rack: Optional[str] = None,
+    stock_level: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build match conditions for search pipeline"""
     match_conditions = {"$or": []}
@@ -260,6 +262,12 @@ def _build_match_conditions(
 
     if warehouse:
         match_conditions["warehouse"] = {"$regex": warehouse, "$options": "i"}
+
+    if floor:
+        match_conditions["floor"] = {"$regex": floor, "$options": "i"}
+
+    if rack:
+        match_conditions["rack"] = {"$regex": rack, "$options": "i"}
 
     if stock_level:
         if stock_level == "zero":
@@ -283,13 +291,15 @@ def _build_search_pipeline(
     category: Optional[str],
     warehouse: Optional[str],
     stock_level: Optional[str],
+    floor: Optional[str],
+    rack: Optional[str],
 ) -> List[Dict[str, Any]]:
     """Build MongoDB aggregation pipeline for advanced search"""
     pipeline = []
 
     # Match stage - search criteria
     match_conditions = _build_match_conditions(
-        query, search_fields, category, warehouse, stock_level
+        query, search_fields, category, warehouse, stock_level, floor, rack
     )
     pipeline.append({"$match": match_conditions})
 
@@ -329,6 +339,8 @@ async def advanced_item_search(
     sort_by: str = Query("relevance", description="Sort by: relevance, name, code, stock"),
     category: Optional[str] = Query(None, description="Filter by category"),
     warehouse: Optional[str] = Query(None, description="Filter by warehouse"),
+    floor: Optional[str] = Query(None, description="Filter by floor"),
+    rack: Optional[str] = Query(None, description="Filter by rack"),
     stock_level: Optional[str] = Query(
         None, description="Filter by stock: low, medium, high, zero"
     ),
@@ -350,6 +362,8 @@ async def advanced_item_search(
             category,
             warehouse,
             stock_level,
+            floor,
+            rack,
         )
 
         # Execute aggregation
@@ -385,6 +399,8 @@ async def advanced_item_search(
                 "filters": {
                     "category": category,
                     "warehouse": warehouse,
+                    "floor": floor,
+                    "rack": rack,
                     "stock_level": stock_level,
                 },
                 "sort_by": sort_by,
@@ -409,6 +425,37 @@ async def advanced_item_search(
                 "error": str(e),
             },
         )
+
+
+@enhanced_item_router.get("/locations")
+async def get_unique_locations(current_user: dict = Depends(get_current_user)):
+    """
+    Get unique floors and racks for filtering
+    """
+    try:
+        pipeline = [
+            {
+                "$group": {
+                    "_id": None,
+                    "floors": {"$addToSet": "$floor"},
+                    "racks": {"$addToSet": "$rack"},
+                }
+            }
+        ]
+
+        result = await db.erp_items.aggregate(pipeline).to_list(1)
+
+        if not result:
+            return {"floors": [], "racks": []}
+
+        # Filter out None/null values and sort
+        floors = sorted([f for f in result[0].get("floors", []) if f])
+        racks = sorted([r for r in result[0].get("racks", []) if r])
+
+        return {"floors": floors, "racks": racks}
+    except Exception as e:
+        logger.error(f"Failed to fetch locations: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch locations: {str(e)}")
 
 
 @enhanced_item_router.get("/performance/stats")

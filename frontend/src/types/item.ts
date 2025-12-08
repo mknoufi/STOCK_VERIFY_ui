@@ -14,6 +14,7 @@ export interface Item {
   quantity?: number;
   mrp_variants?: any[];
   mrp_history?: any[];
+  image_url?: string;
 }
 
 export interface SearchResult {
@@ -26,4 +27,5 @@ export interface SearchResult {
   subcategory?: string;
   uom_name?: string;
   warehouse?: string;
+  image_url?: string;
 }

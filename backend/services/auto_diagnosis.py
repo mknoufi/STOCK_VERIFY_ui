@@ -690,7 +690,7 @@ class AutoDiagnosisService:
 
 async def run_nightly_diagnosis():
     """Run nightly diagnosis and health check"""
-    print(f"Starting nightly diagnosis at {datetime.utcnow().isoformat()}")
+    logger.info(f"Starting nightly diagnosis at {datetime.utcnow().isoformat()}")
     service = AutoDiagnosisService()
 
     # Add some basic health checks
@@ -701,14 +701,13 @@ async def run_nightly_diagnosis():
     service.register_health_check(check_db)
 
     report = await service.health_check()
-    print("Health Report:")
-    print(report)
+    logger.info(f"Health Report: {report}")
 
     # Here you would typically send this report to an admin or log it
     if report["status"] != "healthy":
-        print("WARNING: System health is degraded!")
+        logger.warning("System health is degraded!")
         for diagnosis in report["diagnoses"]:
-            print(f" - {diagnosis['category']}: {diagnosis['root_cause']}")
+            logger.warning(f" - {diagnosis['category']}: {diagnosis['root_cause']}")
 
 
 if __name__ == "__main__":

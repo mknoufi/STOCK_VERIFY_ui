@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 
 class MetricCategory(Enum):
     """Categories for evaluation metrics."""
+
     API_PERFORMANCE = "api_performance"
     BUSINESS_LOGIC = "business_logic"
     DATA_QUALITY = "data_quality"
@@ -25,6 +26,7 @@ class MetricCategory(Enum):
 
 class MetricStatus(Enum):
     """Status of a metric evaluation."""
+
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
@@ -34,6 +36,7 @@ class MetricStatus(Enum):
 @dataclass
 class Metric:
     """Individual metric measurement."""
+
     name: str
     value: float
     unit: str
@@ -80,6 +83,7 @@ class Metric:
 @dataclass
 class EvaluationReport:
     """Complete evaluation report with all metrics and summary."""
+
     metrics: List[Metric] = field(default_factory=list)
     start_time: datetime = field(default_factory=datetime.now)
     end_time: Optional[datetime] = None
@@ -114,7 +118,9 @@ class EvaluationReport:
         if total == 0:
             return 1.0
         # Both PASSED and WARNING are considered successful (WARNING means at threshold)
-        successful = sum(1 for m in self.metrics if m.status in [MetricStatus.PASSED, MetricStatus.WARNING])
+        successful = sum(
+            1 for m in self.metrics if m.status in [MetricStatus.PASSED, MetricStatus.WARNING]
+        )
         return successful / total
 
     def get_metrics_by_category(self, category: MetricCategory) -> List[Metric]:
@@ -131,9 +137,8 @@ class EvaluationReport:
             "success_rate": f"{self.success_rate * 100:.1f}%",
             "duration_seconds": self.duration_seconds,
             "categories": {
-                cat.value: len(self.get_metrics_by_category(cat))
-                for cat in MetricCategory
-            }
+                cat.value: len(self.get_metrics_by_category(cat)) for cat in MetricCategory
+            },
         }
 
     def to_dict(self) -> Dict[str, Any]:
@@ -179,19 +184,19 @@ class EvaluationReport:
         print(f"   Success Rate: {summary['success_rate']}")
         print(f"   Duration: {summary['duration_seconds']:.2f}s")
 
-        print(f"\n📈 Metrics Breakdown:")
+        print("\n📈 Metrics Breakdown:")
         print(f"   ✅ Passed:   {summary['passed']}")
         print(f"   ⚠️  Warnings: {summary['warnings']}")
         print(f"   ❌ Failed:   {summary['failed']}")
 
-        print(f"\n📁 By Category:")
-        for cat, count in summary['categories'].items():
+        print("\n📁 By Category:")
+        for cat, count in summary["categories"].items():
             if count > 0:
                 print(f"   {cat}: {count} metrics")
 
         # Show failed metrics
         if self.failed_count > 0:
-            print(f"\n❌ Failed Metrics:")
+            print("\n❌ Failed Metrics:")
             for m in self.metrics:
                 if m.status == MetricStatus.FAILED:
                     threshold_info = f" (threshold: {m.threshold}{m.unit})" if m.threshold else ""
@@ -523,26 +528,18 @@ class MetricsCollector:
 
         # Mean
         mean = statistics.mean(latencies)
-        metrics["mean"] = self.record_latency(
-            f"{name}_mean", mean, threshold=p99_threshold * 0.5
-        )
+        metrics["mean"] = self.record_latency(f"{name}_mean", mean, threshold=p99_threshold * 0.5)
 
         # P50 (median)
         p50 = sorted_latencies[int(n * 0.5)]
-        metrics["p50"] = self.record_latency(
-            f"{name}_p50", p50, threshold=p99_threshold * 0.6
-        )
+        metrics["p50"] = self.record_latency(f"{name}_p50", p50, threshold=p99_threshold * 0.6)
 
         # P95
         p95 = sorted_latencies[int(n * 0.95)]
-        metrics["p95"] = self.record_latency(
-            f"{name}_p95", p95, threshold=p99_threshold * 0.8
-        )
+        metrics["p95"] = self.record_latency(f"{name}_p95", p95, threshold=p99_threshold * 0.8)
 
         # P99
         p99 = sorted_latencies[int(n * 0.99)] if n >= 100 else sorted_latencies[-1]
-        metrics["p99"] = self.record_latency(
-            f"{name}_p99", p99, threshold=p99_threshold
-        )
+        metrics["p99"] = self.record_latency(f"{name}_p99", p99, threshold=p99_threshold)
 
         return metrics

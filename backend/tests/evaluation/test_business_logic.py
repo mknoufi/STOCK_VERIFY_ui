@@ -13,7 +13,7 @@ Run with: pytest backend/tests/evaluation/test_business_logic.py -v
 
 import pytest
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import Tuple
 
 from .metrics_collector import MetricsCollector
 from .evaluators import BusinessLogicEvaluator
@@ -51,18 +51,15 @@ class TestVarianceCalculations:
         VarianceCase(100, 100, 0, True, 0, 0.0, "Exact match"),
         VarianceCase(100, 95, 0, True, -5, -5.0, "Under count"),
         VarianceCase(100, 110, 0, True, 10, 10.0, "Over count"),
-
         # Damage handling
         VarianceCase(100, 90, 10, True, 0, 0.0, "Damage included - no variance"),
         VarianceCase(100, 90, 10, False, -10, -10.0, "Damage excluded - shows variance"),
         VarianceCase(100, 85, 10, True, -5, -5.0, "Partial damage included"),
-
         # Edge cases
         VarianceCase(0, 5, 0, True, 5, 100.0, "New stock found (zero ERP)"),
         VarianceCase(50, 0, 0, True, -50, -100.0, "All stock missing"),
         VarianceCase(0, 0, 0, True, 0, 0.0, "Both zero"),
         VarianceCase(1, 1, 0, True, 0, 0.0, "Single item match"),
-
         # Decimal quantities
         VarianceCase(100.5, 100.5, 0, True, 0, 0.0, "Decimal exact match"),
         VarianceCase(100.0, 99.5, 0, True, -0.5, -0.5, "Small variance"),
@@ -115,7 +112,9 @@ class TestVarianceCalculations:
                 correct += 1
             else:
                 print(f"FAIL: {case.description}")
-                print(f"  Expected: variance={case.expected_variance}, pct={case.expected_variance_pct}")
+                print(
+                    f"  Expected: variance={case.expected_variance}, pct={case.expected_variance_pct}"
+                )
                 print(f"  Got: variance={variance}, pct={variance_pct}")
 
         accuracy = correct / total
@@ -127,9 +126,9 @@ class TestVarianceCalculations:
     def test_variance_threshold_detection(self, collector: MetricsCollector):
         """Test variance threshold detection logic."""
         thresholds = {
-            "low": 5.0,      # 5% variance
+            "low": 5.0,  # 5% variance
             "medium": 10.0,  # 10% variance
-            "high": 20.0,    # 20% variance
+            "high": 20.0,  # 20% variance
             "critical": 50.0,  # 50% variance
         }
 
@@ -193,10 +192,10 @@ class TestSessionStateMachine:
         """Test that invalid state transitions are blocked."""
         invalid_cases = [
             ("created", "completed"),  # Can't skip active
-            ("created", "paused"),     # Can't pause before active
-            ("completed", "active"),   # Can't reopen completed
-            ("completed", "paused"),   # Can't pause completed
-            ("cancelled", "active"),   # Can't reopen cancelled
+            ("created", "paused"),  # Can't pause before active
+            ("completed", "active"),  # Can't reopen completed
+            ("completed", "paused"),  # Can't pause completed
+            ("cancelled", "active"),  # Can't reopen cancelled
             ("cancelled", "completed"),  # Can't complete cancelled
         ]
 
@@ -226,25 +225,17 @@ class TestCountAggregation:
         """Test count total aggregation."""
         test_cases = [
             # (count_lines, expected_total, expected_damaged)
-            (
-                [{"counted_qty": 10, "damaged_qty": 0}],
-                10, 0
-            ),
-            (
-                [{"counted_qty": 5, "damaged_qty": 2}, {"counted_qty": 5, "damaged_qty": 1}],
-                10, 3
-            ),
-            (
-                [{"counted_qty": 0, "damaged_qty": 0}],
-                0, 0
-            ),
+            ([{"counted_qty": 10, "damaged_qty": 0}], 10, 0),
+            ([{"counted_qty": 5, "damaged_qty": 2}, {"counted_qty": 5, "damaged_qty": 1}], 10, 3),
+            ([{"counted_qty": 0, "damaged_qty": 0}], 0, 0),
             (
                 [
                     {"counted_qty": 100, "damaged_qty": 10},
                     {"counted_qty": 50, "damaged_qty": 5},
                     {"counted_qty": 25, "damaged_qty": 0},
                 ],
-                175, 15
+                175,
+                15,
             ),
         ]
 
@@ -301,22 +292,35 @@ class TestAuthorizationRules:
 
     ROLE_PERMISSIONS = {
         "staff": {
-            "session.create", "session.read_own",
-            "count_line.create", "count_line.read_own",
+            "session.create",
+            "session.read_own",
+            "count_line.create",
+            "count_line.read_own",
             "item.read",
         },
         "supervisor": {
-            "session.create", "session.read_own", "session.read_all",
-            "count_line.create", "count_line.read_own", "count_line.read_all",
+            "session.create",
+            "session.read_own",
+            "session.read_all",
+            "count_line.create",
+            "count_line.read_own",
+            "count_line.read_all",
             "count_line.approve",
             "item.read",
             "export.all",
         },
         "admin": {
-            "session.create", "session.read_own", "session.read_all", "session.delete",
-            "count_line.create", "count_line.read_own", "count_line.read_all",
-            "count_line.approve", "count_line.delete",
-            "item.read", "item.update",
+            "session.create",
+            "session.read_own",
+            "session.read_all",
+            "session.delete",
+            "count_line.create",
+            "count_line.read_own",
+            "count_line.read_all",
+            "count_line.approve",
+            "count_line.delete",
+            "item.read",
+            "item.update",
             "user.manage",
             "settings.manage",
             "sync.trigger",
@@ -388,12 +392,14 @@ class TestFullBusinessLogicEvaluation:
         logic_evaluator: BusinessLogicEvaluator,
     ):
         """Run complete business logic evaluation."""
-        results = await logic_evaluator.evaluate()
+        await logic_evaluator.evaluate()
 
         # Generate report
-        report = collector.finish_evaluation(metadata={
-            "test_type": "business_logic_evaluation",
-        })
+        report = collector.finish_evaluation(
+            metadata={
+                "test_type": "business_logic_evaluation",
+            }
+        )
 
         # Print summary
         report.print_summary()

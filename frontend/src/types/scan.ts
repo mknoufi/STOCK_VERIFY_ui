@@ -36,6 +36,7 @@ export interface CreateCountLinePayload {
   item_code: string;
   counted_qty: number;
   damaged_qty?: number;
+  damage_included?: boolean;
   non_returnable_damaged_qty?: number;
   variance_reason?: string | null;
   variance_note?: string | null;
@@ -52,6 +53,8 @@ export interface CreateCountLinePayload {
   mrp_source?: string;
   variant_id?: string;
   variant_barcode?: string;
+  category_correction?: string;
+  subcategory_correction?: string;
 }
 
 export interface ApiErrorResponse {

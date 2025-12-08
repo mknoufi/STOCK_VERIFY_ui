@@ -2,7 +2,7 @@
  * Item Verification API Service
  * Handles verification, filtering, CSV export, and variance tracking
  */
-import api from '../httpClient';
+import api from "../httpClient";
 
 export interface VerificationRequest {
   verified: boolean;
@@ -121,19 +121,17 @@ export class ItemVerificationAPI {
    */
   static async verifyItem(
     itemCode: string,
-    request: VerificationRequest
+    request: VerificationRequest,
   ): Promise<VerificationResponse> {
     try {
       const response = await api.patch(
         `/v2/erp/items/${encodeURIComponent(itemCode)}/verify`,
-        request
+        request,
       );
       return response.data;
     } catch (error: unknown) {
-      __DEV__ && console.error('Verification failed:', error);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'Verification failed';
+      __DEV__ && console.error("Verification failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Verification failed";
       throw new Error(errorMessage);
     }
   }
@@ -141,35 +139,30 @@ export class ItemVerificationAPI {
   /**
    * Get filtered items
    */
-  static async getFilteredItems(
-    params: FilteredItemsParams
-  ): Promise<FilteredItemsResponse> {
+  static async getFilteredItems(params: FilteredItemsParams): Promise<FilteredItemsResponse> {
     try {
       const queryParams = new URLSearchParams();
 
-      if (params.category) queryParams.append('category', params.category);
-      if (params.subcategory) queryParams.append('subcategory', params.subcategory);
-      if (params.floor) queryParams.append('floor', params.floor);
-      if (params.rack) queryParams.append('rack', params.rack);
-      if (params.warehouse) queryParams.append('warehouse', params.warehouse);
-      if (params.uom_code) queryParams.append('uom_code', params.uom_code);
-      if (params.verified !== undefined)
-        queryParams.append('verified', params.verified.toString());
-      if (params.search) queryParams.append('search', params.search);
-      if (params.limit) queryParams.append('limit', params.limit.toString());
-      if (params.skip) queryParams.append('skip', params.skip.toString());
+      if (params.category) queryParams.append("category", params.category);
+      if (params.subcategory) queryParams.append("subcategory", params.subcategory);
+      if (params.floor) queryParams.append("floor", params.floor);
+      if (params.rack) queryParams.append("rack", params.rack);
+      if (params.warehouse) queryParams.append("warehouse", params.warehouse);
+      if (params.uom_code) queryParams.append("uom_code", params.uom_code);
+      if (params.verified !== undefined) queryParams.append("verified", params.verified.toString());
+      if (params.search) queryParams.append("search", params.search);
+      if (params.limit) queryParams.append("limit", params.limit.toString());
+      if (params.skip) queryParams.append("skip", params.skip.toString());
 
-      const response = await api.get(
-        `/v2/erp/items/filtered?${queryParams.toString()}`
-      );
+      const response = await api.get(`/api/v2/erp/items/filtered?${queryParams.toString()}`);
       return response.data;
     } catch (error: any) {
-      __DEV__ && console.error('Get filtered items failed:', error);
+      __DEV__ && console.error("Get filtered items failed:", error);
       throw new Error(
         error.response?.data?.detail?.message ||
-        error.response?.data?.detail ||
-        error.message ||
-        'Failed to get filtered items'
+          error.response?.data?.detail ||
+          error.message ||
+          "Failed to get filtered items",
       );
     }
   }
@@ -181,26 +174,25 @@ export class ItemVerificationAPI {
     try {
       const queryParams = new URLSearchParams();
 
-      if (params.category) queryParams.append('category', params.category);
-      if (params.subcategory) queryParams.append('subcategory', params.subcategory);
-      if (params.floor) queryParams.append('floor', params.floor);
-      if (params.rack) queryParams.append('rack', params.rack);
-      if (params.warehouse) queryParams.append('warehouse', params.warehouse);
-      if (params.verified !== undefined)
-        queryParams.append('verified', params.verified.toString());
-      if (params.search) queryParams.append('search', params.search);
+      if (params.category) queryParams.append("category", params.category);
+      if (params.subcategory) queryParams.append("subcategory", params.subcategory);
+      if (params.floor) queryParams.append("floor", params.floor);
+      if (params.rack) queryParams.append("rack", params.rack);
+      if (params.warehouse) queryParams.append("warehouse", params.warehouse);
+      if (params.verified !== undefined) queryParams.append("verified", params.verified.toString());
+      if (params.search) queryParams.append("search", params.search);
 
-      const response = await api.get(`/v2/erp/items/export/csv?${queryParams.toString()}`, {
-        responseType: 'blob',
+      const response = await api.get(`/api/v2/erp/items/export/csv?${queryParams.toString()}`, {
+        responseType: "blob",
       });
       return response.data;
     } catch (error: any) {
-      __DEV__ && console.error('CSV export failed:', error);
+      __DEV__ && console.error("CSV export failed:", error);
       throw new Error(
         error.response?.data?.detail?.message ||
-        error.response?.data?.detail ||
-        error.message ||
-        'CSV export failed'
+          error.response?.data?.detail ||
+          error.message ||
+          "CSV export failed",
       );
     }
   }
@@ -220,25 +212,23 @@ export class ItemVerificationAPI {
     try {
       const queryParams = new URLSearchParams();
 
-      if (params.category) queryParams.append('category', params.category);
-      if (params.floor) queryParams.append('floor', params.floor);
-      if (params.rack) queryParams.append('rack', params.rack);
-      if (params.warehouse) queryParams.append('warehouse', params.warehouse);
-      if (params.search) queryParams.append('search', params.search);
-      if (params.limit) queryParams.append('limit', params.limit.toString());
-      if (params.skip) queryParams.append('skip', params.skip.toString());
+      if (params.category) queryParams.append("category", params.category);
+      if (params.floor) queryParams.append("floor", params.floor);
+      if (params.rack) queryParams.append("rack", params.rack);
+      if (params.warehouse) queryParams.append("warehouse", params.warehouse);
+      if (params.search) queryParams.append("search", params.search);
+      if (params.limit) queryParams.append("limit", params.limit.toString());
+      if (params.skip) queryParams.append("skip", params.skip.toString());
 
-      const response = await api.get(
-        `/v2/erp/items/variances?${queryParams.toString()}`
-      );
+      const response = await api.get(`/api/v2/erp/items/variances?${queryParams.toString()}`);
       return response.data;
     } catch (error: any) {
-      __DEV__ && console.error('Get variances failed:', error);
+      __DEV__ && console.error("Get variances failed:", error);
       throw new Error(
         error.response?.data?.detail?.message ||
-        error.response?.data?.detail ||
-        error.message ||
-        'Failed to get variances'
+          error.response?.data?.detail ||
+          error.message ||
+          "Failed to get variances",
       );
     }
   }
@@ -252,15 +242,15 @@ export class ItemVerificationAPI {
     count: number;
   }> {
     try {
-      const response = await api.get('/v2/erp/items/live/users');
+      const response = await api.get("/api/v2/erp/items/live/users");
       return response.data;
     } catch (error: any) {
-      __DEV__ && console.error('Get live users failed:', error);
+      __DEV__ && console.error("Get live users failed:", error);
       throw new Error(
         error.response?.data?.detail?.message ||
-        error.response?.data?.detail ||
-        error.message ||
-        'Failed to get live users'
+          error.response?.data?.detail ||
+          error.message ||
+          "Failed to get live users",
       );
     }
   }
@@ -271,6 +261,20 @@ export class ItemVerificationAPI {
   static async getLiveVerifications(limit: number = 10): Promise<LiveVerification[]> {
     const response = await api.get(`/api/verification/live-feed?limit=${limit}`);
     return response.data;
+  }
+
+  /**
+   * Get unique locations (floors and racks)
+   */
+  static async getLocations(): Promise<{ floors: string[]; racks: string[] }> {
+    try {
+      const response = await api.get("/api/v2/erp/items/locations");
+      return response.data;
+    } catch (error: any) {
+      __DEV__ && console.error("Get locations failed:", error);
+      // Return empty lists on error to prevent UI crash
+      return { floors: [], racks: [] };
+    }
   }
 
   /**
@@ -294,20 +298,20 @@ export class ItemVerificationAPI {
    */
   static async updateItemMaster(
     itemCode: string,
-    request: ItemUpdateRequest
+    request: ItemUpdateRequest,
   ): Promise<{ success: boolean; message: string }> {
     try {
       const response = await api.patch(
-        `/v2/erp/items/${encodeURIComponent(itemCode)}/update-master`,
-        request
+        `/api/v2/erp/items/${encodeURIComponent(itemCode)}/update-master`,
+        request,
       );
       return response.data;
     } catch (error: any) {
-      __DEV__ && console.error('Master update failed:', error);
+      __DEV__ && console.error("Master update failed:", error);
       throw new Error(
         error.response?.data?.detail?.message ||
-        error.response?.data?.detail ||
-        'Failed to update item details'
+          error.response?.data?.detail ||
+          "Failed to update item details",
       );
     }
   }
@@ -318,12 +322,12 @@ export class ItemVerificationAPI {
   static async getVarianceDetails(itemCode: string, sessionId: string): Promise<any> {
     try {
       // First try to find the count line
-      const response = await api.get(`/count-lines`, {
+      const response = await api.get(`/api/count-lines`, {
         params: {
           item_code: itemCode,
           session_id: sessionId,
-          limit: 1
-        }
+          limit: 1,
+        },
       });
 
       if (response.data && response.data.items && response.data.items.length > 0) {
@@ -340,7 +344,7 @@ export class ItemVerificationAPI {
           verified_qty: countLine.counted_qty,
           verified_by: countLine.username,
           verified_at: countLine.counted_at,
-          count_line_id: countLine.id
+          count_line_id: countLine.id,
         };
       }
 
@@ -348,7 +352,7 @@ export class ItemVerificationAPI {
       // This is less ideal for "approval" workflow which is based on CountLine
       return null;
     } catch (error) {
-      __DEV__ && console.error('Failed to get variance details:', error);
+      __DEV__ && console.error("Failed to get variance details:", error);
       throw error;
     }
   }

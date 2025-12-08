@@ -1,0 +1,30 @@
+# GitHub Template Repository Configuration
+# This file configures the repository as a template for creating new Stock Verify instances
+
+name: Stock Verify Template
+description: A production-ready stock verification system with FastAPI backend and React Native frontend
+
+# Files to exclude when creating a new repository from this template
+exclude:
+  - .github/workflows/  # Let new instances configure their own CI/CD
+  - backend.pid
+  - backend_port.json
+  - .coverage
+  - tmp/
+  - .venv311/
+  - node_modules/
+  - frontend/.expo/
+  - frontend/dist/
+
+# Suggested initial setup steps for new instances
+setup:
+  - name: "Configure Environment Variables"
+    description: "Copy .env.production.example to .env and configure your settings"
+  - name: "Generate JWT Secrets"
+    description: "Run: openssl rand -base64 32 to generate secure JWT secrets"
+  - name: "Configure Database Connections"
+    description: "Update MongoDB and SQL Server connection strings in backend/config.py"
+  - name: "Install Dependencies"
+    description: "Backend: pip install -r backend/requirements.txt | Frontend: cd frontend && npm install"
+  - name: "Run Initial Setup"
+    description: "Execute ./init-new-instance.sh to initialize your new instance"

@@ -1,7 +1,7 @@
 # Makefile for STOCK_VERIFY CI and Development Tasks
 # Usage: make <target>
 
-.PHONY: help ci test lint format typecheck pre-commit install clean
+.PHONY: help ci test lint format typecheck pre-commit install clean eval
 
 help:
 	@echo "Available targets:"
@@ -13,6 +13,8 @@ help:
 	@echo "  make pre-commit   - Run pre-commit hooks"
 	@echo "  make install      - Install dependencies"
 	@echo "  make clean        - Clean build artifacts"
+	@echo "  make eval         - Run evaluation framework"
+	@echo "  make eval-report  - Run evaluation with markdown report"
 
 # Python backend targets
 .PHONY: python-ci python-test python-lint python-format python-typecheck
@@ -89,3 +91,22 @@ clean:
 	find . -type d -name ".mypy_cache" -exec rm -r {} + 2>/dev/null || true
 	find . -type d -name "node_modules" -prune -o -type d -name ".next" -exec rm -r {} + 2>/dev/null || true
 	@echo "✅ Cleanup complete!"
+
+# Evaluation Framework
+.PHONY: eval eval-report eval-performance eval-security
+
+eval:
+	@echo "Running evaluation framework..."
+	python -m backend.tests.evaluation.run_evaluation --all
+
+eval-report:
+	@echo "Running evaluation with markdown report..."
+	python -m backend.tests.evaluation.run_evaluation --all --format md --verbose
+
+eval-performance:
+	@echo "Running performance evaluation..."
+	python -m backend.tests.evaluation.run_evaluation --performance --verbose
+
+eval-security:
+	@echo "Running security evaluation..."
+	cd backend && pytest tests/evaluation/test_security_evaluation.py -v

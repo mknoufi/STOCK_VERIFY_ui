@@ -16,7 +16,10 @@ import {
   TextStyle,
 } from "react-native";
 import * as Haptics from "expo-haptics";
-import { modernColors, modernBorderRadius } from "../../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernBorderRadius,
+} from "../../styles/modernDesignSystem";
 
 interface AnimatedInputProps extends TextInputProps {
   label?: string;
@@ -82,7 +85,14 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
 
       onFocus?.(e);
     },
-    [borderColor, labelPosition, labelScale, shadowOpacity, hapticOnFocus, onFocus]
+    [
+      borderColor,
+      labelPosition,
+      labelScale,
+      shadowOpacity,
+      hapticOnFocus,
+      onFocus,
+    ],
   );
 
   const handleBlur = useCallback(
@@ -115,7 +125,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
 
       onBlur?.(e);
     },
-    [borderColor, labelPosition, labelScale, shadowOpacity, value, onBlur]
+    [borderColor, labelPosition, labelScale, shadowOpacity, value, onBlur],
   );
 
   const animatedBorderColor = borderColor.interpolate({
@@ -195,11 +205,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
           value={value}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          style={[
-            styles.input,
-            props.style,
-            { paddingTop: label ? 20 : 12 },
-          ]}
+          style={[styles.input, props.style, { paddingTop: label ? 20 : 12 }]}
           placeholderTextColor={modernColors.text.tertiary}
         />
       </Animated.View>

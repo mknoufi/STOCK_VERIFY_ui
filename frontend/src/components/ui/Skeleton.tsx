@@ -115,11 +115,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
           ]}
         >
           <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255, 255, 255, 0.4)",
-              "transparent",
-            ]}
+            colors={["transparent", "rgba(255, 255, 255, 0.4)", "transparent"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFillObject}
@@ -189,7 +185,9 @@ export const SkeletonCard: React.FC<{ style?: ViewStyle }> = ({ style }) => {
 };
 
 // List item skeleton
-export const SkeletonListItem: React.FC<{ style?: ViewStyle }> = ({ style }) => {
+export const SkeletonListItem: React.FC<{ style?: ViewStyle }> = ({
+  style,
+}) => {
   return (
     <View style={[styles.listItem, style]}>
       <Skeleton width={40} height={40} borderRadius={8} />

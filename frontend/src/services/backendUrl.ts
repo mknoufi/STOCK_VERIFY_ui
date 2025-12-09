@@ -46,4 +46,3 @@ export const initializeBackendURL = () => {
 };
 
 export const getBackendURL = () => BACKEND_URL;
-

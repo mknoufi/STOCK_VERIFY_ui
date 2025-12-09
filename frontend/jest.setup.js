@@ -5,8 +5,11 @@ const { View, Text } = require("react-native");
 const MockIcon = ({ name = "icon", size = 16, color = "black", testID }) =>
   React.createElement(
     View,
-    { style: { width: size, height: size }, testID: testID || `mock-icon-${name}` },
-    React.createElement(Text, { style: { color } }, name)
+    {
+      style: { width: size, height: size },
+      testID: testID || `mock-icon-${name}`,
+    },
+    React.createElement(Text, { style: { color } }, name),
   );
 
 jest.mock("@expo/vector-icons", () => ({

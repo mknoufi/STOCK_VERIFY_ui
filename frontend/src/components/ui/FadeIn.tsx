@@ -25,8 +25,16 @@ export const FadeIn: React.FC<FadeInProps> = ({
   distance = 20,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(direction === "up" ? distance : direction === "down" ? -distance : 0)).current;
-  const translateX = useRef(new Animated.Value(direction === "left" ? distance : direction === "right" ? -distance : 0)).current;
+  const translateY = useRef(
+    new Animated.Value(
+      direction === "up" ? distance : direction === "down" ? -distance : 0,
+    ),
+  ).current;
+  const translateX = useRef(
+    new Animated.Value(
+      direction === "left" ? distance : direction === "right" ? -distance : 0,
+    ),
+  ).current;
 
   useEffect(() => {
     const animations = [
@@ -45,7 +53,7 @@ export const FadeIn: React.FC<FadeInProps> = ({
           duration,
           delay,
           useNativeDriver: true,
-        })
+        }),
       );
     }
 
@@ -56,7 +64,7 @@ export const FadeIn: React.FC<FadeInProps> = ({
           duration,
           delay,
           useNativeDriver: true,
-        })
+        }),
       );
     }
 
@@ -64,7 +72,10 @@ export const FadeIn: React.FC<FadeInProps> = ({
   }, [opacity, translateY, translateX, delay, duration, direction]);
 
   const getTransform = () => {
-    const transforms: { translateY?: Animated.Value; translateX?: Animated.Value }[] = [];
+    const transforms: {
+      translateY?: Animated.Value;
+      translateX?: Animated.Value;
+    }[] = [];
 
     if (direction === "up" || direction === "down") {
       transforms.push({ translateY });

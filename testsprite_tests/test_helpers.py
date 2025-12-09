@@ -163,4 +163,3 @@ async def login_user(
     except Exception as e:
         print(f"Login failed: {str(e)}")
         return False
-

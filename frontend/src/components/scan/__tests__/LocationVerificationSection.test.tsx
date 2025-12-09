@@ -12,7 +12,7 @@ describe("LocationVerificationSection", () => {
         onSelectFloor={onSelectFloor}
         onChangeRack={jest.fn()}
         username="tester"
-      />
+      />,
     );
 
     const chip = getByTestId("chip-floor-ground");
@@ -30,7 +30,7 @@ describe("LocationVerificationSection", () => {
         onSelectFloor={jest.fn()}
         onChangeRack={onChangeRack}
         username="tester"
-      />
+      />,
     );
 
     const input = getByTestId("input-rack");

@@ -345,12 +345,15 @@ export const getItemByBarcode = async (
 
     // Check if we actually got an item
     if (!itemData || !itemData.item_code) {
-      throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
+      throw new Error(
+        `Item not found: Barcode '${trimmedBarcode}' not in database`,
+      );
     }
 
     // Map backend fields to frontend Item interface
     // Handle empty item_name by falling back to category or item_code
-    const displayName = itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
+    const displayName =
+      itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
     if (!itemData.name) {
       itemData.name = displayName;
     }

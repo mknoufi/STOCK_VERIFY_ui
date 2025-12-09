@@ -45,7 +45,7 @@ async def run_test():
 
         # Perform login using helper function
         login_success = await login_user(page, role="staff", timeout=30000)
-        
+
         if not login_success:
             raise AssertionError(
                 "Test case failed: Login process did not complete successfully. Unable to authenticate user."
@@ -63,7 +63,7 @@ async def run_test():
                 'text="Welcome"',
                 'text="Stock Verify"',
             ]
-            
+
             found_success = False
             for indicator in success_indicators:
                 try:
@@ -72,13 +72,13 @@ async def run_test():
                     break
                 except AssertionError:
                     continue
-            
+
             if not found_success:
                 # Check if we're no longer on login page (indicates successful redirect)
                 current_url = page.url
                 if "/login" not in current_url:
                     found_success = True
-            
+
             if not found_success:
                 raise AssertionError(
                     "Test case failed: User authentication and login flow did not succeed as expected. The home screen or welcome message was not found after login."
@@ -87,7 +87,7 @@ async def run_test():
             raise AssertionError(
                 f"Test case failed: User authentication and login flow did not succeed as expected. {str(e)}"
             )
-        
+
         await asyncio.sleep(2)
 
     finally:

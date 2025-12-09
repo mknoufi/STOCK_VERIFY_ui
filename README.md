@@ -1,6 +1,6 @@
 # Stock Verify Application (v2.1)
 
-> **✨ This repository is available as a GitHub template!**  
+> **✨ This repository is available as a GitHub template!**
 > Click "Use this template" to create your own Stock Verify instance. See [TEMPLATE_README.md](TEMPLATE_README.md) for setup instructions.
 
 ## 📚 Documentation (v2.1)

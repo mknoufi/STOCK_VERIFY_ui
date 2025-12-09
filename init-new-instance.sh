@@ -153,7 +153,7 @@ if [ -f backend/requirements.txt ]; then
         python3 -m venv venv
         print_success "Created Python virtual environment"
     fi
-    
+
     print_info "Activating virtual environment and installing packages..."
     # Portable activation - works with bash, zsh, etc.
     if [ -f venv/bin/activate ]; then
@@ -166,7 +166,7 @@ if [ -f backend/requirements.txt ]; then
         cd ..
         exit 1
     fi
-    
+
     pip install --quiet --upgrade pip
     pip install --quiet -r requirements.txt
     deactivate 2>/dev/null || true

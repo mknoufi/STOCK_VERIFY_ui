@@ -28,7 +28,7 @@ Based on [TestSprite Documentation](https://docs.testsprite.com/mcp/getting-star
 
 #### 4. **Application Initialization Delays**
 - **Problem:** App has multiple async initialization steps
-- **Evidence:** 
+- **Evidence:**
   - Backend URL discovery (5s timeout)
   - Auth loading (3s timeout)
   - Network listener setup
@@ -58,7 +58,7 @@ According to [TestSprite Troubleshooting Guide](https://docs.testsprite.com/mcp/
 
 ### 🔴 Step 3: Provide Test Credentials
 - **Status:** ❌ MISSING
-- **Action Required:** 
+- **Action Required:**
   - Create test user accounts in database
   - Configure credentials in test files
   - Or use environment variables for credentials
@@ -87,24 +87,24 @@ According to [TestSprite Troubleshooting Guide](https://docs.testsprite.com/mcp/
 # Example fix for test_001_Login_Flow_Test.py
 async def run_test():
     # ... existing setup ...
-    
+
     # Navigate to login page
     await page.goto("http://localhost:19006/login", timeout=30000)
     await page.wait_for_load_state("networkidle", timeout=30000)
-    
+
     # Wait for login form to be visible
     await page.wait_for_selector('input[type="text"], input[name="username"]', timeout=30000)
-    
+
     # Fill login form
     await page.fill('input[name="username"]', 'test_staff')  # Use actual test credentials
     await page.fill('input[name="password"]', 'test_password')
-    
+
     # Submit form
     await page.click('button[type="submit"]')
-    
+
     # Wait for successful login (redirect or success message)
     await page.wait_for_url('**/home**', timeout=30000)
-    
+
     # Then proceed with assertions
     await expect(page.locator("text=Welcome").first).to_be_visible(timeout=10000)
 ```

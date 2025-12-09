@@ -22,21 +22,21 @@ async def login_user(
 ) -> bool:
     """
     Helper function to login a user in the application.
-    
+
     Args:
         page: Playwright page object
         username: Username to login (optional, uses role default if not provided)
         password: Password to login (optional, uses role default if not provided)
         role: User role (staff, supervisor, admin) - used to get default credentials
         timeout: Timeout in milliseconds for login operations
-    
+
     Returns:
         bool: True if login successful, False otherwise
     """
     try:
         # Navigate to login page
         await page.goto("http://localhost:19006/login", wait_until="networkidle", timeout=timeout)
-        
+
         # Wait for login form to be visible
         # Try multiple selectors for React Native Web components
         login_form_visible = False
@@ -47,7 +47,7 @@ async def login_user(
             'input[placeholder*="Username" i]',
             'input[type="text"]',
         ]
-        
+
         for selector in selectors_to_try:
             try:
                 await page.wait_for_selector(selector, timeout=10000, state="visible")
@@ -55,19 +55,19 @@ async def login_user(
                 break
             except PlaywrightTimeoutError:
                 continue
-        
+
         if not login_form_visible:
             raise Exception("Login form not found")
-        
+
         # Get credentials
         if not username or not password:
             creds = TEST_CREDENTIALS.get(role, TEST_CREDENTIALS["staff"])
             username = username or creds["username"]
             password = password or creds["password"]
-        
+
         # Wait a bit for form to be fully interactive
         await asyncio.sleep(1)
-        
+
         # Fill username field - try multiple selectors
         username_filled = False
         username_selectors = [
@@ -76,7 +76,7 @@ async def login_user(
             'input[type="text"]:first-of-type',
             'input[autocomplete="username"]',
         ]
-        
+
         for selector in username_selectors:
             try:
                 username_input = page.locator(selector).first
@@ -86,10 +86,10 @@ async def login_user(
                     break
             except PlaywrightTimeoutError:
                 continue
-        
+
         if not username_filled:
             raise Exception("Username input field not found")
-        
+
         # Fill password field - try multiple selectors
         password_filled = False
         password_selectors = [
@@ -98,7 +98,7 @@ async def login_user(
             'input[placeholder*="Password" i]',
             'input[autocomplete="password"]',
         ]
-        
+
         for selector in password_selectors:
             try:
                 password_input = page.locator(selector).first
@@ -108,10 +108,10 @@ async def login_user(
                     break
             except PlaywrightTimeoutError:
                 continue
-        
+
         if not password_filled:
             raise Exception("Password input field not found")
-        
+
         # Click login button - try multiple selectors
         login_clicked = False
         button_selectors = [
@@ -120,7 +120,7 @@ async def login_user(
             'button[type="submit"]',
             'text="Sign In"',
         ]
-        
+
         for selector in button_selectors:
             try:
                 login_button = page.locator(selector).first
@@ -130,10 +130,10 @@ async def login_user(
                     break
             except PlaywrightTimeoutError:
                 continue
-        
+
         if not login_clicked:
             raise Exception("Login button not found or not enabled")
-        
+
         # Wait for navigation after login (redirect to home/dashboard)
         # Wait for URL to change or for home page elements to appear
         try:
@@ -154,12 +154,12 @@ async def login_user(
                     break
                 except PlaywrightTimeoutError:
                     continue
-        
+
         # Additional wait for app to fully load
         await asyncio.sleep(2)
-        
+
         return True
-        
+
     except Exception as e:
         print(f"Login failed: {str(e)}")
         return False

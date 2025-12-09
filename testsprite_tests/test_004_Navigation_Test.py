@@ -43,7 +43,7 @@ async def run_test():
 
         # Perform login
         login_success = await login_user(page, role="staff", timeout=30000)
-        
+
         if not login_success:
             raise AssertionError(
                 "Test case failed: Login required before testing navigation functionality."

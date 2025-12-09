@@ -1,7 +1,7 @@
 # 🏢 LAN Deployment Plan - Stock Verify v2.1
 
-**Date**: December 2025  
-**Deployment Type**: Local Network (LAN)  
+**Date**: December 2025
+**Deployment Type**: Local Network (LAN)
 **No Cloud Required** ✅
 
 ---
@@ -367,7 +367,7 @@ mongosh --eval "db.adminCommand('ping')"
    ```bash
    # On server
    ipconfig getifaddr en0
-   
+
    # On mobile - Settings → WiFi → IP address
    ```
 

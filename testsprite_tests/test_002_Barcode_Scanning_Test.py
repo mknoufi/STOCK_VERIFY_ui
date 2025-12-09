@@ -43,7 +43,7 @@ async def run_test():
 
         # Perform login
         login_success = await login_user(page, role="staff", timeout=30000)
-        
+
         if not login_success:
             raise AssertionError(
                 "Test case failed: Login required before accessing barcode scanning functionality."
@@ -63,7 +63,7 @@ async def run_test():
                 'input[placeholder*="barcode" i]',
                 'input[placeholder*="Barcode" i]',
             ]
-            
+
             found_scan = False
             for indicator in scan_indicators:
                 try:
@@ -72,7 +72,7 @@ async def run_test():
                     break
                 except AssertionError:
                     continue
-            
+
             if not found_scan:
                 raise AssertionError(
                     "Test case failed: Barcode scanning functionality did not load or display correctly. Scan screen elements not found."
@@ -81,7 +81,7 @@ async def run_test():
             raise AssertionError(
                 f"Test case failed: Barcode scanning functionality did not load or display the item correctly as per the test plan. {str(e)}"
             )
-        
+
         await asyncio.sleep(2)
 
     finally:

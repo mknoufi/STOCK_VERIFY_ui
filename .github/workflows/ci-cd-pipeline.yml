@@ -121,21 +121,21 @@ jobs:
       - name: Wait for MongoDB
         working-directory: ./backend
         run: |
-          python -c "
-import time
-from pymongo import MongoClient
-for i in range(60):
-    try:
-        client = MongoClient('mongodb://localhost:27017', serverSelectionTimeoutMS=1000)
-        client.admin.command('ping')
-        print('MongoDB is ready!')
-        break
-    except Exception as e:
-        print(f'Waiting for MongoDB... ({i+1}/60)')
-        time.sleep(1)
-else:
-    raise Exception('MongoDB did not become ready in time')
-"
+          python << 'EOF'
+          import time
+          from pymongo import MongoClient
+          for i in range(60):
+              try:
+                  client = MongoClient('mongodb://localhost:27017', serverSelectionTimeoutMS=1000)
+                  client.admin.command('ping')
+                  print('MongoDB is ready!')
+                  break
+              except Exception as e:
+                  print(f'Waiting for MongoDB... ({i+1}/60)')
+                  time.sleep(1)
+          else:
+              raise Exception('MongoDB did not become ready in time')
+          EOF
 
       - name: Run backend tests with coverage
         working-directory: ./backend
@@ -336,21 +336,21 @@ else:
       - name: Wait for MongoDB
         working-directory: ./backend
         run: |
-          python -c "
-import time
-from pymongo import MongoClient
-for i in range(60):
-    try:
-        client = MongoClient('mongodb://localhost:27017', serverSelectionTimeoutMS=1000)
-        client.admin.command('ping')
-        print('MongoDB is ready!')
-        break
-    except Exception as e:
-        print(f'Waiting for MongoDB... ({i+1}/60)')
-        time.sleep(1)
-else:
-    raise Exception('MongoDB did not become ready in time')
-"
+          python << 'EOF'
+          import time
+          from pymongo import MongoClient
+          for i in range(60):
+              try:
+                  client = MongoClient('mongodb://localhost:27017', serverSelectionTimeoutMS=1000)
+                  client.admin.command('ping')
+                  print('MongoDB is ready!')
+                  break
+              except Exception as e:
+                  print(f'Waiting for MongoDB... ({i+1}/60)')
+                  time.sleep(1)
+          else:
+              raise Exception('MongoDB did not become ready in time')
+          EOF
 
       - name: Start application stack
         working-directory: ./backend

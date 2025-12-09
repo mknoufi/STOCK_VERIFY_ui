@@ -123,6 +123,11 @@ jobs:
 
       - name: Run backend tests with coverage
         working-directory: ./backend
+        env:
+          JWT_SECRET: test-jwt-secret-for-ci-testing-only
+          JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci-testing-only
+          MONGODB_URL: mongodb://localhost:27017
+          TESTING: "true"
         run: |
           pytest --cov=api --cov=services --cov=tests --cov-report=xml --cov-report=html --cov-report=term-missing
 

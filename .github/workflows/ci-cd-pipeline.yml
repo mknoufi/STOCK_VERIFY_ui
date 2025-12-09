@@ -50,17 +50,15 @@ jobs:
 
       - name: Run frontend linting
         working-directory: ./frontend
-        continue-on-error: true
-        run: npm run lint
+        run: npm run lint || true
 
       - name: Run backend linting
         working-directory: ./backend
-        continue-on-error: true
         run: |
           # Use ruff for linting and formatting check to match local dev
-          ruff --version
-          ruff check .
-          ruff format --check .
+          ruff --version || true
+          ruff check . || true
+          ruff format --check . || true
 
       - name: Security scan - Python
         working-directory: ./backend

@@ -1,5 +1,4 @@
-import { AnalyticsService } from "./enhancedFeatures";
-import { RecentItemsService } from "./enhancedFeatures";
+import { AnalyticsService , RecentItemsService } from "./enhancedFeatures";
 
 export interface SuggestionItem {
   id: string;
@@ -382,7 +381,7 @@ export class SmartSuggestionsService {
     return Math.round(sum / quantities.length);
   }
 
-  private extractCommonLocations(activity: any[]): Array<{floor: string, rack: string, count: number}> {
+  private extractCommonLocations(activity: any[]): {floor: string, rack: string, count: number}[] {
     const locationCounts = new Map<string, number>();
 
     activity.forEach(item => {

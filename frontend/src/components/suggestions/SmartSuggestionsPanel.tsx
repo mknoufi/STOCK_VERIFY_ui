@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-  Dimensions,
   ScrollView,
   LayoutAnimation,
   UIManager,
@@ -13,10 +12,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { modernColors, modernSpacing, modernBorderRadius } from "@/styles/modernDesignSystem";
-import { SuggestionItem } from "@/services/smartSuggestionsService";
-import { smartSuggestionsService } from "@/services/smartSuggestionsService";
-
-const { width } = Dimensions.get('window');
+import { SuggestionItem , smartSuggestionsService } from "@/services/smartSuggestionsService";
+import * as Haptics from 'expo-haptics';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -77,7 +74,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
         }),
       ]).start();
     }
-  }, [visible]);
+  }, [visible, fadeAnimation, slideAnimation]);
 
   // Rotation animation for expand/collapse
   const toggleExpanded = () => {
@@ -232,9 +229,8 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                   onPress={() => {
                     // Add haptic feedback
                     try {
-                      const { Haptics } = require('expo-haptics');
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    } catch (e) {
+                    } catch {
                       // Haptics not available
                     }
 

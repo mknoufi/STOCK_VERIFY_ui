@@ -65,7 +65,9 @@ export class SmartSuggestionsService {
       suggestions.push(...workflowSuggestions);
 
       // Sort by confidence and return top suggestions
-      return suggestions.sort((a, b) => b.confidence - a.confidence).slice(0, 6); // Limit to top 6 suggestions
+      return suggestions
+        .sort((a, b) => b.confidence - a.confidence)
+        .slice(0, 6); // Limit to top 6 suggestions
     } catch (error) {
       console.error("Error getting suggestions:", error);
       return [];
@@ -73,13 +75,17 @@ export class SmartSuggestionsService {
   }
 
   // Quantity suggestions based on historical data
-  private async getQuantitySuggestions(context: SuggestionContext): Promise<SuggestionItem[]> {
+  private async getQuantitySuggestions(
+    context: SuggestionContext,
+  ): Promise<SuggestionItem[]> {
     const suggestions: SuggestionItem[] = [];
 
     if (context.itemCode && context.scannedItem) {
       try {
         // Get historical data for this item
-        const recentItems = await RecentItemsService.getRecentItems(context.itemCode);
+        const recentItems = await RecentItemsService.getRecentItems(
+          context.itemCode,
+        );
         const avgQuantity = this.calculateAverageQuantity(recentItems);
 
         if (avgQuantity && avgQuantity > 0) {
@@ -110,7 +116,8 @@ export class SmartSuggestionsService {
         }
 
         // Stock-based suggestion
-        const systemStock = context.scannedItem.stock_qty || context.scannedItem.current_stock;
+        const systemStock =
+          context.scannedItem.stock_qty || context.scannedItem.current_stock;
         if (systemStock && systemStock > 0) {
           suggestions.push({
             id: "quantity-system-stock",
@@ -132,13 +139,17 @@ export class SmartSuggestionsService {
   }
 
   // Location suggestions based on recent activity
-  private async getLocationSuggestions(context: SuggestionContext): Promise<SuggestionItem[]> {
+  private async getLocationSuggestions(
+    context: SuggestionContext,
+  ): Promise<SuggestionItem[]> {
     const suggestions: SuggestionItem[] = [];
 
     if (context.sessionId) {
       try {
         // Get recent locations from analytics
-        const recentActivity = await AnalyticsService.getRecentActivity(context.sessionId);
+        const recentActivity = await AnalyticsService.getRecentActivity(
+          context.sessionId,
+        );
         const commonLocations = this.extractCommonLocations(recentActivity);
 
         commonLocations.forEach((location, index) => {
@@ -150,7 +161,8 @@ export class SmartSuggestionsService {
             icon: "location-outline",
             confidence: Math.max(0.5, 0.9 - index * 0.2),
             data: location,
-            action: () => console.log(`Navigate to: ${location.floor} - ${location.rack}`),
+            action: () =>
+              console.log(`Navigate to: ${location.floor} - ${location.rack}`),
           });
         });
 
@@ -176,18 +188,28 @@ export class SmartSuggestionsService {
   }
 
   // Variance reason suggestions
-  private async getReasonSuggestions(context: SuggestionContext): Promise<SuggestionItem[]> {
+  private async getReasonSuggestions(
+    context: SuggestionContext,
+  ): Promise<SuggestionItem[]> {
     const suggestions: SuggestionItem[] = [];
 
     if (context.scannedItem && context.quantity) {
-      const systemStock = context.scannedItem.stock_qty || context.scannedItem.current_stock;
+      const systemStock =
+        context.scannedItem.stock_qty || context.scannedItem.current_stock;
 
-      if (systemStock && Math.abs(context.quantity - systemStock) > systemStock * 0.1) {
+      if (
+        systemStock &&
+        Math.abs(context.quantity - systemStock) > systemStock * 0.1
+      ) {
         // High variance detected
         const commonReasons = [
           { code: "damaged", label: "Damaged Items", confidence: 0.8 },
           { code: "lost", label: "Lost/Missing", confidence: 0.7 },
-          { code: "new_stock", label: "New Stock Not Updated", confidence: 0.6 },
+          {
+            code: "new_stock",
+            label: "New Stock Not Updated",
+            confidence: 0.6,
+          },
           { code: "theft", label: "Theft/Security Issue", confidence: 0.5 },
         ];
 
@@ -210,7 +232,9 @@ export class SmartSuggestionsService {
   }
 
   // Quick action suggestions
-  private async getActionSuggestions(context: SuggestionContext): Promise<SuggestionItem[]> {
+  private async getActionSuggestions(
+    context: SuggestionContext,
+  ): Promise<SuggestionItem[]> {
     const suggestions: SuggestionItem[] = [];
 
     // Time-based suggestions
@@ -260,7 +284,9 @@ export class SmartSuggestionsService {
   }
 
   // Photo suggestions
-  private async getPhotoSuggestions(context: SuggestionContext): Promise<SuggestionItem[]> {
+  private async getPhotoSuggestions(
+    context: SuggestionContext,
+  ): Promise<SuggestionItem[]> {
     const suggestions: SuggestionItem[] = [];
 
     if (context.scannedItem) {
@@ -315,7 +341,9 @@ export class SmartSuggestionsService {
   }
 
   // Workflow suggestions
-  private async getWorkflowSuggestions(context: SuggestionContext): Promise<SuggestionItem[]> {
+  private async getWorkflowSuggestions(
+    context: SuggestionContext,
+  ): Promise<SuggestionItem[]> {
     const suggestions: SuggestionItem[] = [];
 
     // Session-based workflow suggestions
@@ -350,7 +378,10 @@ export class SmartSuggestionsService {
     // Quality check suggestion
     if (context.quantity && context.scannedItem) {
       const systemStock = context.scannedItem.stock_qty;
-      if (systemStock && Math.abs(context.quantity - systemStock) > systemStock * 0.2) {
+      if (
+        systemStock &&
+        Math.abs(context.quantity - systemStock) > systemStock * 0.2
+      ) {
         suggestions.push({
           id: "workflow-quality-check",
           type: "workflow",
@@ -371,7 +402,9 @@ export class SmartSuggestionsService {
   private calculateAverageQuantity(recentItems: any[]): number {
     if (!recentItems || recentItems.length === 0) return 0;
 
-    const quantities = recentItems.map((item) => item.counted_qty).filter((qty) => qty && qty > 0);
+    const quantities = recentItems
+      .map((item) => item.counted_qty)
+      .filter((qty) => qty && qty > 0);
 
     if (quantities.length === 0) return 0;
 
@@ -380,7 +413,7 @@ export class SmartSuggestionsService {
   }
 
   private extractCommonLocations(
-    activity: any[]
+    activity: any[],
   ): { floor: string; rack: string; count: number }[] {
     const locationCounts = new Map<string, number>();
 
@@ -406,7 +439,7 @@ export class SmartSuggestionsService {
   // Track user interactions to improve suggestions
   async trackSuggestionInteraction(
     suggestionId: string,
-    action: "viewed" | "clicked" | "dismissed"
+    action: "viewed" | "clicked" | "dismissed",
   ): Promise<void> {
     try {
       await AnalyticsService.trackEvent("suggestion_interaction", {
@@ -427,7 +460,9 @@ export class SmartSuggestionsService {
   }
 
   // Get personalized suggestions based on user patterns
-  async getPersonalizedSuggestions(context: SuggestionContext): Promise<SuggestionItem[]> {
+  async getPersonalizedSuggestions(
+    context: SuggestionContext,
+  ): Promise<SuggestionItem[]> {
     const suggestions = await this.getSuggestions(context);
 
     // Apply user pattern weighting
@@ -436,7 +471,7 @@ export class SmartSuggestionsService {
       if (pattern) {
         const recentActions = pattern.filter(
           (p: { value: any; timestamp: number }) =>
-            Date.now() - p.timestamp < 7 * 24 * 60 * 60 * 1000 // Last 7 days
+            Date.now() - p.timestamp < 7 * 24 * 60 * 60 * 1000, // Last 7 days
         );
         if (recentActions.length > 0) {
           suggestion.confidence = Math.min(1.0, suggestion.confidence + 0.1);

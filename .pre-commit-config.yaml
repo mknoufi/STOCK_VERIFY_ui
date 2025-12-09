@@ -27,8 +27,6 @@ repos:
       - id: ruff
         files: ^backend/
         args: [--fix]
-      - id: ruff-format
-        files: ^backend/
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8

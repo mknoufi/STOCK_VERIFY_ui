@@ -366,7 +366,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: build-images
+    needs: [build-images]
     if: github.ref == 'refs/heads/develop'
     environment: staging
 
@@ -395,7 +395,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: build-images
+    needs: [build-images]
     if: github.ref == 'refs/heads/main'
     environment: production
 
@@ -427,8 +427,7 @@ jobs:
           text: "🚀 STOCK_VERIFY_2.1 deployed successfully to production!"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: success() && secrets.SLACK_WEBHOOK != ''
-        continue-on-error: true
+        if: success()
 
       - name: Notify deployment failure
         uses: 8398a7/action-slack@v3
@@ -437,8 +436,7 @@ jobs:
           text: "❌ STOCK_VERIFY_2.1 deployment failed!"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && secrets.SLACK_WEBHOOK != ''
-        continue-on-error: true
+        if: failure()
 
   # Security Scan (optional - continue on error)
   security-scan:

@@ -8,6 +8,7 @@ expo-env.d.ts
 # Expo cache files
 .expo/cache/
 .expo/devices.json
+.expo/types/
 
 # Node modules
 node_modules/

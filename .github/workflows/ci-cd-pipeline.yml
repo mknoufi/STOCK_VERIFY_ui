@@ -92,7 +92,7 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongo --eval 'db.runCommand({ping:1})' || exit 0"
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})' || mongo --eval 'db.runCommand({ping:1})' || exit 0"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10

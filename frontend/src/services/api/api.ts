@@ -343,9 +343,19 @@ export const getItemByBarcode = async (
     // Handle v2 response format { item: ..., metadata: ... }
     const itemData = response.data.item || response.data;
 
+    // Check if we actually got an item
+    if (!itemData || !itemData.item_code) {
+      throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
+    }
+
     // Map backend fields to frontend Item interface
-    if (itemData.item_name && !itemData.name) {
-      itemData.name = itemData.item_name;
+    // Handle empty item_name by falling back to category or item_code
+    const displayName = itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
+    if (!itemData.name) {
+      itemData.name = displayName;
+    }
+    if (!itemData.item_name) {
+      itemData.item_name = displayName;
     }
     if (itemData._id && !itemData.id) {
       itemData.id = itemData._id;

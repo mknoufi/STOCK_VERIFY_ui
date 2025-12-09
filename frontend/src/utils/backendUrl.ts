@@ -1,8 +1,5 @@
-const BACKEND_URL =
-  process.env.EXPO_PUBLIC_BACKEND_URL || "http://localhost:8000";
-
-export const initializeBackendURL = () => {
-  // Stub implementation
-};
-
-export const getBackendURL = () => BACKEND_URL;
+export {
+  BACKEND_URL,
+  getBackendURL,
+  initializeBackendURL,
+} from "../services/backendUrl";

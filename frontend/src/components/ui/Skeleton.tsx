@@ -1,11 +1,13 @@
 /**
  * Skeleton Component - Loading placeholder
+ * Enhanced with shimmer gradient animation inspired by react-native-auto-skeleton
  * Safe, non-breaking addition for loading states
  */
 
 import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, Animated, ViewStyle } from "react-native";
-import { useTheme } from "../../hooks/useTheme";
+import { LinearGradient } from "expo-linear-gradient";
+import { modernColors } from "../../styles/modernDesignSystem";
 
 interface SkeletonProps {
   width?: number | string;
@@ -13,6 +15,7 @@ interface SkeletonProps {
   borderRadius?: number;
   style?: ViewStyle;
   variant?: "text" | "circular" | "rectangular";
+  shimmer?: boolean;
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
@@ -21,33 +24,43 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   borderRadius = 4,
   style,
   variant = "rectangular",
+  shimmer = true,
 }) => {
-  const theme = useTheme();
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const translateX = useRef(new Animated.Value(-1)).current;
+  const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(animatedValue, {
+    if (shimmer) {
+      // Shimmer animation - sweeping highlight
+      const shimmerAnimation = Animated.loop(
+        Animated.timing(translateX, {
           toValue: 1,
-          duration: 1000,
+          duration: 1200,
           useNativeDriver: true,
         }),
-        Animated.timing(animatedValue, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [animatedValue]);
-
-  const opacity = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
+      );
+      shimmerAnimation.start();
+      return () => shimmerAnimation.stop();
+    } else {
+      // Fallback pulse animation
+      const pulseAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(opacity, {
+            toValue: 0.7,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0.3,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ]),
+      );
+      pulseAnimation.start();
+      return () => pulseAnimation.stop();
+    }
+  }, [translateX, opacity, shimmer]);
 
   const getVariantStyle = (): ViewStyle => {
     switch (variant) {
@@ -72,6 +85,50 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   const variantStyle = getVariantStyle();
 
+  if (shimmer) {
+    return (
+      <View
+        style={[
+          styles.skeleton,
+          {
+            width: typeof width === "string" ? width : width,
+            height: variantStyle.height,
+            borderRadius: variantStyle.borderRadius,
+            backgroundColor: modernColors.neutral[200],
+          } as ViewStyle,
+          style as ViewStyle,
+        ]}
+      >
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              transform: [
+                {
+                  translateX: translateX.interpolate({
+                    inputRange: [-1, 1],
+                    outputRange: [-200, 200],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={[
+              "transparent",
+              "rgba(255, 255, 255, 0.4)",
+              "transparent",
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </Animated.View>
+      </View>
+    );
+  }
+
   return (
     <Animated.View
       style={[
@@ -80,10 +137,10 @@ export const Skeleton: React.FC<SkeletonProps> = ({
           width: typeof width === "string" ? width : width,
           height: variantStyle.height,
           borderRadius: variantStyle.borderRadius,
-          backgroundColor: theme.colors.surface,
-        } as any,
-        { opacity },
-        style as any,
+          backgroundColor: modernColors.neutral[200],
+          opacity,
+        } as ViewStyle,
+        style as ViewStyle,
       ]}
     />
   );
@@ -115,8 +172,65 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
   );
 };
 
+// Card skeleton for common card loading states
+export const SkeletonCard: React.FC<{ style?: ViewStyle }> = ({ style }) => {
+  return (
+    <View style={[styles.card, style]}>
+      <View style={styles.cardHeader}>
+        <Skeleton width={48} height={48} variant="circular" />
+        <View style={styles.cardHeaderText}>
+          <Skeleton width="70%" height={16} style={{ marginBottom: 8 }} />
+          <Skeleton width="40%" height={12} />
+        </View>
+      </View>
+      <SkeletonText lines={2} lineHeight={14} lastLineWidth="80%" />
+    </View>
+  );
+};
+
+// List item skeleton
+export const SkeletonListItem: React.FC<{ style?: ViewStyle }> = ({ style }) => {
+  return (
+    <View style={[styles.listItem, style]}>
+      <Skeleton width={40} height={40} borderRadius={8} />
+      <View style={styles.listItemContent}>
+        <Skeleton width="60%" height={14} style={{ marginBottom: 6 }} />
+        <Skeleton width="40%" height={12} />
+      </View>
+      <Skeleton width={60} height={24} borderRadius={12} />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   skeleton: {
     overflow: "hidden",
+  },
+  card: {
+    padding: 16,
+    backgroundColor: modernColors.background.paper,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  cardHeaderText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  listItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: modernColors.background.paper,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  listItemContent: {
+    flex: 1,
+    marginLeft: 12,
   },
 });

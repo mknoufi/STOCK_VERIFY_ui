@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Platform, Pressable } from "react-native";
 import { flags } from "../constants/flags";
 import { useAuthStore } from "../store/authStore";
 import { useNetworkStore } from "../services/networkService";
-import { getBackendURL } from "../utils/backendUrl";
+import { getBackendURL } from "../services/backendUrl";
 import {
   getQueueCount,
   getConflictsCount,

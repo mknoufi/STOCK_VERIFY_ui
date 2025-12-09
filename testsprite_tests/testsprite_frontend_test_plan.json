@@ -1,408 +1,672 @@
 [
   {
     "id": "TC001",
-    "title": "Successful Login with Valid Credentials",
-    "description": "Verify that users can log in successfully using correct username and password with JWT authentication and role assignment.",
+    "title": "JWT Authentication Success",
+    "description": "Verify that users can successfully authenticate using valid credentials and receive a JWT token with correct role assignments.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to login screen"
+        "description": "Navigate to login page."
       },
       {
         "type": "action",
-        "description": "Input valid username and password"
+        "description": "Enter valid username and password for Staff role."
       },
       {
         "type": "action",
-        "description": "Click on the login button"
+        "description": "Submit login request."
       },
       {
         "type": "assertion",
-        "description": "Verify that the user is authenticated with a valid JWT token"
+        "description": "Verify JWT token is issued and stored securely."
       },
       {
         "type": "assertion",
-        "description": "Verify user is redirected to the correct landing page based on their role (admin, supervisor, staff)"
+        "description": "Verify user is redirected to Staff home page with proper permissions."
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Login Failure with Invalid Credentials",
-    "description": "Verify that login fails and appropriate error message is shown when incorrect username or password is provided.",
+    "title": "JWT Authentication Failure with Invalid Credentials",
+    "description": "Verify the system rejects authentication attempts with incorrect username or password and provides appropriate error messages.",
     "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to login screen"
+        "description": "Navigate to login page."
       },
       {
         "type": "action",
-        "description": "Input invalid username or password"
+        "description": "Enter invalid username and/or password."
       },
       {
         "type": "action",
-        "description": "Click on the login button"
+        "description": "Submit login request."
       },
       {
         "type": "assertion",
-        "description": "Verify that login fails and error message related to invalid credentials is displayed"
+        "description": "Verify login is rejected and error message is shown."
       },
       {
         "type": "assertion",
-        "description": "Verify that no JWT token is issued"
+        "description": "Verify no JWT token is issued or stored."
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Role-Based Access Control Enforcement",
-    "description": "Verify that users can only access features according to permissions defined for their roles (admin, supervisor, staff).",
+    "title": "Role-based Access Control Enforcement",
+    "description": "Verify users with different roles (Staff, Supervisor, Admin) can only access authorized modules and perform permitted actions.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as Admin user"
+        "description": "Login as Staff and attempt to access Admin control panel."
       },
       {
         "type": "assertion",
-        "description": "Verify Admin can access user management, system configuration, and all app functions"
+        "description": "Verify access is denied with appropriate notification."
       },
       {
         "type": "action",
-        "description": "Logout, then login as Supervisor"
+        "description": "Login as Supervisor and access supervisor dashboard features."
       },
       {
         "type": "assertion",
-        "description": "Verify Supervisor can access reports, manage sessions, and view variances, but cannot access user management"
+        "description": "Verify all supervisor features are accessible and working."
       },
       {
         "type": "action",
-        "description": "Logout, then login as Staff"
+        "description": "Login as Admin and access user management and system settings."
       },
       {
         "type": "assertion",
-        "description": "Verify Staff can scan items, verify quantities, and view history but has no access to reports or user management"
+        "description": "Confirm Admin features are available and function correctly."
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "Barcode Scanning Functionality",
-    "description": "Verify barcode scanning correctly identifies items using expo-barcode-scanner on supported platforms.",
+    "title": "Barcode Scanner Reads Supported Formats",
+    "description": "Validate that the native barcode scanner accurately reads multiple international barcode formats: EAN-13, UPC-A, Code 128, and QR Code.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to barcode scanning screen"
+        "description": "Open staff scan interface."
       },
       {
         "type": "action",
-        "description": "Scan a valid barcode corresponding to an existing item"
+        "description": "Scan sample EAN-13 barcode."
       },
       {
         "type": "assertion",
-        "description": "Verify the scanned item details are displayed correctly"
+        "description": "Verify barcode is recognized and item record is retrieved."
       },
       {
         "type": "action",
-        "description": "Scan an invalid or unregistered barcode"
+        "description": "Scan sample UPC-A barcode."
       },
       {
         "type": "assertion",
-        "description": "Verify an appropriate error or 'item not found' message is displayed"
+        "description": "Item data matches scanned barcode."
+      },
+      {
+        "type": "action",
+        "description": "Scan sample Code 128 barcode."
+      },
+      {
+        "type": "assertion",
+        "description": "Item retrieval is successful."
+      },
+      {
+        "type": "action",
+        "description": "Scan sample QR code containing valid product info."
+      },
+      {
+        "type": "assertion",
+        "description": "Correct product information is displayed for verification."
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Verify Item Quantity Entry with Photo Proof",
-    "description": "Verify that staff can enter stock quantities and attach photo proof to the verification record.",
+    "title": "Barcode Scanner Fallback to Manual Entry",
+    "description": "Test that manual barcode entry is supported and functioning correctly when barcode scanning hardware or camera access is unavailable or fails.",
     "category": "functional",
-    "priority": "High",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Scan or select an item to verify"
-      },
-      {
-        "type": "action",
-        "description": "Input valid quantity for the item"
-      },
-      {
-        "type": "action",
-        "description": "Attach or capture a photo as proof"
-      },
-      {
-        "type": "action",
-        "description": "Save the verification"
+        "description": "Open staff scanning interface with camera permission denied."
       },
       {
         "type": "assertion",
-        "description": "Verify the entered quantity is saved correctly"
+        "description": "Verify manual barcode entry input field is displayed."
+      },
+      {
+        "type": "action",
+        "description": "Manually enter a valid barcode number and submit."
       },
       {
         "type": "assertion",
-        "description": "Verify photo proof is correctly attached and viewable"
+        "description": "Verify item is fetched and displayed correctly."
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid barcode number and submit."
+      },
+      {
+        "type": "assertion",
+        "description": "Error message displayed indicating barcode not found."
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "Handle Invalid Quantity Input During Verification",
-    "description": "Verify the system handles invalid or negative quantities gracefully when staff try to enter them.",
-    "category": "error handling",
+    "title": "Create Stock Verification Session",
+    "description": "Verify Staff user can create a new stock verification session with selected warehouse and required initial details.",
+    "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Select an item for verification"
+        "description": "Login as Staff user."
       },
       {
         "type": "action",
-        "description": "Enter a negative or non-numeric quantity"
+        "description": "Navigate to session creation interface."
       },
       {
         "type": "action",
-        "description": "Attempt to save the verification"
+        "description": "Select warehouse and enter mandatory fields for new session."
+      },
+      {
+        "type": "action",
+        "description": "Submit to create new verification session."
       },
       {
         "type": "assertion",
-        "description": "Verify the system presents a validation error preventing the save"
+        "description": "Verify session is created with 'In Progress' status and visible in session list."
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Variance Tracking Accuracy",
-    "description": "Verify the variance between system stock quantities and verified quantities is calculated and displayed correctly.",
+    "title": "Add and Update Count Lines with Quantity and Serial Numbers",
+    "description": "Verify staff can scan or input items to add count lines with quantities and serial numbers; updates reflect in session with discrepancy detection.",
     "category": "functional",
-    "priority": "Medium",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Verify quantities for multiple items with known stock and entered counts"
+        "description": "Open active stock verification session."
+      },
+      {
+        "type": "action",
+        "description": "Scan barcode for an existing item."
+      },
+      {
+        "type": "action",
+        "description": "Input quantity and optional serial numbers for scan."
       },
       {
         "type": "assertion",
-        "description": "Verify variance = verified quantity minus system stock quantity is correctly calculated for each item"
+        "description": "Count line added or updated with correct quantity and serial info."
       },
       {
         "type": "assertion",
-        "description": "Verify variances appear accurately in variance reports or views for supervisor and admin roles"
+        "description": "Discrepancy against ERPNext data is flagged immediately."
+      },
+      {
+        "type": "action",
+        "description": "Manually modify count quantity for existing count line."
+      },
+      {
+        "type": "assertion",
+        "description": "Change persists and discrepancy is recalculated."
       }
     ]
   },
   {
     "id": "TC008",
-    "title": "CSV Export of Verification Data",
-    "description": "Verify export functionality generates a correct CSV file containing verification data.",
+    "title": "Discrepancy Detection and Flagging During Counting",
+    "description": "Verify discrepancies between counted quantities and ERPNext item data are detected in real-time and flagged with visible indicators.",
     "category": "functional",
-    "priority": "Medium",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the verification data export feature"
+        "description": "Scan an item barcode with quantity differing from ERPNext data."
+      },
+      {
+        "type": "assertion",
+        "description": "UI highlights the count line as discrepant."
       },
       {
         "type": "action",
-        "description": "Perform export to CSV"
+        "description": "Scan an item matching ERPNext quantity."
       },
       {
         "type": "assertion",
-        "description": "Verify a CSV file is generated and downloaded or accessible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the CSV file contents match current verification data including item details, quantities, variance, and timestamps"
+        "description": "No discrepancy flags are raised."
       }
     ]
   },
   {
     "id": "TC009",
-    "title": "Offline Usage with Data Sync",
-    "description": "Verify that users can perform scanning, verification, and data entry offline and that data syncs correctly when connectivity is restored.",
+    "title": "Supervisor Approves Stock Verification Session",
+    "description": "Verify Supervisor can access session details, review discrepancies, and approve or reject count lines with audit logging.",
     "category": "functional",
-    "priority": "Medium",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Simulate offline mode by disabling network connectivity"
+        "description": "Login as Supervisor."
       },
       {
         "type": "action",
-        "description": "Perform barcode scanning and item quantity verification with photo"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify data is saved locally and accessible while offline"
+        "description": "Navigate to supervisor dashboard and open pending session."
       },
       {
         "type": "action",
-        "description": "Restore network connectivity"
+        "description": "Review count lines with discrepancies."
+      },
+      {
+        "type": "action",
+        "description": "Approve or reject individual count lines or entire session."
       },
       {
         "type": "assertion",
-        "description": "Verify that all offline data is synced to the server correctly"
+        "description": "Session status updates accordingly and audit log records actions."
+      },
+      {
+        "type": "assertion",
+        "description": "Notifications are sent to relevant users."
       }
     ]
   },
   {
     "id": "TC010",
-    "title": "React Native Expo Router Navigation",
-    "description": "Verify navigation flows correctly between screens using Expo Router on iOS, Android, and Web platforms.",
+    "title": "ERPNext Data Synchronization with Conflict Detection",
+    "description": "Verify that ERPNext item data sync successfully pulls data without loss, detects conflicts, and allows interactive conflict resolution.",
     "category": "functional",
-    "priority": "Medium",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Launch app and navigate through login, scanning, verification, and report screens"
+        "description": "Initiate ERPNext sync from system."
       },
       {
         "type": "assertion",
-        "description": "Verify back and forward navigation works correctly without errors"
+        "description": "ERPNext items data is updated in the system."
+      },
+      {
+        "type": "action",
+        "description": "Cause a conflict by modifying same item data in ERPNext and local system."
+      },
+      {
+        "type": "action",
+        "description": "Run sync process again."
       },
       {
         "type": "assertion",
-        "description": "Verify navigation state is preserved across platform-specific behaviors"
+        "description": "Conflict detected and conflict resolution UI is presented."
+      },
+      {
+        "type": "action",
+        "description": "Supervisor resolves conflict using resolution UI."
+      },
+      {
+        "type": "assertion",
+        "description": "Conflict resolution is saved and reflected in system data."
       }
     ]
   },
   {
     "id": "TC011",
-    "title": "Invalid JWT Token Handling and Session Expiry",
-    "description": "Verify that the app properly handles expired or invalid JWT tokens by redirecting users to login and displaying relevant messages.",
-    "category": "security",
-    "priority": "High",
+    "title": "Dynamic Report Generation with Filtering and Export",
+    "description": "Verify that reports can be generated dynamically with configurable fields, filtered, sorted, and exported in Excel and CSV formats.",
+    "category": "functional",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Login and obtain valid JWT token"
+        "description": "Login as Supervisor."
       },
       {
         "type": "action",
-        "description": "Simulate JWT expiry or token invalidation"
+        "description": "Navigate to reports interface."
       },
       {
         "type": "action",
-        "description": "Attempt to access secured features"
+        "description": "Configure report fields and apply filters/sorting options."
+      },
+      {
+        "type": "action",
+        "description": "Generate report preview."
       },
       {
         "type": "assertion",
-        "description": "Verify user is redirected to login screen"
+        "description": "Report data complies with selected fields and filters."
+      },
+      {
+        "type": "action",
+        "description": "Export report as Excel file."
       },
       {
         "type": "assertion",
-        "description": "Verify an appropriate message is displayed about session expiry"
+        "description": "Excel file downloads successfully and opens with correct data."
+      },
+      {
+        "type": "action",
+        "description": "Export report as CSV file."
+      },
+      {
+        "type": "assertion",
+        "description": "CSV file downloads and content is valid."
       }
     ]
   },
   {
     "id": "TC012",
-    "title": "Staff Access Restriction to Admin Features",
-    "description": "Verify that staff users cannot access admin-only features such as user management and system configuration.",
-    "category": "security",
+    "title": "Offline Queue Operation and Synchronization Upon Reconnection",
+    "description": "Verify that operations performed offline are queued locally and automatically synchronized to backend upon network restoration without data loss or conflicts.",
+    "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as staff user"
+        "description": "Turn off network connectivity on device."
       },
       {
         "type": "action",
-        "description": "Attempt to navigate to user management and system configuration screens"
+        "description": "Create a new stock verification session and add count lines."
       },
       {
         "type": "assertion",
-        "description": "Verify access is denied with an appropriate message or the features are not visible"
+        "description": "Operations are queued locally and visible in offline queue interface."
+      },
+      {
+        "type": "action",
+        "description": "Restore network connectivity."
+      },
+      {
+        "type": "assertion",
+        "description": "Queued operations synchronize automatically with backend."
+      },
+      {
+        "type": "assertion",
+        "description": "No data conflicts or duplicates occur during sync."
       }
     ]
   },
   {
     "id": "TC013",
-    "title": "Verify Photo Proof Upload Failure Handling",
-    "description": "Check the system behavior when photo proof upload fails due to network or file errors.",
-    "category": "error handling",
+    "title": "Supervisor Dashboard Analytics and Export Scheduling",
+    "description": "Verify that supervisor dashboard displays real-time analytics, supports export scheduling, and allows managing export jobs.",
+    "category": "functional",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Attempt to attach a photo proof with simulated upload failure (e.g., network disconnected)"
+        "description": "Login as Supervisor and open dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify analytics visualizations load correctly."
       },
       {
         "type": "action",
-        "description": "Try to save verification record"
+        "description": "Schedule a report export job for a future time."
       },
       {
         "type": "assertion",
-        "description": "Verify an error message is shown explaining photo upload failure"
+        "description": "Export job is listed and status can be monitored."
+      },
+      {
+        "type": "action",
+        "description": "Cancel scheduled export job."
       },
       {
         "type": "assertion",
-        "description": "Verify the verification is not saved without successful photo upload"
+        "description": "Job is removed/cancelled successfully."
       }
     ]
   },
   {
     "id": "TC014",
-    "title": "Verify State Management Consistency using Zustand",
-    "description": "Verify that application state changes are properly managed and persisted through Zustand across user interactions.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Perform multiple state updates: scan items, enter quantities, attach photos"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the state correctly reflects all updates and is consistent across components"
-      },
-      {
-        "type": "action",
-        "description": "Refresh or restart the app"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify persisted state is restored correctly if implemented"
-      }
-    ]
-  },
-  {
-    "id": "TC015",
-    "title": "App Compatibility Across iOS, Android, and Web",
-    "description": "Verify that core app features including scanning, verification, and exporting work on iOS, Android, and Web platforms using Expo.",
+    "title": "Admin User Management and System Configuration",
+    "description": "Verify that Admin users can create, edit, and delete users, assign roles, configure system settings, and control system services from the control panel.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Run the app on iOS device/emulator and perform barcode scanning, item verification, and CSV export"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify all features work as expected without crashes or errors on iOS"
+        "description": "Login as Admin user."
       },
       {
         "type": "action",
-        "description": "Run the app on Android device/emulator and repeat the tests"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify all features work as expected without crashes or errors on Android"
+        "description": "Access user management interface."
       },
       {
         "type": "action",
-        "description": "Run the app on supported Web browser and repeat the tests"
+        "description": "Create a new user and assign Staff role."
       },
       {
         "type": "assertion",
-        "description": "Verify features work as expected on web platform, considering scanning limitations on web"
+        "description": "New user appears in user list with correct role."
+      },
+      {
+        "type": "action",
+        "description": "Edit user details and roles."
+      },
+      {
+        "type": "assertion",
+        "description": "Changes persist and are reflected."
+      },
+      {
+        "type": "action",
+        "description": "Delete a user."
+      },
+      {
+        "type": "assertion",
+        "description": "User is removed successfully."
+      },
+      {
+        "type": "action",
+        "description": "Access system configuration settings and modify parameters."
+      },
+      {
+        "type": "assertion",
+        "description": "Configurations update and apply correctly."
+      },
+      {
+        "type": "action",
+        "description": "Perform start, stop, and restart of backend services."
+      },
+      {
+        "type": "assertion",
+        "description": "Service control commands execute and system status updates accordingly."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Activity and Error Logs Capture and Filter",
+    "description": "Verify the system captures user activity and error logs comprehensively, supports searching, filtering and audit trail compliance.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Generate user activities by performing typical user operations."
+      },
+      {
+        "type": "action",
+        "description": "Cause system error by inputting invalid data or network failure."
+      },
+      {
+        "type": "action",
+        "description": "Login as Admin and access logs interface."
+      },
+      {
+        "type": "action",
+        "description": "Search and filter logs by user, date range, error severity."
+      },
+      {
+        "type": "assertion",
+        "description": "Activity and error logs are displayed matching filter criteria."
+      },
+      {
+        "type": "assertion",
+        "description": "Audit trails show detailed information on operations performed."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Mobile UI Responsiveness and Dark Mode Toggle",
+    "description": "Verify that UI components respond properly to different screen sizes and orientations and dark mode toggle switches themes correctly.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open app on mobile device in portrait orientation."
+      },
+      {
+        "type": "assertion",
+        "description": "Layouts render correctly without overlapping or clipping."
+      },
+      {
+        "type": "action",
+        "description": "Rotate device to landscape orientation."
+      },
+      {
+        "type": "assertion",
+        "description": "UI adjusts appropriately to new layout."
+      },
+      {
+        "type": "action",
+        "description": "Toggle dark mode on and off from settings."
+      },
+      {
+        "type": "assertion",
+        "description": "Theme colors switch smoothly and UI elements remain accessible and visually consistent."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Security Compliance with OWASP Standards",
+    "description": "Verify security measures including secure token storage, input validation, rate limiting, and secure HTTP headers to comply with OWASP best practices.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Inspect JWT storage; confirm tokens are stored securely and not in localStorage."
+      },
+      {
+        "type": "action",
+        "description": "Attempt SQL injection or XSS by submitting malicious input in forms."
+      },
+      {
+        "type": "assertion",
+        "description": "Input is sanitized and no injection or XSS occurs."
+      },
+      {
+        "type": "action",
+        "description": "Send rapid consecutive authentication requests to test rate limiting."
+      },
+      {
+        "type": "assertion",
+        "description": "Rate limiting triggers and blocks excessive requests."
+      },
+      {
+        "type": "action",
+        "description": "Verify HTTP response headers include security controls such as Content-Security-Policy and X-Content-Type-Options."
+      },
+      {
+        "type": "assertion",
+        "description": "Secure headers are present and correctly configured."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Performance Load Metrics and Optimization",
+    "description": "Test that application meets performance benchmarks for load times and responsiveness, including effects of power saving mode and caching.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Measure cold start time of app on typical mobile device."
+      },
+      {
+        "type": "assertion",
+        "description": "App loads within acceptable time thresholds (<3 seconds)."
+      },
+      {
+        "type": "action",
+        "description": "Navigate through major UI areas including scanning, session management, and reports."
+      },
+      {
+        "type": "assertion",
+        "description": "Navigation and data loading responses are smooth without delays."
+      },
+      {
+        "type": "action",
+        "description": "Enable power saving mode in app settings."
+      },
+      {
+        "type": "assertion",
+        "description": "App performance remains acceptable and power usage is reduced."
+      },
+      {
+        "type": "action",
+        "description": "Verify caching reduces data fetch times on repeated requests."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Notifications and Toast Message Feedback",
+    "description": "Verify that users receive appropriate toast notifications for key actions, errors, and recovery options with consistent formatting.",
+    "category": "ui",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform successful operation such as creating a new session."
+      },
+      {
+        "type": "assertion",
+        "description": "Success toast notification is shown briefly with clear message."
+      },
+      {
+        "type": "action",
+        "description": "Trigger an error such as invalid barcode entry."
+      },
+      {
+        "type": "assertion",
+        "description": "Error toast notification appears with retry or help options."
+      },
+      {
+        "type": "action",
+        "description": "Perform an operation offline causing queuing."
+      },
+      {
+        "type": "assertion",
+        "description": "Informative notification indicates offline status and sync progress."
       }
     ]
   }

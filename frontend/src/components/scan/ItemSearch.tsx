@@ -9,11 +9,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SearchResult } from "../../services/enhancedSearchService";
+import { Skeleton } from "../ui/Skeleton";
 
 interface ItemSearchProps {
   manualBarcode: string;
@@ -201,8 +201,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
 
       {isSearching && (
         <View style={styles.searchingContainer}>
-          <ActivityIndicator size="small" color="#3B82F6" />
-          <Text style={styles.searchingText}>Searching...</Text>
+          <Skeleton width="100%" height={60} style={{ marginBottom: 8 }} />
+          <Skeleton width="100%" height={60} style={{ marginBottom: 8 }} />
+          <Skeleton width="100%" height={60} />
         </View>
       )}
     </View>

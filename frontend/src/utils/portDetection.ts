@@ -5,6 +5,7 @@
  */
 
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
 // Common Expo ports
 const EXPO_PORTS = [19006, 19000, 19001, 19002, 8081];
@@ -40,6 +41,25 @@ export const detectFrontendPort = async (): Promise<number | null> => {
           __DEV__ &&
             console.log(
               `📡 Detected frontend port from window.location: ${cachedPort}`,
+            );
+        }
+        return cachedPort;
+      }
+    }
+  }
+
+  // Native: Try to get from Expo Constants
+  if (Platform.OS !== "web" && Constants.expoConfig?.hostUri) {
+    const parts = Constants.expoConfig.hostUri.split(":");
+    const portStr = parts[1];
+    if (parts.length === 2 && portStr) {
+      const port = parseInt(portStr, 10);
+      if (!isNaN(port)) {
+        cachedPort = port;
+        if (__DEV__) {
+          __DEV__ &&
+            console.log(
+              `📡 Detected frontend port from Expo Constants: ${cachedPort}`,
             );
         }
         return cachedPort;
@@ -106,6 +126,19 @@ export const getFrontendPortSync = (): number => {
     }
   }
 
+  // Native: Try to get from Expo Constants
+  if (Platform.OS !== "web" && Constants.expoConfig?.hostUri) {
+    const parts = Constants.expoConfig.hostUri.split(":");
+    const portStr = parts[1];
+    if (parts.length === 2 && portStr) {
+      const port = parseInt(portStr, 10);
+      if (!isNaN(port)) {
+        cachedPort = port;
+        return cachedPort;
+      }
+    }
+  }
+
   // Return default based on platform
   return Platform.OS === "web" ? DEFAULT_WEB_PORT : METRO_PORT;
 };
@@ -123,6 +156,13 @@ export const clearPortCache = (): void => {
  */
 export const getFrontendURL = async (): Promise<string> => {
   const port = await detectFrontendPort();
+
+  if (Platform.OS !== "web" && Constants.expoConfig?.hostUri) {
+    const parts = Constants.expoConfig.hostUri.split(":");
+    const host = parts[0];
+    return `http://${host}:${port || METRO_PORT}`;
+  }
+
   return `http://localhost:${port || DEFAULT_WEB_PORT}`;
 };
 
@@ -131,6 +171,13 @@ export const getFrontendURL = async (): Promise<string> => {
  */
 export const getFrontendURLSync = (): string => {
   const port = getFrontendPortSync();
+
+  if (Platform.OS !== "web" && Constants.expoConfig?.hostUri) {
+    const parts = Constants.expoConfig.hostUri.split(":");
+    const host = parts[0];
+    return `http://${host}:${port}`;
+  }
+
   return `http://localhost:${port}`;
 };
 

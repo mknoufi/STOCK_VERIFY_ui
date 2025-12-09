@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@testsprite/testsprite-mcp": "^0.0.18"
+  }
+}

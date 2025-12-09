@@ -92,12 +92,31 @@ from backend.utils.api_utils import result_to_response  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.result import Fail, Ok, Result  # noqa: E402
 
+# Initialize a fallback logger early so optional import blocks can log safely
+logger = logging.getLogger("stock-verify")
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO)
+
 # Import optional services
 try:
     from backend.api.enrichment_api import enrichment_router, init_enrichment_api
     from backend.services.enrichment_service import EnrichmentService
 except ImportError:
     EnrichmentService = None  # type: ignore
+
+# Import enterprise services (optional - for enterprise features)
+try:
+    from backend.api.enterprise_api import enterprise_router
+    from backend.services.data_governance import DataGovernanceService
+    from backend.services.enterprise_audit import EnterpriseAuditService
+    from backend.services.enterprise_security import EnterpriseSecurityService
+    from backend.services.feature_flags import FeatureFlagService
+
+    ENTERPRISE_AVAILABLE = True
+except ImportError as e:
+    ENTERPRISE_AVAILABLE = False
+    enterprise_router = None  # type: ignore
+    logger.info(f"Enterprise features not available: {e}")
     init_enrichment_api = None  # type: ignore
     enrichment_router = None  # type: ignore
 
@@ -560,6 +579,50 @@ async def lifespan(app: FastAPI):  # noqa: C901
         except Exception as e:
             logger.error(f"Failed to initialize enrichment service: {str(e)}")
 
+    # Initialize enterprise services
+    if ENTERPRISE_AVAILABLE:
+        try:
+            # Enterprise Audit Service
+            app.state.enterprise_audit = EnterpriseAuditService(db)
+            await app.state.enterprise_audit.initialize()
+            logger.info("✓ Enterprise audit service initialized")
+        except Exception as e:
+            app.state.enterprise_audit = None
+            logger.warning(f"Enterprise audit service not available: {str(e)}")
+
+        try:
+            # Enterprise Security Service
+            app.state.enterprise_security = EnterpriseSecurityService(db)
+            await app.state.enterprise_security.initialize()
+            logger.info("✓ Enterprise security service initialized")
+        except Exception as e:
+            app.state.enterprise_security = None
+            logger.warning(f"Enterprise security service not available: {str(e)}")
+
+        try:
+            # Feature Flags Service
+            app.state.feature_flags = FeatureFlagService(db)
+            await app.state.feature_flags.initialize()
+            logger.info("✓ Feature flags service initialized")
+        except Exception as e:
+            app.state.feature_flags = None
+            logger.warning(f"Feature flags service not available: {str(e)}")
+
+        try:
+            # Data Governance Service
+            app.state.data_governance = DataGovernanceService(db)
+            await app.state.data_governance.initialize()
+            logger.info("✓ Data governance service initialized")
+        except Exception as e:
+            app.state.data_governance = None
+            logger.warning(f"Data governance service not available: {str(e)}")
+    else:
+        # Set None for enterprise services if not available
+        app.state.enterprise_audit = None
+        app.state.enterprise_security = None
+        app.state.feature_flags = None
+        app.state.data_governance = None
+
     try:
         # Sync conflicts service
         sync_conflicts_service = SyncConflictsService(db)
@@ -794,6 +857,8 @@ else:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
+    # Allow local network IPs for development (Expo Go, LAN access)
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=[
@@ -847,6 +912,11 @@ app.include_router(erp_router, prefix="/api")  # ERP endpoints
 app.include_router(variance_router, prefix="/api")  # Variance reasons and trendspoints
 app.include_router(admin_control_router)  # Admin control endpoints
 app.include_router(dynamic_fields_router)  # Dynamic fields management
+
+# Enterprise API (audit, security, feature flags, governance)
+if ENTERPRISE_AVAILABLE and enterprise_router is not None:
+    app.include_router(enterprise_router, prefix="/api")
+    logger.info("✓ Enterprise API router registered at /api/enterprise/*")
 
 
 @app.get("/api/mapping/test_direct")

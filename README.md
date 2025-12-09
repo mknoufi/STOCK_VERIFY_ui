@@ -5,10 +5,16 @@
 
 ## 📚 Documentation (v2.1)
 
+### Core Documentation
 * **[Codebase Memory](docs/codebase_memory_v2.1.md)**: Architecture, Tech Stack, and Data Models.
 * **[Cursor Rules](docs/STOCK_VERIFY_2.1_cursor_rules.md)**: AI behavior and coding standards.
 * **[Verified Coding Policy](docs/verified_coding_policy.md)**: Testing and verification requirements.
 * **[Changelog](docs/CHANGELOG.md)**: Version history.
+
+### Production & Deployment
+* **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT_GUIDE.md)**: Complete deployment instructions for production.
+* **[Production Readiness Checklist](docs/PRODUCTION_READINESS_CHECKLIST.md)**: Step-by-step verification before going live.
+* **[Feature Roadmap](docs/FEATURE_ROADMAP.md)**: Planned features and upgrade recommendations.
 
 ---
 

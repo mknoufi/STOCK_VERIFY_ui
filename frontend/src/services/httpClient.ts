@@ -1,8 +1,7 @@
 import axios from "axios";
+import { getBackendURL } from "./backendUrl";
 
-// Default to localhost for development if env var is not set
-// Note: For Android Emulator use 'http://10.0.2.2:8001'
-const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || "http://localhost:8001";
+const BASE_URL = getBackendURL();
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

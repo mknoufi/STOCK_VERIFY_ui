@@ -53,6 +53,7 @@ export interface CreateCountLinePayload {
   mark_location?: string | null;
   sr_no?: string | null;
   manufacturing_date?: string | null;
+  photo_base64?: string;
   photo_proofs?: any[];
   mrp_counted?: number;
   mrp_source?: string;

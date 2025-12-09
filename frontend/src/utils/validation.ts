@@ -77,12 +77,17 @@ export const validateBarcode = (barcode: string): ValidationResult<string> => {
 
   const trimmed = barcode.trim();
 
+  // Check minimum length - barcode must be at least 6 characters
+  if (trimmed.length < 6) {
+    return { valid: false, error: "Invalid barcode: must be at least 6 digits" };
+  }
+
   if (trimmed.match(/^\d+$/)) {
     if (trimmed.length > 20) {
       return { valid: false, error: "Barcode is too long (max 20 digits)" };
     }
 
-    return { valid: true, value: normalizeBarcode(trimmed) };
+    return { valid: true, value: trimmed };
   }
 
   if (trimmed.match(/^[A-Za-z0-9]+$/)) {

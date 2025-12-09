@@ -71,6 +71,17 @@ async def get_item_by_barcode_enhanced(
 
         barcode = barcode.strip()
 
+        # Validate barcode length - must be at least 6 characters
+        if len(barcode) < 6:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Invalid barcode: must be at least 6 digits",
+                    "barcode": barcode,
+                    "error_code": "INVALID_BARCODE",
+                },
+            )
+
         # Determine data source strategy
         if force_source:
             item_data, source = await _fetch_from_specific_source(barcode, force_source)
@@ -78,6 +89,19 @@ async def get_item_by_barcode_enhanced(
             item_data, source = await _fetch_with_fallback_strategy(barcode)
 
         response_time = (time.time() - start_time) * 1000
+
+        # Return 404 if item not found
+        if not item_data or source == "not_found":
+            logger.warning(f"Item not found for barcode: {barcode}")
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "message": "Item not found",
+                    "barcode": barcode,
+                    "source": "not_found",
+                    "response_time_ms": response_time,
+                },
+            )
 
         # Log performance
         logger.info(f"Enhanced barcode lookup: {barcode} from {source} in {response_time:.2f}ms")

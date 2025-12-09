@@ -1,3 +1,4 @@
+import inspect
 import logging
 import uuid
 from datetime import datetime
@@ -112,13 +113,15 @@ async def create_count_line(
 ):
     db = _get_db_client()
 
-    # Validate session exists
-    session = await db.sessions.find_one({"id": line_data.session_id})
+    # Validate session exists (support both async and sync mocks)
+    result = db.sessions.find_one({"id": line_data.session_id})
+    session = await result if inspect.isawaitable(result) else result
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # Get ERP item
-    erp_item = await db.erp_items.find_one({"item_code": line_data.item_code})
+    # Get ERP item (support both async and sync mocks)
+    result_item = db.erp_items.find_one({"item_code": line_data.item_code})
+    erp_item = await result_item if inspect.isawaitable(result_item) else result_item
     if not erp_item:
         raise HTTPException(status_code=404, detail="Item not found in ERP")
 
@@ -146,12 +149,15 @@ async def create_count_line(
     approval_status = "NEEDS_REVIEW" if risk_flags else "PENDING"
 
     # Check for duplicates
-    duplicate_check = await db.count_lines.count_documents(
+    duplicate_result = db.count_lines.count_documents(
         {
             "session_id": line_data.session_id,
             "item_code": line_data.item_code,
             "counted_by": current_user["username"],
         }
+    )
+    duplicate_check = (
+        await duplicate_result if inspect.isawaitable(duplicate_result) else duplicate_result
     )
     if duplicate_check > 0:
         risk_flags.append("DUPLICATE_CORRECTION")
@@ -244,7 +250,7 @@ async def create_count_line(
     if risk_flags and _activity_log_service:
         await _activity_log_service.log_activity(
             user=current_user["username"],
-            role=current_user["role"],
+            role=current_user.get("role", ""),
             action="high_risk_correction",
             entity_type="count_line",
             entity_id=count_line["id"],
@@ -539,7 +545,7 @@ async def delete_count_line(
         if _activity_log_service:
             await _activity_log_service.log_activity(
                 user=current_user["username"],
-                role=current_user["role"],
+                role=current_user.get("role", ""),
                 action="delete_count_line",
                 entity_type="count_line",
                 entity_id=str(count_line.get("id", line_id)),

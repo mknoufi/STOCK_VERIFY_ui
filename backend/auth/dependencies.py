@@ -209,6 +209,32 @@ async def get_current_user(
 get_current_user_async = get_current_user
 
 
+async def require_admin(
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    """
+    Dependency to require admin role
+    Usage: current_user: dict = Depends(require_admin)
+    """
+    from backend.error_messages import get_error_message
+
+    user_role = current_user.get("role", "")
+
+    if user_role != "admin":
+        error = get_error_message("AUTH_INSUFFICIENT_PERMISSIONS")
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": error.get("message", "Admin access required"),
+                "detail": "This endpoint requires admin privileges",
+                "code": error.get("code", "ADMIN_REQUIRED"),
+                "category": error.get("category", "authorization"),
+            },
+        )
+
+    return current_user
+
+
 def require_permissions(required_permissions: list[str]):
     """
     Dependency factory to require specific permissions

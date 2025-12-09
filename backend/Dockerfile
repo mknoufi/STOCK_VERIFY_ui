@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies in builder stage (include all transitive dependencies)
+# Install dependencies in builder stage
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.11-slim AS runtime
 
@@ -29,10 +29,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* && \
     groupadd -r appuser && useradd -r -g appuser appuser
 
-# Install Python packages from wheels
-COPY --from=builder /app/wheels /wheels
-RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* && \
-    rm -rf /wheels
+# Copy installed packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY . /app/backend

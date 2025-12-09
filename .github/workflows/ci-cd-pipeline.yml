@@ -453,7 +453,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ needs.build-images.outputs.backend-image }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ needs.build-images.outputs.version }}
           format: 'table'
           exit-code: '0'  # Don't fail on vulnerabilities, just report
           ignore-unfixed: true

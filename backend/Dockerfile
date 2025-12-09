@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies in builder stage
+# Install dependencies in builder stage (include all transitive dependencies)
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+    pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt
 
 FROM python:3.11-slim AS runtime
 

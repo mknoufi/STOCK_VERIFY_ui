@@ -161,9 +161,9 @@ class TestAPIThroughput:
         collector.record_success_rate("concurrent", success_count / len(results), threshold=0.95)
 
         assert throughput > 5.0, f"Throughput {throughput} req/s is too low"
-        assert success_count == concurrent_requests, (
-            f"Only {success_count}/{concurrent_requests} succeeded"
-        )
+        assert (
+            success_count == concurrent_requests
+        ), f"Only {success_count}/{concurrent_requests} succeeded"
 
     @pytest.mark.asyncio
     @pytest.mark.performance

@@ -55,10 +55,8 @@ jobs:
       - name: Run backend linting
         working-directory: ./backend
         run: |
-          # Use ruff for linting and formatting check to match local dev
-          ruff --version || true
-          ruff check . || true
-          ruff format --check . || true
+          flake8 . || true
+          black --check . || true
 
       - name: Security scan - Python
         working-directory: ./backend

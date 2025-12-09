@@ -380,7 +380,7 @@ export class SmartSuggestionsService {
   }
 
   private extractCommonLocations(
-    activity: any[]
+    activity: any[],
   ): { floor: string; rack: string; count: number }[] {
     const locationCounts = new Map<string, number>();
 
@@ -406,7 +406,7 @@ export class SmartSuggestionsService {
   // Track user interactions to improve suggestions
   async trackSuggestionInteraction(
     suggestionId: string,
-    action: "viewed" | "clicked" | "dismissed"
+    action: "viewed" | "clicked" | "dismissed",
   ): Promise<void> {
     try {
       await AnalyticsService.trackEvent("suggestion_interaction", {
@@ -436,7 +436,7 @@ export class SmartSuggestionsService {
       if (pattern) {
         const recentActions = pattern.filter(
           (p: { value: any; timestamp: number }) =>
-            Date.now() - p.timestamp < 7 * 24 * 60 * 60 * 1000 // Last 7 days
+            Date.now() - p.timestamp < 7 * 24 * 60 * 60 * 1000, // Last 7 days
         );
         if (recentActions.length > 0) {
           suggestion.confidence = Math.min(1.0, suggestion.confidence + 0.1);

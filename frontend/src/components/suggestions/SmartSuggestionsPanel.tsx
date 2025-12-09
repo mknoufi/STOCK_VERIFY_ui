@@ -322,7 +322,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                 onPress={() => {
                   smartSuggestionsService.trackSuggestionInteraction(
                     "panel_dismissed",
-                    "dismissed"
+                    "dismissed",
                   );
                   onDismiss();
                 }}

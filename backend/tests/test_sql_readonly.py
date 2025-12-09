@@ -68,9 +68,9 @@ def test_sql_server_methods_readonly():
             found_write_methods.extend(matches)
 
     # Should only have read/get methods
-    assert len(found_write_methods) == 0, (
-        f"Found write methods in SQL Server connector: {found_write_methods}"
-    )
+    assert (
+        len(found_write_methods) == 0
+    ), f"Found write methods in SQL Server connector: {found_write_methods}"
 
 
 def test_all_sql_queries_select_only():

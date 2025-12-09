@@ -2,25 +2,27 @@
 # Use: pip install -r requirements.production.txt
 
 # Core Framework
-fastapi==0.115.0
-uvicorn[standard]==0.30.0
+fastapi==0.115.8
+uvicorn[standard]==0.34.1
 gunicorn==23.0.0
-python-dotenv==1.0.0
-pydantic==2.10.0
-pydantic-settings==2.6.0
+python-dotenv==1.0.1
+pydantic==2.12.5
+pydantic-settings==2.7.0
 
 # Database Drivers
-motor==3.6.0
-pymongo==4.9.2
+motor==3.7.0
+pymongo>=4.10.0
 pyodbc==5.2.0
-redis==7.0.1
+redis>=5.2.1
 
 # Security
-python-jose[cryptography]==3.3.0
+# NOTE: python-jose removed due to CVE-2024-33663/33664 and ecdsa vulnerabilities
+# Using PyJWT + cryptography instead (see backend/auth/jwt_provider.py)
 passlib[argon2]==1.7.4
-bcrypt==4.2.0
-python-multipart==0.0.12
-PyJWT==2.10.0
+bcrypt==4.2.1
+python-multipart>=0.0.18
+PyJWT>=2.10.1
+cryptography>=43.0.3
 
 # Monitoring & Logging
 prometheus-client==0.21.0

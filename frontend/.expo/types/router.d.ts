@@ -1,14 +1,334 @@
 /* eslint-disable */
-import * as Router from 'expo-router';
+import * as Router from "expo-router";
 
-export * from 'expo-router';
+export * from "expo-router";
 
-declare module 'expo-router' {
+declare module "expo-router" {
   export namespace ExpoRouter {
     export interface __routes<T extends string | object = string> {
-      hrefInputParams: { pathname: Router.RelativePathString, params?: Router.UnknownInputParams } | { pathname: Router.ExternalPathString, params?: Router.UnknownInputParams } | { pathname: `/help`; params?: Router.UnknownInputParams; } | { pathname: `/`; params?: Router.UnknownInputParams; } | { pathname: `/login`; params?: Router.UnknownInputParams; } | { pathname: `/register`; params?: Router.UnknownInputParams; } | { pathname: `/welcome`; params?: Router.UnknownInputParams; } | { pathname: `/_sitemap`; params?: Router.UnknownInputParams; } | { pathname: `/admin/control-panel`; params?: Router.UnknownInputParams; } | { pathname: `/admin/dashboard-web`; params?: Router.UnknownInputParams; } | { pathname: `/admin/logs`; params?: Router.UnknownInputParams; } | { pathname: `/admin/metrics`; params?: Router.UnknownInputParams; } | { pathname: `/admin/permissions`; params?: Router.UnknownInputParams; } | { pathname: `/admin/reports`; params?: Router.UnknownInputParams; } | { pathname: `/admin/security`; params?: Router.UnknownInputParams; } | { pathname: `/admin/settings`; params?: Router.UnknownInputParams; } | { pathname: `/admin/sql-config`; params?: Router.UnknownInputParams; } | { pathname: `/staff/history`; params?: Router.UnknownInputParams; } | { pathname: `/staff/home`; params?: Router.UnknownInputParams; } | { pathname: `/staff/scan`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/activity-logs`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/dashboard`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/db-mapping`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/error-logs`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/export-results`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/export-schedules`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/export`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/items`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/notes`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/offline-queue`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/session-detail`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/settings`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/sync-conflicts`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/variance-details`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/variances`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/watchtower`; params?: Router.UnknownInputParams; } | { pathname: `/+not-found`, params: Router.UnknownInputParams & {  } } | { pathname: `/supervisor/session/[id]`, params: Router.UnknownInputParams & { id: string | number; } };
-      hrefOutputParams: { pathname: Router.RelativePathString, params?: Router.UnknownOutputParams } | { pathname: Router.ExternalPathString, params?: Router.UnknownOutputParams } | { pathname: `/help`; params?: Router.UnknownOutputParams; } | { pathname: `/`; params?: Router.UnknownOutputParams; } | { pathname: `/login`; params?: Router.UnknownOutputParams; } | { pathname: `/register`; params?: Router.UnknownOutputParams; } | { pathname: `/welcome`; params?: Router.UnknownOutputParams; } | { pathname: `/_sitemap`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/control-panel`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/dashboard-web`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/logs`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/metrics`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/permissions`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/reports`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/security`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/settings`; params?: Router.UnknownOutputParams; } | { pathname: `/admin/sql-config`; params?: Router.UnknownOutputParams; } | { pathname: `/staff/history`; params?: Router.UnknownOutputParams; } | { pathname: `/staff/home`; params?: Router.UnknownOutputParams; } | { pathname: `/staff/scan`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/activity-logs`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/dashboard`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/db-mapping`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/error-logs`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/export-results`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/export-schedules`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/export`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/items`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/notes`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/offline-queue`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/session-detail`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/settings`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/sync-conflicts`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/variance-details`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/variances`; params?: Router.UnknownOutputParams; } | { pathname: `/supervisor/watchtower`; params?: Router.UnknownOutputParams; } | { pathname: `/+not-found`, params: Router.UnknownOutputParams & {  } } | { pathname: `/supervisor/session/[id]`, params: Router.UnknownOutputParams & { id: string; } };
-      href: Router.RelativePathString | Router.ExternalPathString | `/help${`?${string}` | `#${string}` | ''}` | `/${`?${string}` | `#${string}` | ''}` | `/login${`?${string}` | `#${string}` | ''}` | `/register${`?${string}` | `#${string}` | ''}` | `/welcome${`?${string}` | `#${string}` | ''}` | `/_sitemap${`?${string}` | `#${string}` | ''}` | `/admin/control-panel${`?${string}` | `#${string}` | ''}` | `/admin/dashboard-web${`?${string}` | `#${string}` | ''}` | `/admin/logs${`?${string}` | `#${string}` | ''}` | `/admin/metrics${`?${string}` | `#${string}` | ''}` | `/admin/permissions${`?${string}` | `#${string}` | ''}` | `/admin/reports${`?${string}` | `#${string}` | ''}` | `/admin/security${`?${string}` | `#${string}` | ''}` | `/admin/settings${`?${string}` | `#${string}` | ''}` | `/admin/sql-config${`?${string}` | `#${string}` | ''}` | `/staff/history${`?${string}` | `#${string}` | ''}` | `/staff/home${`?${string}` | `#${string}` | ''}` | `/staff/scan${`?${string}` | `#${string}` | ''}` | `/supervisor/activity-logs${`?${string}` | `#${string}` | ''}` | `/supervisor/dashboard${`?${string}` | `#${string}` | ''}` | `/supervisor/db-mapping${`?${string}` | `#${string}` | ''}` | `/supervisor/error-logs${`?${string}` | `#${string}` | ''}` | `/supervisor/export-results${`?${string}` | `#${string}` | ''}` | `/supervisor/export-schedules${`?${string}` | `#${string}` | ''}` | `/supervisor/export${`?${string}` | `#${string}` | ''}` | `/supervisor/items${`?${string}` | `#${string}` | ''}` | `/supervisor/notes${`?${string}` | `#${string}` | ''}` | `/supervisor/offline-queue${`?${string}` | `#${string}` | ''}` | `/supervisor/session-detail${`?${string}` | `#${string}` | ''}` | `/supervisor/settings${`?${string}` | `#${string}` | ''}` | `/supervisor/sync-conflicts${`?${string}` | `#${string}` | ''}` | `/supervisor/variance-details${`?${string}` | `#${string}` | ''}` | `/supervisor/variances${`?${string}` | `#${string}` | ''}` | `/supervisor/watchtower${`?${string}` | `#${string}` | ''}` | { pathname: Router.RelativePathString, params?: Router.UnknownInputParams } | { pathname: Router.ExternalPathString, params?: Router.UnknownInputParams } | { pathname: `/help`; params?: Router.UnknownInputParams; } | { pathname: `/`; params?: Router.UnknownInputParams; } | { pathname: `/login`; params?: Router.UnknownInputParams; } | { pathname: `/register`; params?: Router.UnknownInputParams; } | { pathname: `/welcome`; params?: Router.UnknownInputParams; } | { pathname: `/_sitemap`; params?: Router.UnknownInputParams; } | { pathname: `/admin/control-panel`; params?: Router.UnknownInputParams; } | { pathname: `/admin/dashboard-web`; params?: Router.UnknownInputParams; } | { pathname: `/admin/logs`; params?: Router.UnknownInputParams; } | { pathname: `/admin/metrics`; params?: Router.UnknownInputParams; } | { pathname: `/admin/permissions`; params?: Router.UnknownInputParams; } | { pathname: `/admin/reports`; params?: Router.UnknownInputParams; } | { pathname: `/admin/security`; params?: Router.UnknownInputParams; } | { pathname: `/admin/settings`; params?: Router.UnknownInputParams; } | { pathname: `/admin/sql-config`; params?: Router.UnknownInputParams; } | { pathname: `/staff/history`; params?: Router.UnknownInputParams; } | { pathname: `/staff/home`; params?: Router.UnknownInputParams; } | { pathname: `/staff/scan`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/activity-logs`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/dashboard`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/db-mapping`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/error-logs`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/export-results`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/export-schedules`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/export`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/items`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/notes`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/offline-queue`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/session-detail`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/settings`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/sync-conflicts`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/variance-details`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/variances`; params?: Router.UnknownInputParams; } | { pathname: `/supervisor/watchtower`; params?: Router.UnknownInputParams; } | `/+not-found${`?${string}` | `#${string}` | ''}` | `/supervisor/session/${Router.SingleRoutePart<T>}${`?${string}` | `#${string}` | ''}` | { pathname: `/+not-found`, params: Router.UnknownInputParams & {  } } | { pathname: `/supervisor/session/[id]`, params: Router.UnknownInputParams & { id: string | number; } };
+      hrefInputParams:
+        | {
+            pathname: Router.RelativePathString;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: Router.ExternalPathString;
+            params?: Router.UnknownInputParams;
+          }
+        | { pathname: `/help`; params?: Router.UnknownInputParams }
+        | { pathname: `/`; params?: Router.UnknownInputParams }
+        | { pathname: `/login`; params?: Router.UnknownInputParams }
+        | { pathname: `/register`; params?: Router.UnknownInputParams }
+        | { pathname: `/welcome`; params?: Router.UnknownInputParams }
+        | { pathname: `/_sitemap`; params?: Router.UnknownInputParams }
+        | {
+            pathname: `/admin/control-panel`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/admin/dashboard-web`;
+            params?: Router.UnknownInputParams;
+          }
+        | { pathname: `/admin/logs`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/metrics`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/permissions`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/reports`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/security`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/settings`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/sql-config`; params?: Router.UnknownInputParams }
+        | { pathname: `/staff/history`; params?: Router.UnknownInputParams }
+        | { pathname: `/staff/home`; params?: Router.UnknownInputParams }
+        | { pathname: `/staff/scan`; params?: Router.UnknownInputParams }
+        | {
+            pathname: `/supervisor/activity-logs`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/dashboard`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/db-mapping`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/error-logs`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/export-results`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/export-schedules`;
+            params?: Router.UnknownInputParams;
+          }
+        | { pathname: `/supervisor/export`; params?: Router.UnknownInputParams }
+        | { pathname: `/supervisor/items`; params?: Router.UnknownInputParams }
+        | { pathname: `/supervisor/notes`; params?: Router.UnknownInputParams }
+        | {
+            pathname: `/supervisor/offline-queue`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/session-detail`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/settings`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/sync-conflicts`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/variance-details`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/variances`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/watchtower`;
+            params?: Router.UnknownInputParams;
+          }
+        | { pathname: `/+not-found`; params: Router.UnknownInputParams & {} }
+        | {
+            pathname: `/supervisor/session/[id]`;
+            params: Router.UnknownInputParams & { id: string | number };
+          };
+      hrefOutputParams:
+        | {
+            pathname: Router.RelativePathString;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: Router.ExternalPathString;
+            params?: Router.UnknownOutputParams;
+          }
+        | { pathname: `/help`; params?: Router.UnknownOutputParams }
+        | { pathname: `/`; params?: Router.UnknownOutputParams }
+        | { pathname: `/login`; params?: Router.UnknownOutputParams }
+        | { pathname: `/register`; params?: Router.UnknownOutputParams }
+        | { pathname: `/welcome`; params?: Router.UnknownOutputParams }
+        | { pathname: `/_sitemap`; params?: Router.UnknownOutputParams }
+        | {
+            pathname: `/admin/control-panel`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/admin/dashboard-web`;
+            params?: Router.UnknownOutputParams;
+          }
+        | { pathname: `/admin/logs`; params?: Router.UnknownOutputParams }
+        | { pathname: `/admin/metrics`; params?: Router.UnknownOutputParams }
+        | {
+            pathname: `/admin/permissions`;
+            params?: Router.UnknownOutputParams;
+          }
+        | { pathname: `/admin/reports`; params?: Router.UnknownOutputParams }
+        | { pathname: `/admin/security`; params?: Router.UnknownOutputParams }
+        | { pathname: `/admin/settings`; params?: Router.UnknownOutputParams }
+        | { pathname: `/admin/sql-config`; params?: Router.UnknownOutputParams }
+        | { pathname: `/staff/history`; params?: Router.UnknownOutputParams }
+        | { pathname: `/staff/home`; params?: Router.UnknownOutputParams }
+        | { pathname: `/staff/scan`; params?: Router.UnknownOutputParams }
+        | {
+            pathname: `/supervisor/activity-logs`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/dashboard`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/db-mapping`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/error-logs`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/export-results`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/export-schedules`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/export`;
+            params?: Router.UnknownOutputParams;
+          }
+        | { pathname: `/supervisor/items`; params?: Router.UnknownOutputParams }
+        | { pathname: `/supervisor/notes`; params?: Router.UnknownOutputParams }
+        | {
+            pathname: `/supervisor/offline-queue`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/session-detail`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/settings`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/sync-conflicts`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/variance-details`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/variances`;
+            params?: Router.UnknownOutputParams;
+          }
+        | {
+            pathname: `/supervisor/watchtower`;
+            params?: Router.UnknownOutputParams;
+          }
+        | { pathname: `/+not-found`; params: Router.UnknownOutputParams & {} }
+        | {
+            pathname: `/supervisor/session/[id]`;
+            params: Router.UnknownOutputParams & { id: string };
+          };
+      href:
+        | Router.RelativePathString
+        | Router.ExternalPathString
+        | `/help${`?${string}` | `#${string}` | ""}`
+        | `/${`?${string}` | `#${string}` | ""}`
+        | `/login${`?${string}` | `#${string}` | ""}`
+        | `/register${`?${string}` | `#${string}` | ""}`
+        | `/welcome${`?${string}` | `#${string}` | ""}`
+        | `/_sitemap${`?${string}` | `#${string}` | ""}`
+        | `/admin/control-panel${`?${string}` | `#${string}` | ""}`
+        | `/admin/dashboard-web${`?${string}` | `#${string}` | ""}`
+        | `/admin/logs${`?${string}` | `#${string}` | ""}`
+        | `/admin/metrics${`?${string}` | `#${string}` | ""}`
+        | `/admin/permissions${`?${string}` | `#${string}` | ""}`
+        | `/admin/reports${`?${string}` | `#${string}` | ""}`
+        | `/admin/security${`?${string}` | `#${string}` | ""}`
+        | `/admin/settings${`?${string}` | `#${string}` | ""}`
+        | `/admin/sql-config${`?${string}` | `#${string}` | ""}`
+        | `/staff/history${`?${string}` | `#${string}` | ""}`
+        | `/staff/home${`?${string}` | `#${string}` | ""}`
+        | `/staff/scan${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/activity-logs${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/dashboard${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/db-mapping${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/error-logs${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/export-results${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/export-schedules${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/export${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/items${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/notes${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/offline-queue${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/session-detail${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/settings${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/sync-conflicts${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/variance-details${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/variances${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/watchtower${`?${string}` | `#${string}` | ""}`
+        | {
+            pathname: Router.RelativePathString;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: Router.ExternalPathString;
+            params?: Router.UnknownInputParams;
+          }
+        | { pathname: `/help`; params?: Router.UnknownInputParams }
+        | { pathname: `/`; params?: Router.UnknownInputParams }
+        | { pathname: `/login`; params?: Router.UnknownInputParams }
+        | { pathname: `/register`; params?: Router.UnknownInputParams }
+        | { pathname: `/welcome`; params?: Router.UnknownInputParams }
+        | { pathname: `/_sitemap`; params?: Router.UnknownInputParams }
+        | {
+            pathname: `/admin/control-panel`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/admin/dashboard-web`;
+            params?: Router.UnknownInputParams;
+          }
+        | { pathname: `/admin/logs`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/metrics`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/permissions`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/reports`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/security`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/settings`; params?: Router.UnknownInputParams }
+        | { pathname: `/admin/sql-config`; params?: Router.UnknownInputParams }
+        | { pathname: `/staff/history`; params?: Router.UnknownInputParams }
+        | { pathname: `/staff/home`; params?: Router.UnknownInputParams }
+        | { pathname: `/staff/scan`; params?: Router.UnknownInputParams }
+        | {
+            pathname: `/supervisor/activity-logs`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/dashboard`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/db-mapping`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/error-logs`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/export-results`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/export-schedules`;
+            params?: Router.UnknownInputParams;
+          }
+        | { pathname: `/supervisor/export`; params?: Router.UnknownInputParams }
+        | { pathname: `/supervisor/items`; params?: Router.UnknownInputParams }
+        | { pathname: `/supervisor/notes`; params?: Router.UnknownInputParams }
+        | {
+            pathname: `/supervisor/offline-queue`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/session-detail`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/settings`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/sync-conflicts`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/variance-details`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/variances`;
+            params?: Router.UnknownInputParams;
+          }
+        | {
+            pathname: `/supervisor/watchtower`;
+            params?: Router.UnknownInputParams;
+          }
+        | `/+not-found${`?${string}` | `#${string}` | ""}`
+        | `/supervisor/session/${Router.SingleRoutePart<T>}${`?${string}` | `#${string}` | ""}`
+        | { pathname: `/+not-found`; params: Router.UnknownInputParams & {} }
+        | {
+            pathname: `/supervisor/session/[id]`;
+            params: Router.UnknownInputParams & { id: string | number };
+          };
     }
   }
 }

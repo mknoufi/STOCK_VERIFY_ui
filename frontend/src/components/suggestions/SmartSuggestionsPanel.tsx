@@ -43,7 +43,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
   const [expanded, setExpanded] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [displayedSuggestions, setDisplayedSuggestions] = useState<SuggestionItem[]>([]);
-  
+
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const fadeAnimation = useRef(new Animated.Value(0)).current;
   const rotateAnimation = useRef(new Animated.Value(0)).current;
@@ -87,7 +87,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
       duration: 200,
       useNativeDriver: true,
     }).start();
-    
+
     setExpanded(!expanded);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
   };
@@ -97,19 +97,23 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
     if (expanded) {
       const initialSuggestions = suggestions.slice(0, 3);
       setDisplayedSuggestions(initialSuggestions);
-      
+
       // Stagger animation for suggestions
       initialSuggestions.forEach((_, index) => {
         setTimeout(() => {
-          setDisplayedSuggestions(prev => [...prev, suggestions[index]]);
+          setDisplayedSuggestions(prev => {
+            const newSuggestion = suggestions[index];
+            if (newSuggestion && !prev.find(s => s.id === newSuggestion.id)) {
+              return [...prev, newSuggestion];
+            }
+            return prev;
+          });
         }, index * 100);
       });
     } else {
       setDisplayedSuggestions([]);
     }
-  }, [suggestions, expanded]);
-
-  // Get icon color based on suggestion type
+  }, [suggestions, expanded]);  // Get icon color based on suggestion type
   const getIconColor = (type: string) => {
     switch (type) {
       case 'quantity':
@@ -123,7 +127,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
       case 'photo':
         return modernColors.secondary[500];
       case 'workflow':
-        return modernColors.purple[500];
+        return modernColors.accent[500];
       default:
         return modernColors.text.secondary;
     }
@@ -186,7 +190,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
               <Text style={styles.badgeText}>{suggestions.length}</Text>
             </View>
           </View>
-          
+
           <Animated.View style={{ transform: [{ rotate: rotateStyle }] }}>
             <Ionicons
               name="chevron-down"
@@ -212,7 +216,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                     opacity: displayedSuggestions.length > index ? fadeAnimation : 0,
                     transform: [
                       {
-                        translateY: displayedSuggestions.length > index 
+                        translateY: displayedSuggestions.length > index
                           ? fadeAnimation.interpolate({
                               inputRange: [0, 1],
                               outputRange: [20, 0],
@@ -233,10 +237,10 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                     } catch (e) {
                       // Haptics not available
                     }
-                    
+
                     // Track interaction
                     smartSuggestionsService.trackSuggestionInteraction(suggestion.id, 'clicked');
-                    
+
                     onSuggestionPress(suggestion);
                   }}
                   activeOpacity={0.7}
@@ -248,14 +252,14 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                         size={18}
                         color={getIconColor(suggestion.type)}
                       />
-                      <View 
+                      <View
                         style={[
                           styles.confidenceDot,
                           { backgroundColor: getConfidenceColor(suggestion.confidence) }
                         ]}
                       />
                     </View>
-                    
+
                     <View style={styles.suggestionText}>
                       <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
                       {suggestion.subtitle && (
@@ -266,10 +270,10 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                     </View>
 
                     <View style={styles.suggestionAction}>
-                      <View 
+                      <View
                         style={[
                           styles.confidenceBar,
-                          { 
+                          {
                             width: `${suggestion.confidence * 100}%`,
                             backgroundColor: getConfidenceColor(suggestion.confidence)
                           }

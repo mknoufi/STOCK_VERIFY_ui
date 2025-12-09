@@ -7,6 +7,14 @@ export const AnalyticsService = {
     // Stub implementation
     console.log("Tracking item scan:", itemCode, itemName);
   },
+  getRecentActivity: async (_sessionId: string): Promise<any[]> => {
+    // Stub implementation - returns recent activity for a session
+    return [];
+  },
+  trackEvent: async (eventName: string, data: Record<string, any>) => {
+    // Stub implementation
+    console.log("Tracking event:", eventName, data);
+  },
 };
 
 export const RecentItemsService = {
@@ -16,6 +24,10 @@ export const RecentItemsService = {
   },
   getRecent: async (): Promise<any[]> => {
     // Stub implementation
+    return [];
+  },
+  getRecentItems: async (_itemCode: string): Promise<any[]> => {
+    // Stub implementation - returns recent items for a specific item code
     return [];
   },
   clearRecent: async () => {

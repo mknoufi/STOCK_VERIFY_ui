@@ -394,9 +394,12 @@ export class SmartSuggestionsService {
 
     return Array.from(locationCounts.entries())
       .map(([key, count]) => {
-        const [floor, rack] = key.split('-');
+        const parts = key.split('-');
+        const floor = parts[0] || '';
+        const rack = parts.slice(1).join('-') || '';
         return { floor, rack, count };
       })
+      .filter(loc => loc.floor && loc.rack)
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
   }
@@ -429,7 +432,7 @@ export class SmartSuggestionsService {
     return suggestions.map(suggestion => {
       const pattern = this.userPatterns.get(suggestion.type);
       if (pattern) {
-        const recentActions = pattern.filter(p =>
+        const recentActions = pattern.filter((p: { value: any; timestamp: number }) =>
           Date.now() - p.timestamp < 7 * 24 * 60 * 60 * 1000 // Last 7 days
         );
         if (recentActions.length > 0) {

@@ -89,10 +89,10 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand({ping: 1})'"
+          --health-cmd "mongo --eval 'db.runCommand({ping:1})' || exit 0"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
     steps:
       - name: Checkout code
@@ -121,7 +121,21 @@ jobs:
       - name: Wait for MongoDB
         working-directory: ./backend
         run: |
-          timeout 60 bash -c 'until mongosh --eval "db.adminCommand({ping: 1})" --host localhost:27017; do sleep 1; done'
+          python -c "
+import time
+from pymongo import MongoClient
+for i in range(60):
+    try:
+        client = MongoClient('mongodb://localhost:27017', serverSelectionTimeoutMS=1000)
+        client.admin.command('ping')
+        print('MongoDB is ready!')
+        break
+    except Exception as e:
+        print(f'Waiting for MongoDB... ({i+1}/60)')
+        time.sleep(1)
+else:
+    raise Exception('MongoDB did not become ready in time')
+"
 
       - name: Run backend tests with coverage
         working-directory: ./backend
@@ -293,10 +307,10 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand({ping: 1})'"
+          --health-cmd "mongo --eval 'db.runCommand({ping:1})' || exit 0"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
     steps:
       - name: Checkout code
@@ -320,8 +334,23 @@ jobs:
           pip install httpx pytest
 
       - name: Wait for MongoDB
+        working-directory: ./backend
         run: |
-          timeout 60 bash -c 'until mongosh --eval "db.adminCommand({ping: 1})" --host localhost:27017; do sleep 1; done'
+          python -c "
+import time
+from pymongo import MongoClient
+for i in range(60):
+    try:
+        client = MongoClient('mongodb://localhost:27017', serverSelectionTimeoutMS=1000)
+        client.admin.command('ping')
+        print('MongoDB is ready!')
+        break
+    except Exception as e:
+        print(f'Waiting for MongoDB... ({i+1}/60)')
+        time.sleep(1)
+else:
+    raise Exception('MongoDB did not become ready in time')
+"
 
       - name: Start application stack
         working-directory: ./backend

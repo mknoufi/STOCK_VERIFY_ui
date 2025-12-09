@@ -1,8 +1,8 @@
-import { AnalyticsService , RecentItemsService } from "./enhancedFeatures";
+import { AnalyticsService, RecentItemsService } from "./enhancedFeatures";
 
 export interface SuggestionItem {
   id: string;
-  type: 'quantity' | 'location' | 'reason' | 'action' | 'photo' | 'workflow';
+  type: "quantity" | "location" | "reason" | "action" | "photo" | "workflow";
   title: string;
   subtitle?: string;
   icon: string;
@@ -65,12 +65,9 @@ export class SmartSuggestionsService {
       suggestions.push(...workflowSuggestions);
 
       // Sort by confidence and return top suggestions
-      return suggestions
-        .sort((a, b) => b.confidence - a.confidence)
-        .slice(0, 6); // Limit to top 6 suggestions
-
+      return suggestions.sort((a, b) => b.confidence - a.confidence).slice(0, 6); // Limit to top 6 suggestions
     } catch (error) {
-      console.error('Error getting suggestions:', error);
+      console.error("Error getting suggestions:", error);
       return [];
     }
   }
@@ -88,27 +85,27 @@ export class SmartSuggestionsService {
         if (avgQuantity && avgQuantity > 0) {
           suggestions.push({
             id: `quantity-avg-${context.itemCode}`,
-            type: 'quantity',
+            type: "quantity",
             title: `Usually count ${avgQuantity}`,
-            subtitle: 'Based on your history',
-            icon: 'trending-up',
+            subtitle: "Based on your history",
+            icon: "trending-up",
             confidence: 0.8,
             data: { suggestedQuantity: avgQuantity },
-            action: () => console.log(`Suggested quantity: ${avgQuantity}`)
+            action: () => console.log(`Suggested quantity: ${avgQuantity}`),
           });
         }
 
         // Smart bulk suggestions
-        if (context.scannedItem.category === 'Electronics') {
+        if (context.scannedItem.category === "Electronics") {
           suggestions.push({
-            id: 'quantity-bulk-electronics',
-            type: 'quantity',
-            title: 'Electronics bulk count',
-            subtitle: 'Scan 5-10 units efficiently',
-            icon: 'cube-outline',
+            id: "quantity-bulk-electronics",
+            type: "quantity",
+            title: "Electronics bulk count",
+            subtitle: "Scan 5-10 units efficiently",
+            icon: "cube-outline",
             confidence: 0.7,
             data: { suggestedQuantities: [1, 5, 10] },
-            action: () => console.log('Electronics bulk count suggested')
+            action: () => console.log("Electronics bulk count suggested"),
           });
         }
 
@@ -116,19 +113,18 @@ export class SmartSuggestionsService {
         const systemStock = context.scannedItem.stock_qty || context.scannedItem.current_stock;
         if (systemStock && systemStock > 0) {
           suggestions.push({
-            id: 'quantity-system-stock',
-            type: 'quantity',
+            id: "quantity-system-stock",
+            type: "quantity",
             title: `System shows ${systemStock}`,
-            subtitle: 'Verify against physical count',
-            icon: 'server-outline',
+            subtitle: "Verify against physical count",
+            icon: "server-outline",
             confidence: 0.6,
             data: { systemStock },
-            action: () => console.log(`System stock: ${systemStock}`)
+            action: () => console.log(`System stock: ${systemStock}`),
           });
         }
-
       } catch (error) {
-        console.warn('Error getting quantity suggestions:', error);
+        console.warn("Error getting quantity suggestions:", error);
       }
     }
 
@@ -148,32 +144,31 @@ export class SmartSuggestionsService {
         commonLocations.forEach((location, index) => {
           suggestions.push({
             id: `location-recent-${index}`,
-            type: 'location',
+            type: "location",
             title: `${location.floor} - ${location.rack}`,
             subtitle: `Visited ${location.count} times`,
-            icon: 'location-outline',
+            icon: "location-outline",
             confidence: Math.max(0.5, 0.9 - index * 0.2),
             data: location,
-            action: () => console.log(`Navigate to: ${location.floor} - ${location.rack}`)
+            action: () => console.log(`Navigate to: ${location.floor} - ${location.rack}`),
           });
         });
 
         // Nearest rack suggestions
         if (context.floorNo) {
           suggestions.push({
-            id: 'location-adjacent-racks',
-            type: 'location',
-            title: 'Check adjacent racks',
-            subtitle: 'Often items are stored nearby',
-            icon: 'navigate-outline',
+            id: "location-adjacent-racks",
+            type: "location",
+            title: "Check adjacent racks",
+            subtitle: "Often items are stored nearby",
+            icon: "navigate-outline",
             confidence: 0.7,
             data: { floorNo: context.floorNo },
-            action: () => console.log('Suggest adjacent racks')
+            action: () => console.log("Suggest adjacent racks"),
           });
         }
-
       } catch (error) {
-        console.warn('Error getting location suggestions:', error);
+        console.warn("Error getting location suggestions:", error);
       }
     }
 
@@ -190,22 +185,22 @@ export class SmartSuggestionsService {
       if (systemStock && Math.abs(context.quantity - systemStock) > systemStock * 0.1) {
         // High variance detected
         const commonReasons = [
-          { code: 'damaged', label: 'Damaged Items', confidence: 0.8 },
-          { code: 'lost', label: 'Lost/Missing', confidence: 0.7 },
-          { code: 'new_stock', label: 'New Stock Not Updated', confidence: 0.6 },
-          { code: 'theft', label: 'Theft/Security Issue', confidence: 0.5 }
+          { code: "damaged", label: "Damaged Items", confidence: 0.8 },
+          { code: "lost", label: "Lost/Missing", confidence: 0.7 },
+          { code: "new_stock", label: "New Stock Not Updated", confidence: 0.6 },
+          { code: "theft", label: "Theft/Security Issue", confidence: 0.5 },
         ];
 
-        commonReasons.forEach(reason => {
+        commonReasons.forEach((reason) => {
           suggestions.push({
             id: `reason-${reason.code}`,
-            type: 'reason',
+            type: "reason",
             title: reason.label,
-            subtitle: 'Common for this variance',
-            icon: 'warning-outline',
+            subtitle: "Common for this variance",
+            icon: "warning-outline",
             confidence: reason.confidence,
             data: reason,
-            action: () => console.log(`Select reason: ${reason.code}`)
+            action: () => console.log(`Select reason: ${reason.code}`),
           });
         });
       }
@@ -219,44 +214,45 @@ export class SmartSuggestionsService {
     const suggestions: SuggestionItem[] = [];
 
     // Time-based suggestions
-    if (context.timeSpent && context.timeSpent > 300) { // 5 minutes
+    if (context.timeSpent && context.timeSpent > 300) {
+      // 5 minutes
       suggestions.push({
-        id: 'action-bulk-mode',
-        type: 'action',
-        title: 'Switch to Bulk Mode',
-        subtitle: 'Speed up your counting',
-        icon: 'albums-outline',
+        id: "action-bulk-mode",
+        type: "action",
+        title: "Switch to Bulk Mode",
+        subtitle: "Speed up your counting",
+        icon: "albums-outline",
         confidence: 0.8,
         data: {},
-        action: () => console.log('Switch to bulk mode')
+        action: () => console.log("Switch to bulk mode"),
       });
     }
 
     // Photo suggestions
     if (context.scannedItem && context.scannedItem.mrp > 1000) {
       suggestions.push({
-        id: 'action-photo-required',
-        type: 'photo',
-        title: 'Add Photo Required',
-        subtitle: 'High-value items need verification',
-        icon: 'camera-outline',
+        id: "action-photo-required",
+        type: "photo",
+        title: "Add Photo Required",
+        subtitle: "High-value items need verification",
+        icon: "camera-outline",
         confidence: 0.9,
         data: {},
-        action: () => console.log('Open camera for photo')
+        action: () => console.log("Open camera for photo"),
       });
     }
 
     // Serial number suggestions
-    if (context.scannedItem && context.scannedItem.category === 'Electronics') {
+    if (context.scannedItem && context.scannedItem.category === "Electronics") {
       suggestions.push({
-        id: 'action-serial-scan',
-        type: 'action',
-        title: 'Enable Serial Tracking',
-        subtitle: 'Required for electronics',
-        icon: 'qr-code-outline',
+        id: "action-serial-scan",
+        type: "action",
+        title: "Enable Serial Tracking",
+        subtitle: "Required for electronics",
+        icon: "qr-code-outline",
         confidence: 0.7,
         data: {},
-        action: () => console.log('Enable serial tracking')
+        action: () => console.log("Enable serial tracking"),
       });
     }
 
@@ -271,43 +267,46 @@ export class SmartSuggestionsService {
       // Auto-photo suggestions based on item value
       if (context.scannedItem.mrp > 500) {
         suggestions.push({
-          id: 'photo-item-verification',
-          type: 'photo',
-          title: 'Item Verification Photo',
-          subtitle: 'For high-value items',
-          icon: 'shield-checkmark-outline',
+          id: "photo-item-verification",
+          type: "photo",
+          title: "Item Verification Photo",
+          subtitle: "For high-value items",
+          icon: "shield-checkmark-outline",
           confidence: 0.8,
-          data: { photoType: 'verification' },
-          action: () => console.log('Take verification photo')
+          data: { photoType: "verification" },
+          action: () => console.log("Take verification photo"),
         });
       }
 
       // Serial photo for electronics
-      if (context.scannedItem.category === 'Electronics') {
+      if (context.scannedItem.category === "Electronics") {
         suggestions.push({
-          id: 'photo-serial-number',
-          type: 'photo',
-          title: 'Capture Serial Number',
-          subtitle: 'Important for warranty',
-          icon: 'barcode-outline',
+          id: "photo-serial-number",
+          type: "photo",
+          title: "Capture Serial Number",
+          subtitle: "Important for warranty",
+          icon: "barcode-outline",
           confidence: 0.7,
-          data: { photoType: 'serial' },
-          action: () => console.log('Capture serial photo')
+          data: { photoType: "serial" },
+          action: () => console.log("Capture serial photo"),
         });
       }
 
       // Condition photo for damaged items
-      if (context.quantity && context.scannedItem.stock_qty &&
-          context.quantity < context.scannedItem.stock_qty) {
+      if (
+        context.quantity &&
+        context.scannedItem.stock_qty &&
+        context.quantity < context.scannedItem.stock_qty
+      ) {
         suggestions.push({
-          id: 'photo-condition',
-          type: 'photo',
-          title: 'Document Condition',
-          subtitle: 'Show why count differs',
-          icon: 'document-text-outline',
+          id: "photo-condition",
+          type: "photo",
+          title: "Document Condition",
+          subtitle: "Show why count differs",
+          icon: "document-text-outline",
           confidence: 0.6,
-          data: { photoType: 'condition' },
-          action: () => console.log('Take condition photo')
+          data: { photoType: "condition" },
+          action: () => console.log("Take condition photo"),
         });
       }
     }
@@ -322,28 +321,29 @@ export class SmartSuggestionsService {
     // Session-based workflow suggestions
     if (context.recentActivity && context.recentActivity.length > 10) {
       suggestions.push({
-        id: 'workflow-complete-session',
-        type: 'workflow',
-        title: 'Complete Session',
-        subtitle: 'You\'ve counted many items',
-        icon: 'checkmark-circle-outline',
+        id: "workflow-complete-session",
+        type: "workflow",
+        title: "Complete Session",
+        subtitle: "You've counted many items",
+        icon: "checkmark-circle-outline",
         confidence: 0.8,
         data: {},
-        action: () => console.log('Suggest session completion')
+        action: () => console.log("Suggest session completion"),
       });
     }
 
     // Break suggestion
-    if (context.timeSpent && context.timeSpent > 1800) { // 30 minutes
+    if (context.timeSpent && context.timeSpent > 1800) {
+      // 30 minutes
       suggestions.push({
-        id: 'workflow-take-break',
-        type: 'workflow',
-        title: 'Take a Break',
-        subtitle: '30+ minutes of counting',
-        icon: 'cafe-outline',
+        id: "workflow-take-break",
+        type: "workflow",
+        title: "Take a Break",
+        subtitle: "30+ minutes of counting",
+        icon: "cafe-outline",
         confidence: 0.9,
         data: {},
-        action: () => console.log('Suggest break')
+        action: () => console.log("Suggest break"),
       });
     }
 
@@ -352,14 +352,14 @@ export class SmartSuggestionsService {
       const systemStock = context.scannedItem.stock_qty;
       if (systemStock && Math.abs(context.quantity - systemStock) > systemStock * 0.2) {
         suggestions.push({
-          id: 'workflow-quality-check',
-          type: 'workflow',
-          title: 'Quality Check Recommended',
-          subtitle: 'Large variance detected',
-          icon: 'clipboard-outline',
+          id: "workflow-quality-check",
+          type: "workflow",
+          title: "Quality Check Recommended",
+          subtitle: "Large variance detected",
+          icon: "clipboard-outline",
           confidence: 0.8,
           data: {},
-          action: () => console.log('Suggest quality check')
+          action: () => console.log("Suggest quality check"),
         });
       }
     }
@@ -371,9 +371,7 @@ export class SmartSuggestionsService {
   private calculateAverageQuantity(recentItems: any[]): number {
     if (!recentItems || recentItems.length === 0) return 0;
 
-    const quantities = recentItems
-      .map(item => item.counted_qty)
-      .filter(qty => qty && qty > 0);
+    const quantities = recentItems.map((item) => item.counted_qty).filter((qty) => qty && qty > 0);
 
     if (quantities.length === 0) return 0;
 
@@ -381,10 +379,12 @@ export class SmartSuggestionsService {
     return Math.round(sum / quantities.length);
   }
 
-  private extractCommonLocations(activity: any[]): {floor: string, rack: string, count: number}[] {
+  private extractCommonLocations(
+    activity: any[]
+  ): { floor: string; rack: string; count: number }[] {
     const locationCounts = new Map<string, number>();
 
-    activity.forEach(item => {
+    activity.forEach((item) => {
       if (item.floor_no && item.rack_no) {
         const key = `${item.floor_no}-${item.rack_no}`;
         locationCounts.set(key, (locationCounts.get(key) || 0) + 1);
@@ -393,26 +393,29 @@ export class SmartSuggestionsService {
 
     return Array.from(locationCounts.entries())
       .map(([key, count]) => {
-        const parts = key.split('-');
-        const floor = parts[0] || '';
-        const rack = parts.slice(1).join('-') || '';
+        const parts = key.split("-");
+        const floor = parts[0] || "";
+        const rack = parts.slice(1).join("-") || "";
         return { floor, rack, count };
       })
-      .filter(loc => loc.floor && loc.rack)
+      .filter((loc) => loc.floor && loc.rack)
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
   }
 
   // Track user interactions to improve suggestions
-  async trackSuggestionInteraction(suggestionId: string, action: 'viewed' | 'clicked' | 'dismissed'): Promise<void> {
+  async trackSuggestionInteraction(
+    suggestionId: string,
+    action: "viewed" | "clicked" | "dismissed"
+  ): Promise<void> {
     try {
-      await AnalyticsService.trackEvent('suggestion_interaction', {
+      await AnalyticsService.trackEvent("suggestion_interaction", {
         suggestion_id: suggestionId,
         action,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.warn('Error tracking suggestion interaction:', error);
+      console.warn("Error tracking suggestion interaction:", error);
     }
   }
 
@@ -428,11 +431,12 @@ export class SmartSuggestionsService {
     const suggestions = await this.getSuggestions(context);
 
     // Apply user pattern weighting
-    return suggestions.map(suggestion => {
+    return suggestions.map((suggestion) => {
       const pattern = this.userPatterns.get(suggestion.type);
       if (pattern) {
-        const recentActions = pattern.filter((p: { value: any; timestamp: number }) =>
-          Date.now() - p.timestamp < 7 * 24 * 60 * 60 * 1000 // Last 7 days
+        const recentActions = pattern.filter(
+          (p: { value: any; timestamp: number }) =>
+            Date.now() - p.timestamp < 7 * 24 * 60 * 60 * 1000 // Last 7 days
         );
         if (recentActions.length > 0) {
           suggestion.confidence = Math.min(1.0, suggestion.confidence + 0.1);

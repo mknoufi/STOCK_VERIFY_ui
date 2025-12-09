@@ -12,8 +12,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { modernColors, modernSpacing, modernBorderRadius } from "@/styles/modernDesignSystem";
-import { SuggestionItem , smartSuggestionsService } from "@/services/smartSuggestionsService";
-import * as Haptics from 'expo-haptics';
+import { SuggestionItem, smartSuggestionsService } from "@/services/smartSuggestionsService";
+import * as Haptics from "expo-haptics";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -25,7 +25,7 @@ interface SmartSuggestionsPanelProps {
   onSuggestionPress: (suggestion: SuggestionItem) => void;
   onDismiss?: () => void;
   visible?: boolean;
-  position?: 'top' | 'bottom' | 'center';
+  position?: "top" | "bottom" | "center";
   maxHeight?: number;
 }
 
@@ -34,7 +34,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
   onSuggestionPress,
   onDismiss,
   visible = true,
-  position = 'top',
+  position = "top",
   maxHeight = 200,
 }) => {
   const [expanded, setExpanded] = useState(true);
@@ -98,9 +98,9 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
       // Stagger animation for suggestions
       initialSuggestions.forEach((_, index) => {
         setTimeout(() => {
-          setDisplayedSuggestions(prev => {
+          setDisplayedSuggestions((prev) => {
             const newSuggestion = suggestions[index];
-            if (newSuggestion && !prev.find(s => s.id === newSuggestion.id)) {
+            if (newSuggestion && !prev.find((s) => s.id === newSuggestion.id)) {
               return [...prev, newSuggestion];
             }
             return prev;
@@ -110,20 +110,20 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
     } else {
       setDisplayedSuggestions([]);
     }
-  }, [suggestions, expanded]);  // Get icon color based on suggestion type
+  }, [suggestions, expanded]); // Get icon color based on suggestion type
   const getIconColor = (type: string) => {
     switch (type) {
-      case 'quantity':
+      case "quantity":
         return modernColors.primary[500];
-      case 'location':
+      case "location":
         return modernColors.success.main;
-      case 'reason':
+      case "reason":
         return modernColors.warning.main;
-      case 'action':
+      case "action":
         return modernColors.info.main;
-      case 'photo':
+      case "photo":
         return modernColors.secondary[500];
-      case 'workflow':
+      case "workflow":
         return modernColors.accent[500];
       default:
         return modernColors.text.secondary;
@@ -140,13 +140,13 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
   // Calculate position for slide animation
   const slidePosition = slideAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [position === 'top' ? -100 : 100, 0],
+    outputRange: [position === "top" ? -100 : 100, 0],
   });
 
   // Rotation for expand/collapse icon
   const rotateStyle = rotateAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
+    outputRange: ["0deg", "180deg"],
   });
 
   if (!visible || suggestions.length === 0) {
@@ -160,28 +160,23 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
         {
           opacity: fadeAnimation,
           transform: [{ translateY: slidePosition }],
-          [position === 'top' ? 'top' : 'bottom']: 0,
+          [position === "top" ? "top" : "bottom"]: 0,
         },
       ]}
     >
-      <View style={[
-        styles.panel,
-        {
-          [position === 'top' ? 'borderBottomColor' : 'borderTopColor']: modernColors.border.light,
-        },
-      ]}>
+      <View
+        style={[
+          styles.panel,
+          {
+            [position === "top" ? "borderBottomColor" : "borderTopColor"]:
+              modernColors.border.light,
+          },
+        ]}
+      >
         {/* Header */}
-        <TouchableOpacity
-          style={styles.header}
-          onPress={toggleExpanded}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.header} onPress={toggleExpanded} activeOpacity={0.7}>
           <View style={styles.headerLeft}>
-            <Ionicons
-              name="bulb-outline"
-              size={20}
-              color={modernColors.primary[500]}
-            />
+            <Ionicons name="bulb-outline" size={20} color={modernColors.primary[500]} />
             <Text style={styles.headerTitle}>Smart Suggestions</Text>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{suggestions.length}</Text>
@@ -189,11 +184,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
           </View>
 
           <Animated.View style={{ transform: [{ rotate: rotateStyle }] }}>
-            <Ionicons
-              name="chevron-down"
-              size={20}
-              color={modernColors.text.secondary}
-            />
+            <Ionicons name="chevron-down" size={20} color={modernColors.text.secondary} />
           </Animated.View>
         </TouchableOpacity>
 
@@ -213,12 +204,13 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                     opacity: displayedSuggestions.length > index ? fadeAnimation : 0,
                     transform: [
                       {
-                        translateY: displayedSuggestions.length > index
-                          ? fadeAnimation.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [20, 0],
-                            })
-                          : 0,
+                        translateY:
+                          displayedSuggestions.length > index
+                            ? fadeAnimation.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [20, 0],
+                              })
+                            : 0,
                       },
                     ],
                   },
@@ -235,7 +227,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                     }
 
                     // Track interaction
-                    smartSuggestionsService.trackSuggestionInteraction(suggestion.id, 'clicked');
+                    smartSuggestionsService.trackSuggestionInteraction(suggestion.id, "clicked");
 
                     onSuggestionPress(suggestion);
                   }}
@@ -251,7 +243,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                       <View
                         style={[
                           styles.confidenceDot,
-                          { backgroundColor: getConfidenceColor(suggestion.confidence) }
+                          { backgroundColor: getConfidenceColor(suggestion.confidence) },
                         ]}
                       />
                     </View>
@@ -259,9 +251,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                     <View style={styles.suggestionText}>
                       <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
                       {suggestion.subtitle && (
-                        <Text style={styles.suggestionSubtitle}>
-                          {suggestion.subtitle}
-                        </Text>
+                        <Text style={styles.suggestionSubtitle}>{suggestion.subtitle}</Text>
                       )}
                     </View>
 
@@ -271,8 +261,8 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                           styles.confidenceBar,
                           {
                             width: `${suggestion.confidence * 100}%`,
-                            backgroundColor: getConfidenceColor(suggestion.confidence)
-                          }
+                            backgroundColor: getConfidenceColor(suggestion.confidence),
+                          },
                         ]}
                       />
                     </View>
@@ -280,7 +270,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                 </TouchableOpacity>
 
                 {/* Quick Actions */}
-                {suggestion.type === 'quantity' && (
+                {suggestion.type === "quantity" && (
                   <View style={styles.quickActions}>
                     {[1, 5, 10].map((qty) => (
                       <TouchableOpacity
@@ -289,7 +279,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                         onPress={() => {
                           const suggestionWithQty = {
                             ...suggestion,
-                            data: { ...suggestion.data, quantity: qty }
+                            data: { ...suggestion.data, quantity: qty },
                           };
                           onSuggestionPress(suggestionWithQty);
                         }}
@@ -300,7 +290,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                   </View>
                 )}
 
-                {suggestion.type === 'location' && suggestion.data.rack && (
+                {suggestion.type === "location" && suggestion.data.rack && (
                   <View style={styles.locationChip}>
                     <Ionicons name="location" size={12} color={modernColors.success.main} />
                     <Text style={styles.locationText}>
@@ -313,10 +303,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
 
             {/* Show More Button */}
             {suggestions.length > 3 && (
-              <TouchableOpacity
-                style={styles.showMoreButton}
-                onPress={() => setShowAll(!showAll)}
-              >
+              <TouchableOpacity style={styles.showMoreButton} onPress={() => setShowAll(!showAll)}>
                 <Ionicons
                   name={showAll ? "chevron-up" : "chevron-down"}
                   size={16}
@@ -333,7 +320,10 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
               <TouchableOpacity
                 style={styles.dismissButton}
                 onPress={() => {
-                  smartSuggestionsService.trackSuggestionInteraction('panel_dismissed', 'dismissed');
+                  smartSuggestionsService.trackSuggestionInteraction(
+                    "panel_dismissed",
+                    "dismissed"
+                  );
                   onDismiss();
                 }}
               >
@@ -354,7 +344,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     zIndex: 1000,
@@ -366,30 +356,30 @@ const styles = StyleSheet.create({
     borderRadius: modernBorderRadius.lg,
     borderWidth: 1,
     borderColor: modernColors.border.light,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: modernSpacing.md,
     backgroundColor: modernColors.background.elevated,
     borderBottomWidth: 1,
     borderBottomColor: modernColors.border.light,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: modernColors.text.primary,
     marginLeft: modernSpacing.sm,
     flex: 1,
@@ -400,11 +390,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     minWidth: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     color: modernColors.primary[600],
   },
   suggestionsList: {
@@ -422,15 +412,15 @@ const styles = StyleSheet.create({
     borderColor: modernColors.border.light,
   },
   suggestionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   suggestionIcon: {
-    position: 'relative',
+    position: "relative",
     marginRight: modernSpacing.md,
   },
   confidenceDot: {
-    position: 'absolute',
+    position: "absolute",
     top: -2,
     right: -2,
     width: 8,
@@ -442,7 +432,7 @@ const styles = StyleSheet.create({
   },
   suggestionTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: modernColors.text.primary,
     marginBottom: 2,
   },
@@ -459,7 +449,7 @@ const styles = StyleSheet.create({
     minWidth: 30,
   },
   quickActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: modernSpacing.sm,
     paddingLeft: modernSpacing.md + 26, // Icon width + margin
   },
@@ -472,13 +462,13 @@ const styles = StyleSheet.create({
   },
   quickActionText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     color: modernColors.primary[600],
   },
   locationChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: modernColors.success.light + '20',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: modernColors.success.light + "20",
     borderRadius: modernBorderRadius.sm,
     paddingHorizontal: modernSpacing.sm,
     paddingVertical: 4,
@@ -488,26 +478,26 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 12,
     color: modernColors.success.main,
-    fontWeight: '500',
+    fontWeight: "500",
     marginLeft: 4,
   },
   showMoreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: modernSpacing.sm,
     marginTop: modernSpacing.sm,
   },
   showMoreText: {
     fontSize: 14,
     color: modernColors.primary[500],
-    fontWeight: '500',
+    fontWeight: "500",
     marginLeft: 4,
   },
   dismissButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: modernSpacing.sm,
     marginTop: modernSpacing.sm,
     borderTopWidth: 1,

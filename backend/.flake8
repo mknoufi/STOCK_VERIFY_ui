@@ -1,0 +1,37 @@
+[flake8]
+# Ignore complexity warnings (C901) - these are informational
+# Ignore E402 - module level import not at top (common in scripts with sys.path manipulation)
+# Ignore F811 - redefinition of unused (often intentional for optional imports)
+# Ignore W503 - line break before binary operator (conflicts with PEP 8 and black)
+# Ignore E501 - line too long (black handles this, sometimes allows slightly longer lines)
+# Ignore E203 - whitespace before ':' (conflicts with black's slice formatting)
+ignore = C901, E402, F811, W503, E501, E203
+
+# Max line length (consistent with black)
+max-line-length = 100
+
+# Exclude directories
+exclude =
+    .git,
+    __pycache__,
+    venv,
+    .venv,
+    build,
+    dist,
+    .eggs,
+    *.egg-info,
+    .mypy_cache,
+    .pytest_cache,
+    .ruff_cache,
+    htmlcov,
+    node_modules
+
+# Per-file ignores for specific patterns
+per-file-ignores =
+    # Scripts often need sys.path manipulation before imports
+    scripts/*.py: E402, F811
+    # Tests may have unusual import patterns
+    tests/*.py: E402, F811
+    tests/**/*.py: E402, F811
+    # Server startup may have conditional imports
+    server.py: E402, F811

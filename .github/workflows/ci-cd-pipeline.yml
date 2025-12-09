@@ -222,8 +222,7 @@ jobs:
       contents: read
       packages: write
     outputs:
-      backend-image: ${{ steps.meta.outputs.tags }}
-      frontend-image: ${{ steps.meta-frontend.outputs.tags }}
+      version: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -308,8 +307,8 @@ jobs:
 
       - name: Download Docker images
         run: |
-          docker pull ${{ needs.build-images.outputs.backend-image }}
-          docker pull ${{ needs.build-images.outputs.frontend-image }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ needs.build-images.outputs.version }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ needs.build-images.outputs.version }}
 
       - name: Install dependencies
         working-directory: ./backend
@@ -372,8 +371,8 @@ jobs:
 
       - name: Download Docker images
         run: |
-          docker pull ${{ needs.build-images.outputs.backend-image }}
-          docker pull ${{ needs.build-images.outputs.frontend-image }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ needs.build-images.outputs.version }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ needs.build-images.outputs.version }}
 
       - name: Deploy to staging
         run: |
@@ -401,8 +400,8 @@ jobs:
 
       - name: Download Docker images
         run: |
-          docker pull ${{ needs.build-images.outputs.backend-image }}
-          docker pull ${{ needs.build-images.outputs.frontend-image }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ needs.build-images.outputs.version }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ needs.build-images.outputs.version }}
 
       - name: Deploy to production
         run: |

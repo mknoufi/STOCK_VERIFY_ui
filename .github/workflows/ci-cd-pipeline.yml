@@ -427,7 +427,8 @@ jobs:
           text: "🚀 STOCK_VERIFY_2.1 deployed successfully to production!"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: success()
+        if: success() && secrets.SLACK_WEBHOOK != ''
+        continue-on-error: true
 
       - name: Notify deployment failure
         uses: 8398a7/action-slack@v3
@@ -436,7 +437,8 @@ jobs:
           text: "❌ STOCK_VERIFY_2.1 deployment failed!"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure()
+        if: failure() && secrets.SLACK_WEBHOOK != ''
+        continue-on-error: true
 
   # Security Scan (optional - continue on error)
   security-scan:

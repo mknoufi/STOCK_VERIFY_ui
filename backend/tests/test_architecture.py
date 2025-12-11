@@ -63,9 +63,9 @@ def test_no_sql_server_writes_in_server():
         if matches:
             found_sql_writes.extend(matches)
 
-    assert (
-        len(found_sql_writes) == 0
-    ), f"Found SQL Server write operations in server.py: {found_sql_writes}"
+    assert len(found_sql_writes) == 0, (
+        f"Found SQL Server write operations in server.py: {found_sql_writes}"
+    )
 
 
 def test_erp_sync_reads_from_sql_writes_to_mongo():

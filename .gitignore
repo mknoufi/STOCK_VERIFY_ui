@@ -138,3 +138,9 @@ archive_old_docs/
 # React Native Metro cache
 frontend/.metro-cache/
 frontend/coverage/
+
+# Cursor IDE
+.cursor/
+
+# Temporary files
+tmp/

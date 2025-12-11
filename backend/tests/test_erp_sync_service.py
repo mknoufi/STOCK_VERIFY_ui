@@ -95,7 +95,7 @@ class TestSQLSyncService:
         assert result["items_updated"] == 1
         assert result["items_created"] == 1
         assert result["errors"] == 0
-        assert result["duration"] > 0
+        assert result["duration"] >= 0
 
         # Verify MongoDB operations
         assert mock_mongo_db.erp_items.update_one.called

@@ -1,3 +1,6 @@
-Set-Location 'D:\testapp\Stock_count'
-$proc = Start-Process -FilePath 'npm' -ArgumentList '--prefix','frontend','run','web' -WorkingDirectory (Get-Location) -PassThru
-Write-Output ("Started frontend PID: {0}" -f $proc.Id)
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$RootDir = Split-Path -Parent $ScriptDir
+Set-Location $RootDir
+
+Write-Host "Starting Frontend..."
+npm --prefix frontend run web

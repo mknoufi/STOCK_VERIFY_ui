@@ -15,7 +15,7 @@ def test_mongodb_handles_all_writes():
     if not server_file.exists():
         pytest.skip("server.py not found")
 
-    content = server_file.read_text()
+    content = server_file.read_text(encoding="utf-8")
 
     # Check that write operations use MongoDB (db.*)
     mongo_write_patterns = [
@@ -45,7 +45,7 @@ def test_no_sql_server_writes_in_server():
     if not server_file.exists():
         pytest.skip("server.py not found")
 
-    content = server_file.read_text()
+    content = server_file.read_text(encoding="utf-8")
 
     # Check for SQL Server write patterns
     sql_write_patterns = [
@@ -75,7 +75,7 @@ def test_erp_sync_reads_from_sql_writes_to_mongo():
     if not sync_file.exists():
         pytest.skip("erp_sync_service.py not found")
 
-    content = sync_file.read_text()
+    content = sync_file.read_text(encoding="utf-8")
 
     # Should read from SQL Server
     sql_read_patterns = [

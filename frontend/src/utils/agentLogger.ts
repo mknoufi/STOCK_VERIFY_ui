@@ -16,7 +16,9 @@ const getIngestUrl = (): string => {
     host = (Constants as any).manifest2.extra.expoClient.hostUri.split(":")[0];
   } else if (Constants.debuggerHost) {
     host = Constants.debuggerHost.split(":")[0];
-  }
+  } else if (Platform.OS === "android") {
+    // Match backend URL behavior: from Android emulator, route to dev machine
+    host = "10.0.2.2";
 
   return `http://${host}:7242${ENDPOINT_PATH}`;
 };

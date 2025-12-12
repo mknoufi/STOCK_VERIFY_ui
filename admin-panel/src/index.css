@@ -21,6 +21,10 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -34,13 +38,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-width: 320px;
+  width: 100%;
+  height: 100vh;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 #root {
+  width: 100%;
+  height: 100vh;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  padding: 0;
+  position: relative;
 }
 
 /* Focus management */
@@ -124,4 +138,129 @@ select {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-neutral-300) var(--color-neutral-100);
+}
+
+/* ================================
+   Mobile Reset & Responsive Styles
+   ================================ */
+
+/* Mobile Viewport Fix */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  body {
+    height: -webkit-fill-available;
+  }
+  
+  #root {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile touch devices */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Mobile Responsive Breakpoints */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Prevent horizontal scroll */
+  * {
+    max-width: 100%;
+  }
+  
+  /* Improve touch targets */
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Better form inputs on mobile */
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevents iOS zoom */
+    width: 100%;
+    padding: 0.75rem;
+  }
+  
+  /* Table responsive */
+  table {
+    font-size: 0.875rem;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Images responsive */
+  img {
+    height: auto;
+    max-width: 100%;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+  
+  /* Reduce padding on small screens */
+  .page-content {
+    padding: 1rem;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  #root {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Optimize for retina displays */
+  img,
+  svg {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
 }

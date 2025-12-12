@@ -215,3 +215,183 @@ td {
     transform: rotate(360deg);
   }
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .analytics-page {
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+    width: 100%;
+  }
+
+  .time-range-selector {
+    width: 100%;
+    display: flex;
+    justify-content: stretch;
+  }
+
+  .time-range-selector button {
+    flex: 1;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    min-height: 44px;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .card {
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .chart-container {
+    height: 250px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chart-placeholder {
+    min-width: 100%;
+    padding-bottom: 2rem;
+  }
+
+  .chart-bar-group {
+    min-width: 30px;
+  }
+
+  .chart-bar-group .label {
+    font-size: 0.625rem;
+    bottom: -30px;
+  }
+
+  .chart-legend {
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+
+  table {
+    min-width: 100%;
+    font-size: 0.8125rem;
+  }
+
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  th {
+    font-size: 0.75rem;
+  }
+
+  td {
+    font-size: 0.8125rem;
+  }
+
+  .badge {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.4375rem;
+  }
+
+  .loading-container,
+  .error-container {
+    min-height: 300px;
+    padding: 1rem;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+  .analytics-page {
+    gap: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .time-range-selector {
+    flex-direction: column;
+  }
+
+  .time-range-selector button {
+    width: 100%;
+  }
+
+  .card {
+    padding: 0.75rem;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+
+  .chart-bar-group {
+    min-width: 25px;
+  }
+
+  .chart-bar-group .label {
+    font-size: 0.5625rem;
+    bottom: -35px;
+  }
+
+  table {
+    font-size: 0.75rem;
+  }
+
+  th,
+  td {
+    padding: 0.4375rem 0.5rem;
+  }
+
+  th {
+    font-size: 0.6875rem;
+  }
+
+  td {
+    font-size: 0.75rem;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .chart-container {
+    height: 200px;
+  }
+
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

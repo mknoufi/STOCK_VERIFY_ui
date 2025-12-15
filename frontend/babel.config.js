@@ -3,16 +3,14 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     plugins: [
-      // Transform import.meta for web compatibility
-      // This must come before other plugins
-      /*
+      // Transform import.meta for web compatibility - MUST be first
+      // This transforms import.meta.env to process.env for Safari compatibility
       [
-        'babel-plugin-transform-import-meta',
+        "babel-plugin-transform-import-meta",
         {
-          module: 'ES6',
+          // Replaces import.meta with a module-level object
         },
       ],
-      */
       // Removed react-native-dotenv - it conflicts with expo-router
       // Use EXPO_PUBLIC_* environment variables instead (built into Expo)
       [

@@ -1,16 +1,27 @@
+/**
+ * Export Schedules Screen
+ * Allows creating, editing, and managing automated export schedules.
+ * Refactored to use Aurora Design System
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   Modal,
   TextInput,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+
 import { usePermissions } from "../../src/hooks/usePermissions";
 import {
   getExportSchedules,
@@ -19,6 +30,8 @@ import {
   deleteExportSchedule,
   triggerExportSchedule,
 } from "../../src/services/api/api";
+import { AuroraBackground, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 interface ExportSchedule {
   _id: string;
@@ -76,6 +89,7 @@ export default function ExportSchedulesScreen() {
 
   const handleCreateSchedule = async () => {
     try {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await createExportSchedule(formData);
       Alert.alert("Success", "Export schedule created successfully");
       setModalVisible(false);
@@ -87,6 +101,7 @@ export default function ExportSchedulesScreen() {
       });
       loadSchedules();
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to create export schedule");
     }
   };
@@ -95,6 +110,7 @@ export default function ExportSchedulesScreen() {
     if (!editingSchedule) return;
 
     try {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await updateExportSchedule(editingSchedule._id, formData);
       Alert.alert("Success", "Export schedule updated successfully");
       setModalVisible(false);
@@ -107,11 +123,13 @@ export default function ExportSchedulesScreen() {
       });
       loadSchedules();
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to update export schedule");
     }
   };
 
   const handleDeleteSchedule = async (scheduleId: string) => {
+    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert(
       "Confirm Delete",
       "Are you sure you want to delete this export schedule?",
@@ -139,6 +157,7 @@ export default function ExportSchedulesScreen() {
 
   const handleTriggerSchedule = async (scheduleId: string) => {
     try {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await triggerExportSchedule(scheduleId);
       Alert.alert("Success", "Export triggered successfully");
     } catch (error: any) {
@@ -147,6 +166,7 @@ export default function ExportSchedulesScreen() {
   };
 
   const openCreateModal = () => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     setEditingSchedule(null);
     setFormData({
       name: "",
@@ -158,6 +178,7 @@ export default function ExportSchedulesScreen() {
   };
 
   const openEditModal = (schedule: ExportSchedule) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     setEditingSchedule(schedule);
     setFormData({
       name: schedule.name,
@@ -168,410 +189,463 @@ export default function ExportSchedulesScreen() {
     setModalVisible(true);
   };
 
-  const renderScheduleCard = (schedule: ExportSchedule) => (
-    <View key={schedule._id} style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{schedule.name}</Text>
-        <View
-          style={[
-            styles.badge,
-            schedule.enabled ? styles.badgeActive : styles.badgeInactive,
-          ]}
-        >
-          <Text style={styles.badgeText}>
-            {schedule.enabled ? "Enabled" : "Disabled"}
-          </Text>
+  const renderScheduleCard = (schedule: ExportSchedule, index: number) => (
+    <Animated.View
+      key={schedule._id}
+      entering={FadeInDown.delay(index * 100).springify()}
+    >
+      <GlassCard
+        variant="light"
+        padding={auroraTheme.spacing.md}
+        borderRadius={auroraTheme.borderRadius.lg}
+        style={styles.card}
+      >
+        <View style={styles.cardHeader}>
+          <View style={styles.cardHeaderLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: auroraTheme.colors.primary[500] + '20' }]}>
+              <Ionicons name="calendar-outline" size={24} color={auroraTheme.colors.primary[500]} />
+            </View>
+            <View>
+              <Text style={styles.cardTitle}>{schedule.name}</Text>
+              <View
+                style={[
+                  styles.badge,
+                  schedule.enabled ? { backgroundColor: auroraTheme.colors.success[500] + '20', borderColor: auroraTheme.colors.success[500] } : { backgroundColor: auroraTheme.colors.text.tertiary + '20', borderColor: auroraTheme.colors.text.tertiary },
+                ]}
+              >
+                <Text style={[styles.badgeText, { color: schedule.enabled ? auroraTheme.colors.success[500] : auroraTheme.colors.text.secondary }]}>
+                  {schedule.enabled ? "Active" : "Disabled"}
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
-      </View>
 
-      {schedule.description && (
-        <Text style={styles.cardDescription}>{schedule.description}</Text>
-      )}
-
-      <View style={styles.cardDetails}>
-        <Text style={styles.cardDetailText}>
-          Frequency: {schedule.frequency}
-        </Text>
-        <Text style={styles.cardDetailText}>Format: {schedule.format}</Text>
-        {schedule.next_run && (
-          <Text style={styles.cardDetailText}>
-            Next Run: {new Date(schedule.next_run).toLocaleString()}
-          </Text>
+        {schedule.description && (
+          <Text style={styles.cardDescription}>{schedule.description}</Text>
         )}
-      </View>
 
-      <View style={styles.cardActions}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.triggerButton]}
-          onPress={() => handleTriggerSchedule(schedule._id)}
-        >
-          <Text style={styles.actionButtonText}>▶ Trigger Now</Text>
-        </TouchableOpacity>
+        <View style={styles.cardDetails}>
+          <View style={styles.detailRow}>
+            <Ionicons name="time-outline" size={16} color={auroraTheme.colors.text.tertiary} />
+            <Text style={styles.cardDetailText}>Frequency: <Text style={{ color: auroraTheme.colors.text.primary, fontWeight: '600' }}>{schedule.frequency}</Text></Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons name="document-text-outline" size={16} color={auroraTheme.colors.text.tertiary} />
+            <Text style={styles.cardDetailText}>Format: <Text style={{ color: auroraTheme.colors.text.primary, fontWeight: '600' }}>{schedule.format.toUpperCase()}</Text></Text>
+          </View>
+          {schedule.next_run && (
+            <View style={styles.detailRow}>
+              <Ionicons name="play-skip-forward-outline" size={16} color={auroraTheme.colors.text.tertiary} />
+              <Text style={styles.cardDetailText}>Next Run: <Text style={{ color: auroraTheme.colors.text.primary }}>{new Date(schedule.next_run).toLocaleString()}</Text></Text>
+            </View>
+          )}
+        </View>
 
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => openEditModal(schedule)}
-        >
-          <Text style={styles.actionButtonText}>✎ Edit</Text>
-        </TouchableOpacity>
+        <View style={styles.cardActions}>
+          <AnimatedPressable
+            style={[styles.actionButton, { backgroundColor: auroraTheme.colors.primary[500] }]}
+            onPress={() => handleTriggerSchedule(schedule._id)}
+          >
+            <Ionicons name="play" size={16} color="#fff" />
+            <Text style={styles.actionButtonText}>Run Now</Text>
+          </AnimatedPressable>
 
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeleteSchedule(schedule._id)}
-        >
-          <Text style={styles.actionButtonText}>✕ Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          <AnimatedPressable
+            style={[styles.actionButton, { backgroundColor: auroraTheme.colors.warning[500] }]}
+            onPress={() => openEditModal(schedule)}
+          >
+            <Ionicons name="create-outline" size={16} color="#fff" />
+            <Text style={styles.actionButtonText}>Edit</Text>
+          </AnimatedPressable>
+
+          <AnimatedPressable
+            style={[styles.actionButton, { backgroundColor: auroraTheme.colors.error[500] }]}
+            onPress={() => handleDeleteSchedule(schedule._id)}
+          >
+            <Ionicons name="trash-outline" size={16} color="#fff" />
+            <Text style={styles.actionButtonText}>Delete</Text>
+          </AnimatedPressable>
+        </View>
+      </GlassCard>
+    </Animated.View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading schedules...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Export Schedules</Text>
-        <TouchableOpacity style={styles.createButton} onPress={openCreateModal}>
-          <Text style={styles.createButtonText}>+ New</Text>
-        </TouchableOpacity>
-      </View>
+    <AuroraBackground variant="secondary" intensity="low">
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Export Schedules</Text>
+              <Text style={styles.pageSubtitle}>Manage automated reports</Text>
+            </View>
+          </View>
+          <AnimatedPressable
+            style={[styles.createButton, { backgroundColor: auroraTheme.colors.success[500] }]}
+            onPress={openCreateModal}
+          >
+            <Ionicons name="add" size={24} color="#fff" />
+            <Text style={styles.createButtonText}>New</Text>
+          </AnimatedPressable>
+        </Animated.View>
 
-      <ScrollView style={styles.content}>
-        {schedules.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No export schedules found</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Create a schedule to automatically export data
-            </Text>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+            <Text style={styles.loadingText}>Loading schedules...</Text>
           </View>
         ) : (
-          schedules.map(renderScheduleCard)
-        )}
-      </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {editingSchedule ? "Edit Schedule" : "Create Schedule"}
-            </Text>
-
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Schedule Name"
-              placeholderTextColor="#666"
-              value={formData.name}
-              onChangeText={(text) => setFormData({ ...formData, name: text })}
-            />
-
-            <TextInput
-              style={[styles.modalInput, styles.modalTextArea]}
-              placeholder="Description (optional)"
-              placeholderTextColor="#666"
-              value={formData.description}
-              onChangeText={(text) =>
-                setFormData({ ...formData, description: text })
-              }
-              multiline
-            />
-
-            <Text style={styles.modalLabel}>Frequency</Text>
-            <View style={styles.optionGroup}>
-              {["daily", "weekly", "monthly"].map((freq) => (
-                <TouchableOpacity
-                  key={freq}
-                  style={[
-                    styles.optionButton,
-                    formData.frequency === freq && styles.optionButtonSelected,
-                  ]}
-                  onPress={() => setFormData({ ...formData, frequency: freq })}
-                >
-                  <Text
-                    style={[
-                      styles.optionButtonText,
-                      formData.frequency === freq &&
-                        styles.optionButtonTextSelected,
-                    ]}
-                  >
-                    {freq.charAt(0).toUpperCase() + freq.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.modalLabel}>Format</Text>
-            <View style={styles.optionGroup}>
-              {["excel", "csv", "json"].map((fmt) => (
-                <TouchableOpacity
-                  key={fmt}
-                  style={[
-                    styles.optionButton,
-                    formData.format === fmt && styles.optionButtonSelected,
-                  ]}
-                  onPress={() => setFormData({ ...formData, format: fmt })}
-                >
-                  <Text
-                    style={[
-                      styles.optionButtonText,
-                      formData.format === fmt &&
-                        styles.optionButtonTextSelected,
-                    ]}
-                  >
-                    {fmt.toUpperCase()}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonCancel]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonPrimary]}
-                onPress={
-                  editingSchedule ? handleUpdateSchedule : handleCreateSchedule
-                }
-              >
-                <Text style={styles.modalButtonText}>
-                  {editingSchedule ? "Update" : "Create"}
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            {schedules.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="calendar-outline" size={64} color={auroraTheme.colors.text.tertiary} />
+                <Text style={styles.emptyStateText}>No export schedules found</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Create a schedule to automatically export data
                 </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </View>
+              </View>
+            ) : (
+              schedules.map((schedule, index) => renderScheduleCard(schedule, index))
+            )}
+          </ScrollView>
+        )}
+
+        <Modal
+          visible={modalVisible}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <AuroraBackground variant="primary" intensity="high" style={styles.modalOverlay}>
+            <GlassCard variant="modal" borderRadius={auroraTheme.borderRadius.xl} padding={auroraTheme.spacing.xl} style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {editingSchedule ? "Edit Schedule" : "Create Schedule"}
+                </Text>
+                <AnimatedPressable onPress={() => setModalVisible(false)}>
+                  <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+                </AnimatedPressable>
+              </View>
+
+              <Text style={styles.inputLabel}>Name</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Schedule Name"
+                placeholderTextColor={auroraTheme.colors.text.tertiary}
+                value={formData.name}
+                onChangeText={(text) => setFormData({ ...formData, name: text })}
+              />
+
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput
+                style={[styles.modalInput, styles.modalTextArea]}
+                placeholder="Description (optional)"
+                placeholderTextColor={auroraTheme.colors.text.tertiary}
+                value={formData.description}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, description: text })
+                }
+                multiline
+              />
+
+              <Text style={styles.inputLabel}>Frequency</Text>
+              <View style={styles.optionGroup}>
+                {["daily", "weekly", "monthly"].map((freq) => (
+                  <AnimatedPressable
+                    key={freq}
+                    style={[
+                      styles.optionButton,
+                      formData.frequency === freq && { backgroundColor: auroraTheme.colors.primary[500], borderColor: auroraTheme.colors.primary[500] },
+                    ]}
+                    onPress={() => setFormData({ ...formData, frequency: freq })}
+                  >
+                    <Text
+                      style={[
+                        styles.optionButtonText,
+                        formData.frequency === freq && { color: "#fff", fontWeight: "700" },
+                      ]}
+                    >
+                      {freq.charAt(0).toUpperCase() + freq.slice(1)}
+                    </Text>
+                  </AnimatedPressable>
+                ))}
+              </View>
+
+              <Text style={styles.inputLabel}>Format</Text>
+              <View style={styles.optionGroup}>
+                {["excel", "csv", "json"].map((fmt) => (
+                  <AnimatedPressable
+                    key={fmt}
+                    style={[
+                      styles.optionButton,
+                      formData.format === fmt && { backgroundColor: auroraTheme.colors.primary[500], borderColor: auroraTheme.colors.primary[500] },
+                    ]}
+                    onPress={() => setFormData({ ...formData, format: fmt })}
+                  >
+                    <Text
+                      style={[
+                        styles.optionButtonText,
+                        formData.format === fmt && { color: "#fff", fontWeight: "700" },
+                      ]}
+                    >
+                      {fmt.toUpperCase()}
+                    </Text>
+                  </AnimatedPressable>
+                ))}
+              </View>
+
+              <View style={styles.modalActions}>
+                <AnimatedPressable
+                  style={[styles.modalButton, { backgroundColor: auroraTheme.colors.background.glass, borderWidth: 1, borderColor: auroraTheme.colors.border.light }]}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={[styles.modalButtonText, { color: auroraTheme.colors.text.primary }]}>Cancel</Text>
+                </AnimatedPressable>
+
+                <AnimatedPressable
+                  style={[styles.modalButton, { backgroundColor: auroraTheme.colors.primary[500] }]}
+                  onPress={
+                    editingSchedule ? handleUpdateSchedule : handleCreateSchedule
+                  }
+                >
+                  <Text style={styles.modalButtonText}>
+                    {editingSchedule ? "Update" : "Create"}
+                  </Text>
+                </AnimatedPressable>
+              </View>
+            </GlassCard>
+          </AuroraBackground>
+        </Modal>
+      </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#121212",
-  },
-  loadingText: {
-    marginTop: 10,
-    color: "#fff",
-    fontSize: 16,
+    paddingTop: 60,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#1E1E1E",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    paddingHorizontal: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
   },
   backButton: {
-    marginRight: 16,
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
-  backButtonText: {
-    color: "#007AFF",
-    fontSize: 16,
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
   },
-  title: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   createButton: {
-    backgroundColor: "#00E676",
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.full,
   },
   createButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: auroraTheme.typography.fontSize.md,
     fontWeight: "600",
   },
-  content: {
+  contentContainer: {
+    padding: auroraTheme.spacing.md,
+    paddingBottom: 40,
+  },
+  loadingContainer: {
     flex: 1,
-    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
+  },
+  loadingText: {
+    color: auroraTheme.colors.text.secondary,
+    fontSize: auroraTheme.typography.fontSize.md,
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
+    gap: auroraTheme.spacing.md,
   },
   emptyStateText: {
-    fontSize: 18,
-    color: "#666",
-    marginBottom: 8,
+    fontSize: auroraTheme.typography.fontSize.xl,
+    color: auroraTheme.colors.text.secondary,
+    fontWeight: 'bold',
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: "#444",
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.tertiary,
+  },
+  scrollView: {
+    flex: 1,
   },
   card: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#333",
+    marginBottom: auroraTheme.spacing.md,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: auroraTheme.spacing.sm,
+  },
+  cardHeaderLeft: {
+    flexDirection: 'row',
+    gap: auroraTheme.spacing.md,
+    flex: 1
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: auroraTheme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: auroraTheme.typography.fontSize.lg,
     fontWeight: "bold",
-    color: "#fff",
-    flex: 1,
+    color: auroraTheme.colors.text.primary,
+    marginBottom: 4,
   },
   badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeActive: {
-    backgroundColor: "#00E676",
-  },
-  badgeInactive: {
-    backgroundColor: "#666",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: auroraTheme.borderRadius.badge,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
   },
   badgeText: {
-    color: "#fff",
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "600",
   },
   cardDescription: {
-    fontSize: 14,
-    color: "#aaa",
-    marginBottom: 12,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
+    marginBottom: auroraTheme.spacing.md,
+    lineHeight: 20,
   },
   cardDetails: {
-    marginBottom: 12,
+    marginBottom: auroraTheme.spacing.md,
+    gap: 6,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   cardDetailText: {
-    fontSize: 14,
-    color: "#ccc",
-    marginBottom: 4,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   cardActions: {
     flexDirection: "row",
-    gap: 8,
+    gap: auroraTheme.spacing.sm,
   },
   actionButton: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.lg,
     alignItems: "center",
-  },
-  triggerButton: {
-    backgroundColor: "#007AFF",
-  },
-  editButton: {
-    backgroundColor: "#FFC107",
-  },
-  deleteButton: {
-    backgroundColor: "#FF5252",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 4,
   },
   actionButtonText: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: auroraTheme.typography.fontSize.sm,
     fontWeight: "600",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.8)',
   },
   modalContent: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 12,
-    padding: 24,
     width: "100%",
     maxWidth: 500,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: auroraTheme.spacing.lg,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: auroraTheme.typography.fontSize.xl,
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 20,
+    color: auroraTheme.colors.text.primary,
+  },
+  inputLabel: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
+    marginBottom: 6,
+    fontWeight: '600',
   },
   modalInput: {
-    backgroundColor: "#252525",
-    color: "#fff",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    color: auroraTheme.colors.text.primary,
     padding: 12,
-    borderRadius: 8,
-    fontSize: 16,
-    marginBottom: 16,
+    borderRadius: auroraTheme.borderRadius.md,
+    fontSize: auroraTheme.typography.fontSize.md,
+    marginBottom: auroraTheme.spacing.md,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: auroraTheme.colors.border.light,
   },
   modalTextArea: {
     minHeight: 80,
     textAlignVertical: "top",
   },
-  modalLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: 8,
-  },
   optionGroup: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: 16,
+    marginBottom: auroraTheme.spacing.md,
   },
   optionButton: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.md,
     alignItems: "center",
-    backgroundColor: "#252525",
+    backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-    borderColor: "#333",
-  },
-  optionButtonSelected: {
-    backgroundColor: "#007AFF",
-    borderColor: "#007AFF",
+    borderColor: auroraTheme.colors.border.light,
   },
   optionButtonText: {
-    color: "#aaa",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  optionButtonTextSelected: {
-    color: "#fff",
+    color: auroraTheme.colors.text.secondary,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    fontWeight: "500",
   },
   modalActions: {
     flexDirection: "row",
@@ -581,18 +655,12 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.full,
     alignItems: "center",
-  },
-  modalButtonCancel: {
-    backgroundColor: "#666",
-  },
-  modalButtonPrimary: {
-    backgroundColor: "#00E676",
   },
   modalButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: auroraTheme.typography.fontSize.md,
     fontWeight: "600",
   },
 });

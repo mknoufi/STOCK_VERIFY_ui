@@ -1,6 +1,7 @@
 """Check and create default users if they don't exist"""
 
 import asyncio
+import logging
 import os
 from datetime import datetime
 
@@ -9,6 +10,13 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
 
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 # Password context - Modern Argon2 hashing
@@ -29,13 +37,13 @@ async def check_users():
     db = client[db_name]
 
     users = await db.users.find({}).to_list(10)
-    print(f"Users found: {len(users)}")
+    logger.info(f"Users found: {len(users)}")
 
     for u in users:
-        print(f"  - {u.get('username')} ({u.get('role')})")
+        logger.info(f"  - {u.get('username')} ({u.get('role')})")
 
     if len(users) == 0:
-        print("\nNo users found - creating default users...")
+        logger.warning("No users found - creating default users...")
         await db.users.insert_many(
             [
                 {
@@ -54,9 +62,9 @@ async def check_users():
                 },
             ]
         )
-        print("✓ Default users created")
+        logger.info("✅ Default users created")
         users = await db.users.find({}).to_list(10)
-        print(f"Total users: {len(users)}")
+        logger.info(f"Total users: {len(users)}")
 
     client.close()
 

@@ -48,9 +48,30 @@ BATCH_COLUMN_MAP = {
     "shelf_id": "ShelfID",
 }
 
+# Common Table Expression for last purchase info
+LAST_PURCHASE_CTE = """
+    WITH LastPurchase AS (
+        SELECT
+            ITD.ProductBatchID,
+            ITM.VoucherType as last_purchase_type,
+            ITM.TransactionDate as last_purchase_date,
+            ITD.Quantity as last_purchase_qty,
+            Pa.PartyName as last_purchase_supplier,
+            ROW_NUMBER() OVER (
+                PARTITION BY ITD.ProductBatchID
+                ORDER BY ITM.TransactionDate DESC, ITM.InvTransactionMasterID DESC
+            ) as rn
+        FROM InvTransactionDetails ITD
+        LEFT JOIN InvTransactionMaster ITM ON ITD.InvTransactionMasterID = ITM.InvTransactionMasterID
+        LEFT JOIN Parties Pa ON ITM.LedgerID = Pa.LedgerID
+        WHERE ITM.VoucherType IN ('PI', 'PE')
+    )
+"""
+
 # SQL Query Templates
 SQL_TEMPLATES = {
-    "get_item_by_barcode": """
+    "get_item_by_barcode": LAST_PURCHASE_CTE
+    + """
         SELECT DISTINCT
             P.ProductID as item_id,
             P.ProductCode as item_code,
@@ -62,6 +83,9 @@ SQL_TEMPLATES = {
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
             PB.MRP as mrp,
+            PB.StdSalesPrice as sale_price,
+            PB.LastPurchaseRate as last_purchase_price,
+            PB.LastPurchaseCost as last_purchase_cost,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
@@ -73,20 +97,34 @@ SQL_TEMPLATES = {
             GST.Sales_SGSTPerc as sgst_percent,
             GST.Sales_CGSTPerc as cgst_percent,
             GST.Sales_IGSTPerc as igst_percent,
+            B.BrandName as brand_name,
+            LP.last_purchase_supplier,
+            LP.last_purchase_type as purchase_type,
+            LP.last_purchase_date,
+            LP.last_purchase_qty,
+            S.ShelfName as rack,
+            Z.ZoneName as floor,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
+            {optional_columns}
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
         LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
         LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
         LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
+        LEFT JOIN dbo.Brands B ON PB.BrandID = B.BrandID
+        LEFT JOIN dbo.Shelfs S ON PB.ShelfID = S.ShelfID
+        LEFT JOIN dbo.Zone Z ON S.ZoneID = Z.ZoneID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE CAST(PB.AutoBarcode AS VARCHAR(50)) = %s
+        LEFT JOIN LastPurchase LP ON PB.ProductBatchID = LP.ProductBatchID AND LP.rn = 1
+        {optional_joins}
+        WHERE CAST(PB.AutoBarcode AS VARCHAR(50)) = ?
           AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
           AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
     """,
-    "get_item_by_code": """
+    "get_item_by_code": LAST_PURCHASE_CTE
+    + """
         SELECT DISTINCT
             P.ProductID as item_id,
             P.ProductCode as item_code,
@@ -98,6 +136,9 @@ SQL_TEMPLATES = {
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
             PB.MRP as mrp,
+            PB.StdSalesPrice as sale_price,
+            PB.LastPurchaseRate as last_purchase_price,
+            PB.LastPurchaseCost as last_purchase_cost,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
@@ -109,20 +150,34 @@ SQL_TEMPLATES = {
             GST.Sales_SGSTPerc as sgst_percent,
             GST.Sales_CGSTPerc as cgst_percent,
             GST.Sales_IGSTPerc as igst_percent,
+            B.BrandName as brand_name,
+            LP.last_purchase_supplier,
+            LP.last_purchase_type as purchase_type,
+            LP.last_purchase_date,
+            LP.last_purchase_qty,
+            S.ShelfName as rack,
+            Z.ZoneName as floor,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
+            {optional_columns}
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
         LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
         LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
         LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
+        LEFT JOIN dbo.Brands B ON PB.BrandID = B.BrandID
+        LEFT JOIN dbo.Shelfs S ON PB.ShelfID = S.ShelfID
+        LEFT JOIN dbo.Zone Z ON S.ZoneID = Z.ZoneID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE P.ProductCode = %s
+        LEFT JOIN LastPurchase LP ON PB.ProductBatchID = LP.ProductBatchID AND LP.rn = 1
+        {optional_joins}
+        WHERE P.ProductCode = ?
           AND PB.AutoBarcode IS NOT NULL
           AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
     """,
-    "get_all_items": """
+    "get_all_items": LAST_PURCHASE_CTE
+    + """
         SELECT DISTINCT TOP 1000
             P.ProductID as item_id,
             P.ProductCode as item_code,
@@ -134,6 +189,9 @@ SQL_TEMPLATES = {
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
             PB.MRP as mrp,
+            PB.StdSalesPrice as sale_price,
+            PB.LastPurchaseRate as last_purchase_price,
+            PB.LastPurchaseCost as last_purchase_cost,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
@@ -145,22 +203,36 @@ SQL_TEMPLATES = {
             GST.Sales_SGSTPerc as sgst_percent,
             GST.Sales_CGSTPerc as cgst_percent,
             GST.Sales_IGSTPerc as igst_percent,
+            B.BrandName as brand_name,
+            LP.last_purchase_supplier,
+            LP.last_purchase_type as purchase_type,
+            LP.last_purchase_date,
+            LP.last_purchase_qty,
+            S.ShelfName as rack,
+            Z.ZoneName as floor,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
+            {optional_columns}
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
         LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
         LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
         LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
+        LEFT JOIN dbo.Brands B ON PB.BrandID = B.BrandID
+        LEFT JOIN dbo.Shelfs S ON PB.ShelfID = S.ShelfID
+        LEFT JOIN dbo.Zone Z ON S.ZoneID = Z.ZoneID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
+        LEFT JOIN LastPurchase LP ON PB.ProductBatchID = LP.ProductBatchID AND LP.rn = 1
+        {optional_joins}
         WHERE P.IsActive = 1
           AND PB.AutoBarcode IS NOT NULL
           AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
           AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
         ORDER BY P.ProductName
     """,
-    "search_items": """
+    "search_items": LAST_PURCHASE_CTE
+    + """
         SELECT DISTINCT TOP 50
             P.ProductID as item_id,
             P.ProductCode as item_code,
@@ -172,6 +244,9 @@ SQL_TEMPLATES = {
             PB.ExpiryDate as expiry_date,
             PB.Stock as stock_qty,
             PB.MRP as mrp,
+            PB.StdSalesPrice as sale_price,
+            PB.LastPurchaseRate as last_purchase_price,
+            PB.LastPurchaseCost as last_purchase_cost,
             P.BasicUnitID as uom_id,
             UOM.UnitCode as uom_code,
             UOM.UnitName as uom_name,
@@ -183,18 +258,31 @@ SQL_TEMPLATES = {
             GST.Sales_SGSTPerc as sgst_percent,
             GST.Sales_CGSTPerc as cgst_percent,
             GST.Sales_IGSTPerc as igst_percent,
+            B.BrandName as brand_name,
+            LP.last_purchase_supplier,
+            LP.last_purchase_type as purchase_type,
+            LP.last_purchase_date,
+            LP.last_purchase_qty,
+            S.ShelfName as rack,
+            Z.ZoneName as floor,
             W.WarehouseID as warehouse_id,
             W.WarehouseName as location
+            {optional_columns}
         FROM dbo.Products P
         LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
         LEFT JOIN dbo.UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
         LEFT JOIN dbo.ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
         LEFT JOIN dbo.ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
         LEFT JOIN dbo.GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
+        LEFT JOIN dbo.Brands B ON PB.BrandID = B.BrandID
+        LEFT JOIN dbo.Shelfs S ON PB.ShelfID = S.ShelfID
+        LEFT JOIN dbo.Zone Z ON S.ZoneID = Z.ZoneID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
-        WHERE (P.ProductName LIKE %s
-           OR P.ProductCode LIKE %s
-           OR CAST(PB.AutoBarcode AS VARCHAR(50)) LIKE %s)
+        LEFT JOIN LastPurchase LP ON PB.ProductBatchID = LP.ProductBatchID AND LP.rn = 1
+        {optional_joins}
+        WHERE (P.ProductName LIKE ?
+           OR P.ProductCode LIKE ?
+           OR CAST(PB.AutoBarcode AS VARCHAR(50)) LIKE ?)
           AND P.IsActive = 1
           AND PB.AutoBarcode IS NOT NULL
           AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
@@ -219,8 +307,59 @@ SQL_TEMPLATES = {
         INNER JOIN dbo.Products P ON PB.ProductID = P.ProductID
         LEFT JOIN dbo.Warehouses W ON PB.WarehouseID = W.WarehouseID
         LEFT JOIN dbo.Shelfs S ON PB.ShelfID = S.ShelfID
-        WHERE P.ProductID = %s OR P.ProductCode = %s
+        WHERE P.ProductID = ? OR P.ProductCode = ?
         ORDER BY PB.ExpiryDate, PB.BatchNo
+    """,
+    # Full sync query for MongoDB - includes ALL fields
+    "sync_all_items": LAST_PURCHASE_CTE
+    + """
+        SELECT
+            P.ProductID as item_id,
+            P.ProductCode as item_code,
+            CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
+            P.ProductName as item_name,
+            UOM.UnitName as uom_name,
+            UOM.UnitCode as uom_code,
+            PB.Stock as stock_qty,
+            PB.MRP as mrp,
+            PB.StdSalesPrice as sale_price,
+            PB.LastPurchaseRate as last_purchase_price,
+            PB.LastPurchaseCost as last_purchase_cost,
+            COALESCE(GST.Sales_SGSTPerc, 0) + COALESCE(GST.Sales_CGSTPerc, 0) as gst_percent,
+            GST.Sales_SGSTPerc as sgst_percent,
+            GST.Sales_CGSTPerc as cgst_percent,
+            GST.Sales_IGSTPerc as igst_percent,
+            P.HSNCode as hsn_code,
+            PG.GroupName as category,
+            PC.ProductCategoryName as subcategory,
+            LP.last_purchase_supplier,
+            LP.last_purchase_type as purchase_type,
+            PB.BatchNo as batch_no,
+            PB.ProductBatchID as batch_id,
+            B.BrandName as brand_name,
+            LP.last_purchase_date,
+            LP.last_purchase_qty,
+            PB.MfgDate as mfg_date,
+            PB.ExpiryDate as expiry_date,
+            S.ShelfName as rack,
+            Z.ZoneName as floor,
+            W.WarehouseName as location,
+            W.WarehouseID as warehouse_id
+        FROM ProductBatches PB
+        LEFT JOIN Products P ON PB.ProductID = P.ProductID
+        LEFT JOIN UnitOfMeasures UOM ON P.BasicUnitID = UOM.UnitID
+        LEFT JOIN ProductGroups PG ON P.ProductGroupID = PG.ProductGroupID
+        LEFT JOIN ProductCategory PC ON P.ProductCategoryID = PC.ProductCategoryID
+        LEFT JOIN GSTCategory GST ON P.GSTTaxCategoryID = GST.GSTCategoryID
+        LEFT JOIN Brands B ON PB.BrandID = B.BrandID
+        LEFT JOIN Shelfs S ON PB.ShelfID = S.ShelfID
+        LEFT JOIN Zone Z ON S.ZoneID = Z.ZoneID
+        LEFT JOIN Warehouses W ON PB.WarehouseID = W.WarehouseID
+        LEFT JOIN LastPurchase LP ON PB.ProductBatchID = LP.ProductBatchID AND LP.rn = 1
+        WHERE PB.AutoBarcode IS NOT NULL
+          AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
+          AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
+          AND P.IsActive = 1
     """,
 }
 

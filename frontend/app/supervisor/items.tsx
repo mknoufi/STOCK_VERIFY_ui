@@ -1,13 +1,13 @@
 /**
  * Filtered Items Screen
  * View and filter all items with category, subcategory, floor, rack, UOM filters
+ * Refactored to use Aurora Design System
  */
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
   Alert,
@@ -16,12 +16,17 @@ import {
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../src/hooks/useTheme";
-import { ItemVerificationAPI } from "@/services/api/itemVerificationApi";
-import { ItemFilters, FilterValues } from "../../src/components/ItemFilters";
-import { exportItemsToCSV, downloadCSV } from "../../src/utils/csvExport";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
+
+import { ItemVerificationAPI } from "../../src/services/api/itemVerificationApi";
+import { ItemFilters, FilterValues } from "../../src/components/ItemFilters";
+import { exportItemsToCSV, downloadCSV } from "../../src/utils/csvExport";
+import { AuroraBackground, GlassCard, StatsCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 const getLocalFileUri = (filename: string) => {
   const baseDir =
@@ -31,7 +36,6 @@ const getLocalFileUri = (filename: string) => {
 
 export default function ItemsScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -72,7 +76,6 @@ export default function ItemsScreen() {
         setPagination(response.pagination);
         setStatistics(response.statistics);
       } catch (error: any) {
-        // Error logged via error handler
         Alert.alert("Error", error.message || "Failed to load items");
       } finally {
         setLoading(false);
@@ -87,6 +90,7 @@ export default function ItemsScreen() {
   }, [loadItems]);
 
   const handleRefresh = () => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     loadItems(true);
   };
@@ -108,7 +112,8 @@ export default function ItemsScreen() {
         return;
       }
 
-      // Try to get all items if we have filters
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       let allItems = items;
       if (pagination.total > items.length) {
         const response = await ItemVerificationAPI.getFilteredItems({
@@ -138,383 +143,337 @@ export default function ItemsScreen() {
         }
       }
     } catch (error: any) {
-      // Error logged via error handler
       Alert.alert("Error", error.message || "Failed to export CSV");
     }
   };
 
   const renderItem = ({ item }: { item: any }) => {
     return (
-      <TouchableOpacity
-        style={[styles.itemCard, { backgroundColor: theme.colors.card }]}
+      <AnimatedPressable
         onPress={() => {
           // Could navigate to item detail
+          if (Platform.OS !== "web") Haptics.selectionAsync();
         }}
+        style={{ marginBottom: auroraTheme.spacing.sm }}
       >
-        <View style={styles.itemHeader}>
-          <View style={styles.itemHeaderLeft}>
-            <Text style={[styles.itemName, { color: theme.colors.text }]}>
-              {item.item_name}
-            </Text>
-            <Text
-              style={[styles.itemCode, { color: theme.colors.textSecondary }]}
-            >
-              {item.item_code}
-            </Text>
+        <GlassCard variant="light" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.lg}>
+          <View style={styles.itemHeader}>
+            <View style={styles.itemHeaderLeft}>
+              <Text style={styles.itemName}>{item.item_name}</Text>
+              <Text style={styles.itemCode}>{item.item_code}</Text>
+            </View>
+            {item.verified && (
+              <View style={styles.verifiedBadge}>
+                <Ionicons name="checkmark-circle" size={14} color={auroraTheme.colors.success[500]} />
+              </View>
+            )}
           </View>
-          {item.verified && (
-            <View style={styles.verifiedBadge}>
-              <Ionicons name="checkmark-circle" size={14} color="#fff" />
+
+          <View style={styles.itemDetails}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Stock</Text>
+              <Text style={styles.detailValue}>
+                {item.stock_qty?.toFixed(2) || "0.00"} {item.uom_name || ""}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>MRP</Text>
+              <Text style={styles.detailValue}>
+                ₹{item.mrp?.toFixed(2) || "0.00"}
+              </Text>
+            </View>
+          </View>
+
+          {(item.floor || item.rack) && (
+            <View style={styles.locationRow}>
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color={auroraTheme.colors.text.tertiary}
+              />
+              <Text style={styles.locationText}>
+                {[item.floor, item.rack].filter(Boolean).join(" / ")}
+              </Text>
             </View>
           )}
-        </View>
 
-        <View style={styles.itemDetails}>
-          <View style={styles.detailRow}>
-            <Text
-              style={[
-                styles.detailLabel,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              Stock:
-            </Text>
-            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-              {item.stock_qty?.toFixed(2) || "0.00"} {item.uom_name || ""}
-            </Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text
-              style={[
-                styles.detailLabel,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              MRP:
-            </Text>
-            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-              ₹{item.mrp?.toFixed(2) || "0.00"}
-            </Text>
-          </View>
-        </View>
+          {item.category && (
+            <View style={{ marginTop: 4 }}>
+              <Text style={styles.categoryText}>
+                {item.category}
+                {item.subcategory && ` • ${item.subcategory}`}
+              </Text>
+            </View>
+          )}
 
-        {(item.floor || item.rack) && (
-          <View style={styles.locationRow}>
-            <Ionicons
-              name="location"
-              size={14}
-              color={theme.colors.textSecondary}
-            />
-            <Text
-              style={[
-                styles.locationText,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              {[item.floor, item.rack].filter(Boolean).join(" / ")}
-            </Text>
-          </View>
-        )}
-
-        {item.category && (
-          <Text
-            style={[styles.categoryText, { color: theme.colors.textSecondary }]}
-          >
-            {item.category}
-            {item.subcategory && ` • ${item.subcategory}`}
-          </Text>
-        )}
-
-        {item.verified && item.verified_by && (
-          <View style={styles.verificationInfo}>
-            <Ionicons
-              name="person"
-              size={12}
-              color={theme.colors.textSecondary}
-            />
-            <Text
-              style={[
-                styles.verificationInfoText,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              Verified by {item.verified_by}
-              {item.verified_at &&
-                ` • ${new Date(item.verified_at).toLocaleDateString()}`}
-            </Text>
-          </View>
-        )}
-      </TouchableOpacity>
+          {item.verified && item.verified_by && (
+            <View style={styles.verificationInfo}>
+              <Ionicons
+                name="person-outline"
+                size={12}
+                color={auroraTheme.colors.text.tertiary}
+              />
+              <Text style={styles.verificationInfoText}>
+                Verified by {item.verified_by}
+                {item.verified_at &&
+                  ` • ${new Date(item.verified_at).toLocaleDateString()}`}
+              </Text>
+            </View>
+          )}
+        </GlassCard>
+      </AnimatedPressable>
     );
   };
 
-  if (loading && items.length === 0) {
-    return (
-      <View
-        style={[
-          styles.container,
-          styles.centered,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text
-          style={[styles.loadingText, { color: theme.colors.textSecondary }]}
-        >
-          Loading items...
-        </Text>
-      </View>
-    );
-  }
-
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Items
-        </Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={styles.exportButton}
+    <AuroraBackground variant="secondary" intensity="medium" animated>
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Items</Text>
+              <Text style={styles.pageSubtitle}>{pagination.total} items listed</Text>
+            </View>
+          </View>
+
+          <AnimatedPressable
+            style={[
+              styles.exportButton,
+              items.length === 0 && { opacity: 0.5 }
+            ]}
             onPress={handleExportCSV}
             disabled={items.length === 0}
           >
-            <Ionicons name="download" size={20} color={theme.colors.primary} />
-          </TouchableOpacity>
-          <Text
-            style={[styles.headerCount, { color: theme.colors.textSecondary }]}
-          >
-            {pagination.total} items
-          </Text>
-        </View>
-      </View>
+            <GlassCard variant="medium" padding={8} borderRadius={auroraTheme.borderRadius.full}>
+              <Ionicons name="download-outline" size={20} color={auroraTheme.colors.text.primary} />
+            </GlassCard>
+          </AnimatedPressable>
+        </Animated.View>
 
-      {/* Statistics Cards */}
-      <View style={styles.statsContainer}>
-        <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.statValue, { color: theme.colors.text }]}>
-            {statistics.total_items}
-          </Text>
-          <Text
-            style={[styles.statLabel, { color: theme.colors.textSecondary }]}
-          >
-            Total Items
-          </Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.statValue, { color: "#4CAF50" }]}>
-            {statistics.verified_items}
-          </Text>
-          <Text
-            style={[styles.statLabel, { color: theme.colors.textSecondary }]}
-          >
-            Verified
-          </Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.statValue, { color: theme.colors.text }]}>
-            {statistics.total_qty.toFixed(0)}
-          </Text>
-          <Text
-            style={[styles.statLabel, { color: theme.colors.textSecondary }]}
-          >
-            Total Qty
-          </Text>
-        </View>
-      </View>
-
-      <ItemFilters
-        onFilterChange={setFilters}
-        showVerifiedFilter={true}
-        showSearch={true}
-      />
-
-      {items.length === 0 ? (
-        <View style={styles.centered}>
-          <Ionicons
-            name="cube-outline"
-            size={64}
-            color={theme.colors.placeholder}
+        {/* Statistics Cards */}
+        <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
+          <StatsCard
+            title="Total Items"
+            value={statistics.total_items.toString()}
+            icon="cube-outline"
+            variant="primary"
+            style={{ flex: 1 }}
           />
-          <Text
-            style={[styles.emptyText, { color: theme.colors.textSecondary }]}
-          >
-            No items found
-          </Text>
-          <Text
-            style={[styles.emptySubtext, { color: theme.colors.placeholder }]}
-          >
-            Try adjusting your filters
-          </Text>
-        </View>
-      ) : (
-        <FlashList
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => `${item.item_code}-${index}`}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            loading && items.length > 0 ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            ) : null
-          }
-        />
-      )}
-    </View>
+          <StatsCard
+            title="Verified"
+            value={statistics.verified_items.toString()}
+            icon="checkmark-done-circle-outline"
+            variant="success"
+            style={{ flex: 1 }}
+          />
+          <StatsCard
+            title="Total Qty"
+            value={statistics.total_qty.toFixed(0)}
+            icon="layers-outline"
+            variant="warning"
+            style={{ flex: 1 }}
+          />
+        </Animated.View>
+
+        {/* Filters */}
+        <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <GlassCard variant="light" padding={auroraTheme.spacing.sm} style={{ marginBottom: auroraTheme.spacing.md }}>
+            <ItemFilters
+              onFilterChange={setFilters}
+              showVerifiedFilter={true}
+              showSearch={true}
+            />
+          </GlassCard>
+        </Animated.View>
+
+        {items.length === 0 && !loading ? (
+          <View style={styles.centered}>
+            <Ionicons
+              name="cube-outline"
+              size={64}
+              color={auroraTheme.colors.text.tertiary}
+            />
+            <Text style={styles.emptyText}>No items found</Text>
+            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+          </View>
+        ) : (
+          <View style={{ flex: 1 }}>
+            <FlashList
+              data={items}
+              renderItem={renderItem}
+              // @ts-ignore
+              estimatedItemSize={150}
+              keyExtractor={(item, index) => `${item.item_code}-${index}`}
+              contentContainerStyle={styles.listContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  tintColor={auroraTheme.colors.primary[500]}
+                  colors={[auroraTheme.colors.primary[500]]}
+                />
+              }
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                loading && items.length > 0 ? (
+                  <View style={{ paddingVertical: 20 }}>
+                    <ActivityIndicator size="small" color={auroraTheme.colors.primary[500]} />
+                  </View>
+                ) : (
+                  <View style={{ height: 20 }} />
+                )
+              }
+            />
+          </View>
+        )}
+      </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 60,
+    paddingHorizontal: auroraTheme.spacing.md,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingBottom: 100,
   },
   header: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    marginBottom: auroraTheme.spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
   },
   backButton: {
-    marginRight: 12,
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    fontWeight: "bold",
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
   },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   exportButton: {
-    padding: 8,
-  },
-  headerCount: {
-    fontSize: 14,
+    //
   },
   statsContainer: {
     flexDirection: "row",
-    padding: 16,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
+    gap: auroraTheme.spacing.sm,
+    marginBottom: auroraTheme.spacing.md,
   },
   listContent: {
-    padding: 16,
-  },
-  itemCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingBottom: auroraTheme.spacing.xl,
   },
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
+    marginBottom: auroraTheme.spacing.sm,
   },
   itemHeaderLeft: {
     flex: 1,
   },
   itemName: {
-    fontSize: 16,
+    fontFamily: auroraTheme.typography.fontFamily.body,
+    fontSize: auroraTheme.typography.fontSize.md,
     fontWeight: "600",
+    color: auroraTheme.colors.text.primary,
     marginBottom: 4,
   },
   itemCode: {
-    fontSize: 14,
+    fontFamily: auroraTheme.typography.fontFamily.body,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.tertiary,
   },
   verifiedBadge: {
-    borderRadius: 12,
+    backgroundColor: 'rgba(34, 197, 94, 0.15)', // Success color with opacity
+    borderRadius: auroraTheme.borderRadius.full,
     padding: 4,
-    backgroundColor: "#00E676",
   },
   itemDetails: {
     flexDirection: "row",
-    gap: 16,
-    marginBottom: 8,
+    gap: auroraTheme.spacing.lg,
+    marginBottom: auroraTheme.spacing.sm,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    padding: auroraTheme.spacing.xs,
+    borderRadius: auroraTheme.borderRadius.sm,
   },
   detailRow: {
-    flex: 1,
+    //
   },
   detailLabel: {
-    fontSize: 12,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
     marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: 14,
+    fontSize: auroraTheme.typography.fontSize.sm,
     fontWeight: "600",
+    color: auroraTheme.colors.text.primary,
   },
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginTop: 4,
+    gap: auroraTheme.spacing.xs,
+    marginBottom: 4, // Added margin bottom for spacing
   },
   locationText: {
-    fontSize: 13,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.secondary,
   },
   categoryText: {
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
+    fontStyle: 'italic',
   },
   verificationInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginTop: 8,
+    gap: auroraTheme.spacing.xs,
+    marginTop: auroraTheme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: auroraTheme.colors.border.light,
+    paddingTop: auroraTheme.spacing.xs,
   },
   verificationInfoText: {
-    fontSize: 11,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: auroraTheme.typography.fontSize.lg,
     fontWeight: "500",
-    marginTop: 16,
+    color: auroraTheme.colors.text.secondary,
+    marginTop: auroraTheme.spacing.md,
   },
   emptySubtext: {
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.tertiary,
+    marginTop: auroraTheme.spacing.xs,
   },
 });

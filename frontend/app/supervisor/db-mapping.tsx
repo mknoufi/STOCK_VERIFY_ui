@@ -1,6 +1,7 @@
 /**
  * Database Mapping Configuration Screen
  * Allows supervisors to select tables and columns for ERP mapping
+ * Refactored to use Aurora Design System
  */
 
 import React, { useState, useEffect } from "react";
@@ -9,26 +10,29 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   Alert,
   ActivityIndicator,
   Modal,
+  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Header } from "../../src/components/layout/Header";
-import { useTheme } from "../../src/hooks/useTheme";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+
 import {
   getAvailableTables,
   getTableColumns,
   getCurrentMapping,
   testMapping,
   saveMapping,
-  getERPConfig,
 } from "../../src/services/api/api";
 import { useToast } from "../../src/components/feedback/ToastProvider";
+import { AuroraBackground, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 interface Table {
   name: string;
@@ -64,7 +68,6 @@ const appFields = [
 
 export default function DatabaseMappingScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const { show } = useToast();
 
   // Connection settings
@@ -86,91 +89,151 @@ export default function DatabaseMappingScreen() {
   const [showColumnModal, setShowColumnModal] = useState(false);
   const [selectedAppField, setSelectedAppField] = useState<string>("");
 
-  // Standard app fields that need mapping
-
-  const loadDefaultConnectionParams = React.useCallback(async () => {
+  // Consolidated data loading
+  const loadInitialData = React.useCallback(async () => {
     try {
-      // First, try to get ERP config from backend
+      setLoading(true);
+      // 1. Try to get full configuration from backend (Single Source of Truth)
       try {
-        const config = await getERPConfig();
-        if (config) {
-          if (config.host) setHost(config.host);
-          if (config.port) setPort(config.port.toString());
-          if (config.database) setDatabase(config.database);
-          if (config.user) setUser(config.user);
-          if (config.password) setPassword(config.password);
-          if (config.schema) setSchema(config.schema || "dbo");
-          return; // Successfully loaded from backend, no need to check storage
-        }
-      } catch {
-        // If endpoint doesn't exist or fails, try AsyncStorage
-        console.log("Could not load ERP config from backend, trying storage");
-      }
+        const response = await getCurrentMapping();
 
-      // Fallback: Try to load from AsyncStorage (saved from previous sessions)
-      const savedHost = await AsyncStorage.getItem("db_mapping_host");
-      const savedPort = await AsyncStorage.getItem("db_mapping_port");
-      const savedDatabase = await AsyncStorage.getItem("db_mapping_database");
-      const savedUser = await AsyncStorage.getItem("db_mapping_user");
-      const savedPassword = await AsyncStorage.getItem("db_mapping_password");
-      const savedSchema = await AsyncStorage.getItem("db_mapping_schema");
+        if (response) {
+          // Set Connection Params from Backend
+          if (response.connection) {
+            const conn = response.connection;
+            if (conn.host) setHost(conn.host);
+            if (conn.port) setPort(conn.port.toString());
+            if (conn.database) setDatabase(conn.database);
+            if (conn.user) setUser(conn.user);
+            if (conn.password) setPassword(conn.password);
+            if (conn.schema_name) setSchema(conn.schema_name);
+            else if (conn.schema) setSchema(conn.schema);
+          } else {
+            // Fallback to AsyncStorage if no backend connection config
+            const savedHost = await AsyncStorage.getItem("db_mapping_host");
+            const savedPort = await AsyncStorage.getItem("db_mapping_port");
+            const savedDatabase = await AsyncStorage.getItem("db_mapping_database");
+            const savedUser = await AsyncStorage.getItem("db_mapping_user");
+            const savedPassword = await AsyncStorage.getItem("db_mapping_password");
+            const savedSchema = await AsyncStorage.getItem("db_mapping_schema");
 
-      if (savedHost) setHost(savedHost);
-      if (savedPort) setPort(savedPort);
-      if (savedDatabase) setDatabase(savedDatabase);
-      if (savedUser) setUser(savedUser);
-      if (savedPassword) setPassword(savedPassword);
-      if (savedSchema) setSchema(savedSchema);
-    } catch (error: any) {
-      console.error("Failed to load default connection params:", error);
-    }
-  }, []);
+            if (savedHost) setHost(savedHost);
+            if (savedPort) setPort(savedPort);
+            if (savedDatabase) setDatabase(savedDatabase);
+            if (savedUser) setUser(savedUser);
+            if (savedPassword) setPassword(savedPassword);
+            if (savedSchema) setSchema(savedSchema);
+          }
 
-  const loadCurrentMapping = React.useCallback(async () => {
-    try {
-      const response = await getCurrentMapping();
-      if (response && response.mapping) {
-        // Convert to mapping state
-        if (response.mapping.columns) {
-          const mappedColumns: Record<string, ColumnMapping> = {};
-          Object.entries(response.mapping.columns).forEach(
-            ([key, value]: [string, any]) => {
-              mappedColumns[key] = {
-                app_field: key,
-                erp_column: value.erp_column || value,
-                table_name: value.table_name || selectedTable,
-                is_required:
-                  appFields.find((f) => f.key === key)?.required || false,
-              };
-            },
-          );
-          setMapping(mappedColumns);
-        }
-        if (response.mapping.tables) {
-          const firstTable = Object.values(
-            response.mapping.tables,
-          )[0] as string;
-          if (firstTable) {
-            setSelectedTable(firstTable);
+          // Set Mapping Config
+          if (response.mapping) {
+            if (response.mapping.columns) {
+              const mappedColumns: Record<string, ColumnMapping> = {};
+              Object.entries(response.mapping.columns).forEach(
+                ([key, value]: [string, any]) => {
+                  mappedColumns[key] = {
+                    app_field: key,
+                    erp_column: value.erp_column || value,
+                    table_name: value.table_name || selectedTable, // Might be empty initially
+                    is_required:
+                      appFields.find((f) => f.key === key)?.required || false,
+                  };
+                },
+              );
+              setMapping(mappedColumns);
+            }
+            if (response.mapping.tables) {
+              const firstTable = Object.values(
+                response.mapping.tables,
+              )[0] as string;
+              if (firstTable) {
+                setSelectedTable(firstTable);
+                // Update table_name in mapping if it was missing
+                setMapping(prev => {
+                  const newMap = { ...prev };
+                  Object.keys(newMap).forEach(key => {
+                    const columnMapping = newMap[key];
+                    if (columnMapping && !columnMapping.table_name) {
+                      newMap[key] = { ...columnMapping, table_name: firstTable };
+                    }
+                  });
+                  return newMap;
+                });
+              }
+            }
           }
         }
+      } catch (backendError) {
+        console.log("Failed to load from backend, trying local storage", backendError);
+        // Fallback to AsyncStorage on error
+        const savedHost = await AsyncStorage.getItem("db_mapping_host");
+        if (savedHost) setHost(savedHost);
+        const savedPort = await AsyncStorage.getItem("db_mapping_port");
+        if (savedPort) setPort(savedPort);
+        const savedDatabase = await AsyncStorage.getItem("db_mapping_database");
+        if (savedDatabase) setDatabase(savedDatabase);
+        const savedUser = await AsyncStorage.getItem("db_mapping_user");
+        if (savedUser) setUser(savedUser);
+        const savedPassword = await AsyncStorage.getItem("db_mapping_password");
+        if (savedPassword) setPassword(savedPassword);
+        const savedSchema = await AsyncStorage.getItem("db_mapping_schema");
+        if (savedSchema) setSchema(savedSchema);
       }
-    } catch {
-      show("Failed to load current mapping", "error");
+    } catch (error) {
+      console.error("Error loading initial data", error);
+      show("Failed to load configuration", "error");
+    } finally {
+      setLoading(false);
     }
-  }, [selectedTable, show]);
+  }, [show]);
 
   useEffect(() => {
-    loadDefaultConnectionParams();
-    loadCurrentMapping();
-  }, [loadDefaultConnectionParams, loadCurrentMapping]);
+    loadInitialData();
+  }, [loadInitialData]);
 
   const handleLoadTables = async () => {
-    if (!host || !database) {
-      show("Please enter host and database", "error");
+    // Validate required fields
+    if (!host || !host.trim()) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show("Please enter a valid host address", "error");
       return;
     }
 
+    if (!database || !database.trim()) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show("Please enter a database name", "error");
+      return;
+    }
+
+    // Validate host format (IP or hostname)
+    const hostTrimmed = host.trim();
+    const isValidHost = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostTrimmed) ||
+      /^[a-zA-Z0-9][a-zA-Z0-9\-._]*[a-zA-Z0-9]$/.test(hostTrimmed) ||
+      hostTrimmed === 'localhost';
+    if (!isValidHost) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show("Invalid host format. Use IP address or hostname", "error");
+      return;
+    }
+
+    // Validate port if provided
+    if (port) {
+      const portNum = parseInt(port, 10);
+      if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+        if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        show("Port must be a number between 1 and 65535", "error");
+        return;
+      }
+    }
+
+    // Validate database name (no special characters that could cause issues)
+    if (!/^[a-zA-Z0-9_\-]+$/.test(database.trim())) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show("Database name contains invalid characters", "error");
+      return;
+    }
+
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setLoading(true);
     try {
       const response = await getAvailableTables(
@@ -184,6 +247,7 @@ export default function DatabaseMappingScreen() {
       setTables(response.tables.map((name: string) => ({ name, schema })));
       show(`Found ${response.count} tables`, "success");
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show(
         `Failed to load tables: ${error.response?.data?.detail || error.message}`,
         "error",
@@ -199,6 +263,7 @@ export default function DatabaseMappingScreen() {
       return;
     }
 
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     setLoading(true);
     setSelectedTable(tableName);
     try {
@@ -214,6 +279,7 @@ export default function DatabaseMappingScreen() {
       setColumns(response.columns);
       show(`Found ${response.count} columns`, "success");
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show(
         `Failed to load columns: ${error.response?.data?.detail || error.message}`,
         "error",
@@ -224,6 +290,7 @@ export default function DatabaseMappingScreen() {
   };
 
   const handleSelectColumn = (appField: string) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     setSelectedAppField(appField);
     setShowColumnModal(true);
   };
@@ -233,6 +300,8 @@ export default function DatabaseMappingScreen() {
       show("Please select a table first", "error");
       return;
     }
+
+    if (Platform.OS !== "web") Haptics.selectionAsync();
 
     const appField = selectedAppField;
     const isRequired =
@@ -264,6 +333,7 @@ export default function DatabaseMappingScreen() {
       return;
     }
 
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setLoading(true);
     try {
       const config = {
@@ -284,6 +354,7 @@ export default function DatabaseMappingScreen() {
       );
 
       if (response.success) {
+        if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert(
           "Mapping Test Successful",
           `Query executed successfully.\n\nSample data: ${JSON.stringify(response.sample_data, null, 2)}`,
@@ -291,6 +362,7 @@ export default function DatabaseMappingScreen() {
         );
       }
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
         "Mapping Test Failed",
         error.response?.data?.detail || error.message,
@@ -310,6 +382,7 @@ export default function DatabaseMappingScreen() {
     const requiredFields = appFields.filter((f) => f.required);
     const missingFields = requiredFields.filter((f) => !mapping[f.key]);
     if (missingFields.length > 0) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show(
         `Missing required fields: ${missingFields.map((f) => f.label).join(", ")}`,
         "error",
@@ -317,19 +390,31 @@ export default function DatabaseMappingScreen() {
       return;
     }
 
+    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setLoading(true);
     try {
-      const config = {
-        tables: { items: selectedTable },
-        columns: mapping,
-        query_options: {
-          schema_name: schema,
+      // Construct full payload with connection and mapping
+      const payload = {
+        connection: {
+          host,
+          port: parseInt(port) || 1433,
+          database,
+          user: user || null,
+          password: password || null,
+          schema_name: schema
         },
+        mapping: {
+          tables: { items: selectedTable },
+          columns: mapping,
+          query_options: {
+            schema_name: schema,
+          },
+        }
       };
 
-      const response = await saveMapping(config);
+      const response = await saveMapping(payload);
       if (response.success) {
-        // Save connection parameters for next time
+        // Save connection parameters locally too for offline fallback
         await AsyncStorage.setItem("db_mapping_host", host);
         await AsyncStorage.setItem("db_mapping_port", port);
         await AsyncStorage.setItem("db_mapping_database", database);
@@ -342,6 +427,7 @@ export default function DatabaseMappingScreen() {
         router.back();
       }
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show(
         `Failed to save mapping: ${error.response?.data?.detail || error.message}`,
         "error",
@@ -352,478 +438,483 @@ export default function DatabaseMappingScreen() {
   };
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <Header
-        title="Database Mapping"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
-
-      <ScrollView style={styles.scrollView}>
-        {/* Connection Settings */}
-        <View style={[styles.section, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            Connection Settings
-          </Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>
-              Host
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.colors.background,
-                  color: theme.colors.text,
-                },
-              ]}
-              value={host}
-              onChangeText={setHost}
-              placeholder="SQL Server host"
-              placeholderTextColor={theme.colors.textSecondary}
-            />
+    <AuroraBackground>
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Database Mapping</Text>
+              <Text style={styles.pageSubtitle}>Configure ERP integration</Text>
+            </View>
           </View>
+        </Animated.View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>
-              Port
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.colors.background,
-                  color: theme.colors.text,
-                },
-              ]}
-              value={port}
-              onChangeText={setPort}
-              placeholder="1433"
-              keyboardType="numeric"
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-          </View>
+        <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 100 }}>
+          {/* Connection Settings */}
+          <Animated.View entering={FadeInDown.delay(200).springify()}>
+            <GlassCard variant="light" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.lg} style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="server-outline" size={20} color={auroraTheme.colors.primary[500]} />
+                <Text style={styles.sectionTitle}>Connection Settings</Text>
+              </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>
-              Database
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.colors.background,
-                  color: theme.colors.text,
-                },
-              ]}
-              value={database}
-              onChangeText={setDatabase}
-              placeholder="Database name"
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-          </View>
+              <View style={styles.inputGrid}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Host</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={host}
+                    onChangeText={setHost}
+                    placeholder="SQL Server host"
+                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                  />
+                </View>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Port</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={port}
+                    onChangeText={setPort}
+                    placeholder="1433"
+                    keyboardType="numeric"
+                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                  />
+                </View>
+              </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>
-              Schema
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.colors.background,
-                  color: theme.colors.text,
-                },
-              ]}
-              value={schema}
-              onChangeText={setSchema}
-              placeholder="dbo"
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-          </View>
+              <View style={styles.inputGrid}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Database</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={database}
+                    onChangeText={setDatabase}
+                    placeholder="Database name"
+                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                  />
+                </View>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Schema</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={schema}
+                    onChangeText={setSchema}
+                    placeholder="dbo"
+                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                  />
+                </View>
+              </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>
-              User (Optional)
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.colors.background,
-                  color: theme.colors.text,
-                },
-              ]}
-              value={user}
-              onChangeText={setUser}
-              placeholder="Username"
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-          </View>
+              <View style={styles.inputGrid}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>User (Optional)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={user}
+                    onChangeText={setUser}
+                    placeholder="Username"
+                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                  />
+                </View>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Password (Optional)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Password"
+                    secureTextEntry
+                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                  />
+                </View>
+              </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>
-              Password (Optional)
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.colors.background,
-                  color: theme.colors.text,
-                },
-              ]}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Password"
-              secureTextEntry
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: theme.colors.primary }]}
-            onPress={handleLoadTables}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <>
-                <Ionicons name="list" size={20} color="#fff" />
-                <Text style={styles.buttonText}>Load Tables</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Tables */}
-        {tables.length > 0 && (
-          <View
-            style={[styles.section, { backgroundColor: theme.colors.card }]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Select Table ({tables.length} tables)
-            </Text>
-            {tables.map((table) => (
-              <TouchableOpacity
-                key={table.name}
-                style={[
-                  styles.tableItem,
-                  selectedTable === table.name && {
-                    backgroundColor: theme.colors.primary + "20",
-                  },
-                ]}
-                onPress={() => handleLoadColumns(table.name)}
+              <AnimatedPressable
+                style={[styles.button, { backgroundColor: auroraTheme.colors.primary[500] }]}
+                onPress={handleLoadTables}
+                disabled={loading}
               >
-                <Ionicons
-                  name={
-                    selectedTable === table.name ? "checkbox" : "square-outline"
-                  }
-                  size={24}
-                  color={
-                    selectedTable === table.name
-                      ? theme.colors.primary
-                      : theme.colors.textSecondary
-                  }
-                />
-                <Text style={[styles.tableName, { color: theme.colors.text }]}>
-                  {table.schema}.{table.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="link-outline" size={20} color="#fff" />
+                    <Text style={styles.buttonText}>Connect & Load Tables</Text>
+                  </>
+                )}
+              </AnimatedPressable>
+            </GlassCard>
+          </Animated.View>
 
-        {/* Column Mapping */}
-        {selectedTable && columns.length > 0 && (
-          <View
-            style={[styles.section, { backgroundColor: theme.colors.card }]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Map Columns ({columns.length} columns available)
-            </Text>
+          {/* Tables */}
+          {tables.length > 0 && (
+            <Animated.View entering={FadeInDown.delay(300).springify()}>
+              <GlassCard variant="light" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.lg} style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="list-outline" size={20} color={auroraTheme.colors.primary[500]} />
+                  <Text style={styles.sectionTitle}>Select Table ({tables.length})</Text>
+                </View>
 
-            {appFields.map((field) => {
-              const mappedColumn = mapping[field.key];
-              return (
-                <View key={field.key} style={styles.mappingRow}>
-                  <View style={styles.mappingField}>
-                    <Text
-                      style={[styles.fieldLabel, { color: theme.colors.text }]}
-                    >
-                      {field.label}
-                      {field.required && (
-                        <Text style={{ color: theme.colors.error }}> *</Text>
-                      )}
-                    </Text>
-                    <TouchableOpacity
+                <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled>
+                  {tables.map((table) => (
+                    <AnimatedPressable
+                      key={table.name}
                       style={[
-                        styles.columnButton,
-                        {
-                          backgroundColor: mappedColumn
-                            ? theme.colors.success + "20"
-                            : theme.colors.background,
+                        styles.tableItem,
+                        selectedTable === table.name && {
+                          backgroundColor: auroraTheme.colors.primary[500] + "20",
+                          borderColor: auroraTheme.colors.primary[500],
                         },
                       ]}
-                      onPress={() => handleSelectColumn(field.key)}
+                      onPress={() => handleLoadColumns(table.name)}
                     >
-                      <Text
-                        style={[
-                          styles.columnButtonText,
-                          {
-                            color: mappedColumn
-                              ? theme.colors.success
-                              : theme.colors.textSecondary,
-                          },
-                        ]}
-                      >
-                        {mappedColumn
-                          ? mappedColumn.erp_column
-                          : "Select column..."}
-                      </Text>
                       <Ionicons
-                        name="chevron-forward"
+                        name={selectedTable === table.name ? "radio-button-on" : "radio-button-off"}
                         size={20}
-                        color={theme.colors.textSecondary}
+                        color={selectedTable === table.name ? auroraTheme.colors.primary[500] : auroraTheme.colors.text.tertiary}
                       />
-                    </TouchableOpacity>
-                  </View>
+                      <Text style={[styles.tableName, selectedTable === table.name && { color: auroraTheme.colors.primary[500], fontWeight: 'bold' }]}>
+                        {table.schema}.{table.name}
+                      </Text>
+                    </AnimatedPressable>
+                  ))}
+                </ScrollView>
+              </GlassCard>
+            </Animated.View>
+          )}
+
+          {/* Column Mapping */}
+          {selectedTable && columns.length > 0 && (
+            <Animated.View entering={FadeInDown.delay(400).springify()}>
+              <GlassCard variant="light" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.lg} style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="git-merge-outline" size={20} color={auroraTheme.colors.primary[500]} />
+                  <Text style={styles.sectionTitle}>Map Columns ({columns.length} source cols)</Text>
                 </View>
-              );
-            })}
-          </View>
-        )}
 
-        {/* Actions */}
-        {Object.keys(mapping).length > 0 && (
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                { backgroundColor: theme.colors.warning },
-              ]}
-              onPress={handleTestMapping}
-              disabled={loading}
-            >
-              <Ionicons name="checkmark-circle" size={20} color="#fff" />
-              <Text style={styles.buttonText}>Test Mapping</Text>
-            </TouchableOpacity>
+                {appFields.map((field) => {
+                  const mappedColumn = mapping[field.key];
+                  return (
+                    <View key={field.key} style={styles.mappingRow}>
+                      <View style={styles.mappingHeader}>
+                        <Text style={styles.fieldLabel}>
+                          {field.label}
+                          {field.required && <Text style={{ color: auroraTheme.colors.error[500] }}> *</Text>}
+                        </Text>
+                      </View>
 
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                { backgroundColor: theme.colors.primary },
-              ]}
-              onPress={handleSaveMapping}
-              disabled={loading}
-            >
-              <Ionicons name="save" size={20} color="#fff" />
-              <Text style={styles.buttonText}>Save Mapping</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
+                      <AnimatedPressable
+                        style={[
+                          styles.columnSelector,
+                          mappedColumn && { backgroundColor: auroraTheme.colors.success[500] + "10", borderColor: auroraTheme.colors.success[500] }
+                        ]}
+                        onPress={() => handleSelectColumn(field.key)}
+                      >
+                        <Text style={[
+                          styles.columnSelectorText,
+                          mappedColumn ? { color: auroraTheme.colors.success[500], fontWeight: '600' } : { color: auroraTheme.colors.text.tertiary }
+                        ]}>
+                          {mappedColumn ? mappedColumn.erp_column : "Select source column..."}
+                        </Text>
+                        <Ionicons
+                          name={mappedColumn ? "checkmark-circle" : "chevron-down"}
+                          size={20}
+                          color={mappedColumn ? auroraTheme.colors.success[500] : auroraTheme.colors.text.tertiary}
+                        />
+                      </AnimatedPressable>
+                    </View>
+                  );
+                })}
+              </GlassCard>
 
-      {/* Column Selection Modal */}
-      <Modal
-        visible={showColumnModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowColumnModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.card },
-            ]}
-          >
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Select Column for{" "}
-                {appFields.find((f) => f.key === selectedAppField)?.label}
-              </Text>
-              <TouchableOpacity onPress={() => setShowColumnModal(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalScroll}>
-              {columns.map((column) => (
-                <TouchableOpacity
-                  key={column.name}
-                  style={[
-                    styles.columnItem,
-                    { backgroundColor: theme.colors.background },
-                  ]}
-                  onPress={() => handleMapColumn(column.name)}
+              <View style={styles.actions}>
+                <AnimatedPressable
+                  style={[styles.actionButton, { backgroundColor: auroraTheme.colors.warning[500], flex: 1 }]}
+                  onPress={handleTestMapping}
+                  disabled={loading}
                 >
-                  <View>
-                    <Text
-                      style={[styles.columnName, { color: theme.colors.text }]}
-                    >
-                      {column.name}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.columnType,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      {column.data_type}
-                      {column.max_length && `(${column.max_length})`}
-                      {column.nullable && " - Nullable"}
-                    </Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color={theme.colors.textSecondary}
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-    </View>
+                  <Ionicons name="construct-outline" size={20} color="#fff" />
+                  <Text style={styles.buttonText}>Test Mapping</Text>
+                </AnimatedPressable>
+
+                <AnimatedPressable
+                  style={[styles.actionButton, { backgroundColor: auroraTheme.colors.primary[500], flex: 1 }]}
+                  onPress={handleSaveMapping}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons name="save-outline" size={20} color="#fff" />
+                      <Text style={styles.buttonText}>Save Configuration</Text>
+                    </>
+                  )}
+                </AnimatedPressable>
+              </View>
+            </Animated.View>
+          )}
+        </ScrollView>
+
+        {/* Column Selection Modal */}
+        <Modal
+          visible={showColumnModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowColumnModal(false)}
+        >
+          <AuroraBackground variant="primary" intensity="high" style={styles.modalOverlay}>
+            <GlassCard variant="modal" padding={auroraTheme.spacing.lg} borderRadius={auroraTheme.borderRadius.xl} style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <View>
+                  <Text style={styles.modalTitle}>Select Column</Text>
+                  <Text style={styles.modalSubtitle}>For {appFields.find((f) => f.key === selectedAppField)?.label}</Text>
+                </View>
+                <AnimatedPressable onPress={() => setShowColumnModal(false)}>
+                  <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+                </AnimatedPressable>
+              </View>
+
+              <ScrollView style={styles.modalScroll}>
+                {columns.map((column) => (
+                  <AnimatedPressable
+                    key={column.name}
+                    style={styles.columnItem}
+                    onPress={() => handleMapColumn(column.name)}
+                  >
+                    <View style={styles.columnInfo}>
+                      <Text style={styles.columnName}>{column.name}</Text>
+                      <View style={styles.columnMetaRec}>
+                        <Text style={styles.columnType}>{column.data_type.toUpperCase()}</Text>
+                        {column.max_length && <Text style={styles.columnMeta}>Length: {column.max_length}</Text>}
+                        {column.nullable && <Text style={styles.columnMeta}>Nullable</Text>}
+                      </View>
+                    </View>
+                    <Ionicons name="add-circle-outline" size={24} color={auroraTheme.colors.primary[500]} />
+                  </AnimatedPressable>
+                ))}
+              </ScrollView>
+            </GlassCard>
+          </AuroraBackground>
+        </Modal>
+
+      </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 60,
+    paddingHorizontal: auroraTheme.spacing.md,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: auroraTheme.spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
+  },
+  backButton: {
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
+  },
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
+  },
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   scrollView: {
     flex: 1,
   },
   section: {
-    padding: 16,
-    margin: 16,
-    borderRadius: 8,
+    marginBottom: auroraTheme.spacing.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: auroraTheme.spacing.md,
+    paddingBottom: auroraTheme.spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: auroraTheme.colors.border.light,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
+    fontSize: auroraTheme.typography.fontSize.lg,
+    fontWeight: 'bold',
+    color: auroraTheme.colors.text.primary,
   },
-  inputGroup: {
-    marginBottom: 16,
+  inputGrid: {
+    flexDirection: 'row',
+    gap: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.md,
+  },
+  inputContainer: {
+    flex: 1,
   },
   label: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 8,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.secondary,
+    marginBottom: 6,
+    fontWeight: '600',
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    color: auroraTheme.colors.text.primary,
     padding: 12,
-    fontSize: 16,
+    borderRadius: auroraTheme.borderRadius.md,
+    fontSize: auroraTheme.typography.fontSize.md,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     padding: 14,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.full,
     gap: 8,
+    marginTop: auroraTheme.spacing.xs,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: auroraTheme.typography.fontSize.md,
     fontWeight: "600",
   },
   tableItem: {
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.md,
     marginBottom: 8,
     gap: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   tableName: {
-    fontSize: 16,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.primary,
   },
   mappingRow: {
-    marginBottom: 16,
+    marginBottom: auroraTheme.spacing.md,
   },
-  mappingField: {
-    gap: 8,
+  mappingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
   },
   fieldLabel: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.primary,
+    fontWeight: '600',
   },
-  columnButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  columnSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.md,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: auroraTheme.colors.border.light,
+    backgroundColor: "rgba(255,255,255,0.03)",
   },
-  columnButtonText: {
-    fontSize: 16,
+  columnSelectorText: {
+    fontSize: auroraTheme.typography.fontSize.md,
   },
   actions: {
-    padding: 16,
-    gap: 12,
+    flexDirection: 'row',
+    gap: auroraTheme.spacing.md,
+    paddingVertical: auroraTheme.spacing.md,
   },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     padding: 14,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.full,
     gap: 8,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.8)',
   },
   modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    width: "100%",
+    maxWidth: 500,
     maxHeight: "80%",
-    paddingBottom: 32,
   },
   modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: auroraTheme.spacing.md,
+    paddingBottom: auroraTheme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: auroraTheme.colors.border.light,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: auroraTheme.typography.fontSize.xl,
+    fontWeight: 'bold',
+    color: auroraTheme.colors.text.primary,
+  },
+  modalSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   modalScroll: {
-    flex: 1,
+    marginBottom: auroraTheme.spacing.sm,
   },
   columnItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  columnInfo: {
+    gap: 4,
   },
   columnName: {
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.primary,
+    fontWeight: '500',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  columnMetaRec: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
   },
   columnType: {
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.primary[500],
+    fontWeight: 'bold',
+  },
+  columnMeta: {
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
   },
 });

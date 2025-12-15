@@ -10,13 +10,7 @@
  */
 
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import Animated, {
@@ -35,16 +29,10 @@ import {
   modernAnimations,
 } from "../styles/modernDesignSystem";
 
-const AnimatedTouchableOpacity =
-  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-export type CardVariant =
-  | "default"
-  | "elevated"
-  | "glass"
-  | "gradient"
-  | "outlined";
+export type CardVariant = "default" | "elevated" | "glass" | "gradient" | "outlined";
 export type CardElevation = "none" | "sm" | "md" | "lg";
 
 interface ModernCardProps {
@@ -55,11 +43,15 @@ interface ModernCardProps {
   variant?: CardVariant;
   elevation?: CardElevation;
   padding?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   gradientColors?: string[];
   icon?: keyof typeof Ionicons.glyphMap;
   footer?: React.ReactNode;
   testID?: string;
+  onLongPress?: () => void;
+  delayLongPress?: number;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const ModernCard: React.FC<ModernCardProps> = ({
@@ -75,6 +67,10 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   icon,
   footer,
   testID,
+  onLongPress,
+  delayLongPress,
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   // Animation values
   const scale = useSharedValue(1);
@@ -114,7 +110,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   };
 
   // Get card styles
-  const getCardStyles = (): ViewStyle => {
+  const getCardStyles = (): StyleProp<ViewStyle> => {
     const baseStyle: ViewStyle = {
       borderRadius: modernBorderRadius.card,
       padding,
@@ -170,11 +166,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
           <View style={styles.header}>
             {icon && (
               <View style={styles.iconContainer}>
-                <Ionicons
-                  name={icon}
-                  size={24}
-                  color={modernColors.primary[500]}
-                />
+                <Ionicons name={icon} size={24} color={modernColors.primary[500]} />
               </View>
             )}
             <View style={styles.headerText}>
@@ -201,10 +193,16 @@ export const ModernCard: React.FC<ModernCardProps> = ({
       return (
         <Component
           onPress={onPress}
+          onLongPress={onLongPress}
+          delayLongPress={delayLongPress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           style={[animatedStyle, cardStyle]}
           testID={testID}
+          accessible={true}
+          accessibilityRole={onPress ? "button" : "none"}
+          accessibilityLabel={accessibilityLabel || title}
+          accessibilityHint={accessibilityHint}
         >
           <LinearGradient
             colors={colors as unknown as readonly [string, string, ...string[]]}
@@ -226,6 +224,10 @@ export const ModernCard: React.FC<ModernCardProps> = ({
           onPressOut={handlePressOut}
           style={[animatedStyle, cardStyle]}
           testID={testID}
+          accessible={true}
+          accessibilityRole={onPress ? "button" : "none"}
+          accessibilityLabel={accessibilityLabel || title}
+          accessibilityHint={accessibilityHint}
         >
           <BlurView intensity={20} tint="dark" style={styles.blur}>
             {renderContent()}
@@ -241,6 +243,10 @@ export const ModernCard: React.FC<ModernCardProps> = ({
         onPressOut={handlePressOut}
         style={[animatedStyle, cardStyle]}
         testID={testID}
+        accessible={true}
+        accessibilityRole={onPress ? "button" : "none"}
+        accessibilityLabel={accessibilityLabel || title}
+        accessibilityHint={accessibilityHint}
       >
         {renderContent()}
       </Component>

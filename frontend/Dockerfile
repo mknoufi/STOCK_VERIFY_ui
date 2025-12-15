@@ -1,5 +1,5 @@
 # Build stage - Export Expo web app
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -9,6 +9,10 @@ RUN npm ci
 
 # Copy source code
 COPY . .
+
+# Accept build argument for backend URL
+ARG EXPO_PUBLIC_BACKEND_URL
+ENV EXPO_PUBLIC_BACKEND_URL=${EXPO_PUBLIC_BACKEND_URL}
 
 # Build the web export
 RUN npm run build:web

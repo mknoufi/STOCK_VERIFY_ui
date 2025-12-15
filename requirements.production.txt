@@ -1,28 +1,29 @@
 # Production Requirements
 # Use: pip install -r requirements.production.txt
+# Last updated: December 2025
 
 # Core Framework
-fastapi==0.115.8
-uvicorn[standard]==0.34.1
+fastapi==0.115.8  # Latest stable
+uvicorn[standard]==0.34.1  # Latest stable
 gunicorn==23.0.0
 python-dotenv==1.0.1
-pydantic==2.12.5
+pydantic==2.12.5  # v2 stable
 pydantic-settings==2.7.0
 
 # Database Drivers
-motor==3.7.0
-pymongo>=4.10.0
-pyodbc==5.2.0
-redis>=5.2.1
+motor==3.7.0  # MongoDB async driver
+pymongo>=4.10.0  # MongoDB sync driver
+pyodbc==5.2.0  # SQL Server ODBC driver
+redis>=5.2.1  # Redis client
 
 # Security
 # NOTE: python-jose removed due to CVE-2024-33663/33664 and ecdsa vulnerabilities
 # Using PyJWT + cryptography instead (see backend/auth/jwt_provider.py)
 passlib[argon2]==1.7.4
-bcrypt==4.2.1
+bcrypt==4.2.1  # TODO: Update to 5.0.0 (test compatibility first)
 python-multipart>=0.0.18
-PyJWT>=2.10.1
-cryptography>=43.0.3
+PyJWT>=2.10.1  # Secure JWT implementation
+cryptography>=43.0.3  # Security: CVE fixes
 
 # Monitoring & Logging
 prometheus-client==0.21.0
@@ -31,7 +32,7 @@ sentry-sdk[fastapi]==2.18.0
 
 # Performance
 aioredis==2.0.1
-aiocache==0.12.2
+aiocache==0.12.2  # TODO: Update to 0.12.3
 ujson==5.10.0
 orjson==3.10.0
 

@@ -45,4 +45,4 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-CMD ["uvicorn", "backend.server:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["gunicorn", "backend.server:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8001"]

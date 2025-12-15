@@ -349,21 +349,11 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
         print("DEBUG: MOCK get_current_user called")
         return {"username": "staff1", "role": "staff", "full_name": "Staff Member"}
 
-    # server_module.get_current_user = mock_get_current_user
-    # We can't easily patch it because it's used as Depends(get_current_user) in decorators
-    # The decorator is evaluated at import time.
-    # So patching the function object AFTER import won't affect the route handler's dependency.
-    # UNLESS we patch it BEFORE server.py is imported? No, we import it here.
-
-    # BUT FastAPI resolves dependencies at runtime using the function object.
-    # If we patch server_module.get_current_user, does FastAPI use the new object?
-    # Depends(get_current_user) stores the function object.
-    # If we change the name in the module, the old object is still in Depends.
-
-    # So patching get_current_user won't work for existing routes.
-
-    # However, we can patch app.dependency_overrides!
+    # Override both the server module's dependency and the auth module's dependency
     server_module.app.dependency_overrides[server_module.get_current_user] = mock_get_current_user
+
+    from backend.auth import dependencies as auth_deps_module
+    server_module.app.dependency_overrides[auth_deps_module.get_current_user] = mock_get_current_user
 
     # Also patch the global variables in server module if they are used directly
     # (They are used in get_current_user in server.py)

@@ -2,7 +2,6 @@
 
 import logging
 import os
-import re
 import sys
 import time
 import uuid
@@ -29,8 +28,10 @@ if str(project_root) not in sys.path:
 
 from backend.api import auth, supervisor_pin
 from backend.api.admin_control_api import admin_control_router  # noqa: E402
+from backend.api.admin_dashboard_api import admin_dashboard_router  # noqa: E402
 from backend.api.auth import router as auth_router  # noqa: E402
 from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
+from backend.api.dynamic_reports_api import dynamic_reports_router  # noqa: E402
 from backend.api.enhanced_item_api import enhanced_item_router as items_router  # noqa: E402
 from backend.api.enhanced_item_api import init_enhanced_api
 from backend.api.erp_api import init_erp_api
@@ -41,12 +42,21 @@ from backend.api.item_verification_api import (  # noqa: E402
     init_verification_api,
     verification_router,
 )
+from backend.api.logs_api import router as logs_router  # noqa: E402
+from backend.api.mapping_api import router as mapping_router  # noqa: E402
 from backend.api.metrics_api import metrics_router, set_monitoring_service  # noqa: E402
 
 # New feature API routers
 from backend.api.permissions_api import permissions_router  # noqa: E402
+from backend.api.rack_api import router as rack_router  # noqa: E402
+from backend.api.report_generation_api import report_generation_router  # noqa: E402
+from backend.api.reporting_api import router as reporting_router  # noqa: E402
 from backend.api.security_api import security_router  # noqa: E402
 from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
+from backend.api.session_management_api import router as session_mgmt_router  # noqa: E402
+
+# Phase 1-3: New Upgrade APIs
+from backend.api.sync_batch_api import router as sync_batch_router  # noqa: E402
 
 # New feature services
 from backend.api.sync_conflicts_api import sync_conflicts_router  # noqa: E402
@@ -56,9 +66,9 @@ from backend.api.sync_management_api import (  # noqa: E402
 )
 from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
 from backend.api.variance_api import router as variance_router  # noqa: E402
-from backend.api_mapping import router as mapping_router  # noqa: E402
 from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
 from backend.config import settings  # noqa: E402
+from backend.db.indexes import create_indexes  # noqa: E402
 from backend.db.migrations import MigrationManager  # noqa: E402
 from backend.db.runtime import set_client, set_db  # noqa: E402
 from backend.error_messages import get_error_message  # noqa: E402
@@ -79,8 +89,13 @@ from backend.services.errors import (  # noqa: E402
     RateLimitExceededError,
     ValidationError,
 )
+from backend.services.lock_manager import get_lock_manager  # noqa: E402
 from backend.services.monitoring_service import MonitoringService  # noqa: E402
+from backend.services.pubsub_service import get_pubsub_service  # noqa: E402
 from backend.services.rate_limiter import ConcurrentRequestHandler, RateLimiter  # noqa: E402
+
+# Phase 1-3: New Services
+from backend.services.redis_service import close_redis, init_redis  # noqa: E402
 from backend.services.refresh_token import RefreshTokenService  # noqa: E402
 from backend.services.runtime import set_cache_service, set_refresh_token_service  # noqa: E402
 from backend.services.scheduled_export_service import ScheduledExportService  # noqa: E402
@@ -88,7 +103,11 @@ from backend.services.sync_conflicts_service import SyncConflictsService  # noqa
 from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
-from backend.utils.api_utils import result_to_response  # noqa: E402
+from backend.utils.api_utils import (
+    result_to_response,  # noqa: E402
+    sanitize_for_logging,  # noqa: E402
+)
+from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.result import Fail, Ok, Result  # noqa: E402
 
@@ -163,74 +182,12 @@ else:
 logger = logging.getLogger(__name__)
 
 
-# SECURITY: Helper function to sanitize user input for logging
-def sanitize_for_logging(user_input: str, max_length: int = 50) -> str:
-    """
-    Sanitize user input before logging to prevent log injection attacks.
-
-    Args:
-        user_input: The user input to sanitize
-        max_length: Maximum length to allow (default: 50)
-
-    Returns:
-        Sanitized string safe for logging
-    """
-    if not user_input:
-        return ""
-
-    # Convert to string and truncate
-    sanitized = str(user_input)[:max_length]
-
-    # Remove newlines, carriage returns, and control characters that could break log format
-    sanitized = re.sub(r"[\r\n\x00-\x1f\x7f-\x9f]", "", sanitized)
-
-    # Remove potentially dangerous characters for log parsers
-    sanitized = re.sub(r'[<>&"\'`]', "", sanitized)
-
-    return sanitized
-
-
-# SECURITY: Helper function for safe error responses
-def create_safe_error_response(
-    status_code: int,
-    message: str,
-    error_code: str = "INTERNAL_ERROR",
-    log_details: Optional[str] = None,
-) -> HTTPException:
-    """
-    Create a safe error response that doesn't leak sensitive information.
-
-    Args:
-        status_code: HTTP status code
-        message: Safe user-facing error message
-        error_code: Application-specific error code
-        log_details: Detailed error for logging only (not sent to client)
-
-    Returns:
-        HTTPException with sanitized error information
-    """
-    if log_details:
-        logger.error(f"Internal error ({error_code}): {log_details}")
-
-    return HTTPException(
-        status_code=status_code,
-        detail={
-            "success": False,
-            "error": {
-                "message": message,
-                "code": error_code,
-            },
-        },
-    )
+# Note: sanitize_for_logging and create_safe_error_response are imported from backend.utils.api_utils (line 73)
 
 
 # Load configuration with validation
-try:
-    # Use centralized validated settings
-    from backend.config import settings
-except Exception as e:
-    logger.error(f"Failed to load configuration: {str(e)}")
-    raise
+# Note: settings already imported at top of file (line 68)
+# Configuration validation happens during import
 
 
 # Only define fallback Settings if settings is None
@@ -417,13 +374,45 @@ error_log_service = ErrorLogService(db)
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: C901
     # Startup
-    logger.info("🚀 Starting application...")
+    logger.info("🚀 Starting StockVerify application...")
 
     # Initialize runtime globals
     set_client(client)
     set_db(db)
     set_cache_service(cache_service)
     set_refresh_token_service(refresh_token_service)
+
+    # Phase 1: Initialize Redis and related services
+    redis_service = None
+    pubsub_service = None
+    try:
+        logger.info("📦 Phase 1: Initializing Redis services...")
+        redis_service = await init_redis()
+        logger.info("✓ Redis service initialized")
+
+        # Start Pub/Sub service
+        pubsub_service = get_pubsub_service(redis_service)
+        await pubsub_service.start()
+        logger.info("✓ Pub/Sub service started")
+
+        # Initialize lock manager (will be used by APIs)
+        lock_manager = get_lock_manager(redis_service)
+        logger.info("✓ Lock manager initialized")
+
+    except Exception as e:
+        logger.warning(f"⚠️ Redis services not available: {str(e)}")
+        logger.warning("Multi-user locking and real-time updates will be disabled")
+
+    # Create MongoDB indexes
+    try:
+        logger.info("📊 Creating MongoDB indexes...")
+        index_results = await create_indexes(db)
+        total_indexes = sum(index_results.values())
+        logger.info(
+            f"✓ MongoDB indexes created: {total_indexes} total across {len(index_results)} collections"
+        )
+    except Exception as e:
+        logger.warning(f"⚠️ Index creation warning: {str(e)}")
 
     # Initialize SQL Server connection if credentials are available
     try:
@@ -463,20 +452,31 @@ async def lifespan(app: FastAPI):  # noqa: C901
         await db.command("ping")
         logger.info("✅ MongoDB connection verified - MongoDB is required and available")
     except Exception as e:
-        # MongoDB connection failed - this is critical, so we exit
+        # MongoDB connection failed - check if we're in development mode
         error_type = type(e).__name__
         logger.error(f"❌ MongoDB is required but unavailable ({error_type}): {e}")
-        logger.error("Application cannot start without MongoDB. Please ensure MongoDB is running.")
-        raise SystemExit(
-            f"MongoDB is required but unavailable ({error_type}). Please start MongoDB and try again."
-        )
+
+        # In development, allow app to run without MongoDB
+        if os.getenv("ENVIRONMENT", "development").lower() in ["development", "dev"]:
+            logger.warning(
+                "⚠️ Running in DEVELOPMENT mode without MongoDB - some features may be limited"
+            )
+        else:
+            logger.error(
+                "Application cannot start without MongoDB. Please ensure MongoDB is running."
+            )
+            raise SystemExit(
+                f"MongoDB is required but unavailable ({error_type}). Please start MongoDB and try again."
+            )
 
     # Initialize default users
     try:
         await init_default_users()
         logger.info("OK: Default users initialized")
     except Exception as e:
-        logger.error(f"Error initializing default users: {str(e)}")
+        logger.warning(
+            f"Could not initialize default users (may be due to MongoDB unavailability): {str(e)}"
+        )
 
     # Run migrations
     try:
@@ -484,10 +484,12 @@ async def lifespan(app: FastAPI):  # noqa: C901
         await migration_manager.run_migrations()
         logger.info("OK: Migrations completed")
     except DatabaseError as e:
-        logger.error(f"Database error during migrations: {str(e)}")
+        logger.warning(
+            f"Database error during migrations (may be due to MongoDB unavailability): {str(e)}"
+        )
     except Exception as e:
         # Catch-all for migration errors (index creation failures, etc.)
-        logger.error(f"Migration error: {str(e)}")
+        logger.warning(f"Migration error (may be due to MongoDB unavailability): {str(e)}")
 
     # Initialize auto-sync manager (monitors SQL Server and auto-syncs when available)
     global auto_sync_manager
@@ -786,6 +788,20 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     shutdown_tasks.append(stop_auto_sync())
 
+    # Phase 1: Stop Pub/Sub and Redis services
+    async def stop_redis_services():
+        try:
+            if pubsub_service:
+                await pubsub_service.stop()
+                logger.info("✓ Pub/Sub service stopped")
+
+            await close_redis()
+            logger.info("✓ Redis connection closed")
+        except Exception as e:
+            logger.error(f"Error stopping Redis services: {str(e)}")
+
+    shutdown_tasks.append(stop_redis_services())
+
     # Execute shutdown tasks with timeout
     try:
         import asyncio
@@ -897,9 +913,9 @@ app.include_router(health_router)  # Health check endpoints at /health/*
 app.include_router(health_router, prefix="/api")  # Alias for frontend compatibility
 app.include_router(info_router)  # Version check and info endpoints at /api/*
 app.include_router(permissions_router, prefix="/api")  # Permissions management
+app.include_router(mapping_router)  # Database mapping endpoints via mapping_api
 app.include_router(exports_router, prefix="/api")  # Export functionality
-# Include routers
-app.include_router(mapping_router, prefix="/api/mapping")  # API mappings
+
 app.include_router(auth_router, prefix="/api")
 app.include_router(items_router)  # Enhanced items API (has its own prefix /api/v2/erp/items)
 app.include_router(metrics_router, prefix="/api")  # Metrics and monitoring
@@ -912,6 +928,19 @@ app.include_router(erp_router, prefix="/api")  # ERP endpoints
 app.include_router(variance_router, prefix="/api")  # Variance reasons and trendspoints
 app.include_router(admin_control_router)  # Admin control endpoints
 app.include_router(dynamic_fields_router)  # Dynamic fields management
+app.include_router(dynamic_reports_router)  # Dynamic reports (has prefix /api/dynamic-reports)
+app.include_router(logs_router, prefix="/api")  # Error and Activity logs
+
+
+# Phase 1-3: New Upgrade Routers
+app.include_router(sync_batch_router)  # Batch sync API (has prefix /api/sync)
+app.include_router(rack_router)  # Rack management (has prefix /api/racks)
+app.include_router(session_mgmt_router)  # Session management (has prefix /api/sessions)
+app.include_router(reporting_router)  # Reporting API (has prefix /api/reports)
+app.include_router(admin_dashboard_router, prefix="/api")  # Admin Dashboard API
+app.include_router(report_generation_router, prefix="/api")  # Report Generation API
+logger.info("✓ Phase 1-3 upgrade routers registered")
+logger.info("✓ Admin Dashboard, Report Generation, and Dynamic Reports APIs registered")
 
 # Enterprise API (audit, security, feature flags, governance)
 if ENTERPRISE_AVAILABLE and enterprise_router is not None:
@@ -1094,62 +1123,7 @@ class UnknownItemCreate(BaseModel):
     remark: Optional[str] = None
 
 
-# Helper functions
-def verify_password(plain_password: str, hashed_password: str) -> bool:  # noqa: C901
-    """
-    Verify a password against a hash using multiple fallback strategies.
-
-    Args:
-        plain_password: The plain text password to verify
-        hashed_password: The hashed password to compare against
-
-    Returns:
-        True if password matches, False otherwise
-    """
-    if not plain_password or not hashed_password:
-        logger.warning("Empty password or hash provided")
-        return False
-
-    # Bcrypt has a 72-byte limit, truncate if necessary
-    password_bytes = plain_password.encode("utf-8")
-    if len(password_bytes) > 72:
-        logger.warning("Password exceeds 72 bytes, truncating")
-        plain_password = plain_password[:72]
-        password_bytes = plain_password.encode("utf-8")
-
-    # Strategy 1: Try passlib CryptContext (supports multiple schemes)
-    try:
-        result = pwd_context.verify(plain_password, hashed_password)
-        if result:
-            logger.debug("Password verified using passlib CryptContext")
-        return bool(result)
-    except Exception as e:
-        logger.debug(f"Passlib verification failed: {type(e).__name__}: {str(e)}")
-
-    # Strategy 2: Direct bcrypt verification (fallback)
-    try:
-        import bcrypt
-
-        # if isinstance(hashed_password, str):
-        hash_bytes = hashed_password.encode("utf-8")
-        result = bcrypt.checkpw(password_bytes, hash_bytes)
-        if result:
-            logger.debug("Password verified using direct bcrypt")
-        return bool(result)
-        # else:
-        #     logger.error(f"Password hash is not a string: {type(hashed_password)}")
-        #     return False
-    except ImportError:
-        logger.error("bcrypt module not available - password verification cannot proceed")
-        return False
-    except Exception as e:
-        logger.error(f"Direct bcrypt verification failed: {type(e).__name__}: {str(e)}")
-        return False
-
-
-def get_password_hash(password: str) -> str:
-    """Hash a password using the configured context"""
-    return str(pwd_context.hash(password))
+# Note: verify_password and get_password_hash are imported from backend.utils.auth_utils (line 72)
 
 
 def create_access_token(data: Dict[str, Any]) -> str:
@@ -1160,10 +1134,10 @@ def create_access_token(data: Dict[str, Any]) -> str:
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> Dict[str, Any]:
-    logger.error(f"DEBUG: server.get_current_user called. SECRET_KEY={SECRET_KEY[:5]}...")
+    logger.debug(f"get_current_user called. SECRET_KEY={SECRET_KEY[:5]}...")
     try:
         if credentials is None:
-            logger.error("DEBUG: server.get_current_user: No credentials")
+            logger.debug("get_current_user: No credentials")
             error = get_error_message("AUTH_TOKEN_INVALID")
             raise HTTPException(
                 status_code=401,
@@ -1176,9 +1150,9 @@ async def get_current_user(
             )
 
         token = credentials.credentials
-        logger.error(f"DEBUG: server.get_current_user token: {token}")
+        logger.debug(f"get_current_user token: {token}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.error(f"DEBUG: server.get_current_user payload: {payload}")
+        logger.debug(f"get_current_user payload: {payload}")
 
         # No type validation needed - we only issue access tokens through this endpoint
         # (Refresh tokens are UUIDs, not JWTs, so they won't decode successfully)
@@ -1382,6 +1356,15 @@ async def init_mock_erp_data():
                 "stock_qty": 250.0,
                 "mrp": 30.0,
                 "category": "Snacks",
+                "warehouse": "Main",
+            },
+            {
+                "item_code": "ITEM_TEST_E2E",
+                "item_name": "E2E Test Item",
+                "barcode": "513456",
+                "stock_qty": 100.0,
+                "mrp": 999.0,
+                "category": "Test",
                 "warehouse": "Main",
             },
         ]
@@ -1636,7 +1619,7 @@ async def create_session(
     session_data: SessionCreate,
     current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> Session:
-    logger.error(f"DEBUG: server.create_session called. User: {current_user.get('username')}")
+    logger.debug(f"create_session called. User: {current_user.get('username')}")
     # Input validation and sanitization
     warehouse = session_data.warehouse.strip()
     if not warehouse:
@@ -2425,17 +2408,71 @@ app.include_router(
 # Run the server if executed directly
 if __name__ == "__main__":
     import json
+    import socket
     from datetime import datetime
     from pathlib import Path
 
     import uvicorn
 
-    # Get port from environment or settings
-    port = int(getattr(settings, "PORT", os.getenv("PORT", 8001)))
+    def find_available_port(start_port: int, max_attempts: int = 10) -> int:
+        """Find the first available port starting from start_port."""
+        for port in range(start_port, start_port + max_attempts):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                try:
+                    # Try binding to 0.0.0.0 to ensure availability on all interfaces
+                    s.bind(("0.0.0.0", port))
+                    return port
+                except OSError:
+                    continue
+        return start_port
+
+    def get_local_ip():
+        """Get the local IP address of the machine."""
+        try:
+            # 1. Try connecting to a public DNS server (Google)
+            # This usually forces the OS to pick the primary outgoing interface (LAN)
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(0)
+            try:
+                s.connect(("8.8.8.8", 80))
+                ip = s.getsockname()[0]
+            except Exception:
+                ip = "127.0.0.1"
+            finally:
+                s.close()
+
+            # 2. Sanity check: If we got localhost or something weird, try 192.168 specifically
+            if ip.startswith("127.") or ip == "0.0.0.0":
+                # Fallback: iterate interfaces (simple approach often restricted, so we rely on socket)
+                # Re-try with a local router guess
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                try:
+                    s.connect(("192.168.1.1", 80))
+                    ip = s.getsockname()[0]
+                except Exception:
+                    pass
+                finally:
+                    s.close()
+
+            print(f"DEBUG: Detected Local IP: {ip}")
+            return ip
+        except Exception:
+            return "127.0.0.1"
+
+    # Get configured port as starting point
+    start_port = int(getattr(settings, "PORT", os.getenv("PORT", 8001)))
+    port = find_available_port(start_port)
+    local_ip = get_local_ip()
 
     # Save port to file for other services to discover
     try:
-        port_data = {"port": port, "pid": os.getpid(), "timestamp": datetime.utcnow().isoformat()}
+        port_data = {
+            "port": port,
+            "ip": local_ip,
+            "url": f"http://{local_ip}:{port}",
+            "pid": os.getpid(),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
 
         # Save to backend_port.json in project root
         root_dir = Path(__file__).parent.parent
@@ -2449,7 +2486,9 @@ if __name__ == "__main__":
                 json.dump(port_data, f)
             logger.info(f"Saved backend port info to {frontend_public / 'backend_port.json'}")
 
-        logger.info(f"Saved backend port info to {root_dir / 'backend_port.json'}")
+        logger.info(
+            f"Saved backend info (IP: {local_ip}, Port: {port}) to {root_dir / 'backend_port.json'}"
+        )
     except Exception as e:
         logger.warning(f"Failed to save backend port info: {e}")
 

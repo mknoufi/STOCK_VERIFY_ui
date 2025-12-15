@@ -1,23 +1,36 @@
+/**
+ * Sync Conflicts Screen
+ * Review and resolve data synchronization conflicts
+ * Refactored to use Aurora Design System
+ */
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   Modal,
   TextInput,
+  RefreshControl,
+  Platform,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+
+// import { usePermissions } from "../../src/hooks/usePermissions";
 import {
   getSyncConflicts,
   resolveSyncConflict,
   batchResolveSyncConflicts,
   getSyncConflictStats,
 } from "../../src/services/api/api";
+import { AuroraBackground, GlassCard, StatsCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 interface SyncConflict {
   _id: string;
@@ -35,8 +48,10 @@ interface SyncConflict {
 
 export default function SyncConflictsScreen() {
   const router = useRouter();
-  const { hasPermission } = usePermissions();
+  // const { hasPermission } = usePermissions();
   const [loading, setLoading] = useState(true);
+  /* const { hasPermission } = usePermissions(); */
+  const [refreshing, setRefreshing] = useState(false);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<string>("pending");
@@ -50,6 +65,7 @@ export default function SyncConflictsScreen() {
   const [resolutionNote, setResolutionNote] = useState("");
 
   useEffect(() => {
+    // Security: Check permission before allowing conflict resolution
     if (!hasPermission("sync.resolve_conflict")) {
       Alert.alert(
         "Access Denied",
@@ -58,21 +74,25 @@ export default function SyncConflictsScreen() {
       );
       return;
     }
-    loadConflicts();
-    loadStats();
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStatus]);
 
+  const loadData = async () => {
+    setLoading(true);
+    await Promise.all([loadConflicts(), loadStats()]);
+    setLoading(false);
+    setRefreshing(false);
+  };
+
   const loadConflicts = async () => {
     try {
-      setLoading(true);
       const status = filterStatus === "all" ? undefined : filterStatus;
       const response = await getSyncConflicts(status);
       setConflicts(response.data?.conflicts || []);
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to load sync conflicts");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -85,16 +105,23 @@ export default function SyncConflictsScreen() {
     }
   };
 
+  const handleRefresh = () => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setRefreshing(true);
+    loadData();
+  };
+
   const handleResolve = async (conflictId: string, resolution: string) => {
     try {
       await resolveSyncConflict(conflictId, resolution, resolutionNote);
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert("Success", "Conflict resolved successfully");
       setModalVisible(false);
       setSelectedConflict(null);
       setResolutionNote("");
-      loadConflicts();
-      loadStats();
+      loadData();
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to resolve conflict");
     }
   };
@@ -104,6 +131,8 @@ export default function SyncConflictsScreen() {
       Alert.alert("Error", "Please select conflicts to resolve");
       return;
     }
+
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
     Alert.alert(
       "Confirm Batch Resolution",
@@ -119,11 +148,11 @@ export default function SyncConflictsScreen() {
                 resolution,
                 resolutionNote,
               );
+              if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               Alert.alert("Success", "Conflicts resolved successfully");
               setSelectedConflicts(new Set());
               setResolutionNote("");
-              loadConflicts();
-              loadStats();
+              loadData();
             } catch (error: any) {
               Alert.alert(
                 "Error",
@@ -137,6 +166,7 @@ export default function SyncConflictsScreen() {
   };
 
   const toggleConflictSelection = (conflictId: string) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     const newSelection = new Set(selectedConflicts);
     if (newSelection.has(conflictId)) {
       newSelection.delete(conflictId);
@@ -147,522 +177,550 @@ export default function SyncConflictsScreen() {
   };
 
   const openConflictDetail = (conflict: SyncConflict) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     setSelectedConflict(conflict);
     setModalVisible(true);
   };
 
-  const renderConflictCard = (conflict: SyncConflict) => {
-    const isSelected = selectedConflicts.has(conflict._id);
+  const renderConflictCard = ({ item }: { item: SyncConflict }) => {
+    const isSelected = selectedConflicts.has(item._id);
 
     return (
-      <TouchableOpacity
-        key={conflict._id}
-        style={[styles.card, isSelected && styles.cardSelected]}
-        onPress={() => toggleConflictSelection(conflict._id)}
-        onLongPress={() => openConflictDetail(conflict)}
+      <AnimatedPressable
+        onPress={() => toggleConflictSelection(item._id)}
+        onLongPress={() => openConflictDetail(item)}
+        style={{ marginBottom: auroraTheme.spacing.md }}
       >
-        <View style={styles.cardHeader}>
-          <View style={styles.checkbox}>
-            {isSelected && <View style={styles.checkboxChecked} />}
+        <GlassCard
+          variant={isSelected ? "medium" : "light"}
+          padding={auroraTheme.spacing.md}
+          borderRadius={auroraTheme.borderRadius.lg}
+          style={isSelected ? { borderColor: auroraTheme.colors.primary[500], borderWidth: 1 } : undefined}
+        >
+          <View style={styles.cardHeader}>
+            <View style={[styles.checkbox, isSelected && styles.checkboxChecked]}>
+              {isSelected && <Ionicons name="checkmark" size={16} color="white" />}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.itemCode}>{item.item_code}</Text>
+              <View style={styles.conflictTypeContainer}>
+                <Text style={styles.conflictType}>{item.conflict_type}</Text>
+              </View>
+            </View>
           </View>
-          <Text style={styles.itemCode}>{conflict.item_code}</Text>
-          <Text style={styles.conflictType}>{conflict.conflict_type}</Text>
-        </View>
 
-        <View style={styles.conflictData}>
-          <View style={styles.dataColumn}>
-            <Text style={styles.dataLabel}>Local Value:</Text>
-            <Text style={styles.dataValue}>
-              {JSON.stringify(conflict.local_value)}
-            </Text>
+          <View style={styles.conflictData}>
+            <View style={styles.dataColumn}>
+              <Text style={styles.dataLabel}>Local Value</Text>
+              <GlassCard variant="dark" intensity={10} padding={8} borderRadius={auroraTheme.borderRadius.sm}>
+                <Text style={styles.dataValue} numberOfLines={2}>
+                  {JSON.stringify(item.local_value)}
+                </Text>
+              </GlassCard>
+            </View>
+            <View style={styles.dataColumn}>
+              <Text style={styles.dataLabel}>Server Value</Text>
+              <GlassCard variant="dark" intensity={10} padding={8} borderRadius={auroraTheme.borderRadius.sm}>
+                <Text style={styles.dataValue} numberOfLines={2}>
+                  {JSON.stringify(item.server_value)}
+                </Text>
+              </GlassCard>
+            </View>
           </View>
-          <View style={styles.dataColumn}>
-            <Text style={styles.dataLabel}>Server Value:</Text>
-            <Text style={styles.dataValue}>
-              {JSON.stringify(conflict.server_value)}
-            </Text>
-          </View>
-        </View>
 
-        <Text style={styles.timestamp}>
-          Detected: {new Date(conflict.detected_at).toLocaleString()}
-        </Text>
+          <Text style={styles.timestamp}>
+            Detected: {new Date(item.detected_at).toLocaleString()}
+          </Text>
 
-        {conflict.status !== "pending" && (
-          <View style={styles.resolvedInfo}>
-            <Text style={styles.resolvedText}>
-              Resolved: {conflict.resolution} by {conflict.resolved_by}
-            </Text>
-          </View>
-        )}
-      </TouchableOpacity>
+          {item.status !== "pending" && (
+            <View style={styles.resolvedInfo}>
+              <Ionicons name="checkmark-circle-outline" size={14} color={auroraTheme.colors.success[500]} />
+              <Text style={styles.resolvedText}>
+                Resolved: {item.resolution} by {item.resolved_by}
+              </Text>
+            </View>
+          )}
+        </GlassCard>
+      </AnimatedPressable>
     );
   };
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading conflicts...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Sync Conflicts</Text>
-        <TouchableOpacity style={styles.refreshButton} onPress={loadConflicts}>
-          <Text style={styles.refreshButtonText}>↻</Text>
-        </TouchableOpacity>
-      </View>
+    <AuroraBackground variant="secondary" intensity="medium" animated>
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Sync Conflicts</Text>
+              <Text style={styles.pageSubtitle}>Resolve data discrepancies</Text>
+            </View>
+          </View>
+        </Animated.View>
 
-      {stats && (
-        <View style={styles.statsBar}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.total || 0}</Text>
-            <Text style={styles.statLabel}>Total</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: "#FFC107" }]}>
-              {stats.pending || 0}
-            </Text>
-            <Text style={styles.statLabel}>Pending</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: "#00E676" }]}>
-              {stats.resolved || 0}
-            </Text>
-            <Text style={styles.statLabel}>Resolved</Text>
-          </View>
-        </View>
-      )}
+        {stats && (
+          <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
+            <StatsCard
+              title="Total"
+              value={stats.total?.toString() || "0"}
+              icon="alert-circle-outline"
+              variant="primary"
+              style={{ flex: 1 }}
+            />
+            <StatsCard
+              title="Pending"
+              value={stats.pending?.toString() || "0"}
+              icon="time-outline"
+              variant="warning"
+              style={{ flex: 1 }}
+            />
+            <StatsCard
+              title="Resolved"
+              value={stats.resolved?.toString() || "0"}
+              icon="checkmark-circle-outline"
+              variant="success"
+              style={{ flex: 1 }}
+            />
+          </Animated.View>
+        )}
 
-      <View style={styles.filterBar}>
-        {["pending", "resolved", "all"].map((status) => (
-          <TouchableOpacity
-            key={status}
-            style={[
-              styles.filterButton,
-              filterStatus === status && styles.filterButtonActive,
-            ]}
-            onPress={() => setFilterStatus(status)}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                filterStatus === status && styles.filterButtonTextActive,
-              ]}
+        {/* Filters */}
+        <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.filterBar}>
+          {["pending", "resolved", "all"].map((status) => (
+            <AnimatedPressable
+              key={status}
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.selectionAsync();
+                setFilterStatus(status);
+              }}
+              style={{ flex: 1 }}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <GlassCard
+                variant={filterStatus === status ? "medium" : "light"}
+                padding={auroraTheme.spacing.sm}
+                borderRadius={auroraTheme.borderRadius.full}
+                style={[
+                  styles.filterButton,
+                  filterStatus === status && { borderColor: auroraTheme.colors.primary[500], borderWidth: 1 }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterButtonText,
+                    filterStatus === status && { color: auroraTheme.colors.primary[500] },
+                  ]}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </GlassCard>
+            </AnimatedPressable>
+          ))}
+        </Animated.View>
 
-      {selectedConflicts.size > 0 && (
-        <View style={styles.batchActions}>
-          <Text style={styles.batchText}>
-            {selectedConflicts.size} selected
-          </Text>
-          <TouchableOpacity
-            style={[styles.batchButton, { backgroundColor: "#00E676" }]}
-            onPress={() => handleBatchResolve("accept_server")}
-          >
-            <Text style={styles.batchButtonText}>Accept Server</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.batchButton, { backgroundColor: "#007AFF" }]}
-            onPress={() => handleBatchResolve("accept_local")}
-          >
-            <Text style={styles.batchButtonText}>Accept Local</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        {selectedConflicts.size > 0 && (
+          <Animated.View entering={FadeInDown.delay(100)} style={styles.batchActions}>
+            <GlassCard variant="medium" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.lg} style={styles.batchCard}>
+              <Text style={styles.batchText}>
+                {selectedConflicts.size} selected
+              </Text>
+              <View style={styles.batchButtons}>
+                <AnimatedPressable
+                  style={[styles.batchButton, { backgroundColor: auroraTheme.colors.success[500] }]}
+                  onPress={() => handleBatchResolve("accept_server")}
+                >
+                  <Text style={styles.batchButtonText}>Accept Server</Text>
+                </AnimatedPressable>
+                <AnimatedPressable
+                  style={[styles.batchButton, { backgroundColor: auroraTheme.colors.secondary[500] }]}
+                  onPress={() => handleBatchResolve("accept_local")}
+                >
+                  <Text style={styles.batchButtonText}>Accept Local</Text>
+                </AnimatedPressable>
+              </View>
+            </GlassCard>
+          </Animated.View>
+        )}
 
-      <ScrollView style={styles.content}>
-        {conflicts.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No sync conflicts found</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Conflicts will appear here when they are detected
-            </Text>
+        {loading && !refreshing ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+            <Text style={styles.loadingText}>Loading conflicts...</Text>
+          </View>
+        ) : conflicts.length === 0 ? (
+          <View style={styles.centered}>
+            <Ionicons
+              name="checkmark-done-circle-outline"
+              size={64}
+              color={auroraTheme.colors.success[500]}
+            />
+            <Text style={styles.emptyText}>No conflicts found</Text>
+            <Text style={styles.emptySubtext}>System data is in sync</Text>
           </View>
         ) : (
-          conflicts.map(renderConflictCard)
-        )}
-      </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Resolve Conflict</Text>
-
-            {selectedConflict && (
-              <>
-                <Text style={styles.modalLabel}>
-                  Item: {selectedConflict.item_code}
-                </Text>
-                <Text style={styles.modalLabel}>
-                  Type: {selectedConflict.conflict_type}
-                </Text>
-
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Local Value:</Text>
-                  <Text style={styles.modalValue}>
-                    {JSON.stringify(selectedConflict.local_value, null, 2)}
-                  </Text>
-                </View>
-
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Server Value:</Text>
-                  <Text style={styles.modalValue}>
-                    {JSON.stringify(selectedConflict.server_value, null, 2)}
-                  </Text>
-                </View>
-
-                <TextInput
-                  style={[styles.modalInput, styles.modalTextArea]}
-                  placeholder="Resolution note (optional)"
-                  placeholderTextColor="#666"
-                  value={resolutionNote}
-                  onChangeText={setResolutionNote}
-                  multiline
+          <View style={{ flex: 1 }}>
+            <FlashList
+              data={conflicts}
+              renderItem={renderConflictCard}
+              // @ts-ignore
+              estimatedItemSize={200}
+              keyExtractor={(item) => item._id}
+              contentContainerStyle={styles.listContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  tintColor={auroraTheme.colors.primary[500]}
+                  colors={[auroraTheme.colors.primary[500]]}
                 />
-
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: "#00E676" }]}
-                    onPress={() =>
-                      handleResolve(selectedConflict._id, "accept_server")
-                    }
-                  >
-                    <Text style={styles.modalButtonText}>Accept Server</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: "#007AFF" }]}
-                    onPress={() =>
-                      handleResolve(selectedConflict._id, "accept_local")
-                    }
-                  >
-                    <Text style={styles.modalButtonText}>Accept Local</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonCancel]}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
-                </TouchableOpacity>
-              </>
-            )}
+              }
+            />
           </View>
-        </View>
-      </Modal>
-    </View>
+        )}
+
+        <Modal
+          visible={modalVisible}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <AuroraBackground variant="primary" intensity="high" style={styles.modalOverlay}>
+            <GlassCard variant="modal" padding={auroraTheme.spacing.lg} borderRadius={auroraTheme.borderRadius.xl} style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Resolve Conflict</Text>
+
+              {selectedConflict && (
+                <>
+                  <Text style={styles.modalLabel}>
+                    Item: <Text style={{ color: "white" }}>{selectedConflict.item_code}</Text>
+                  </Text>
+                  <View style={styles.modalTypeBadge}>
+                    <Text style={styles.modalTypeText}>{selectedConflict.conflict_type}</Text>
+                  </View>
+
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSectionTitle}>Local Value</Text>
+                    <GlassCard variant="dark" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.md}>
+                      <Text style={styles.modalValue}>
+                        {JSON.stringify(selectedConflict.local_value, null, 2)}
+                      </Text>
+                    </GlassCard>
+                  </View>
+
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSectionTitle}>Server Value</Text>
+                    <GlassCard variant="dark" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.md}>
+                      <Text style={styles.modalValue}>
+                        {JSON.stringify(selectedConflict.server_value, null, 2)}
+                      </Text>
+                    </GlassCard>
+                  </View>
+
+                  <TextInput
+                    style={[styles.modalInput, styles.modalTextArea]}
+                    placeholder="Resolution note (optional)"
+                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                    value={resolutionNote}
+                    onChangeText={setResolutionNote}
+                    multiline
+                  />
+
+                  <View style={styles.modalActions}>
+                    <AnimatedPressable
+                      style={[styles.modalButton, { backgroundColor: auroraTheme.colors.success[500] }]}
+                      onPress={() => handleResolve(selectedConflict._id, "accept_server")}
+                    >
+                      <Text style={styles.modalButtonText}>Accept Server</Text>
+                    </AnimatedPressable>
+
+                    <AnimatedPressable
+                      style={[styles.modalButton, { backgroundColor: auroraTheme.colors.secondary[500] }]}
+                      onPress={() => handleResolve(selectedConflict._id, "accept_local")}
+                    >
+                      <Text style={styles.modalButtonText}>Accept Local</Text>
+                    </AnimatedPressable>
+                  </View>
+
+                  <AnimatedPressable
+                    style={[styles.modalButton, styles.modalButtonCancel]}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </AnimatedPressable>
+                </>
+              )}
+            </GlassCard>
+          </AuroraBackground>
+        </Modal>
+      </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+    paddingTop: 60,
+    paddingHorizontal: auroraTheme.spacing.md,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#121212",
-  },
-  loadingText: {
-    marginTop: 10,
-    color: "#fff",
-    fontSize: 16,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#1a1a1a",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    alignItems: "center",
+    marginBottom: auroraTheme.spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
   },
   backButton: {
-    marginRight: 16,
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
-  backButtonText: {
-    color: "#007AFF",
-    fontSize: 16,
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
   },
-  title: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
-  refreshButton: {
-    padding: 8,
-  },
-  refreshButtonText: {
-    color: "#007AFF",
-    fontSize: 24,
-  },
-  statsBar: {
+  statsContainer: {
     flexDirection: "row",
-    backgroundColor: "#1E1E1E",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    padding: 16,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#aaa",
+    gap: auroraTheme.spacing.sm,
+    marginBottom: auroraTheme.spacing.md,
   },
   filterBar: {
     flexDirection: "row",
-    padding: 16,
-    backgroundColor: "#1E1E1E",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    gap: 8,
+    gap: auroraTheme.spacing.sm,
+    marginBottom: auroraTheme.spacing.md,
   },
   filterButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
     alignItems: "center",
-    backgroundColor: "#252525",
-  },
-  filterButtonActive: {
-    backgroundColor: "#007AFF",
+    justifyContent: 'center',
   },
   filterButtonText: {
-    color: "#aaa",
-    fontSize: 14,
+    fontSize: auroraTheme.typography.fontSize.sm,
     fontWeight: "600",
-  },
-  filterButtonTextActive: {
-    color: "#fff",
+    color: auroraTheme.colors.text.secondary,
   },
   batchActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#1E1E1E",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    gap: 8,
+    marginBottom: auroraTheme.spacing.md,
+  },
+  batchCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   batchText: {
-    flex: 1,
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: auroraTheme.typography.fontSize.md,
+    fontWeight: '600',
+    color: auroraTheme.colors.text.primary,
+  },
+  batchButtons: {
+    flexDirection: 'row',
+    gap: auroraTheme.spacing.sm,
   },
   batchButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: auroraTheme.spacing.md,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.full,
   },
   batchButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: auroraTheme.typography.fontSize.xs,
   },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-  },
-  emptyStateText: {
-    fontSize: 18,
-    color: "#666",
-    marginBottom: 8,
-  },
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: "#444",
-  },
-  card: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: "#333",
-  },
-  cardSelected: {
-    borderColor: "#007AFF",
+  listContent: {
+    paddingBottom: auroraTheme.spacing.xl,
   },
   cardHeader: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
+    alignItems: "flex-start",
+    marginBottom: auroraTheme.spacing.md,
   },
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 4,
+    borderRadius: auroraTheme.borderRadius.sm,
     borderWidth: 2,
-    borderColor: "#666",
-    marginRight: 12,
+    borderColor: auroraTheme.colors.text.tertiary,
+    marginRight: auroraTheme.spacing.md,
     justifyContent: "center",
     alignItems: "center",
   },
   checkboxChecked: {
-    width: 16,
-    height: 16,
-    borderRadius: 2,
-    backgroundColor: "#007AFF",
+    backgroundColor: auroraTheme.colors.primary[500],
+    borderColor: auroraTheme.colors.primary[500],
   },
   itemCode: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+    fontSize: auroraTheme.typography.fontSize.lg,
+    fontWeight: "700",
+    color: auroraTheme.colors.text.primary,
   },
-  conflictType: {
-    fontSize: 12,
-    color: "#FFC107",
-    backgroundColor: "rgba(255, 193, 7, 0.1)",
+  conflictTypeContainer: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(234, 179, 8, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: auroraTheme.borderRadius.full,
+    marginTop: 4,
+  },
+  conflictType: {
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.warning[500],
+    fontWeight: '600',
   },
   conflictData: {
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 12,
+    gap: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.md,
   },
   dataColumn: {
     flex: 1,
   },
   dataLabel: {
-    fontSize: 12,
-    color: "#aaa",
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
     marginBottom: 4,
+    textTransform: 'uppercase',
   },
   dataValue: {
-    fontSize: 14,
-    color: "#fff",
-    backgroundColor: "#252525",
-    padding: 8,
-    borderRadius: 4,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   timestamp: {
-    fontSize: 12,
-    color: "#666",
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
   },
   resolvedInfo: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: "rgba(0, 230, 118, 0.1)",
-    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.xs,
+    marginTop: auroraTheme.spacing.sm,
+    paddingTop: auroraTheme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: auroraTheme.colors.border.light,
   },
   resolvedText: {
-    fontSize: 12,
-    color: "#00E676",
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.success[500],
+  },
+  loadingText: {
+    marginTop: auroraTheme.spacing.md,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.secondary,
+  },
+  emptyText: {
+    fontSize: auroraTheme.typography.fontSize.lg,
+    fontWeight: "500",
+    color: auroraTheme.colors.text.secondary,
+    marginTop: auroraTheme.spacing.md,
+  },
+  emptySubtext: {
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.tertiary,
+    marginTop: auroraTheme.spacing.xs,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.8)',
   },
   modalContent: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 12,
-    padding: 24,
     width: "100%",
     maxWidth: 500,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 20,
+    color: auroraTheme.colors.text.primary,
+    marginBottom: auroraTheme.spacing.lg,
+    textAlign: 'center',
   },
   modalLabel: {
-    fontSize: 16,
-    color: "#aaa",
-    marginBottom: 8,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.secondary,
+    marginBottom: 4,
+  },
+  modalTypeBadge: {
+    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: auroraTheme.borderRadius.full,
+    alignSelf: 'flex-start',
+    marginBottom: auroraTheme.spacing.lg,
+  },
+  modalTypeText: {
+    color: auroraTheme.colors.warning[500],
+    fontSize: auroraTheme.typography.fontSize.sm,
+    fontWeight: '600',
   },
   modalSection: {
-    marginBottom: 16,
+    marginBottom: auroraTheme.spacing.lg,
   },
   modalSectionTitle: {
-    fontSize: 14,
+    fontSize: auroraTheme.typography.fontSize.sm,
     fontWeight: "600",
-    color: "#fff",
+    color: auroraTheme.colors.text.tertiary,
     marginBottom: 8,
+    textTransform: 'uppercase',
   },
   modalValue: {
-    fontSize: 14,
-    color: "#fff",
-    backgroundColor: "#252525",
-    padding: 12,
-    borderRadius: 8,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.primary,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   modalInput: {
-    backgroundColor: "#252525",
-    color: "#fff",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    color: auroraTheme.colors.text.primary,
     padding: 12,
-    borderRadius: 8,
-    fontSize: 16,
-    marginBottom: 16,
+    borderRadius: auroraTheme.borderRadius.md,
+    fontSize: auroraTheme.typography.fontSize.md,
+    marginBottom: auroraTheme.spacing.lg,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: auroraTheme.colors.border.light,
   },
   modalTextArea: {
-    minHeight: 60,
+    minHeight: 100,
     textAlignVertical: "top",
   },
   modalActions: {
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 12,
+    gap: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.md,
   },
   modalButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: auroraTheme.borderRadius.full,
     alignItems: "center",
   },
   modalButtonCancel: {
-    backgroundColor: "#666",
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
   modalButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: auroraTheme.typography.fontSize.md,
     fontWeight: "600",
   },
 });

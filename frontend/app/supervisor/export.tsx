@@ -1,20 +1,30 @@
+/**
+ * Export Reports Screen
+ * Refactored to use Aurora Design System
+ */
+
 import React from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+
 import { getSessions } from "../../src/services/api/api";
 import { ExportService } from "../../src/services/exportService";
 import { useAutoLogout } from "../../src/hooks/useAutoLogout";
 import { LogoutButton } from "../../src/components/LogoutButton";
+import { AuroraBackground, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 export default function ExportReports() {
   const router = useRouter();
@@ -26,10 +36,20 @@ export default function ExportReports() {
     resetTimer();
   };
 
+  const handleExportStart = (type: string) => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setLoading(true);
+    setExportType(type);
+  };
+
+  const handleExportEnd = () => {
+    setLoading(false);
+    setExportType(null);
+  };
+
   const exportAllSessions = async () => {
     try {
-      setLoading(true);
-      setExportType("sessions");
+      handleExportStart("sessions");
 
       console.log("📊 [Export] Fetching all sessions for export...");
       const result = await getSessions(1, 10000); // Get all sessions
@@ -55,15 +75,13 @@ export default function ExportReports() {
         error.message || "Failed to export sessions. Please try again.",
       );
     } finally {
-      setLoading(false);
-      setExportType(null);
+      handleExportEnd();
     }
   };
 
   const exportSessionDetails = async () => {
     try {
-      setLoading(true);
-      setExportType("details");
+      handleExportStart("details");
 
       Alert.alert(
         "Export Session Details",
@@ -72,18 +90,12 @@ export default function ExportReports() {
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => {
-              setLoading(false);
-              setExportType(null);
-            },
+            onPress: handleExportEnd,
           },
           {
             text: "Export",
             onPress: async () => {
               try {
-                console.log(
-                  "📊 [Export] Fetching all sessions with details...",
-                );
                 const result = await getSessions(1, 10000);
                 const sessions = result.items || [];
 
@@ -92,14 +104,7 @@ export default function ExportReports() {
                   return;
                 }
 
-                // Export with detailed count lines
-                console.log(
-                  "✅ [Export] Exporting detailed data for",
-                  sessions.length,
-                  "sessions",
-                );
                 await ExportService.exportSessionsWithDetails(sessions);
-
                 Alert.alert(
                   "Export Successful",
                   `Exported detailed data for ${sessions.length} sessions`,
@@ -107,13 +112,9 @@ export default function ExportReports() {
                 );
               } catch (error: any) {
                 console.error("❌ [Export] Details export failed:", error);
-                Alert.alert(
-                  "Export Failed",
-                  error.message || "Failed to export details",
-                );
+                Alert.alert("Export Failed", error.message || "Failed to export details");
               } finally {
-                setLoading(false);
-                setExportType(null);
+                handleExportEnd();
               }
             },
           },
@@ -121,17 +122,14 @@ export default function ExportReports() {
       );
     } catch (error: any) {
       console.error("❌ [Export] Error:", error);
-      setLoading(false);
-      setExportType(null);
+      handleExportEnd();
     }
   };
 
   const exportVarianceReport = async () => {
     try {
-      setLoading(true);
-      setExportType("variance");
+      handleExportStart("variance");
 
-      console.log("📊 [Export] Generating variance report...");
       const result = await getSessions(1, 10000);
       const sessions = result.items || [];
 
@@ -140,7 +138,6 @@ export default function ExportReports() {
         return;
       }
 
-      // Filter sessions with variance
       const varianceSessions = sessions.filter(
         (s: any) => Math.abs(s.total_variance || 0) > 0,
       );
@@ -150,13 +147,7 @@ export default function ExportReports() {
         return;
       }
 
-      console.log(
-        "✅ [Export] Exporting variance report for",
-        varianceSessions.length,
-        "sessions",
-      );
       await ExportService.exportVarianceReport(varianceSessions);
-
       Alert.alert(
         "Export Successful",
         `Exported variance report for ${varianceSessions.length} sessions`,
@@ -164,22 +155,16 @@ export default function ExportReports() {
       );
     } catch (error: any) {
       console.error("❌ [Export] Variance report failed:", error);
-      Alert.alert(
-        "Export Failed",
-        error.message || "Failed to export variance report",
-      );
+      Alert.alert("Export Failed", error.message || "Failed to export variance report");
     } finally {
-      setLoading(false);
-      setExportType(null);
+      handleExportEnd();
     }
   };
 
   const exportSummaryReport = async () => {
     try {
-      setLoading(true);
-      setExportType("summary");
+      handleExportStart("summary");
 
-      console.log("📊 [Export] Generating summary report...");
       const result = await getSessions(1, 10000);
       const sessions = result.items || [];
 
@@ -188,13 +173,7 @@ export default function ExportReports() {
         return;
       }
 
-      console.log(
-        "✅ [Export] Exporting summary report for",
-        sessions.length,
-        "sessions",
-      );
       await ExportService.exportSummaryReport(sessions);
-
       Alert.alert(
         "Export Successful",
         `Exported summary report with ${sessions.length} sessions`,
@@ -202,238 +181,255 @@ export default function ExportReports() {
       );
     } catch (error: any) {
       console.error("❌ [Export] Summary report failed:", error);
-      Alert.alert(
-        "Export Failed",
-        error.message || "Failed to export summary report",
-      );
+      Alert.alert("Export Failed", error.message || "Failed to export summary report");
     } finally {
-      setLoading(false);
-      setExportType(null);
+      handleExportEnd();
     }
   };
 
-  const renderExportCard = (
-    title: string,
-    description: string,
-    icon: string,
-    color: string,
-    onPress: () => void,
-    type: string,
-  ) => {
+  const RenderExportCard = ({
+    title,
+    description,
+    icon,
+    color,
+    onPress,
+    type,
+    delay
+  }: {
+    title: string;
+    description: string;
+    icon: keyof typeof Ionicons.glyphMap;
+    color: string;
+    onPress: () => void;
+    type: string;
+    delay: number;
+  }) => {
     const isLoading = loading && exportType === type;
+    const isDisabled = loading && exportType !== type;
 
     return (
-      <TouchableOpacity
-        style={[styles.exportCard, { borderLeftColor: color }]}
-        onPress={onPress}
-        disabled={loading}
-        onPressIn={handleInteraction}
-      >
-        <View style={styles.exportCardIcon}>
-          <Ionicons name={icon as any} size={40} color={color} />
-        </View>
-        <View style={styles.exportCardContent}>
-          <Text style={styles.exportCardTitle}>{title}</Text>
-          <Text style={styles.exportCardDescription}>{description}</Text>
-        </View>
-        {isLoading ? (
-          <ActivityIndicator size="small" color={color} />
-        ) : (
-          <Ionicons name="chevron-forward" size={24} color="#888" />
-        )}
-      </TouchableOpacity>
+      <Animated.View entering={FadeInDown.delay(delay).springify()}>
+        <AnimatedPressable
+          onPress={onPress}
+          disabled={loading}
+          onPressIn={handleInteraction}
+          style={{ marginBottom: auroraTheme.spacing.md }}
+        >
+          <GlassCard
+            variant="medium"
+            intensity={20}
+            padding={auroraTheme.spacing.md}
+            borderRadius={auroraTheme.borderRadius.lg}
+            style={isDisabled ? { opacity: 0.5 } : undefined}
+          >
+            <View style={styles.cardContent}>
+              <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color={color} />
+                ) : (
+                  <Ionicons name={icon} size={28} color={color} />
+                )}
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={styles.cardTitle}>{title}</Text>
+                <Text style={styles.cardDescription}>{description}</Text>
+              </View>
+              <Ionicons
+                name="download-outline"
+                size={20}
+                color={auroraTheme.colors.text.tertiary}
+                style={styles.actionIcon}
+              />
+            </View>
+          </GlassCard>
+        </AnimatedPressable>
+      </Animated.View>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <AuroraBackground variant="secondary" intensity="medium" animated>
       <StatusBar style="light" />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.title}>Export Reports</Text>
-            <Text style={styles.subtitle}>Generate and download reports</Text>
-          </View>
-        </View>
-        <LogoutButton variant="icon" size="large" showText={false} />
-      </View>
-
-      {/* Content */}
       <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.scrollContent}
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Available Reports</Text>
-
-          {renderExportCard(
-            "All Sessions",
-            "Export complete list of all stock count sessions with basic details",
-            "documents-outline",
-            "#00E676",
-            exportAllSessions,
-            "sessions",
-          )}
-
-          {renderExportCard(
-            "Session Details",
-            "Export detailed count lines for all sessions including item-level data",
-            "list-outline",
-            "#2196F3",
-            exportSessionDetails,
-            "details",
-          )}
-
-          {renderExportCard(
-            "Variance Report",
-            "Export only sessions with stock variance for analysis",
-            "analytics-outline",
-            "#FF5252",
-            exportVarianceReport,
-            "variance",
-          )}
-
-          {renderExportCard(
-            "Summary Report",
-            "Export aggregated statistics and summary across all sessions",
-            "stats-chart-outline",
-            "#FFC107",
-            exportSummaryReport,
-            "summary",
-          )}
-        </View>
-
-        <View style={styles.infoSection}>
-          <Ionicons name="information-circle-outline" size={24} color="#888" />
-          <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Export Information</Text>
-            <Text style={styles.infoText}>
-              • Reports are generated in Excel format (.xlsx)
-            </Text>
-            <Text style={styles.infoText}>
-              • Files are saved to your device&apos;s Downloads folder
-            </Text>
-            <Text style={styles.infoText}>
-              • Large exports may take a few moments to generate
-            </Text>
-            <Text style={styles.infoText}>
-              • Check your file manager after export completes
-            </Text>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Data Exports</Text>
+              <Text style={styles.pageSubtitle}>Generate & Download Reports</Text>
+            </View>
           </View>
+          <LogoutButton variant="icon" size="large" showText={false} />
+        </Animated.View>
+
+        {/* Report Cards */}
+        <View style={styles.grid}>
+          <Text style={styles.sectionTitle}>Available Reports</Text>
+
+          <RenderExportCard
+            title="All Sessions"
+            description="Complete list of all stock count sessions with basic details"
+            icon="documents-outline"
+            color={auroraTheme.colors.success[500]}
+            onPress={exportAllSessions}
+            type="sessions"
+            delay={200}
+          />
+
+          <RenderExportCard
+            title="Session Details"
+            description="Detailed count lines for all sessions including item-level data"
+            icon="list-outline"
+            color={auroraTheme.colors.primary[500]}
+            onPress={exportSessionDetails}
+            type="details"
+            delay={300}
+          />
+
+          <RenderExportCard
+            title="Variance Report"
+            description="Only sessions with stock variance for analysis"
+            icon="analytics-outline"
+            color={auroraTheme.colors.error[500]}
+            onPress={exportVarianceReport}
+            type="variance"
+            delay={400}
+          />
+
+          <RenderExportCard
+            title="Summary Report"
+            description="Aggregated statistics and summary across all sessions"
+            icon="stats-chart-outline"
+            color={auroraTheme.colors.warning[500]}
+            onPress={exportSummaryReport}
+            type="summary"
+            delay={500}
+          />
         </View>
+
+        {/* Info Section */}
+        <Animated.View entering={FadeInDown.delay(600).springify()}>
+          <View style={styles.infoContainer}>
+            <Ionicons name="information-circle-outline" size={24} color={auroraTheme.colors.text.tertiary} />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoTitle}>Export Information</Text>
+              <Text style={styles.infoText}>• Reports are generated in Excel format (.xlsx)</Text>
+              <Text style={styles.infoText}>• Files are saved to your device&apos;s Downloads folder</Text>
+              <Text style={styles.infoText}>• Large exports may take a few moments to generate</Text>
+            </View>
+          </View>
+        </Animated.View>
+
+        <View style={{ height: 40 }} />
       </ScrollView>
-    </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+  },
+  contentContainer: {
+    padding: auroraTheme.spacing.lg,
+    paddingTop: 60,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
-    paddingTop: 60,
-    backgroundColor: "#1E1E1E",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    marginBottom: auroraTheme.spacing.xl,
   },
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
   },
   backButton: {
-    padding: 8,
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
   },
-  subtitle: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 4,
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-  },
-  section: {
-    marginBottom: 24,
+  grid: {
+    marginBottom: auroraTheme.spacing.xl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 16,
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.secondary,
+    marginBottom: auroraTheme.spacing.md,
+    marginLeft: auroraTheme.spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-  exportCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1E1E1E",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
   },
-  exportCardIcon: {
-    marginRight: 16,
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: auroraTheme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  exportCardContent: {
+  textContainer: {
     flex: 1,
+    gap: 4,
   },
-  exportCardTitle: {
-    fontSize: 16,
+  cardTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.primary,
     fontWeight: "600",
-    color: "#fff",
-    marginBottom: 4,
   },
-  exportCardDescription: {
-    fontSize: 13,
-    color: "#888",
+  cardDescription: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
     lineHeight: 18,
   },
-  infoSection: {
-    flexDirection: "row",
-    backgroundColor: "#1E1E1E",
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 16,
+  actionIcon: {
+    opacity: 0.5,
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: auroraTheme.borderRadius.lg,
+    padding: auroraTheme.spacing.lg,
+    gap: auroraTheme.spacing.md,
   },
   infoContent: {
     flex: 1,
-    marginLeft: 12,
+    gap: auroraTheme.spacing.xs,
   },
   infoTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: 8,
+    fontWeight: '600',
+    color: auroraTheme.colors.text.primary,
+    marginBottom: 4,
   },
   infoText: {
-    fontSize: 13,
-    color: "#888",
-    marginBottom: 4,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.secondary,
     lineHeight: 18,
   },
 });

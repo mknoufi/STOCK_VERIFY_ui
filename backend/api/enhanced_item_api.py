@@ -34,6 +34,43 @@ def init_enhanced_api(database, cache_svc, monitoring_svc):
     monitoring_service = monitoring_svc
 
 
+def _validate_barcode_format(barcode: Optional[str]) -> str:
+    """Validate barcode strictly: 6 digits, starts with 51, 52, or 53"""
+    if not barcode or len(barcode.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Barcode cannot be empty")
+
+    barcode = barcode.strip()
+
+    # STRICT VALIDATION: Barcode must be exactly 6 digits and start with 51, 52, or 53
+    # UPDATE: Relaxed validation to allow item codes for generic lookup
+    allowed_prefixes = ("51", "52", "53")
+    is_correct_length = len(barcode) == 6
+    has_correct_prefix = barcode.startswith(allowed_prefixes)
+
+    # Check if numeric
+    if not barcode.isdigit():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Invalid barcode: must be numeric",
+                "barcode": barcode,
+                "error_code": "INVALID_BARCODE_FORMAT",
+            },
+        )
+
+    if not is_correct_length or not has_correct_prefix:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Invalid barcode. Must be exactly 6 digits and start with 51, 52, or 53.",
+                "barcode": barcode,
+                "error_code": "INVALID_BARCODE",
+                "requirements": "6 digits, starts with 51-53",
+            },
+        )
+    return barcode
+
+
 # Enhanced router with comprehensive item management
 enhanced_item_router = APIRouter(prefix="/api/v2/erp/items", tags=["Enhanced Items"])
 
@@ -63,24 +100,11 @@ async def get_item_by_barcode_enhanced(
 
     try:
         # Log request for monitoring
-        monitoring_service.track_request("enhanced_barcode_lookup", request)
+        if monitoring_service:
+            monitoring_service.track_request("enhanced_barcode_lookup", request)
 
         # Validate barcode format
-        if not barcode or len(barcode.strip()) == 0:
-            raise HTTPException(status_code=400, detail="Barcode cannot be empty")
-
-        barcode = barcode.strip()
-
-        # Validate barcode length - must be at least 6 characters
-        if len(barcode) < 6:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "message": "Invalid barcode: must be at least 6 digits",
-                    "barcode": barcode,
-                    "error_code": "INVALID_BARCODE",
-                },
-            )
+        _validate_barcode_format(barcode)
 
         # Determine data source strategy
         if force_source:
@@ -157,7 +181,9 @@ async def _fetch_from_specific_source(barcode: str, source: str) -> tuple[Option
     """Fetch item from a specific data source"""
 
     if source == "mongodb":
-        item = await db.erp_items.find_one({"barcode": barcode})
+        item = await db.erp_items.find_one(
+            {"$or": [{"barcode": barcode}, {"autobarcode": barcode}, {"item_code": barcode}]}
+        )
         return item, "mongodb"
 
     elif source == "cache":
@@ -189,7 +215,9 @@ async def _fetch_with_fallback_strategy(barcode: str) -> tuple[Optional[Dict], s
 
     # Strategy 2: MongoDB (primary app database)
     try:
-        mongo_item = await db.erp_items.find_one({"barcode": barcode})
+        mongo_item = await db.erp_items.find_one(
+            {"$or": [{"barcode": barcode}, {"autobarcode": barcode}, {"item_code": barcode}]}
+        )
         if mongo_item:
             # Convert ObjectId to string for JSON serialization
             mongo_item["_id"] = str(mongo_item["_id"])
@@ -294,16 +322,22 @@ def _build_match_conditions(
         match_conditions["rack"] = {"$regex": rack, "$options": "i"}
 
     if stock_level:
-        if stock_level == "zero":
-            match_conditions["stock_qty"] = {"$eq": 0}
-        elif stock_level == "low":
-            match_conditions["stock_qty"] = {"$gt": 0, "$lt": 10}
-        elif stock_level == "medium":
-            match_conditions["stock_qty"] = {"$gte": 10, "$lt": 100}
-        elif stock_level == "high":
-            match_conditions["stock_qty"] = {"$gte": 100}
+        stock_filter = _get_stock_level_filter(stock_level)
+        if stock_filter:
+            match_conditions["stock_qty"] = stock_filter
 
     return match_conditions
+
+
+def _get_stock_level_filter(stock_level: str) -> Optional[Dict[str, Any]]:
+    """Get stock quantity filter based on level"""
+    level_map = {
+        "zero": {"$eq": 0},
+        "low": {"$gt": 0, "$lt": 10},
+        "medium": {"$gte": 10, "$lt": 100},
+        "high": {"$gte": 100},
+    }
+    return level_map.get(stock_level)
 
 
 def _build_search_pipeline(

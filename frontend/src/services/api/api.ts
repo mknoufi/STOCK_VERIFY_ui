@@ -33,8 +33,7 @@ export const isOnline = () => {
 
   // If network state is unknown or null, assume online (fail-safe for API calls)
   if (state.isOnline === undefined || state.isOnline === null) {
-    __DEV__ &&
-      console.log("🌐 Network state unknown, assuming ONLINE for API calls");
+    __DEV__ && console.log("🌐 Network state unknown, assuming ONLINE for API calls");
     return true;
   }
 
@@ -43,9 +42,7 @@ export const isOnline = () => {
 
 // Create session (with offline support)
 // Create session (with offline support)
-export const createSession = async (
-  params: string | { warehouse: string; type?: string },
-) => {
+export const createSession = async (params: string | { warehouse: string; type?: string }) => {
   const warehouse = typeof params === "string" ? params : params.warehouse;
   const sessionType = typeof params !== "string" ? params.type : undefined;
 
@@ -77,11 +74,7 @@ export const createSession = async (
     return response.data;
   } catch (error) {
     // Use warn instead of error to avoid blocking the UI with LogBox since we have a fallback
-    __DEV__ &&
-      console.warn(
-        "Error creating session (switching to offline mode):",
-        error,
-      );
+    __DEV__ && console.warn("Error creating session (switching to offline mode):", error);
 
     // Fallback to offline mode
     const offlineSession = {
@@ -131,10 +124,7 @@ export const getSessions = async (page: number = 1, pageSize: number = 20) => {
 
     // Ensure page and pageSize are valid numbers (convert to integers explicitly)
     const validPage = Math.max(1, Math.floor(Number(page)) || 1);
-    const validPageSize = Math.max(
-      1,
-      Math.min(100, Math.floor(Number(pageSize)) || 20),
-    );
+    const validPageSize = Math.max(1, Math.min(100, Math.floor(Number(pageSize)) || 20));
 
     const response = await api.get("/api/sessions", {
       params: {
@@ -216,13 +206,51 @@ export const getSession = async (sessionId: string) => {
 export const getRackProgress = async (sessionId: string) => {
   try {
     if (!isOnline()) {
-      // TODO: Implement offline calculation if possible, or return empty
-      return { data: [] };
+      // Offline: Calculate rack progress from cached count lines
+      // Note: This provides a best-effort approximation since we may not have
+      // complete ERP item data cached (total items per rack)
+      const cachedLines = await getCountLinesBySessionFromCache(sessionId);
+
+      if (cachedLines.length === 0) {
+        return { data: [], message: "Offline mode - no cached data available" };
+      }
+
+      // Group counted items by rack (if rack info is available in cached data)
+      // Since count lines may have rack_no from when they were created
+      const rackCounts: Record<string, { counted: number; items: Set<string> }> = {};
+
+      for (const line of cachedLines) {
+        // Try to get rack from cached line data (may be stored in extended fields)
+        const rack = (line as any).rack_no || (line as any).rack || "Unknown";
+        if (!rackCounts[rack]) {
+          rackCounts[rack] = { counted: 0, items: new Set() };
+        }
+        // Count unique items per rack
+        if (!rackCounts[rack].items.has(line.item_code)) {
+          rackCounts[rack].items.add(line.item_code);
+          rackCounts[rack].counted++;
+        }
+      }
+
+      // Build rack progress array (without totals - offline limitation)
+      const rackProgress = Object.entries(rackCounts)
+        .filter(([rack]) => rack !== "Unknown")
+        .map(([rack, data]) => ({
+          rack,
+          total: 0, // Unknown offline - would need full ERP cache
+          counted: data.counted,
+          percentage: 0, // Can't calculate without totals
+          offline: true,
+        }))
+        .sort((a, b) => a.rack.localeCompare(b.rack));
+
+      return {
+        data: rackProgress,
+        message: "Offline mode - showing counted items only (totals unavailable)"
+      };
     }
     // Note: The backend response wrapper puts the actual array in data.data
-    const response = await api.get(
-      `/api/v2/sessions/${sessionId}/rack-progress`,
-    );
+    const response = await api.get(`/api/v2/sessions/${sessionId}/rack-progress`);
     // Return just the data part which is the array of racks
     return response.data;
   } catch (error) {
@@ -254,10 +282,7 @@ export const bulkReconcileSessions = async (sessionIds: string[]) => {
 };
 
 // Bulk export sessions
-export const bulkExportSessions = async (
-  sessionIds: string[],
-  format: string = "excel",
-) => {
+export const bulkExportSessions = async (sessionIds: string[], format: string = "excel") => {
   try {
     const response = await api.post("/api/sessions/bulk/export", sessionIds, {
       params: { format },
@@ -286,10 +311,7 @@ export const getSessionsAnalytics = async () => {
  * @param barcode Barcode string scanned/entered
  * @param retryCount Number of retries for transient failures
  */
-export const getItemByBarcode = async (
-  barcode: string,
-  retryCount: number = 3,
-) => {
+export const getItemByBarcode = async (barcode: string, retryCount: number = 3) => {
   // Validate and normalize barcode before making API call
   const validation = validateBarcode(barcode);
   if (!validation.valid || !validation.value) {
@@ -299,10 +321,7 @@ export const getItemByBarcode = async (
   // Use normalized barcode if available (6-digit format for numeric barcodes)
   const trimmedBarcode = validation.value;
 
-  __DEV__ &&
-    console.log(
-      `🔍 Looking up barcode: ${trimmedBarcode} (original: ${barcode})`,
-    );
+  __DEV__ && console.log(`🔍 Looking up barcode: ${trimmedBarcode} (original: ${barcode})`);
 
   // Check if offline first - only use cache if truly offline
   if (!isOnline()) {
@@ -313,13 +332,9 @@ export const getItemByBarcode = async (
         __DEV__ && console.log("✅ Found in cache:", items[0]?.item_code);
         return items[0];
       }
-      throw new Error(
-        "Item not found in offline cache. Connect to internet to search server.",
-      );
+      throw new Error("Item not found in offline cache. Connect to internet to search server.");
     } catch {
-      throw new Error(
-        "Offline: Item not found in cache. Connect to internet to search server.",
-      );
+      throw new Error("Offline: Item not found in cache. Connect to internet to search server.");
     }
   }
 
@@ -330,10 +345,7 @@ export const getItemByBarcode = async (
     // Direct API call with retry
     // Use enhanced v2 endpoint for better performance and metadata
     const response = await retryWithBackoff(
-      () =>
-        api.get(
-          `/api/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`,
-        ),
+      () => api.get(`/api/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`),
       {
         retries: retryCount,
         backoffMs: 1000,
@@ -345,15 +357,12 @@ export const getItemByBarcode = async (
 
     // Check if we actually got an item
     if (!itemData || !itemData.item_code) {
-      throw new Error(
-        `Item not found: Barcode '${trimmedBarcode}' not in database`,
-      );
+      throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
     }
 
     // Map backend fields to frontend Item interface
     // Handle empty item_name by falling back to category or item_code
-    const displayName =
-      itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
+    const displayName = itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
     if (!itemData.name) {
       itemData.name = displayName;
     }
@@ -390,8 +399,7 @@ export const getItemByBarcode = async (
     try {
       const items = await searchItemsInCache(trimmedBarcode);
       if (items.length > 0) {
-        __DEV__ &&
-          console.log("✅ Found in cache fallback:", items[0]?.item_code);
+        __DEV__ && console.log("✅ Found in cache fallback:", items[0]?.item_code);
         return items[0];
       }
 
@@ -406,21 +414,18 @@ export const getItemByBarcode = async (
 
       // Provide helpful error message
       if (apiError.response?.status === 404) {
-        throw new Error(
-          `Item not found: Barcode '${trimmedBarcode}' not in database`,
-        );
-      } else if (
-        apiError.code === "ECONNABORTED" ||
-        apiError.message?.includes("timeout")
-      ) {
+        throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
+      } else if (apiError.response?.status === 400) {
+        __DEV__ && console.error("❌ API Bad Request Details:", apiError.response?.data);
+        throw new Error(apiError.response?.data?.detail?.message || "Invalid request parameters");
+      } else if (apiError.code === "ECONNABORTED" || apiError.message?.includes("timeout")) {
         throw new Error("Connection timeout. Check your internet connection.");
       } else if (apiError.code === "ECONNREFUSED" || !apiError.response) {
-        throw new Error(
-          "Cannot connect to server. Check if backend is running.",
-        );
+        throw new Error("Cannot connect to server. Check if backend is running.");
       } else {
+        const errorMsg = apiError.response?.data?.detail || apiError.message || "Unknown error";
         throw new Error(
-          `Barcode lookup failed: ${apiError.message || "Unknown error"}`,
+          `Barcode lookup failed: ${typeof errorMsg === "object" ? JSON.stringify(errorMsg) : errorMsg}`,
         );
       }
     }
@@ -531,9 +536,7 @@ export const getCountLines = async (
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
       // Filter by verified status if provided
       if (verified !== undefined) {
-        const filtered = cachedLines.filter(
-          (line: any) => line.verified === verified,
-        );
+        const filtered = cachedLines.filter((line: any) => line.verified === verified);
         return {
           items: filtered,
           pagination: {
@@ -585,9 +588,7 @@ export const getCountLines = async (
     // Fallback to cache
     const cachedLines = await getCountLinesBySessionFromCache(sessionId);
     if (verified !== undefined) {
-      const filtered = cachedLines.filter(
-        (line: any) => line.verified === verified,
-      );
+      const filtered = cachedLines.filter((line: any) => line.verified === verified);
       return {
         items: filtered,
         pagination: {
@@ -620,15 +621,11 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
     if (!isOnline()) {
       // Check in cached count lines
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
-      const itemLines = cachedLines.filter(
-        (line) => line.item_code === itemCode,
-      );
+      const itemLines = cachedLines.filter((line) => line.item_code === itemCode);
       return { already_counted: itemLines.length > 0, count_lines: itemLines };
     }
 
-    const response = await api.get(
-      `/api/count-lines/check/${sessionId}/${itemCode}`,
-    );
+    const response = await api.get(`/api/count-lines/check/${sessionId}/${itemCode}`);
     return response.data;
   } catch (error) {
     __DEV__ && console.error("Error checking item counted:", error);
@@ -641,10 +638,7 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
 };
 
 // Add quantity to existing count line
-export const addQuantityToCountLine = async (
-  lineId: string,
-  additionalQty: number,
-) => {
+export const addQuantityToCountLine = async (lineId: string, additionalQty: number) => {
   try {
     const response = await api.patch(
       `/api/count-lines/${lineId}/add-quantity?additional_qty=${additionalQty}`,
@@ -660,11 +654,7 @@ export const addQuantityToCountLine = async (
 export const getVarianceReasons = async () => {
   const response = await api.get("/api/variance-reasons");
   // Handle wrapped response format
-  if (
-    response.data &&
-    response.data.reasons &&
-    Array.isArray(response.data.reasons)
-  ) {
+  if (response.data && response.data.reasons && Array.isArray(response.data.reasons)) {
     return response.data.reasons.map((r: any) => ({
       ...r,
       code: r.id || r.code,
@@ -687,13 +677,8 @@ export const rejectCountLine = async (lineId: string) => {
 };
 
 // Update session status
-export const updateSessionStatus = async (
-  sessionId: string,
-  status: string,
-) => {
-  const response = await api.put(
-    `/api/sessions/${sessionId}/status?status=${status}`,
-  );
+export const updateSessionStatus = async (sessionId: string, status: string) => {
+  const response = await api.put(`/api/sessions/${sessionId}/status?status=${status}`);
   return response.data;
 };
 
@@ -726,11 +711,13 @@ export const registerUser = async (userData: {
   return response.data;
 };
 
-// Refresh item stock from ERP
+// Refresh item stock from ERP (with longer timeout for slow ERP connections)
 export const refreshItemStock = async (itemCode: string) => {
   try {
     const response = await api.post(
       `/api/erp/items/${encodeURIComponent(itemCode)}/refresh-stock`,
+      {},
+      { timeout: 30000 } // 30s timeout for slow ERP operations
     );
     return response.data;
   } catch (error: any) {
@@ -821,10 +808,7 @@ export const testMapping = async (
     if (user) params.append("user", user);
     if (password) params.append("password", password);
 
-    const response = await api.post(
-      `/api/mapping/test?${params.toString()}`,
-      config,
-    );
+    const response = await api.post(`/api/mapping/test?${params.toString()}`, config);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Test mapping error:", error);
@@ -930,10 +914,7 @@ export const deleteCountLine = async (lineId: string) => {
   }
 };
 
-export const getActivityStats = async (
-  startDate?: string,
-  endDate?: string,
-) => {
+export const getActivityStats = async (startDate?: string, endDate?: string) => {
   try {
     const params = new URLSearchParams();
     if (startDate) params.append("start_date", startDate);
@@ -945,9 +926,7 @@ export const getActivityStats = async (
         url: `/api/activity-logs/stats?${params.toString()}`,
       });
 
-    const response = await api.get(
-      `/api/activity-logs/stats?${params.toString()}`,
-    );
+    const response = await api.get(`/api/activity-logs/stats?${params.toString()}`);
 
     __DEV__ &&
       console.log("✅ [Activity Stats] Success:", {
@@ -1055,9 +1034,7 @@ export const getErrorStats = async (startDate?: string, endDate?: string) => {
         url: `/api/error-logs/stats?${params.toString()}`,
       });
 
-    const response = await api.get(
-      `/api/error-logs/stats?${params.toString()}`,
-    );
+    const response = await api.get(`/api/error-logs/stats?${params.toString()}`);
 
     __DEV__ &&
       console.log("✅ [Error Stats] Success:", {
@@ -1084,8 +1061,7 @@ export const getErrorStats = async (startDate?: string, endDate?: string) => {
 
 export const getErrorDetail = async (errorId: string) => {
   try {
-    __DEV__ &&
-      console.log("🔍 [Error Detail] Fetching error details:", { errorId });
+    __DEV__ && console.log("🔍 [Error Detail] Fetching error details:", { errorId });
 
     const response = await api.get(`/api/error-logs/${errorId}`);
 
@@ -1112,10 +1088,7 @@ export const getErrorDetail = async (errorId: string) => {
   }
 };
 
-export const resolveError = async (
-  errorId: string,
-  resolutionNote?: string,
-) => {
+export const resolveError = async (errorId: string, resolutionNote?: string) => {
   try {
     const response = await api.put(`/api/error-logs/${errorId}/resolve`, {
       resolution_note: resolutionNote,
@@ -1203,10 +1176,7 @@ export const getUserPermissions = async (username: string) => {
   }
 };
 
-export const addUserPermissions = async (
-  username: string,
-  permissions: string[],
-) => {
+export const addUserPermissions = async (username: string, permissions: string[]) => {
   try {
     const response = await api.post(`/api/permissions/users/${username}/add`, {
       permissions,
@@ -1218,15 +1188,9 @@ export const addUserPermissions = async (
   }
 };
 
-export const removeUserPermissions = async (
-  username: string,
-  permissions: string[],
-) => {
+export const removeUserPermissions = async (username: string, permissions: string[]) => {
   try {
-    const response = await api.post(
-      `/api/permissions/users/${username}/remove`,
-      { permissions },
-    );
+    const response = await api.post(`/api/permissions/users/${username}/remove`, { permissions });
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Remove user permissions error:", error);
@@ -1243,9 +1207,7 @@ export const getExportSchedules = async (enabled?: boolean) => {
     const params = new URLSearchParams();
     if (enabled !== undefined) params.append("enabled", enabled.toString());
 
-    const response = await api.get(
-      `/api/exports/schedules?${params.toString()}`,
-    );
+    const response = await api.get(`/api/exports/schedules?${params.toString()}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get export schedules error:", error);
@@ -1273,15 +1235,9 @@ export const createExportSchedule = async (scheduleData: any) => {
   }
 };
 
-export const updateExportSchedule = async (
-  scheduleId: string,
-  scheduleData: any,
-) => {
+export const updateExportSchedule = async (scheduleId: string, scheduleData: any) => {
   try {
-    const response = await api.put(
-      `/api/exports/schedules/${scheduleId}`,
-      scheduleData,
-    );
+    const response = await api.put(`/api/exports/schedules/${scheduleId}`, scheduleData);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Update export schedule error:", error);
@@ -1301,9 +1257,7 @@ export const deleteExportSchedule = async (scheduleId: string) => {
 
 export const triggerExportSchedule = async (scheduleId: string) => {
   try {
-    const response = await api.post(
-      `/api/exports/schedules/${scheduleId}/trigger`,
-    );
+    const response = await api.post(`/api/exports/schedules/${scheduleId}/trigger`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Trigger export schedule error:", error);
@@ -1335,12 +1289,9 @@ export const getExportResults = async (
 
 export const downloadExportResult = async (resultId: string) => {
   try {
-    const response = await api.get(
-      `/api/exports/results/${resultId}/download`,
-      {
-        responseType: "blob",
-      },
-    );
+    const response = await api.get(`/api/exports/results/${resultId}/download`, {
+      responseType: "blob",
+    });
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Download export result error:", error);
@@ -1390,13 +1341,10 @@ export const resolveSyncConflict = async (
   resolutionNote?: string,
 ) => {
   try {
-    const response = await api.post(
-      `/api/sync/conflicts/${conflictId}/resolve`,
-      {
-        resolution,
-        resolution_note: resolutionNote,
-      },
-    );
+    const response = await api.post(`/api/sync/conflicts/${conflictId}/resolve`, {
+      resolution,
+      resolution_note: resolutionNote,
+    });
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Resolve sync conflict error:", error);
@@ -1456,6 +1404,17 @@ export const getMetricsHealth = async () => {
   }
 };
 
+// Health check alias for backward compatibility
+export const checkHealth = async () => {
+  try {
+    const response = await api.get("/health");
+    return response.data;
+  } catch (error: any) {
+    __DEV__ && console.error("Health check error:", error);
+    throw error;
+  }
+};
+
 export const getMetricsStats = async () => {
   try {
     const response = await api.get("/api/metrics/stats");
@@ -1510,9 +1469,7 @@ export const getServicesStatus = async () => {
 
 export const startService = async (service: string) => {
   try {
-    const response = await api.post(
-      `/api/admin/control/services/${service}/start`,
-    );
+    const response = await api.post(`/api/admin/control/services/${service}/start`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error(`Start ${service} error:`, error);
@@ -1522,9 +1479,7 @@ export const startService = async (service: string) => {
 
 export const stopService = async (service: string) => {
   try {
-    const response = await api.post(
-      `/api/admin/control/services/${service}/stop`,
-    );
+    const response = await api.post(`/api/admin/control/services/${service}/stop`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error(`Stop ${service} error:`, error);
@@ -1582,17 +1537,11 @@ export const generateReport = async (
   }
 };
 
-export const getServiceLogs = async (
-  service: string,
-  lines: number = 100,
-  level?: string,
-) => {
+export const getServiceLogs = async (service: string, lines: number = 100, level?: string) => {
   try {
     const params = new URLSearchParams({ lines: lines.toString() });
     if (level) params.append("level", level);
-    const response = await api.get(
-      `/api/admin/control/logs/${service}?${params.toString()}`,
-    );
+    const response = await api.get(`/api/admin/control/logs/${service}?${params.toString()}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get service logs error:", error);
@@ -1612,10 +1561,7 @@ export const getSqlServerConfig = async () => {
 
 export const updateSqlServerConfig = async (config: any) => {
   try {
-    const response = await api.post(
-      "/api/admin/control/sql-server/config",
-      config,
-    );
+    const response = await api.post("/api/admin/control/sql-server/config", config);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Update SQL Server config error:", error);
@@ -1625,10 +1571,7 @@ export const updateSqlServerConfig = async (config: any) => {
 
 export const testSqlServerConnection = async (config?: any) => {
   try {
-    const response = await api.post(
-      "/api/admin/control/sql-server/test",
-      config || {},
-    );
+    const response = await api.post("/api/admin/control/sql-server/test", config || {});
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Test SQL Server connection error:", error);
@@ -1680,9 +1623,7 @@ export const getFailedLogins = async (
     });
     if (username) params.append("username", username);
     if (ipAddress) params.append("ip_address", ipAddress);
-    const response = await api.get(
-      `/api/admin/security/failed-logins?${params.toString()}`,
-    );
+    const response = await api.get(`/api/admin/security/failed-logins?${params.toString()}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get failed logins error:", error);
@@ -1692,9 +1633,7 @@ export const getFailedLogins = async (
 
 export const getSuspiciousActivity = async (hours: number = 24) => {
   try {
-    const response = await api.get(
-      `/api/admin/security/suspicious-activity?hours=${hours}`,
-    );
+    const response = await api.get(`/api/admin/security/suspicious-activity?hours=${hours}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get suspicious activity error:", error);
@@ -1702,10 +1641,7 @@ export const getSuspiciousActivity = async (hours: number = 24) => {
   }
 };
 
-export const getSecuritySessions = async (
-  limit: number = 100,
-  activeOnly: boolean = false,
-) => {
+export const getSecuritySessions = async (limit: number = 100, activeOnly: boolean = false) => {
   try {
     const response = await api.get(
       `/api/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`,
@@ -1730,9 +1666,7 @@ export const getSecurityAuditLog = async (
     });
     if (action) params.append("action", action);
     if (user) params.append("user", user);
-    const response = await api.get(
-      `/api/admin/security/audit-log?${params.toString()}`,
-    );
+    const response = await api.get(`/api/admin/security/audit-log?${params.toString()}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get security audit log error:", error);
@@ -1742,9 +1676,7 @@ export const getSecurityAuditLog = async (
 
 export const getIpTracking = async (hours: number = 24) => {
   try {
-    const response = await api.get(
-      `/api/admin/security/ip-tracking?hours=${hours}`,
-    );
+    const response = await api.get(`/api/admin/security/ip-tracking?hours=${hours}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get IP tracking error:", error);
@@ -1818,10 +1750,7 @@ export const getSystemParameters = async () => {
 
 export const updateSystemParameters = async (parameters: any) => {
   try {
-    const response = await api.put(
-      "/api/admin/settings/parameters",
-      parameters,
-    );
+    const response = await api.put("/api/admin/settings/parameters", parameters);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Update system parameters error:", error);
@@ -1999,9 +1928,7 @@ export const getVarianceTrend = async (days: number = 30) => {
 
 export const getStaffPerformance = async (days: number = 30) => {
   try {
-    const response = await api.get(
-      `/api/metrics/staff-performance?days=${days}`,
-    );
+    const response = await api.get(`/api/metrics/staff-performance?days=${days}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get staff performance error:", error);
@@ -2022,9 +1949,7 @@ export const getFieldDefinitions = async (
       enabled_only: enabledOnly.toString(),
       visible_only: visibleOnly.toString(),
     });
-    const response = await api.get(
-      `/api/dynamic-fields/definitions?${params.toString()}`,
-    );
+    const response = await api.get(`/api/dynamic-fields/definitions?${params.toString()}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get field definitions error:", error);
@@ -2034,10 +1959,7 @@ export const getFieldDefinitions = async (
 
 export const createFieldDefinition = async (fieldData: any) => {
   try {
-    const response = await api.post(
-      "/api/dynamic-fields/definitions",
-      fieldData,
-    );
+    const response = await api.post("/api/dynamic-fields/definitions", fieldData);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Create field definition error:", error);
@@ -2047,10 +1969,7 @@ export const createFieldDefinition = async (fieldData: any) => {
 
 export const updateFieldDefinition = async (fieldId: string, updates: any) => {
   try {
-    const response = await api.put(
-      `/api/dynamic-fields/definitions/${fieldId}`,
-      updates,
-    );
+    const response = await api.put(`/api/dynamic-fields/definitions/${fieldId}`, updates);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Update field definition error:", error);
@@ -2060,9 +1979,7 @@ export const updateFieldDefinition = async (fieldId: string, updates: any) => {
 
 export const deleteFieldDefinition = async (fieldId: string) => {
   try {
-    const response = await api.delete(
-      `/api/dynamic-fields/definitions/${fieldId}`,
-    );
+    const response = await api.delete(`/api/dynamic-fields/definitions/${fieldId}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Delete field definition error:", error);
@@ -2070,11 +1987,7 @@ export const deleteFieldDefinition = async (fieldId: string) => {
   }
 };
 
-export const setFieldValue = async (
-  itemCode: string,
-  fieldName: string,
-  value: any,
-) => {
+export const setFieldValue = async (itemCode: string, fieldName: string, value: any) => {
   try {
     const response = await api.post("/api/dynamic-fields/values", {
       item_code: itemCode,
@@ -2088,10 +2001,7 @@ export const setFieldValue = async (
   }
 };
 
-export const setBulkFieldValues = async (
-  itemCodes: string[],
-  fieldValues: Record<string, any>,
-) => {
+export const setBulkFieldValues = async (itemCodes: string[], fieldValues: Record<string, any>) => {
   try {
     const response = await api.post("/api/dynamic-fields/values/bulk", {
       item_codes: itemCodes,
@@ -2128,9 +2038,7 @@ export const getItemsWithFields = async (
     if (fieldName) params.append("field_name", fieldName);
     if (fieldValue) params.append("field_value", fieldValue);
 
-    const response = await api.get(
-      `/api/dynamic-fields/items?${params.toString()}`,
-    );
+    const response = await api.get(`/api/dynamic-fields/items?${params.toString()}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get items with fields error:", error);
@@ -2140,9 +2048,7 @@ export const getItemsWithFields = async (
 
 export const getFieldStatistics = async (fieldName: string) => {
   try {
-    const response = await api.get(
-      `/api/dynamic-fields/statistics/${fieldName}`,
-    );
+    const response = await api.get(`/api/dynamic-fields/statistics/${fieldName}`);
     return response.data;
   } catch (error: any) {
     __DEV__ && console.error("Get field statistics error:", error);

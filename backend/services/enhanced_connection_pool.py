@@ -160,6 +160,7 @@ class EnhancedSQLServerConnectionPool:
                     logger.warning(
                         f"Connection attempt {attempt} failed: {last_error}. Retrying in {wait_time:.2f}s..."
                     )
+                    # Blocking sleep - consider using async alternative if in async context
                     time.sleep(wait_time)
                 else:
                     logger.error(

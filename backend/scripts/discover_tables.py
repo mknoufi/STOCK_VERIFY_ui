@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
-"""
-Discover table structure from E_MART_KITCHEN_CARE SQL Server database
+"""Discover table structure from E_MART_KITCHEN_CARE SQL Server database.
+
+This script provides utilities to explore SQL Server database schema,
+including tables, columns, and sample data with proper security measures.
 """
 
+import logging
 import os
+from typing import Any, Dict, List, Optional
 
 import pymssql
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Connection parameters
 SERVER = os.getenv("SQL_SERVER_HOST", "localhost")
@@ -18,8 +29,12 @@ USER = os.getenv("SQL_SERVER_USER", "sa")
 PASSWORD = os.getenv("SQL_SERVER_PASSWORD")
 
 
-def connect():
-    """Connect to SQL Server"""
+def connect() -> Optional[pymssql.Connection]:
+    """Connect to SQL Server.
+
+    Returns:
+        Connection object if successful, None if connection fails
+    """
     try:
         conn = pymssql.connect(
             server=SERVER,
@@ -29,74 +44,116 @@ def connect():
             password=PASSWORD,
             timeout=10,
         )
-        print(f"✅ Connected to {DATABASE} on {SERVER}:{PORT}")
+        logger.info(f"✅ Connected to {DATABASE} on {SERVER}:{PORT}")
         return conn
+    except pymssql.Error as e:
+        logger.error(f"❌ Connection failed: {e}")
+        return None
     except Exception as e:
-        print(f"❌ Connection failed: {e}")
+        logger.error(f"❌ Unexpected connection error: {e}")
         return None
 
 
-def search_tables(conn, search_term):
-    """Search for tables matching a pattern"""
-    cursor = conn.cursor(as_dict=True)
-    query = """
-        SELECT
-            TABLE_SCHEMA,
-            TABLE_NAME,
-            TABLE_TYPE
-        FROM INFORMATION_SCHEMA.TABLES
-        WHERE TABLE_NAME LIKE %s
-        ORDER BY TABLE_NAME
+def search_tables(conn: pymssql.Connection, search_term: str) -> List[Dict[str, Any]]:
+    """Search for tables matching a pattern.
+
+    Args:
+        conn: Active database connection
+        search_term: Pattern to search for in table names
+
+    Returns:
+        List of dictionaries containing table information
     """
-    cursor.execute(query, (f"%{search_term}%",))
-    results = cursor.fetchall()
-    cursor.close()
-    return results
-
-
-def get_table_columns(conn, table_name, schema="dbo"):
-    """Get columns for a specific table"""
     cursor = conn.cursor(as_dict=True)
-    query = """
-        SELECT
-            COLUMN_NAME,
-            DATA_TYPE,
-            IS_NULLABLE,
-            CHARACTER_MAXIMUM_LENGTH
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = %s
-          AND TABLE_SCHEMA = %s
-        ORDER BY ORDINAL_POSITION
-    """
-    cursor.execute(query, (table_name, schema))
-    results = cursor.fetchall()
-    cursor.close()
-    return results
-
-
-def get_sample_data(conn, table_name, schema="dbo", limit=3):
-    """Get sample data from table"""
     try:
-        cursor = conn.cursor(as_dict=True)
-        # SECURITY FIX: Use parameterized query to prevent SQL injection
-        # Validate and sanitize inputs
+        query = """
+            SELECT
+                TABLE_SCHEMA,
+                TABLE_NAME,
+                TABLE_TYPE
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_NAME LIKE %s
+            ORDER BY TABLE_NAME
+        """
+        cursor.execute(query, (f"%{search_term}%",))
+        results = cursor.fetchall()
+        return results
+    finally:
+        cursor.close()
+
+
+def get_table_columns(
+    conn: pymssql.Connection, table_name: str, schema: str = "dbo"
+) -> List[Dict[str, Any]]:
+    """Get columns for a specific table.
+
+    Args:
+        conn: Active database connection
+        table_name: Name of the table
+        schema: Database schema (default: "dbo")
+
+    Returns:
+        List of dictionaries containing column information
+    """
+    cursor = conn.cursor(as_dict=True)
+    try:
+        query = """
+            SELECT
+                COLUMN_NAME,
+                DATA_TYPE,
+                IS_NULLABLE,
+                CHARACTER_MAXIMUM_LENGTH
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = %s
+              AND TABLE_SCHEMA = %s
+            ORDER BY ORDINAL_POSITION
+        """
+        cursor.execute(query, (table_name, schema))
+        results = cursor.fetchall()
+        return results
+    finally:
+        cursor.close()
+
+
+def get_sample_data(
+    conn: pymssql.Connection, table_name: str, schema: str = "dbo", limit: int = 3
+) -> List[Dict[str, Any]]:
+    """Get sample data from table with security validation.
+
+    Args:
+        conn: Active database connection
+        table_name: Name of the table
+        schema: Database schema (default: "dbo")
+        limit: Maximum number of rows to return (1-100, default: 3)
+
+    Returns:
+        List of dictionaries containing sample rows
+
+    Raises:
+        ValueError: If table_name or schema are invalid
+    """
+    import re
+
+    cursor = conn.cursor(as_dict=True)
+    try:
+        # SECURITY: Validate and sanitize inputs to prevent SQL injection
         if not table_name or not schema:
             raise ValueError("Table name and schema cannot be empty")
 
         # Sanitize table and schema names (allow only alphanumeric and underscore)
-        import re
-
         if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", table_name):
-            raise ValueError("Invalid table name format")
+            raise ValueError(f"Invalid table name format: {table_name}")
         if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", schema):
-            raise ValueError("Invalid schema name format")
+            raise ValueError(f"Invalid schema name format: {schema}")
 
         # Ensure limit is a safe integer
         try:
             limit = int(limit)
             if limit < 1 or limit > 100:
+                logger.warning(f"Limit {limit} out of range, using default: 3")
                 limit = 3
         except (ValueError, TypeError):
+            logger.warning("Invalid limit value, using default: 3")
             limit = 3
 
         # Use QUOTENAME for safe identifier quoting

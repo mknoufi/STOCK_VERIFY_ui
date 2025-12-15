@@ -1,8 +1,9 @@
 // ==========================================
-// DETAILED LOGGING ADDED - Track every step
+// Root Layout for Stock Verify App
 // ==========================================
 
 import React from "react";
+
 import { Platform, View, Text, ActivityIndicator } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -22,20 +23,34 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../src/services/queryClient";
 
 // import DebugPanel from '../components/DebugPanel';
-import { UnistylesThemeProvider } from "@/theme/Provider";
+import { UnistylesThemeProvider } from "../src/theme/Provider";
+import { ThemeProvider } from "../src/theme/ThemeContext";
 import { initReactotron } from "../src/services/devtools/reactotron";
-import {
-  startOfflineQueue,
-  stopOfflineQueue,
-} from "../src/services/offlineQueue";
+import { startOfflineQueue, stopOfflineQueue } from "../src/services/offlineQueue";
 import apiClient from "../src/services/httpClient";
 import { initSentry } from "../src/services/sentry";
 
 // keep the splash screen visible while complete fetching resources
-SplashScreen.preventAutoHideAsync();
+// On web, wrap in try-catch to prevent blocking
+if (Platform.OS !== "web") {
+  SplashScreen.preventAutoHideAsync();
+} else {
+  // On web, splash screen may not be needed
+  SplashScreen.preventAutoHideAsync().catch(() => {
+    // Silent fail for web platform
+  });
+}
+
+// Debug logs only in development
+if (__DEV__) {
+  console.log("🌐 [DEV] _layout.tsx module loaded, Platform:", Platform.OS);
+}
 
 // Provide a single place to bootstrap auth, settings, network listeners, and routing.
 export default function RootLayout() {
+  if (__DEV__) {
+    console.log("🌐 [DEV] RootLayout component rendering...");
+  }
   const { user, isLoading, loadStoredAuth } = useAuthStore();
   const { loadSettings } = useSettingsStore();
   const theme = useTheme();
@@ -60,9 +75,7 @@ export default function RootLayout() {
     initReactotron();
     // Safety: Maximum initialization timeout (10 seconds)
     const maxTimeout = setTimeout(() => {
-      console.warn(
-        "⚠️ Maximum initialization timeout reached - forcing app to render",
-      );
+      console.warn("⚠️ Maximum initialization timeout reached - forcing app to render");
       setIsInitialized(true);
     }, 10000);
 
@@ -75,18 +88,12 @@ export default function RootLayout() {
         try {
           const backendUrlPromise = initializeBackendURL();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Backend URL initialization timeout")),
-              5000,
-            ),
+            setTimeout(() => reject(new Error("Backend URL initialization timeout")), 5000),
           );
           await Promise.race([backendUrlPromise, timeoutPromise]);
         } catch (urlError) {
           if (__DEV__) {
-            console.warn(
-              "⚠️ Backend URL initialization failed or timed out:",
-              urlError,
-            );
+            console.warn("⚠️ Backend URL initialization failed or timed out:", urlError);
           }
           // Continue anyway - will use default URL
         }
@@ -109,18 +116,12 @@ export default function RootLayout() {
         try {
           const settingsPromise = loadSettings();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Settings loading timeout")),
-              3000,
-            ),
+            setTimeout(() => reject(new Error("Settings loading timeout")), 3000),
           );
           await Promise.race([settingsPromise, timeoutPromise]);
         } catch (settingsError) {
           if (__DEV__) {
-            console.warn(
-              "⚠️ Settings loading failed or timed out:",
-              settingsError,
-            );
+            console.warn("⚠️ Settings loading failed or timed out:", settingsError);
           }
           // Continue anyway - will use defaults
         }
@@ -154,12 +155,13 @@ export default function RootLayout() {
             syncService.cleanup();
             try {
               stopOfflineQueue();
-            } catch {}
+            } catch { }
           });
         }
 
         // Always set initialized to true, even if some steps failed
         clearTimeout(maxTimeout);
+        useAuthStore.getState().setLoading(false); // Ensure loading is cleared
         setIsInitialized(true);
         setInitError(null);
         console.log("✅ [INIT] Initialization completed successfully");
@@ -188,6 +190,7 @@ export default function RootLayout() {
         // Always set initialized to true to prevent infinite loading
         console.log("⚠️ [INIT] Initialization had errors but continuing...");
         clearTimeout(maxTimeout);
+        useAuthStore.getState().setLoading(false);
         setIsInitialized(true);
         await SplashScreen.hideAsync();
       }
@@ -253,12 +256,7 @@ export default function RootLayout() {
               isWelcomePage,
             });
           }
-          if (
-            !isIndexPage &&
-            !isRegisterPage &&
-            !isLoginPage &&
-            !isWelcomePage
-          ) {
+          if (!isIndexPage && !isRegisterPage && !isLoginPage && !isWelcomePage) {
             if (__DEV__) {
               console.log("🔄 [NAV] Redirecting to /welcome (no user)");
             }
@@ -271,10 +269,7 @@ export default function RootLayout() {
         if (isLoginPage || isRegisterPage || isIndexPage || isWelcomePage) {
           let targetRoute: string;
           // On web, always redirect admin/supervisor to admin panel
-          if (
-            Platform.OS === "web" &&
-            (user.role === "supervisor" || user.role === "admin")
-          ) {
+          if (Platform.OS === "web" && (user.role === "supervisor" || user.role === "admin")) {
             targetRoute = "/admin/metrics";
           } else if (user.role === "supervisor" || user.role === "admin") {
             targetRoute = "/supervisor/dashboard";
@@ -301,9 +296,7 @@ export default function RootLayout() {
           !inAdminGroup
         ) {
           if (__DEV__) {
-            console.log(
-              "🔄 [NAV] Redirecting admin/supervisor to control panel",
-            );
+            console.log("🔄 [NAV] Redirecting admin/supervisor to control panel");
           }
           router.replace("/admin/control-panel" as any);
         } else if (
@@ -340,32 +333,56 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#121212",
+          backgroundColor: "#0F172A", // modernColors.background.primary
         }}
       >
-        <Text style={{ color: "#00E676", fontSize: 18, fontWeight: "bold" }}>
-          {Platform.OS === "web" ? "Loading Admin Panel..." : "Loading..."}
-        </Text>
-        <Text style={{ color: "#888", fontSize: 14, marginTop: 10 }}>
-          Please wait
-        </Text>
         <ActivityIndicator
-          color="#00E676"
-          style={{ marginTop: 16 }}
+          color="#3B82F6" // modernColors.primary[500]
+          style={{ marginBottom: 24 }}
           size="large"
         />
+        <Text
+          style={{
+            color: "#F8FAFC", // modernColors.text.primary
+            fontSize: 24, // modernTypography.heading.h3.fontSize
+            fontWeight: "700", // modernTypography.heading.h3.fontWeight
+            letterSpacing: 0.5,
+          }}
+        >
+          {Platform.OS === "web" ? "StockVerify Admin" : "StockVerify"}
+        </Text>
+        <Text
+          style={{
+            color: "#94A3B8", // modernColors.text.tertiary
+            fontSize: 14, // modernTypography.body.small.fontSize
+            marginTop: 8,
+            letterSpacing: 0.5,
+          }}
+        >
+          Initializing Secure Session...
+        </Text>
         {initError && (
-          <Text
+          <View
             style={{
-              color: "#FF5252",
-              fontSize: 12,
-              marginTop: 20,
-              padding: 10,
-              textAlign: "center",
+              marginTop: 32,
+              padding: 16,
+              backgroundColor: "rgba(239, 68, 68, 0.1)", // modernColors.error with opacity
+              borderRadius: 12, // modernBorderRadius.lg
+              borderWidth: 1,
+              borderColor: "rgba(239, 68, 68, 0.2)",
+              maxWidth: 300,
             }}
           >
-            Warning: {initError}
-          </Text>
+            <Text
+              style={{
+                color: "#EF4444", // modernColors.error
+                fontSize: 12,
+                textAlign: "center",
+              }}
+            >
+              Warning: {initError}
+            </Text>
+          </View>
         )}
       </View>
     );
@@ -379,33 +396,57 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#121212",
+          backgroundColor: "#0F172A",
           padding: 20,
         }}
       >
-        <Text
+        <View
           style={{
-            color: "#FF5252",
-            fontSize: 20,
-            fontWeight: "bold",
-            marginBottom: 10,
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 24,
           }}
         >
-          ⚠️ Initialization Error
+          <Text style={{ fontSize: 32 }}>⚠️</Text>
+        </View>
+        <Text
+          style={{
+            color: "#EF4444",
+            fontSize: 20,
+            fontWeight: "bold",
+            marginBottom: 12,
+          }}
+        >
+          Initialization Error
         </Text>
         <Text
           style={{
-            color: "#888",
+            color: "#94A3B8",
             fontSize: 14,
-            marginBottom: 20,
+            marginBottom: 32,
             textAlign: "center",
+            maxWidth: 400,
+            lineHeight: 20,
           }}
         >
           {initError}
         </Text>
-        <Text style={{ color: "#00E676", fontSize: 14, marginTop: 20 }}>
-          Attempting to continue anyway...
-        </Text>
+        <View
+          style={{
+            backgroundColor: "rgba(59, 130, 246, 0.1)",
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 8,
+          }}
+        >
+          <Text style={{ color: "#3B82F6", fontSize: 14, fontWeight: "600" }}>
+            Attempting to continue...
+          </Text>
+        </View>
       </View>
     );
   }
@@ -413,46 +454,51 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
-        <UnistylesThemeProvider>
-          <ToastProvider>
-            <StatusBar style={theme.isDark ? "light" : "dark"} />
-            {/* {__DEV__ && flags.enableDebugPanel && <DebugPanel />} */}
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: "#121212" },
-              }}
-            >
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="login" options={{ headerShown: false }} />
-              <Stack.Screen name="welcome" />
-              <Stack.Screen name="register" />
-              <Stack.Screen name="staff/home" />
-              <Stack.Screen name="staff/scan" />
-              <Stack.Screen name="staff/history" />
-              <Stack.Screen name="supervisor/dashboard" />
-              <Stack.Screen name="supervisor/session-detail" />
-              <Stack.Screen name="supervisor/settings" />
-              <Stack.Screen name="supervisor/db-mapping" />
-              <Stack.Screen name="supervisor/dynamic-fields" />
-              <Stack.Screen name="supervisor/activity-logs" />
-              <Stack.Screen name="supervisor/error-logs" />
-              <Stack.Screen name="supervisor/export-schedules" />
-              <Stack.Screen name="supervisor/export-results" />
-              <Stack.Screen name="supervisor/sync-conflicts" />
-              <Stack.Screen name="supervisor/offline-queue" />
-              <Stack.Screen name="admin/permissions" />
-              <Stack.Screen name="admin/metrics" />
-              <Stack.Screen name="admin/control-panel" />
-              <Stack.Screen name="admin/logs" />
-              <Stack.Screen name="admin/sql-config" />
-              <Stack.Screen name="admin/reports" />
-              <Stack.Screen name="admin/security" />
-              <Stack.Screen name="help" />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </ToastProvider>
-        </UnistylesThemeProvider>
+        <ThemeProvider>
+          <UnistylesThemeProvider>
+            <ToastProvider>
+              <StatusBar style={theme.isDark ? "light" : "dark"} />
+              {/* {__DEV__ && flags.enableDebugPanel && <DebugPanel />} */}
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: "#121212" },
+                }}
+              >
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="welcome" />
+                <Stack.Screen name="register" />
+                <Stack.Screen name="staff/home" />
+                <Stack.Screen name="staff/scan" />
+                <Stack.Screen name="staff/item-detail" />
+                <Stack.Screen name="staff/history" />
+                <Stack.Screen name="staff/appearance" />
+                <Stack.Screen name="supervisor/dashboard" />
+                <Stack.Screen name="supervisor/sessions" />
+                <Stack.Screen name="supervisor/session/[id]" />
+                <Stack.Screen name="supervisor/settings" />
+                <Stack.Screen name="supervisor/appearance" />
+                <Stack.Screen name="supervisor/db-mapping" />
+                <Stack.Screen name="supervisor/activity-logs" />
+                <Stack.Screen name="supervisor/error-logs" />
+                <Stack.Screen name="supervisor/export-schedules" />
+                <Stack.Screen name="supervisor/export-results" />
+                <Stack.Screen name="supervisor/sync-conflicts" />
+                <Stack.Screen name="supervisor/offline-queue" />
+                <Stack.Screen name="admin/permissions" />
+                <Stack.Screen name="admin/metrics" />
+                <Stack.Screen name="admin/control-panel" />
+                <Stack.Screen name="admin/logs" />
+                <Stack.Screen name="admin/sql-config" />
+                <Stack.Screen name="admin/reports" />
+                <Stack.Screen name="admin/security" />
+                <Stack.Screen name="help" />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </ToastProvider>
+          </UnistylesThemeProvider>
+        </ThemeProvider>
       </ErrorBoundary>
     </QueryClientProvider>
   );

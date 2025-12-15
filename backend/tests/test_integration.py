@@ -187,7 +187,7 @@ class TestERPItemsWorkflow:
         logger.info("Testing ERP items barcode lookup")
 
         # Test barcode lookup
-        test_barcode = "TEST123456"
+        test_barcode = "513456"
         response = await async_client.get(
             f"/api/erp/items/barcode/{test_barcode}", headers=auth_headers
         )

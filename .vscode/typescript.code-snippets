@@ -1,0 +1,110 @@
+{
+    "React Native Component": {
+        "prefix": "rnc",
+        "body": [
+            "import React from 'react';",
+            "import { View, Text, StyleSheet } from 'react-native';",
+            "",
+            "interface ${1:ComponentName}Props {",
+            "  ${2:prop}: ${3:string};",
+            "}",
+            "",
+            "export const ${1:ComponentName}: React.FC<${1:ComponentName}Props> = ({ ${2:prop} }) => {",
+            "  return (",
+            "    <View style={styles.container}>",
+            "      <Text style={styles.text}>${0}</Text>",
+            "    </View>",
+            "  );",
+            "};",
+            "",
+            "const styles = StyleSheet.create({",
+            "  container: {",
+            "    flex: 1,",
+            "  },",
+            "  text: {",
+            "    fontSize: 16,",
+            "  },",
+            "});"
+        ],
+        "description": "React Native component with TypeScript"
+    },
+    "React Native Screen": {
+        "prefix": "rnscreen",
+        "body": [
+            "import React from 'react';",
+            "import { View, Text, StyleSheet } from 'react-native';",
+            "import { useRouter } from 'expo-router';",
+            "",
+            "export default function ${1:ScreenName}() {",
+            "  const router = useRouter();",
+            "  ",
+            "  return (",
+            "    <View style={styles.container}>",
+            "      <Text style={styles.text}>${1:ScreenName}</Text>",
+            "      ${0}",
+            "    </View>",
+            "  );",
+            "}",
+            "",
+            "const styles = StyleSheet.create({",
+            "  container: {",
+            "    flex: 1,",
+            "    justifyContent: 'center',",
+            "    alignItems: 'center',",
+            "    backgroundColor: '#121212',",
+            "  },",
+            "  text: {",
+            "    color: '#fff',",
+            "    fontSize: 20,",
+            "  },",
+            "});"
+        ],
+        "description": "React Native screen for Expo Router"
+    },
+    "Zustand Store": {
+        "prefix": "zustand",
+        "body": [
+            "import { create } from 'zustand';",
+            "",
+            "interface ${1:StoreName}State {",
+            "  ${2:value}: ${3:string};",
+            "  set${2/(.*)/${1:/capitalize}/}: (${2:value}: ${3:string}) => void;",
+            "}",
+            "",
+            "export const use${1:StoreName} = create<${1:StoreName}State>((set) => ({",
+            "  ${2:value}: ${4:''},",
+            "  set${2/(.*)/${1:/capitalize}/}: (${2:value}) => set({ ${2:value} }),",
+            "}));"
+        ],
+        "description": "Create a Zustand store"
+    },
+    "API Call": {
+        "prefix": "api-call",
+        "body": [
+            "try {",
+            "  const response = await axios.${1|get,post,put,delete,patch|}(",
+            "    `\\${BACKEND_URL}/${2:endpoint}`,",
+            "    ${3:{}}",
+            "  );",
+            "  return response.data;",
+            "} catch (error) {",
+            "  console.error('${4:API} error:', error);",
+            "  throw error;",
+            "}"
+        ],
+        "description": "API call with axios"
+    },
+    "React Query Hook": {
+        "prefix": "usequery",
+        "body": [
+            "const { data, isLoading, error } = useQuery({",
+            "  queryKey: ['${1:key}'],",
+            "  queryFn: async () => {",
+            "    const response = await axios.get(`\\${BACKEND_URL}/${2:endpoint}`);",
+            "    return response.data;",
+            "  },",
+            "});"
+        ],
+        "description": "React Query hook"
+    }
+}

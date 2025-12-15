@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { useRouter, useSegments } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "../../hooks/useTheme";
 import { useAuthStore } from "../../store/authStore";
 import {
   layout,
@@ -52,8 +52,9 @@ const ADMIN_GROUPS: SidebarGroup[] = [
         key: "sessions",
         label: "Sessions",
         icon: "cube",
-        route: "/supervisor/session-detail",
+        route: "/supervisor/sessions",
       },
+
     ],
   },
   {
@@ -393,11 +394,11 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     ...(Platform.OS === "web"
       ? {
-          position: "fixed" as const,
-          left: 0,
-          top: 0,
-          bottom: 0,
-        }
+        position: "fixed" as const,
+        left: 0,
+        top: 0,
+        bottom: 0,
+      }
       : {}),
   } as any,
   scrollView: {

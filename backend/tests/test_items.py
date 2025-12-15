@@ -116,8 +116,9 @@ class TestGetItemByBarcode:
             pytest.skip("Authentication token not available")
 
         # Note: This requires a valid barcode in the database
+        # Using a barcode with valid prefix (51, 52, 53) to pass validation
         response = client.get(
-            "/api/erp/items/barcode/123456",
+            "/api/erp/items/barcode/510000",
             headers={"Authorization": f"Bearer {auth_token}"},
         )
 

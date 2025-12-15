@@ -21,7 +21,8 @@ export interface AuthState {
     username: string,
     password: string,
     rememberMe?: boolean,
-  ) => Promise<boolean>;
+  ) => Promise<{ success: boolean; message?: string }>;
+  loginWithPin: (pin: string) => Promise<{ success: boolean; message?: string }>;
   setUser: (user: User) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
@@ -41,7 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     username: string,
     password: string,
     _rememberMe?: boolean,
-  ): Promise<boolean> => {
+  ): Promise<{ success: boolean; message?: string }> => {
     set({ isLoading: true });
     try {
       const response = await apiClient.post("/api/auth/login", {
@@ -53,8 +54,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         const { access_token, user } = response.data.data;
 
         // Store token for subsequent requests
-        apiClient.defaults.headers.common["Authorization"] =
-          `Bearer ${access_token}`;
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
         await storage.setItem(TOKEN_STORAGE_KEY, access_token);
         await storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
 
@@ -63,15 +63,69 @@ export const useAuthStore = create<AuthState>((set) => ({
           isAuthenticated: true,
           isLoading: false,
         });
-        return true;
+        return { success: true };
       }
 
       set({ isLoading: false });
-      return false;
-    } catch (error) {
+      return { success: false, message: response.data.message || "Login failed" };
+    } catch (error: any) {
       console.error("Login failed:", error);
       set({ isLoading: false });
-      return false;
+
+      let message = "An unexpected error occurred";
+      if (error.response) {
+        // Server responded with error code
+        message =
+          error.response.data?.detail ||
+          error.response.data?.message ||
+          `Server Error (${error.response.status})`;
+      } else if (error.request) {
+        // Request made but no response (Network Error)
+        message =
+          "Unable to connect to server. Please check your internet connection and verify the backend is running.";
+      } else {
+        message = error.message;
+      }
+
+      return { success: false, message };
+    }
+  },
+
+  loginWithPin: async (pin: string): Promise<{ success: boolean; message?: string }> => {
+    set({ isLoading: true });
+    try {
+      const response = await apiClient.post("/api/auth/login-pin", { pin });
+
+      if (response.data.success && response.data.data) {
+        const { access_token, user } = response.data.data;
+
+        // Store token for subsequent requests
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+        await storage.setItem(TOKEN_STORAGE_KEY, access_token);
+        await storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        return { success: true };
+      }
+
+      set({ isLoading: false });
+      return { success: false, message: response.data.message || "Invalid PIN" };
+    } catch (error: any) {
+      console.error("PIN login failed:", error);
+      set({ isLoading: false });
+
+      let message = "Invalid PIN";
+      if (error.response?.status === 401) {
+        message = "Invalid PIN. Please try again.";
+      } else if (error.request) {
+        message = "Unable to connect to server.";
+      }
+
+      return { success: false, message };
     }
   },
 
@@ -105,8 +159,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (storedUser && storedToken) {
         const user = JSON.parse(storedUser) as User;
-        apiClient.defaults.headers.common["Authorization"] =
-          `Bearer ${storedToken}`;
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
         set({
           user,
           isAuthenticated: true,

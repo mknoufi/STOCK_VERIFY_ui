@@ -1,78 +1,86 @@
-<!-- .github/pull_request_template.md -->
+# Pull Request
 
-## Summary
+## Description
+<!-- Provide a brief description of the changes -->
 
-**What & Why (Business Impact)**
-- [Brief description of changes]
-- [Business value/impact]
-- [Related issue/ticket number if applicable]
+## Type of Change
+<!-- Mark the relevant option with an 'x' -->
 
-## Validation
+- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
+- [ ] ✨ New feature (non-breaking change which adds functionality)
+- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] 📝 Documentation update
+- [ ] 🔒 Security fix
+- [ ] ♻️ Code refactoring
+- [ ] ⚡ Performance improvement
+- [ ] ✅ Test addition/update
 
-- [ ] `ci` green locally (`pre-commit run -a` passes)
-- [ ] New/updated unit tests added
-- [ ] All existing tests pass (`pytest tests/` and `npm test`)
-- [ ] Affected modules listed below
-- [ ] Code coverage maintained or improved
-- [ ] Type checking passes (`mypy backend/` and `npx tsc --noEmit`)
+## Related Issues
+<!-- Link to related issues -->
+Fixes #(issue number)
 
-## Affected Modules
+## Changes Made
+<!-- List the main changes -->
 
-- [List all files/modules changed]
-- [Document any breaking changes]
+- 
+- 
+- 
 
-## Risk Assessment
+## Testing
+<!-- Describe the tests you ran -->
 
-- [ ] No data migration required
-- [ ] Backward compatible (no breaking API changes)
-- [ ] Security review completed (if touching auth/ledgers/payments)
-- [ ] Performance impact assessed
-- [ ] Error handling tested
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Manual testing performed
+- [ ] All tests passing locally
 
-## Testing Checklist
+## Security Checklist
+<!-- Verify security requirements -->
 
-- [ ] Happy path tested
-- [ ] Error cases tested
+- [ ] No secrets or credentials committed
+- [ ] No `.env` files committed
+- [ ] Environment variables documented in `.env.example`
+- [ ] Pre-commit hooks passing
+- [ ] No new security vulnerabilities introduced
+
+## Code Quality Checklist
+<!-- Verify code quality -->
+
+- [ ] Code follows project style guidelines
+- [ ] Self-review performed
+- [ ] Comments added for complex logic
+- [ ] Documentation updated (if needed)
+- [ ] No console.log or print statements in production code
+- [ ] TypeScript types added (no 'any' types)
+- [ ] Proper error handling implemented
+
+## Test Coverage
+<!-- Verify test coverage -->
+
+- [ ] New code has test coverage
+- [ ] Coverage percentage maintained or improved
 - [ ] Edge cases tested
-- [ ] Integration tested (if applicable)
-- [ ] Manual testing completed (if UI changes)
-- [ ] No regressions in existing functionality
+- [ ] Error scenarios tested
 
-## Code Quality
+## Screenshots (if applicable)
+<!-- Add screenshots for UI changes -->
 
-- [ ] Diff size ≤ 400 LoC (if larger, explain why)
-- [ ] Follows project coding standards
-- [ ] Linting passes (`ruff check .` and `eslint`)
-- [ ] Formatting passes (`black --check .` and `ruff format`)
-- [ ] No hardcoded secrets or credentials
-- [ ] Accessibility considered (if UI changes: `aria-*` attributes, responsive layout)
+## Deployment Notes
+<!-- Any special deployment considerations -->
 
-## ERPNext-Specific (if applicable)
+- [ ] Database migrations required
+- [ ] Environment variables need updating
+- [ ] Dependencies need updating
+- [ ] Breaking changes documented
 
-- [ ] Ledger operations: idempotent posting tests included
-- [ ] Financial transactions: peer review flag added `[REVIEW:finance-lead]`
-- [ ] Timezone handling: +05:30 (IST) validated in tests
-- [ ] Discount/pricing: pure functions, no DB in business logic
-- [ ] Frappe doctypes: schema changes reviewed in ERPNext UI
+## Reviewer Checklist
+<!-- For reviewers -->
 
-## Notes for Reviewer
+- [ ] Code review completed
+- [ ] Tests verified
+- [ ] Security review completed
+- [ ] Documentation reviewed
+- [ ] Performance impact considered
 
-**Scope Boundaries:**
-- [What is included in this PR]
-- [What is explicitly NOT included (future work)]
-
-**Special Considerations:**
-- [Any non-obvious design decisions]
-- [Performance optimizations]
-- [Security considerations]
-
-**Screenshots/Demo:**
-- [If UI changes, include screenshots or demo link]
-
----
-
-## Commit Metadata
-
-- **Type**: `feat` | `fix` | `refactor` | `test` | `docs` | `chore`
-- **Scope**: [module/component name]
-- **AI-Assisted**: [ ] Yes (tagged with `[auto-ai]` and `Co-authored-by: cursor-agent`) | [ ] No
+## Additional Notes
+<!-- Any additional information -->

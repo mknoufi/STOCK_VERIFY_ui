@@ -84,9 +84,15 @@ class AutoRecovery:
 
                 logger.warning(f"Error occurred (attempt {retry_count}/{max_retries}): {str(e)}")
 
-                # Wait before retry
+                # Wait before retry with exponential backoff
                 if retry_count < max_retries:
-                    time.sleep(retry_delay * retry_count)  # Exponential backoff
+                    # Use exponential backoff with jitter
+                    import random
+
+                    wait_time = (retry_delay * (2 ** (retry_count - 1))) + random.uniform(0, 0.5)
+                    logger.debug(f"Waiting {wait_time:.2f}s before retry {retry_count + 1}")
+                    # Note: For sync context we use time.sleep, but callers should prefer async version
+                    time.sleep(wait_time)
 
         # All retries failed, try fallback
         if strategy == RecoveryStrategy.FALLBACK and fallback:

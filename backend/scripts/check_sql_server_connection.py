@@ -1,35 +1,55 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Check SQL Server Connection and Identify Local Server Path
+"""Check SQL Server Connection and Identify Local Server Path.
+
 Helps identify the correct connection parameters for Polosys ERP database
+with proper type hints and error handling.
 """
 
 import io
+import logging
+import socket
 import sys
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import pymssql
 
 # Fix Windows console encoding for Unicode characters
 if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-import socket
-from pathlib import Path
-
-import pymssql
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Database file path provided by user
 DB_PATH = r"\\Server\d\Polosys ERP 7.0\DATA"
 DB_NAME = "E_MART_KITCHEN_CARE"
 
 
-def get_local_hostname():
-    """Get the local machine hostname"""
+def get_local_hostname() -> str:
+    """Get the local machine hostname.
+
+    Returns:
+        The hostname of the local machine
+    """
     return socket.gethostname()
 
 
-def check_path_access(path):
-    """Check if the database path is accessible"""
+def check_path_access(path: str) -> bool:
+    """Check if the database path is accessible.
+
+    Args:
+        path: File system path to check
+
+    Returns:
+        True if accessible, False otherwise
+    """
     path_obj = Path(path)
     if path_obj.exists():
         print(f"✅ Database path is accessible: {path}")

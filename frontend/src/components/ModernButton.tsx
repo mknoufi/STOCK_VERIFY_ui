@@ -66,6 +66,7 @@ interface ModernButtonProps {
   gradientColors?: string[];
   testID?: string;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const ModernButton: React.FC<ModernButtonProps> = ({
@@ -83,6 +84,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   gradientColors,
   testID,
   accessibilityLabel,
+  accessibilityHint,
 }) => {
   // Animation values
   const scale = useSharedValue(1);
@@ -281,6 +283,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
           style={[animatedStyle, buttonStyle]}
           testID={testID}
           accessibilityLabel={accessibilityLabel || title}
+          accessibilityHint={accessibilityHint}
           accessibilityRole="button"
           accessibilityState={{ disabled: disabled || loading }}
         >
@@ -307,6 +310,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
           style={[animatedStyle, buttonStyle]}
           testID={testID}
           accessibilityLabel={accessibilityLabel || title}
+          accessibilityHint={accessibilityHint}
           accessibilityRole="button"
           accessibilityState={{ disabled: disabled || loading }}
         >
@@ -327,6 +331,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
         style={[animatedStyle, buttonStyle]}
         testID={testID}
         accessibilityLabel={accessibilityLabel || title}
+        accessibilityHint={accessibilityHint}
         accessibilityRole="button"
         accessibilityState={{ disabled: disabled || loading }}
       >

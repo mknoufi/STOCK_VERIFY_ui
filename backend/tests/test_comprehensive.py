@@ -211,7 +211,7 @@ async def test_error_logging(mock_db, mock_supervisor):
 @pytest.mark.asyncio
 async def test_separation_of_sql_and_mongo(mock_db):
     """Test that SQL Server is read-only and MongoDB handles writes"""
-    from backend.services.erp_sync_service import SQLSyncService
+    from backend.services.sql_sync_service import SQLSyncService
 
     # Mock SQL connector (read-only)
     mock_sql_connector = MagicMock()

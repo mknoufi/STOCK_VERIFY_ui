@@ -6,3 +6,4 @@ export { AppHeader } from "./AppHeader";
 export { StaffTabBar } from "./StaffTabBar";
 export { SupervisorSidebar } from "./SupervisorSidebar";
 export { AdminSidebar } from "./AdminSidebar";
+export { QuickActions } from "./QuickActions";

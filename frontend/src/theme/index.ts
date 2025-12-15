@@ -15,3 +15,6 @@ export * from "./typography";
 // Existing theme files
 export * from "./themes";
 export * from "./designSystem";
+
+// Theme Context (Provider, Hook, Types)
+export * from "./ThemeContext";

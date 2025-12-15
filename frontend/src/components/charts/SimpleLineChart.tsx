@@ -32,7 +32,7 @@ interface SimpleLineChartProps {
   xAxisLabel?: string;
 }
 
-export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
+export const SimpleLineChart: React.FC<SimpleLineChartProps & { gridColor?: string; textColor?: string; axisColor?: string }> = ({
   data,
   color = modernColors.primary[500],
   showGrid = true,
@@ -40,13 +40,16 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
   title,
   yAxisLabel,
   xAxisLabel,
+  gridColor = modernColors.border.light,
+  textColor = modernColors.text.secondary,
+  axisColor = modernColors.border.medium,
 }) => {
   if (!data || data.length === 0) {
     return (
       <View style={styles.container}>
-        {title && <Text style={styles.title}>{title}</Text>}
+        {title && <Text style={[styles.title, { color: textColor }]}>{title}</Text>}
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No data available</Text>
+          <Text style={[styles.emptyText, { color: textColor }]}>No data available</Text>
         </View>
       </View>
     );
@@ -91,14 +94,14 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
 
   return (
     <View style={styles.container}>
-      {title && <Text style={styles.title}>{title}</Text>}
-      {yAxisLabel && <Text style={styles.yAxisLabel}>{yAxisLabel}</Text>}
+      {title && <Text style={[styles.title, { color: textColor }]}>{title}</Text>}
+      {yAxisLabel && <Text style={[styles.yAxisLabel, { color: textColor }]}>{yAxisLabel}</Text>}
       <View style={styles.chartContainer}>
         {/* Y-axis labels */}
         <View style={styles.yAxis}>
           {gridLines.map((line, i) => (
             <View key={i} style={[styles.yAxisLabelContainer, { top: line.y }]}>
-              <Text style={styles.yAxisText}>{Math.round(line.value)}</Text>
+              <Text style={[styles.yAxisText, { color: textColor }]}>{Math.round(line.value)}</Text>
             </View>
           ))}
         </View>
@@ -115,6 +118,8 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
                   {
                     top: line.y,
                     width: chartWidth,
+                    backgroundColor: gridColor,
+                    ...(Platform.OS === "web" && { borderTopColor: gridColor })
                   },
                 ]}
               />
@@ -127,6 +132,7 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
               {
                 bottom: 0,
                 width: chartWidth,
+                backgroundColor: axisColor,
               },
             ]}
           />
@@ -139,6 +145,7 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
                 left: 0,
                 height: chartHeight,
                 width: 2,
+                backgroundColor: axisColor,
               },
             ]}
           />
@@ -196,13 +203,13 @@ export const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
           <View style={styles.xAxis}>
             {xLabels.map((label, i) => (
               <View key={i} style={[styles.xAxisLabel, { left: label.x }]}>
-                <Text style={styles.xAxisText}>{label.label}</Text>
+                <Text style={[styles.xAxisText, { color: textColor }]}>{label.label}</Text>
               </View>
             ))}
           </View>
         </View>
       </View>
-      {xAxisLabel && <Text style={styles.xAxisLabelText}>{xAxisLabel}</Text>}
+      {xAxisLabel && <Text style={[styles.xAxisLabelText, { color: textColor }]}>{xAxisLabel}</Text>}
     </View>
   );
 };

@@ -16,7 +16,8 @@ from backend.services.dynamic_report_service import DynamicReportService
 
 logger = logging.getLogger(__name__)
 
-dynamic_reports_router = APIRouter(prefix="/api/reports", tags=["dynamic-reports"])
+# Changed prefix to /api/dynamic-reports to avoid conflict with reporting_api.py (/api/reports)
+dynamic_reports_router = APIRouter(prefix="/api/dynamic-reports", tags=["dynamic-reports"])
 
 # Global service instance
 _dynamic_report_service = None

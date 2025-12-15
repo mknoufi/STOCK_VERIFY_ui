@@ -1,20 +1,32 @@
+/**
+ * Export Results Screen
+ * Displays a list of export jobs and allows downloading completed exports.
+ * Refactored to use Aurora Design System
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+
 import { usePermissions } from "../../src/hooks/usePermissions";
 import {
   getExportResults,
   downloadExportResult,
 } from "../../src/services/api/api";
+import { AuroraBackground, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 interface ExportResult {
   _id: string;
@@ -69,6 +81,7 @@ export default function ExportResultsScreen() {
 
   const handleDownload = async (resultId: string, fileName: string) => {
     try {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setDownloading(resultId);
       const blob = await downloadExportResult(resultId);
 
@@ -91,6 +104,7 @@ export default function ExportResultsScreen() {
         );
       }
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to download export");
     } finally {
       setDownloading(null);
@@ -100,15 +114,28 @@ export default function ExportResultsScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "#00E676";
+        return auroraTheme.colors.success[500];
       case "failed":
-        return "#FF5252";
+        return auroraTheme.colors.error[500];
       case "pending":
-        return "#FFC107";
+        return auroraTheme.colors.warning[500];
       default:
-        return "#666";
+        return auroraTheme.colors.text.secondary;
     }
   };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "checkmark-circle-outline";
+      case "failed":
+        return "alert-circle-outline";
+      case "pending":
+        return "time-outline";
+      default:
+        return "help-circle-outline";
+    }
+  }
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "N/A";
@@ -117,279 +144,338 @@ export default function ExportResultsScreen() {
     return `${(kb / 1024).toFixed(2)} MB`;
   };
 
-  const renderResultCard = (result: ExportResult) => (
-    <View key={result._id} style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{result.schedule_name}</Text>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: getStatusColor(result.status) },
-          ]}
-        >
-          <Text style={styles.statusText}>{result.status.toUpperCase()}</Text>
-        </View>
-      </View>
-
-      <View style={styles.cardDetails}>
-        <Text style={styles.detailText}>
-          Format: {result.format.toUpperCase()}
-        </Text>
-        {result.record_count !== undefined && (
-          <Text style={styles.detailText}>
-            Records: {result.record_count.toLocaleString()}
-          </Text>
-        )}
-        {result.file_size && (
-          <Text style={styles.detailText}>
-            Size: {formatFileSize(result.file_size)}
-          </Text>
-        )}
-        <Text style={styles.detailText}>
-          Started: {new Date(result.started_at).toLocaleString()}
-        </Text>
-        {result.completed_at && (
-          <Text style={styles.detailText}>
-            Completed: {new Date(result.completed_at).toLocaleString()}
-          </Text>
-        )}
-      </View>
-
-      {result.error_message && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {result.error_message}</Text>
-        </View>
-      )}
-
-      {result.status === "completed" && result.file_path && (
-        <TouchableOpacity
-          style={styles.downloadButton}
-          onPress={() =>
-            handleDownload(
-              result._id,
-              `export_${result.schedule_name}_${new Date().getTime()}.${result.format}`,
-            )
-          }
-          disabled={downloading === result._id}
-        >
-          {downloading === result._id ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.downloadButtonText}>⬇ Download</Text>
-          )}
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-
-  if (loading) {
+  const renderResultCard = (result: ExportResult, index: number) => {
+    const statusColor = getStatusColor(result.status);
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading export results...</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
+      <Animated.View
+        key={result._id}
+        entering={FadeInDown.delay(index * 100).springify()}
+      >
+        <GlassCard
+          variant="light"
+          padding={auroraTheme.spacing.md}
+          borderRadius={auroraTheme.borderRadius.lg}
+          style={styles.card}
         >
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Export Results</Text>
-        <TouchableOpacity style={styles.refreshButton} onPress={loadResults}>
-          <Text style={styles.refreshButtonText}>↻</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.filterBar}>
-        {["all", "completed", "failed", "pending"].map((status) => (
-          <TouchableOpacity
-            key={status}
-            style={[
-              styles.filterButton,
-              filterStatus === status && styles.filterButtonActive,
-            ]}
-            onPress={() => setFilterStatus(status)}
-          >
-            <Text
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={[styles.iconContainer, { backgroundColor: statusColor + '20' }]}>
+                <Ionicons name={getStatusIcon(result.status) as any} size={24} color={statusColor} />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>{result.schedule_name}</Text>
+                <Text style={styles.cardSubtitle}>{new Date(result.started_at).toLocaleString()}</Text>
+              </View>
+            </View>
+            <View
               style={[
-                styles.filterButtonText,
-                filterStatus === status && styles.filterButtonTextActive,
+                styles.statusBadge,
+                { backgroundColor: statusColor + '20', borderColor: statusColor },
               ]}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <Text style={[styles.statusText, { color: statusColor }]}>{result.status.toUpperCase()}</Text>
+            </View>
+          </View>
 
-      <ScrollView style={styles.content}>
-        {results.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No export results found</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Exports will appear here when they complete
-            </Text>
+          <View style={styles.cardDetails}>
+            <View style={styles.detailRow}>
+              <Ionicons name="document-text-outline" size={16} color={auroraTheme.colors.text.tertiary} />
+              <Text style={styles.detailText}>Format: {result.format.toUpperCase()}</Text>
+            </View>
+            {result.record_count !== undefined && (
+              <View style={styles.detailRow}>
+                <Ionicons name="list-outline" size={16} color={auroraTheme.colors.text.tertiary} />
+                <Text style={styles.detailText}>Records: {result.record_count.toLocaleString()}</Text>
+              </View>
+            )}
+            {result.file_size && (
+              <View style={styles.detailRow}>
+                <Ionicons name="save-outline" size={16} color={auroraTheme.colors.text.tertiary} />
+                <Text style={styles.detailText}>Size: {formatFileSize(result.file_size)}</Text>
+              </View>
+            )}
+          </View>
+
+          {result.error_message && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="warning-outline" size={20} color={auroraTheme.colors.error[500]} />
+              <Text style={styles.errorText}>{result.error_message}</Text>
+            </View>
+          )}
+
+          {result.status === "completed" && result.file_path && (
+            <AnimatedPressable
+              style={[styles.downloadButton, { backgroundColor: auroraTheme.colors.success[500] }]}
+              onPress={() =>
+                handleDownload(
+                  result._id,
+                  `export_${result.schedule_name}_${new Date().getTime()}.${result.format}`,
+                )
+              }
+              disabled={downloading === result._id}
+            >
+              {downloading === result._id ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="download-outline" size={20} color="#fff" />
+                  <Text style={styles.downloadButtonText}>Download</Text>
+                </>
+              )}
+            </AnimatedPressable>
+          )}
+        </GlassCard>
+      </Animated.View>
+    );
+  };
+
+  return (
+    <AuroraBackground variant="secondary" intensity="low">
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Export Results</Text>
+              <Text style={styles.pageSubtitle}>View and download generated reports</Text>
+            </View>
+          </View>
+          <AnimatedPressable onPress={loadResults} style={styles.refreshButton}>
+            <Ionicons name="refresh" size={24} color={auroraTheme.colors.primary[500]} />
+          </AnimatedPressable>
+        </Animated.View>
+
+        {/* Filter Bar */}
+        <Animated.View entering={FadeInDown.delay(200).springify()}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterBar} contentContainerStyle={styles.filterContent}>
+            {["all", "completed", "failed", "pending"].map((status) => (
+              <AnimatedPressable
+                key={status}
+                style={[
+                  styles.filterButton,
+                  filterStatus === status && { backgroundColor: auroraTheme.colors.primary[500] },
+                ]}
+                onPress={() => {
+                  if (Platform.OS !== "web") Haptics.selectionAsync();
+                  setFilterStatus(status);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.filterButtonText,
+                    filterStatus === status && { color: "#fff", fontWeight: "700" },
+                  ]}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </AnimatedPressable>
+            ))}
+          </ScrollView>
+        </Animated.View>
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+            <Text style={styles.loadingText}>Loading results...</Text>
           </View>
         ) : (
-          results.map(renderResultCard)
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            {results.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="document-text-outline" size={64} color={auroraTheme.colors.text.tertiary} />
+                <Text style={styles.emptyStateText}>No export results found</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Exports will appear here when they complete
+                </Text>
+              </View>
+            ) : (
+              results.map((result, index) => renderResultCard(result, index))
+            )}
+          </ScrollView>
         )}
-      </ScrollView>
-    </View>
+      </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#121212",
-  },
-  loadingText: {
-    marginTop: 10,
-    color: "#fff",
-    fontSize: 16,
+    paddingTop: 60,
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#1E1E1E",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    alignItems: "center",
+    paddingHorizontal: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
   },
   backButton: {
-    marginRight: 16,
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
-  backButtonText: {
-    color: "#007AFF",
-    fontSize: 16,
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
   },
-  title: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   refreshButton: {
-    padding: 8,
-  },
-  refreshButtonText: {
-    color: "#007AFF",
-    fontSize: 24,
+    padding: auroraTheme.spacing.sm,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
   },
   filterBar: {
-    flexDirection: "row",
-    padding: 16,
-    backgroundColor: "#1E1E1E",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    gap: 8,
+    marginBottom: auroraTheme.spacing.md,
+  },
+  filterContent: {
+    paddingHorizontal: auroraTheme.spacing.md,
+    gap: auroraTheme.spacing.sm,
   },
   filterButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: "center",
-    backgroundColor: "#252525",
-  },
-  filterButtonActive: {
-    backgroundColor: "#007AFF",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: auroraTheme.borderRadius.full,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
   filterButtonText: {
-    color: "#aaa",
-    fontSize: 14,
-    fontWeight: "600",
+    color: auroraTheme.colors.text.secondary,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    fontWeight: "500",
   },
-  filterButtonTextActive: {
-    color: "#fff",
-  },
-  content: {
+  scrollView: {
     flex: 1,
-    padding: 16,
+  },
+  contentContainer: {
+    padding: auroraTheme.spacing.md,
+    paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
+  },
+  loadingText: {
+    color: auroraTheme.colors.text.secondary,
+    fontSize: auroraTheme.typography.fontSize.md,
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
+    gap: auroraTheme.spacing.md,
   },
   emptyStateText: {
-    fontSize: 18,
-    color: "#666",
-    marginBottom: 8,
+    fontSize: auroraTheme.typography.fontSize.xl,
+    color: auroraTheme.colors.text.secondary,
+    fontWeight: 'bold',
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: "#444",
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.tertiary,
   },
   card: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#333",
+    marginBottom: auroraTheme.spacing.md,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
+    alignItems: "flex-start",
+    marginBottom: auroraTheme.spacing.md,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+  cardHeaderLeft: {
+    flexDirection: 'row',
+    gap: auroraTheme.spacing.md,
     flex: 1,
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: auroraTheme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  statusText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  cardDetails: {
-    marginBottom: 12,
-  },
-  detailText: {
-    fontSize: 14,
-    color: "#ccc",
+  cardTitle: {
+    fontSize: auroraTheme.typography.fontSize.lg,
+    fontWeight: "bold",
+    color: auroraTheme.colors.text.primary,
     marginBottom: 4,
   },
+  cardSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: auroraTheme.borderRadius.badge,
+    borderWidth: 1,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  cardDetails: {
+    marginBottom: auroraTheme.spacing.md,
+    gap: 8,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  detailText: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
+  },
   errorContainer: {
-    backgroundColor: "#f443361a",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: auroraTheme.colors.error[500] + '15',
+    padding: auroraTheme.spacing.sm,
+    borderRadius: auroraTheme.borderRadius.md,
+    marginBottom: auroraTheme.spacing.md,
+    gap: 8,
   },
   errorText: {
-    color: "#f44336",
-    fontSize: 14,
+    color: auroraTheme.colors.error[500],
+    fontSize: auroraTheme.typography.fontSize.sm,
+    flex: 1,
   },
   downloadButton: {
-    backgroundColor: "#00E676",
-    paddingVertical: 12,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: auroraTheme.borderRadius.full,
+    gap: 8,
   },
   downloadButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: auroraTheme.typography.fontSize.md,
     fontWeight: "600",
   },
 });

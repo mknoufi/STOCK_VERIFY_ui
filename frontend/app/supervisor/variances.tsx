@@ -1,13 +1,13 @@
 /**
  * Variance List Screen
  * Displays all items with variances (verified qty != system qty)
+ * Refactored to use Aurora Design System
  */
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
   Alert,
@@ -16,15 +16,20 @@ import {
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../src/hooks/useTheme";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
+
 import {
   ItemVerificationAPI,
   VarianceItem,
 } from "../../src/services/api/itemVerificationApi";
 import { ItemFilters, FilterValues } from "../../src/components/ItemFilters";
 import { exportVariancesToCSV, downloadCSV } from "../../src/utils/csvExport";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
+import { AuroraBackground, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 const getLocalFileUri = (filename: string) => {
   const baseDir =
@@ -34,7 +39,6 @@ const getLocalFileUri = (filename: string) => {
 
 export default function VariancesScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const [variances, setVariances] = useState<VarianceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,7 +75,6 @@ export default function VariancesScreen() {
 
         setPagination(response.pagination);
       } catch (error: any) {
-        // Error logged via error handler
         Alert.alert("Error", error.message || "Failed to load variances");
       } finally {
         setLoading(false);
@@ -86,6 +89,7 @@ export default function VariancesScreen() {
   }, [loadVariances]);
 
   const handleRefresh = () => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     loadVariances(true);
   };
@@ -107,7 +111,8 @@ export default function VariancesScreen() {
         return;
       }
 
-      // Try to get all variances if we have filters
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       let allVariances = variances;
       if (pagination.total > variances.length) {
         // Fetch all variances with current filters
@@ -129,7 +134,6 @@ export default function VariancesScreen() {
         downloadCSV(csvContent, filename);
         Alert.alert("Success", "CSV file downloaded");
       } else {
-        // For mobile, save to file system and share
         const fileUri = getLocalFileUri(filename);
         await FileSystem.writeAsStringAsync(fileUri, csvContent, {
           encoding: "utf8",
@@ -142,19 +146,23 @@ export default function VariancesScreen() {
         }
       }
     } catch (error: any) {
-      // Error logged via error handler
       Alert.alert("Error", error.message || "Failed to export CSV");
     }
   };
 
   const renderVarianceItem = ({ item }: { item: VarianceItem }) => {
-    const varianceColor = item.variance > 0 ? "#00E676" : "#FF5252";
-    const varianceSign = item.variance > 0 ? "+" : "";
+    // Determine status color based on variance
+    const isPositive = item.variance > 0;
+    const statusColor = isPositive
+      ? auroraTheme.colors.success[500]
+      : auroraTheme.colors.error[500];
+
+    const varianceSign = isPositive ? "+" : "";
 
     return (
-      <TouchableOpacity
-        style={[styles.varianceCard, { backgroundColor: theme.colors.card }]}
+      <AnimatedPressable
         onPress={() => {
+          if (Platform.OS !== "web") Haptics.selectionAsync();
           router.push({
             pathname: "/supervisor/variance-details",
             params: {
@@ -163,327 +171,328 @@ export default function VariancesScreen() {
             },
           });
         }}
+        style={{ marginBottom: auroraTheme.spacing.md }}
       >
-        <View style={styles.varianceHeader}>
-          <View style={styles.varianceHeaderLeft}>
-            <Text style={[styles.itemName, { color: theme.colors.text }]}>
-              {item.item_name}
-            </Text>
-            <Text
-              style={[styles.itemCode, { color: theme.colors.textSecondary }]}
+        <GlassCard
+          variant="light"
+          padding={auroraTheme.spacing.md}
+          borderRadius={auroraTheme.borderRadius.lg}
+          style={{
+            borderColor: `${statusColor}40`, // Low opacity border matching status
+            borderWidth: 1,
+          }}
+        >
+          <View style={styles.varianceHeader}>
+            <View style={styles.varianceHeaderLeft}>
+              <Text style={styles.itemName}>{item.item_name}</Text>
+              <Text style={styles.itemCode}>{item.item_code}</Text>
+            </View>
+            <View
+              style={[
+                styles.varianceBadge,
+                { backgroundColor: `${statusColor}20` }, // Low opacity background
+              ]}
             >
-              {item.item_code}
-            </Text>
-          </View>
-          <View
-            style={[styles.varianceBadge, { backgroundColor: varianceColor }]}
-          >
-            <Text style={styles.varianceBadgeText}>
-              {varianceSign}
-              {item.variance.toFixed(2)}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.varianceDetails}>
-          <View style={styles.qtyRow}>
-            <View style={styles.qtyItem}>
-              <Text
-                style={[styles.qtyLabel, { color: theme.colors.textSecondary }]}
-              >
-                System Qty
-              </Text>
-              <Text style={[styles.qtyValue, { color: theme.colors.text }]}>
-                {item.system_qty.toFixed(2)}
-              </Text>
-            </View>
-            <View style={styles.qtyItem}>
-              <Text
-                style={[styles.qtyLabel, { color: theme.colors.textSecondary }]}
-              >
-                Verified Qty
-              </Text>
-              <Text style={[styles.qtyValue, { color: theme.colors.text }]}>
-                {item.verified_qty.toFixed(2)}
+              <Text style={[styles.varianceBadgeText, { color: statusColor }]}>
+                {varianceSign}{item.variance.toFixed(2)}
               </Text>
             </View>
           </View>
 
-          {(item.floor || item.rack) && (
-            <View style={styles.locationRow}>
+          <View style={styles.varianceDetails}>
+            <View style={styles.qtyRow}>
+              <View style={styles.qtyItem}>
+                <Text style={styles.qtyLabel}>System Qty</Text>
+                <Text style={styles.qtyValue}>{item.system_qty.toFixed(2)}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.qtyItem}>
+                <Text style={styles.qtyLabel}>Verified Qty</Text>
+                <Text style={[styles.qtyValue, { color: auroraTheme.colors.text.primary }]}>
+                  {item.verified_qty.toFixed(2)}
+                </Text>
+              </View>
+            </View>
+
+            {(item.floor || item.rack) && (
+              <View style={styles.locationRow}>
+                <Ionicons
+                  name="location-outline"
+                  size={14}
+                  color={auroraTheme.colors.text.tertiary}
+                />
+                <Text style={styles.locationText}>
+                  {[item.floor, item.rack].filter(Boolean).join(" / ")}
+                </Text>
+              </View>
+            )}
+
+            {item.category && (
+              <Text style={styles.categoryText}>
+                {item.category}
+                {item.subcategory && ` • ${item.subcategory}`}
+              </Text>
+            )}
+
+            <View style={styles.verificationInfo}>
               <Ionicons
-                name="location"
-                size={14}
-                color={theme.colors.textSecondary}
+                name="person-outline"
+                size={12}
+                color={auroraTheme.colors.text.tertiary}
               />
-              <Text
-                style={[
-                  styles.locationText,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                {[item.floor, item.rack].filter(Boolean).join(" / ")}
+              <Text style={styles.verificationInfoText}>
+                Verified by {item.verified_by}
+                {item.verified_at && ` • ${new Date(item.verified_at).toLocaleDateString()}`}
               </Text>
             </View>
-          )}
-
-          {item.category && (
-            <Text
-              style={[
-                styles.categoryText,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              {item.category}
-              {item.subcategory && ` • ${item.subcategory}`}
-            </Text>
-          )}
-
-          <View style={styles.verificationInfo}>
-            <Ionicons
-              name="person"
-              size={14}
-              color={theme.colors.textSecondary}
-            />
-            <Text
-              style={[
-                styles.verificationInfoText,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              Verified by {item.verified_by} •{" "}
-              {new Date(item.verified_at).toLocaleString()}
-            </Text>
           </View>
-        </View>
-      </TouchableOpacity>
+        </GlassCard>
+      </AnimatedPressable>
     );
   };
 
-  if (loading && variances.length === 0) {
-    return (
-      <View
-        style={[
-          styles.container,
-          styles.centered,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text
-          style={[styles.loadingText, { color: theme.colors.textSecondary }]}
-        >
-          Loading variances...
-        </Text>
-      </View>
-    );
-  }
-
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Item Variances
-        </Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={styles.exportButton}
+    <AuroraBackground variant="secondary" intensity="medium" animated>
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Variances</Text>
+              <Text style={styles.pageSubtitle}>{pagination.total} discrepancies found</Text>
+            </View>
+          </View>
+
+          <AnimatedPressable
+            style={[
+              styles.exportButton,
+              variances.length === 0 && { opacity: 0.5 }
+            ]}
             onPress={handleExportCSV}
             disabled={variances.length === 0}
           >
-            <Ionicons name="download" size={20} color={theme.colors.primary} />
-          </TouchableOpacity>
-          <Text
-            style={[styles.headerCount, { color: theme.colors.textSecondary }]}
-          >
-            {pagination.total} items
-          </Text>
-        </View>
+            <GlassCard variant="medium" padding={8} borderRadius={auroraTheme.borderRadius.full}>
+              <Ionicons name="download-outline" size={20} color={auroraTheme.colors.text.primary} />
+            </GlassCard>
+          </AnimatedPressable>
+        </Animated.View>
+
+        {/* Filters */}
+        <Animated.View entering={FadeInDown.delay(200).springify()}>
+          <GlassCard variant="light" padding={auroraTheme.spacing.sm} style={{ marginBottom: auroraTheme.spacing.md }}>
+            <ItemFilters
+              onFilterChange={setFilters}
+              showVerifiedFilter={false} // Verified filter irrelevant here as all are filtered by variance
+              showSearch={false}
+            />
+          </GlassCard>
+        </Animated.View>
+
+        {variances.length === 0 && !loading ? (
+          <View style={styles.centered}>
+            <Ionicons
+              name="checkmark-done-circle-outline"
+              size={64}
+              color={auroraTheme.colors.success[500]}
+            />
+            <Text style={styles.emptyText}>No variances found</Text>
+            <Text style={styles.emptySubtext}>All items match system quantities</Text>
+          </View>
+        ) : (
+          <View style={{ flex: 1 }}>
+            <FlashList
+              data={variances}
+              renderItem={renderVarianceItem}
+              // @ts-ignore
+              estimatedItemSize={180}
+              keyExtractor={(item, index) => `${item.item_code}-${item.verified_at}-${index}`}
+              contentContainerStyle={styles.listContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  tintColor={auroraTheme.colors.primary[500]}
+                  colors={[auroraTheme.colors.primary[500]]}
+                />
+              }
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                loading && variances.length > 0 ? (
+                  <View style={{ paddingVertical: 20 }}>
+                    <ActivityIndicator size="small" color={auroraTheme.colors.primary[500]} />
+                  </View>
+                ) : (
+                  <View style={{ height: 20 }} />
+                )
+              }
+            />
+          </View>
+        )}
       </View>
-
-      <ItemFilters
-        onFilterChange={setFilters}
-        showVerifiedFilter={false}
-        showSearch={false}
-      />
-
-      {variances.length === 0 ? (
-        <View style={styles.centered}>
-          <Ionicons
-            name="checkmark-circle-outline"
-            size={64}
-            color={theme.colors.placeholder}
-          />
-          <Text
-            style={[styles.emptyText, { color: theme.colors.textSecondary }]}
-          >
-            No variances found
-          </Text>
-          <Text
-            style={[styles.emptySubtext, { color: theme.colors.placeholder }]}
-          >
-            All items match system quantities
-          </Text>
-        </View>
-      ) : (
-        <FlashList
-          data={variances}
-          renderItem={renderVarianceItem}
-          keyExtractor={(item, index) =>
-            `${item.item_code}-${item.verified_at}-${index}`
-          }
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            loading && variances.length > 0 ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            ) : null
-          }
-        />
-      )}
-    </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 60,
+    paddingHorizontal: auroraTheme.spacing.md,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingBottom: 100,
   },
   header: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    marginBottom: auroraTheme.spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
   },
   backButton: {
-    marginRight: 12,
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    fontWeight: "bold",
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
   },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   exportButton: {
-    padding: 8,
-  },
-  headerCount: {
-    fontSize: 14,
+    //
   },
   listContent: {
-    padding: 16,
-  },
-  varianceCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingBottom: auroraTheme.spacing.xl,
   },
   varianceHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
+    marginBottom: auroraTheme.spacing.md,
   },
   varianceHeaderLeft: {
     flex: 1,
   },
   itemName: {
-    fontSize: 16,
+    fontFamily: auroraTheme.typography.fontFamily.body,
+    fontSize: auroraTheme.typography.fontSize.md,
     fontWeight: "600",
+    color: auroraTheme.colors.text.primary,
     marginBottom: 4,
   },
   itemCode: {
-    fontSize: 14,
+    fontFamily: auroraTheme.typography.fontFamily.body,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.tertiary,
   },
   varianceBadge: {
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderRadius: auroraTheme.borderRadius.full,
+    paddingHorizontal: auroraTheme.spacing.sm,
+    paddingVertical: 4,
     minWidth: 60,
     alignItems: "center",
+    justifyContent: 'center',
   },
   varianceBadgeText: {
-    color: "#fff",
-    fontSize: 14,
+    fontSize: auroraTheme.typography.fontSize.sm,
     fontWeight: "bold",
   },
   varianceDetails: {
-    gap: 8,
+    //
   },
   qtyRow: {
     flexDirection: "row",
-    gap: 16,
-    marginBottom: 8,
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.sm,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    padding: auroraTheme.spacing.sm,
+    borderRadius: auroraTheme.borderRadius.sm,
   },
   qtyItem: {
     flex: 1,
   },
+  divider: {
+    width: 1,
+    height: '80%',
+    backgroundColor: auroraTheme.colors.border.light,
+  },
   qtyLabel: {
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   qtyValue: {
-    fontSize: 16,
+    fontSize: auroraTheme.typography.fontSize.lg,
     fontWeight: "600",
+    color: auroraTheme.colors.text.secondary, // Subtle for System, Primary/Highlight for Verified
   },
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: auroraTheme.spacing.xs,
+    marginBottom: 4,
   },
   locationText: {
-    fontSize: 13,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.secondary,
   },
   categoryText: {
-    fontSize: 13,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
+    fontStyle: 'italic',
+    marginBottom: auroraTheme.spacing.xs,
+    marginTop: 2,
   },
   verificationInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginTop: 4,
+    gap: auroraTheme.spacing.xs,
+    marginTop: auroraTheme.spacing.xs,
+    paddingTop: auroraTheme.spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: auroraTheme.colors.border.light,
   },
   verificationInfoText: {
-    fontSize: 12,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: auroraTheme.spacing.md,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.secondary,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: auroraTheme.typography.fontSize.lg,
     fontWeight: "500",
-    marginTop: 16,
+    color: auroraTheme.colors.text.secondary,
+    marginTop: auroraTheme.spacing.md,
   },
   emptySubtext: {
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.tertiary,
+    marginTop: auroraTheme.spacing.xs,
   },
 });

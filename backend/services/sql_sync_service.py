@@ -5,7 +5,7 @@ CRITICAL: Preserves all enriched data (serial numbers, MRP, HSN codes, etc.)
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Dict, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -77,6 +77,29 @@ class SQLSyncService:
             logger.info("Starting SQL Server quantity sync...")
             sql_items = self.sql_connector.get_all_items()
 
+            def _normalize_date(value: Any) -> Optional[str]:
+                if value in (None, ""):
+                    return None
+                if isinstance(value, datetime):
+                    return value.isoformat()
+                if isinstance(value, date):
+                    return datetime.combine(value, datetime.min.time()).isoformat()
+                try:
+                    return str(value)
+                except Exception:
+                    return None
+
+            def _numeric_or_none(value: Any) -> Optional[float]:
+                try:
+                    return float(value) if value is not None else None
+                except (TypeError, ValueError):
+                    return None
+
+            def _safe_optional_str(value: Any) -> Optional[str]:
+                if value in (None, ""):
+                    return None
+                return str(value)
+
             # Batch process items
             batch_size = 100
             for i in range(0, len(sql_items), batch_size):
@@ -102,20 +125,81 @@ class SQLSyncService:
                                 "warehouse": sql_item.get("warehouse", "Main"),
                                 "uom_code": sql_item.get("uom_code", ""),
                                 "uom_name": sql_item.get("uom_name", ""),
+                                "hsn_code": _safe_optional_str(sql_item.get("hsn_code")),
+                                "gst_category": _safe_optional_str(sql_item.get("gst_category")),
+                                "gst_percent": _numeric_or_none(sql_item.get("gst_percent")),
+                                "sgst_percent": _numeric_or_none(sql_item.get("sgst_percent")),
+                                "cgst_percent": _numeric_or_none(sql_item.get("cgst_percent")),
+                                "igst_percent": _numeric_or_none(sql_item.get("igst_percent")),
                                 # Stock quantity from SQL Server
                                 "stock_qty": sql_qty,
                                 "sql_server_qty": sql_qty,
                                 # Enrichment fields (empty initially)
                                 "serial_number": None,
-                                "mrp": None,
-                                "hsn_code": None,
+                                "mrp": _numeric_or_none(sql_item.get("mrp")),
                                 "barcode": sql_item.get("barcode", ""),
-                                "location": None,
+                                "location": sql_item.get("location"),
                                 "condition": None,
+                                "floor": sql_item.get("floor"),
+                                "rack": sql_item.get("rack"),
+                                # Sales / pricing metadata (optional from SQL)
+                                "sales_price": _numeric_or_none(sql_item.get("sales_price")),
+                                "sale_price": _numeric_or_none(sql_item.get("sale_price")),
+                                "standard_rate": _numeric_or_none(sql_item.get("standard_rate")),
+                                "last_purchase_rate": _numeric_or_none(
+                                    sql_item.get("last_purchase_rate")
+                                ),
+                                "last_purchase_price": _numeric_or_none(
+                                    sql_item.get("last_purchase_price")
+                                ),
+                                # Brand metadata (optional from SQL)
+                                "brand_id": sql_item.get("brand_id"),
+                                "brand_name": sql_item.get("brand_name"),
+                                "brand_code": sql_item.get("brand_code"),
+                                # Supplier metadata (optional from SQL)
+                                "supplier_id": _safe_optional_str(sql_item.get("supplier_id")),
+                                "supplier_code": _safe_optional_str(sql_item.get("supplier_code")),
+                                "supplier_name": _safe_optional_str(sql_item.get("supplier_name")),
+                                "supplier_phone": _safe_optional_str(
+                                    sql_item.get("supplier_phone")
+                                ),
+                                "supplier_city": _safe_optional_str(sql_item.get("supplier_city")),
+                                "supplier_state": _safe_optional_str(
+                                    sql_item.get("supplier_state")
+                                ),
+                                "supplier_gst": _safe_optional_str(sql_item.get("supplier_gst")),
+                                "last_purchase_supplier": _safe_optional_str(
+                                    sql_item.get("last_purchase_supplier")
+                                ),
+                                # Purchase info (optional from SQL)
+                                "purchase_price": _numeric_or_none(sql_item.get("purchase_price")),
+                                "last_purchase_qty": _numeric_or_none(
+                                    sql_item.get("last_purchase_qty")
+                                ),
+                                "purchase_qty": _numeric_or_none(sql_item.get("purchase_qty")),
+                                "purchase_invoice_no": _safe_optional_str(
+                                    sql_item.get("purchase_invoice_no")
+                                ),
+                                "purchase_reference": _safe_optional_str(
+                                    sql_item.get("purchase_reference")
+                                ),
+                                "last_purchase_date": sql_item.get("last_purchase_date"),
+                                "last_purchase_cost": _numeric_or_none(
+                                    sql_item.get("last_purchase_cost")
+                                ),
+                                "purchase_voucher_type": _safe_optional_str(
+                                    sql_item.get("purchase_voucher_type")
+                                ),
+                                "purchase_type": _safe_optional_str(sql_item.get("purchase_type")),
+                                # Batch information
+                                "batch_id": _safe_optional_str(sql_item.get("batch_id")),
+                                "batch_no": _safe_optional_str(sql_item.get("batch_no")),
+                                "manufacturing_date": _normalize_date(sql_item.get("mfg_date")),
+                                "expiry_date": _normalize_date(sql_item.get("expiry_date")),
                                 # Tracking fields
                                 "data_complete": False,
                                 "completion_percentage": 0,
-                                "missing_fields": ["serial_number", "mrp", "hsn_code"],
+                                "missing_fields": ["serial_number"],
                                 "enrichment_history": [],
                                 # Sync metadata
                                 "last_synced": datetime.utcnow(),
@@ -133,26 +217,111 @@ class SQLSyncService:
                             # Existing item - update ONLY quantity if changed
                             mongo_qty = float(mongo_item.get("stock_qty", 0.0))
 
-                            if sql_qty != mongo_qty:
-                                # Quantity changed! Update it
-                                await self.mongo_db.erp_items.update_one(
-                                    {"item_code": item_code},
-                                    {
-                                        "$set": {
-                                            # Update quantity fields
-                                            "stock_qty": sql_qty,
-                                            "sql_server_qty": sql_qty,
-                                            # Update sync metadata
-                                            "last_synced": datetime.utcnow(),
-                                            "qty_changed_at": datetime.utcnow(),
-                                            "qty_change_delta": sql_qty - mongo_qty,
-                                            "updated_at": datetime.utcnow(),
-                                        }
-                                        # NOTE: $set does NOT overwrite enrichment fields!
-                                        # serial_number, mrp, hsn_code, etc. are preserved!
-                                    },
-                                )
+                            # Prepare backfill for optional metadata that was introduced later
+                            metadata_candidates = {
+                                # Core descriptive fields
+                                "category": sql_item.get("category"),
+                                "subcategory": sql_item.get("subcategory"),
+                                "warehouse": sql_item.get("warehouse"),
+                                "uom_code": sql_item.get("uom_code"),
+                                "uom_name": sql_item.get("uom_name"),
+                                "location": sql_item.get("location"),
+                                "floor": sql_item.get("floor"),
+                                "rack": sql_item.get("rack"),
+                                "hsn_code": _safe_optional_str(sql_item.get("hsn_code")),
+                                "gst_category": _safe_optional_str(sql_item.get("gst_category")),
+                                "gst_percent": _numeric_or_none(sql_item.get("gst_percent")),
+                                "sgst_percent": _numeric_or_none(sql_item.get("sgst_percent")),
+                                "cgst_percent": _numeric_or_none(sql_item.get("cgst_percent")),
+                                "igst_percent": _numeric_or_none(sql_item.get("igst_percent")),
+                                # Pricing metadata
+                                "mrp": _numeric_or_none(sql_item.get("mrp")),
+                                "sales_price": _numeric_or_none(sql_item.get("sales_price")),
+                                "sale_price": _numeric_or_none(sql_item.get("sale_price")),
+                                "standard_rate": _numeric_or_none(sql_item.get("standard_rate")),
+                                "last_purchase_rate": _numeric_or_none(
+                                    sql_item.get("last_purchase_rate")
+                                ),
+                                "last_purchase_price": _numeric_or_none(
+                                    sql_item.get("last_purchase_price")
+                                ),
+                                # Brand metadata
+                                "brand_id": sql_item.get("brand_id"),
+                                "brand_name": sql_item.get("brand_name"),
+                                "brand_code": sql_item.get("brand_code"),
+                                # Supplier metadata
+                                "supplier_id": _safe_optional_str(sql_item.get("supplier_id")),
+                                "supplier_code": _safe_optional_str(sql_item.get("supplier_code")),
+                                "supplier_name": _safe_optional_str(sql_item.get("supplier_name")),
+                                "supplier_phone": _safe_optional_str(
+                                    sql_item.get("supplier_phone")
+                                ),
+                                "supplier_city": _safe_optional_str(sql_item.get("supplier_city")),
+                                "supplier_state": _safe_optional_str(
+                                    sql_item.get("supplier_state")
+                                ),
+                                "supplier_gst": _safe_optional_str(sql_item.get("supplier_gst")),
+                                "last_purchase_supplier": _safe_optional_str(
+                                    sql_item.get("last_purchase_supplier")
+                                ),
+                                # Purchase metadata
+                                "purchase_price": _numeric_or_none(sql_item.get("purchase_price")),
+                                "last_purchase_qty": _numeric_or_none(
+                                    sql_item.get("last_purchase_qty")
+                                ),
+                                "purchase_qty": _numeric_or_none(sql_item.get("purchase_qty")),
+                                "purchase_invoice_no": _safe_optional_str(
+                                    sql_item.get("purchase_invoice_no")
+                                ),
+                                "purchase_reference": _safe_optional_str(
+                                    sql_item.get("purchase_reference")
+                                ),
+                                "last_purchase_date": sql_item.get("last_purchase_date"),
+                                "last_purchase_cost": _numeric_or_none(
+                                    sql_item.get("last_purchase_cost")
+                                ),
+                                "purchase_voucher_type": _safe_optional_str(
+                                    sql_item.get("purchase_voucher_type")
+                                ),
+                                "purchase_type": _safe_optional_str(sql_item.get("purchase_type")),
+                                # Batch metadata
+                                "batch_id": _safe_optional_str(sql_item.get("batch_id")),
+                                "batch_no": _safe_optional_str(sql_item.get("batch_no")),
+                                "manufacturing_date": _normalize_date(sql_item.get("mfg_date")),
+                                "expiry_date": _normalize_date(sql_item.get("expiry_date")),
+                            }
 
+                            metadata_updates: Dict[str, Any] = {}
+
+                            for field, new_value in metadata_candidates.items():
+                                if new_value is None:
+                                    continue
+                                existing_value = mongo_item.get(field)
+
+                                # For numeric fields we treat only None as missing
+                                if isinstance(new_value, (int, float)):
+                                    if existing_value is None:
+                                        metadata_updates[field] = new_value
+                                    continue
+
+                                # For strings / other types update when missing or empty
+                                if existing_value in (None, ""):
+                                    metadata_updates[field] = new_value
+
+                            update_fields: Dict[str, Any] = {
+                                "last_synced": datetime.utcnow(),
+                                "updated_at": datetime.utcnow(),
+                            }
+
+                            if sql_qty != mongo_qty:
+                                update_fields.update(
+                                    {
+                                        "stock_qty": sql_qty,
+                                        "sql_server_qty": sql_qty,
+                                        "qty_changed_at": datetime.utcnow(),
+                                        "qty_change_delta": sql_qty - mongo_qty,
+                                    }
+                                )
                                 stats["qty_changes_detected"] += 1
                                 stats["qty_updated"] += 1
 
@@ -161,12 +330,14 @@ class SQLSyncService:
                                     f"{mongo_qty} → {sql_qty} "
                                     f"(Δ {sql_qty - mongo_qty})"
                                 )
-                            else:
-                                # Quantity unchanged - just update sync timestamp
-                                await self.mongo_db.erp_items.update_one(
-                                    {"item_code": item_code},
-                                    {"$set": {"last_synced": datetime.utcnow()}},
-                                )
+
+                            if metadata_updates:
+                                update_fields.update(metadata_updates)
+
+                            await self.mongo_db.erp_items.update_one(
+                                {"item_code": item_code},
+                                {"$set": update_fields},
+                            )
 
                         stats["items_checked"] += 1
 
@@ -359,6 +530,14 @@ class SQLSyncService:
 
     async def sync_now(self) -> Dict[str, Any]:
         """Trigger immediate sync"""
+        return await self.sync_quantities_only()
+
+    async def sync_items(self) -> Dict[str, Any]:
+        """Alias for sync_quantities_only - backward compatibility"""
+        return await self.sync_quantities_only()
+
+    async def sync_all_items(self) -> Dict[str, Any]:
+        """Alias for sync_quantities_only - backward compatibility for tests"""
         return await self.sync_quantities_only()
 
     def get_stats(self) -> Dict[str, Any]:

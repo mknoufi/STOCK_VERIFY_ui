@@ -51,6 +51,7 @@ async def create_session(
         warehouse=warehouse,
         staff_user=current_user["username"],
         staff_name=current_user["full_name"],
+        type=session_data.type or "STANDARD",
     )
     await _db.sessions.insert_one(session.model_dump())
 
@@ -132,7 +133,7 @@ async def bulk_close_sessions(
             try:
                 result = await _db.sessions.update_one(
                     {"id": session_id},
-                    {"$set": {"status": "closed", "ended_at": datetime.utcnow()}},
+                    {"$set": {"status": "CLOSED", "closed_at": datetime.utcnow()}},
                 )
                 if result.modified_count > 0:
                     updated_count += 1
@@ -182,7 +183,7 @@ async def bulk_reconcile_sessions(
                     {"id": session_id},
                     {
                         "$set": {
-                            "status": "reconciled",
+                            "status": "RECONCILE",
                             "reconciled_at": datetime.utcnow(),
                         }
                     },

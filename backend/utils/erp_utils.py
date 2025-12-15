@@ -65,21 +65,125 @@ def _get_barcode_variations(barcode: str) -> List[str]:
 
 def _map_erp_item_to_schema(item: Dict[str, Any], original_barcode: str = None) -> Dict[str, Any]:
     """Map raw ERP item data to internal schema format."""
-    return {
-        "item_code": item.get("item_code", ""),
-        "item_name": item.get("item_name", ""),
-        "barcode": item.get("barcode", original_barcode or ""),
-        "stock_qty": float(item.get("stock_qty", 0.0)),
-        "mrp": float(item.get("mrp", 0.0)),
-        "category": item.get("category", "General"),
-        "subcategory": item.get("subcategory", ""),
-        "warehouse": item.get("warehouse", "Main"),
-        "uom_code": item.get("uom_code", ""),
-        "uom_name": item.get("uom_name", ""),
-        "floor": item.get("floor", ""),
-        "rack": item.get("rack", ""),
-        "manual_barcode": item.get("manual_barcode", ""),
+    from datetime import date, datetime
+    from typing import Optional
+
+    def _safe_float(val: Any, default: Optional[float] = None) -> Optional[float]:
+        if val is None:
+            return default
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
+    def _safe_str(val: Any, default: str = "") -> str:
+        if val is None:
+            return default
+        return str(val)
+
+    def _safe_optional_str(val: Any) -> Optional[str]:
+        if val is None or val == "":
+            return None
+        return str(val)
+
+    def _safe_date_str(val: Any) -> Optional[str]:
+        if val is None:
+            return None
+        if isinstance(val, datetime):
+            return val.isoformat()
+        if isinstance(val, date):
+            return datetime.combine(val, datetime.min.time()).isoformat()
+        try:
+            return str(val)
+        except Exception:
+            return None
+
+    mapped = {
+        "item_code": _safe_str(item.get("item_code"), ""),
+        "item_name": _safe_str(item.get("item_name"), ""),
+        "barcode": _safe_str(item.get("barcode"), original_barcode or ""),
+        "stock_qty": _safe_float(item.get("stock_qty"), 0.0),
+        "mrp": _safe_float(item.get("mrp"), 0.0),
+        "category": _safe_str(item.get("category"), "General"),
+        "subcategory": _safe_str(item.get("subcategory"), ""),
+        "warehouse": _safe_str(item.get("warehouse"), "Main"),
+        "location": _safe_str(item.get("location"), ""),
+        "uom_code": _safe_str(item.get("uom_code"), ""),
+        "uom_name": _safe_str(item.get("uom_name"), ""),
+        "hsn_code": _safe_optional_str(item.get("hsn_code")),
+        "gst_category": _safe_optional_str(item.get("gst_category")),
+        "gst_percent": _safe_float(item.get("gst_percent")),
+        "sgst_percent": _safe_float(item.get("sgst_percent")),
+        "cgst_percent": _safe_float(item.get("cgst_percent")),
+        "igst_percent": _safe_float(item.get("igst_percent")),
+        "floor": _safe_str(item.get("floor"), ""),
+        "rack": _safe_str(item.get("rack"), ""),
+        "manual_barcode": _safe_str(item.get("manual_barcode"), ""),
+        "batch_id": _safe_optional_str(item.get("batch_id")),
+        "batch_no": _safe_optional_str(item.get("batch_no")),
+        "manufacturing_date": _safe_date_str(item.get("mfg_date")),
+        "expiry_date": _safe_date_str(item.get("expiry_date")),
     }
+
+    # Sales / pricing metadata (optional)
+    if item.get("sales_price") is not None:
+        mapped["sales_price"] = _safe_float(item.get("sales_price"))
+    if item.get("sale_price") is not None:
+        mapped["sale_price"] = _safe_float(item.get("sale_price"))
+    if item.get("standard_rate") is not None:
+        mapped["standard_rate"] = _safe_float(item.get("standard_rate"))
+    if item.get("last_purchase_rate") is not None:
+        mapped["last_purchase_rate"] = _safe_float(item.get("last_purchase_rate"))
+    if item.get("last_purchase_price") is not None:
+        mapped["last_purchase_price"] = _safe_float(item.get("last_purchase_price"))
+
+    # Brand metadata (optional)
+    if item.get("brand_id") is not None:
+        mapped["brand_id"] = _safe_str(item.get("brand_id"))
+    if item.get("brand_name") is not None:
+        mapped["brand_name"] = _safe_str(item.get("brand_name"))
+    if item.get("brand_code") is not None:
+        mapped["brand_code"] = _safe_str(item.get("brand_code"))
+
+    # Supplier metadata (optional)
+    if item.get("supplier_id") is not None:
+        mapped["supplier_id"] = _safe_str(item.get("supplier_id"))
+    if item.get("supplier_code") is not None:
+        mapped["supplier_code"] = _safe_str(item.get("supplier_code"))
+    if item.get("supplier_name") is not None:
+        mapped["supplier_name"] = _safe_str(item.get("supplier_name"))
+    if item.get("last_purchase_supplier") is not None:
+        mapped["last_purchase_supplier"] = _safe_str(item.get("last_purchase_supplier"))
+    if item.get("supplier_phone") is not None:
+        mapped["supplier_phone"] = _safe_str(item.get("supplier_phone"))
+    if item.get("supplier_city") is not None:
+        mapped["supplier_city"] = _safe_str(item.get("supplier_city"))
+    if item.get("supplier_state") is not None:
+        mapped["supplier_state"] = _safe_str(item.get("supplier_state"))
+    if item.get("supplier_gst") is not None:
+        mapped["supplier_gst"] = _safe_str(item.get("supplier_gst"))
+
+    # Purchase info (optional)
+    if item.get("purchase_price") is not None:
+        mapped["purchase_price"] = _safe_float(item.get("purchase_price"))
+    if item.get("last_purchase_qty") is not None:
+        mapped["last_purchase_qty"] = _safe_float(item.get("last_purchase_qty"))
+    if item.get("purchase_qty") is not None:
+        mapped["purchase_qty"] = _safe_float(item.get("purchase_qty"))
+    if item.get("purchase_invoice_no") is not None:
+        mapped["purchase_invoice_no"] = _safe_str(item.get("purchase_invoice_no"))
+    if item.get("purchase_reference") is not None:
+        mapped["purchase_reference"] = _safe_str(item.get("purchase_reference"))
+    if item.get("last_purchase_date") is not None:
+        mapped["last_purchase_date"] = item.get("last_purchase_date")  # Keep datetime
+    if item.get("last_purchase_cost") is not None:
+        mapped["last_purchase_cost"] = _safe_float(item.get("last_purchase_cost"))
+    if item.get("purchase_voucher_type") is not None:
+        mapped["purchase_voucher_type"] = _safe_str(item.get("purchase_voucher_type"))
+    if item.get("purchase_type") is not None:
+        mapped["purchase_type"] = _safe_str(item.get("purchase_type"))
+
+    return mapped
 
 
 async def _fetch_from_mongo_fallback(barcode: str, db: Any, cache_service: Any) -> ERPItem:

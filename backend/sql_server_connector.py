@@ -47,6 +47,12 @@ class SQLServerConnector:
         self.config = None
         self.mapping = get_active_mapping()
         self.connection_methods = []  # Store tested connection methods
+        self.optional_columns_clause = ""
+        self.optional_joins_clause = ""
+        self._dynamic_sql_ready = False
+        self._available_tables: Dict[str, str] = {}
+        self._table_columns: Dict[str, Dict[str, str]] = {}
+        self._enabled_optional_fields: List[str] = []
 
     def _build_column_list(self) -> str:
         """Build SELECT column list with proper aliases"""
@@ -81,10 +87,374 @@ class SQLServerConnector:
             code_column=mapping["items_columns"]["item_code"],
             warehouse_column=mapping["items_columns"]["warehouse"],
             additional_where=additional_where,
+            optional_columns=self.optional_columns_clause,
+            optional_joins=self.optional_joins_clause,
             **kwargs,
         )
 
         return query
+
+    def _reset_dynamic_metadata(self) -> None:
+        """Reset cached optional select/join fragments."""
+        self.optional_columns_clause = ""
+        self.optional_joins_clause = ""
+        self._dynamic_sql_ready = False
+        self._available_tables = {}
+        self._table_columns = {}
+        self._enabled_optional_fields = []
+
+    def _ensure_dynamic_sql_fragments(self) -> None:
+        """Detect optional tables/columns once per connection for richer item metadata."""
+        if self._dynamic_sql_ready or not self.connection:
+            return
+
+        try:
+            self._load_schema_metadata()
+            columns_clause, joins_clause, enabled_fields = self._build_optional_selects_and_joins()
+            self.optional_columns_clause = columns_clause
+            self.optional_joins_clause = joins_clause
+            self._enabled_optional_fields = enabled_fields
+            self._dynamic_sql_ready = True
+
+            if enabled_fields:
+                logger.info(
+                    "Enriched ERP queries with optional fields: %s",
+                    ", ".join(sorted(set(enabled_fields))),
+                )
+        except Exception as exc:
+            logger.debug(f"Dynamic SQL preparation failed: {str(exc)[:120]}")
+            # Avoid blocking queries – continue without optional columns
+            self.optional_columns_clause = ""
+            self.optional_joins_clause = ""
+            self._dynamic_sql_ready = True
+
+    def _load_schema_metadata(self) -> None:
+        """Snapshot available tables for optional joins."""
+        if not self.connection:
+            return
+
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            SELECT TABLE_NAME
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = 'dbo'
+            """
+        )
+        self._available_tables = {row[0].lower(): row[0] for row in cursor.fetchall()}
+        cursor.close()
+        self._table_columns = {}
+
+    def _get_table_columns(self, table_name: Optional[str]) -> Dict[str, str]:
+        """Return column map for table (lowercase -> actual)."""
+        if not table_name or not self.connection:
+            return {}
+
+        if table_name in self._table_columns:
+            return self._table_columns[table_name]
+
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = ?
+            """,
+            (table_name,),
+        )
+        columns = {row[0].lower(): row[0] for row in cursor.fetchall()}
+        cursor.close()
+        self._table_columns[table_name] = columns
+        return columns
+
+    def _resolve_table_name(self, candidates: List[str]) -> Optional[str]:
+        for candidate in candidates:
+            if not candidate:
+                continue
+            actual = self._available_tables.get(candidate.lower())
+            if actual:
+                return actual
+        return None
+
+    def _resolve_column_name(self, columns: Dict[str, str], candidates: List[str]) -> Optional[str]:
+        for candidate in candidates:
+            if not candidate:
+                continue
+            column = columns.get(candidate.lower())
+            if column:
+                return column
+        return None
+
+    def _get_column_reference(
+        self, alias: str, columns: Dict[str, str], candidates: List[str]
+    ) -> Optional[str]:
+        column = self._resolve_column_name(columns, candidates)
+        if column:
+            return f"{alias}.{column}"
+        return None
+
+    def _build_coalesce_expression(self, expressions: List[str], default: str = "0") -> str:
+        values = [expr for expr in expressions if expr]
+        if not values:
+            return default
+        if default:
+            values.append(default)
+        return f"COALESCE({', '.join(values)})"
+
+    def _build_optional_selects_and_joins(self) -> tuple[str, str, List[str]]:
+        """Build optional metadata selects/joins (sales, purchase, supplier, brand)."""
+        if not self.mapping:
+            return "", "", []
+
+        optional_columns: List[str] = []
+        optional_joins: List[str] = []
+        enabled_fields: List[str] = []
+
+        items_table = self.mapping.get("tables", {}).get("items")
+        batches_table = self.mapping.get("tables", {}).get("item_batches")
+
+        product_columns = self._get_table_columns(items_table)
+        batch_columns = self._get_table_columns(batches_table)
+
+        if not product_columns:
+            return "", "", []
+
+        # --- Sales price / rate metadata ---
+        sales_sources: List[str] = []
+        batch_sales = self._get_column_reference("PB", batch_columns, ["stdsalesprice", "stdsalesrate"])
+        if batch_sales:
+            sales_sources.append(batch_sales)
+
+        product_sales = self._get_column_reference("P", product_columns, ["stdsalesprice", "stdsalesrate"])
+        if product_sales:
+            sales_sources.append(product_sales)
+
+        product_last_sales = self._get_column_reference("P", product_columns, ["lastsalesrate", "salesrate"])
+        if product_last_sales:
+            sales_sources.append(product_last_sales)
+
+        if sales_sources:
+            coalesced_sales = self._build_coalesce_expression(sales_sources, "0")
+            optional_columns.append(f"{coalesced_sales} as sales_price")
+            optional_columns.append(f"{coalesced_sales} as sale_price")
+            enabled_fields.extend(["sales_price", "sale_price"])
+
+        if product_last_sales:
+            optional_columns.append(f"{product_last_sales} as standard_rate")
+            enabled_fields.append("standard_rate")
+
+        last_purchase_rate = self._get_column_reference("P", product_columns, ["lastpurchaserate"])
+        if last_purchase_rate:
+            optional_columns.append(f"{last_purchase_rate} as last_purchase_rate")
+            enabled_fields.append("last_purchase_rate")
+
+        # --- Brand metadata ---
+        brand_table = self._resolve_table_name(["brands", "productbrands", "brandmaster", "brand"])
+        if brand_table:
+            brand_columns = self._get_table_columns(brand_table)
+            brand_fk = self._resolve_column_name(product_columns, ["brandid", "brand_id", "brandcode"])
+            brand_pk = self._resolve_column_name(brand_columns, ["brandid", "brand_id", "id"])
+            if brand_fk and brand_pk:
+                optional_joins.append(
+                    f"LEFT JOIN dbo.{brand_table} BR ON P.{brand_fk} = BR.{brand_pk}"
+                )
+                enabled_fields.append("brand")
+                optional_columns.append(f"BR.{brand_pk} as brand_id")
+                brand_name_col = self._resolve_column_name(
+                    brand_columns, ["brandname", "name", "brand"]
+                )
+                if brand_name_col:
+                    optional_columns.append(f"BR.{brand_name_col} as brand_name")
+                brand_code_col = self._resolve_column_name(brand_columns, ["brandcode", "code"])
+                if brand_code_col:
+                    optional_columns.append(f"BR.{brand_code_col} as brand_code")
+
+        # --- Purchase / supplier metadata ---
+        purchase_detail_table = self._resolve_table_name(
+            [
+                "purchaseinvoicedetails",
+                "purchaseinvoicedetail",
+                "purchaseinvoiceitems",
+                "purchaseitems",
+            ]
+        )
+        purchase_invoice_table = self._resolve_table_name(
+            ["purchaseinvoices", "purchaseinvoice", "purchaseinvoicemaster"]
+        )
+        product_pk = self._resolve_column_name(product_columns, ["productid", "itemid", "id"])
+
+        if purchase_detail_table and purchase_invoice_table and product_pk:
+            pid_columns = self._get_table_columns(purchase_detail_table)
+            pi_columns = self._get_table_columns(purchase_invoice_table)
+
+            pid_product_fk = self._resolve_column_name(pid_columns, ["productid", "itemid"])
+            pid_invoice_fk = self._resolve_column_name(
+                pid_columns, ["purchaseinvoiceid", "invoiceid", "purchaseinvoicemasterid"]
+            )
+            pid_pk = self._resolve_column_name(
+                pid_columns, ["purchaseinvoicedetailid", "purchaseinvoicedetailsid", "id"]
+            )
+            pi_pk = self._resolve_column_name(pi_columns, ["purchaseinvoiceid", "invoiceid", "id"])
+
+            if pid_product_fk and pid_invoice_fk and pi_pk:
+                purchase_select_parts: List[tuple[str, str]] = []
+
+                def _add_purchase_part(expr: Optional[str], alias: str) -> None:
+                    if expr and alias not in {a for _, a in purchase_select_parts}:
+                        purchase_select_parts.append((expr, alias))
+
+                purchase_rate_expr = self._get_column_reference(
+                    "PID", pid_columns, ["purchaserate", "rate", "unitrate"]
+                )
+                _add_purchase_part(purchase_rate_expr, "purchase_price")
+                _add_purchase_part(purchase_rate_expr, "last_purchase_price")
+
+                purchase_qty_expr = self._get_column_reference(
+                    "PID", pid_columns, ["qty", "quantity", "purchaseqty"]
+                )
+                _add_purchase_part(purchase_qty_expr, "purchase_qty")
+                _add_purchase_part(purchase_qty_expr, "last_purchase_qty")
+                _add_purchase_part(
+                    self._get_column_reference(
+                        "PID",
+                        pid_columns,
+                        ["amount", "lineamount", "netamount", "totalamount", "purchaseamount"],
+                    ),
+                    "last_purchase_cost",
+                )
+                invoice_no = self._get_column_reference(
+                    "PI", pi_columns, ["invoiceno", "invoicenumber", "documentno"]
+                )
+                _add_purchase_part(invoice_no, "purchase_invoice_no")
+                _add_purchase_part(
+                    self._get_column_reference(
+                        "PI", pi_columns, ["referenceno", "supplierinvoiceno", "supplierrefno"]
+                    ),
+                    "purchase_reference",
+                )
+                purchase_date_col = self._get_column_reference(
+                    "PI", pi_columns, ["docdate", "postingdate", "invoicedate", "createddate"]
+                )
+                _add_purchase_part(purchase_date_col, "last_purchase_date")
+                voucher_expr = self._get_column_reference(
+                    "PI",
+                    pi_columns,
+                    [
+                        "vouchertype",
+                        "voucher",
+                        "documenttype",
+                        "vouchercode",
+                        "doctype",
+                        "transactiontype",
+                    ],
+                )
+                _add_purchase_part(voucher_expr, "purchase_voucher_type")
+                _add_purchase_part(voucher_expr, "purchase_type")
+
+                pi_supplier_fk = self._resolve_column_name(pi_columns, ["supplierid", "vendorid"])
+                supplier_join_clause = ""
+                supplier_table = self._resolve_table_name(
+                    ["suppliers", "supplier", "vendormaster", "vendors", "vendor"]
+                )
+                if supplier_table and pi_supplier_fk:
+                    supplier_columns = self._get_table_columns(supplier_table)
+                    supplier_pk = self._resolve_column_name(
+                        supplier_columns, ["supplierid", "vendorid", "id"]
+                    )
+                    if supplier_pk:
+                        supplier_join_clause = (
+                            f"            LEFT JOIN dbo.{supplier_table} SUP "
+                            f"ON PI.{pi_supplier_fk} = SUP.{supplier_pk}\n"
+                        )
+                        _add_purchase_part(f"SUP.{supplier_pk}", "supplier_id")
+                        _add_purchase_part(
+                            self._get_column_reference(
+                                "SUP", supplier_columns, ["suppliercode", "vendorcode", "code"]
+                            ),
+                            "supplier_code",
+                        )
+                        supplier_name_expr = self._get_column_reference(
+                            "SUP", supplier_columns, ["suppliername", "vendorname", "name"]
+                        )
+                        _add_purchase_part(supplier_name_expr, "supplier_name")
+                        _add_purchase_part(supplier_name_expr, "last_purchase_supplier")
+                        _add_purchase_part(
+                            self._get_column_reference(
+                                "SUP", supplier_columns, ["phone", "phoneno", "mobile", "contact"]
+                            ),
+                            "supplier_phone",
+                        )
+                        _add_purchase_part(
+                            self._get_column_reference("SUP", supplier_columns, ["city", "town"]),
+                            "supplier_city",
+                        )
+                        _add_purchase_part(
+                            self._get_column_reference("SUP", supplier_columns, ["state", "province"]),
+                            "supplier_state",
+                        )
+                        _add_purchase_part(
+                            self._get_column_reference(
+                                "SUP", supplier_columns, ["gstnumber", "gstno", "gstin", "taxnumber"]
+                            ),
+                            "supplier_gst",
+                        )
+
+                if purchase_select_parts:
+                    select_sql = ",\n                ".join(
+                        f"{expr} as {alias}" for expr, alias in purchase_select_parts if expr
+                    )
+                    order_terms: List[str] = []
+                    if purchase_date_col:
+                        order_terms.append(f"{purchase_date_col} DESC")
+                    if pid_pk:
+                        order_terms.append(f"PID.{pid_pk} DESC")
+                    order_clause = ", ".join(order_terms) or f"PID.{pid_product_fk} DESC"
+
+                    purchase_join_sql = (
+                        "OUTER APPLY (\n"
+                        "            SELECT TOP 1\n"
+                        f"                {select_sql}\n"
+                        f"            FROM dbo.{purchase_detail_table} PID\n"
+                        f"            INNER JOIN dbo.{purchase_invoice_table} PI ON PID.{pid_invoice_fk} = PI.{pi_pk}\n"
+                    )
+                    if supplier_join_clause:
+                        purchase_join_sql += supplier_join_clause
+                    purchase_join_sql += (
+                        f"            WHERE PID.{pid_product_fk} = P.{product_pk}\n"
+                        f"            ORDER BY {order_clause}\n"
+                        "        ) PurchaseInfo"
+                    )
+                    optional_joins.append(purchase_join_sql)
+                    optional_columns.extend(
+                        [f"PurchaseInfo.{alias} as {alias}" for _, alias in purchase_select_parts]
+                    )
+                    enabled_fields.extend(
+                        [alias for _, alias in purchase_select_parts if alias not in enabled_fields]
+                    )
+
+        columns_clause = ""
+        if optional_columns:
+            columns_clause = ",\n            " + ",\n            ".join(optional_columns)
+
+        joins_clause = ""
+        if optional_joins:
+            joins_clause = "\n        " + "\n        ".join(optional_joins)
+
+        return columns_clause, joins_clause, enabled_fields
+
+    def _apply_optional_sections(self, template: str) -> str:
+        try:
+            return template.format(
+                optional_columns=self.optional_columns_clause,
+                optional_joins=self.optional_joins_clause,
+            )
+        except KeyError:
+            return template
+
+    def _get_formatted_query(self, template_name: str) -> str:
+        self._ensure_dynamic_sql_fragments()
+        template = SQL_TEMPLATES[template_name]
+        return self._apply_optional_sections(template)
 
     def connect(
         self,
@@ -208,6 +578,7 @@ class SQLServerConnector:
                 raise pyodbc.Error("Connection validation failed")
 
             # Success - store config and log
+            self._reset_dynamic_metadata()
             self._store_successful_config(method)
             return True
 
@@ -264,6 +635,7 @@ class SQLServerConnector:
             self.connection.close()
             self.connection = None
             logger.info("Disconnected from SQL Server")
+        self._reset_dynamic_metadata()
 
     def test_connection(self) -> bool:
         """Test if connection is alive, reconnect if needed"""
@@ -357,15 +729,13 @@ class SQLServerConnector:
         try:
             cursor = self.connection.cursor()
 
-            # Use the predefined query template
-            query = SQL_TEMPLATES["get_item_by_barcode"]
+            # Use the predefined query template with optional metadata
+            query = self._get_formatted_query("get_item_by_barcode")
 
             logger.info(f"Searching for barcode: {barcode}")
 
-            # Execute with barcode - query checks multiple barcode fields
-            # Query prioritizes AutoBarcode first
-            # Parameters: AutoBarcode(WHERE), MannualBarcode(WHERE), ProductBarcode(WHERE), ProductCode(WHERE)
-            cursor.execute(query, (barcode, barcode, barcode, barcode))
+            # Execute with barcode - query template has single %s placeholder
+            cursor.execute(query, (barcode,))
             row = cursor.fetchone()
 
             if row:
@@ -392,7 +762,7 @@ class SQLServerConnector:
 
         try:
             cursor = self.connection.cursor()
-            query = SQL_TEMPLATES["get_all_items"]
+            query = self._get_formatted_query("get_all_items")
 
             cursor.execute(query)
             rows = cursor.fetchall()
@@ -420,7 +790,7 @@ class SQLServerConnector:
             cursor = self.connection.cursor()
 
             # Get the query template
-            query = SQL_TEMPLATES["search_items"]
+            query = self._get_formatted_query("search_items")
             search_pattern = f"%{search_term}%"
 
             # Execute with all 10 parameters:
@@ -464,7 +834,7 @@ class SQLServerConnector:
 
         try:
             cursor = self.connection.cursor()
-            query = SQL_TEMPLATES["get_item_batches"]
+            query = self._get_formatted_query("get_item_batches")
 
             cursor.execute(query, (item_identifier, item_identifier))
             rows = cursor.fetchall()
@@ -491,7 +861,7 @@ class SQLServerConnector:
             cursor = self.connection.cursor()
 
             # Use the predefined query template
-            query = SQL_TEMPLATES["get_item_by_code"]
+            query = self._get_formatted_query("get_item_by_code")
 
             logger.info(f"Searching for item code: {item_code}")
 

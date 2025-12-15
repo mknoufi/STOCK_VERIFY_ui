@@ -9,7 +9,7 @@ import pytest
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from backend.exceptions import SQLServerConnectionError
-from backend.services.erp_sync_service import SQLSyncService
+from backend.services.sql_sync_service import SQLSyncService
 
 
 @pytest.fixture

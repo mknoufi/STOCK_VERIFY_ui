@@ -1,9 +1,9 @@
 /**
- * Modern Design System - Enhanced UI/UX Upgrade
- * Version: 2.0
+ * Modern Design System - Enhanced UI/UX Upgrade v3.0
+ * Aurora Pro Color Scheme
  *
  * Features:
- * - Modern color palette with semantic tokens
+ * - Vibrant indigo-purple primary with modern gradients
  * - Enhanced typography scale
  * - Improved spacing system
  * - Advanced animations and transitions
@@ -14,72 +14,72 @@
 import { StyleSheet, Platform } from "react-native";
 
 // ==========================================
-// MODERN COLOR PALETTE
+// MODERN COLOR PALETTE - AURORA PRO
 // ==========================================
 
 export const modernColors = {
-  // Primary Brand Colors - Vibrant Blue
+  // Primary Brand Colors - Vibrant Indigo
   primary: {
-    50: "#EFF6FF",
-    100: "#DBEAFE",
-    200: "#BFDBFE",
-    300: "#93C5FD",
-    400: "#60A5FA",
-    500: "#3B82F6", // Main primary
-    600: "#2563EB",
-    700: "#1D4ED8",
-    800: "#1E40AF",
-    900: "#1E3A8A",
+    50: "#EEF2FF",
+    100: "#E0E7FF",
+    200: "#C7D2FE",
+    300: "#A5B4FC",
+    400: "#818CF8",
+    500: "#6366F1", // Main primary - Vibrant Indigo
+    600: "#4F46E5",
+    700: "#4338CA",
+    800: "#3730A3",
+    900: "#312E81",
   },
 
-  // Secondary - Emerald Green
+  // Secondary - Vibrant Teal/Cyan
   secondary: {
-    50: "#ECFDF5",
-    100: "#D1FAE5",
-    200: "#A7F3D0",
-    300: "#6EE7B7",
-    400: "#34D399",
-    500: "#10B981", // Main secondary
-    600: "#059669",
-    700: "#047857",
-    800: "#065F46",
-    900: "#064E3B",
+    50: "#ECFEFF",
+    100: "#CFFAFE",
+    200: "#A5F3FC",
+    300: "#67E8F9",
+    400: "#22D3EE",
+    500: "#06B6D4", // Main secondary - Cyan
+    600: "#0891B2",
+    700: "#0E7490",
+    800: "#155E75",
+    900: "#164E63",
   },
 
-  // Accent - Purple
+  // Accent - Vibrant Purple
   accent: {
-    50: "#F5F3FF",
-    100: "#EDE9FE",
-    200: "#DDD6FE",
-    300: "#C4B5FD",
-    400: "#A78BFA",
-    500: "#8B5CF6",
-    600: "#7C3AED",
-    700: "#6D28D9",
-    800: "#5B21B6",
-    900: "#4C1D95",
+    50: "#FAF5FF",
+    100: "#F3E8FF",
+    200: "#E9D5FF",
+    300: "#D8B4FE",
+    400: "#C084FC",
+    500: "#A855F7", // Main accent - Purple
+    600: "#9333EA",
+    700: "#7E22CE",
+    800: "#6B21A8",
+    900: "#581C87",
   },
 
   // Neutral Grays - Dark Mode Optimized
   neutral: {
-    50: "#F9FAFB",
-    100: "#F3F4F6",
-    200: "#E5E7EB",
-    300: "#D1D5DB",
-    400: "#9CA3AF",
-    500: "#6B7280",
-    600: "#4B5563",
-    700: "#374151",
-    800: "#1F2937",
-    900: "#111827",
-    950: "#030712",
+    50: "#FAFAFA",
+    100: "#F4F4F5",
+    200: "#E4E4E7",
+    300: "#D4D4D8",
+    400: "#A1A1AA",
+    500: "#71717A",
+    600: "#52525B",
+    700: "#3F3F46",
+    800: "#27272A",
+    900: "#18181B",
+    950: "#09090B",
   },
 
-  // Semantic Colors
+  // Semantic Colors - More Vibrant
   success: {
-    light: "#D1FAE5",
-    main: "#10B981",
-    dark: "#059669",
+    light: "#DCFCE7",
+    main: "#22C55E", // Brighter green
+    dark: "#16A34A",
     contrast: "#FFFFFF",
   },
 
@@ -91,59 +91,69 @@ export const modernColors = {
   },
 
   warning: {
-    light: "#FEF3C7",
-    main: "#F59E0B",
-    dark: "#D97706",
-    contrast: "#111827",
+    light: "#FEF9C3",
+    main: "#EAB308", // Brighter yellow
+    dark: "#CA8A04",
+    contrast: "#18181B",
   },
 
   info: {
-    light: "#DBEAFE",
-    main: "#3B82F6",
-    dark: "#2563EB",
+    light: "#E0F2FE",
+    main: "#0EA5E9", // Sky blue
+    dark: "#0284C7",
     contrast: "#FFFFFF",
   },
 
-  // Background Colors (Dark Mode)
+  // Background Colors (Dark Mode) - Deeper & Richer
   background: {
-    default: "#0F172A", // Slate 900
-    paper: "#1E293B", // Slate 800
-    elevated: "#334155", // Slate 700
-    overlay: "rgba(15, 23, 42, 0.8)",
-    glass: "rgba(30, 41, 59, 0.7)", // Glassmorphism
+    default: "#030712", // Very deep slate
+    paper: "#0F172A", // Slate 900
+    elevated: "#1E293B", // Slate 800
+    overlay: "rgba(3, 7, 18, 0.9)",
+    glass: "rgba(15, 23, 42, 0.75)", // Glassmorphism
   },
 
-  // Text Colors
+  // Text Colors - Higher Contrast
   text: {
-    primary: "#F8FAFC", // Slate 50
-    secondary: "#94A3B8", // Slate 400
-    tertiary: "#64748B", // Slate 500
-    disabled: "#475569", // Slate 600
-    inverse: "#0F172A", // Slate 900
-    link: "#60A5FA", // Blue 400
-    linkHover: "#93C5FD", // Blue 300
+    primary: "#FAFAFA", // Near white
+    secondary: "#A1A1AA", // Zinc 400
+    tertiary: "#71717A", // Zinc 500
+    disabled: "#52525B", // Zinc 600
+    inverse: "#09090B", // Zinc 950
+    link: "#818CF8", // Indigo 400
+    linkHover: "#A5B4FC", // Indigo 300
   },
 
-  // Border Colors
+  // Border Colors - Subtle & Clean
   border: {
-    light: "#334155", // Slate 700
-    medium: "#475569", // Slate 600
-    dark: "#64748B", // Slate 500
-    focus: "#3B82F6", // Blue 500
+    light: "#27272A", // Zinc 800
+    medium: "#3F3F46", // Zinc 700
+    dark: "#52525B", // Zinc 600
+    focus: "#6366F1", // Indigo 500
     error: "#EF4444", // Red 500
   },
 
-  // Gradient Definitions
+  // Semantic Colors Shorthand (for backward compatibility)
+  semantic: {
+    success: "#22C55E",
+    error: "#EF4444",
+    warning: "#EAB308",
+    info: "#0EA5E9",
+  },
+
+  // Gradient Definitions - More Vibrant
   gradients: {
-    primary: ["#3B82F6", "#2563EB", "#1D4ED8"],
-    secondary: ["#10B981", "#059669", "#047857"],
-    accent: ["#8B5CF6", "#7C3AED", "#6D28D9"],
-    dark: ["#1E293B", "#0F172A", "#020617"],
-    surface: ["#334155", "#1E293B", "#0F172A"],
-    success: ["#10B981", "#059669"],
-    warning: ["#F59E0B", "#D97706"],
-    error: ["#EF4444", "#DC2626"],
-    glass: ["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.05)"],
+    primary: ["#6366F1", "#8B5CF6", "#A855F7"] as const, // Indigo to Purple
+    secondary: ["#06B6D4", "#22D3EE", "#67E8F9"] as const, // Cyan spectrum
+    accent: ["#A855F7", "#C084FC", "#D8B4FE"] as const, // Purple spectrum
+    dark: ["#0F172A", "#030712", "#000000"] as const, // Deep background
+    surface: ["#1E293B", "#0F172A", "#030712"] as const, // Surface layers
+    aurora: ["#6366F1", "#A855F7", "#EC4899"] as const, // Rainbow aurora
+    success: ["#22C55E", "#16A34A"] as const,
+    warning: ["#EAB308", "#CA8A04"] as const,
+    error: ["#EF4444", "#DC2626"] as const,
+    glass: ["rgba(255, 255, 255, 0.12)", "rgba(255, 255, 255, 0.04)"] as const,
+    shimmer: ["rgba(99, 102, 241, 0.1)", "rgba(168, 85, 247, 0.15)", "rgba(99, 102, 241, 0.1)"] as const,
   },
 };
 

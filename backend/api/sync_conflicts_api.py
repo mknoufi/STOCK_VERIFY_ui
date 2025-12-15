@@ -3,11 +3,12 @@ Sync Conflicts API
 Endpoints for managing synchronization conflicts
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
+from backend.auth.dependencies import auth_deps
 from backend.auth.permissions import Permission, require_permission
 from backend.services.sync_conflicts_service import (
     ConflictResolution,
@@ -23,6 +24,21 @@ class ConflictResolutionRequest(BaseModel):
     merged_data: Optional[Dict[str, Any]] = None
 
 
+class BatchConflictResolutionRequest(BaseModel):
+    conflict_ids: List[str]
+    resolution: str
+    resolution_note: Optional[str] = None
+
+
+async def get_sync_service() -> SyncConflictsService:
+    if not auth_deps.db:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database not initialized",
+        )
+    return SyncConflictsService(auth_deps.db)
+
+
 @sync_conflicts_router.get("")
 async def list_conflicts(
     status: Optional[str] = None,
@@ -30,7 +46,7 @@ async def list_conflicts(
     user: Optional[str] = None,
     entity_type: Optional[str] = None,
     limit: int = 100,
-    sync_service: SyncConflictsService = Depends(lambda: None),
+    sync_service: SyncConflictsService = Depends(get_sync_service),
     current_user: dict = require_permission(Permission.SYNC_RESOLVE_CONFLICT),
 ):
     """List sync conflicts with optional filters"""
@@ -50,7 +66,7 @@ async def list_conflicts(
 @sync_conflicts_router.get("/{conflict_id}")
 async def get_conflict_details(
     conflict_id: str,
-    sync_service: SyncConflictsService = Depends(lambda: None),
+    sync_service: SyncConflictsService = Depends(get_sync_service),
     current_user: dict = require_permission(Permission.SYNC_RESOLVE_CONFLICT),
 ):
     """Get detailed information about a specific conflict"""
@@ -75,7 +91,7 @@ async def get_conflict_details(
 async def resolve_conflict(
     conflict_id: str,
     resolution_request: ConflictResolutionRequest,
-    sync_service: SyncConflictsService = Depends(lambda: None),
+    sync_service: SyncConflictsService = Depends(get_sync_service),
     current_user: dict = require_permission(Permission.SYNC_RESOLVE_CONFLICT),
 ):
     """Resolve a sync conflict"""
@@ -126,10 +142,68 @@ async def resolve_conflict(
         )
 
 
+@sync_conflicts_router.post("/batch-resolve")
+async def batch_resolve_conflicts(
+    request: BatchConflictResolutionRequest,
+    sync_service: SyncConflictsService = Depends(get_sync_service),
+    current_user: dict = require_permission(Permission.SYNC_RESOLVE_CONFLICT),
+):
+    """Batch resolve sync conflicts"""
+    try:
+        # Validate resolution
+        try:
+            resolution = ConflictResolution(request.resolution)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "success": False,
+                    "error": {
+                        "message": f"Invalid resolution: {request.resolution}",
+                        "code": "INVALID_RESOLUTION",
+                    },
+                },
+            )
+
+        resolved_count = 0
+        errors = []
+
+        for conflict_id in request.conflict_ids:
+            try:
+                await sync_service.resolve_conflict(
+                    conflict_id=conflict_id,
+                    resolution=resolution,
+                    resolved_by=current_user["username"],
+                )
+                resolved_count += 1
+            except Exception as e:
+                errors.append({"id": conflict_id, "error": str(e)})
+
+        return {
+            "success": True,
+            "data": {
+                "message": f"Resolved {resolved_count} conflicts",
+                "resolved_count": resolved_count,
+                "errors": errors,
+            },
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "message": f"Failed to batch resolve: {str(e)}",
+                    "code": "INTERNAL_ERROR",
+                },
+            },
+        )
+
+
 @sync_conflicts_router.post("/auto-resolve")
 async def auto_resolve_conflicts(
     strategy: str = "server_wins",
-    sync_service: SyncConflictsService = Depends(lambda: None),
+    sync_service: SyncConflictsService = Depends(get_sync_service),
     current_user: dict = require_permission(Permission.SYNC_RESOLVE_CONFLICT),
 ):
     """Auto-resolve pending conflicts using a strategy"""
@@ -161,7 +235,7 @@ async def auto_resolve_conflicts(
 
 @sync_conflicts_router.get("/stats/summary")
 async def get_conflict_statistics(
-    sync_service: SyncConflictsService = Depends(lambda: None),
+    sync_service: SyncConflictsService = Depends(get_sync_service),
     current_user: dict = require_permission(Permission.SYNC_RESOLVE_CONFLICT),
 ):
     """Get statistics about sync conflicts"""

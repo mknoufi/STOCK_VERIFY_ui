@@ -33,6 +33,34 @@ async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_cur
     if _db is None or _cache_service is None:
         raise HTTPException(status_code=503, detail="Service not initialized")
 
+    # STRICT VALIDATION: Barcode must be exactly 6 digits and start with 51, 52, or 53
+    allowed_prefixes = ("51", "52", "53")
+    barcode = barcode.strip()
+
+    if not barcode.isdigit():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Invalid barcode: must be numeric",
+                "barcode": barcode,
+                "error_code": "INVALID_BARCODE_FORMAT",
+            },
+        )
+
+    is_correct_length = len(barcode) == 6
+    has_correct_prefix = barcode.startswith(allowed_prefixes)
+
+    if not is_correct_length or not has_correct_prefix:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Invalid barcode. Must be exactly 6 digits and start with 51, 52, or 53.",
+                "barcode": barcode,
+                "error_code": "INVALID_BARCODE",
+                "requirements": "6 digits, starts with 51-53",
+            },
+        )
+
     # Check cache first
     cached_item = await _cache_service.get("items", barcode)
     if cached_item:

@@ -1,0 +1,76 @@
+# Open Interpreter Configuration
+# https://github.com/OpenInterpreter/open-interpreter
+
+# System message for Stock Verification System context
+system_message: |
+  You are an AI assistant working on the Stock Verification System.
+
+  ## Project Overview
+  - Backend: FastAPI (Python 3.10+) on port 8001
+  - Frontend: React Native + Expo (TypeScript) on port 8081
+  - Primary DB: MongoDB (Motor async driver)
+  - ERP Source: SQL Server (pyodbc, READ-ONLY)
+
+  ## Critical Rules
+  1. SQL Server is READ-ONLY - never write to it
+  2. Use parameterized queries with ? placeholders for SQL
+  3. JWT authentication on all /api/* endpoints
+  4. Follow existing code patterns
+  5. Run tests before making changes
+
+  ## Available Commands
+  - Backend tests: cd backend && pytest tests/ -v
+  - Frontend tests: cd frontend && npm test
+  - Lint: make lint
+  - Full CI: make ci
+  - Start backend: cd backend && uvicorn backend.server:app --host 0.0.0.0 --port 8001 --reload
+  - Start frontend: cd frontend && npm start
+
+  ## Key Directories
+  - backend/ - FastAPI application
+  - frontend/ - React Native + Expo app
+  - docs/ - Documentation
+  - scripts/ - Utility scripts
+
+# Model configuration
+model: claude-sonnet-4-20250514
+context_window: 200000
+max_tokens: 4096
+
+# Safety settings
+safe_mode: auto
+auto_run: false
+
+# Disable computer control for safety
+computer:
+  enabled: false
+
+# Language preferences
+language: python
+
+# Custom functions available
+custom_functions:
+  - name: run_tests
+    description: Run the project test suite
+    command: make test
+
+  - name: lint_code
+    description: Run linting and formatting
+    command: make lint
+
+  - name: start_backend
+    description: Start the backend server
+    command: cd backend && uvicorn backend.server:app --host 0.0.0.0 --port 8001 --reload
+
+  - name: start_frontend
+    description: Start the frontend development server
+    command: cd frontend && npm start
+
+  - name: check_health
+    description: Check if backend is running
+    command: curl -s http://localhost:8001/api/health
+
+# Allowed operations
+allow_commands: true
+allow_file_access: true
+allow_network: false

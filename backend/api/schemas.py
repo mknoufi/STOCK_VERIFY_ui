@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 T = TypeVar("T")
 
@@ -33,14 +33,62 @@ class ERPItem(BaseModel):
     location: Optional[str] = None
     uom_code: Optional[str] = None
     uom_name: Optional[str] = None
+    hsn_code: Optional[str] = None
+    gst_category: Optional[str] = None
+    gst_percent: Optional[float] = None
+    sgst_percent: Optional[float] = None
+    cgst_percent: Optional[float] = None
+    igst_percent: Optional[float] = None
     floor: Optional[str] = None
     rack: Optional[str] = None
     verified: Optional[bool] = False
     verified_by: Optional[str] = None
     verified_at: Optional[datetime] = None
     last_scanned_at: Optional[datetime] = None
+    verified_qty: Optional[float] = None
+    variance: Optional[float] = None
+    damaged_qty: Optional[float] = None
+    non_returnable_damaged_qty: Optional[float] = None
+    item_condition: Optional[str] = None
     manual_barcode: Optional[str] = None
+    serial_number: Optional[str] = None
+    is_serialized: Optional[bool] = None
+    verified_floor: Optional[str] = None
+    verified_rack: Optional[str] = None
     image_url: Optional[str] = None
+    # Sales / pricing metadata
+    sales_price: Optional[float] = None
+    sale_price: Optional[float] = None
+    standard_rate: Optional[float] = None
+    last_purchase_rate: Optional[float] = None
+    last_purchase_price: Optional[float] = None
+    # Brand metadata
+    brand_id: Optional[str] = None
+    brand_name: Optional[str] = None
+    brand_code: Optional[str] = None
+    # Supplier metadata
+    supplier_id: Optional[str] = None
+    supplier_code: Optional[str] = None
+    supplier_name: Optional[str] = None
+    last_purchase_supplier: Optional[str] = None
+    supplier_phone: Optional[str] = None
+    supplier_city: Optional[str] = None
+    supplier_state: Optional[str] = None
+    supplier_gst: Optional[str] = None
+    # Purchase info
+    purchase_price: Optional[float] = None
+    last_purchase_qty: Optional[float] = None
+    purchase_qty: Optional[float] = None
+    purchase_invoice_no: Optional[str] = None
+    purchase_reference: Optional[str] = None
+    last_purchase_date: Optional[datetime] = None
+    last_purchase_cost: Optional[float] = None
+    purchase_voucher_type: Optional[str] = None
+    purchase_type: Optional[str] = None
+    batch_id: Optional[str] = None
+    batch_no: Optional[str] = None
+    manufacturing_date: Optional[str] = None
+    expiry_date: Optional[str] = None
 
 
 class UserInfo(BaseModel):
@@ -71,6 +119,12 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+
+class PinLogin(BaseModel):
+    """PIN-based login for staff users (4-digit numeric PIN)."""
+
+    pin: str
 
 
 class CorrectionReason(BaseModel):
@@ -123,14 +177,25 @@ class Session(BaseModel):
     staff_user: str
     staff_name: str
     status: str = "OPEN"  # OPEN, RECONCILE, CLOSED
+    type: str = "STANDARD"  # STANDARD, BLIND, STRICT
     started_at: datetime = Field(default_factory=datetime.utcnow)
     closed_at: Optional[datetime] = None
+    reconciled_at: Optional[datetime] = None
     total_items: int = 0
     total_variance: float = 0
+    notes: Optional[str] = None
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def normalize_status(cls, v: Any) -> str:
+        if isinstance(v, str):
+            return v.upper()
+        return v
 
 
 class SessionCreate(BaseModel):
     warehouse: str
+    type: Optional[str] = "STANDARD"
 
 
 class UnknownItem(BaseModel):

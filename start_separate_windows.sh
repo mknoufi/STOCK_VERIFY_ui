@@ -55,6 +55,9 @@ EOF
 sleep 2
 
 # Start Frontend in new Terminal window
+echo -e "${YELLOW}🔄 Updating network configuration...${NC}"
+node "$SCRIPT_DIR/frontend/scripts/update-ip.js"
+
 echo -e "${YELLOW}📱 Starting Frontend Server in new window...${NC}"
 osascript <<EOF
 tell application "Terminal"

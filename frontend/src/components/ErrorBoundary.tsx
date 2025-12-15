@@ -1,20 +1,20 @@
 /**
  * Error Boundary Component
  * Catches and handles React component errors
- * Enhanced with theme support and better error handling
+ * Enhanced with modern design system support
  */
 
 import React, { Component, ReactNode } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ThemeService } from "../services/themeService";
 import { errorReporter } from "../services/errorRecovery";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+  modernLayout,
+} from "../styles/modernDesignSystem";
+import { PremiumButton } from "./premium/PremiumButton";
 
 interface Props {
   children: ReactNode;
@@ -28,8 +28,6 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  private theme = ThemeService.getTheme();
-
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -37,15 +35,6 @@ export class ErrorBoundary extends Component<Props, State> {
       error: null,
       errorInfo: null,
     };
-
-    // Subscribe to theme changes
-    ThemeService.subscribe((theme) => {
-      this.theme = theme;
-      // Force re-render if there's an error
-      if (this.state.hasError) {
-        this.forceUpdate();
-      }
-    });
   }
 
   static getDerivedStateFromError(error: Error): State {
@@ -93,73 +82,39 @@ export class ErrorBoundary extends Component<Props, State> {
         }
       }
 
-      // Get current theme (may have changed)
-      const currentTheme = ThemeService.getTheme();
-      const theme = currentTheme || this.theme;
-
       return (
-        <View
-          style={[
-            styles.container,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
-          <ScrollView contentContainerStyle={styles.content}>
-            <Ionicons
-              name="warning-outline"
-              size={64}
-              color={theme.colors.error}
-            />
-            <Text style={[styles.title, { color: theme.colors.text }]}>
-              Something went wrong
-            </Text>
-            <Text
-              style={[styles.message, { color: theme.colors.textSecondary }]}
-            >
+        <View style={styles.container}>
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="warning-outline" size={80} color={modernColors.error.main} />
+            </View>
+
+            <Text style={styles.title}>Something went wrong</Text>
+
+            <Text style={styles.message}>
               {this.state.error?.message || "An unexpected error occurred"}
             </Text>
 
             {__DEV__ && this.state.error && (
-              <View
-                style={[
-                  styles.details,
-                  { backgroundColor: theme.colors.surface },
-                ]}
-              >
-                <Text
-                  style={[styles.detailsTitle, { color: theme.colors.text }]}
-                >
-                  Error Details:
-                </Text>
-                <Text
-                  style={[
-                    styles.detailsText,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  {this.state.error.toString()}
-                </Text>
+              <View style={styles.details}>
+                <Text style={styles.detailsTitle}>Error Details:</Text>
+                <Text style={styles.detailsText}>{this.state.error.toString()}</Text>
                 {this.state.errorInfo?.componentStack && (
-                  <Text
-                    style={[
-                      styles.detailsText,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    {this.state.errorInfo.componentStack}
-                  </Text>
+                  <Text style={styles.detailsText}>{this.state.errorInfo.componentStack}</Text>
                 )}
               </View>
             )}
 
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: theme.colors.primary }]}
-              onPress={this.handleReset}
-            >
-              <Text style={[styles.buttonText, { color: "#FFFFFF" }]}>
-                Try Again
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <PremiumButton
+                title="Try Again"
+                onPress={this.handleReset}
+                variant="primary"
+                size="medium"
+                icon="refresh-outline"
+                gradientColors={[...modernColors.gradients.primary]}
+              />
+            </View>
           </ScrollView>
         </View>
       );
@@ -172,51 +127,55 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: modernColors.background.default,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
+    padding: modernSpacing.xl,
+  },
+  iconContainer: {
+    marginBottom: modernSpacing.lg,
+    padding: modernSpacing.lg,
+    backgroundColor: "rgba(255, 82, 82, 0.1)", // Light red background
+    borderRadius: 50,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 16,
-    marginBottom: 8,
+    ...modernTypography.h2,
+    color: modernColors.text.primary,
+    marginBottom: modernSpacing.md,
     textAlign: "center",
   },
   message: {
-    fontSize: 16,
+    ...modernTypography.body.large,
+    color: modernColors.text.secondary,
     textAlign: "center",
-    marginBottom: 24,
-    paddingHorizontal: 16,
+    marginBottom: modernSpacing.xl,
+    paddingHorizontal: modernSpacing.md,
   },
   details: {
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 24,
     width: "100%",
-    maxHeight: 300,
+    padding: modernSpacing.md,
+    backgroundColor: modernColors.background.paper,
+    borderRadius: 12,
+    marginBottom: modernSpacing.xl,
+    borderWidth: 1,
+    borderColor: modernColors.border.light,
   },
   detailsTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 8,
+    ...modernTypography.h4,
+    color: modernColors.text.primary,
+    marginBottom: modernSpacing.sm,
   },
   detailsText: {
-    fontSize: 12,
+    ...modernTypography.body.small,
+    color: modernColors.text.secondary,
     fontFamily: "monospace",
+    marginBottom: modernSpacing.xs,
   },
-  button: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    minWidth: 120,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
+  buttonContainer: {
+    width: "100%",
+    maxWidth: 300,
   },
 });

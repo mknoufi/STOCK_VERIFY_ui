@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { ViewStyle } from "react-native";
+import { ViewStyle, StyleProp } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ModernCard, CardVariant, CardElevation } from "../ModernCard";
 
@@ -16,11 +16,13 @@ interface PremiumCardProps {
   variant?: CardVariant;
   elevation?: CardElevation;
   padding?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   gradientColors?: string[];
   icon?: keyof typeof Ionicons.glyphMap;
   footer?: React.ReactNode;
   testID?: string;
+  onLongPress?: () => void;
+  delayLongPress?: number;
 }
 
 export const PremiumCard: React.FC<PremiumCardProps> = (props) => {

@@ -274,3 +274,40 @@ def require_permissions(required_permissions: list[str]):
         return current_user
 
     return permission_checker
+
+
+def require_role(*roles: str):
+    """
+    Dependency factory to require specific role(s).
+    Usage: current_user: dict = Depends(require_role("admin", "supervisor"))
+
+    Args:
+        *roles: One or more role names that are allowed
+    """
+    allowed_roles = set(roles)
+
+    async def role_checker(
+        current_user: dict = Depends(get_current_user),
+    ) -> dict:
+        """Check if user has one of the required roles"""
+        from backend.error_messages import get_error_message
+
+        user_role = current_user.get("role", "")
+
+        if user_role not in allowed_roles:
+            error = get_error_message("AUTH_INSUFFICIENT_PERMISSIONS")
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "message": error.get("message", "Insufficient permissions"),
+                    "detail": f"Required role: {' or '.join(allowed_roles)}",
+                    "code": error.get("code", "ROLE_REQUIRED"),
+                    "category": error.get("category", "authorization"),
+                    "allowed_roles": list(allowed_roles),
+                    "user_role": user_role,
+                },
+            )
+
+        return current_user
+
+    return role_checker

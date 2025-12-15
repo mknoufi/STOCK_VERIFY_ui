@@ -1,3 +1,7 @@
+/**
+ * Item - Canonical item interface for the entire application
+ * All components should import Item from this file or @/types/item (which re-exports this)
+ */
 export interface Item {
   id: string;
   name: string;
@@ -10,12 +14,14 @@ export interface Item {
   uom_name?: string;
   item_group?: string;
   location?: string;
+  warehouse?: string;  // warehouse location (alias for location in some contexts)
   mrp_variants?: unknown[];
   mrp_history?: unknown[];
   item_type?: string;
   quantity?: number;
   sales_price?: number;
   item_name?: string;
+  image_url?: string;  // item image URL for display
 }
 
 export type ScannerMode = "item" | "serial";

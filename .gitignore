@@ -2,10 +2,34 @@
 
 # IDE and editors
 .idea/
-.vscode/
 .vs/
 **/FileContentIndex/
 *.vsidx
+
+# VS Code - Track project settings but ignore user-specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+!.vscode/*.code-snippets
+!.vscode/README.md
+
+# AI Agent configs - Track these
+!.aider.conf.yml
+!.aiderignore
+!.clinerules
+!.swe-agent.yml
+!.metagpt.yml
+!.autogpt.yml
+!.devon.yml
+!.interpreter.yml
+!.aicontext.json
+!.continue/
+.continue/db/
+.continue/index/
+.continue/logs/
 
 # Dependencies
 node_modules/
@@ -92,14 +116,16 @@ diagnostic.data/
 android-sdk/
 
 # Environment files (CRITICAL - Never commit production secrets!)
+# All .env files are ignored except .example templates
 *.env
 *.env.*
-!.env.example
-!.env.production.example
+!*.env.example
 .env.local
 .env.production
 .env.staging
 .env.development
+backend/.env
+frontend/.env
 
 # Secret files (CRITICAL - Never commit!)
 .secrets
@@ -138,3 +164,22 @@ archive_old_docs/
 # React Native Metro cache
 frontend/.metro-cache/
 frontend/coverage/
+
+# Large binary dependencies (JDK, SDKs)
+**/*.jdk/
+**/oracleJdk*/
+**/*.jmod
+**/*.jsa
+
+# PID files
+*.pid
+backend.pid
+frontend.pid
+frontend/frontend.pid
+
+# Run details (temporary)
+run_details*.json
+run_jobs*.json
+backend_port.json
+agentic-project-management
+expo-new

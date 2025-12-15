@@ -1,0 +1,186 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  python-quality:
+    name: Python Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install black isort flake8 mypy bandit pylint
+
+      - name: Run Black (formatter check)
+        run: |
+          cd backend
+          black --check --diff .
+
+      - name: Run isort (import sorting check)
+        run: |
+          cd backend
+          isort --check-only --diff .
+
+      - name: Run Flake8 (linting)
+        run: |
+          cd backend
+          flake8 . --max-line-length=100 --extend-ignore=E203,W503 --statistics
+
+      - name: Run MyPy (type checking)
+        run: |
+          cd backend
+          mypy . --ignore-missing-imports --no-strict-optional || true
+
+      - name: Run Bandit (security linting)
+        run: |
+          cd backend
+          bandit -r . -ll -f json -o bandit-report.json || true
+
+      - name: Run Pylint (code analysis)
+        run: |
+          cd backend
+          pylint **/*.py --fail-under=7.0 || true
+
+  typescript-quality:
+    name: TypeScript Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npm run lint -- --max-warnings=0
+
+      - name: Run TypeScript compiler
+        run: |
+          cd frontend
+          npm run typecheck
+
+      - name: Check for 'any' types
+        run: |
+          cd frontend
+          echo "Checking for 'any' type usage..."
+          ANY_COUNT=$(grep -r ": any" src/ --include="*.ts" --include="*.tsx" | wc -l || echo "0")
+          echo "Found $ANY_COUNT uses of 'any' type"
+          if [ "$ANY_COUNT" -gt 200 ]; then
+            echo "⚠️ Warning: High number of 'any' types ($ANY_COUNT)"
+          fi
+
+  documentation-quality:
+    name: Documentation Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check README exists
+        run: |
+          if [ ! -f "README.md" ]; then
+            echo "❌ README.md not found"
+            exit 1
+          fi
+          echo "✅ README.md exists"
+
+      - name: Check documentation files
+        run: |
+          REQUIRED_DOCS=(
+            "SECURITY_REMEDIATION_STEPS.md"
+            "docs/ENVIRONMENT_VARIABLES.md"
+            "backend/.env.example"
+            "frontend/.env.example"
+          )
+          
+          for doc in "${REQUIRED_DOCS[@]}"; do
+            if [ ! -f "$doc" ]; then
+              echo "❌ Missing: $doc"
+              exit 1
+            fi
+          done
+          echo "✅ All required documentation present"
+
+      - name: Check for broken links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.github/markdown-link-check-config.json'
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Audit Python dependencies
+        run: |
+          pip install safety
+          cd backend
+          safety check --file=requirements.txt --json || true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Audit npm dependencies
+        run: |
+          cd frontend
+          npm audit --audit-level=moderate || true
+
+  code-metrics:
+    name: Code Metrics
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Count lines of code
+        run: |
+          echo "📊 Code Statistics:"
+          echo "Backend Python files:"
+          find backend -name "*.py" | xargs wc -l | tail -1
+          echo "Frontend TypeScript files:"
+          find frontend/src -name "*.ts" -o -name "*.tsx" | xargs wc -l | tail -1
+          echo "Test files:"
+          find . -name "*.test.ts" -o -name "*.test.tsx" -o -name "test_*.py" | xargs wc -l | tail -1
+
+      - name: Check test coverage requirement
+        run: |
+          echo "⚠️ Test coverage should be >70%"
+          echo "Run 'npm test -- --coverage' in frontend to check"

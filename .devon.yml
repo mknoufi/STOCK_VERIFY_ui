@@ -1,0 +1,98 @@
+# Devon / OpenDevin Agent Configuration
+# https://github.com/entropy-research/Devon
+# https://github.com/OpenDevin/OpenDevin
+
+workspace:
+  name: stock-verification-system
+  path: /Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped
+
+# Agent configuration
+agent:
+  model: claude-sonnet-4-20250514
+  max_iterations: 50
+  temperature: 0
+
+# Sandbox environment
+sandbox:
+  type: local
+  timeout: 300
+  memory_limit: 4096
+
+# Repository information
+repository:
+  type: git
+  languages:
+    - python
+    - typescript
+  frameworks:
+    - fastapi
+    - react-native
+    - expo
+
+# Task templates
+task_templates:
+  fix_bug:
+    description: "Fix a bug in the codebase"
+    steps:
+      - "Reproduce the bug"
+      - "Identify root cause"
+      - "Implement fix"
+      - "Add test case"
+      - "Run full test suite"
+
+  add_feature:
+    description: "Add a new feature"
+    steps:
+      - "Understand requirements"
+      - "Design solution following existing patterns"
+      - "Implement backend (if needed)"
+      - "Implement frontend (if needed)"
+      - "Add tests"
+      - "Update documentation"
+
+  refactor:
+    description: "Refactor code for better maintainability"
+    steps:
+      - "Analyze current code"
+      - "Identify improvement areas"
+      - "Refactor incrementally"
+      - "Ensure tests still pass"
+      - "Update docstrings"
+
+# Environment setup
+setup_commands:
+  - "cd backend && pip install -r ../requirements.production.txt"
+  - "cd frontend && npm install"
+
+# Verification commands
+verify_commands:
+  test: "make test"
+  lint: "make lint"
+  typecheck: "make typecheck"
+
+# Project-specific instructions
+instructions: |
+  ## Stock Verification System
+
+  ### Architecture
+  - Backend: FastAPI (Python 3.10+) on port 8001
+  - Frontend: React Native + Expo (TypeScript) on port 8081
+  - Primary DB: MongoDB (Motor async driver)
+  - ERP Source: SQL Server (READ-ONLY)
+
+  ### Critical Rules
+  1. SQL Server is READ-ONLY - never write to it
+  2. Use parameterized queries with ? placeholders
+  3. JWT auth required on /api/* endpoints
+  4. Follow existing patterns
+
+  ### Key Commands
+  - Test: make test
+  - Lint: make lint
+  - CI: make ci
+
+  ### Important Files
+  - backend/server.py - Main app
+  - backend/config.py - Configuration
+  - frontend/app/ - Expo pages
+  - frontend/services/ - API clients

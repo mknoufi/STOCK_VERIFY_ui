@@ -1,215 +1,176 @@
 {
   "tech_stack": [
-    "TypeScript",
-    "React Native",
-    "Expo",
+    "Python 3.10",
     "FastAPI",
-    "Python",
+    "Pydantic",
+    "Uvicorn",
     "MongoDB",
     "SQL Server",
-    "Zustand",
-    "React Query",
+    "pyodbc",
+    "React Native 0.81",
+    "Expo SDK 54",
+    "TypeScript 5.9",
     "Expo Router",
+    "Zustand",
+    "TanStack Query",
     "Axios",
     "AsyncStorage",
-    "JWT",
-    "Barcode Scanner",
-    "Camera API",
-    "Playwright",
-    "Motor",
-    "PyODBC",
-    "Pydantic",
-    "Uvicorn"
+    "Docker",
+    "Nginx",
+    "Pytest",
+    "Playwright"
   ],
   "features": [
     {
-      "name": "Authentication System",
-      "description": "JWT-based authentication with refresh tokens, remember me functionality, and role-based access control",
+      "name": "FastAPI Application Router",
+      "description": "ASGI configuration, middleware, and API router mounting that expose every backend capability under the /api namespace.",
       "files": [
-        "frontend/app/login.tsx",
-        "frontend/app/register.tsx",
-        "frontend/src/store/authStore.ts",
-        "backend/auth/jwt_provider.py",
+        "backend/server.py",
+        "backend/config.py",
+        "backend/api/"
+      ]
+    },
+    {
+      "name": "JWT Authentication & Role Access",
+      "description": "End-to-end login, token issuance, and dependency guards that secure routes and hydrate the Expo client stores.",
+      "files": [
+        "backend/api/auth.py",
+        "backend/auth/dependencies.py",
         "backend/auth/permissions.py",
-        "backend/auth/dependencies.py"
+        "frontend/app/login.tsx",
+        "frontend/src/store/authStore.ts"
       ]
     },
     {
-      "name": "Barcode Scanning",
-      "description": "Native barcode scanner using Expo Camera with support for multiple formats (EAN-13, UPC-A, Code 128, QR Code)",
+      "name": "ERPNext Data Mapping & Synchronization",
+      "description": "Read-only SQL Server connectors, schema mapping, and sync services that hydrate MongoDB with ERP item master data.",
       "files": [
-        "frontend/app/staff/scan.tsx",
-        "frontend/src/components/scan/BarcodeScanner.tsx",
-        "frontend/src/components/scan/CameraView.tsx",
-        "frontend/src/services/itemVerificationApi.ts"
-      ]
-    },
-    {
-      "name": "Stock Verification Sessions",
-      "description": "Create and manage counting sessions with count lines, quantity tracking, and discrepancy detection",
-      "files": [
-        "frontend/app/staff/home.tsx",
-        "frontend/app/staff/scan.tsx",
-        "frontend/app/staff/history.tsx",
-        "frontend/src/services/api/api.ts",
-        "backend/api/item_verification_api.py"
-      ]
-    },
-    {
-      "name": "Supervisor Dashboard",
-      "description": "Dashboard for supervisors to monitor sessions, approve/reject count lines, and view analytics",
-      "files": [
-        "frontend/app/supervisor/dashboard.tsx",
-        "frontend/app/supervisor/session-detail.tsx",
-        "frontend/app/supervisor/settings.tsx",
-        "frontend/app/supervisor/variances.tsx"
-      ]
-    },
-    {
-      "name": "Admin Control Panel",
-      "description": "Admin interface for user management, system configuration, health monitoring, and service control",
-      "files": [
-        "frontend/app/admin/control-panel.tsx",
-        "frontend/app/admin/permissions.tsx",
-        "frontend/app/admin/metrics.tsx",
-        "frontend/app/admin/logs.tsx",
-        "backend/api/admin_control_api.py"
-      ]
-    },
-    {
-      "name": "ERPNext Integration",
-      "description": "Read-only integration with ERPNext SQL Server for item data synchronization and conflict resolution",
-      "files": [
+        "backend/api_mapping.py",
+        "backend/db_mapping_config.py",
         "backend/services/erp_sync_service.py",
-        "backend/services/advanced_erp_sync.py",
-        "backend/services/sync_conflicts_service.py",
-        "backend/api/sync_management_api.py",
-        "backend/api/sync_conflicts_api.py",
-        "backend/sql_server_connector.py"
+        "backend/services/sql_sync_service.py",
+        "backend/services/sync_conflicts_service.py"
       ]
     },
     {
-      "name": "Dynamic Fields & Reports",
-      "description": "Configurable dynamic fields and custom report generation with filtering and export capabilities",
+      "name": "Dynamic Fields & Custom Reports",
+      "description": "Configurable metadata fields plus export-ready report templates that combine Mongo data, ERP lookups, and runtime filters.",
       "files": [
+        "backend/api/dynamic_fields_api.py",
         "backend/services/dynamic_fields_service.py",
+        "backend/api/dynamic_reports_api.py",
         "backend/services/dynamic_report_service.py",
-        "backend/api/dynamic_fields_api.py"
+        "docs/archive/old_docs/DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md"
       ]
     },
     {
-      "name": "Offline Queue",
-      "description": "Queue operations when offline and automatically sync when connection is restored",
+      "name": "Stock Verification Sessions & Barcode Flows",
+      "description": "Session orchestration, barcode lookups, and discrepancy tracking that guide staff through scanning workflows.",
+      "files": [
+        "backend/api/session_api.py",
+        "backend/api/item_verification_api.py",
+        "frontend/app/staff/",
+        "frontend/src/services/itemVerificationApi.ts",
+        "frontend/src/hooks/useItemByBarcodeQuery.ts",
+        "frontend/src/store/scanSessionStore.ts"
+      ]
+    },
+    {
+      "name": "Offline Queue & Sync Health",
+      "description": "Queue-first client services and backend sync monitors that continue capturing work without connectivity.",
       "files": [
         "frontend/src/services/offlineQueue.ts",
-        "frontend/src/services/offlineStorage.ts",
-        "frontend/app/supervisor/offline-queue.tsx"
+        "frontend/src/services/syncService.ts",
+        "backend/api/sync_status_api.py",
+        "backend/api/sync_management_api.py",
+        "backend/services/auto_sync_manager.py",
+        "backend/services/database_health.py"
       ]
     },
     {
-      "name": "Network Status",
-      "description": "Monitor network connectivity and display status indicators",
+      "name": "Admin & Supervisor Dashboards",
+      "description": "Role-specific Expo Router stacks that surface approvals, metrics, and controls backed by privileged APIs.",
       "files": [
-        "frontend/src/services/networkService.ts",
-        "frontend/src/components/feedback/NetworkStatusBanner.tsx",
-        "frontend/src/components/OnlineStatus.tsx"
+        "frontend/app/admin/",
+        "frontend/app/supervisor/",
+        "backend/api/admin_control_api.py",
+        "backend/api/metrics_api.py",
+        "backend/services/monitoring_service.py"
       ]
     },
     {
-      "name": "Error Handling & Recovery",
-      "description": "Comprehensive error handling with auto-recovery, error logging, and user-friendly error messages",
+      "name": "Exports & Reporting Pipelines",
+      "description": "Batch export APIs, scheduled jobs, and client helpers for delivering CSV/XLSX outputs and downloadable artifacts.",
       "files": [
-        "frontend/src/services/errorHandler.ts",
-        "frontend/src/components/ErrorBoundary.tsx",
-        "backend/services/auto_recovery.py",
-        "backend/services/error_log.py"
-      ]
-    },
-    {
-      "name": "Data Export",
-      "description": "Export count lines and sessions to Excel/CSV formats with scheduled export capabilities",
-      "files": [
-        "frontend/src/services/exportService.ts",
         "backend/api/exports_api.py",
+        "backend/api/reporting_api.py",
         "backend/services/scheduled_export_service.py",
-        "frontend/app/supervisor/export-results.tsx"
+        "frontend/src/services/exportService.ts"
       ]
     },
     {
-      "name": "Activity & Error Logs",
-      "description": "Track user activities and system errors with filtering and search capabilities",
+      "name": "Observability & Self-Diagnostics",
+      "description": "Health checks, self-diagnosis routines, and monitoring services that feed admin tooling and automated recovery.",
       "files": [
-        "backend/services/activity_log.py",
-        "backend/services/error_log.py",
-        "frontend/app/supervisor/activity-logs.tsx",
-        "frontend/app/supervisor/error-logs.tsx"
+        "backend/api/health.py",
+        "backend/api/self_diagnosis_api.py",
+        "backend/services/monitoring_service.py",
+        "backend/services/auto_diagnosis.py",
+        "frontend/app/debug.tsx"
       ]
     },
     {
-      "name": "Search & Filtering",
-      "description": "Advanced search functionality for items with autocomplete, fuzzy search, and filtering",
+      "name": "Frontend Infrastructure & Theming",
+      "description": "Expo Router layout, shared theming, and HTTP utilities that keep the React Native clients cohesive across roles.",
       "files": [
-        "frontend/src/components/scan/ItemSearch.tsx",
-        "frontend/src/components/forms/SearchAutocomplete.tsx",
-        "frontend/src/components/ItemFilters.tsx"
-      ]
-    },
-    {
-      "name": "State Management",
-      "description": "Global state management using Zustand stores for auth, settings, and application state",
-      "files": [
-        "frontend/src/store/authStore.ts",
+        "frontend/app/_layout.tsx",
+        "frontend/src/theme/",
+        "frontend/src/services/httpClient.ts",
         "frontend/src/store/settingsStore.ts",
-        "frontend/src/services/queryClient.ts"
+        "frontend/src/hooks/useTheme.ts"
       ]
+    }
+  ],
+  "functional_capabilities": [
+    {
+      "name": "User Authentication & Session Security",
+      "description": "Users authenticate with username/password, receive JWTs with role claims, and maintain sessions with refresh tokens and auto-logout policies."
     },
     {
-      "name": "UI Components",
-      "description": "Reusable UI components including buttons, cards, modals, forms, and premium styling",
-      "files": [
-        "frontend/src/components/ui/",
-        "frontend/src/components/forms/",
-        "frontend/src/components/modals/",
-        "frontend/src/components/premium/"
-      ]
+      "name": "Inventory Counting Sessions",
+      "description": "Staff launch counting sessions, scan barcodes, capture expected vs counted quantities, and flag discrepancies in real time."
     },
     {
-      "name": "Location Verification",
-      "description": "Verify and track item locations with floor and rack information",
-      "files": [
-        "frontend/src/components/scan/LocationVerificationSection.tsx",
-        "frontend/src/components/scan/LocationInput.tsx"
-      ]
+      "name": "Variance Review & Approval",
+      "description": "Supervisors inspect variance queues, compare audit trails, approve or reject adjustments, and push decisions back into the ERP source of truth."
     },
     {
-      "name": "Database Management",
-      "description": "Multi-database connection management with MongoDB and SQL Server, connection pooling, and health monitoring",
-      "files": [
-        "backend/services/database_manager.py",
-        "backend/services/database_health.py",
-        "backend/db/",
-        "backend/sql_server_connector.py"
-      ]
+      "name": "Dynamic Field Configuration",
+      "description": "Admins add or adjust metadata fields without schema changes, enabling custom attributes to flow through capture forms and reports."
     },
     {
-      "name": "API Services",
-      "description": "RESTful API endpoints for all application features with authentication and authorization",
-      "files": [
-        "backend/api/",
-        "backend/server.py",
-        "frontend/src/services/api/api.ts",
-        "frontend/src/services/httpClient.ts"
-      ]
+      "name": "Custom Reporting & Exports",
+      "description": "Users build or execute report templates, filter data by warehouse/date/status, and export to CSV/XLSX for downstream auditing."
     },
     {
-      "name": "Testing Infrastructure",
-      "description": "Test suite using Playwright for end-to-end testing and TestSprite integration",
-      "files": [
-        "testsprite_tests/",
-        "testsprite_tests/test_helpers.py",
-        "testsprite_tests/test_001_Login_Flow_Test.py",
-        "testsprite_tests/test_002_Barcode_Scanning_Test.py"
-      ]
+      "name": "ERPNext Synchronization",
+      "description": "Background jobs fetch master data from SQL Server, reconcile conflicts, and keep MongoDB inventories aligned with ERP state."
+    },
+    {
+      "name": "Offline Data Capture",
+      "description": "When connectivity drops, scans and edits land in a durable queue that syncs automatically once the network is restored."
+    },
+    {
+      "name": "System Health & Observability",
+      "description": "Operational users can view heartbeat metrics, diagnostics, and automated recovery suggestions through dedicated dashboards."
+    },
+    {
+      "name": "Role-Based Dashboards",
+      "description": "Each persona (admin, supervisor, staff) sees tailored navigation, KPIs, and actions aligned to their operational responsibilities."
+    },
+    {
+      "name": "Security & Compliance Controls",
+      "description": "Least-privilege permissions, audit trails, and rate limits protect sensitive inventory data and enforce corporate policies."
     }
   ]
 }

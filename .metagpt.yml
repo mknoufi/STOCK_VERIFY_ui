@@ -1,0 +1,88 @@
+# MetaGPT Configuration for Stock Verification System
+# https://github.com/geekan/MetaGPT
+
+# Project requirements
+project:
+  name: Stock Verification System
+  description: |
+    Inventory verification system with FastAPI backend, React Native frontend,
+    MongoDB primary storage, and SQL Server ERP integration (read-only).
+
+# Role definitions for multi-agent collaboration
+roles:
+  product_manager:
+    goal: "Define features and requirements for the stock verification system"
+    constraints:
+      - "Features must work offline-first"
+      - "Focus on barcode scanning and inventory counting"
+      - "Consider mobile UX for warehouse workers"
+
+  architect:
+    goal: "Design system architecture following existing patterns"
+    constraints:
+      - "Maintain FastAPI + MongoDB + SQL Server architecture"
+      - "SQL Server is READ-ONLY"
+      - "Use JWT authentication"
+      - "Follow existing API patterns in server.py"
+
+  engineer:
+    goal: "Implement features following project conventions"
+    constraints:
+      - "Use parameterized SQL queries (?)"
+      - "Add type hints to all Python functions"
+      - "Use TypeScript strict mode for frontend"
+      - "Follow Zustand patterns for state management"
+
+  qa_engineer:
+    goal: "Test all features thoroughly"
+    constraints:
+      - "Backend: pytest with 90%+ coverage"
+      - "Frontend: Jest tests for components"
+      - "Integration: Test full data flow"
+      - "Always run `make ci` before approving"
+
+# Technical constraints
+constraints:
+  backend:
+    framework: FastAPI
+    python_version: "3.10+"
+    database_write: MongoDB
+    database_read: SQL Server (via pyodbc)
+    auth: JWT (Authlib)
+
+  frontend:
+    framework: React Native + Expo
+    language: TypeScript
+    state: Zustand
+    routing: Expo Router
+    styling: NativeWind
+
+  api:
+    prefix: /api
+    auth: "Bearer token required"
+    error_format: '{"detail": ..., "error_code": ..., "timestamp": ...}'
+
+# Workflow configuration
+workflow:
+  - role: product_manager
+    output: requirements.md
+
+  - role: architect
+    input: requirements.md
+    output: design.md
+
+  - role: engineer
+    input: design.md
+    output: code changes
+
+  - role: qa_engineer
+    input: code changes
+    output: test results
+
+# Commands
+commands:
+  test: make test
+  lint: make lint
+  ci: make ci
+  start_backend: "cd backend && uvicorn backend.server:app --reload"
+  start_frontend: "cd frontend && npm start"

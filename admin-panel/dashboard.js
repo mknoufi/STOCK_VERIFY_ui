@@ -448,11 +448,11 @@ function initializeAnalyticsCharts() {
                     }
                 }
             });
-
-            console.log('Analytics charts initialized successfully');
-        } catch (error) {
-            console.error('Analytics chart initialization failed:', error);
         }
+
+        console.log('Analytics charts initialized successfully');
+    } catch (error) {
+        console.error('Analytics chart initialization failed:', error);
     }
 }
 

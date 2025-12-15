@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from backend.services.erp_sync_service import SQLSyncService
+from backend.services.sql_sync_service import SQLSyncService
 from backend.sql_server_connector import SQLServerConnector
 
 logger = logging.getLogger(__name__)

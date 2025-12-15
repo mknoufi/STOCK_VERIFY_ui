@@ -1,5 +1,6 @@
 /**
  * Settings Screen - App settings and preferences
+ * Refactored to use Aurora Design System
  */
 
 import React from "react";
@@ -8,24 +9,108 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   Alert,
+  Switch,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useSettingsStore } from "../../src/store/settingsStore";
-import { Header } from "../../src/components/layout/Header";
-import { useTheme } from "../../src/hooks/useTheme";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
-import { SettingGroup } from "../../src/components/layout/SettingGroup";
-import { SettingItem } from "../../src/components/layout/SettingItem";
+import { useSettingsStore } from "../../src/store/settingsStore";
+import { AuroraBackground, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
+
+// Reusable Setting Row Component
+const SettingRow = ({
+  label,
+  value,
+  type,
+  onValueChange,
+  options = [],
+  disabled = false,
+  icon,
+}: {
+  label: string;
+  value: any;
+  type: "switch" | "select" | "slider" | "number";
+  onValueChange: (value: any) => void;
+  options?: { label: string; value: any }[];
+  disabled?: boolean;
+  icon?: keyof typeof Ionicons.glyphMap;
+}) => {
+  const handlePress = () => {
+    if (disabled) return;
+    if (Platform.OS !== "web") Haptics.selectionAsync();
+
+    if (type === "select" && options.length > 0) {
+      const currentIndex = options.findIndex((opt) => opt.value === value);
+      const nextIndex = (currentIndex + 1) % options.length;
+      const nextOption = options[nextIndex];
+      if (nextOption) {
+        onValueChange(nextOption.value);
+      }
+    }
+  };
+
+  return (
+    <AnimatedPressable
+      style={[styles.settingRow, disabled && styles.disabledRow]}
+      onPress={handlePress}
+      disabled={disabled || type === "switch"}
+    >
+      <View style={styles.settingLeft}>
+        {icon && (
+          <View style={styles.iconContainer}>
+            <Ionicons name={icon} size={18} color={auroraTheme.colors.text.primary} />
+          </View>
+        )}
+        <Text style={styles.settingLabel}>{label}</Text>
+      </View>
+
+      <View style={styles.settingRight}>
+        {type === "switch" && (
+          <Switch
+            value={value}
+            onValueChange={(val) => {
+              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onValueChange(val);
+            }}
+            disabled={disabled}
+            trackColor={{
+              false: auroraTheme.colors.neutral[600],
+              true: auroraTheme.colors.primary[500],
+            }}
+            thumbColor={auroraTheme.colors.text.primary}
+            ios_backgroundColor={auroraTheme.colors.neutral[700]}
+          />
+        )}
+
+        {type === "select" && (
+          <View style={styles.selectContainer}>
+            <Text style={styles.selectValue}>
+              {options.find((opt) => opt.value === value)?.label || String(value)}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color={auroraTheme.colors.text.tertiary} />
+          </View>
+        )}
+
+        {(type === "slider" || type === "number") && (
+          <Text style={styles.valueText}>{String(value)}</Text>
+        )}
+      </View>
+    </AnimatedPressable>
+  );
+};
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { settings, setSetting, resetSettings } = useSettingsStore();
-  const theme = useTheme();
 
   const handleReset = () => {
+    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert(
       "Reset Settings",
       "Are you sure you want to reset all settings to default?",
@@ -39,327 +124,180 @@ export default function SettingsScreen() {
             Alert.alert("Success", "Settings reset to default");
           },
         },
-      ],
+      ]
     );
   };
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <Header
-        title="Settings"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
+    <AuroraBackground variant="secondary" intensity="medium" animated>
+      <StatusBar style="light" />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Settings</Text>
+              <Text style={styles.pageSubtitle}>Preferences & Configuration</Text>
+            </View>
+          </View>
+        </Animated.View>
 
-      <ScrollView style={styles.scrollView}>
         {/* Theme Settings */}
-        <SettingGroup title="Theme" icon="color-palette">
-          <SettingItem
-            label="Dark Mode"
-            value={settings.darkMode}
-            type="switch"
-            onValueChange={(value) => setSetting("darkMode", value)}
-          />
-          <SettingItem
-            label="Theme"
-            value={settings.theme}
-            type="select"
-            options={[
-              { label: "Light", value: "light" },
-              { label: "Dark", value: "dark" },
-              { label: "Auto", value: "auto" },
-            ]}
-            onValueChange={(value) => setSetting("theme", value)}
-          />
-        </SettingGroup>
-
-        {/* Notifications */}
-        <SettingGroup title="Notifications" icon="notifications">
-          <SettingItem
-            label="Enable Notifications"
-            value={settings.notificationsEnabled}
-            type="switch"
-            onValueChange={(value) => setSetting("notificationsEnabled", value)}
-          />
-          <SettingItem
-            label="Notification Sound"
-            value={settings.notificationSound}
-            type="switch"
-            disabled={!settings.notificationsEnabled}
-            onValueChange={(value) => setSetting("notificationSound", value)}
-          />
-          <SettingItem
-            label="Badge Count"
-            value={settings.notificationBadge}
-            type="switch"
-            disabled={!settings.notificationsEnabled}
-            onValueChange={(value) => setSetting("notificationBadge", value)}
-          />
-        </SettingGroup>
+        <Animated.View entering={FadeInDown.delay(200).springify()}>
+          <Text style={styles.sectionTitle}>Appearance</Text>
+          <GlassCard variant="medium" padding={0} style={styles.card}>
+            <AnimatedPressable
+              style={styles.settingRow}
+              onPress={() => router.push("/supervisor/appearance")}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="color-palette-outline" size={18} color={auroraTheme.colors.text.primary} />
+                </View>
+                <Text style={styles.settingLabel}>Customize Appearance</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={auroraTheme.colors.text.tertiary} />
+            </AnimatedPressable>
+            <View style={styles.divider} />
+            <SettingRow
+              label="Dark Mode"
+              value={settings.darkMode}
+              type="switch"
+              icon="moon-outline"
+              onValueChange={(value) => setSetting("darkMode", value)}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              label="Theme"
+              value={settings.theme}
+              type="select"
+              icon="contrast-outline"
+              options={[
+                { label: "Light", value: "light" },
+                { label: "Dark", value: "dark" },
+                { label: "Auto", value: "auto" },
+              ]}
+              onValueChange={(value) => setSetting("theme", value)}
+            />
+          </GlassCard>
+        </Animated.View>
 
         {/* Sync Settings */}
-        <SettingGroup title="Sync" icon="sync">
-          <SettingItem
-            label="Auto Sync"
-            value={settings.autoSyncEnabled}
-            type="switch"
-            onValueChange={(value) => setSetting("autoSyncEnabled", value)}
-          />
-          <SettingItem
-            label="Sync Interval"
-            value={`${settings.autoSyncInterval} minutes`}
-            type="slider"
-            min={1}
-            max={60}
-            step={1}
-            disabled={!settings.autoSyncEnabled}
-            onValueChange={(value) => setSetting("autoSyncInterval", value)}
-          />
-          <SettingItem
-            label="Sync on Reconnect"
-            value={settings.syncOnReconnect}
-            type="switch"
-            disabled={!settings.autoSyncEnabled}
-            onValueChange={(value) => setSetting("syncOnReconnect", value)}
-          />
-        </SettingGroup>
-
-        {/* Offline Settings */}
-        <SettingGroup title="Offline" icon="cloud-offline">
-          <SettingItem
-            label="Offline Mode"
-            value={settings.offlineMode}
-            type="switch"
-            onValueChange={(value) => setSetting("offlineMode", value)}
-          />
-          <SettingItem
-            label="Cache Expiration"
-            value={`${settings.cacheExpiration} hours`}
-            type="slider"
-            min={1}
-            max={168}
-            step={1}
-            disabled={!settings.offlineMode}
-            onValueChange={(value) => setSetting("cacheExpiration", value)}
-          />
-          <SettingItem
-            label="Max Queue Size"
-            value={settings.maxQueueSize.toString()}
-            type="number"
-            disabled={!settings.offlineMode}
-            onValueChange={(value) =>
-              setSetting("maxQueueSize", parseInt(value))
-            }
-          />
-        </SettingGroup>
+        <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <Text style={styles.sectionTitle}>Data & Sync</Text>
+          <GlassCard variant="medium" padding={0} style={styles.card}>
+            <SettingRow
+              label="Auto Sync"
+              value={settings.autoSyncEnabled}
+              type="switch"
+              icon="sync-outline"
+              onValueChange={(value) => setSetting("autoSyncEnabled", value)}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              label="Sync Interval (mins)"
+              value={settings.autoSyncInterval}
+              type="slider"
+              icon="time-outline"
+              disabled={!settings.autoSyncEnabled}
+              onValueChange={(value) => setSetting("autoSyncInterval", value)}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              label="Offline Mode"
+              value={settings.offlineMode}
+              type="switch"
+              icon="cloud-offline-outline"
+              onValueChange={(value) => setSetting("offlineMode", value)}
+            />
+          </GlassCard>
+        </Animated.View>
 
         {/* Scanner Settings */}
-        <SettingGroup title="Scanner" icon="barcode">
-          <SettingItem
-            label="Vibration"
-            value={settings.scannerVibration}
-            type="switch"
-            onValueChange={(value) => setSetting("scannerVibration", value)}
-          />
-          <SettingItem
-            label="Sound"
-            value={settings.scannerSound}
-            type="switch"
-            onValueChange={(value) => setSetting("scannerSound", value)}
-          />
-          <SettingItem
-            label="Auto Submit"
-            value={settings.scannerAutoSubmit}
-            type="switch"
-            onValueChange={(value) => setSetting("scannerAutoSubmit", value)}
-          />
-          <SettingItem
-            label="Timeout"
-            value={`${settings.scannerTimeout} seconds`}
-            type="slider"
-            min={5}
-            max={60}
-            step={5}
-            onValueChange={(value) => setSetting("scannerTimeout", value)}
-          />
-        </SettingGroup>
+        <Animated.View entering={FadeInDown.delay(400).springify()}>
+          <Text style={styles.sectionTitle}>Scanner</Text>
+          <GlassCard variant="medium" padding={0} style={styles.card}>
+            <SettingRow
+              label="Vibration Feedback"
+              value={settings.scannerVibration}
+              type="switch"
+              icon="pulse-outline"
+              onValueChange={(value) => setSetting("scannerVibration", value)}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              label="Sound Effects"
+              value={settings.scannerSound}
+              type="switch"
+              icon="musical-note-outline"
+              onValueChange={(value) => setSetting("scannerSound", value)}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              label="Auto Submit Scan"
+              value={settings.scannerAutoSubmit}
+              type="switch"
+              icon="checkmark-circle-outline"
+              onValueChange={(value) => setSetting("scannerAutoSubmit", value)}
+            />
+          </GlassCard>
+        </Animated.View>
 
-        {/* Display Settings */}
-        <SettingGroup title="Display" icon="eye">
-          <SettingItem
-            label="Font Size"
-            value={settings.fontSize}
-            type="select"
-            options={[
-              { label: "Small", value: "small" },
-              { label: "Medium", value: "medium" },
-              { label: "Large", value: "large" },
-            ]}
-            onValueChange={(value) => setSetting("fontSize", value)}
-          />
-          <SettingItem
-            label="Show Item Images"
-            value={settings.showItemImages}
-            type="switch"
-            onValueChange={(value) => setSetting("showItemImages", value)}
-          />
-          <SettingItem
-            label="Show Prices"
-            value={settings.showItemPrices}
-            type="switch"
-            onValueChange={(value) => setSetting("showItemPrices", value)}
-          />
-          <SettingItem
-            label="Show Stock"
-            value={settings.showItemStock}
-            type="switch"
-            onValueChange={(value) => setSetting("showItemStock", value)}
-          />
-        </SettingGroup>
-
-        {/* Data Settings */}
-        <SettingGroup title="Data" icon="server">
-          <SettingItem
-            label="Export Format"
-            value={settings.exportFormat.toUpperCase()}
-            type="select"
-            options={[
-              { label: "CSV", value: "csv" },
-              { label: "JSON", value: "json" },
-            ]}
-            onValueChange={(value) => setSetting("exportFormat", value)}
-          />
-          <SettingItem
-            label="Backup Frequency"
-            value={settings.backupFrequency}
-            type="select"
-            options={[
-              { label: "Daily", value: "daily" },
-              { label: "Weekly", value: "weekly" },
-              { label: "Monthly", value: "monthly" },
-              { label: "Never", value: "never" },
-            ]}
-            onValueChange={(value) => setSetting("backupFrequency", value)}
-          />
-        </SettingGroup>
-
-        {/* Database Mapping */}
-        <SettingGroup title="Database Mapping" icon="swap-horizontal">
-          <TouchableOpacity
-            style={styles.mappingButton}
-            onPress={() => router.push("/supervisor/db-mapping")}
-          >
-            <Ionicons name="settings" size={20} color={theme.colors.primary} />
-            <Text
-              style={[
-                styles.mappingButtonText,
-                { color: theme.colors.primary },
-              ]}
+        {/* Navigation Actions */}
+        <Animated.View entering={FadeInDown.delay(500).springify()}>
+          <Text style={styles.sectionTitle}>Management</Text>
+          <GlassCard variant="medium" padding={0} style={styles.card}>
+            <AnimatedPressable
+              style={styles.settingRow}
+              onPress={() => router.push("/supervisor/db-mapping")}
             >
-              Configure Table & Column Mapping
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={theme.colors.textSecondary}
-            />
-          </TouchableOpacity>
-        </SettingGroup>
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="options-outline" size={18} color={auroraTheme.colors.text.primary} />
+                </View>
+                <Text style={styles.settingLabel}>Database Mapping</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={auroraTheme.colors.text.tertiary} />
+            </AnimatedPressable>
 
-        {/* Help & Support */}
-        <SettingGroup title="Help & Support" icon="help-circle">
-          <TouchableOpacity
-            style={styles.mappingButton}
-            onPress={() => router.push("/help" as any)}
-          >
-            <Ionicons
-              name="help-circle"
-              size={20}
-              color={theme.colors.primary}
-            />
-            <Text
-              style={[
-                styles.mappingButtonText,
-                { color: theme.colors.primary },
-              ]}
+            <View style={styles.divider} />
+
+            <AnimatedPressable
+              style={styles.settingRow}
+              onPress={() => router.push("/help" as any)}
             >
-              Help & Documentation
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={theme.colors.textSecondary}
-            />
-          </TouchableOpacity>
-        </SettingGroup>
-
-        {/* Security Settings */}
-        <SettingGroup title="Security" icon="lock-closed">
-          <SettingItem
-            label="Require Authentication"
-            value={settings.requireAuth}
-            type="switch"
-            onValueChange={(value) => setSetting("requireAuth", value)}
-          />
-          <SettingItem
-            label="Session Timeout"
-            value={`${settings.sessionTimeout} minutes`}
-            type="slider"
-            min={5}
-            max={480}
-            step={5}
-            onValueChange={(value) => setSetting("sessionTimeout", value)}
-          />
-          <SettingItem
-            label="Biometric Auth"
-            value={settings.biometricAuth}
-            type="switch"
-            disabled={!settings.requireAuth}
-            onValueChange={(value) => setSetting("biometricAuth", value)}
-          />
-        </SettingGroup>
-
-        {/* Performance Settings */}
-        <SettingGroup title="Performance" icon="speedometer">
-          <SettingItem
-            label="Image Cache"
-            value={settings.imageCache}
-            type="switch"
-            onValueChange={(value) => setSetting("imageCache", value)}
-          />
-          <SettingItem
-            label="Lazy Loading"
-            value={settings.lazyLoading}
-            type="switch"
-            onValueChange={(value) => setSetting("lazyLoading", value)}
-          />
-          <SettingItem
-            label="Debounce Delay"
-            value={`${settings.debounceDelay}ms`}
-            type="slider"
-            min={100}
-            max={1000}
-            step={100}
-            onValueChange={(value) => setSetting("debounceDelay", value)}
-          />
-        </SettingGroup>
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="help-circle-outline" size={18} color={auroraTheme.colors.text.primary} />
+                </View>
+                <Text style={styles.settingLabel}>Help & Support</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={auroraTheme.colors.text.tertiary} />
+            </AnimatedPressable>
+          </GlassCard>
+        </Animated.View>
 
         {/* Reset Button */}
-        <View style={styles.resetContainer}>
-          <TouchableOpacity
-            style={[styles.resetButton, { borderColor: theme.colors.error }]}
+        <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.resetContainer}>
+          <AnimatedPressable
+            style={styles.resetButton}
             onPress={handleReset}
           >
-            <Ionicons name="refresh" size={20} color={theme.colors.error} />
-            <Text style={[styles.resetText, { color: theme.colors.error }]}>
-              Reset to Default
-            </Text>
-          </TouchableOpacity>
-        </View>
+            <Ionicons name="refresh" size={18} color={auroraTheme.colors.error[500]} />
+            <Text style={styles.resetText}>Reset to Defaults</Text>
+          </AnimatedPressable>
+        </Animated.View>
+
+        <View style={{ height: 40 }} />
       </ScrollView>
-    </View>
+    </AuroraBackground>
   );
 }
 
@@ -367,39 +305,118 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
+  contentContainer: {
+    padding: auroraTheme.spacing.lg,
+    paddingTop: 60,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: auroraTheme.spacing.xl,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
+  },
+  backButton: {
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
+  },
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
+  },
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
+  },
+  sectionTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.secondary,
+    marginBottom: auroraTheme.spacing.sm,
+    marginLeft: auroraTheme.spacing.xs,
+    marginTop: auroraTheme.spacing.md,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  card: {
+    overflow: 'hidden',
+  },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: auroraTheme.spacing.md,
+    minHeight: 56,
+  },
+  disabledRow: {
+    opacity: 0.5,
+  },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: auroraTheme.borderRadius.full,
+    backgroundColor: auroraTheme.colors.background.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingLabel: {
+    fontFamily: auroraTheme.typography.fontFamily.body,
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.primary,
+  },
+  settingRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.xs,
+  },
+  selectValue: {
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.secondary,
+  },
+  valueText: {
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.secondary,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: auroraTheme.colors.border.light,
+    marginLeft: 56, // Align with text start
   },
   resetContainer: {
-    padding: 16,
-    marginTop: 16,
-    marginBottom: 32,
+    marginTop: auroraTheme.spacing.xl,
+    alignItems: 'center',
   },
   resetButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.sm,
+    paddingVertical: auroraTheme.spacing.sm,
+    paddingHorizontal: auroraTheme.spacing.lg,
+    borderRadius: auroraTheme.borderRadius.full,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)', // Error color with low opacity
     borderWidth: 1,
-    gap: 8,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
   },
   resetText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  mappingButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#333",
-    gap: 12,
-  },
-  mappingButtonText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "500",
+    color: auroraTheme.colors.error[500],
+    fontWeight: '600',
   },
 });

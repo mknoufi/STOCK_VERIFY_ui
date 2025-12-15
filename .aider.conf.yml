@@ -1,0 +1,77 @@
+# Aider Configuration for Stock Verification System
+# https://aider.chat/docs/config/aider_conf.html
+
+# Model Configuration
+model: claude-sonnet-4-20250514
+edit-format: diff
+weak-model: claude-sonnet-4-20250514
+
+# Context Configuration
+auto-commits: false
+dirty-commits: false
+attribute-author: true
+attribute-committer: true
+attribute-commit-message-author: true
+attribute-commit-message-committer: true
+
+# Read-only files (reference only, never modify)
+read:
+  - README.md
+  - ARCHITECTURE.md
+  - API_CONTRACTS.md
+  - API_REFERENCE.md
+  - .cursorrules
+  - .github/copilot-instructions.md
+
+# Files to exclude from context
+ignore-file:
+  - .gitignore
+  - .aiderignore
+
+# Safety settings
+suggest-shell-commands: true
+show-diffs: true
+check-update: true
+
+# Git settings
+git: true
+gitignore: true
+
+# Lint/test commands
+lint-cmd:
+  python: "cd backend && ruff check --fix {fname}"
+  typescript: "cd frontend && npm run lint -- --fix"
+
+test-cmd: "make test"
+
+# Code map settings
+map-tokens: 2048
+map-refresh: auto
+
+# Voice settings (experimental)
+voice-language: en
+
+# Environment
+env-file: .env
+
+# Custom prompts
+system-prompt: |
+  You are working on the Stock Verification System.
+
+  CRITICAL RULES:
+  - SQL Server is READ-ONLY. All writes go to MongoDB.
+  - Use parameterized queries (?) for SQL - never string concatenation.
+  - JWT auth required for all /api/* endpoints.
+  - Follow patterns in existing code.
+  - Run tests before suggesting changes.
+
+  ARCHITECTURE:
+  - Backend: FastAPI (Python 3.10+) on port 8001
+  - Frontend: React Native + Expo (TypeScript)
+  - Primary DB: MongoDB (Motor async driver)
+  - ERP Source: SQL Server (pyodbc, read-only)
+
+  TEST COMMANDS:
+  - Backend: cd backend && pytest tests/ -v
+  - Frontend: cd frontend && npm test
+  - Full CI: make ci

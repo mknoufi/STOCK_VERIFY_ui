@@ -1,11 +1,37 @@
 import axios from "axios";
-import { getBackendURL } from "./backendUrl";
+import Constants from "expo-constants";
 
-const BASE_URL = getBackendURL();
+// Logic to determine the backend URL
+// Priority:
+// 1. Expo Config `extra.backendUrl` (runtime dynamic config)
+// 2. EXPO_PUBLIC_BACKEND_URL (build-time env var)
+// 3. Fallback to localhost (dev default)
+
+const getBackendUrl = () => {
+  // Check for dynamically loaded URL from app.config.js
+  const configUrl = Constants.expoConfig?.extra?.backendUrl;
+  if (configUrl) {
+    console.log("[API] Using Dynamic Backend URL:", configUrl);
+    return configUrl;
+  }
+
+  // Fallback to env var
+  const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+  if (envUrl) {
+    console.log("[API] Using Env Backend URL:", envUrl);
+    return envUrl;
+  }
+
+  // Default fallback
+  console.log("[API] Using Default Localhost URL");
+  return "http://localhost:8000";
+};
+
+export const API_BASE_URL = getBackendUrl();
 
 const apiClient = axios.create({
-  baseURL: BASE_URL,
-  timeout: 10000,
+  baseURL: API_BASE_URL,
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
   },

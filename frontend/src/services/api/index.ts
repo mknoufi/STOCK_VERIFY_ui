@@ -1,4 +1,6 @@
 export * from "./api";
+export * from "./adminApi";
+export * from "./reportApi";
 export * from "./enhancedApi";
 export * from "./enhancedApiClient";
 export * from "./enhancedDatabaseApi";

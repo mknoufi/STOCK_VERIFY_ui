@@ -58,17 +58,24 @@ async def add_test_items():
                 "synced_from_erp": False,
                 "created_at": datetime.utcnow(),
             },
+            {
+                "item_code": "ITEM52000",
+                "item_name": "Test Item 52000",
+                "barcode": "52000",
+                "stock_qty": 500.0,
+                "mrp": 120.0,
+                "category": "Test",
+                "warehouse": "Main",
+                "synced_at": datetime.utcnow(),
+                "synced_from_erp": False,
+                "created_at": datetime.utcnow(),
+            },
         ]
 
         # Check if items already exist
         existing_count = await db.erp_items.count_documents({})
         if existing_count > 0:
-            print(f"⚠️  MongoDB already has {existing_count} items")
-            response = input("Do you want to add test items anyway? (y/n): ")
-            if response.lower() != "y":
-                print("❌ Cancelled")
-                client.close()
-                return
+            print(f"⚠️  MongoDB already has {existing_count} items. Proceeding to add test items...")
 
         # Insert test items
         result = await db.erp_items.insert_many(test_items)

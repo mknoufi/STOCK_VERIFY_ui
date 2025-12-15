@@ -6,7 +6,7 @@
 
 import type { Meta, StoryObj } from "@storybook/react";
 import { DataTable, TableColumn, TableData } from "./DataTable";
-import { View, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 const meta: Meta<typeof DataTable> = {
   title: "Components/DataTable",
@@ -158,7 +158,7 @@ export const CustomRenderers: Story = {
               style={[styles.stockBadge, { backgroundColor: color + "20" }]}
             >
               <View style={[styles.stockDot, { backgroundColor: color }]} />
-              <span style={{ color }}>{qty}</span>
+              <Text style={[styles.stockText, { color }]}>{qty}</Text>
             </View>
           );
         },
@@ -168,9 +168,9 @@ export const CustomRenderers: Story = {
         label: "MRP",
         sortable: true,
         render: (value) => (
-          <span style={{ fontWeight: "bold", color: "#2196F3" }}>
+          <Text style={styles.mrpText}>
             ₹{Number(value).toFixed(2)}
-          </span>
+          </Text>
         ),
       },
     ],
@@ -219,5 +219,13 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  stockText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  mrpText: {
+    fontWeight: "bold",
+    color: "#2196F3",
   },
 });

@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from backend.api.schemas import ApiResponse, TokenResponse, UserLogin, UserRegister
+from backend.api.schemas import ApiResponse, PinLogin, TokenResponse, UserLogin, UserRegister
 from backend.auth.dependencies import auth_deps, get_current_user
 from backend.config import settings
 from backend.db.runtime import get_db
@@ -383,6 +383,91 @@ async def login(credentials: UserLogin, request: Request) -> Result[Dict[str, An
 
     except Exception as e:
         logger.error("=== LOGIN EXCEPTION ===")
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Exception message: {str(e)}")
+        logger.error("Traceback:", exc_info=True)
+        return Fail(e)
+
+
+@router.post("/auth/login-pin", response_model=ApiResponse[TokenResponse])
+@result_to_response(success_status=200)
+async def login_with_pin(
+    credentials: PinLogin, request: Request
+) -> Result[Dict[str, Any], Exception]:
+    """
+    Staff PIN login endpoint (4-digit numeric PIN).
+
+    For staff users to quickly login with their PIN instead of username/password.
+    PIN is stored as a hashed value in the user document.
+    """
+    db = get_db()
+    cache_service = get_cache_service()
+    pin = credentials.pin
+
+    logger.info("=== PIN LOGIN ATTEMPT START ===")
+
+    client_ip = request.client.host if request.client else ""
+
+    # Validate PIN format (4-digit numeric)
+    if not pin or len(pin) != 4 or not pin.isdigit():
+        logger.warning(f"Invalid PIN format from IP: {client_ip}")
+        return Fail(AuthenticationError("Invalid PIN format. PIN must be 4 digits."))
+
+    try:
+        # Check rate limiting
+        rate_limit_fail = await _check_login_rate_limit(client_ip)
+        if rate_limit_fail:
+            return rate_limit_fail
+
+        # Find user by PIN - we iterate through users with PIN and verify
+        logger.info("Searching for user by PIN...")
+
+        # We need to verify PIN against all users with PIN set
+        # Since we hash PINs, we iterate and verify
+        users_with_pin = await db.users.find({"pin_hash": {"$exists": True}}).to_list(length=100)
+
+        found_user = None
+        for user in users_with_pin:
+            if verify_password(pin, user.get("pin_hash", "")):
+                found_user = user
+                break
+
+        if not found_user:
+            logger.warning(f"No user found with matching PIN from IP: {client_ip}")
+            await log_failed_login_attempt(
+                username="PIN_LOGIN",
+                ip_address=client_ip,
+                user_agent=request.headers.get("user-agent"),
+                error="Invalid PIN",
+            )
+            return Fail(AuthenticationError("Invalid PIN"))
+
+        logger.info(f"PIN matched user: {found_user['username']}")
+
+        # Check active status
+        if not found_user.get("is_active", True):
+            logger.error("User account is deactivated")
+            return Fail(AuthorizationError("Account is deactivated. Please contact support."))
+
+        # Generate tokens
+        logger.info("Generating tokens...")
+        tokens_result = await generate_auth_tokens(found_user, client_ip, request)
+        if tokens_result.is_err:
+            logger.error(f"Token generation failed: {tokens_result}")
+            return tokens_result
+
+        tokens = tokens_result.unwrap()
+        logger.info("Tokens generated successfully")
+
+        # Log success and cleanup
+        await log_successful_login(found_user, client_ip, request)
+        await cache_service.delete("login_attempts", client_ip)
+
+        logger.info("=== PIN LOGIN SUCCESS ===")
+        return Ok(_build_login_response(tokens, found_user))
+
+    except Exception as e:
+        logger.error("=== PIN LOGIN EXCEPTION ===")
         logger.error(f"Exception type: {type(e).__name__}")
         logger.error(f"Exception message: {str(e)}")
         logger.error("Traceback:", exc_info=True)

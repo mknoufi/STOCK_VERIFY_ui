@@ -1,5 +1,6 @@
 /**
  * Error Logs Screen - View application errors and exceptions for monitoring
+ * Refactored to use Aurora Design System
  */
 
 import React, { useState, useEffect } from "react";
@@ -7,17 +8,20 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
   Modal,
   TextInput,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Header } from "../../src/components/layout/Header";
-import { useTheme } from "../../src/hooks/useTheme";
+import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { FlashList } from "@shopify/flash-list";
+
 import {
   getErrorLogs,
   getErrorStats,
@@ -25,6 +29,8 @@ import {
   resolveError,
 } from "../../src/services/api/api";
 import { useToast } from "../../src/components/feedback/ToastProvider";
+import { AuroraBackground, GlassCard, StatsCard, AnimatedPressable } from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 interface ErrorLog {
   id: string;
@@ -50,7 +56,6 @@ interface ErrorLog {
 
 export default function ErrorLogsScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const { show } = useToast();
 
   const [errors, setErrors] = useState<ErrorLog[]>([]);
@@ -75,7 +80,7 @@ export default function ErrorLogsScreen() {
         setLoading(pageNum === 1);
         const response = await getErrorLogs(
           pageNum,
-          50,
+          20,
           filters.severity || undefined,
           undefined,
           undefined,
@@ -92,6 +97,7 @@ export default function ErrorLogsScreen() {
         setHasMore(response.pagination?.has_next || false);
       } catch {
         show("Failed to load error logs", "error");
+        if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -115,6 +121,7 @@ export default function ErrorLogsScreen() {
   }, [loadErrors, loadStats]);
 
   const handleRefresh = async () => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     setPage(1);
     await Promise.all([loadErrors(1), loadStats()]);
@@ -123,6 +130,7 @@ export default function ErrorLogsScreen() {
 
   const loadMore = () => {
     if (hasMore && !loading) {
+      if (Platform.OS !== "web") Haptics.selectionAsync();
       const nextPage = page + 1;
       setPage(nextPage);
       loadErrors(nextPage);
@@ -130,6 +138,7 @@ export default function ErrorLogsScreen() {
   };
 
   const handleErrorClick = async (error: ErrorLog) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     try {
       const detail = await getErrorDetail(error.id);
       setSelectedError(detail);
@@ -143,6 +152,7 @@ export default function ErrorLogsScreen() {
     if (!selectedError) return;
 
     try {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setResolving(true);
       await resolveError(selectedError.id, resolutionNote);
       show("Error marked as resolved", "success");
@@ -151,6 +161,7 @@ export default function ErrorLogsScreen() {
       setResolutionNote("");
       handleRefresh();
     } catch (error: any) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show(`Failed to resolve error: ${error.message}`, "error");
     } finally {
       setResolving(false);
@@ -165,15 +176,15 @@ export default function ErrorLogsScreen() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "#FF5252";
+        return auroraTheme.colors.error[500];
       case "error":
-        return "#FF5252";
+        return auroraTheme.colors.error[500];
       case "warning":
-        return "#FFC107";
+        return auroraTheme.colors.warning[500];
       case "info":
-        return "#2196F3";
+        return auroraTheme.colors.primary[500];
       default:
-        return theme.colors.textSecondary;
+        return auroraTheme.colors.text.secondary;
     }
   };
 
@@ -192,595 +203,312 @@ export default function ErrorLogsScreen() {
     }
   };
 
-  return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <Header
-        title="Error Monitoring"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
-
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-      >
-        {/* Statistics */}
-        {stats && (
-          <View
-            style={[
-              styles.statsContainer,
-              { backgroundColor: theme.colors.card },
-            ]}
-          >
-            <Text style={[styles.statsTitle, { color: theme.colors.text }]}>
-              Error Statistics
-            </Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text
-                  style={[styles.statValue, { color: theme.colors.primary }]}
-                >
-                  {stats.total || 0}
-                </Text>
-                <Text
-                  style={[
-                    styles.statLabel,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  Total Errors
-                </Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: "#FF5252" }]}>
-                  {stats.by_severity?.critical || 0}
-                </Text>
-                <Text
-                  style={[
-                    styles.statLabel,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  Critical
-                </Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: "#FF5252" }]}>
-                  {stats.by_severity?.error || 0}
-                </Text>
-                <Text
-                  style={[
-                    styles.statLabel,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  Errors
-                </Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: "#FFC107" }]}>
-                  {stats.unresolved || 0}
-                </Text>
-                <Text
-                  style={[
-                    styles.statLabel,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  Unresolved
-                </Text>
-              </View>
+  const renderErrorItem = ({ item: error }: { item: ErrorLog }) => (
+    <AnimatedPressable onPress={() => handleErrorClick(error)} style={{ marginBottom: auroraTheme.spacing.md }}>
+      <GlassCard variant="light" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.lg} style={{ borderColor: error.severity === 'critical' ? auroraTheme.colors.error[500] : undefined }}>
+        <View style={styles.errorHeader}>
+          <View style={styles.errorHeaderLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: getSeverityColor(error.severity) + '20' }]}>
+              <Ionicons
+                name={getSeverityIcon(error.severity) as any}
+                size={20}
+                color={getSeverityColor(error.severity)}
+              />
             </View>
-            <View style={styles.recentContainer}>
-              <Text
-                style={[
-                  styles.recentText,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                Last 24 hours: {stats.recent_24h || 0} errors
+            <View style={styles.errorInfo}>
+              <Text style={styles.errorType}>{error.error_type}</Text>
+              <Text style={styles.errorMessage} numberOfLines={1}>
+                {error.error_message}
               </Text>
             </View>
           </View>
+          <GlassCard variant="dark" intensity={10} padding={auroraTheme.spacing.xs} borderRadius={auroraTheme.borderRadius.full}>
+            <Text style={[styles.severityText, { color: getSeverityColor(error.severity) }]}>
+              {error.severity.toUpperCase()}
+            </Text>
+          </GlassCard>
+        </View>
+
+        <View style={styles.errorMeta}>
+          <View style={styles.metaRow}>
+            <Ionicons name="time-outline" size={14} color={auroraTheme.colors.text.tertiary} />
+            <Text style={styles.metaText}>{formatTimestamp(error.timestamp)}</Text>
+          </View>
+          {error.endpoint && (
+            <View style={styles.metaRow}>
+              <Ionicons name="globe-outline" size={14} color={auroraTheme.colors.text.tertiary} />
+              <Text style={styles.metaText}>{error.method} {error.endpoint}</Text>
+            </View>
+          )}
+          {error.user && (
+            <View style={styles.metaRow}>
+              <Ionicons name="person-outline" size={14} color={auroraTheme.colors.text.tertiary} />
+              <Text style={styles.metaText}>{error.user}</Text>
+            </View>
+          )}
+        </View>
+
+        {error.resolved && (
+          <GlassCard variant="medium" padding={auroraTheme.spacing.sm} borderRadius={auroraTheme.borderRadius.md} style={styles.resolvedBadge}>
+            <Ionicons name="checkmark-circle" size={16} color={auroraTheme.colors.success[500]} />
+            <Text style={styles.resolvedText}>
+              Resolved by {error.resolved_by}
+            </Text>
+          </GlassCard>
+        )}
+      </GlassCard>
+    </AnimatedPressable>
+  );
+
+  return (
+    <AuroraBackground>
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            </AnimatedPressable>
+            <View>
+              <Text style={styles.pageTitle}>Error Monitoring</Text>
+              <Text style={styles.pageSubtitle}>System exceptions & failures</Text>
+            </View>
+          </View>
+        </Animated.View>
+
+        {stats && (
+          <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
+            <StatsCard
+              title="Total Errors"
+              value={stats.total?.toString() || "0"}
+              icon="bug-outline"
+              variant="primary"
+              style={{ flex: 1 }}
+            />
+            <StatsCard
+              title="Critical"
+              value={`${stats.by_severity?.critical || 0}`}
+              icon="alert-circle-outline"
+              variant="error"
+              style={{ flex: 1 }}
+            />
+            <StatsCard
+              title="Unresolved"
+              value={`${stats.unresolved || 0}`}
+              icon="time-outline"
+              variant="warning"
+              style={{ flex: 1 }}
+            />
+          </Animated.View>
         )}
 
         {/* Filters */}
-        <View
-          style={[
-            styles.filtersContainer,
-            { backgroundColor: theme.colors.card },
-          ]}
-        >
-          <Text style={[styles.filterTitle, { color: theme.colors.text }]}>
-            Filters
-          </Text>
-          <View style={styles.filterRow}>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                { backgroundColor: theme.colors.background },
-                filters.severity === "" && styles.filterButtonActive,
-              ]}
+        <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.filtersContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+            <AnimatedPressable
               onPress={() => setFilters({ ...filters, severity: "" })}
+              style={{ marginRight: auroraTheme.spacing.sm }}
             >
-              <Text
-                style={[styles.filterButtonText, { color: theme.colors.text }]}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
+              <GlassCard variant={filters.severity === "" ? "medium" : "light"} padding={8} borderRadius={auroraTheme.borderRadius.full} style={filters.severity === "" && { borderColor: auroraTheme.colors.primary[500], borderWidth: 1 }}>
+                <Text style={[styles.filterText, filters.severity === "" && { color: auroraTheme.colors.primary[500] }]}>All Severities</Text>
+              </GlassCard>
+            </AnimatedPressable>
             {["critical", "error", "warning"].map((sev) => (
-              <TouchableOpacity
+              <AnimatedPressable
                 key={sev}
-                style={[
-                  styles.filterButton,
-                  { backgroundColor: theme.colors.background },
-                  filters.severity === sev && styles.filterButtonActive,
-                ]}
                 onPress={() => setFilters({ ...filters, severity: sev })}
+                style={{ marginRight: auroraTheme.spacing.sm }}
               >
-                <Text
-                  style={[
-                    styles.filterButtonText,
-                    { color: theme.colors.text },
-                  ]}
-                >
-                  {sev.charAt(0).toUpperCase() + sev.slice(1)}
-                </Text>
-              </TouchableOpacity>
+                <GlassCard variant={filters.severity === sev ? "medium" : "light"} padding={8} borderRadius={auroraTheme.borderRadius.full} style={filters.severity === sev && { borderColor: getSeverityColor(sev), borderWidth: 1 }}>
+                  <Text style={[styles.filterText, filters.severity === sev && { color: getSeverityColor(sev) }]}>{sev.charAt(0).toUpperCase() + sev.slice(1)}</Text>
+                </GlassCard>
+              </AnimatedPressable>
             ))}
-          </View>
-          <View style={styles.filterRow}>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                { backgroundColor: theme.colors.background },
-                filters.resolved === undefined && styles.filterButtonActive,
-              ]}
+          </ScrollView>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.filtersScroll, { marginTop: auroraTheme.spacing.sm }]}>
+            <AnimatedPressable
               onPress={() => setFilters({ ...filters, resolved: undefined })}
+              style={{ marginRight: auroraTheme.spacing.sm }}
             >
-              <Text
-                style={[styles.filterButtonText, { color: theme.colors.text }]}
-              >
-                All Status
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                { backgroundColor: theme.colors.background },
-                filters.resolved === false && styles.filterButtonActive,
-              ]}
+              <GlassCard variant={filters.resolved === undefined ? "medium" : "light"} padding={8} borderRadius={auroraTheme.borderRadius.full} style={filters.resolved === undefined && { borderColor: auroraTheme.colors.primary[500], borderWidth: 1 }}>
+                <Text style={[styles.filterText, filters.resolved === undefined && { color: auroraTheme.colors.primary[500] }]}>All Status</Text>
+              </GlassCard>
+            </AnimatedPressable>
+            <AnimatedPressable
               onPress={() => setFilters({ ...filters, resolved: false })}
+              style={{ marginRight: auroraTheme.spacing.sm }}
             >
-              <Text
-                style={[styles.filterButtonText, { color: theme.colors.text }]}
-              >
-                Unresolved
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                { backgroundColor: theme.colors.background },
-                filters.resolved === true && styles.filterButtonActive,
-              ]}
+              <GlassCard variant={filters.resolved === false ? "medium" : "light"} padding={8} borderRadius={auroraTheme.borderRadius.full} style={filters.resolved === false && { borderColor: auroraTheme.colors.warning[500], borderWidth: 1 }}>
+                <Text style={[styles.filterText, filters.resolved === false && { color: auroraTheme.colors.warning[500] }]}>Unresolved</Text>
+              </GlassCard>
+            </AnimatedPressable>
+            <AnimatedPressable
               onPress={() => setFilters({ ...filters, resolved: true })}
+              style={{ marginRight: auroraTheme.spacing.sm }}
             >
-              <Text
-                style={[styles.filterButtonText, { color: theme.colors.text }]}
-              >
-                Resolved
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              <GlassCard variant={filters.resolved === true ? "medium" : "light"} padding={8} borderRadius={auroraTheme.borderRadius.full} style={filters.resolved === true && { borderColor: auroraTheme.colors.success[500], borderWidth: 1 }}>
+                <Text style={[styles.filterText, filters.resolved === true && { color: auroraTheme.colors.success[500] }]}>Resolved</Text>
+              </GlassCard>
+            </AnimatedPressable>
+          </ScrollView>
+        </Animated.View>
 
-        {/* Error Logs */}
-        {loading && errors.length === 0 ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text
-              style={[
-                styles.loadingText,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              Loading error logs...
-            </Text>
-          </View>
-        ) : errors.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons
-              name="checkmark-circle"
-              size={64}
-              color={theme.colors.textSecondary}
+        <View style={styles.listContainer}>
+          {loading && errors.length === 0 ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+              <Text style={styles.loadingText}>Loading error logs...</Text>
+            </View>
+          ) : (
+            <FlashList
+              data={errors}
+              renderItem={renderErrorItem}
+              // @ts-ignore
+              estimatedItemSize={200}
+              keyExtractor={(item) => item.id}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={auroraTheme.colors.primary[500]} />
+              }
+              onEndReached={loadMore}
+              onEndReachedThreshold={0.5}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="checkmark-circle-outline" size={64} color={auroraTheme.colors.success[500]} />
+                  <Text style={styles.emptyText}>No errors found</Text>
+                </View>
+              }
+              ListFooterComponent={
+                loading && errors.length > 0 ? (
+                  <View style={{ padding: 20 }}>
+                    <ActivityIndicator color={auroraTheme.colors.primary[500]} />
+                  </View>
+                ) : null
+              }
+              contentContainerStyle={{ paddingBottom: auroraTheme.spacing.xl }}
             />
-            <Text
-              style={[styles.emptyText, { color: theme.colors.textSecondary }]}
-            >
-              No errors found
-            </Text>
-          </View>
-        ) : (
-          <>
-            {errors.map((error) => (
-              <TouchableOpacity
-                key={error.id}
-                style={[
-                  styles.errorItem,
-                  { backgroundColor: theme.colors.card },
-                ]}
-                onPress={() => handleErrorClick(error)}
-              >
-                <View style={styles.errorHeader}>
-                  <View style={styles.errorHeaderLeft}>
-                    <Ionicons
-                      name={getSeverityIcon(error.severity) as any}
-                      size={20}
-                      color={getSeverityColor(error.severity)}
-                    />
-                    <View style={styles.errorInfo}>
-                      <Text
-                        style={[styles.errorType, { color: theme.colors.text }]}
-                      >
-                        {error.error_type}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.errorMessage,
-                          { color: theme.colors.textSecondary },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {error.error_message}
-                      </Text>
-                    </View>
-                  </View>
-                  <View
-                    style={[
-                      styles.severityBadge,
-                      {
-                        backgroundColor:
-                          getSeverityColor(error.severity) + "20",
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.severityText,
-                        { color: getSeverityColor(error.severity) },
-                      ]}
-                    >
-                      {error.severity}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.errorMeta}>
-                  <Text
-                    style={[
-                      styles.errorMetaText,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    {formatTimestamp(error.timestamp)}
-                  </Text>
-                  {error.endpoint && (
-                    <Text
-                      style={[
-                        styles.errorMetaText,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      {error.method} {error.endpoint}
-                    </Text>
-                  )}
-                  {error.user && (
-                    <Text
-                      style={[
-                        styles.errorMetaText,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      {error.user}
-                    </Text>
-                  )}
-                </View>
-
-                {error.resolved && (
-                  <View style={styles.resolvedBadge}>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={16}
-                      color="#00E676"
-                    />
-                    <Text style={styles.resolvedText}>
-                      Resolved by {error.resolved_by} on{" "}
-                      {formatTimestamp(error.resolved_at!)}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-
-            {hasMore && (
-              <TouchableOpacity
-                style={[
-                  styles.loadMoreButton,
-                  { backgroundColor: theme.colors.primary },
-                ]}
-                onPress={loadMore}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.loadMoreText}>Load More</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          </>
-        )}
-      </ScrollView>
-
-      {/* Error Detail Modal */}
-      <Modal
-        visible={showDetailModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowDetailModal(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.card },
-            ]}
-          >
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Error Details
-              </Text>
-              <TouchableOpacity onPress={() => setShowDetailModal(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            {selectedError && (
-              <ScrollView style={styles.modalBody}>
-                <View style={styles.detailSection}>
-                  <Text
-                    style={[
-                      styles.detailLabel,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    Error Type
-                  </Text>
-                  <Text
-                    style={[styles.detailValue, { color: theme.colors.text }]}
-                  >
-                    {selectedError.error_type}
-                  </Text>
-                </View>
-
-                <View style={styles.detailSection}>
-                  <Text
-                    style={[
-                      styles.detailLabel,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    Message
-                  </Text>
-                  <Text
-                    style={[styles.detailValue, { color: theme.colors.text }]}
-                  >
-                    {selectedError.error_message}
-                  </Text>
-                </View>
-
-                {selectedError.error_code && (
-                  <View style={styles.detailSection}>
-                    <Text
-                      style={[
-                        styles.detailLabel,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      Error Code
-                    </Text>
-                    <Text
-                      style={[styles.detailValue, { color: theme.colors.text }]}
-                    >
-                      {selectedError.error_code}
-                    </Text>
-                  </View>
-                )}
-
-                <View style={styles.detailSection}>
-                  <Text
-                    style={[
-                      styles.detailLabel,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    Timestamp
-                  </Text>
-                  <Text
-                    style={[styles.detailValue, { color: theme.colors.text }]}
-                  >
-                    {formatTimestamp(selectedError.timestamp)}
-                  </Text>
-                </View>
-
-                {selectedError.endpoint && (
-                  <View style={styles.detailSection}>
-                    <Text
-                      style={[
-                        styles.detailLabel,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      Endpoint
-                    </Text>
-                    <Text
-                      style={[styles.detailValue, { color: theme.colors.text }]}
-                    >
-                      {selectedError.method} {selectedError.endpoint}
-                    </Text>
-                  </View>
-                )}
-
-                {selectedError.user && (
-                  <View style={styles.detailSection}>
-                    <Text
-                      style={[
-                        styles.detailLabel,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      User
-                    </Text>
-                    <Text
-                      style={[styles.detailValue, { color: theme.colors.text }]}
-                    >
-                      {selectedError.user} ({selectedError.role})
-                    </Text>
-                  </View>
-                )}
-
-                {selectedError.stack_trace && (
-                  <View style={styles.detailSection}>
-                    <Text
-                      style={[
-                        styles.detailLabel,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      Stack Trace
-                    </Text>
-                    <ScrollView style={styles.stackTraceContainer}>
-                      <Text
-                        style={[
-                          styles.stackTraceText,
-                          { color: theme.colors.text },
-                        ]}
-                      >
-                        {selectedError.stack_trace}
-                      </Text>
-                    </ScrollView>
-                  </View>
-                )}
-
-                {selectedError.resolved && selectedError.resolution_note && (
-                  <View style={styles.detailSection}>
-                    <Text
-                      style={[
-                        styles.detailLabel,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      Resolution Note
-                    </Text>
-                    <Text
-                      style={[styles.detailValue, { color: theme.colors.text }]}
-                    >
-                      {selectedError.resolution_note}
-                    </Text>
-                  </View>
-                )}
-              </ScrollView>
-            )}
-
-            <View style={styles.modalFooter}>
-              {selectedError && !selectedError.resolved && (
-                <TouchableOpacity
-                  style={[styles.resolveButton, { backgroundColor: "#00E676" }]}
-                  onPress={() => {
-                    setShowDetailModal(false);
-                    setShowResolveModal(true);
-                  }}
-                >
-                  <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                  <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={[
-                  styles.closeButton,
-                  { backgroundColor: theme.colors.background },
-                ]}
-                onPress={() => setShowDetailModal(false)}
-              >
-                <Text
-                  style={[styles.closeButtonText, { color: theme.colors.text }]}
-                >
-                  Close
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          )}
         </View>
-      </Modal>
 
-      {/* Resolve Modal */}
-      <Modal
-        visible={showResolveModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowResolveModal(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.card },
-            ]}
-          >
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Resolve Error
-              </Text>
-              <TouchableOpacity onPress={() => setShowResolveModal(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
+        {/* Error Detail Modal */}
+        <Modal
+          visible={showDetailModal}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setShowDetailModal(false)}
+        >
+          <AuroraBackground variant="primary" intensity="high" style={styles.modalOverlay}>
+            <GlassCard variant="modal" padding={auroraTheme.spacing.lg} borderRadius={auroraTheme.borderRadius.xl} style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Error Details</Text>
+                <AnimatedPressable onPress={() => setShowDetailModal(false)}>
+                  <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+                </AnimatedPressable>
+              </View>
 
-            <View style={styles.modalBody}>
-              <Text
-                style={[
-                  styles.detailLabel,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                Resolution Note (Optional)
-              </Text>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  {
-                    backgroundColor: theme.colors.background,
-                    color: theme.colors.text,
-                  },
-                ]}
-                value={resolutionNote}
-                onChangeText={setResolutionNote}
-                placeholder="Enter resolution notes..."
-                placeholderTextColor={theme.colors.textSecondary}
-                multiline
-                numberOfLines={4}
-              />
-            </View>
+              {selectedError && (
+                <Animated.ScrollView style={styles.modalBody}>
+                  <View style={[styles.detailBadge, { backgroundColor: getSeverityColor(selectedError.severity) + '20' }]}>
+                    <Text style={[styles.detailBadgeText, { color: getSeverityColor(selectedError.severity) }]}>{selectedError.severity.toUpperCase()}</Text>
+                  </View>
 
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={[styles.resolveButton, { backgroundColor: "#00E676" }]}
+                  <Text style={styles.detailMessage}>{selectedError.error_message}</Text>
+                  <Text style={styles.detailType}>{selectedError.error_type}</Text>
+
+                  <View style={styles.separator} />
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Timestamp</Text>
+                    <Text style={styles.detailValue}>{formatTimestamp(selectedError.timestamp)}</Text>
+                  </View>
+
+                  {selectedError.error_code && (
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Error Code</Text>
+                      <Text style={styles.detailValue}>{selectedError.error_code}</Text>
+                    </View>
+                  )}
+
+                  {selectedError.endpoint && (
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Endpoint</Text>
+                      <Text style={styles.detailValue}>{selectedError.method} {selectedError.endpoint}</Text>
+                    </View>
+                  )}
+
+                  {selectedError.stack_trace && (
+                    <View style={styles.stackTraceContainer}>
+                      <Text style={styles.stackTraceLabel}>Stack Trace</Text>
+                      <GlassCard variant="dark" padding={auroraTheme.spacing.sm} borderRadius={auroraTheme.borderRadius.md}>
+                        <Text style={styles.stackTraceText}>{selectedError.stack_trace}</Text>
+                      </GlassCard>
+                    </View>
+                  )}
+
+                  {selectedError.resolved && selectedError.resolution_note && (
+                    <View style={styles.resolutionContainer}>
+                      <Text style={styles.resolutionLabel}>Resolution</Text>
+                      <GlassCard variant="medium" padding={auroraTheme.spacing.md} borderRadius={auroraTheme.borderRadius.md} style={{ borderColor: auroraTheme.colors.success[500] }}>
+                        <Text style={styles.resolutionText}>{selectedError.resolution_note}</Text>
+                        <View style={styles.resolverInfo}>
+                          <Ionicons name="checkmark-circle" size={14} color={auroraTheme.colors.success[500]} />
+                          <Text style={styles.resolverText}>Resolved by {selectedError.resolved_by}</Text>
+                        </View>
+                      </GlassCard>
+                    </View>
+                  )}
+                </Animated.ScrollView>
+              )}
+
+              <View style={styles.modalFooter}>
+                {selectedError && !selectedError.resolved && (
+                  <AnimatedPressable
+                    style={[styles.resolveButton, { backgroundColor: auroraTheme.colors.success[500] }]}
+                    onPress={() => {
+                      setShowDetailModal(false);
+                      setShowResolveModal(true);
+                    }}
+                  >
+                    <Ionicons name="checkmark-circle" size={20} color="white" />
+                    <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
+                  </AnimatedPressable>
+                )}
+              </View>
+            </GlassCard>
+          </AuroraBackground>
+        </Modal>
+
+        {/* Resolve Modal */}
+        <Modal
+          visible={showResolveModal}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setShowResolveModal(false)}
+        >
+          <AuroraBackground variant="primary" intensity="high" style={styles.modalOverlay}>
+            <GlassCard variant="modal" padding={auroraTheme.spacing.lg} borderRadius={auroraTheme.borderRadius.xl} style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Resolve Error</Text>
+                <AnimatedPressable onPress={() => setShowResolveModal(false)}>
+                  <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+                </AnimatedPressable>
+              </View>
+
+              <View style={styles.resolveBody}>
+                <Text style={styles.inputLabel}>Resolution Note (Optional)</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Describe how this was resolved..."
+                  placeholderTextColor={auroraTheme.colors.text.tertiary}
+                  value={resolutionNote}
+                  onChangeText={setResolutionNote}
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+
+              <AnimatedPressable
+                style={[styles.resolveButton, { backgroundColor: auroraTheme.colors.success[500], marginTop: auroraTheme.spacing.lg }]}
                 onPress={handleResolve}
                 disabled={resolving}
               >
@@ -789,281 +517,290 @@ export default function ErrorLogsScreen() {
                 ) : (
                   <>
                     <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                    <Text style={styles.resolveButtonText}>
-                      Mark as Resolved
-                    </Text>
+                    <Text style={styles.resolveButtonText}>Confirm Resolution</Text>
                   </>
                 )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.closeButton,
-                  { backgroundColor: theme.colors.background },
-                ]}
-                onPress={() => {
-                  setShowResolveModal(false);
-                  setResolutionNote("");
-                }}
-              >
-                <Text
-                  style={[styles.closeButtonText, { color: theme.colors.text }]}
-                >
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </View>
+              </AnimatedPressable>
+            </GlassCard>
+          </AuroraBackground>
+        </Modal>
+      </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 60,
+    paddingHorizontal: auroraTheme.spacing.md,
   },
-  scrollView: {
-    flex: 1,
-  },
-  statsContainer: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-  },
-  statsTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    flexWrap: "wrap",
-  },
-  statItem: {
-    alignItems: "center",
-    minWidth: "22%",
-    marginBottom: 12,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    textAlign: "center",
-  },
-  recentContainer: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#333",
-  },
-  recentText: {
-    fontSize: 14,
-    textAlign: "center",
-  },
-  filtersContainer: {
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-    borderRadius: 12,
-  },
-  filterTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  filterRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 12,
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  filterButtonActive: {
-    backgroundColor: "#00E676",
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  loadingContainer: {
-    padding: 32,
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-  },
-  emptyContainer: {
-    padding: 64,
-    alignItems: "center",
-  },
-  emptyText: {
-    marginTop: 16,
-    fontSize: 16,
-  },
-  errorItem: {
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-    borderRadius: 12,
-  },
-  errorHeader: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
+    alignItems: "center",
+    marginBottom: auroraTheme.spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: auroraTheme.spacing.md,
+  },
+  backButton: {
+    padding: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.background.glass,
+    borderRadius: auroraTheme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
+  },
+  pageTitle: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    color: auroraTheme.colors.text.primary,
+    fontWeight: "700",
+  },
+  pageSubtitle: {
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
+  },
+  statsContainer: {
+    flexDirection: "row",
+    gap: auroraTheme.spacing.sm,
+    marginBottom: auroraTheme.spacing.md,
+  },
+  filtersContainer: {
+    marginBottom: auroraTheme.spacing.md,
+  },
+  filtersScroll: {
+    paddingBottom: 4,
+  },
+  filterText: {
+    fontSize: auroraTheme.typography.fontSize.xs,
+    fontWeight: '600',
+    color: auroraTheme.colors.text.secondary,
+  },
+  listContainer: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: auroraTheme.spacing.md,
+    color: auroraTheme.colors.text.secondary,
+    fontSize: auroraTheme.typography.fontSize.md,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  emptyText: {
+    marginTop: auroraTheme.spacing.md,
+    color: auroraTheme.colors.text.tertiary,
+    fontSize: auroraTheme.typography.fontSize.lg,
+  },
+  errorHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: auroraTheme.spacing.sm,
   },
   errorHeaderLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
     flex: 1,
-    gap: 12,
+    gap: auroraTheme.spacing.md,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: auroraTheme.borderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorInfo: {
     flex: 1,
   },
   errorType: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    fontWeight: '700',
+    color: auroraTheme.colors.text.primary,
   },
   errorMessage: {
-    fontSize: 14,
-  },
-  severityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    color: auroraTheme.colors.text.secondary,
   },
   severityText: {
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
+    fontSize: auroraTheme.typography.fontSize.xs,
+    fontWeight: 'bold',
   },
   errorMeta: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginTop: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.sm,
   },
-  errorMetaText: {
-    fontSize: 12,
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.text.tertiary,
   },
   resolvedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: "rgba(0, 230, 118, 0.1)",
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    alignSelf: 'flex-start',
+    marginTop: auroraTheme.spacing.xs,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: auroraTheme.colors.success[500],
   },
   resolvedText: {
-    fontSize: 12,
-    color: "#00E676",
+    fontSize: auroraTheme.typography.fontSize.xs,
+    color: auroraTheme.colors.success[500],
+    fontWeight: '600',
   },
-  loadMoreButton: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  loadMoreText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.8)',
   },
   modalContent: {
-    maxHeight: "90%",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
+    width: "100%",
+    maxWidth: 600,
+    maxHeight: "80%",
   },
   modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: auroraTheme.spacing.lg,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: auroraTheme.typography.fontSize.xl,
+    fontWeight: 'bold',
+    color: auroraTheme.colors.text.primary,
   },
   modalBody: {
-    maxHeight: 500,
+    marginBottom: auroraTheme.spacing.lg,
   },
-  detailSection: {
-    marginBottom: 16,
+  detailBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: auroraTheme.borderRadius.full,
+    marginBottom: auroraTheme.spacing.sm,
+  },
+  detailBadgeText: {
+    fontSize: auroraTheme.typography.fontSize.xs,
+    fontWeight: 'bold',
+  },
+  detailMessage: {
+    fontSize: auroraTheme.typography.fontSize.lg,
+    fontWeight: 'bold',
+    color: auroraTheme.colors.text.primary,
+    marginBottom: 4,
+  },
+  detailType: {
+    fontSize: auroraTheme.typography.fontSize.md,
+    color: auroraTheme.colors.text.tertiary,
+    marginBottom: auroraTheme.spacing.lg,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: auroraTheme.colors.border.light,
+    marginBottom: auroraTheme.spacing.lg,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: auroraTheme.spacing.md,
   },
   detailLabel: {
-    fontSize: 12,
-    marginBottom: 4,
-    textTransform: "uppercase",
+    color: auroraTheme.colors.text.tertiary,
+    fontSize: auroraTheme.typography.fontSize.sm,
   },
   detailValue: {
-    fontSize: 14,
+    color: auroraTheme.colors.text.primary,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    fontWeight: '600',
   },
   stackTraceContainer: {
-    maxHeight: 200,
-    backgroundColor: "#1a1a1a",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
+    marginTop: auroraTheme.spacing.md,
+  },
+  stackTraceLabel: {
+    color: auroraTheme.colors.text.tertiary,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    marginBottom: 8,
   },
   stackTraceText: {
-    fontSize: 11,
-    fontFamily: "monospace",
+    color: auroraTheme.colors.text.secondary,
+    fontSize: auroraTheme.typography.fontSize.xs,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  resolutionContainer: {
+    marginTop: auroraTheme.spacing.lg,
+  },
+  resolutionLabel: {
+    color: auroraTheme.colors.text.tertiary,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    marginBottom: 8,
+  },
+  resolutionText: {
+    color: auroraTheme.colors.text.primary,
+    fontSize: auroraTheme.typography.fontSize.sm,
+    marginBottom: 8,
+  },
+  resolverInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  resolverText: {
+    color: auroraTheme.colors.success[500],
+    fontSize: auroraTheme.typography.fontSize.xs,
   },
   modalFooter: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 20,
+    marginTop: auroraTheme.spacing.lg,
   },
   resolveButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 12,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
+    paddingVertical: 14,
+    borderRadius: auroraTheme.borderRadius.full,
   },
   resolveButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: auroraTheme.typography.fontSize.md,
   },
-  closeButton: {
-    flex: 1,
+  resolveBody: {
+
+  },
+  inputLabel: {
+    color: auroraTheme.colors.text.secondary,
+    marginBottom: 8,
+  },
+  modalInput: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    color: auroraTheme.colors.text.primary,
     padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  closeButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: "#333",
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
+    borderRadius: auroraTheme.borderRadius.md,
+    fontSize: auroraTheme.typography.fontSize.md,
     minHeight: 100,
     textAlignVertical: "top",
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.light,
   },
 });

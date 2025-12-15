@@ -112,6 +112,7 @@ class VerificationRequest(BaseModel):
     non_returnable_damaged_qty: Optional[float] = 0.0
     item_condition: Optional[str] = "Good"
     serial_number: Optional[str] = None
+    is_serialized: Optional[bool] = None
     notes: Optional[str] = None
     floor: Optional[str] = None
     rack: Optional[str] = None
@@ -226,10 +227,17 @@ async def verify_item(
             update_doc["$set"]["item_condition"] = request.item_condition
         if request.serial_number:
             update_doc["$set"]["serial_number"] = request.serial_number
+            update_doc["$set"]["is_serialized"] = True
+        if request.is_serialized is not None:
+            update_doc["$set"]["is_serialized"] = request.is_serialized
         if request.floor:
             update_doc["$set"]["verified_floor"] = request.floor
+            if item.get("floor") in (None, ""):
+                update_doc["$set"]["floor"] = request.floor
         if request.rack:
             update_doc["$set"]["verified_rack"] = request.rack
+            if item.get("rack") in (None, ""):
+                update_doc["$set"]["rack"] = request.rack
         if request.session_id:
             update_doc["$set"]["session_id"] = request.session_id
 
@@ -261,6 +269,7 @@ async def verify_item(
             "count_line_id": request.count_line_id,
             "item_condition": request.item_condition,
             "serial_number": request.serial_number,
+            "is_serialized": update_doc["$set"].get("is_serialized"),
         }
 
         # Insert into verification_logs (new collection for full history)

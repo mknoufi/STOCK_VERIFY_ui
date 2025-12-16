@@ -1,9 +1,30 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Radon IDE",
+      "request": "launch",
+      "type": "radon-ide",
+      "cwd": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "Expo Go",
+      "request": "launch",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}/frontend",
+      "platform": "expoGo",
+      "expoHostType": "lan"
+    },
+    {
+      "name": "Attach to Hermes",
+      "request": "attach",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}/frontend",
+      "port": 8081
+    },
     {
       "name": "Launch Edge",
       "request": "launch",
@@ -11,64 +32,62 @@
       "url": "http://localhost:8080",
       "webRoot": "${workspaceFolder}"
     },
-
-
-        {
-            "name": "Python: FastAPI Backend",
-            "type": "python",
-            "request": "launch",
-            "module": "uvicorn",
-            "args": [
-                "backend.server:app",
-                "--host",
-                "0.0.0.0",
-                "--port",
-                "8001",
-                "--reload"
-            ],
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "console": "integratedTerminal",
-            "justMyCode": false
-        },
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            }
-        },
-        {
-            "name": "Python: Pytest Current File",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "${file}",
-                "-v"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "cwd": "${workspaceFolder}/backend"
-        },
-        {
-            "name": "Python: Pytest All",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "tests/",
-                "-v"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "cwd": "${workspaceFolder}/backend"
-        }
-    ]
+    {
+      "name": "Python: FastAPI Backend",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "backend.server:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8001",
+        "--reload"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Python: Pytest Current File",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}",
+        "-v"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "name": "Python: Pytest All",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests/",
+        "-v"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}/backend"
+    }
+  ]
 }

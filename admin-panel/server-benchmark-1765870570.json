@@ -1,0 +1,148 @@
+{
+  "timestamp": 1765870570.5057416,
+  "results": {
+    "startup": {
+      "server.py": {
+        "startup_time": 3.8,
+        "file_size": 19.419921875
+      },
+      "enhanced-server.py": {
+        "startup_time": 7.57,
+        "file_size": 43.486328125
+      }
+    },
+    "memory": {
+      "initial_memory_mb": 18.45,
+      "list_operations": {
+        "time_ms": 41.49,
+        "memory_mb": 49.34,
+        "memory_increase_mb": 30.89
+      },
+      "dict_operations": {
+        "time_ms": 25.99,
+        "memory_mb": 68.05,
+        "memory_increase_mb": 18.71
+      },
+      "json_operations": {
+        "time_ms": 1.87,
+        "memory_mb": 68.3,
+        "json_size_kb": 64.0
+      },
+      "final_memory_mb": 22.34,
+      "total_increase_mb": 3.88
+    },
+    "file_operations": {
+      "write_time_ms": 0.77,
+      "read_time_ms": 0.19,
+      "file_size_kb": 58.78,
+      "write_throughput_kb_per_sec": 76785.65,
+      "read_throughput_kb_per_sec": 305146.93,
+      "small_files_time_ms": 0.61
+    },
+    "request_handling": {
+      "total_requests": 1000,
+      "sequential_time_ms": 2.66,
+      "sequential_rps": 375766.35,
+      "batch_time_ms": 0.19,
+      "batch_rps": 5152707.62,
+      "performance_improvement": 92.71
+    },
+    "code_analysis": {
+      "server.py": {
+        "total_lines": 552,
+        "code_lines": 475,
+        "comment_lines": 21,
+        "comment_ratio": 3.8,
+        "functions": 23,
+        "classes": 2,
+        "imports": 12,
+        "avg_function_length": 20.65,
+        "estimated_complexity": 259,
+        "maintainability_score": 100
+      },
+      "enhanced-server.py": {
+        "total_lines": 1122,
+        "code_lines": 912,
+        "comment_lines": 56,
+        "comment_ratio": 4.99,
+        "functions": 48,
+        "classes": 4,
+        "imports": 14,
+        "avg_function_length": 19.0,
+        "estimated_complexity": 621,
+        "maintainability_score": 100
+      }
+    },
+    "dependencies": {
+      "total_packages": 160,
+      "web_frameworks": [
+        {
+          "name": "aiohttp",
+          "version": "3.13.2"
+        },
+        {
+          "name": "fastapi",
+          "version": "0.124.4"
+        }
+      ],
+      "database_packages": [
+        {
+          "name": "pymongo",
+          "version": "4.15.5"
+        },
+        {
+          "name": "redis",
+          "version": "7.1.0"
+        }
+      ],
+      "utility_packages": [
+        {
+          "name": "psutil",
+          "version": "7.1.3"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.12.5"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.34.1"
+        }
+      ],
+      "package_categories": {
+        "web": 2,
+        "database": 2,
+        "utility": 4,
+        "other": 152
+      }
+    },
+    "system_resources": {
+      "cpu": {
+        "cores": 4,
+        "usage_percent": 0.3,
+        "performance_ms": 5.38
+      },
+      "memory": {
+        "total_gb": 15.62,
+        "available_gb": 13.69,
+        "usage_percent": 12.4,
+        "process_memory_mb": 22.71
+      },
+      "disk": {
+        "total_gb": 71.61,
+        "free_gb": 15.84,
+        "usage_percent": 77.85
+      },
+      "network": {
+        "bytes_sent": 205700299,
+        "bytes_recv": 879236718
+      }
+    }
+  },
+  "score": 97.49,
+  "duration": 1.62
+}

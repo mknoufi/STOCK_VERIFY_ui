@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-12-16T07:36:31.618097",
+  "evaluations": {
+    "performance": {
+      "name": "API Performance",
+      "markers": [
+        "performance"
+      ],
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 5.816617,
+      "return_code": 0,
+      "success": true
+    }
+  },
+  "summary": {
+    "total_passed": 8,
+    "total_failed": 0,
+    "total_skipped": 0,
+    "overall_success": true
+  }
+}

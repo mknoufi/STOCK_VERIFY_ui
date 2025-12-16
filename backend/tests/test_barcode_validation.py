@@ -45,12 +45,6 @@ def override_auth():
     # Clean up overrides
     app.dependency_overrides.pop(get_current_user, None)
     app.dependency_overrides.pop(get_current_user_async, None)
-    # Note: It might return 404 if not found, but it shouldn't return 400 for validation
-    response = client.get(f"/api/v2/erp/items/barcode/{barcode}/enhanced")
-    assert response.status_code != 400, f"Valid barcode {barcode} was rejected with 400"
-
-    response = client.get(f"/api/erp/items/barcode/{barcode}")
-    assert response.status_code != 400, f"Valid barcode {barcode} was rejected with 400"
 
 
 @pytest.mark.parametrize(

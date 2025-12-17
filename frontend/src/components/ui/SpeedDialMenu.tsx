@@ -28,6 +28,7 @@ import Animated, {
   withSpring,
   withTiming,
   interpolate,
+  SharedValue,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
@@ -55,7 +56,7 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 const ActionButton: React.FC<{
   action: SpeedDialAction;
   index: number;
-  animationProgress: Animated.SharedValue<number>;
+  animationProgress: SharedValue<number>;
   handleActionPress: (action: SpeedDialAction) => void;
 }> = ({ action, index, animationProgress, handleActionPress }) => {
   const actionStyle = useAnimatedStyle(() => {

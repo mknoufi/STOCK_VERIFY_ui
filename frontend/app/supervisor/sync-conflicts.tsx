@@ -22,7 +22,7 @@ import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-// import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermissions } from "../../src/hooks/usePermissions";
 import {
   getSyncConflicts,
   resolveSyncConflict,
@@ -48,9 +48,8 @@ interface SyncConflict {
 
 export default function SyncConflictsScreen() {
   const router = useRouter();
-  // const { hasPermission } = usePermissions();
+  const { hasPermission } = usePermissions();
   const [loading, setLoading] = useState(true);
-  /* const { hasPermission } = usePermissions(); */
   const [refreshing, setRefreshing] = useState(false);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [stats, setStats] = useState<any>(null);

@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
   interpolateColor,
 } from 'react-native-reanimated';
-import { colorPalette, spacing } from '@/theme/designTokens';
+import { colorPalette } from '@/theme/designTokens';
 
 export type SwitchSize = 'sm' | 'md' | 'lg';
 

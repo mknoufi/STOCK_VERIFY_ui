@@ -114,11 +114,7 @@ export const validateSessionName = (
 
 export const normalizeBarcode = (barcode: string): string => {
   const trimmed = barcode.trim();
-  // Pad numeric barcodes to 6 digits if they are shorter
   // Removed auto-padding to support short internal codes
-  // if (trimmed.match(/^\d+$/) && trimmed.length < 6) {
-  //   return trimmed.padStart(6, "0");
-  // }
   return trimmed;
 };
 

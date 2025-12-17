@@ -163,7 +163,6 @@ export class BatchOperationsService {
         await Promise.allSettled(
           batch.map(async (update) => {
             try {
-              // const api = require('./api/api').default; // Removed require
               await handleErrorWithRecovery(
                 () =>
                   api.put(`/api/count-lines/${update.line_id}`, {

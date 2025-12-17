@@ -157,9 +157,6 @@ export class HeartbeatService {
       if (this.missedHeartbeats >= this.maxMissedHeartbeats) {
         console.error("❌ Too many missed heartbeats, stopping service");
         this.stop();
-
-        // Notify user (could emit event here)
-        // EventEmitter.emit('heartbeat:failed', { sessionId: this.sessionId });
       }
     }
   }

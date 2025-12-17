@@ -26,7 +26,7 @@ import Animated, {
   withTiming,
   useSharedValue,
 } from "react-native-reanimated";
-import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
+import { modernColors } from "../../styles/modernDesignSystem";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const KEYPAD_SIZE = Math.min(SCREEN_WIDTH - 64, 320);

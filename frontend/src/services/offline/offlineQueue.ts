@@ -1,5 +1,4 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios";
-// import apiClient from './httpClient';
 import { storage } from "../storage/asyncStorageService";
 import { useNetworkStore } from "../../store/networkStore";
 import { flags } from "../../constants/flags";

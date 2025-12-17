@@ -85,9 +85,6 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
     );
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // Sync local state with props if needed (optional, but good for initial load)
-    // useEffect(() => { setShowSerial(serialCaptureEnabled); }, [serialCaptureEnabled]);
-
     const handleDamageChange = (
       text: string,
       field: "returnableDamageQty" | "nonReturnableDamageQty",

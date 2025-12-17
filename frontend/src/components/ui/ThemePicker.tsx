@@ -25,7 +25,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeContext, ThemeKey, ThemeMode } from '../../theme/ThemeContext';
-import { GlassCard } from './GlassCard';
 
 interface ThemePickerProps {
   showModeToggle?: boolean;

@@ -3,6 +3,13 @@
 > **✨ This repository is available as a GitHub template!**
 > Click "Use this template" to create your own Stock Verify instance. See [TEMPLATE_README.md](TEMPLATE_README.md) for setup instructions.
 
+## 🎵 New to Vibe Coding?
+
+**Start Here:**
+* **[⚡ Quick Start: Vibe Coding Today](QUICK_START_VIBE_CODING.md)** - Get coding in 2 hours!
+* **[🎯 Vibe Coding Next Steps Guide](VIBE_CODING_NEXT_STEPS.md)** - Comprehensive 30-day learning path
+* **[🛠️ Vibe Coding Setup](VIBE_CODING_SETUP.md)** - AI tools configuration
+
 ## 📚 Documentation (v2.1)
 
 ### Core Documentation

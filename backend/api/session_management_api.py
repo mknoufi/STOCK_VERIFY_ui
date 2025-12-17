@@ -8,10 +8,10 @@ import time
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.services.lock_manager import LockManager, get_lock_manager
+from backend.services.lock_manager import get_lock_manager
 from backend.services.redis_service import get_redis
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ async def get_active_sessions(
 ) -> List[SessionDetail]:
     """
     Get all active sessions
-    
+
     Filters:
     - user_id: Filter by specific user
     - rack_id: Filter by specific rack
@@ -138,16 +138,11 @@ async def get_session_detail(
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if (
-        current_user["role"] != "supervisor"
-        and session["user_id"] != current_user["username"]
-    ):
+    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get counts
-    item_count = await db.verification_records.count_documents(
-        {"session_id": session_id}
-    )
+    item_count = await db.verification_records.count_documents({"session_id": session_id})
 
     verified_count = await db.verification_records.count_documents(
         {"session_id": session_id, "status": "finalized"}
@@ -181,10 +176,7 @@ async def get_session_stats(
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if (
-        current_user["role"] != "supervisor"
-        and session["user_id"] != current_user["username"]
-    ):
+    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get item statistics
@@ -194,9 +186,7 @@ async def get_session_stats(
             "$group": {
                 "_id": None,
                 "total": {"$sum": 1},
-                "verified": {
-                    "$sum": {"$cond": [{"$eq": ["$status", "finalized"]}, 1, 0]}
-                },
+                "verified": {"$sum": {"$cond": [{"$eq": ["$status", "finalized"]}, 1, 0]}},
                 "damage": {"$sum": "$damage_qty"},
             }
         },
@@ -237,9 +227,9 @@ async def session_heartbeat(
 ) -> HeartbeatResponse:
     """
     Session heartbeat - maintain locks and presence
-    
+
     Should be called every 20-30 seconds by active clients
-    
+
     Actions:
     1. Update user heartbeat in Redis
     2. Renew rack lock if session has rack
@@ -269,9 +259,7 @@ async def session_heartbeat(
 
     if session.get("rack_id"):
         rack_id = session["rack_id"]
-        rack_lock_renewed = await lock_manager.renew_rack_lock(
-            rack_id, user_id, ttl=60
-        )
+        rack_lock_renewed = await lock_manager.renew_rack_lock(rack_id, user_id, ttl=60)
 
         if rack_lock_renewed:
             lock_ttl_remaining = await lock_manager.get_rack_lock_ttl(rack_id)
@@ -282,8 +270,7 @@ async def session_heartbeat(
     )
 
     logger.debug(
-        f"Heartbeat: session={session_id}, user={user_id}, "
-        f"rack_renewed={rack_lock_renewed}"
+        f"Heartbeat: session={session_id}, user={user_id}, rack_renewed={rack_lock_renewed}"
     )
 
     return HeartbeatResponse(

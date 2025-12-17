@@ -174,10 +174,10 @@ INDEXES: Dict[str, List[Tuple[List[Tuple[str, int]], Dict]]] = {
 async def create_indexes(db) -> Dict[str, int]:
     """
     Create all indexes defined in INDEXES
-    
+
     Args:
         db: AsyncIOMotorDatabase instance
-        
+
     Returns:
         Dict with collection names and index counts
     """
@@ -215,10 +215,10 @@ async def drop_all_indexes(db) -> Dict[str, bool]:
     """
     Drop all indexes (except _id) from all collections
     USE WITH CAUTION - for development/testing only
-    
+
     Args:
         db: AsyncIOMotorDatabase instance
-        
+
     Returns:
         Dict with collection names and success status
     """
@@ -243,10 +243,10 @@ async def drop_all_indexes(db) -> Dict[str, bool]:
 async def get_index_stats(db) -> Dict[str, List[Dict]]:
     """
     Get index statistics for all collections
-    
+
     Args:
         db: AsyncIOMotorDatabase instance
-        
+
     Returns:
         Dict with collection names and index info
     """

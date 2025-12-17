@@ -353,7 +353,10 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     server_module.app.dependency_overrides[server_module.get_current_user] = mock_get_current_user
 
     from backend.auth import dependencies as auth_deps_module
-    server_module.app.dependency_overrides[auth_deps_module.get_current_user] = mock_get_current_user
+
+    server_module.app.dependency_overrides[auth_deps_module.get_current_user] = (
+        mock_get_current_user
+    )
 
     # Also patch the global variables in server module if they are used directly
     # (They are used in get_current_user in server.py)

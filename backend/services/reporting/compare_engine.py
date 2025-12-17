@@ -127,11 +127,9 @@ class CompareEngine:
                     "comparison": value_b,
                     "absolute_diff": absolute_diff,
                     "percent_diff": round(percent_diff, 2),
-                    "trend": "up"
-                    if absolute_diff > 0
-                    else "down"
-                    if absolute_diff < 0
-                    else "stable",
+                    "trend": (
+                        "up" if absolute_diff > 0 else "down" if absolute_diff < 0 else "stable"
+                    ),
                 }
             else:
                 diff[key] = {

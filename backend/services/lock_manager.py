@@ -3,10 +3,8 @@ Lock Manager - Redis-based distributed locking
 Implements rack locking, session management, and concurrency control
 """
 
-import asyncio
 import logging
 import time
-import uuid
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -26,17 +24,15 @@ class LockManager:
 
     # Rack Locking
 
-    async def acquire_rack_lock(
-        self, rack_id: str, user_id: str, ttl: int = 60
-    ) -> bool:
+    async def acquire_rack_lock(self, rack_id: str, user_id: str, ttl: int = 60) -> bool:
         """
         Acquire exclusive lock on a rack
-        
+
         Args:
             rack_id: Rack identifier
             user_id: User claiming the rack
             ttl: Lock time-to-live in seconds (default: 60)
-            
+
         Returns:
             True if lock acquired, False if already locked
         """
@@ -51,9 +47,7 @@ class LockManager:
                 return True
             else:
                 current_owner = await self.redis.get(lock_key)
-                logger.warning(
-                    f"✗ Rack lock failed: {rack_id} already locked by {current_owner}"
-                )
+                logger.warning(f"✗ Rack lock failed: {rack_id} already locked by {current_owner}")
                 return False
 
         except Exception as e:
@@ -63,11 +57,11 @@ class LockManager:
     async def release_rack_lock(self, rack_id: str, user_id: str) -> bool:
         """
         Release rack lock (only if owned by user)
-        
+
         Args:
             rack_id: Rack identifier
             user_id: User releasing the rack
-            
+
         Returns:
             True if lock released, False if not owned or error
         """
@@ -94,12 +88,12 @@ class LockManager:
     async def renew_rack_lock(self, rack_id: str, user_id: str, ttl: int = 60) -> bool:
         """
         Renew/extend rack lock (heartbeat)
-        
+
         Args:
             rack_id: Rack identifier
             user_id: User renewing the lock
             ttl: New TTL in seconds
-            
+
         Returns:
             True if renewed, False if not owned or error
         """
@@ -143,7 +137,7 @@ class LockManager:
     async def update_user_heartbeat(self, user_id: str, ttl: int = 90) -> None:
         """
         Update user heartbeat timestamp
-        
+
         Args:
             user_id: User identifier
             ttl: Heartbeat TTL in seconds (default: 90)
@@ -173,9 +167,7 @@ class LockManager:
         # Scan for heartbeat keys
         cursor = 0
         while True:
-            cursor, batch = await self.redis.client.scan(
-                cursor, match=pattern, count=100
-            )
+            cursor, batch = await self.redis.client.scan(cursor, match=pattern, count=100)
             keys.extend(batch)
             if cursor == 0:
                 break
@@ -191,7 +183,7 @@ class LockManager:
     ) -> bool:
         """
         Create session lock with metadata
-        
+
         Args:
             session_id: Session identifier
             user_id: User ID
@@ -239,7 +231,7 @@ class LockManager:
     async def rack_lock(self, rack_id: str, user_id: str, ttl: int = 60):
         """
         Context manager for automatic rack lock acquisition and release
-        
+
         Usage:
             async with lock_manager.rack_lock("R1", "user123"):
                 # Do work with rack
@@ -268,9 +260,7 @@ class LockManager:
 
         cursor = 0
         while True:
-            cursor, batch = await self.redis.client.scan(
-                cursor, match=lock_pattern, count=100
-            )
+            cursor, batch = await self.redis.client.scan(cursor, match=lock_pattern, count=100)
             keys.extend(batch)
             if cursor == 0:
                 break
@@ -288,9 +278,7 @@ class LockManager:
 
         cursor = 0
         while True:
-            cursor, batch = await self.redis.client.scan(
-                cursor, match=lock_pattern, count=100
-            )
+            cursor, batch = await self.redis.client.scan(cursor, match=lock_pattern, count=100)
 
             for lock_key in batch:
                 owner = await self.redis.get(lock_key)

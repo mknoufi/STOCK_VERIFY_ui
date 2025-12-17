@@ -427,9 +427,9 @@ async def get_performance_metrics(
 
             metrics.append(
                 PerformanceMetric(
-                    timestamp=bucket_time.isoformat()
-                    if bucket_time
-                    else datetime.utcnow().isoformat(),
+                    timestamp=(
+                        bucket_time.isoformat() if bucket_time else datetime.utcnow().isoformat()
+                    ),
                     latency_ms=round(r.get("avg_latency", 0), 2),
                     throughput_rps=round(throughput, 3),
                     error_count=r.get("error_count", 0),

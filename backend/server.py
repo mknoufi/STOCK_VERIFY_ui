@@ -396,7 +396,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         logger.info("✓ Pub/Sub service started")
 
         # Initialize lock manager (will be used by APIs)
-        lock_manager = get_lock_manager(redis_service)
+        _ = get_lock_manager(redis_service)
         logger.info("✓ Lock manager initialized")
 
     except Exception as e:

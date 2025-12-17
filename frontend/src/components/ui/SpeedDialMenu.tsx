@@ -51,6 +51,79 @@ interface SpeedDialMenuProps {
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
+// ActionButton component to avoid hooks-in-callback issue
+const ActionButton: React.FC<{
+  action: SpeedDialAction;
+  index: number;
+  animationProgress: Animated.SharedValue<number>;
+  handleActionPress: (action: SpeedDialAction) => void;
+}> = ({ action, index, animationProgress, handleActionPress }) => {
+  const actionStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      animationProgress.value,
+      [0, 1],
+      [0, -(72 + auroraTheme.spacing.md) * (index + 1)]
+    );
+    const opacity = interpolate(animationProgress.value, [0, 0.5, 1], [0, 0.5, 1]);
+    const scale = interpolate(animationProgress.value, [0, 1], [0.3, 1]);
+
+    return {
+      transform: [{ translateY }, { scale }],
+      opacity,
+    };
+  });
+
+  return (
+    <AnimatedTouchable
+      style={[styles.actionButton, actionStyle]}
+      onPress={() => handleActionPress(action)}
+      activeOpacity={0.9}
+    >
+      <View style={styles.actionContent}>
+        {/* Label */}
+        <View style={styles.labelContainer}>
+          <Text
+            style={[
+              styles.label,
+              {
+                fontFamily: auroraTheme.typography.fontFamily.label,
+                fontSize: auroraTheme.typography.fontSize.sm,
+              },
+            ]}
+          >
+            {action.label}
+          </Text>
+        </View>
+
+        {/* Icon Button */}
+        <View style={styles.iconButton}>
+          <LinearGradient
+            colors={
+              action.color
+                ? [action.color, action.color]
+                : [auroraTheme.colors.aurora.secondary[0], auroraTheme.colors.aurora.secondary[1]]
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.iconGradient}
+          >
+            <Ionicons
+              name={action.icon}
+              size={24}
+              color={auroraTheme.colors.text.primary}
+            />
+            {action.badge !== undefined && action.badge > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{action.badge}</Text>
+              </View>
+            )}
+          </LinearGradient>
+        </View>
+      </View>
+    </AnimatedTouchable>
+  );
+};
+
 export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
   actions,
   mainIcon = "menu",
@@ -127,73 +200,15 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
       {/* Speed Dial Container */}
       <View style={[styles.container, getPositionStyles()]}>
         {/* Action Buttons */}
-        {actions.map((action, index) => {
-          const actionStyle = useAnimatedStyle(() => {
-            const translateY = interpolate(
-              animationProgress.value,
-              [0, 1],
-              [0, -(72 + auroraTheme.spacing.md) * (index + 1)]
-            );
-            const opacity = interpolate(animationProgress.value, [0, 0.5, 1], [0, 0.5, 1]);
-            const scale = interpolate(animationProgress.value, [0, 1], [0.3, 1]);
-
-            return {
-              transform: [{ translateY }, { scale }],
-              opacity,
-            };
-          });
-
-          return (
-            <AnimatedTouchable
-              key={index}
-              style={[styles.actionButton, actionStyle]}
-              onPress={() => handleActionPress(action)}
-              activeOpacity={0.9}
-            >
-              <View style={styles.actionContent}>
-                {/* Label */}
-                <View style={styles.labelContainer}>
-                  <Text
-                    style={[
-                      styles.label,
-                      {
-                        fontFamily: auroraTheme.typography.fontFamily.label,
-                        fontSize: auroraTheme.typography.fontSize.sm,
-                      },
-                    ]}
-                  >
-                    {action.label}
-                  </Text>
-                </View>
-
-                {/* Icon Button */}
-                <View style={styles.iconButton}>
-                  <LinearGradient
-                    colors={
-                      action.color
-                        ? [action.color, action.color]
-                        : [auroraTheme.colors.aurora.secondary[0], auroraTheme.colors.aurora.secondary[1]]
-                    }
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.iconGradient}
-                  >
-                    <Ionicons
-                      name={action.icon}
-                      size={24}
-                      color={auroraTheme.colors.text.primary}
-                    />
-                    {action.badge !== undefined && action.badge > 0 && (
-                      <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{action.badge}</Text>
-                      </View>
-                    )}
-                  </LinearGradient>
-                </View>
-              </View>
-            </AnimatedTouchable>
-          );
-        })}
+        {actions.map((action, index) => (
+          <ActionButton
+            key={index}
+            action={action}
+            index={index}
+            animationProgress={animationProgress}
+            handleActionPress={handleActionPress}
+          />
+        ))}
 
         {/* Main Button */}
         <TouchableOpacity

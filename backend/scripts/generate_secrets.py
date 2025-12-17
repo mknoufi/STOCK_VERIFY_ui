@@ -15,13 +15,11 @@ Security:
 import argparse
 import logging
 import secrets
+import sys
 from pathlib import Path
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(levelname)s: %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 DEFAULT_BYTES = 48
@@ -42,8 +40,12 @@ def write_env_file(path: Path, secrets_map: dict):
             content = example_path.read_text(encoding="utf-8")
             # Replace placeholder values with actual secrets
             for key, value in secrets_map.items():
-                content = content.replace(f"{key}=GENERATE_SECURE_SECRET_HERE_MIN_32_CHARS", f"{key}={value}")
-                content = content.replace(f"{key}=GENERATE_DIFFERENT_SECURE_SECRET_HERE_MIN_32_CHARS", f"{key}={value}")
+                content = content.replace(
+                    f"{key}=GENERATE_SECURE_SECRET_HERE_MIN_32_CHARS", f"{key}={value}"
+                )
+                content = content.replace(
+                    f"{key}=GENERATE_DIFFERENT_SECURE_SECRET_HERE_MIN_32_CHARS", f"{key}={value}"
+                )
             path.write_text(content, encoding="utf-8")
         else:
             # Create simple .env
@@ -95,19 +97,19 @@ if __name__ == "__main__":
     for k, v in secrets_map.items():
         logger.info(f"{k}={v}")
     logger.info("")
-    
+
     if args.write:
         env_path = Path(__file__).parent.parent / ".env"
         logger.warning("⚠️  This will update your .env file!")
         logger.info(f"Target: {env_path}")
-        
+
         # Safety check
         if env_path.exists():
             response = input("File exists. Continue? [y/N]: ")
-            if response.lower() != 'y':
+            if response.lower() != "y":
                 logger.info("Aborted.")
-                return
-        
+                sys.exit(0)
+
         write_env_file(env_path, secrets_map)
         logger.info("")
         logger.info("✅ Secrets written to .env file")

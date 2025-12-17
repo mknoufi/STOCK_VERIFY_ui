@@ -7,7 +7,7 @@ import csv
 import io
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -20,16 +20,14 @@ class ExportEngine:
     def __init__(self):
         pass
 
-    def export_to_csv(
-        self, snapshot: Dict[str, Any], include_summary: bool = True
-    ) -> bytes:
+    def export_to_csv(self, snapshot: Dict[str, Any], include_summary: bool = True) -> bytes:
         """
         Export snapshot to CSV
-        
+
         Args:
             snapshot: Snapshot document
             include_summary: Include summary at top
-            
+
         Returns:
             CSV bytes
         """
@@ -39,9 +37,7 @@ class ExportEngine:
         # Write metadata
         writer.writerow(["Snapshot Report"])
         writer.writerow(["Name:", snapshot.get("name", "Untitled")])
-        writer.writerow(
-            ["Created:", datetime.fromtimestamp(snapshot["created_at"]).isoformat()]
-        )
+        writer.writerow(["Created:", datetime.fromtimestamp(snapshot["created_at"]).isoformat()])
         writer.writerow(["Created By:", snapshot.get("created_by", "Unknown")])
         writer.writerow([])
 
@@ -71,12 +67,10 @@ class ExportEngine:
         logger.info(f"✓ CSV export created: {len(row_data)} rows")
         return csv_bytes
 
-    def export_to_xlsx(
-        self, snapshot: Dict[str, Any], include_summary: bool = True
-    ) -> bytes:
+    def export_to_xlsx(self, snapshot: Dict[str, Any], include_summary: bool = True) -> bytes:
         """
         Export snapshot to Excel (XLSX)
-        
+
         Requires: openpyxl
         """
         try:
@@ -130,9 +124,7 @@ class ExportEngine:
             for col_num, header in enumerate(headers, 1):
                 cell = ws.cell(row=row_num, column=col_num, value=header)
                 cell.font = Font(bold=True)
-                cell.fill = PatternFill(
-                    start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
-                )
+                cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
             row_num += 1
 
@@ -179,12 +171,10 @@ class ExportEngine:
 
         json_bytes = json.dumps(snapshot_copy, indent=2, default=str).encode("utf-8")
 
-        logger.info(f"✓ JSON export created")
+        logger.info("✓ JSON export created")
         return json_bytes
 
-    def get_export_filename(
-        self, snapshot: Dict[str, Any], format: str = "csv"
-    ) -> str:
+    def get_export_filename(self, snapshot: Dict[str, Any], format: str = "csv") -> str:
         """
         Generate export filename
         """

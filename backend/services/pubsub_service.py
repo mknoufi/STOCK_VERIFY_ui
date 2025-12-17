@@ -114,7 +114,7 @@ class PubSubService:
     async def subscribe(self, channel: str, handler: Callable) -> None:
         """
         Subscribe to a channel with a handler
-        
+
         Args:
             channel: Channel name
             handler: Callback function(channel, data)
@@ -134,7 +134,7 @@ class PubSubService:
     async def unsubscribe(self, channel: str, handler: Optional[Callable] = None) -> None:
         """
         Unsubscribe from a channel
-        
+
         Args:
             channel: Channel name
             handler: Specific handler to remove (None = remove all)
@@ -145,9 +145,7 @@ class PubSubService:
         if handler:
             # Remove specific handler
             if channel in self.subscribers:
-                self.subscribers[channel] = [
-                    h for h in self.subscribers[channel] if h != handler
-                ]
+                self.subscribers[channel] = [h for h in self.subscribers[channel] if h != handler]
         else:
             # Remove all handlers
             if channel in self.subscribers:
@@ -158,17 +156,15 @@ class PubSubService:
             await self.pubsub.unsubscribe(channel)
             logger.info(f"Unsubscribed from channel: {channel}")
 
-    async def publish(
-        self, channel: str, message: Any, serialize: bool = True
-    ) -> int:
+    async def publish(self, channel: str, message: Any, serialize: bool = True) -> int:
         """
         Publish message to channel
-        
+
         Args:
             channel: Channel name
             message: Message data
             serialize: Auto-serialize to JSON (default: True)
-            
+
         Returns:
             Number of subscribers that received the message
         """
@@ -181,12 +177,10 @@ class PubSubService:
 
     # Convenience methods for common channels
 
-    async def publish_rack_update(
-        self, rack_id: str, event: str, data: dict
-    ) -> int:
+    async def publish_rack_update(self, rack_id: str, event: str, data: dict) -> int:
         """
         Publish rack update
-        
+
         Args:
             rack_id: Rack identifier
             event: Event type (claimed, released, paused, resumed, completed)
@@ -196,12 +190,10 @@ class PubSubService:
         message = {"event": event, "rack_id": rack_id, "data": data}
         return await self.publish(channel, message)
 
-    async def publish_session_update(
-        self, session_id: str, event: str, data: dict
-    ) -> int:
+    async def publish_session_update(self, session_id: str, event: str, data: dict) -> int:
         """
         Publish session update
-        
+
         Args:
             session_id: Session identifier
             event: Event type (started, paused, resumed, completed)
@@ -216,7 +208,7 @@ class PubSubService:
     ) -> int:
         """
         Publish global notification to all users
-        
+
         Args:
             notification_type: Type (info, warning, error, success)
             message: Notification message
@@ -230,16 +222,12 @@ class PubSubService:
         }
         return await self.publish(channel, payload)
 
-    async def subscribe_to_rack_updates(
-        self, rack_id: str, handler: Callable
-    ) -> None:
+    async def subscribe_to_rack_updates(self, rack_id: str, handler: Callable) -> None:
         """Subscribe to rack updates"""
         channel = f"rack:updates:{rack_id}"
         await self.subscribe(channel, handler)
 
-    async def subscribe_to_session_updates(
-        self, session_id: str, handler: Callable
-    ) -> None:
+    async def subscribe_to_session_updates(self, session_id: str, handler: Callable) -> None:
         """Subscribe to session updates"""
         channel = f"session:updates:{session_id}"
         await self.subscribe(channel, handler)

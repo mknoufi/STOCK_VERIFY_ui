@@ -11,8 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.services.lock_manager import LockManager, get_lock_manager
-from backend.services.pubsub_service import PubSubService, get_pubsub_service
+from backend.services.lock_manager import get_lock_manager
+from backend.services.pubsub_service import get_pubsub_service
 from backend.services.redis_service import get_redis
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,12 @@ async def get_or_create_rack(db, rack_id: str, floor: str) -> Dict:
 
 
 async def update_rack_status(
-    db, rack_id: str, status: str, claimed_by: Optional[str] = None, session_id: Optional[str] = None, lock_expires_at: Optional[float] = None
+    db,
+    rack_id: str,
+    status: str,
+    claimed_by: Optional[str] = None,
+    session_id: Optional[str] = None,
+    lock_expires_at: Optional[float] = None,
 ) -> None:
     """Update rack status in database"""
     update_data = {
@@ -119,7 +124,7 @@ async def get_available_racks(
 ) -> List[AvailableRack]:
     """
     Get list of available racks
-    
+
     Filters:
     - floor: Optional floor filter
     - status: Only returns available or paused racks
@@ -190,7 +195,7 @@ async def claim_rack(
 ) -> RackClaimResponse:
     """
     Claim a rack for exclusive use
-    
+
     Process:
     1. Check if rack is available
     2. Acquire Redis lock
@@ -242,9 +247,7 @@ async def claim_rack(
         await db.verification_sessions.insert_one(session_doc)
 
         # Create session lock in Redis
-        await lock_manager.create_session_lock(
-            session_id, user_id, rack_id, ttl=3600
-        )
+        await lock_manager.create_session_lock(session_id, user_id, rack_id, ttl=3600)
 
         # Update rack status
         lock_expires_at = time.time() + lock_ttl
@@ -295,7 +298,7 @@ async def release_rack(
 ) -> RackReleaseResponse:
     """
     Release rack lock
-    
+
     Process:
     1. Verify ownership
     2. Release Redis lock
@@ -342,9 +345,7 @@ async def release_rack(
         )
 
     # Broadcast update
-    await pubsub_service.publish_rack_update(
-        rack_id, "released", {"user_id": user_id}
-    )
+    await pubsub_service.publish_rack_update(rack_id, "released", {"user_id": user_id})
 
     logger.info(f"✓ Rack {rack_id} released by {user_id}")
 
@@ -373,9 +374,7 @@ async def pause_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(
-            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
-        )
+        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
 
     # Update status
     await update_rack_status(
@@ -421,9 +420,7 @@ async def resume_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(
-            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
-        )
+        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
 
     # Verify paused
     if rack["status"] != "paused":

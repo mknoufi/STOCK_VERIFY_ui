@@ -221,15 +221,21 @@ class SQLServerConnector:
 
         # --- Sales price / rate metadata ---
         sales_sources: List[str] = []
-        batch_sales = self._get_column_reference("PB", batch_columns, ["stdsalesprice", "stdsalesrate"])
+        batch_sales = self._get_column_reference(
+            "PB", batch_columns, ["stdsalesprice", "stdsalesrate"]
+        )
         if batch_sales:
             sales_sources.append(batch_sales)
 
-        product_sales = self._get_column_reference("P", product_columns, ["stdsalesprice", "stdsalesrate"])
+        product_sales = self._get_column_reference(
+            "P", product_columns, ["stdsalesprice", "stdsalesrate"]
+        )
         if product_sales:
             sales_sources.append(product_sales)
 
-        product_last_sales = self._get_column_reference("P", product_columns, ["lastsalesrate", "salesrate"])
+        product_last_sales = self._get_column_reference(
+            "P", product_columns, ["lastsalesrate", "salesrate"]
+        )
         if product_last_sales:
             sales_sources.append(product_last_sales)
 
@@ -252,7 +258,9 @@ class SQLServerConnector:
         brand_table = self._resolve_table_name(["brands", "productbrands", "brandmaster", "brand"])
         if brand_table:
             brand_columns = self._get_table_columns(brand_table)
-            brand_fk = self._resolve_column_name(product_columns, ["brandid", "brand_id", "brandcode"])
+            brand_fk = self._resolve_column_name(
+                product_columns, ["brandid", "brand_id", "brandcode"]
+            )
             brand_pk = self._resolve_column_name(brand_columns, ["brandid", "brand_id", "id"])
             if brand_fk and brand_pk:
                 optional_joins.append(
@@ -389,12 +397,16 @@ class SQLServerConnector:
                             "supplier_city",
                         )
                         _add_purchase_part(
-                            self._get_column_reference("SUP", supplier_columns, ["state", "province"]),
+                            self._get_column_reference(
+                                "SUP", supplier_columns, ["state", "province"]
+                            ),
                             "supplier_state",
                         )
                         _add_purchase_part(
                             self._get_column_reference(
-                                "SUP", supplier_columns, ["gstnumber", "gstno", "gstin", "taxnumber"]
+                                "SUP",
+                                supplier_columns,
+                                ["gstnumber", "gstno", "gstin", "taxnumber"],
                             ),
                             "supplier_gst",
                         )

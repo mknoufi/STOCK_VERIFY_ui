@@ -5,10 +5,7 @@ import sys
 from dotenv import load_dotenv
 
 # Configure logging for scripts
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(levelname)s: %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +28,7 @@ def validate_env():
         "JWT_SECRET",
         "JWT_REFRESH_SECRET",
     ]
-    
+
     # Optional keys (for ERP integration)
     optional_keys = [
         "SQL_SERVER_HOST",

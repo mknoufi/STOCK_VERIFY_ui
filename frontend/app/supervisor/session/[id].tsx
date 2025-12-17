@@ -433,7 +433,14 @@ export default function SessionDetail() {
           )}
         </View>
       </GlassCard>
-      </Animated.View >
+    );
+
+    return shouldAnimate ? (
+      <Animated.View entering={FadeInDown.delay(animationDelay).springify()}>
+        {content}
+      </Animated.View>
+    ) : (
+      content
     );
 };
 

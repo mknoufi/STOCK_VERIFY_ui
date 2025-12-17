@@ -32,7 +32,7 @@ class SnapshotEngine:
     ) -> Dict[str, Any]:
         """
         Create a new snapshot from query
-        
+
         Args:
             name: Snapshot name
             description: Snapshot description
@@ -40,7 +40,7 @@ class SnapshotEngine:
             created_by: User who created snapshot
             snapshot_type: Type (custom, scheduled, comparison)
             tags: Optional tags for categorization
-            
+
         Returns:
             Snapshot document
         """
@@ -119,7 +119,7 @@ class SnapshotEngine:
     ) -> List[Dict[str, Any]]:
         """
         List snapshots with filters
-        
+
         Args:
             created_by: Filter by creator
             snapshot_type: Filter by type
@@ -141,9 +141,7 @@ class SnapshotEngine:
         cursor = (
             self.db.report_snapshots.find(
                 query,
-                {
-                    "row_data": 0  # Exclude large row data
-                },
+                {"row_data": 0},  # Exclude large row data
             )
             .sort("created_at", -1)
             .limit(limit)
@@ -223,9 +221,7 @@ class SnapshotEngine:
                     summary[f"total_{field}"] = total
                 elif func == "avg":
                     values = [r.get(agg_field, 0) for r in results if agg_field in r]
-                    summary[f"avg_{field}"] = (
-                        sum(values) / len(values) if values else 0
-                    )
+                    summary[f"avg_{field}"] = sum(values) / len(values) if values else 0
                 elif func == "count":
                     total = sum(r.get(agg_field, 0) for r in results)
                     summary[f"total_{field}"] = total

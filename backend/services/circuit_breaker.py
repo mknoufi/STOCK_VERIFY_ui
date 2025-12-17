@@ -253,11 +253,11 @@ circuit_breaker_registry = CircuitBreakerRegistry()
 def get_circuit_breaker(name: str, config: Optional[CircuitBreakerConfig] = None) -> CircuitBreaker:
     """
     Get or create a circuit breaker from the global registry
-    
+
     Args:
         name: Circuit breaker name
         config: Optional configuration (uses default if not provided)
-    
+
     Returns:
         CircuitBreaker instance
     """

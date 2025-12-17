@@ -35,27 +35,46 @@ export const sanitizeBarcode = (barcode: string): string | null => {
 
 /**
  * Validate barcode and return detailed error message
+ * Uses comprehensive rules for both numeric and alphanumeric codes
  */
 export const validateBarcode = (barcode: string): ValidationResult<string> => {
   if (!barcode || !barcode.trim()) {
-    return { valid: false, error: "Please enter a barcode" };
+    return { valid: false, error: "Barcode cannot be empty" };
   }
 
-  const sanitized = barcode.trim().replace(/[^a-zA-Z0-9\-_]/g, "");
+  const trimmed = barcode.trim().toUpperCase();
 
-  if (sanitized !== barcode.trim()) {
-    return { valid: false, error: "Barcode contains invalid characters" };
+  // Check minimum length logic based on content type
+  // Numeric barcodes (UPC-E, EAN) are usually at least 6 digits
+  // Alphanumeric Item Codes can be shorter (e.g., "A1", "BOX")
+
+  if (trimmed.match(/^\d+$/)) {
+    if (trimmed.length < 2) {
+      return {
+        valid: false,
+        error: "Invalid barcode: numeric barcodes must be at least 2 digits",
+      };
+    }
+    if (trimmed.length > 20) {
+      return { valid: false, error: "Barcode is too long (max 20 digits)" };
+    }
+    return { valid: true, value: trimmed };
   }
 
-  if (sanitized.length < BARCODE_MIN_LENGTH) {
-    return { valid: false, error: `Barcode must be at least ${BARCODE_MIN_LENGTH} characters` };
+  if (trimmed.match(/^[A-Za-z0-9_\-]+$/)) {
+    if (trimmed.length < 2) {
+      return { valid: false, error: "Item code must be at least 2 characters" };
+    }
+    if (trimmed.length > 50) {
+      return { valid: false, error: "Item code is too long (max 50 characters)" };
+    }
+    return { valid: true, value: trimmed };
   }
 
-  if (sanitized.length > BARCODE_MAX_LENGTH) {
-    return { valid: false, error: `Barcode is too long (max ${BARCODE_MAX_LENGTH} characters)` };
-  }
-
-  return { valid: true, value: sanitized };
+  return {
+    valid: false,
+    error: "Invalid barcode format. Use letters, numbers, hyphens, and underscores.",
+  };
 };
 
 export const sanitizeText = (value: string): string => value.replace(/[<>"']/g, "").trim();
@@ -120,46 +139,6 @@ export const normalizeBarcode = (barcode: string): string => {
   //   return trimmed.padStart(6, "0");
   // }
   return trimmed;
-};
-
-export const validateBarcode = (barcode: string): ValidationResult<string> => {
-  if (!barcode || !barcode.trim()) {
-    return { valid: false, error: "Barcode cannot be empty" };
-  }
-
-  const trimmed = barcode.trim().toUpperCase();
-
-  // Check minimum length logic based on content type
-  // Numeric barcodes (UPC-E, EAN) are usually at least 6 digits
-  // Alphanumeric Item Codes can be shorter (e.g., "A1", "BOX")
-
-  if (trimmed.match(/^\d+$/)) {
-    if (trimmed.length < 2) {
-      return {
-        valid: false,
-        error: "Invalid barcode: numeric barcodes must be at least 2 digits",
-      };
-    }
-    if (trimmed.length > 20) {
-      return { valid: false, error: "Barcode is too long (max 20 digits)" };
-    }
-    return { valid: true, value: trimmed };
-  }
-
-  if (trimmed.match(/^[A-Za-z0-9_\-]+$/)) {
-    if (trimmed.length < 2) {
-      return { valid: false, error: "Item code must be at least 2 characters" };
-    }
-    if (trimmed.length > 50) {
-      return { valid: false, error: "Item code is too long (max 50 characters)" };
-    }
-    return { valid: true, value: trimmed };
-  }
-
-  return {
-    valid: false,
-    error: "Invalid barcode format. Use letters, numbers, hyphens, and underscores.",
-  };
 };
 
 export const validateMRP = (value: string): ValidationResult<number> => {

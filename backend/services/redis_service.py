@@ -5,9 +5,8 @@ Provides connection pooling, health checks, and utility methods
 
 import asyncio
 import logging
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
-import redis.asyncio as aioredis
 from redis.asyncio import Redis
 from redis.asyncio.connection import ConnectionPool
 
@@ -136,7 +135,7 @@ class RedisService:
     ) -> bool:
         """
         Set key-value with optional expiration
-        
+
         Args:
             key: Key name
             value: Value to set
@@ -203,9 +202,7 @@ class RedisService:
         """Add members to sorted set"""
         return await self.client.zadd(name, mapping, nx=nx)
 
-    async def zrange(
-        self, name: str, start: int, end: int, withscores: bool = False
-    ) -> list:
+    async def zrange(self, name: str, start: int, end: int, withscores: bool = False) -> list:
         """Get sorted set range"""
         return await self.client.zrange(name, start, end, withscores=withscores)
 

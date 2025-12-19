@@ -252,34 +252,37 @@ export const getRackProgress = async (sessionId: string) => {
           line.rack_id ||
           "Unknown";
 
-        if (!rackStats[rack]) {
-          rackStats[rack] = {
+        // Create stats object if it doesn't exist
+        let stats = rackStats[rack];
+        if (!stats) {
+          stats = {
             counted: 0,
             uniqueItems: new Set(),
             totalQuantity: 0,
             lastUpdated: line.counted_at || new Date().toISOString(),
             hasDiscrepancies: false,
           };
+          rackStats[rack] = stats;
         }
 
         // Track unique items and quantities
-        if (!rackStats[rack].uniqueItems.has(line.item_code)) {
-          rackStats[rack].uniqueItems.add(line.item_code);
-          rackStats[rack].counted++;
+        if (!stats.uniqueItems.has(line.item_code)) {
+          stats.uniqueItems.add(line.item_code);
+          stats.counted++;
         }
 
         // Accumulate total quantity counted
-        rackStats[rack].totalQuantity += line.counted_qty || 1;
+        stats.totalQuantity += line.counted_qty || 1;
 
         // Check for discrepancies (if variance data is available)
         if (line.variance && Math.abs(line.variance) > 0) {
-          rackStats[rack].hasDiscrepancies = true;
+          stats.hasDiscrepancies = true;
         }
 
         // Update last modified time
         const lineTime = line.counted_at;
-        if (lineTime && lineTime > rackStats[rack].lastUpdated) {
-          rackStats[rack].lastUpdated = lineTime;
+        if (lineTime && lineTime > stats.lastUpdated) {
+          stats.lastUpdated = lineTime;
         }
       }
 

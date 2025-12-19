@@ -162,7 +162,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
         <Modal visible={showPhotoCapture} animationType="slide">
           <View style={styles.photoModalContainer}>
             <CameraView
-              ref={photoCameraRef}
+              ref={photoCameraRef as any}
               style={styles.photoCamera}
               facing={photoCameraType}
               ratio="16:9"

@@ -56,12 +56,13 @@ export const Tabs: React.FC<TabsProps> = ({
   const activeIndex = tabs.findIndex((tab) => tab.key === activeTab);
 
   React.useEffect(() => {
-    if (tabLayouts[activeTab]) {
-      indicatorPosition.value = withSpring(tabLayouts[activeTab].x, {
+    const layout = tabLayouts[activeTab];
+    if (layout) {
+      indicatorPosition.value = withSpring(layout.x, {
         damping: 15,
         stiffness: 150,
       });
-      indicatorWidth.value = withSpring(tabLayouts[activeTab].width, {
+      indicatorWidth.value = withSpring(layout.width, {
         damping: 15,
         stiffness: 150,
       });
@@ -125,10 +126,10 @@ export const Tabs: React.FC<TabsProps> = ({
   const Container = scrollable ? ScrollView : View;
   const containerProps = scrollable
     ? {
-        horizontal: true,
-        showsHorizontalScrollIndicator: false,
-        contentContainerStyle: styles.scrollContent,
-      }
+      horizontal: true,
+      showsHorizontalScrollIndicator: false,
+      contentContainerStyle: styles.scrollContent,
+    }
     : { style: styles.container };
 
   return (

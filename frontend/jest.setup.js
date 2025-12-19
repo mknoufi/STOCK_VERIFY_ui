@@ -2,6 +2,9 @@
 const React = require("react");
 const { View, Text } = require("react-native");
 
+// Extend Jest matchers for React Native Testing Library
+require("@testing-library/jest-native/extend-expect");
+
 const MockIcon = ({ name = "icon", size = 16, color = "black", testID }) =>
   React.createElement(
     View,

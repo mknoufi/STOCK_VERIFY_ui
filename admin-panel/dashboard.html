@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOCK_VERIFY - Advanced Admin Dashboard</title>
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="terminal-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/2.29.3/date-fns.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Navigation Header -->
+        <header class="dashboard-header">
+            <div class="header-brand">
+                <h1><i class="fas fa-tachometer-alt"></i> STOCK_VERIFY Advanced Dashboard</h1>
+                <span class="system-health" id="systemHealth">
+                    <i class="fas fa-heart"></i>
+                    <span id="healthScore">--</span>%
+                </span>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+                <button class="refresh-btn" onclick="refreshAllData()" title="Refresh All Data">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="alerts-toggle" onclick="toggleAlerts()" title="Toggle Alerts">
+                    <i class="fas fa-bell"></i>
+                    <span class="alert-badge" id="alertBadge">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-main">
+            <!-- System Overview Cards -->
+            <section class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i class="fas fa-microchip"></i>
+                        <span>CPU Usage</span>
+                    </div>
+                    <div class="metric-value" id="cpuUsage">--</div>
+                    <div class="metric-chart">
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i class="fas fa-memory"></i>
+                        <span>Memory Usage</span>
+                    </div>
+                    <div class="metric-value" id="memoryUsage">--</div>
+                    <div class="metric-chart">
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i class="fas fa-network-wired"></i>
+                        <span>API Response</span>
+                    </div>
+                    <div class="metric-value" id="apiResponse">--</div>
+                    <div class="metric-chart">
+                        <canvas id="apiChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i class="fas fa-users"></i>
+                        <span>Active Sessions</span>
+                    </div>
+                    <div class="metric-value" id="activeSessions">--</div>
+                    <div class="metric-trend" id="sessionTrend">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+2.5%</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Services Status Panel -->
+            <section class="services-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-cogs"></i> Service Health Matrix</h2>
+                    <div class="panel-controls">
+                        <button class="btn-icon" onclick="refreshServices()" title="Refresh Services">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="btn-icon" onclick="restartAllServices()" title="Restart All Services">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="services-matrix">
+                    <div class="service-node" id="mongodbNode">
+                        <div class="service-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="service-info">
+                            <span class="service-name">MongoDB</span>
+                            <span class="service-status" id="mongodbStatus">Checking...</span>
+                            <span class="service-metrics" id="mongodbMetrics">
+                                <i class="fas fa-clock"></i> <span id="mongodbLatency">-- ms</span>
+                            </span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="btn-sm btn-success" onclick="startService('mongodb')"
+                                title="Start MongoDB Service" aria-label="Start MongoDB Service">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="btn-sm btn-danger" onclick="stopService('mongodb')"
+                                title="Stop MongoDB Service" aria-label="Stop MongoDB Service">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="service-node" id="backendNode">
+                        <div class="service-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="service-info">
+                            <span class="service-name">Backend API</span>
+                            <span class="service-status" id="backendStatus">Checking...</span>
+                            <span class="service-metrics" id="backendMetrics">
+                                <i class="fas fa-chart-line"></i> <span id="backendRps">-- req/s</span>
+                            </span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="btn-sm btn-success" onclick="startService('backend')"
+                                title="Start Backend Service" aria-label="Start Backend Service">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="btn-sm btn-danger" onclick="stopService('backend')"
+                                title="Stop Backend Service" aria-label="Stop Backend Service">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="service-node" id="frontendNode">
+                        <div class="service-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="service-info">
+                            <span class="service-name">Frontend</span>
+                            <span class="service-status" id="frontendStatus">Checking...</span>
+                            <span class="service-metrics" id="frontendMetrics">
+                                <i class="fas fa-eye"></i> <span id="frontendConnections">-- conn</span>
+                            </span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="btn-sm btn-success" onclick="startService('frontend')"
+                                title="Start Frontend Service" aria-label="Start Frontend Service">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="btn-sm btn-danger" onclick="stopService('frontend')"
+                                title="Stop Frontend Service" aria-label="Stop Frontend Service">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="service-node" id="sqlServerNode">
+                        <div class="service-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="service-info">
+                            <span class="service-name">SQL Server</span>
+                            <span class="service-status" id="sqlServerStatus">Checking...</span>
+                            <span class="service-metrics" id="sqlServerMetrics">
+                                <i class="fas fa-exchange-alt"></i> <span id="sqlServerQueries">-- q/s</span>
+                            </span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="btn-sm btn-info" onclick="testSqlConnection()" title="Test SQL Connection"
+                                aria-label="Test SQL Server Connection">
+                                <i class="fas fa-plug"></i>
+                            </button>
+                            <button class="btn-sm btn-warning" onclick="showSqlConfig()"
+                                title="Configure SQL Connection" aria-label="Configure SQL Server Connection">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Monitor -->
+            <section class="security-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-shield-alt"></i> Security Monitor</h2>
+                    <div class="security-status" id="securityStatus">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Secure</span>
+                    </div>
+                </div>
+                <div class="security-grid">
+                    <div class="security-metric">
+                        <div class="security-icon failed-logins">
+                            <i class="fas fa-user-times"></i>
+                        </div>
+                        <div class="security-info">
+                            <span class="security-count" id="failedLoginsCount">0</span>
+                            <span class="security-label">Failed Logins (24h)</span>
+                        </div>
+                    </div>
+                    <div class="security-metric">
+                        <div class="security-icon suspicious-activity">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="security-info">
+                            <span class="security-count" id="suspiciousActivityCount">0</span>
+                            <span class="security-label">Suspicious Events</span>
+                        </div>
+                    </div>
+                    <div class="security-metric">
+                        <div class="security-icon active-sessions">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="security-info">
+                            <span class="security-count" id="activeUserSessions">0</span>
+                            <span class="security-label">Active Users</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-events">
+                    <h3>Recent Security Events</h3>
+                    <ul class="events-list" id="securityEventsList">
+                        <li class="event-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>System monitoring initialized</span>
+                            <time>Just now</time>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Connection Panel -->
+            <section class="connection-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-mobile-alt"></i> Mobile Connection</h2>
+                    <button class="btn-icon" onclick="refreshQrCodes()" title="Refresh QR Codes">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="qr-grid">
+                    <div class="qr-card">
+                        <h3>Expo Go (Dev)</h3>
+                        <div id="expoQr" class="qr-code"></div>
+                        <div class="qr-url" id="expoUrl">Loading...</div>
+                    </div>
+                    <div class="qr-card">
+                        <h3>Web App</h3>
+                        <div id="webQr" class="qr-code"></div>
+                        <div class="qr-url" id="webUrl">Loading...</div>
+                    </div>
+                    <div class="qr-card">
+                        <h3>Backend API</h3>
+                        <div id="apiQr" class="qr-code"></div>
+                        <div class="qr-url" id="apiUrl">Loading...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Terminal Panel -->
+            <section class="terminal-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-terminal"></i> System Terminals</h2>
+                    <div class="terminal-controls">
+                        <div class="terminal-tabs">
+                            <button class="tab-btn active" onclick="switchTerminal('backend')">Backend</button>
+                            <button class="tab-btn" onclick="switchTerminal('frontend')">Frontend</button>
+                            <button class="tab-btn" onclick="switchTerminal('admin')">Admin</button>
+                        </div>
+                        <button class="btn-icon" onclick="toggleTerminalAutoScroll()" title="Toggle Auto-scroll">
+                            <i class="fas fa-arrow-down" id="termAutoScrollIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="terminal-window" id="terminalWindow">
+                    <pre id="terminalContent">Loading logs...</pre>
+                </div>
+            </section>
+
+            <!-- Real-time Logs -->
+            <section class="logs-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-terminal"></i> Live System Logs</h2>
+                    <div class="logs-controls">
+                        <select id="logServiceFilter" title="Filter logs by service"
+                            aria-label="Select service to filter logs">
+                            <option value="all">All Services</option>
+                            <option value="backend">Backend</option>
+                            <option value="frontend">Frontend</option>
+                            <option value="mongodb">MongoDB</option>
+                        </select>
+                        <select id="logLevelFilter" title="Filter logs by level"
+                            aria-label="Select log level to filter">
+                            <option value="all">All Levels</option>
+                            <option value="error">Errors Only</option>
+                            <option value="warning">Warnings+</option>
+                            <option value="info">Info+</option>
+                        </select>
+                        <button class="btn-icon" onclick="clearLogs()" title="Clear Logs">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn-icon" onclick="toggleAutoScroll()" title="Toggle Auto-scroll">
+                            <i class="fas fa-arrow-down" id="autoScrollIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="logs-container" id="logsContainer">
+                    <div class="log-line">
+                        <span class="log-time">[12:34:56]</span>
+                        <span class="log-level info">[INFO]</span>
+                        <span class="log-service">[SYSTEM]</span>
+                        <span class="log-message">Advanced dashboard initialized successfully</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Performance Analytics -->
+            <section class="analytics-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-chart-area"></i> Performance Analytics</h2>
+                    <div class="time-range-selector">
+                        <button class="time-btn active" data-range="1h">1H</button>
+                        <button class="time-btn" data-range="6h">6H</button>
+                        <button class="time-btn" data-range="24h">24H</button>
+                        <button class="time-btn" data-range="7d">7D</button>
+                    </div>
+                </div>
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3>System Load Trend</h3>
+                        <canvas id="systemLoadChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>API Response Times</h3>
+                        <canvas id="responseTimeChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Error Rate Analysis</h3>
+                        <canvas id="errorRateChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Database Performance</h3>
+                        <canvas id="dbPerformanceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Alert Toast Container -->
+        <div class="alert-container" id="alertContainer"></div>
+
+        <!-- Modals -->
+        <dialog class="modal-overlay" id="modalOverlay" aria-modal="true">
+            <div class="modal" id="configModal">
+                <div class="modal-header">
+                    <h2>SQL Server Configuration</h2>
+                    <button class="modal-close" onclick="closeModals()" title="Close Configuration Modal"
+                        aria-label="Close Configuration Modal" type="button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="sqlConfigForm">
+                        <div class="form-group">
+                            <label for="sqlHost">Host:</label>
+                            <input type="text" id="sqlHost" placeholder="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label for="sqlPort">Port:</label>
+                            <input type="number" id="sqlPort" placeholder="1433">
+                        </div>
+                        <div class="form-group">
+                            <label for="sqlDatabase">Database:</label>
+                            <input type="text" id="sqlDatabase" placeholder="StockVerify">
+                        </div>
+                        <div class="form-group">
+                            <label for="sqlUsername">Username:</label>
+                            <input type="text" id="sqlUsername" placeholder="sa">
+                        </div>
+                        <div class="form-group">
+                            <label for="sqlPassword">Password:</label>
+                            <input type="password" id="sqlPassword" placeholder="********">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="testSqlConnection()">
+                                <i class="fas fa-plug"></i> Test Connection
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Save Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+    <script src="benchmark.js"></script>
+    <script src="dashboard-fix-validator.js"></script>
+</body>
+
+</html>

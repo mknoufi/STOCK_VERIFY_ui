@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "cursor10x-mcp": {
+      "command": "npx",
+      "args": [
+        "cursor10x-mcp"
+      ],
+      "enabled": true,
+      "env": {
+        "TURSO_DATABASE_URL": "your-turso-database-url-here",
+        "TURSO_AUTH_TOKEN": "your-turso-auth-token-here"
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+0000000000000000000000000000000000000000 b48b141bf54d24f85ccffa19146d5d8fa186b587 Noufi <mknoufi@gmail.com> 1764956153 +0530	branch: Created from HEAD
+b48b141bf54d24f85ccffa19146d5d8fa186b587 b51dc479afc84f14f2bc91d2a4b691b28e173fa4 Noufi <mknoufi@gmail.com> 1764957584 +0530	commit: docs: add comprehensive user guide and fix pre-commit hooks
+b51dc479afc84f14f2bc91d2a4b691b28e173fa4 2f0b7369b7cf60296e87b25cb5bf8e59cc0715bc Noufi <mknoufi@gmail.com> 1765029458 +0530	commit: chore: update deployment config for backfron directory and nginx proxy
+2f0b7369b7cf60296e87b25cb5bf8e59cc0715bc 95e95bdf8db2250231b3dd68135f4677bfc32e21 Noufi <mknoufi@gmail.com> 1765029650 +0530	commit: chore: remove database files from git and update .gitignore
+95e95bdf8db2250231b3dd68135f4677bfc32e21 f9f11f660f784d04e5e03b81284c9f93837ebeb2 Noufi <mknoufi@gmail.com> 1765129549 +0530	commit: feat: complete admin panel scaffold and mobile UI enhancements
+f9f11f660f784d04e5e03b81284c9f93837ebeb2 0a4967baa1d9f8932e5557ce8ce0d3ae6bec5938 Noufi <mknoufi@gmail.com> 1765129636 +0530	commit: docs: update active context with December 7 progress

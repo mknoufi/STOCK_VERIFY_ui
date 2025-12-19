@@ -1,0 +1,176 @@
+{
+  "tech_stack": [
+    "Python 3.10",
+    "FastAPI",
+    "Pydantic",
+    "Uvicorn",
+    "MongoDB",
+    "SQL Server",
+    "pyodbc",
+    "React Native 0.81",
+    "Expo SDK 54",
+    "TypeScript 5.9",
+    "Expo Router",
+    "Zustand",
+    "TanStack Query",
+    "Axios",
+    "AsyncStorage",
+    "Docker",
+    "Nginx",
+    "Pytest",
+    "Playwright"
+  ],
+  "features": [
+    {
+      "name": "FastAPI Application Router",
+      "description": "ASGI configuration, middleware, and API router mounting that expose every backend capability under the /api namespace.",
+      "files": [
+        "backend/server.py",
+        "backend/config.py",
+        "backend/api/"
+      ]
+    },
+    {
+      "name": "JWT Authentication & Role Access",
+      "description": "End-to-end login, token issuance, and dependency guards that secure routes and hydrate the Expo client stores.",
+      "files": [
+        "backend/api/auth.py",
+        "backend/auth/dependencies.py",
+        "backend/auth/permissions.py",
+        "frontend/app/login.tsx",
+        "frontend/src/store/authStore.ts"
+      ]
+    },
+    {
+      "name": "ERPNext Data Mapping & Synchronization",
+      "description": "Read-only SQL Server connectors, schema mapping, and sync services that hydrate MongoDB with ERP item master data.",
+      "files": [
+        "backend/api_mapping.py",
+        "backend/db_mapping_config.py",
+        "backend/services/erp_sync_service.py",
+        "backend/services/sql_sync_service.py",
+        "backend/services/sync_conflicts_service.py"
+      ]
+    },
+    {
+      "name": "Dynamic Fields & Custom Reports",
+      "description": "Configurable metadata fields plus export-ready report templates that combine Mongo data, ERP lookups, and runtime filters.",
+      "files": [
+        "backend/api/dynamic_fields_api.py",
+        "backend/services/dynamic_fields_service.py",
+        "backend/api/dynamic_reports_api.py",
+        "backend/services/dynamic_report_service.py",
+        "docs/archive/old_docs/DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md"
+      ]
+    },
+    {
+      "name": "Stock Verification Sessions & Barcode Flows",
+      "description": "Session orchestration, barcode lookups, and discrepancy tracking that guide staff through scanning workflows.",
+      "files": [
+        "backend/api/session_api.py",
+        "backend/api/item_verification_api.py",
+        "frontend/app/staff/",
+        "frontend/src/services/itemVerificationApi.ts",
+        "frontend/src/hooks/useItemByBarcodeQuery.ts",
+        "frontend/src/store/scanSessionStore.ts"
+      ]
+    },
+    {
+      "name": "Offline Queue & Sync Health",
+      "description": "Queue-first client services and backend sync monitors that continue capturing work without connectivity.",
+      "files": [
+        "frontend/src/services/offlineQueue.ts",
+        "frontend/src/services/syncService.ts",
+        "backend/api/sync_status_api.py",
+        "backend/api/sync_management_api.py",
+        "backend/services/auto_sync_manager.py",
+        "backend/services/database_health.py"
+      ]
+    },
+    {
+      "name": "Admin & Supervisor Dashboards",
+      "description": "Role-specific Expo Router stacks that surface approvals, metrics, and controls backed by privileged APIs.",
+      "files": [
+        "frontend/app/admin/",
+        "frontend/app/supervisor/",
+        "backend/api/admin_control_api.py",
+        "backend/api/metrics_api.py",
+        "backend/services/monitoring_service.py"
+      ]
+    },
+    {
+      "name": "Exports & Reporting Pipelines",
+      "description": "Batch export APIs, scheduled jobs, and client helpers for delivering CSV/XLSX outputs and downloadable artifacts.",
+      "files": [
+        "backend/api/exports_api.py",
+        "backend/api/reporting_api.py",
+        "backend/services/scheduled_export_service.py",
+        "frontend/src/services/exportService.ts"
+      ]
+    },
+    {
+      "name": "Observability & Self-Diagnostics",
+      "description": "Health checks, self-diagnosis routines, and monitoring services that feed admin tooling and automated recovery.",
+      "files": [
+        "backend/api/health.py",
+        "backend/api/self_diagnosis_api.py",
+        "backend/services/monitoring_service.py",
+        "backend/services/auto_diagnosis.py",
+        "frontend/app/debug.tsx"
+      ]
+    },
+    {
+      "name": "Frontend Infrastructure & Theming",
+      "description": "Expo Router layout, shared theming, and HTTP utilities that keep the React Native clients cohesive across roles.",
+      "files": [
+        "frontend/app/_layout.tsx",
+        "frontend/src/theme/",
+        "frontend/src/services/httpClient.ts",
+        "frontend/src/store/settingsStore.ts",
+        "frontend/src/hooks/useTheme.ts"
+      ]
+    }
+  ],
+  "functional_capabilities": [
+    {
+      "name": "User Authentication & Session Security",
+      "description": "Users authenticate with username/password, receive JWTs with role claims, and maintain sessions with refresh tokens and auto-logout policies."
+    },
+    {
+      "name": "Inventory Counting Sessions",
+      "description": "Staff launch counting sessions, scan barcodes, capture expected vs counted quantities, and flag discrepancies in real time."
+    },
+    {
+      "name": "Variance Review & Approval",
+      "description": "Supervisors inspect variance queues, compare audit trails, approve or reject adjustments, and push decisions back into the ERP source of truth."
+    },
+    {
+      "name": "Dynamic Field Configuration",
+      "description": "Admins add or adjust metadata fields without schema changes, enabling custom attributes to flow through capture forms and reports."
+    },
+    {
+      "name": "Custom Reporting & Exports",
+      "description": "Users build or execute report templates, filter data by warehouse/date/status, and export to CSV/XLSX for downstream auditing."
+    },
+    {
+      "name": "ERPNext Synchronization",
+      "description": "Background jobs fetch master data from SQL Server, reconcile conflicts, and keep MongoDB inventories aligned with ERP state."
+    },
+    {
+      "name": "Offline Data Capture",
+      "description": "When connectivity drops, scans and edits land in a durable queue that syncs automatically once the network is restored."
+    },
+    {
+      "name": "System Health & Observability",
+      "description": "Operational users can view heartbeat metrics, diagnostics, and automated recovery suggestions through dedicated dashboards."
+    },
+    {
+      "name": "Role-Based Dashboards",
+      "description": "Each persona (admin, supervisor, staff) sees tailored navigation, KPIs, and actions aligned to their operational responsibilities."
+    },
+    {
+      "name": "Security & Compliance Controls",
+      "description": "Least-privilege permissions, audit trails, and rate limits protect sensitive inventory data and enforce corporate policies."
+    }
+  ]
+}

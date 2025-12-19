@@ -1,0 +1,104 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Backend",
+            "type": "shell",
+            "command": "cd backend && export PYTHONPATH=.. && uvicorn backend.server:app --host 0.0.0.0 --port 8001 --reload",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Start Frontend",
+            "type": "shell",
+            "command": "cd frontend && npm start",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Run Backend Tests",
+            "type": "shell",
+            "command": "cd backend && pytest tests/ -v",
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run Frontend Tests",
+            "type": "shell",
+            "command": "cd frontend && npm test",
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Lint Python",
+            "type": "shell",
+            "command": "cd backend && ruff check .",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Format Python",
+            "type": "shell",
+            "command": "cd backend && black . && ruff format .",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Lint TypeScript",
+            "type": "shell",
+            "command": "cd frontend && npm run lint",
+            "problemMatcher": [
+                "$eslint-stylish"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "Format TypeScript",
+            "type": "shell",
+            "command": "cd frontend && npm run format",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Run Full CI",
+            "type": "shell",
+            "command": "make ci",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Docker: Build",
+            "type": "shell",
+            "command": "docker-compose build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Docker: Up",
+            "type": "shell",
+            "command": "docker-compose up",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Docker: Down",
+            "type": "shell",
+            "command": "docker-compose down",
+            "problemMatcher": []
+        }
+    ]
+}

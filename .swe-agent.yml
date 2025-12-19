@@ -1,0 +1,93 @@
+# SWE-Agent Configuration for Stock Verification System
+# https://github.com/princeton-nlp/SWE-agent
+
+# Agent behavior settings
+agent:
+  model: claude-sonnet-4-20250514
+  temperature: 0
+  max_iterations: 30
+
+# Repository context
+repo:
+  name: STOCK_VERIFY_2-db-maped
+  primary_language: python
+  secondary_language: typescript
+
+# Commands the agent can use
+commands:
+  # Search commands
+  find_file:
+    docstring: "Find files matching a pattern"
+    signature: "find_file <pattern>"
+
+  search_dir:
+    docstring: "Search for text in a directory"
+    signature: "search_dir <search_term> [<dir>]"
+
+  search_file:
+    docstring: "Search for text in a specific file"
+    signature: "search_file <search_term> <file>"
+
+  # Navigation
+  open_file:
+    docstring: "Open a file at a specific line"
+    signature: "open_file <file> [<line>]"
+
+  goto_line:
+    docstring: "Go to a specific line in the open file"
+    signature: "goto <line>"
+
+  scroll_down:
+    docstring: "Scroll down in the open file"
+
+  scroll_up:
+    docstring: "Scroll up in the open file"
+
+  # Editing
+  edit:
+    docstring: "Edit the open file"
+    signature: "edit <start_line>:<end_line>\n<content>\nend_of_edit"
+
+  # Testing
+  run_tests:
+    docstring: "Run the test suite"
+    command: "make test"
+
+  run_lint:
+    docstring: "Run linting"
+    command: "make lint"
+
+# Environment setup
+env_setup:
+  - pip install -r requirements.production.txt
+  - cd frontend && npm install
+
+# Problem statement template
+problem_statement_template: |
+  ## Issue
+  {issue_description}
+
+  ## Context
+  Stock Verification System:
+  - Backend: FastAPI (Python 3.10+)
+  - Frontend: React Native + Expo (TypeScript)
+  - Primary DB: MongoDB
+  - ERP Source: SQL Server (READ-ONLY)
+
+  ## Key Files
+  - backend/server.py - Main FastAPI app
+  - backend/config.py - Configuration
+  - frontend/app/ - Expo Router pages
+  - frontend/services/ - API clients
+
+  ## Constraints
+  - SQL Server is READ-ONLY
+  - Use parameterized queries (?) for SQL
+  - JWT auth on /api/* endpoints
+  - Run `make test` before submitting
+
+# Demonstration examples
+demonstrations:
+  - path: demos/add_endpoint.md
+  - path: demos/fix_bug.md
+  - path: demos/add_test.md

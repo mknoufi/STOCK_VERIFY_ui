@@ -1,0 +1,154 @@
+[
+  {
+    "id": "TC001",
+    "name": "Login Page Renders Correctly",
+    "description": "Verify that the login page displays all required elements including logo, input fields, and buttons",
+    "steps": [
+      "Navigate to the login page at /",
+      "Verify the Stock Verify logo/icon is visible",
+      "Verify the username input field is present and accessible",
+      "Verify the password input field is present and accessible",
+      "Verify the Sign In button is present",
+      "Verify the Remember Me checkbox is present",
+      "Verify the Forgot Password link is present",
+      "Verify the version number is displayed in footer"
+    ],
+    "expectedResult": "All login page elements are visible and properly styled with dark theme",
+    "priority": "high",
+    "category": "authentication"
+  },
+  {
+    "id": "TC002",
+    "name": "Login Form Validation - Empty Fields",
+    "description": "Test login form validation for empty username and password fields",
+    "steps": [
+      "Navigate to the login page",
+      "Leave username field empty",
+      "Leave password field empty",
+      "Click the Sign In button",
+      "Verify error alert is displayed with message 'Please enter username and password'"
+    ],
+    "expectedResult": "Error alert is shown when submitting empty form",
+    "priority": "high",
+    "category": "authentication"
+  },
+  {
+    "id": "TC003",
+    "name": "Remember Me Checkbox Toggle",
+    "description": "Test the remember me checkbox toggles correctly on tap",
+    "steps": [
+      "Navigate to the login page",
+      "Locate the Remember Me checkbox",
+      "Verify checkbox is initially unchecked",
+      "Tap on the Remember Me checkbox",
+      "Verify checkbox becomes checked (shows checkmark)",
+      "Tap again to uncheck",
+      "Verify checkbox becomes unchecked"
+    ],
+    "expectedResult": "Remember Me checkbox toggles between checked and unchecked states",
+    "priority": "medium",
+    "category": "authentication"
+  },
+  {
+    "id": "TC004",
+    "name": "Sign In Button Disabled State",
+    "description": "Test that Sign In button is disabled when fields are empty",
+    "steps": [
+      "Navigate to the login page",
+      "Verify Sign In button is disabled when both fields are empty",
+      "Enter username only",
+      "Verify Sign In button is still disabled",
+      "Enter password",
+      "Verify Sign In button becomes enabled"
+    ],
+    "expectedResult": "Sign In button is only enabled when both username and password are filled",
+    "priority": "high",
+    "category": "authentication"
+  },
+  {
+    "id": "TC005",
+    "name": "Forgot Password Link",
+    "description": "Test that Forgot Password link shows appropriate message",
+    "steps": [
+      "Navigate to the login page",
+      "Locate the Forgot Password link",
+      "Tap on Forgot Password",
+      "Verify alert dialog appears with contact administrator message"
+    ],
+    "expectedResult": "Alert dialog shows 'Please contact your administrator to reset your password'",
+    "priority": "medium",
+    "category": "authentication"
+  },
+  {
+    "id": "TC006",
+    "name": "Username Input Field",
+    "description": "Test username input field accepts text input",
+    "steps": [
+      "Navigate to the login page",
+      "Locate the username input field",
+      "Tap on the username field",
+      "Type 'testuser'",
+      "Verify the text appears in the field"
+    ],
+    "expectedResult": "Username field accepts and displays typed text",
+    "priority": "high",
+    "category": "authentication"
+  },
+  {
+    "id": "TC007",
+    "name": "Password Input Field Secure Entry",
+    "description": "Test password field hides text with secure entry",
+    "steps": [
+      "Navigate to the login page",
+      "Locate the password input field",
+      "Tap on the password field",
+      "Type 'password123'",
+      "Verify the text is hidden (shown as dots/asterisks)"
+    ],
+    "expectedResult": "Password field masks the entered text",
+    "priority": "high",
+    "category": "authentication"
+  },
+  {
+    "id": "TC008",
+    "name": "Login Page Animations",
+    "description": "Verify animated elements load properly",
+    "steps": [
+      "Navigate to the login page",
+      "Observe the logo animation",
+      "Verify logo has subtle rotation animation",
+      "Verify form fades in smoothly"
+    ],
+    "expectedResult": "Page loads with smooth animations",
+    "priority": "low",
+    "category": "ui-ux"
+  },
+  {
+    "id": "TC009",
+    "name": "Security Notice Display",
+    "description": "Verify security notice is shown on login page",
+    "steps": [
+      "Navigate to the login page",
+      "Scroll to see the security notice",
+      "Verify shield icon is visible",
+      "Verify text 'Secured with 256-bit encryption' is displayed"
+    ],
+    "expectedResult": "Security notice with shield icon is visible",
+    "priority": "low",
+    "category": "ui-ux"
+  },
+  {
+    "id": "TC010",
+    "name": "Version Footer Display",
+    "description": "Verify version and copyright info in footer",
+    "steps": [
+      "Navigate to the login page",
+      "Scroll to footer section",
+      "Verify version number is displayed",
+      "Verify copyright text is displayed"
+    ],
+    "expectedResult": "Footer shows 'Version 2.1.0' and '© 2025 Stock Verify'",
+    "priority": "low",
+    "category": "ui-ux"
+  }
+]

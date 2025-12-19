@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 98b9b5cee7d3234317c9486b757290dc5b2dcb02 Noufi <mknoufi@gmail.com> 1764746710 +0530	branch: Created from 98b9b5cee7d3234317c9486b757290dc5b2dcb02
+98b9b5cee7d3234317c9486b757290dc5b2dcb02 d006de43612fcffc7fe106d71a0fdc1384b0adb8 Noufi <mknoufi@gmail.com> 1764760325 +0530	pull: Fast-forward
+d006de43612fcffc7fe106d71a0fdc1384b0adb8 ef8362eee56e098f0fc4000b8f129c270f6d470e Noufi <mknoufi@gmail.com> 1764760649 +0530	commit: Fix TypeScript errors in router calls and layout

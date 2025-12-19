@@ -1,0 +1,107 @@
+# Cline/Claude Dev Rules for Stock Verification System
+# https://github.com/cline/cline
+
+version: 1
+
+# Project context
+project:
+  name: Stock Verification System
+  type: fullstack
+  backend:
+    framework: FastAPI
+    language: Python 3.10+
+    port: 8001
+  frontend:
+    framework: React Native + Expo
+    language: TypeScript
+    port: 8081
+  databases:
+    primary: MongoDB (Motor async)
+    erp: SQL Server (read-only)
+
+# Critical rules
+rules:
+  - id: sql-read-only
+    severity: error
+    description: SQL Server is READ-ONLY
+    pattern: "cursor.execute.*INSERT|UPDATE|DELETE"
+    message: "SQL Server is read-only. Use MongoDB for writes."
+
+  - id: parameterized-queries
+    severity: error
+    description: Use parameterized SQL queries
+    pattern: 'f".*SELECT.*{|f".*WHERE.*{'
+    message: "Use parameterized queries with ? placeholders to prevent SQL injection."
+
+  - id: jwt-required
+    severity: warning
+    description: Protected endpoints need JWT
+    pattern: "@(router|app)\\.(get|post|put|delete|patch).*\\/api"
+    message: "Ensure this endpoint uses Depends(get_current_user) for authentication."
+
+  - id: no-cors-wildcard
+    severity: error
+    description: No CORS wildcard allowed
+    pattern: 'allow_origins=\\["\\*"\\]|allow_origins=\\*'
+    message: "Do not use CORS wildcard. Configure specific origins via CORS_ALLOW_ORIGINS."
+
+# Allowed commands
+commands:
+  allowed:
+    - make ci
+    - make test
+    - make lint
+    - make typecheck
+    - make format
+    - pytest
+    - ruff check
+    - ruff format
+    - black
+    - mypy
+    - npm run lint
+    - npm run typecheck
+    - npm test
+    - npm start
+    - uvicorn
+    - curl
+
+  forbidden:
+    - git push --force
+    - git rebase
+    - docker rm -f
+    - docker system prune
+    - rm -rf
+
+# File access
+files:
+  read_only:
+    - .env
+    - .env.*
+    - .secrets
+    - "*.pem"
+    - "*.key"
+
+  protected:
+    - backend/config.py  # Secrets handling
+    - docker-compose.yml
+    - docker-compose.prod.yml
+
+# Auto-actions
+auto:
+  before_edit:
+    - command: git status
+      description: Check for uncommitted changes
+
+  after_edit:
+    - command: make lint
+      description: Lint the changes
+    - command: make test
+      description: Run tests
+
+# Context files to always include
+context:
+  include:
+    - .cursorrules
+    - .github/copilot-instructions.md
+    - README.md
+    - ARCHITECTURE.md

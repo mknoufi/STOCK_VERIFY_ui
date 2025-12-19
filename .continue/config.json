@@ -1,0 +1,143 @@
+{
+  "models": [
+    {
+      "title": "Claude Sonnet 4",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "apiKey": "${ANTHROPIC_API_KEY}",
+      "contextLength": 200000
+    },
+    {
+      "title": "GPT-4o",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "apiKey": "${OPENAI_API_KEY}"
+    },
+    {
+      "title": "Claude Haiku (Fast)",
+      "provider": "anthropic",
+      "model": "claude-3-5-haiku-20241022",
+      "apiKey": "${ANTHROPIC_API_KEY}"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Claude Haiku",
+    "provider": "anthropic",
+    "model": "claude-3-5-haiku-20241022",
+    "apiKey": "${ANTHROPIC_API_KEY}"
+  },
+  "embeddingsProvider": {
+    "provider": "openai",
+    "model": "text-embedding-3-small",
+    "apiKey": "${OPENAI_API_KEY}"
+  },
+  "reranker": {
+    "name": "cohere",
+    "params": {
+      "apiKey": "${COHERE_API_KEY}"
+    }
+  },
+  "customCommands": [
+    {
+      "name": "test",
+      "description": "Run all tests",
+      "prompt": "Run the test suite and fix any failures. Use `make test` or specific test commands from the Makefile."
+    },
+    {
+      "name": "lint",
+      "description": "Lint and format code",
+      "prompt": "Run linting and formatting. For Python use `ruff check --fix` and `black`. For TypeScript use `npm run lint -- --fix`."
+    },
+    {
+      "name": "security",
+      "description": "Security audit",
+      "prompt": "Perform a security audit focusing on SQL injection, XSS, CORS, and authentication issues. Check for CWE/OWASP violations."
+    },
+    {
+      "name": "refactor",
+      "description": "Refactor for maintainability",
+      "prompt": "Refactor the selected code to improve maintainability. Split functions over 50 lines, add type hints, improve naming."
+    },
+    {
+      "name": "document",
+      "description": "Add documentation",
+      "prompt": "Add comprehensive docstrings following Google style for Python and JSDoc for TypeScript."
+    }
+  ],
+  "contextProviders": [
+    {
+      "name": "code",
+      "params": {}
+    },
+    {
+      "name": "docs",
+      "params": {}
+    },
+    {
+      "name": "diff",
+      "params": {}
+    },
+    {
+      "name": "terminal",
+      "params": {}
+    },
+    {
+      "name": "problems",
+      "params": {}
+    },
+    {
+      "name": "folder",
+      "params": {}
+    },
+    {
+      "name": "codebase",
+      "params": {}
+    }
+  ],
+  "slashCommands": [
+    {
+      "name": "edit",
+      "description": "Edit selected code"
+    },
+    {
+      "name": "comment",
+      "description": "Add comments to code"
+    },
+    {
+      "name": "share",
+      "description": "Export conversation"
+    },
+    {
+      "name": "cmd",
+      "description": "Generate a shell command"
+    },
+    {
+      "name": "commit",
+      "description": "Generate a commit message"
+    }
+  ],
+  "docs": [
+    {
+      "title": "Stock Verify Architecture",
+      "startUrl": "file://./ARCHITECTURE.md"
+    },
+    {
+      "title": "API Contracts",
+      "startUrl": "file://./API_CONTRACTS.md"
+    },
+    {
+      "title": "FastAPI Docs",
+      "startUrl": "https://fastapi.tiangolo.com/"
+    },
+    {
+      "title": "Expo Docs",
+      "startUrl": "https://docs.expo.dev/"
+    },
+    {
+      "title": "MongoDB Motor",
+      "startUrl": "https://motor.readthedocs.io/"
+    }
+  ],
+  "allowAnonymousTelemetry": false,
+  "systemMessage": "You are working on the Stock Verification System - a FastAPI + React Native + Expo application.\n\nCRITICAL RULES:\n- SQL Server is READ-ONLY. All writes go to MongoDB.\n- Use parameterized queries (?) for SQL - never string concatenation.\n- JWT auth required for all /api/* endpoints.\n- Follow patterns in existing code.\n- Run tests before committing.\n\nKey files:\n- backend/server.py - Main FastAPI app\n- backend/config.py - Configuration\n- backend/db_mapping_config.py - SQL mappings\n- frontend/app/ - Expo router pages\n- frontend/services/ - API clients"
+}

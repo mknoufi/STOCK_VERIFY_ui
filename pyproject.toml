@@ -1,0 +1,144 @@
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | node_modules
+  | __pycache__
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# Ignore exception chaining (B904) and unnecessary comprehensions (C401, C416, C408)
+# These are style issues that don't affect functionality
+ignore = ["B904", "C401", "C408", "C416", "B007", "B028"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_glob = [
+    "**/migrations/**",
+    "**/node_modules/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/__pycache__/**",
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+disallow_untyped_decorators = false
+no_implicit_optional = false
+warn_redundant_casts = false
+warn_unused_ignores = false
+warn_no_return = false
+warn_unreachable = false
+strict_equality = false
+ignore_missing_imports = true
+explicit_package_bases = true
+namespace_packages = true
+exclude = ["backend/tests/", "backend/scripts/"]
+
+[[tool.mypy.overrides]]
+module = [
+    "motor.*",
+    "pymongo.*",
+    "pyodbc.*",
+    "pymssql.*",
+    "backend.tests.*",
+    "backend.scripts.*",
+    "backend.api.master_settings_api",
+    "backend.services.advanced_erp_sync",
+    "backend.utils.result_types",
+    "backend.api.enhanced_item_api",
+    "backend.services.database_manager",
+    "backend.services.change_detection_sync",
+    "backend.services.enrichment_service",
+    "backend.api.security_api",
+    "backend.services.error_log",
+    "backend.utils.database_optimizer_v2",
+    "backend.utils.async_utils",
+    "backend.services.activity_log",
+    "backend.api.item_verification_api",
+    "backend.services.sql_sync_service",
+    "backend.services.monitoring_service",
+    "backend.services.dynamic_fields_service",
+    "backend.services.database_health",
+    "backend.middleware.request_size_limit",
+    "backend.api.response_models",
+    "backend.api.exports_api",
+    "backend.services.dynamic_report_service",
+    "backend.utils.structured_logging",
+    "backend.utils.logging_config",
+    "backend.services.rate_limiter",
+    "backend.api.v2.*",
+    "backend.services.cache_service",
+    "backend.utils.port_detector",
+    "backend.services.scheduled_export_service",
+    "backend.db.runtime",
+    "backend.utils.error_handler_with_diagnosis",
+    "backend.services.auto_sync_manager",
+    "backend.api.dynamic_reports_api",
+    "backend.api.admin_control_api",
+]
+ignore_missing_imports = true
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["backend"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

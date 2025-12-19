@@ -1,0 +1,56 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "React Native",
+    "Expo",
+    "Python",
+    "FastAPI",
+    "MongoDB",
+    "SQL Server",
+    "Zustand",
+    "TanStack Query"
+  ],
+  "features": [
+    {
+      "name": "Authentication",
+      "description": "User login and authentication using JWT.",
+      "files": ["frontend/app/login.tsx", "backend/routers/auth.py"]
+    },
+    {
+      "name": "Barcode Scanning",
+      "description": "Scanning barcodes to verify stock items.",
+      "files": [
+        "frontend/app/staff/scan.tsx",
+        "frontend/src/components/scan/BarcodeScanner.tsx",
+        "backend/routers/items.py"
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "description": "Admin dashboard with charts and statistics.",
+      "files": [
+        "frontend/app/admin/dashboard-web.tsx",
+        "frontend/src/components/charts/PieChart.tsx",
+        "frontend/src/components/charts/SimplePieChart.tsx"
+      ]
+    },
+    {
+      "name": "Reports",
+      "description": "Generating and viewing stock reports.",
+      "files": ["frontend/app/admin/reports.tsx", "backend/routers/reports.py"]
+    },
+    {
+      "name": "Offline Mode",
+      "description": "Offline storage and synchronization.",
+      "files": [
+        "frontend/src/services/offline/offlineStorage.ts",
+        "frontend/src/services/offlineQueue.ts"
+      ]
+    },
+    {
+      "name": "Database Mapping",
+      "description": "Mapping SQL Server tables to application models.",
+      "files": ["backend/api_mapping.py", "backend/db_mapping_config.py"]
+    }
+  ]
+}

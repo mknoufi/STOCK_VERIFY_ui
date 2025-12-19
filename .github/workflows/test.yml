@@ -1,0 +1,214 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Create test .env
+        run: |
+          cd backend
+          cat > .env << EOF
+          MONGO_URL=mongodb://localhost:27017
+          DB_NAME=test_stock_verification
+          JWT_SECRET=test-secret-key-for-ci-cd-testing-only-min-32-chars
+          JWT_REFRESH_SECRET=test-refresh-secret-key-for-ci-cd-testing-only-min-32-chars
+          JWT_ALGORITHM=HS256
+          ACCESS_TOKEN_EXPIRE_MINUTES=15
+          REFRESH_TOKEN_EXPIRE_DAYS=30
+          LOG_LEVEL=INFO
+          ENVIRONMENT=test
+          EOF
+
+      - name: Run Python linting
+        run: |
+          cd backend
+          pip install black ruff
+          black --check --line-length=100 .
+          ruff check .
+
+      - name: Run Python tests
+        run: |
+          cd backend
+          pytest --cov=. --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18" # Use LTS version for better stability
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          # Disable automatic exit on error to handle retries manually
+          set +e
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          BACKOFF=10
+
+          install_deps() {
+            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES: Running npm install --legacy-peer-deps"
+            npm install --legacy-peer-deps --omit=optional --ignore-scripts
+            return $?
+          }
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            install_deps
+            EXIT_CODE=$?
+
+            if [ $EXIT_CODE -eq 0 ]; then
+              echo "npm install succeeded on attempt $((RETRY_COUNT + 1))"
+              exit 0
+            fi
+
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Install failed. Retrying in ${BACKOFF} seconds..."
+              sleep $BACKOFF
+              BACKOFF=$((BACKOFF * 2))
+              # Clear npm cache before retry to ensure clean state
+              npm cache clean --force 2>/dev/null || true
+            fi
+          done
+
+          echo "All retry attempts failed"
+          exit 1
+
+      - name: Run TypeScript check
+        run: |
+          cd frontend
+          npm run typecheck
+
+      - name: Run linting
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Run tests
+        run: |
+          cd frontend
+          npm test -- --coverage --watchAll=false
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./frontend/coverage/coverage-final.json
+          flags: frontend
+          name: frontend-coverage
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18" # Use LTS version for consistency
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install --omit=optional --ignore-scripts
+
+      - name: Create test environment
+        run: |
+          cd backend
+          cat > .env << EOF
+          MONGO_URL=mongodb://localhost:27017
+          DB_NAME=integration_test_db
+          JWT_SECRET=integration-test-secret-key-min-32-chars
+          JWT_REFRESH_SECRET=integration-test-refresh-secret-key-min-32-chars
+          EOF
+
+      - name: Run integration tests
+        run: |
+          cd backend
+          pytest tests/test_integration.py -v
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests, integration-tests]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.backend-tests.result }}" != "success" ] || \
+             [ "${{ needs.frontend-tests.result }}" != "success" ] || \
+             [ "${{ needs.integration-tests.result }}" != "success" ]; then
+            echo "❌ Some tests failed"
+            exit 1
+          fi
+          echo "✅ All tests passed"

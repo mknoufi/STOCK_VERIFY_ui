@@ -1,0 +1,110 @@
+WARNING:backend.config:MongoDB port detection failed, using default: No module named 'utils.port_detector'
+INFO:backend.services.database_optimizer:Database optimizer configured: max_pool=100, min_pool=10, timeouts=5000ms/20000ms
+INFO:backend.server:Password hashing: Using Argon2 with bcrypt fallback
+INFO:backend.services.cache_service:Redis client created (pending connection verification)
+INFO:backend.server:✓ Security headers middleware enabled
+INFO:backend.server:✓ Enrichment API router registered
+INFO:backend.server:✓ API v2 router registered
+INFO:backend.server:🚀 Starting application...
+WARNING:backend.server:SQL Server credentials not configured. Set SQL_SERVER_HOST and SQL_SERVER_DATABASE in .env
+INFO:backend.server:✅ MongoDB connection verified - MongoDB is required and available
+INFO:backend.server:OK: Default users initialized
+INFO:backend.db.migrations:Creating database indexes...
+INFO:backend.db.migrations:✓ Refresh tokens indexes created
+INFO:backend.db.migrations:✓ Users indexes created
+INFO:backend.db.migrations:✓ Sessions indexes created
+INFO:backend.db.migrations:✓ Count lines indexes created
+INFO:backend.db.migrations:✓ Text index already exists, skipping
+INFO:backend.db.migrations:✓ ERP items indexes created
+INFO:backend.db.migrations:✓ Item variances indexes created
+INFO:backend.db.migrations:✓ ERP config indexes created
+INFO:backend.db.migrations:✓ Sync metadata indexes created
+INFO:backend.db.migrations:✓ Activity logs indexes created
+INFO:backend.db.migrations:All database indexes created successfully
+INFO:backend.db.migrations:Checking for pending migrations...
+INFO:backend.db.migrations:No pending migrations
+INFO:backend.server:OK: Migrations completed
+INFO:backend.services.auto_sync_manager:🚀 Starting auto-sync manager...
+INFO:backend.services.auto_sync_manager:✅ Auto-sync manager started
+INFO:backend.server:✅ Auto-sync manager started
+INFO:backend.services.database_health:Database health monitoring started (interval: 60s)
+INFO:backend.server:OK: Database health monitoring started
+WARNING:backend.services.cache_service:Redis connection failed: Authentication required.
+INFO:backend.server:OK: Cache service initialized: memory
+INFO:backend.auth.dependencies:✓ AuthDependencies initialized successfully
+INFO:backend.server:OK: Auth dependencies initialized
+INFO:backend.services.scheduled_export_service:Scheduled export service started
+INFO:backend.server:✓ Scheduled export service started
+INFO:backend.server:✓ Enrichment service initialized
+INFO:backend.server:✓ Sync conflicts service initialized
+INFO:backend.server:✓ Monitoring service connected to metrics API
+INFO:backend.server:✓ Item verification API initialized
+INFO:backend.services.scheduled_export_service:Scheduled export service started
+INFO:backend.server:✓ Startup Check: MongoDB connected
+INFO:backend.server:ℹ️  Startup Check: SQL Server not configured (optional)
+INFO:backend.server:✓ Startup Check: Cache initialized (memory)
+INFO:backend.server:✓ Startup Check: Auth initialized
+INFO:backend.server:✓ Startup Check: 4 services running
+INFO:backend.server:✅ Startup Checklist: All critical services OK
+INFO:backend.server:OK: Application startup complete
+INFO:backend.server:=== LOGIN ATTEMPT START ===
+INFO:backend.server:Username: admin
+INFO:backend.server:Client IP: testclient
+INFO:backend.server:Finding user: admin
+INFO:backend.server:User found
+INFO:backend.server:Verifying password...
+INFO:backend.server:Password verified successfully
+INFO:backend.server:Generating tokens...
+INFO:backend.server:Tokens generated successfully
+INFO:backend.server:=== LOGIN SUCCESS ===
+INFO:httpx:HTTP Request: POST http://testserver/api/auth/login "HTTP/1.1 200 OK"
+INFO:backend.api.security_api:Checking admin role for user: admin, role: admin
+INFO:httpx:HTTP Request: GET http://testserver/api/admin/security/summary "HTTP/1.1 200 OK"
+INFO:backend.api.security_api:Checking admin role for user: admin, role: admin
+INFO:httpx:HTTP Request: GET http://testserver/api/admin/security/failed-logins "HTTP/1.1 200 OK"
+INFO:backend.api.security_api:Checking admin role for user: admin, role: admin
+INFO:httpx:HTTP Request: GET http://testserver/api/admin/security/suspicious-activity "HTTP/1.1 200 OK"
+INFO:backend.api.security_api:Checking admin role for user: admin, role: admin
+INFO:httpx:HTTP Request: GET http://testserver/api/admin/security/sessions "HTTP/1.1 200 OK"
+INFO:backend.api.security_api:Checking admin role for user: admin, role: admin
+INFO:httpx:HTTP Request: GET http://testserver/api/admin/security/audit-log "HTTP/1.1 200 OK"
+INFO:backend.api.security_api:Checking admin role for user: admin, role: admin
+INFO:httpx:HTTP Request: GET http://testserver/api/admin/security/ip-tracking "HTTP/1.1 200 OK"
+INFO:backend.server:🛑 Shutting down application...
+INFO:backend.services.auto_sync_manager:Stopping auto-sync manager...
+INFO:backend.services.scheduled_export_service:Scheduled export service stopped
+INFO:backend.server:✓ Scheduled export service stopped
+INFO:backend.services.database_health:Database health monitoring stopped
+INFO:backend.server:✓ Database health monitoring stopped
+INFO:backend.services.auto_sync_manager:✅ Auto-sync manager stopped
+INFO:backend.server:✅ Auto-sync manager stopped
+INFO:backend.server:✓ MongoDB connection closed
+INFO:backend.server:✓ Application shutdown complete (took 0.00s)
+🔧 Fixing admin user role...
+ℹ️  Admin role already correct
+🔒 Verifying Security Dashboard API...
+
+1. Authenticating as Admin...
+✅ Login successful
+
+2. Verifying Security Summary...
+✅ Security Summary OK
+   - Failed Logins: 1
+   - Active Sessions: 97
+
+3. Verifying Failed Logins...
+✅ Failed Logins OK
+
+4. Verifying Suspicious Activity...
+✅ Suspicious Activity OK
+
+5. Verifying Sessions...
+✅ Sessions OK
+
+6. Verifying Audit Log...
+✅ Audit Log OK
+
+7. Verifying IP Tracking...
+✅ IP Tracking OK
+
+✨ Verification Complete!

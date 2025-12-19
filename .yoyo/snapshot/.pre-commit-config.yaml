@@ -1,0 +1,96 @@
+# Pre-commit Quality Gate Configuration
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run -a
+
+repos:
+  # Python formatting and linting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+      - id: ruff-format
+        types_or: [python, pyi]
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3.10
+        args: [--line-length=100]
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+
+  # Python type checking (optional - can be slow)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports, --python-version=3.10]
+        exclude: ^(tests/|migrations/)
+        pass_filenames: true
+        always_run: false
+
+  # Security checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: detect-private-key
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: check-docstring-first
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+      - id: check-executables-have-shebangs
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+      - id: check-shebang-scripts-are-executable
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+      - id: debug-statements
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+      - id: name-tests-test
+        args: [--pytest-test-first]
+        exclude: ^(.*/\.venv|.*/venv|.*/node_modules|.*/__pycache__|.*/\.venv-upgrade-fastapi)/
+
+  # Node.js/TypeScript - DISABLED due to nodeenv installation issues
+  # Run frontend linting manually: cd frontend && npm run lint
+  # To enable: uncomment below and ensure Node.js 20 is available
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: v9.25.0
+  #   hooks:
+  #     - id: eslint
+  #       files: \.(js|jsx|ts|tsx)$
+  #       types: [file]
+  #       additional_dependencies:
+  #         - eslint@^9.25.0
+  #         - '@typescript-eslint/parser@^8.0.0'
+  #         - '@typescript-eslint/eslint-plugin@^8.0.0'
+  #       args: [--fix, --max-warnings=0]
+  #       exclude: ^(node_modules/|dist/|build/)
+
+  # General file checks
+  # Note: Secret detection is disabled - too many false positives
+  # Use detect-private-key hook from pre-commit-hooks instead
+  # - repo: local
+  #   hooks:
+  #     - id: no-commit-secrets
+  #       name: Check for secrets
+  #       entry: bash -c 'if grep -rE "(password|secret|api_key|apikey|token)" --include="*.py" --include="*.js" --include="*.ts" --include="*.tsx" . | grep -vE "(test_|__pycache__|node_modules|\.git|\.venv)"; then exit 1; fi'
+  #       language: system
+  #       pass_filenames: false
+  #       always_run: false
+
+default_language_version:
+  python: python3.10
+  node: "20"
+
+fail_fast: false

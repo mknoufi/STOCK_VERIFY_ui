@@ -1,0 +1,65 @@
+# Aider Ignore File - Files to exclude from AI context
+
+# Dependencies
+node_modules/
+.venv/
+.venv311/
+__pycache__/
+*.pyc
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+.next/
+.expo/
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+*.zip
+
+# IDE and editor
+.idea/
+*.swp
+*.swo
+
+# Backups
+backups/
+.backup_*/
+
+# Generated documentation
+docs/generated/
+
+# Test artifacts
+testsprite_tests/
+*.tgz
+
+# Large binary files
+*.xlsx
+*.xls
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+
+# Secret files
+.env
+.env.*
+.secrets
+*.pem
+*.key
+
+# Platform specific
+.DS_Store
+Thumbs.db

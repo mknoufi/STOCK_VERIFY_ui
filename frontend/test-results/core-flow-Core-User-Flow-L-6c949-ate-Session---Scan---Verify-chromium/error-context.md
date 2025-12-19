@@ -1,0 +1,55 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e18]:
+    - generic [ref=e19]:
+        - generic [ref=e20]:
+            - generic [ref=e21]: Welcome back,
+            - generic [ref=e22]: staff_test
+        - generic [ref=e23]:
+            - generic [ref=e26]: Just now
+            - generic [ref=e28] [cursor=pointer]: 
+    - generic [ref=e32]:
+        - generic [ref=e33]:
+            - generic [ref=e37]:
+                - generic [ref=e39]: 
+                - generic [ref=e40]:
+                    - generic [ref=e41]: "0"
+                    - generic [ref=e42]: Active Areas
+            - generic [ref=e46]:
+                - generic [ref=e48]: 
+                - generic [ref=e49]:
+                    - generic [ref=e50]: "0"
+                    - generic [ref=e51]: Total Scanned
+        - generic [ref=e55]:
+            - generic [ref=e56]:
+                - generic [ref=e57]: 
+                - generic [ref=e58]: New Count Area
+            - generic [ref=e59]: Enter floor and rack location to start stock counting
+            - generic [ref=e60]:
+                - generic [ref=e61]: Count Mode
+                - generic [ref=e62]:
+                    - generic [ref=e64] [cursor=pointer]: 📊 Standard
+                    - generic [ref=e66] [cursor=pointer]: 🔒 Blind
+                    - generic [ref=e68] [cursor=pointer]: ✅ Strict
+                - generic [ref=e69]: Shows expected stock quantities.
+            - generic [ref=e70]:
+                - generic [ref=e72]:
+                    - generic [ref=e74]: Floor / Level
+                    - textbox "e.g. 1, G" [ref=e76]
+                - generic [ref=e78]:
+                    - generic [ref=e80]: Rack / Shelf
+                    - textbox "e.g. A1, B2" [ref=e82]
+            - button "Start Counting" [ref=e83] [cursor=pointer]:
+                - generic [ref=e84]: 
+                - generic [ref=e85]: Start Counting
+        - generic [ref=e86]:
+            - generic [ref=e87]: Your Active Areas
+            - generic [ref=e90]:
+                - generic [ref=e91]: 
+                - generic [ref=e92]: No Active Areas
+                - generic [ref=e93]: Start a new count area above to begin tracking.
+    - generic [ref=e95]:
+        - button "Scan barcode" [disabled]:
+            - generic [ref=e98]: 
+```

@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:8.0
+    restart: always
+    # In production, do not expose Mongo port to the host machine unless necessary
+    # ports:
+    #   - "127.0.0.1:27018:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: stock_verify
+    command: --bind_ip_all --replSet rs0
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    # In production, use env vars injected by the platform, but fallback to .env.production
+    env_file:
+      - ./backend/.env.production
+    environment:
+      MONGO_URL: mongodb://mongo:27017/stock_verify
+      PORT: 8001
+      # Ensure these are set in your production environment!
+      # JWT_SECRET: ...
+      # JWT_ALGORITHM: ...
+    depends_on:
+      - mongo
+    restart: always
+    ports:
+      - "8001:8001"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # In production, this should point to your public domain/lb
+        EXPO_PUBLIC_BACKEND_URL: ${EXPO_PUBLIC_BACKEND_URL:-http://localhost:8001}
+    depends_on:
+      - backend
+    restart: always
+    ports:
+      - "80:80" # Standard HTTP port
+
+  backup:
+    build:
+      context: .
+      dockerfile: backend/backup.Dockerfile
+    depends_on:
+      - mongo
+    restart: always
+    volumes:
+      - ./backups:/backups
+    environment:
+      MONGO_HOST: mongo
+      BACKUP_CRON_SCHEDULE: "0 2 * * *" # Daily at 2 AM
+      BACKUP_RETENTION_DAYS: 30
+
+volumes:
+  mongo-data:

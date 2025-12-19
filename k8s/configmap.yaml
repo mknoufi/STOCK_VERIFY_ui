@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stock-verify-config
+data:
+  ENVIRONMENT: "production"
+  API_URL: "http://stock-verify-backend:8001"

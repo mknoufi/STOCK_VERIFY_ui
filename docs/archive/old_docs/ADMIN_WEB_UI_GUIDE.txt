@@ -1,0 +1,80 @@
+# Admin Web UI - Monitoring, Reporting & Analytics Dashboard
+
+## Overview
+
+A comprehensive web-based admin dashboard for monitoring system health, generating reports, and analyzing data.
+
+## Features
+
+### 1. Overview Dashboard
+- System Health Score (visual indicator)
+- Key Metrics Cards:
+  - Active Users
+  - Total Sessions
+  - Items Synced
+  - System Health
+- Quick Stats:
+  - Active Sessions
+  - Pending Approvals
+  - Sync Errors
+- Recent Issues List
+
+### 2. Monitoring Dashboard
+- Services Status (Backend, Frontend, MongoDB, SQL Server)
+- System Statistics (CPU, Memory, Disk, Network)
+- Health Metrics (Database, API Response)
+- Real-time updates (auto-refresh every 30 seconds)
+
+### 3. Reports Dashboard
+- Available Reports List
+- Report Generation Modal with:
+  - Date Range Selection
+  - Format Selection (Excel, CSV, PDF)
+  - Custom Filters
+- Report Preview
+- Download Management
+
+### 4. Analytics Dashboard
+- (Coming Soon) Charts and Visualizations
+- Trend Analysis
+- Performance Metrics
+
+## Access
+
+Route: `/admin/dashboard-web`
+Requires: Admin role
+
+## Usage
+
+1. Navigate to Admin Dashboard
+2. Select tab: Overview, Monitoring, Reports, or Analytics
+3. View real-time metrics and system status
+4. Generate reports with custom filters
+5. Monitor system health and performance
+
+## Technical Details
+
+- Built with React Native (Web compatible)
+- Uses Modern Design System
+- Real-time data updates
+- Responsive design (Mobile, Tablet, Desktop)
+- Auto-refresh every 30 seconds
+- Pull-to-refresh support
+
+## Components Used
+
+- ModernCard (elevated, gradient variants)
+- ModernButton (primary, outline variants)
+- BlurView (for modals)
+- LinearGradient (for health banners)
+
+## API Endpoints Used
+
+- getServicesStatus()
+- getSystemStats()
+- getMetricsStats()
+- getMetricsHealth()
+- getAvailableReports()
+- generateReport()
+- getSystemIssues()
+- getSystemHealthScore()

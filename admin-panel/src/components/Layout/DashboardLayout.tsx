@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { CopilotSidebar } from "@copilotkit/react-ui";
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -16,6 +17,7 @@ import {
   Package,
   FileText,
   RefreshCcw,
+  ExternalLink,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import './DashboardLayout.css';
@@ -36,6 +38,8 @@ const navItems: NavItem[] = [
   { path: '/users', label: 'Users', icon: <Users size={20} /> },
   { path: '/analytics', label: 'Analytics', icon: <BarChart3 size={20} /> },
   { path: '/reports', label: 'Reports', icon: <FileText size={20} /> },
+  { path: '/knowledge-base', label: 'Knowledge Base', icon: <FileText size={20} /> },
+  { path: 'http://localhost:3002', label: 'AI Doc Analysis', icon: <ExternalLink size={20} /> },
   { path: '/sync', label: 'Sync', icon: <RefreshCcw size={20} /> },
   { path: '/settings', label: 'Settings', icon: <Settings size={20} /> },
 ];
@@ -85,15 +89,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         <nav className="sidebar-nav">
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {item.icon}
-              {sidebarOpen && <span>{item.label}</span>}
-            </NavLink>
+            item.path.startsWith('http') ? (
+              <a
+                key={item.path}
+                href={item.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nav-item"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.icon}
+                {sidebarOpen && <span>{item.label}</span>}
+              </a>
+            ) : (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.icon}
+                {sidebarOpen && <span>{item.label}</span>}
+              </NavLink>
+            )
           ))}
         </nav>
 
@@ -122,6 +140,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
+
+      <CopilotSidebar
+        instructions="You are a helpful assistant for the Stock Verify Admin Panel."
+        labels={{
+          initial: "How can I help you manage stock verification?",
+          title: "Stock Verify AI"
+        }}
+      />
     </div>
   );
 }

@@ -306,7 +306,7 @@ except Exception as e:
         def __init__(self):
             self.MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
             self.DB_NAME = os.getenv("DB_NAME", "stock_count")
-            self.SQL_SERVER_HOST = os.getenv("SQL_SERVER_HOST", "192.168.1.109")
+            self.SQL_SERVER_HOST = os.getenv("SQL_SERVER_HOST")
             self.SQL_SERVER_PORT = int(os.getenv("SQL_SERVER_PORT", 1433))
             self.SQL_SERVER_DATABASE = os.getenv("SQL_SERVER_DATABASE", "")
             self.SQL_SERVER_USER = os.getenv("SQL_SERVER_USER", "readonly_user")

@@ -10,7 +10,7 @@ T = TypeVar("T")
 class ApiResponse(BaseModel, Generic[T]):
     success: bool
     data: Optional[T] = None
-    error: dict[str, Optional[Any]] = None
+    error: Optional[dict[str, Any]] = None
 
     @classmethod
     def success_response(cls, data: T):

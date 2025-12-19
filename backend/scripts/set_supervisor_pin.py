@@ -14,7 +14,7 @@ async def set_pin(username: str, pin: str):
     print(f"Setting PIN for user: {username}")
 
     # Direct connection to avoid dependency issues in script
-    client = AsyncIOMotorClient(settings.MONGODB_URL)
+    client = AsyncIOMotorClient(settings.MONGO_URL)
     db = client[settings.DB_NAME]
 
     user = await db.users.find_one({"username": username})

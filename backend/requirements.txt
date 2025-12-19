@@ -41,6 +41,7 @@ redis[hiredis]>=5.2.1  # Async support with hiredis for better performance
 psutil>=6.1.0
 authlib>=1.4.0
 xlsxwriter>=3.2.0
+copilotkit>=0.1.72
 
 # NOTE: JWT usage has been migrated to an Authlib-based compatibility layer
 # (backend/auth/jwt_provider.py) to avoid transitive ECDSA dependencies.

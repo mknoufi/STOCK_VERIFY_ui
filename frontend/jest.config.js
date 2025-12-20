@@ -12,8 +12,8 @@ module.exports = {
     "!**/node_modules/**",
   ],
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/$1",
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
+  setupFiles: ["<rootDir>/jest.polyfills.js"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
-  testEnvironment: "node",
 };

@@ -275,12 +275,16 @@ async def sync_batch(
     lock_manager = get_lock_manager(redis_service)
 
     # Get circuit breaker
-    circuit_breaker = get_circuit_breaker(
+    from backend.services.circuit_breaker import CircuitBreakerConfig
+
+    circuit_breaker = await get_circuit_breaker(
         "batch_sync",
-        failure_threshold=5,
-        success_threshold=3,
-        timeout=30,
-        half_open_max_calls=2,
+        config=CircuitBreakerConfig(
+            failure_threshold=5,
+            success_threshold=3,
+            timeout_seconds=30,
+            half_open_max_calls=2,
+        ),
     )
 
     # Initialize Sync Service

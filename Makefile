@@ -36,7 +36,7 @@ help:
 # Python backend targets
 .PHONY: python-ci python-test python-lint python-format python-typecheck
 
-python-ci: python-lint python-format python-typecheck python-test
+python-ci: python-format python-lint python-typecheck python-test
 
 python-test:
 	@echo "Running Python tests..."
@@ -48,7 +48,8 @@ python-lint:
 
 python-format:
 	@echo "Formatting Python code..."
-	cd backend && black --line-length=100 . && ruff format .
+	cd backend && black --line-length=100 api auth services middleware utils db scripts \
+		config.py server.py api_mapping.py db_mapping_config.py sql_server_connector.py exceptions.py error_messages.py && ruff format .
 
 python-typecheck:
 	@echo "Running Python type checker..."

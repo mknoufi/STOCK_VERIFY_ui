@@ -23,7 +23,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ViewStyle,
-  StatusBar as RNStatusBar,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -115,7 +114,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   overlay,
 }) => {
   const insets = useSafeAreaInsets();
-  const { theme, pattern, isDark } = useThemeContext();
+  const { theme, pattern } = useThemeContext();
 
   // Calculate safe area padding
   const safeAreaStyle: ViewStyle = {
@@ -288,13 +287,13 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
       {customHeader
         ? customHeader
         : header !== false && (
-            <ScreenHeader
-              showBackButton={false}
-              showLogoutButton={true}
-              showUsername={true}
-              {...(header as ScreenHeaderProps)}
-            />
-          )}
+          <ScreenHeader
+            showBackButton={false}
+            showLogoutButton={true}
+            showUsername={true}
+            {...(header as ScreenHeaderProps)}
+          />
+        )}
 
       {/* Content */}
       {renderContent()}

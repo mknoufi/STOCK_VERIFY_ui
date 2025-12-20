@@ -16,7 +16,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  interpolate,
 } from "react-native-reanimated";
 import {
   colorPalette,
@@ -53,8 +52,6 @@ export const Tabs: React.FC<TabsProps> = ({
   const indicatorPosition = useSharedValue(0);
   const indicatorWidth = useSharedValue(0);
 
-  const activeIndex = tabs.findIndex((tab) => tab.key === activeTab);
-
   React.useEffect(() => {
     const layout = tabLayouts[activeTab];
     if (layout) {
@@ -67,7 +64,7 @@ export const Tabs: React.FC<TabsProps> = ({
         stiffness: 150,
       });
     }
-  }, [activeTab, tabLayouts]);
+  }, [activeTab, tabLayouts, indicatorPosition, indicatorWidth]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: indicatorPosition.value }],

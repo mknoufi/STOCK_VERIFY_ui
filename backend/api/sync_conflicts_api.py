@@ -21,7 +21,7 @@ sync_conflicts_router = APIRouter(prefix="/sync/conflicts", tags=["sync_conflict
 
 class ConflictResolutionRequest(BaseModel):
     resolution: str  # "accept_server", "accept_local", "merge", "ignore"
-    merged_data: dict[str, Optional[Any]] = None
+    merged_data: Optional[dict[str, Optional[Any]]] = None
 
 
 class BatchConflictResolutionRequest(BaseModel):

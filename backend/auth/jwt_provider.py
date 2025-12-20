@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from authlib.jose import jwt as _jwt
 from authlib.jose.errors import ExpiredTokenError, JoseError
@@ -26,11 +26,11 @@ def _ensure_timestamp(exp: Any) -> Optional[float]:
         return exp.timestamp()
     try:
         return float(exp)
-    except:
+    except Exception:
         return None
 
 
-def encode(payload: Dict[str, Any], key: str, algorithm: str = "HS256") -> str:
+def encode(payload: dict[str, Any], key: str, algorithm: str = "HS256") -> str:
     header = {"alg": algorithm}
     token = _jwt.encode(header, payload, key)
     if isinstance(token, bytes):
@@ -39,8 +39,8 @@ def encode(payload: Dict[str, Any], key: str, algorithm: str = "HS256") -> str:
 
 
 def decode(
-    token: str, key: str, algorithms: Optional[List[str]] = None
-) -> Dict[str, Any]:
+    token: str, key: str, algorithms: Optional[list[str]] = None
+) -> dict[str, Any]:
     SUPPORTED_ALGORITHMS = ["HS256", "HS384", "HS512"]
     if algorithms:
         invalid_algs = [alg for alg in algorithms if alg not in SUPPORTED_ALGORITHMS]

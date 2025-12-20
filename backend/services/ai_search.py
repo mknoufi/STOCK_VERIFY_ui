@@ -4,7 +4,7 @@ Handles semantic search using sentence-transformers.
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -51,7 +51,7 @@ class AISearchService:
             logger.error(f"Failed to load semantic model: {e}")
             self._model = None
 
-    def encode(self, text: str) -> np.ndarray:
+    def encode(self, text: str) -> Optional[np.ndarray]:
         """
         Generate embedding for a single string.
         """

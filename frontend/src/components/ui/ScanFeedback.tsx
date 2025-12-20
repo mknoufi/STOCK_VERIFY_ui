@@ -9,7 +9,7 @@
  * - Sound feedback support
  */
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -22,7 +22,6 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
-  runOnJS,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
@@ -101,11 +100,11 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 
   const config = feedbackConfig[type];
 
-  const triggerHaptic = () => {
+  const triggerHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
-      config.haptic();
+      feedbackConfig[type].haptic();
     }
-  };
+  }, [type]);
 
   useEffect(() => {
     if (visible) {
@@ -169,7 +168,19 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
       iconScale.value = 0;
       return; // All paths must return
     }
-  }, [visible, duration, onDismiss]);
+  }, [
+    visible,
+    duration,
+    onDismiss,
+    type,
+    triggerHaptic,
+    opacity,
+    scale,
+    iconScale,
+    iconRotation,
+    ringScale,
+    ringOpacity,
+  ]);
 
   const containerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

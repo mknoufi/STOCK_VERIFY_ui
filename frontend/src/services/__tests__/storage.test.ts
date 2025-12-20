@@ -41,7 +41,7 @@ const mockMultiGet = AsyncStorage.multiGet as jest.MockedFunction<any>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockMultiSet = AsyncStorage.multiSet as jest.MockedFunction<any>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockMultiRemove = AsyncStorage.multiRemove as jest.MockedFunction<any>;
+const _mockMultiRemove = AsyncStorage.multiRemove as jest.MockedFunction<any>;
 
 describe("AsyncStorageService - Basic Operations", () => {
   beforeEach(() => {

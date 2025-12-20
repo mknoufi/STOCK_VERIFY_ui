@@ -109,7 +109,7 @@ const ParticleElement: React.FC<{
         ),
       );
     }
-  }, [animated]);
+  }, [animated, opacity, particle.delay, particle.opacity, scale, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }, { scale: scale.value }],

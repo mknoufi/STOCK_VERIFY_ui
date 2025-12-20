@@ -392,6 +392,11 @@ class SQLSyncService:
                                         metadata_updates[field] = new_value
                                     continue
 
+                                # Location should always be synced from SQL if it changes
+                                if field == "location" and new_value != existing_value:
+                                    metadata_updates[field] = new_value
+                                    continue
+
                                 # For strings / other types update when missing or empty
                                 if existing_value in (None, ""):
                                     metadata_updates[field] = new_value
@@ -436,6 +441,18 @@ class SQLSyncService:
                         stats["errors"] += 1
 
             stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
+
+            # Backwards-compatible stats keys for older callers/tests
+            # items_updated: alias for qty_updated
+            if "items_updated" not in stats:
+                stats["items_updated"] = stats.get("qty_updated", 0)
+
+            # items_unchanged: derived from checked vs updated/created
+            if "items_unchanged" not in stats:
+                checked = stats.get("items_checked", 0)
+                updated = stats.get("qty_updated", 0)
+                created = stats.get("items_created", 0)
+                stats["items_unchanged"] = max(0, checked - updated - created)
             self._last_sync = datetime.utcnow()
             self._sync_stats["successful_syncs"] += 1
             self._sync_stats["items_synced"] = stats["items_checked"]
@@ -449,19 +466,31 @@ class SQLSyncService:
                 f"in {stats['duration']:.2f}s"
             )
 
-            # Update sync metadata
-            await self.mongo_db.sync_metadata.update_one(
-                {"_id": "sql_qty_sync"},
-                {
-                    "$set": {
-                        "last_sync": self._last_sync,
-                        "stats": stats,
-                        "updated_at": datetime.utcnow(),
-                    },
-                    "$inc": {"total_syncs": 1},
-                },
-                upsert=True,
-            )
+            # Update sync metadata (best-effort, skip if collection not available)
+            sync_metadata_collection = getattr(self.mongo_db, "sync_metadata", None)
+            if sync_metadata_collection is not None:
+                try:
+                    await sync_metadata_collection.update_one(
+                        {"_id": "sql_qty_sync"},
+                        {
+                            "$set": {
+                                "last_sync": self._last_sync,
+                                "stats": stats,
+                                "updated_at": datetime.utcnow(),
+                            },
+                            "$inc": {"total_syncs": 1},
+                        },
+                        upsert=True,
+                    )
+                except Exception:
+                    logger.warning(
+                        "Failed to update sync_metadata collection during qty sync",
+                        exc_info=True,
+                    )
+            else:
+                logger.debug(
+                    "MongoDB sync_metadata collection not configured; skipping metadata update",
+                )
 
             return stats
 

@@ -11,33 +11,10 @@ module.exports = function (api) {
           // Replaces import.meta with a module-level object
         },
       ],
-      // Removed react-native-dotenv - it conflicts with expo-router
-      // Use EXPO_PUBLIC_* environment variables instead (built into Expo)
-      [
-        "module-resolver",
-        {
-          root: ["./"],
-          alias: {
-            // Map '@/...' to the frontend src directory so imports like
-            // '@/theme/Provider' resolve to 'frontend/src/theme/Provider.tsx'
-            "@": "./src",
-          },
-          extensions: [
-            ".ios.ts",
-            ".android.ts",
-            ".ts",
-            ".ios.tsx",
-            ".android.tsx",
-            ".tsx",
-            ".jsx",
-            ".js",
-            ".json",
-            ".web.ts",
-            ".web.tsx",
-            ".web.js",
-          ],
-        },
-      ],
+      // NOTE: module-resolver plugin is temporarily disabled to avoid
+      // a bundling-time dependency on babel-plugin-module-resolver.
+      // If you need '@/...' aliases again, re-enable the plugin and
+      // ensure the Babel plugin can be resolved in this environment.
       // Reanimated plugin includes worklets support and must be listed last
       "react-native-reanimated/plugin",
     ],

@@ -40,13 +40,13 @@ export interface AnalyticsDashboardData {
   sessionAnalytics: SessionAnalytics;
   varianceTrends: VarianceTrend[];
   topPerformers: TopPerformer[];
-  recentActivity: Array<{
+  recentActivity: {
     id: string;
     type: "scan" | "session" | "variance";
     message: string;
     timestamp: Date;
     user?: string;
-  }>;
+  }[];
 }
 
 class AnalyticsService {

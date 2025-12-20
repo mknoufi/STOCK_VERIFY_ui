@@ -4,7 +4,6 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
-  Text,
   SafeAreaView,
   StatusBar,
 } from "react-native";

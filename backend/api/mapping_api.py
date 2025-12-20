@@ -57,7 +57,7 @@ def get_connection(conn_string):
     except Exception as e:
         logger.error(f"Database connection failed: {str(e)}")
         # Check if it's a driver issue
-        drivers = [x for x in pyodbc.drivers()]
+        drivers = list(pyodbc.drivers())
         raise HTTPException(
             status_code=400,
             detail=f"Connection failed: {str(e)}. Available drivers: {drivers}",

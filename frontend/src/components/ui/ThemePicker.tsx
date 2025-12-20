@@ -11,7 +11,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,11 +20,9 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { useThemeContext, ThemeKey, ThemeMode } from "../../theme/ThemeContext";
-import { GlassCard } from "./GlassCard";
 
 interface ThemePickerProps {
   showModeToggle?: boolean;
@@ -45,7 +42,6 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
     setThemeKey,
     setThemeMode,
     availableThemes,
-    isDark,
   } = useThemeContext();
 
   const handleThemeSelect = useCallback(

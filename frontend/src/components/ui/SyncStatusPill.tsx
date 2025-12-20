@@ -9,21 +9,17 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
-  withSpring,
   withRepeat,
   withTiming,
   useSharedValue,
-  withSequence
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
 import { getSyncStatus, forceSync } from "../../services/syncService";
 import { useNetworkStore } from "../../services/networkService";
-import { modernColors, modernTypography, modernSpacing, modernBorderRadius } from "../../styles/modernDesignSystem";
+import { modernColors, modernBorderRadius } from "../../styles/modernDesignSystem";
 
 interface SyncStatus {
   isOnline: boolean;

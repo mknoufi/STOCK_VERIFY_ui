@@ -216,7 +216,13 @@ class AIVarianceService:
                     category, self.category_heuristics.get(category, self.default_risk)
                 )
 
-                total_risk = (item_risk * 0.7) + (cat_risk * 0.3)
+                # If we have no item-specific history and are relying purely on
+                # heuristic category risk, use the category risk directly so
+                # high-risk categories like Electronics still surface.
+                if item_risk == 0.0 and category in self.category_heuristics:
+                    total_risk = cat_risk
+                else:
+                    total_risk = (item_risk * 0.7) + (cat_risk * 0.3)
 
                 if total_risk > 0.4:
                     high_risk_items.append(

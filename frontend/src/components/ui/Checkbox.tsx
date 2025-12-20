@@ -44,7 +44,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
       damping: 15,
       stiffness: 150,
     });
-  }, [checked, indeterminate]);
+  }, [checked, indeterminate, scale]);
 
   const checkmarkStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

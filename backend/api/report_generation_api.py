@@ -54,8 +54,8 @@ REPORT_TYPES = {
 
 # Request/Response Models
 class ReportFilter(BaseModel):
-    date_from: date = None
-    date_to: date = None
+    date_from: Optional[date] = None
+    date_to: Optional[date] = None
     warehouse: Optional[str] = None
     user_id: Optional[str] = None
     status: Optional[str] = None
@@ -65,7 +65,7 @@ class ReportFilter(BaseModel):
 
 class ReportRequest(BaseModel):
     report_type: str
-    filters: ReportFilter = None
+    filters: Optional[ReportFilter] = None
     format: str = Field(default="json", pattern="^(json|csv|xlsx)$")
     include_summary: bool = True
 
@@ -84,9 +84,11 @@ class ReportResponse(BaseModel):
 
 
 # Helper Functions
-def build_date_filter(date_from: date, date_to: date) -> dict:
+def build_date_filter(
+    date_from: Optional[date], date_to: Optional[date]
+) -> Optional[dict[str, Any]]:
     """Build MongoDB date range filter."""
-    date_filter = {}
+    date_filter: dict[str, Any] = {}
 
     if date_from:
         date_filter["$gte"] = datetime.combine(date_from, datetime.min.time())
@@ -110,7 +112,7 @@ def sanitize_for_csv(value: Any) -> str:
 
 async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
     """Generate stock summary report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.warehouse:
         query["warehouse"] = filters.warehouse
@@ -156,7 +158,7 @@ async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
 
 async def generate_variance_report(db, filters: ReportFilter) -> list[dict]:
     """Generate variance report data."""
-    query = {"variance": {"$ne": 0}}
+    query: dict[str, Any] = {"variance": {"$ne": 0}}
 
     if filters.warehouse:
         query["warehouse"] = filters.warehouse
@@ -218,7 +220,7 @@ async def generate_variance_report(db, filters: ReportFilter) -> list[dict]:
 
 async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]:
     """Generate user activity report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.user_id:
         query["user_id"] = filters.user_id
@@ -276,7 +278,7 @@ async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]
 
 async def generate_session_history_report(db, filters: ReportFilter) -> list[dict]:
     """Generate session history report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.status:
         query["status"] = filters.status
@@ -349,7 +351,7 @@ async def generate_session_history_report(db, filters: ReportFilter) -> list[dic
 
 async def generate_audit_trail_report(db, filters: ReportFilter) -> list[dict]:
     """Generate audit trail report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.user_id:
         query["user_id"] = filters.user_id

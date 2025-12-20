@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -15,8 +15,8 @@ from backend.services.activity_log import ActivityLogService
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-_db: AsyncIOMotorDatabase = None
-_activity_log_service: ActivityLogService = None
+_db: Optional[AsyncIOMotorDatabase[Any]] = None
+_activity_log_service: Optional[ActivityLogService] = None
 
 
 def init_session_api(

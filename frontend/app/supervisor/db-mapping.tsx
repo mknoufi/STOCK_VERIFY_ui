@@ -199,6 +199,7 @@ export default function DatabaseMappingScreen() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
   useEffect(() => {
@@ -724,9 +725,9 @@ export default function DatabaseMappingScreen() {
                             styles.columnSelectorText,
                             mappedColumn
                               ? {
-                                  color: auroraTheme.colors.success[500],
-                                  fontWeight: "600",
-                                }
+                                color: auroraTheme.colors.success[500],
+                                fontWeight: "600",
+                              }
                               : { color: auroraTheme.colors.text.tertiary },
                           ]}
                         >

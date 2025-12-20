@@ -77,7 +77,7 @@ export const retryWithBackoff = async <T>(
 export const recoverFromError = async <T>(
   primaryOperation: () => Promise<T>,
   fallbackOperations: (() => Promise<T>)[] = [],
-  options: ErrorRecoveryOptions = {},
+  _options: ErrorRecoveryOptions = {},
 ): Promise<T> => {
   try {
     return await primaryOperation();
@@ -278,7 +278,7 @@ export const handleNetworkError = async <T>(
       },
     },
     showAlert,
-    onError: (error: any) => {
+    onError: (_error: any) => {
       if (showAlert) {
         Alert.alert(
           "Network Error",
@@ -310,7 +310,7 @@ export const handleDatabaseError = async <T>(
     },
     fallback,
     showAlert,
-    onError: (error: any) => {
+    onError: (_error: any) => {
       if (showAlert) {
         Alert.alert(
           "Database Error",

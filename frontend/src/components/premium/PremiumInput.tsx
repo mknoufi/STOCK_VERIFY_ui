@@ -87,7 +87,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   const theme = themeContext?.theme;
 
   // Color helpers for semantic usage
-  const colors = {
+  const colors = useMemo(() => ({
     error: theme ? theme.colors.danger : modernColors.error.main,
     errorLight: theme ? theme.colors.dangerLight : modernColors.error.light,
     primary: theme ? theme.colors.accent : modernColors.primary[500],
@@ -99,7 +99,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
     backgroundDefault: theme ? theme.colors.background : modernColors.background.default,
     backgroundPaper: theme ? theme.colors.surface : modernColors.background.paper,
     backgroundDisabled: theme ? theme.colors.border : modernColors.neutral[700],
-  };
+  }), [theme]);
 
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

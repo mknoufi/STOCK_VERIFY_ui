@@ -5,7 +5,7 @@ Enables point-in-time reporting and comparisons
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from backend.services.reporting.query_builder import QueryBuilder
 
@@ -173,7 +173,7 @@ class SnapshotEngine:
 
     async def get_snapshot_data(
         self, snapshot_id: str, skip: int = 0, limit: int = 100
-    ) -> dict[str, Any]:
+    ) -> Optional[dict[str, Any]]:
         """
         Get snapshot data with pagination
         """
@@ -238,14 +238,14 @@ class SnapshotEngine:
             raise ValueError(f"Snapshot {snapshot_id} not found")
 
         # Re-run query
-        query_spec = snapshot["query_spec"]
+        query_spec = cast(dict[str, Any], snapshot["query_spec"])
 
         # Create new snapshot with same spec
         new_snapshot = await self.create_snapshot(
             name=f"{snapshot['name']} (Refreshed)",
             description=f"Refreshed from {snapshot_id}",
             query_spec=query_spec,
-            created_by=snapshot["created_by"],
+            created_by=cast(str, snapshot["created_by"]),
             snapshot_type="refreshed",
             tags=snapshot.get("tags", []),
         )

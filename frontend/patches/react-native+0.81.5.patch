@@ -1,0 +1,28 @@
+diff --git a/node_modules/react-native/jest/setup.js b/node_modules/react-native/jest/setup.js
+index 9af8d76..e8da95a 100644
+--- a/node_modules/react-native/jest/setup.js
++++ b/node_modules/react-native/jest/setup.js
+@@ -51,7 +51,7 @@ Object.defineProperties(global, {
+   regeneratorRuntime: {
+     configurable: true,
+     enumerable: true,
+-    value: jest.requireActual<mixed>('regenerator-runtime/runtime'),
++    value: jest.requireActual < mixed > ('regenerator-runtime/runtime'),
+     writable: true,
+   },
+   requestAnimationFrame: {
+@@ -62,12 +62,14 @@ Object.defineProperties(global, {
+     },
+     writable: true,
+   },
++  /*
+   window: {
+     configurable: true,
+     enumerable: true,
+     value: global,
+     writable: true,
+   },
++  */
+ });
+ 
+ // $FlowFixMe[incompatible-call] - `./mocks/AppState` is incomplete.

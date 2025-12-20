@@ -8,7 +8,9 @@ import os
 from typing import Optional
 
 try:
-    from pydantic_settings import BaseSettings as PydanticBaseSettings
+    from pydantic_settings import (
+        BaseSettings as PydanticBaseSettings,  # type: ignore[no-redef]
+    )
     from pydantic_settings import SettingsConfigDict
 
     HAS_PYDANTIC_V2 = True
@@ -295,7 +297,8 @@ except Exception as e:
     import warnings
 
     warnings.warn(
-        f"Configuration Error: {e}. Using environment variables with defaults."
+        f"Configuration Error: {e}. Using environment variables with defaults.",
+        stacklevel=2,
     )
     # Create a simple settings object from environment variables
     from dotenv import load_dotenv

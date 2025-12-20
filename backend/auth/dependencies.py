@@ -4,7 +4,7 @@ Shared dependencies for authentication across all routers
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -167,7 +167,7 @@ class UserRepository:
     """Handles user database operations"""
 
     @staticmethod
-    async def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
+    async def get_user_by_username(username: str) -> Optional[dict[str, Any]]:
         """Retrieve user from database by username"""
         return await auth_deps.db.users.find_one({"username": username})
 
@@ -175,7 +175,7 @@ class UserRepository:
 async def get_current_user(
     request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(auth_deps.security),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get current authenticated user from JWT token
     Can be used in any router without circular import

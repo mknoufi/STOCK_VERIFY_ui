@@ -7,45 +7,34 @@ import {
   StyleSheet,
   ActivityIndicator,
   Platform,
-  KeyboardAvoidingView,
-  ScrollView,
-  RefreshControl,
   Dimensions,
   Modal,
-  FlatList,
   TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { useAuthStore } from "../../src/store/authStore";
 import { useScanSessionStore } from "../../src/store/scanSessionStore";
 import { createSession } from "../../src/services/api/api";
 import { useSessionsQuery } from "../../src/hooks/useSessionsQuery";
 import { SESSION_PAGE_SIZE } from "../../src/constants/config";
-import { validateSessionName } from "../../src/utils/validation";
 import { PremiumInput } from "../../src/components/premium/PremiumInput";
 import { PremiumButton } from "../../src/components/premium/PremiumButton";
 import { SessionType } from "../../src/types";
 
-import { StatusBar } from "expo-status-bar";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import { useThemeContext } from "../../src/theme/ThemeContext";
 import {
-  AuroraBackground,
   ModernCard,
   FloatingScanButton,
-  SessionCard,
-  ScreenHeader,
-  PatternBackground,
   SyncStatusPill,
   ScreenContainer,
 } from "../../src/components/ui";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: _SCREEN_WIDTH } = Dimensions.get("window");
 
 // Location configuration
 type LocationType = "showroom" | "godown";
@@ -67,17 +56,17 @@ const LOCATION_OPTIONS: Record<
 export default function StaffHome() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const { theme, pattern, isDark } = useThemeContext();
+  const { theme, isDark } = useThemeContext();
 
   // State
   const [locationType, setLocationType] = useState<LocationType | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
   const [rackName, setRackName] = useState("");
-  const [sessionType, setSessionType] = useState<SessionType>("STANDARD");
+  const [sessionType] = useState<SessionType>("STANDARD");
   const [currentPage] = useState(1);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [_lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [showFloorPicker, setShowFloorPicker] = useState(false);
 
   // Queries
@@ -89,15 +78,17 @@ export default function StaffHome() {
     page: currentPage,
     pageSize: SESSION_PAGE_SIZE,
   });
-  const sessions = sessionsData?.items || [];
+
+  // Memoize sessions to prevent dependency array issues
+  const sessions = useMemo(() => sessionsData?.items || [], [sessionsData?.items]);
 
   // Derived State
-  const activeSessions = useMemo(
+  const _activeSessions = useMemo(
     () => sessions.filter((s: any) => s.status === "active"),
     [sessions],
   );
 
-  const totalItemsScanned = useMemo(
+  const _totalItemsScanned = useMemo(
     () =>
       sessions.reduce((acc: number, s: any) => acc + (s.item_count || 0), 0),
     [sessions],
@@ -123,7 +114,7 @@ export default function StaffHome() {
     }
   };
 
-  const handleLogout = async () => {
+  const _handleLogout = async () => {
     if (Platform.OS !== "web")
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -292,7 +283,7 @@ export default function StaffHome() {
   };
 
   // Render Helpers
-  const formatSyncTime = (date: Date | null): string => {
+  const _formatSyncTime = (date: Date | null): string => {
     if (!date) return "Never";
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();

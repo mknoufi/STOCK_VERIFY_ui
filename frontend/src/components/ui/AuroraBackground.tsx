@@ -139,7 +139,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
         true,
       );
     }
-  }, [animated]);
+  }, [animated, blob1X, blob1Y, blob2X, blob2Y, blob3X, blob3Y]);
 
   const blob1Style = useAnimatedStyle(() => ({
     transform: [{ translateX: blob1X.value }, { translateY: blob1Y.value }],

@@ -39,7 +39,7 @@ class MappingConfig(BaseModel):
 
     tables: dict[str, str]
     columns: dict[str, ColumnMapping]
-    query_options: dict[str, Optional[Any]] = None
+    query_options: Optional[dict[str, Optional[Any]]] = None
 
 
 async def get_sql_connection(

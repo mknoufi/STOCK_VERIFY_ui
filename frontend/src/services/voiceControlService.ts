@@ -11,8 +11,9 @@ let Speech: any = null;
 
 // Try to load expo-speech if available
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   Speech = require("expo-speech");
-} catch (error) {
+} catch (_error) {
   console.warn("expo-speech not available, voice features will be disabled");
 }
 

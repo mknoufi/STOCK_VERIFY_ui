@@ -22,11 +22,7 @@ import {
 } from "react-native";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -38,7 +34,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 type SnapPoint = number | `${number}%`;
 
@@ -104,7 +100,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
     } else {
       translateY.value = withTiming(SCREEN_HEIGHT, { duration: 300 });
     }
-  }, [isOpen, initialSnapIndex, parsedSnapPoints]);
+  }, [isOpen, initialSnapIndex, parsedSnapPoints, translateY, activeIndex]);
 
   const findNearestSnapPoint = (currentY: number): number => {
     let nearestIndex = 0;

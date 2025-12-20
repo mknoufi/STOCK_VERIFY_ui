@@ -44,7 +44,7 @@ def fix_file(filepath):
 
 
 def main():
-    for root, dirs, files in os.walk("."):
+    for root, _dirs, files in os.walk("."):
         if "venv" in root or ".git" in root or "__pycache__" in root:
             continue
         for file in files:

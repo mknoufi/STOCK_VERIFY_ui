@@ -62,7 +62,7 @@ export const useVoiceControl = (
     voiceControlService.stop();
   }, []);
 
-  const handleCommand = useCallback(
+  const _handleCommand = useCallback(
     (command: VoiceCommand) => {
       setLastCommand(command);
       if (onCommand) {

@@ -36,7 +36,9 @@ jest.mock("../offline/offlineStorage", () => ({
   getCountLinesBySessionFromCache: jest.fn(() => Promise.resolve([])),
 }));
 
+// eslint-disable-next-line import/first
 import { isOnline } from "../api/api";
+// eslint-disable-next-line import/first
 import { useNetworkStore } from "../../store/networkStore";
 
 describe("API Service - Network Detection", () => {

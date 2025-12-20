@@ -56,7 +56,6 @@ import {
   searchItems,
   updateSessionStatus,
 } from "@/services/api/api";
-import { sanitizeBarcode } from "@/utils/validation";
 import { scanDeduplicationService } from "@/services/scanDeduplicationService";
 import { RecentItemsService } from "@/services/enhancedFeatures";
 import { searchItemsSemantic, identifyItem } from "@/services/api/api";
@@ -69,7 +68,7 @@ export default function ScanScreen() {
     ? rawSessionId[0]
     : rawSessionId;
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user: _user, logout } = useAuthStore();
   const { sessionType } = useScanSessionStore();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
@@ -81,7 +80,7 @@ export default function ScanScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isAISearching, setIsAISearching] = useState(false);
-  const [searchMethod, setSearchMethod] = useState<"standard" | "semantic">("standard");
+  const [_searchMethod, setSearchMethod] = useState<"standard" | "semantic">("standard");
   const [scanned, setScanned] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -114,8 +113,8 @@ export default function ScanScreen() {
       const results = await searchItems(query);
       setSearchResults(results);
       setShowResults(true);
-    } catch (error) {
-      console.error("Search error:", error);
+    } catch (_error) {
+      console.error("Search error:", _error);
     } finally {
       setIsSearching(false);
     }
@@ -135,7 +134,7 @@ export default function ScanScreen() {
       } else {
         Alert.alert("AI Search", "No semantic matches found for your query.");
       }
-    } catch (error) {
+    } catch {
       Alert.alert("AI Search Error", "Failed to perform semantic search.");
     } finally {
       setIsAISearching(false);
@@ -254,6 +253,7 @@ export default function ScanScreen() {
 
   const handleLookup = async (barcode: string) => {
     // Import validation helper
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { validateBarcode } = require("../../src/utils/validation");
 
     // Validate barcode with detailed error message

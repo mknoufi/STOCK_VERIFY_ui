@@ -6,6 +6,7 @@ import * as offlineStorage from '../offline/offlineStorage';
 jest.mock('../api/api');
 jest.mock('../offline/offlineStorage');
 jest.mock('@react-native-async-storage/async-storage', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 

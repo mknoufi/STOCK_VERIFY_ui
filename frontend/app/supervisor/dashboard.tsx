@@ -29,7 +29,6 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAutoLogout } from "../../src/hooks/useAutoLogout";
 import { getSessions } from "../../src/services/api/api";
 import {
-  AuroraBackground,
   GlassCard,
   StatsCard,
   SpeedDialMenu,
@@ -220,8 +219,8 @@ export default function SupervisorDashboard() {
   const completionPercentage =
     stats.totalSessions > 0
       ? ((stats.closedSessions + stats.reconciledSessions) /
-          stats.totalSessions) *
-        100
+        stats.totalSessions) *
+      100
       : 0;
 
   return (

@@ -90,8 +90,8 @@ class AuditEntry(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
     # Change tracking (for updates)
-    old_value: dict[str, Optional[Any]] = None
-    new_value: dict[str, Optional[Any]] = None
+    old_value: Optional[dict[str, Optional[Any]]] = None
+    new_value: Optional[dict[str, Optional[Any]]] = None
 
     # Integrity
     previous_hash: Optional[str] = None
@@ -292,7 +292,7 @@ class EnterpriseAuditService:
         if not self.enable_hash_chain:
             return {"status": "disabled", "message": "Hash chain not enabled"}
 
-        query = {}
+        query: dict[str, Any] = {}
         if start_date or end_date:
             query["timestamp"] = {}
             if start_date:

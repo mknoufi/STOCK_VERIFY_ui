@@ -164,9 +164,9 @@ class CountLineCreate(BaseModel):
     mrp_counted: Optional[float] = None
     split_section: Optional[str] = None
     serial_numbers: Optional[list[str]] = None
-    correction_reason: CorrectionReason = None
-    photo_proofs: list[PhotoProof] = None
-    correction_metadata: CorrectionMetadata = None
+    correction_reason: Optional[CorrectionReason] = None
+    photo_proofs: Optional[list[PhotoProof]] = None
+    correction_metadata: Optional[CorrectionMetadata] = None
     category_correction: Optional[str] = None
     subcategory_correction: Optional[str] = None
 

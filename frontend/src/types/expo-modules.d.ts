@@ -158,7 +158,7 @@ declare module "expo-sharing" {
 }
 
 declare module "expo-image" {
-  import { ViewProps, ImageSourcePropType } from "react-native";
+  import { ViewProps } from "react-native";
 
   export type ImageContentFit =
     | "cover"

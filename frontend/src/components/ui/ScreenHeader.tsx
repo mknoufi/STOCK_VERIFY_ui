@@ -34,7 +34,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  interpolate,
 } from "react-native-reanimated";
 
 import { useAuthStore } from "../../store/authStore";

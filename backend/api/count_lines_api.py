@@ -15,7 +15,7 @@ from backend.services.activity_log import ActivityLogService
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-_activity_log_service: ActivityLogService = None
+_activity_log_service: Optional[ActivityLogService] = None
 
 
 def init_count_lines_api(activity_log_service: ActivityLogService):

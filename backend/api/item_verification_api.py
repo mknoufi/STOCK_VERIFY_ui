@@ -222,9 +222,9 @@ async def verify_item(
         if request.damaged_qty is not None:
             update_doc["$set"]["damaged_qty"] = request.damaged_qty
         if request.non_returnable_damaged_qty is not None:
-            update_doc["$set"][
-                "non_returnable_damaged_qty"
-            ] = request.non_returnable_damaged_qty
+            update_doc["$set"]["non_returnable_damaged_qty"] = (
+                request.non_returnable_damaged_qty
+            )
         if request.item_condition:
             update_doc["$set"]["item_condition"] = request.item_condition
         if request.serial_number:

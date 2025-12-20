@@ -36,8 +36,8 @@ class RedisService:
         self.max_connections = max_connections
         self.decode_responses = decode_responses
 
-        self._pool: ConnectionPool = None
-        self._client: Redis = None
+        self._pool: Optional[ConnectionPool] = None
+        self._client: Optional[Redis] = None
         self._is_connected = False
 
     async def connect(self) -> None:

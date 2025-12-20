@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Platform,
   RefreshControl,
   TextInput,
 } from "react-native";

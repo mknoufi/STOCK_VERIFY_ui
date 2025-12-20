@@ -55,7 +55,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
       duration: 1000,
       easing: Easing.bezier(0.25, 0.1, 0.25, 1),
     });
-  }, [progress]);
+  }, [animatedProgress, progress]);
 
   const animatedProps = useAnimatedProps(() => {
     const strokeDashoffset =

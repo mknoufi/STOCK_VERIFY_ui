@@ -73,7 +73,7 @@ const RadioItem: React.FC<RadioItemProps> = ({
       damping: 15,
       stiffness: 150,
     });
-  }, [selected]);
+  }, [selected, scale]);
 
   const innerCircleStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

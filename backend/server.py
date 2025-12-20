@@ -125,6 +125,7 @@ from backend.utils.api_utils import (  # noqa: E402
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.result import Fail, Ok, Result  # noqa: E402
+from backend.utils.tracing import init_tracing, instrument_fastapi_app  # noqa: E402
 
 # Initialize a fallback logger early so optional import blocks can log safely
 logger = logging.getLogger("stock-verify")
@@ -165,6 +166,15 @@ logger = setup_logging(
     log_file=settings.LOG_FILE or "app.log",
     app_name=settings.APP_NAME,
 )
+
+# Initialize tracing (optional, env-gated). This only configures the
+# tracer provider and exporter; FastAPI is instrumented later once the
+# app instance is created.
+try:
+    init_tracing()
+except Exception:
+    # Never break startup due to tracing
+    pass
 
 T = TypeVar("T")
 E = TypeVar("E", bound=Exception)
@@ -889,6 +899,13 @@ app = FastAPI(
     version=getattr(settings, "APP_VERSION", "1.0.0"),
     lifespan=lifespan,
 )
+
+# Attach OpenTelemetry tracing to the FastAPI app if enabled
+try:
+    instrument_fastapi_app(app)
+except Exception:
+    # Tracing should never prevent the app from starting
+    pass
 
 # SECURITY FIX: Configure CORS with specific origins instead of wildcard
 # Configure CORS from settings with environment-aware defaults

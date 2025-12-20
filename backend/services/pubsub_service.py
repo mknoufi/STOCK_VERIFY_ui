@@ -9,6 +9,8 @@ import logging
 from collections.abc import Callable
 from typing import Any, Optional
 
+from redis.asyncio.client import PubSub
+
 from backend.services.redis_service import RedisService
 
 logger = logging.getLogger(__name__)
@@ -22,9 +24,9 @@ class PubSubService:
 
     def __init__(self, redis_service: RedisService):
         self.redis = redis_service
-        self.pubsub = None
+        self.pubsub: Optional[PubSub] = None
         self.subscribers: dict[str, list] = {}
-        self._listen_task: asyncio.Task = None
+        self._listen_task: Optional[asyncio.Task[None]] = None
         self._is_listening = False
 
     async def start(self) -> None:
@@ -67,6 +69,8 @@ class PubSubService:
         try:
             while self._is_listening:
                 try:
+                    if self.pubsub is None:
+                        break
                     message = await self.pubsub.get_message(
                         ignore_subscribe_messages=True, timeout=1.0
                     )
@@ -248,7 +252,7 @@ class PubSubService:
 
 
 # Global instance
-_pubsub_service: PubSubService = None
+_pubsub_service: Optional[PubSubService] = None
 
 
 def get_pubsub_service(redis_service):

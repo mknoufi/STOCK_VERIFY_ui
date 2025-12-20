@@ -283,7 +283,7 @@ async def register(user: UserRegister):
         )
 
 
-async def _check_login_rate_limit(client_ip: str) -> Result[Any, Exception]:
+async def _check_login_rate_limit(client_ip: str) -> Optional[Result[Any, Exception]]:
     logger.debug(f"Checking rate limit for IP: {client_ip}")
     rate_limit_result = await check_rate_limit(client_ip)
     if rate_limit_result.is_err:

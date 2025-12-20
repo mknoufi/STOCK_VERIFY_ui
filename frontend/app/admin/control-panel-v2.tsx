@@ -35,8 +35,6 @@ import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import {
   modernColors,
   modernTypography,
-  modernSpacing,
-  modernBorderRadius,
 } from "@/styles/modernDesignSystem";
 import {
   getServicesStatus,
@@ -354,13 +352,13 @@ export default function AdminControlPanelV2() {
                   name="database"
                   status={services.mongodb}
                   loading={false}
-                  onToggle={() => {}}
+                  onToggle={() => { }}
                 />
                 <ServiceItem
                   name="sql_server"
                   status={services.sql_server}
                   loading={false}
-                  onToggle={() => {}}
+                  onToggle={() => { }}
                 />
               </View>
             </GlassCard>

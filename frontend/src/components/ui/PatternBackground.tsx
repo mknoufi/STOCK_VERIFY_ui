@@ -16,8 +16,6 @@ import Svg, {
   Defs,
   Pattern as SvgPattern,
   Rect,
-  Polygon,
-  G,
   LinearGradient,
   Stop,
 } from "react-native-svg";
@@ -138,9 +136,6 @@ const DotsPattern: React.FC<{
   color: string;
   opacity: number;
 }> = ({ spacing, size, color, opacity }) => {
-  const cols = Math.ceil(SCREEN_WIDTH / spacing) + 1;
-  const rows = Math.ceil(SCREEN_HEIGHT / spacing) + 1;
-
   return (
     <Svg
       width={SCREEN_WIDTH}

@@ -55,7 +55,7 @@ export const ScanGuideOverlay: React.FC<ScanGuideOverlayProps> = ({
       scanLinePosition.value = 0;
       cornerOpacity.value = 1;
     }
-  }, [isScanning, scanRegion.height]);
+  }, [isScanning, scanRegion.height, cornerOpacity, scanLinePosition]);
 
   const scanLineStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: scanLinePosition.value }],

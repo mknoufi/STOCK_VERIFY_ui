@@ -19,7 +19,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  interpolate,
 } from "react-native-reanimated";
 import {
   colorPalette,
@@ -118,7 +117,7 @@ const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
 
   React.useEffect(() => {
     rotation.value = withTiming(isExpanded ? 180 : 0, { duration: 200 });
-  }, [isExpanded]);
+  }, [isExpanded, rotation]);
 
   const iconStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],

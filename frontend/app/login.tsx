@@ -21,7 +21,6 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
-  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -36,26 +35,23 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withRepeat,
   withSequence,
   withTiming,
 } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../src/store/authStore";
-import { AuroraBackground, GlassCard } from "../src/components/ui";
+import { GlassCard } from "../src/components/ui";
 import {
   modernColors,
   modernTypography,
   modernSpacing,
   modernBorderRadius,
-  modernLayout,
 } from "../src/styles/modernDesignSystem";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
 import { PremiumInput } from "../src/components/premium/PremiumInput";
 import { PremiumButton } from "../src/components/premium/PremiumButton";
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const APP_VERSION = "2.3.0";
 const PIN_LENGTH = 4;
 
@@ -68,7 +64,7 @@ const STORAGE_KEYS = {
 };
 
 export default function LoginScreen() {
-  const router = useRouter();
+  useRouter(); // Used by auth state change side effects
   const { login, loginWithPin } = useAuthStore();
 
   // Login mode state (PIN is primary/default)
@@ -112,14 +108,10 @@ export default function LoginScreen() {
     // Logo entrance animation
     logoScale.value = withSpring(1, { damping: 12, stiffness: 100 });
     cardTranslateY.value = withSpring(0, { damping: 15, stiffness: 80 });
-  }, []);
+  }, [cardTranslateY, logoScale]);
 
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
-  }));
-
-  const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: cardTranslateY.value }],
   }));
 
   const pinIndicatorStyle = useAnimatedStyle(() => ({
@@ -154,6 +146,7 @@ export default function LoginScreen() {
         handlePinLogin(newPin);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [pin, loading],
   );
 
@@ -213,14 +206,15 @@ export default function LoginScreen() {
     );
   };
 
-  const toggleRememberMe = () => {
+  // Toggle functions for UI (used in credentials mode JSX below)
+  const _toggleRememberMe = () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setRememberMe(!rememberMe);
   };
 
-  const toggleShowPassword = () => {
+  const _toggleShowPassword = () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }

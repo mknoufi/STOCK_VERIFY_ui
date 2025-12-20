@@ -8,13 +8,7 @@
  * import { screenStyles, createScreenStyles } from '@/styles/screenStyles';
  */
 
-import {
-  StyleSheet,
-  Dimensions,
-  Platform,
-  ViewStyle,
-  TextStyle,
-} from "react-native";
+import { StyleSheet, Dimensions, Platform } from "react-native";
 import { auroraTheme } from "../theme/auroraTheme";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");

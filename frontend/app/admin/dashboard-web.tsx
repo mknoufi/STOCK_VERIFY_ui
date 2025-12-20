@@ -41,9 +41,6 @@ import {
   getSessionsAnalytics,
   getAvailableReports,
   generateReport,
-  getSyncStats,
-  getVarianceTrend,
-  getStaffPerformance,
   getSessions,
 } from "../../src/services/api";
 
@@ -59,7 +56,6 @@ import { useAuthStore } from "../../src/store/authStore";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
-const isTablet = SCREEN_WIDTH > 768;
 
 type DashboardTab = "overview" | "monitoring" | "reports" | "analytics";
 
@@ -113,7 +109,7 @@ export default function DashboardWeb() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [, setLastUpdate] = useState<Date>(new Date());
 
   // Data States
   const [systemStats, setSystemStats] = useState<any>(null);
@@ -122,12 +118,12 @@ export default function DashboardWeb() {
   const [issues, setIssues] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
-  const [sessionsAnalytics, setSessionsAnalytics] = useState<any>(null);
+  const [, setSessionsAnalytics] = useState<any>(null);
 
   // Report Modal State
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
-  const [reportFilters, setReportFilters] = useState<any>({});
+  const [reportFilters] = useState<any>({});
   const [generating, setGenerating] = useState(false);
 
   // Analytics State
@@ -140,15 +136,16 @@ export default function DashboardWeb() {
     try {
       if (isRefresh) setRefreshing(true);
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [
         servicesRes,
         statsRes,
         metricsRes,
-        healthRes,
+        _healthRes,
         reportsRes,
         issuesRes,
         healthScoreRes,
-        sessionsRes,
+        _sessionsRes,
         analyticsRes,
       ] = await Promise.allSettled([
         getServicesStatus().catch(() => ({ data: null })),
@@ -332,7 +329,7 @@ export default function DashboardWeb() {
           <Text style={styles.quickStatValue}>
             {servicesStatus
               ? Object.values(servicesStatus).filter((s: any) => s.running)
-                  .length
+                .length
               : 0}
             /4
           </Text>

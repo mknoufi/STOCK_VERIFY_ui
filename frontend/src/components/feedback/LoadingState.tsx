@@ -73,7 +73,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       duration: modernAnimations.duration.normal,
       easing: Easing.out(Easing.ease),
     });
-  }, []);
+  }, [opacity, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -140,7 +140,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       -1,
       false,
     );
-  }, []);
+  }, [progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: 0.3 + 0.4 * progress.value,

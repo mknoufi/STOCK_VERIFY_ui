@@ -13,6 +13,7 @@ const pendingWrites = new Map<string, Promise<void>>();
 if (Platform.OS !== "web") {
   try {
     // Dynamic import wrapped in try-catch for native platforms
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { MMKV } = require("react-native-mmkv");
     storage = new MMKV();
   } catch {

@@ -713,7 +713,7 @@ export const createCountLine = async (countData: CreateCountLinePayload) => {
       try {
         const cachedItem = await getItemFromCache(countData.item_code);
         if (cachedItem) itemName = cachedItem.item_name;
-      } catch (e) {
+      } catch {
         // Ignore cache lookup error
       }
 
@@ -756,7 +756,7 @@ export const createCountLine = async (countData: CreateCountLinePayload) => {
     try {
       const cachedItem = await getItemFromCache(countData.item_code);
       if (cachedItem) itemName = cachedItem.item_name;
-    } catch (e) {
+    } catch {
       // Ignore cache lookup error
     }
 

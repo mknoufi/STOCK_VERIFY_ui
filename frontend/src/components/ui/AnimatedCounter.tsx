@@ -9,15 +9,8 @@
  * - Color transitions
  */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Text, TextStyle, StyleProp } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-  Easing,
-  runOnJS,
-} from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
 interface AnimatedCounterProps {
@@ -30,8 +23,6 @@ interface AnimatedCounterProps {
   formatNumber?: boolean;
 }
 
-const AnimatedText = Animated.createAnimatedComponent(Text);
-
 export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   value,
   duration = 1000,
@@ -41,15 +32,7 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   decimalPlaces = 0,
   formatNumber = true,
 }) => {
-  const animatedValue = useSharedValue(0);
   const [displayValue, setDisplayValue] = React.useState("0");
-
-  useEffect(() => {
-    animatedValue.value = withTiming(value, {
-      duration,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [value, duration]);
 
   // Use a simple interval-based approach for display
   useEffect(() => {

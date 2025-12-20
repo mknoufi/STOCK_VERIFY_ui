@@ -807,7 +807,7 @@ class SQLServerConnector:
 
         return result
 
-    def get_item_by_barcode(self, barcode: str) -> dict[str, Optional[Any]]:
+    def get_item_by_barcode(self, barcode: str) -> Optional[dict[str, Optional[Any]]]:
         """
         Fetch item from E_MART_KITCHEN_CARE ERP by barcode
         Searches in ProductBarcodes, ProductBatches, and Products tables
@@ -939,7 +939,7 @@ class SQLServerConnector:
             logger.error(f"Error fetching item batches: {str(e)}")
             raise DatabaseQueryError(f"Failed to fetch item batches: {str(e)}")
 
-    def get_item_by_code(self, item_code: str) -> dict[str, Optional[Any]]:
+    def get_item_by_code(self, item_code: str) -> Optional[dict[str, Optional[Any]]]:
         """
         Fetch item by item code using SQL template
         """

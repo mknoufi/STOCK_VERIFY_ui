@@ -1,4 +1,3 @@
-// cspell:ignore springify
 import React, { useEffect } from "react";
 import {
   ActivityIndicator,
@@ -6,12 +5,10 @@ import {
   StyleSheet,
   View,
   Text,
-  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { BlurView } from "expo-blur";
 
 import { useAuthStore } from "../src/store/authStore";
 import { AuroraBackground } from "../src/components/ui/AuroraBackground";

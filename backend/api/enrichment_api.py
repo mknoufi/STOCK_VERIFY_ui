@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 enrichment_router = APIRouter(prefix="/api/v1/enrichment", tags=["Enrichment"])
 
 # These will be initialized at runtime
-enrichment_service: EnrichmentService = None
+enrichment_service: Optional[EnrichmentService] = None
 
 
 def init_enrichment_api(service: EnrichmentService):

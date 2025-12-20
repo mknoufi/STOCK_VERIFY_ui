@@ -15,21 +15,15 @@ import {
   Text,
   StyleSheet,
   ViewStyle,
-  Dimensions,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import {
-  GestureDetector,
-  Gesture,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withTiming,
   runOnJS,
   interpolate,
   Extrapolation,
@@ -37,7 +31,6 @@ import Animated, {
 import { auroraTheme } from "@/theme/auroraTheme";
 import { GlassCard } from "./GlassCard";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = 80;
 
 interface SwipeAction {

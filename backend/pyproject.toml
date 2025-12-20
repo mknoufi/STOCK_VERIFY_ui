@@ -6,9 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "stock-verify-backend"
 version = "2.1.0"
 description = "Backend API for Stock Verify Application"
-authors = [
-  { name = "Stock Verify Team", email = "admin@stockverify.internal" },
-]
+authors = [{ name = "Stock Verify Team", email = "admin@stockverify.internal" }]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -27,13 +25,9 @@ dependencies = [
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q --cov=api --cov=services --cov=tests"
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 asyncio_mode = "auto"
-env_files = [
-    ".env.test"
-]
+env_files = [".env.test"]
 
 [tool.mypy]
 python_version = "3.9"
@@ -65,6 +59,24 @@ ignore_missing_imports = true
 line-length = 88
 target-version = ['py39']
 include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | venv
+    | venv_test
+    | _build
+    | buck-out
+    | build
+    | dist
+    | node_modules
+    | __pycache__
+)/
+'''
 
 [tool.isort]
 profile = "black"
@@ -80,6 +92,11 @@ exclude = [
     ".ruff_cache/",
     "venv/",
     ".venv/",
+    "venv_test/",
+    "venv*/",
+    ".venv*/",
+    "env/",
+    ".env/",
 ]
 
 [tool.ruff.lint]
@@ -94,11 +111,11 @@ select = [
 ]
 
 ignore = [
-    "E501", # line too long, handled by black
-    "B008", # do not perform function calls in argument defaults
-    "C901", # too complex
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
     "UP045", # allow Optional[X] instead of X | None (for Python 3.9 compat)
-    "B904", # allow raising without from clause (legacy)
+    "B904",  # allow raising without from clause (legacy)
 ]
 
 [tool.ruff.lint.per-file-ignores]

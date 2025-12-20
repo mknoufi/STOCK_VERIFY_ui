@@ -7,8 +7,6 @@ import {
   Alert,
   Switch,
   Platform,
-  LayoutAnimation,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   ActivityIndicator,
@@ -18,7 +16,6 @@ import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
-import { useAuthStore } from "@/store/authStore";
 import { useScanSessionStore } from "@/store/scanSessionStore";
 import {
   modernColors,
@@ -36,21 +33,14 @@ import {
   getItemByBarcode,
   refreshItemStock,
   createCountLine,
-  addQuantityToCountLine,
-  checkItemCounted,
-  getVarianceReasons,
 } from "@/services/api/api";
 import { handleErrorWithRecovery } from "@/services/errorRecovery";
-import { CreateCountLinePayload, VarianceReason } from "@/types/scan";
-import { AnalyticsService } from "@/services/enhancedFeatures";
+import { CreateCountLinePayload } from "@/types/scan";
 import { scanDeduplicationService } from "@/services/scanDeduplicationService";
-import { RecentRacksService } from "@/services/recentRacksService";
 import {
-  getDefaultMrpForItem,
-  getNormalizedMrpVariants,
   normalizeSerialValue,
 } from "@/utils/scanUtils";
-import { useItemState, usePhotoState } from "@/hooks/scan";
+import { useItemState } from "@/hooks/scan";
 
 const CONDITION_OPTIONS = [
   "Good",
@@ -92,7 +82,7 @@ export default function ItemDetailScreen() {
 
   const [isDamageEnabled, setIsDamageEnabled] = useState(false);
   const [damageQty, setDamageQty] = useState("");
-  const [damageType, setDamageType] = useState<
+  const [_damageType, _setDamageType] = useState<
     "returned" | "returnable" | "nonreturnable"
   >("returnable");
   const [damageRemark, setDamageRemark] = useState("");
@@ -105,7 +95,7 @@ export default function ItemDetailScreen() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [itemPhoto, setItemPhoto] = useState<any>(null);
 
-  const { resetItemState } = useItemState();
+  const { resetItemState: _resetItemState } = useItemState();
 
   // Load Item Details
   useEffect(() => {
@@ -147,6 +137,7 @@ export default function ItemDetailScreen() {
     } else {
       console.log("Effect triggered but no barcode yet");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [barcode, router]);
 
   const handleRefreshStock = useCallback(

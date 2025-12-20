@@ -28,8 +28,6 @@ import Animated, {
 } from "react-native-reanimated";
 import {
   modernColors,
-  modernTypography,
-  modernSpacing,
 } from "../../styles/modernDesignSystem";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -44,8 +42,6 @@ interface PinKeypadProps {
   disabled?: boolean;
   error?: boolean;
 }
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export function PinKeypad({
   pin,
@@ -105,7 +101,7 @@ export function PinKeypad({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
-  }, [error]);
+  }, [error, shakeX]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: shakeX.value }],

@@ -4,7 +4,7 @@
  * Phase 2: Design System - Core Components
  */
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
@@ -72,6 +72,15 @@ export const Toast: React.FC<ToastProps> = ({
   const opacity = useSharedValue(0);
   const config = toastConfig[type];
 
+  const handleDismiss = useCallback((): void => {
+    translateY.value = withTiming(-100, { duration: 300 });
+    opacity.value = withTiming(0, { duration: 300 }, () => {
+      if (onDismiss) {
+        runOnJS(onDismiss)();
+      }
+    });
+  }, [translateY, opacity, onDismiss]);
+
   useEffect(() => {
     // Slide in
     translateY.value = withSpring(0, { damping: 15 });
@@ -89,16 +98,7 @@ export const Toast: React.FC<ToastProps> = ({
     }
 
     return undefined;
-  }, [duration]);
-
-  const handleDismiss = (): void => {
-    translateY.value = withTiming(-100, { duration: 300 });
-    opacity.value = withTiming(0, { duration: 300 }, () => {
-      if (onDismiss) {
-        runOnJS(onDismiss)();
-      }
-    });
-  };
+  }, [duration, handleDismiss, translateY, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],

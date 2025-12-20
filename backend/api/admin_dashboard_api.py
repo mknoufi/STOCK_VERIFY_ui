@@ -263,7 +263,7 @@ async def get_system_status(current_user: dict = Depends(require_admin)):
     error_rate = 0.0
     try:
         # Look at last 100 API metrics
-        pipeline = [
+        pipeline: list[dict[str, Any]] = [
             {"$sort": {"timestamp": -1}},
             {"$limit": 100},
             {
@@ -332,7 +332,7 @@ async def get_active_users(current_user: dict = Depends(require_admin)):
                 # Determine online status
                 last_seen = record.get("last_seen", datetime.utcnow())
                 minutes_ago = (datetime.utcnow() - last_seen).total_seconds() / 60
-                status = "online" if minutes_ago < 5 else "idle"
+                user_status = "online" if minutes_ago < 5 else "idle"
 
                 active_users.append(
                     ActiveUserInfo(
@@ -341,7 +341,7 @@ async def get_active_users(current_user: dict = Depends(require_admin)):
                         role=user.get("role", "staff"),
                         last_activity=last_seen.isoformat(),
                         current_session=session.get("session_id") if session else None,
-                        status=status,
+                        status=user_status,
                     )
                 )
 
@@ -369,7 +369,7 @@ async def get_error_logs(
 
     cutoff = datetime.utcnow() - timedelta(hours=hours)
 
-    query = {"timestamp": {"$gte": cutoff}}
+    query: dict[str, Any] = {"timestamp": {"$gte": cutoff}}
     if level:
         query["level"] = level.upper()
 
@@ -416,7 +416,7 @@ async def get_performance_metrics(
 
     try:
         # Aggregate metrics by time bucket
-        pipeline = [
+        pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": cutoff}}},
             {
                 "$group": {

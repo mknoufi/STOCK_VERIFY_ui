@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -12,8 +12,8 @@ from backend.services.cache_service import CacheService
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-_db: AsyncIOMotorDatabase = None
-_cache_service: CacheService = None
+_db: Optional[AsyncIOMotorDatabase[Any]] = None
+_cache_service: Optional[CacheService] = None
 
 
 def init_erp_api(

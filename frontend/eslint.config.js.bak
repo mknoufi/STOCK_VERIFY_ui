@@ -1,0 +1,5 @@
+import eslintConfig from 'eslint-config-expo';
+
+// eslint-config-expo exports a single config object, not an array,
+// so wrap it directly for flat config usage.
+export default [eslintConfig];

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from bson import ObjectId
@@ -29,7 +29,7 @@ class Note(BaseModel):
 def _serialize_note(doc: dict[str, Any]) -> Note:
     created_at = doc.get("created_at")
     if not isinstance(created_at, datetime):
-        created_at = datetime.now(UTC)
+        created_at = datetime.now(timezone.utc)
     updated_at = doc.get("updated_at")
     if updated_at is not None and not isinstance(updated_at, datetime):
         updated_at = None
@@ -75,7 +75,7 @@ async def create_note(
 ):
     try:
         coll = get_db()["notes"]
-        now = datetime.now(UTC)
+        now = datetime.now(timezone.utc)
         doc = {
             "title": payload.title,
             "content": payload.content,

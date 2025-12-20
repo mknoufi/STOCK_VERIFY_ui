@@ -1,0 +1,100 @@
+name: Repo Mirror to New Repository
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      target_owner:
+        description: "Target GitHub owner/org for the new repository"
+        required: true
+        type: string
+      target_repo:
+        description: "Name of the new repository to create/mirror to"
+        required: true
+        type: string
+      visibility:
+        description: "Visibility of the new repository (private/public)"
+        required: false
+        default: "private"
+        type: choice
+        options:
+          - private
+          - public
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    env:
+      # Required: a Personal Access Token with repo scope
+      GH_TOKEN: ${{ secrets.GH_PAT }}
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate inputs
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [ -z "${{ github.event.inputs.target_owner }}" ] || [ -z "${{ github.event.inputs.target_repo }}" ]; then
+            echo "Missing required inputs: target_owner and target_repo" >&2
+            exit 1
+          fi
+
+      - name: Set target variables
+        id: vars
+        run: |
+          # Derive defaults for push-trigger runs (mirrors to <owner>/<repo>-mirror)
+          OWNER="${{ github.repository_owner }}"
+          REPO_NAME="${{ github.event.repository.name }}-mirror"
+          VISIBILITY_INPUT="private"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            OWNER="${{ github.event.inputs.target_owner }}"
+            REPO_NAME="${{ github.event.inputs.target_repo }}"
+            VISIBILITY_INPUT="${{ github.event.inputs.visibility }}"
+          fi
+          echo "owner=$OWNER" >> $GITHUB_OUTPUT
+          echo "repo=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "visibility=$VISIBILITY_INPUT" >> $GITHUB_OUTPUT
+
+      - name: Ensure GitHub CLI available
+        run: gh --version
+
+      - name: Create repo if missing
+        env:
+          OWNER: ${{ steps.vars.outputs.owner }}
+          REPO: ${{ steps.vars.outputs.repo }}
+          VISIBILITY: ${{ steps.vars.outputs.visibility }}
+        run: |
+          set -e
+          if gh repo view "$OWNER/$REPO" >/dev/null 2>&1; then
+            echo "Repo $OWNER/$REPO already exists."
+          else
+            # Create new repository
+            if [ "$VISIBILITY" = "public" ]; then
+              gh repo create "$OWNER/$REPO" --public --disable-wiki --disable-issues --confirm
+            else
+              gh repo create "$OWNER/$REPO" --private --disable-wiki --disable-issues --confirm
+            fi
+            echo "Created repo $OWNER/$REPO."
+          fi
+
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+
+      - name: Add mirror remote and push all refs
+        env:
+          OWNER: ${{ steps.vars.outputs.owner }}
+          REPO: ${{ steps.vars.outputs.repo }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          # Use token in remote URL for auth to target repo
+          git remote remove mirror 2>/dev/null || true
+          git remote add mirror "https://$GH_PAT@github.com/$OWNER/$REPO.git"
+          # Push all refs, tags, branches
+          git push --mirror mirror
+          echo "Mirrored repo to https://github.com/$OWNER/$REPO"

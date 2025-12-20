@@ -187,3 +187,4 @@ expo-new
 # Cursor config with secrets (use .cursor/mcp.json.example as template)
 .cursor/mcp.json
 .git_backup_*
+backend/venv_test/

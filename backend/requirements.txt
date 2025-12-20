@@ -35,13 +35,21 @@ Pillow>=11.0.0
 rapidfuzz>=3.5.2
 python-Levenshtein>=0.26.0
 sentence-transformers>=2.2.2
-torch>=2.0.0 --index-url https://download.pytorch.org/whl/cpu
 redis>=5.2.1
 redis[hiredis]>=5.2.1  # Async support with hiredis for better performance
 psutil>=6.1.0
 authlib>=1.4.0
 xlsxwriter>=3.2.0
 copilotkit>=0.1.72
+
+# OpenTelemetry tracing
+opentelemetry-api>=1.25.0
+opentelemetry-sdk>=1.25.0
+opentelemetry-exporter-otlp-proto-http>=1.25.0
+opentelemetry-instrumentation-fastapi>=0.46b0
+opentelemetry-instrumentation-requests>=0.46b0
+opentelemetry-instrumentation-logging>=0.46b0
+opentelemetry-instrumentation-pymongo>=0.46b0
 
 # NOTE: JWT usage has been migrated to an Authlib-based compatibility layer
 # (backend/auth/jwt_provider.py) to avoid transitive ECDSA dependencies.

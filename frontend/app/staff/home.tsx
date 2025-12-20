@@ -286,6 +286,10 @@ export default function StaffHome() {
     setShowFloorPicker(true);
   };
 
+  useEffect(() => {
+    console.log("showFloorPicker state:", showFloorPicker);
+  }, [showFloorPicker]);
+
   // Computed booleans for location type checks (avoids JSX string comparison issues)
   const isShowroomSelected = locationType === "showroom";
   const isGodownSelected = locationType === "godown";
@@ -640,6 +644,7 @@ export default function StaffHome() {
                     ]}
                     activeOpacity={0.7}
                     onPress={handleOpenFloorPicker}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   >
                     <View style={styles.dropdownContent}>
                       <Ionicons

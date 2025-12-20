@@ -641,7 +641,7 @@ export default function StaffHome() {
                     activeOpacity={0.7}
                     onPress={handleOpenFloorPicker}
                   >
-                    <View style={styles.dropdownContent} pointerEvents="none">
+                    <View style={styles.dropdownContent}>
                       <Ionicons
                         name={locationType === "showroom" ? "layers" : "grid"}
                         size={20}
@@ -668,7 +668,6 @@ export default function StaffHome() {
                         styles.dropdownChevron,
                         { backgroundColor: isDark ? "#3A3A3C" : "#E5E7EB" },
                       ]}
-                      pointerEvents="none"
                     >
                       <Ionicons
                         name="chevron-down"

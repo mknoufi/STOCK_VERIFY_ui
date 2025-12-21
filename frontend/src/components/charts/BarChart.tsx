@@ -35,7 +35,7 @@ export const BarChart: React.FC<BarChartProps> = ({
   data,
   title,
   showValues = true,
-  horizontal = false,
+  horizontal: _horizontal = false,
 }) => {
   if (!data || data.length === 0) {
     return (

@@ -38,9 +38,7 @@ class PortDetector:
 
         for port in port_range:
             if PortDetector.is_port_available(port):
-                logger.info(
-                    f"Found available port: {port} (preferred was {preferred_port})"
-                )
+                logger.info(f"Found available port: {port} (preferred was {preferred_port})")
                 return port
 
         raise Exception(f"No available ports found in range {port_range}")
@@ -98,9 +96,7 @@ class PortDetector:
             return False
 
     @staticmethod
-    def find_mongo_port(
-        start_port: int = 27017, max_attempts: int = 10
-    ) -> tuple[int, bool]:
+    def find_mongo_port(start_port: int = 27017, max_attempts: int = 10) -> tuple[int, bool]:
         """Find MongoDB port and return (port, is_running)"""
         # Check default port first
         if PortDetector.is_mongo_running(start_port):
@@ -148,8 +144,44 @@ class PortDetector:
         }
 
     @staticmethod
+    def get_local_ip() -> str:
+        """Get the local IP address of the machine (prioritizing LAN)"""
+        try:
+            # 1. Try connecting to a public DNS server (Google)
+            # This usually forces the OS to pick the primary outgoing interface (LAN)
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(0)
+            try:
+                s.connect(("8.8.8.8", 80))
+                ip = s.getsockname()[0]
+            except Exception:
+                ip = "127.0.0.1"
+            finally:
+                s.close()
+
+            # 2. Sanity check: If we got localhost or something weird, try 192.168 specifically
+            if ip.startswith("127.") or ip == "0.0.0.0":
+                # Fallback: iterate interfaces (simple approach often restricted, so we rely on socket)
+                # Re-try with a local router guess
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                try:
+                    s.connect(("192.168.1.1", 80))
+                    ip = s.getsockname()[0]
+                except Exception:
+                    pass
+                finally:
+                    s.close()
+
+            return ip
+        except Exception:
+            return "127.0.0.1"
+
+    @staticmethod
     def generate_frontend_config(backend_port: int, frontend_port: int = None) -> str:
         """Generate frontend configuration with dynamic ports"""
+
+        # Detect LAN IP dynamically
+        lan_ip = PortDetector.get_local_ip()
 
         # Try to detect current frontend port
         if frontend_port is None:
@@ -165,7 +197,7 @@ class PortDetector:
                         break
 
         return f"""# Dynamic Configuration for Frontend
-EXPO_PUBLIC_BACKEND_URL=http://192.168.1.41:{backend_port}
+EXPO_PUBLIC_BACKEND_URL=http://{lan_ip}:{backend_port}
 EXPO_PUBLIC_FRONTEND_PORT={frontend_port}
 EXPO_PUBLIC_API_TIMEOUT=30000
 """

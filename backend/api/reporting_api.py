@@ -27,10 +27,10 @@ class QuerySpec(BaseModel):
     """Query specification"""
 
     collection: str = Field(..., description="Collection to query")
-    filters: dict[str, Optional[Any]] = Field(None, description="Filter conditions")
+    filters: dict[str, Optional[Any]] = Field(default=None, description="Filter conditions")
     group_by: Optional[list[str]] = Field(None, description="Group by fields")
-    aggregations: dict[str, Optional[str]] = Field(None, description="Aggregations")
-    sort: dict[str, Optional[int]] = Field(None, description="Sort specification")
+    aggregations: dict[str, Optional[str]] = Field(default=None, description="Aggregations")
+    sort: dict[str, Optional[int]] = Field(default=None, description="Sort specification")
     limit: Optional[int] = Field(None, description="Limit results")
 
 
@@ -160,9 +160,7 @@ async def get_snapshot(
 
     snapshot_engine = SnapshotEngine(db)
 
-    snapshot_data = await snapshot_engine.get_snapshot_data(
-        snapshot_id, skip=skip, limit=limit
-    )
+    snapshot_data = await snapshot_engine.get_snapshot_data(snapshot_id, skip=skip, limit=limit)
 
     if not snapshot_data:
         raise HTTPException(status_code=404, detail="Snapshot not found")
@@ -183,9 +181,7 @@ async def delete_snapshot(
     snapshot_engine = SnapshotEngine(db)
 
     try:
-        deleted = await snapshot_engine.delete_snapshot(
-            snapshot_id, current_user["username"]
-        )
+        deleted = await snapshot_engine.delete_snapshot(snapshot_id, current_user["username"])
 
         if deleted:
             return {"success": True, "snapshot_id": snapshot_id}
@@ -317,9 +313,7 @@ async def list_comparisons(
         if current_user["role"] != "supervisor":
             raise HTTPException(status_code=403, detail="Access denied")
 
-    comparisons = await compare_engine.list_comparisons(
-        created_by=created_by, limit=limit
-    )
+    comparisons = await compare_engine.list_comparisons(created_by=created_by, limit=limit)
 
     return comparisons
 

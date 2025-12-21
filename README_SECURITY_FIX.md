@@ -16,6 +16,8 @@
 - Updated `.gitignore` to explicitly ignore `backend/.env` and `frontend/.env`
 - Added pre-commit hooks for secret detection
 - Created comprehensive `.env.example` files with security warnings
+- Enforced env-driven CORS (no wildcard). Configure allowed origins via `CORS_ALLOW_ORIGINS` and dev additions via `CORS_DEV_ORIGINS`.
+- Hardened SQL discovery/mapping: validated schema, table, and column identifiers to prevent injection via names (see `backend/api/mapping_api.py`).
 
 ### 4. ✅ Created Documentation
 - `SECURITY_REMEDIATION_STEPS.md`: Step-by-step guide to rotate secrets and clean Git history

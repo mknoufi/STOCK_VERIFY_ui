@@ -22,9 +22,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-master_settings_router = APIRouter(
-    prefix="/api/admin/settings", tags=["Master Settings"]
-)
+master_settings_router = APIRouter(prefix="/api/admin/settings", tags=["Master Settings"])
 
 
 def require_admin(current_user: dict = Depends(get_current_user)):
@@ -35,83 +33,49 @@ def require_admin(current_user: dict = Depends(get_current_user)):
         user_role = getattr(current_user, "role", None)
 
     if user_role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return (
-        current_user
-        if isinstance(current_user, dict)
-        else {"role": "admin", "username": "admin"}
+        current_user if isinstance(current_user, dict) else {"role": "admin", "username": "admin"}
     )
 
 
 class SystemParameters(BaseModel):
     # API Settings
-    api_timeout: int = Field(
-        30, ge=5, le=300, description="API request timeout in seconds"
-    )
-    api_rate_limit: int = Field(
-        100, ge=10, le=10000, description="API rate limit per minute"
-    )
+    api_timeout: int = Field(30, ge=5, le=300, description="API request timeout in seconds")
+    api_rate_limit: int = Field(100, ge=10, le=10000, description="API rate limit per minute")
 
     # Cache Settings
     cache_enabled: bool = Field(True, description="Enable caching")
     cache_ttl: int = Field(3600, ge=60, le=86400, description="Cache TTL in seconds")
-    cache_max_size: int = Field(
-        1000, ge=100, le=10000, description="Maximum cache entries"
-    )
+    cache_max_size: int = Field(1000, ge=100, le=10000, description="Maximum cache entries")
 
     # Sync Settings
-    sync_interval: int = Field(
-        3600, ge=60, le=86400, description="ERP sync interval in seconds"
-    )
+    sync_interval: int = Field(3600, ge=60, le=86400, description="ERP sync interval in seconds")
     sync_batch_size: int = Field(100, ge=10, le=1000, description="Sync batch size")
     auto_sync_enabled: bool = Field(True, description="Enable automatic sync")
 
     # Session Settings
-    session_timeout: int = Field(
-        3600, ge=300, le=86400, description="Session timeout in seconds"
-    )
+    session_timeout: int = Field(3600, ge=300, le=86400, description="Session timeout in seconds")
     max_concurrent_sessions: int = Field(
         50, ge=10, le=500, description="Maximum concurrent sessions"
     )
 
     # Logging Settings
-    log_level: str = Field(
-        "INFO", pattern="^(DEBUG|INFO|WARN|ERROR)$", description="Log level"
-    )
-    log_retention_days: int = Field(
-        30, ge=1, le=365, description="Log retention in days"
-    )
+    log_level: str = Field("INFO", pattern="^(DEBUG|INFO|WARN|ERROR)$", description="Log level")
+    log_retention_days: int = Field(30, ge=1, le=365, description="Log retention in days")
     enable_audit_log: bool = Field(True, description="Enable audit logging")
 
     # Database Settings
-    mongo_pool_size: int = Field(
-        10, ge=1, le=100, description="MongoDB connection pool size"
-    )
-    sql_pool_size: int = Field(
-        5, ge=1, le=20, description="SQL Server connection pool size"
-    )
-    query_timeout: int = Field(
-        30, ge=5, le=300, description="Database query timeout in seconds"
-    )
+    mongo_pool_size: int = Field(10, ge=1, le=100, description="MongoDB connection pool size")
+    sql_pool_size: int = Field(5, ge=1, le=20, description="SQL Server connection pool size")
+    query_timeout: int = Field(30, ge=5, le=300, description="Database query timeout in seconds")
 
     # Security Settings
-    password_min_length: int = Field(
-        8, ge=6, le=32, description="Minimum password length"
-    )
-    password_require_uppercase: bool = Field(
-        True, description="Require uppercase in password"
-    )
-    password_require_lowercase: bool = Field(
-        True, description="Require lowercase in password"
-    )
-    password_require_numbers: bool = Field(
-        True, description="Require numbers in password"
-    )
-    jwt_expiration: int = Field(
-        86400, ge=3600, le=604800, description="JWT expiration in seconds"
-    )
+    password_min_length: int = Field(8, ge=6, le=32, description="Minimum password length")
+    password_require_uppercase: bool = Field(True, description="Require uppercase in password")
+    password_require_lowercase: bool = Field(True, description="Require lowercase in password")
+    password_require_numbers: bool = Field(True, description="Require numbers in password")
+    jwt_expiration: int = Field(86400, ge=3600, le=604800, description="JWT expiration in seconds")
 
     # Performance Settings
     enable_compression: bool = Field(True, description="Enable response compression")
@@ -168,9 +132,7 @@ async def update_system_parameters(
         params_dict["updated_at"] = datetime.now().isoformat()
 
         # Save to database
-        await db.system_settings.replace_one(
-            {"_id": "parameters"}, params_dict, upsert=True
-        )
+        await db.system_settings.replace_one({"_id": "parameters"}, params_dict, upsert=True)
 
         # Log the change
         await db.audit_logs.insert_one(
@@ -295,9 +257,7 @@ async def reset_to_defaults(
             params_dict["updated_by"] = current_user.get("username", "admin")
             params_dict["updated_at"] = datetime.now().isoformat()
 
-            await db.system_settings.replace_one(
-                {"_id": "parameters"}, params_dict, upsert=True
-            )
+            await db.system_settings.replace_one({"_id": "parameters"}, params_dict, upsert=True)
 
         return {
             "success": True,

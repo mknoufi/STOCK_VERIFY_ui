@@ -132,7 +132,7 @@ async def get_available_racks(
     from backend.server import db
 
     # Build query
-    query = {"status": {"$in": ["available", "paused"]}}
+    query: dict[str, Any] = {"status": {"$in": ["available", "paused"]}}
     if floor:
         query["floor"] = floor
 
@@ -374,9 +374,7 @@ async def pause_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(
-            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
-        )
+        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
 
     # Update status
     await update_rack_status(
@@ -422,9 +420,7 @@ async def resume_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(
-            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
-        )
+        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
 
     # Verify paused
     if rack["status"] != "paused":

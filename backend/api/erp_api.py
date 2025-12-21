@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -25,70 +26,148 @@ def init_erp_api(
     _cache_service = cache_service
 
 
+_ALPHANUMERIC_PATTERN = re.compile(r"^[A-Z0-9_\-]+$")
+
+
+def _normalize_barcode_input(
+    barcode: str, *, allow_alphanumeric: bool = True, strict_numeric: bool = True
+) -> str:
+    """Normalize and validate barcode or item code input.
+
+    Rules derived from tests and existing usage:
+    - Empty values are rejected with 400.
+    - Numeric barcodes must be exactly 6 digits and start with 51, 52 or 53
+      (when strict_numeric is True).
+    - When ``allow_alphanumeric`` is True, non-numeric item codes such as
+      "TEST001" are allowed for endpoints like refresh-stock.
+    """
+
+    if not barcode or not barcode.strip():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Barcode cannot be empty",
+                "error_code": "INVALID_BARCODE_EMPTY",
+            },
+        )
+
+    normalized = barcode.strip().upper()
+
+    # Strict rules for numeric barcodes used in public barcode endpoints
+    if strict_numeric and normalized.isdigit():
+        if len(normalized) != 6:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Numeric barcode must be exactly 6 digits",
+                    "barcode": normalized,
+                    "error_code": "INVALID_BARCODE_LENGTH",
+                },
+            )
+
+        if normalized[:2] not in {"51", "52", "53"}:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Invalid barcode prefix. Allowed prefixes are 51, 52, 53.",
+                    "barcode": normalized,
+                    "error_code": "INVALID_BARCODE_PREFIX",
+                },
+            )
+
+        return normalized
+
+    # For barcode endpoints we do not allow non-numeric values
+    if not allow_alphanumeric and not normalized.isdigit():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Barcode must be numeric for this endpoint",
+                "barcode": normalized,
+                "error_code": "INVALID_BARCODE_FORMAT",
+            },
+        )
+
+    # Alphanumeric validation for item_code-style inputs (e.g. refresh-stock)
+    if _ALPHANUMERIC_PATTERN.fullmatch(normalized):
+        if len(normalized) < 2:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Item code must be at least 2 characters",
+                    "barcode": normalized,
+                    "error_code": "INVALID_ITEM_CODE_LENGTH",
+                },
+            )
+        if len(normalized) > 50:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Item code is too long (max 50 characters)",
+                    "barcode": normalized,
+                    "error_code": "INVALID_ITEM_CODE_LENGTH",
+                },
+            )
+        return normalized
+
+    raise HTTPException(
+        status_code=400,
+        detail={
+            "message": "Invalid barcode format. Use letters, numbers, hyphens, or underscores.",
+            "barcode": normalized,
+            "error_code": "INVALID_BARCODE_FORMAT",
+        },
+    )
+
+
 @router.get("/erp/items/barcode/{barcode}", response_model=ERPItem)
-async def get_item_by_barcode(
-    barcode: str, current_user: dict = Depends(get_current_user)
-):
+async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
     """
     Get item details by barcode from MongoDB.
     """
     if _db is None or _cache_service is None:
         raise HTTPException(status_code=503, detail="Service not initialized")
 
-    # STRICT VALIDATION: Barcode must be exactly 6 digits and start with 51, 52, or 53
-    allowed_prefixes = ("51", "52", "53")
-    barcode = barcode.strip()
-
-    if not barcode.isdigit():
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "message": "Invalid barcode: must be numeric",
-                "barcode": barcode,
-                "error_code": "INVALID_BARCODE_FORMAT",
-            },
-        )
-
-    is_correct_length = len(barcode) == 6
-    has_correct_prefix = barcode.startswith(allowed_prefixes)
-
-    if not is_correct_length or not has_correct_prefix:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "message": "Invalid barcode. Must be exactly 6 digits and start with 51, 52, or 53.",
-                "barcode": barcode,
-                "error_code": "INVALID_BARCODE",
-                "requirements": "6 digits, starts with 51-53",
-            },
-        )
+    # For barcode lookups, we only accept numeric barcodes with valid prefixes
+    normalized_barcode = _normalize_barcode_input(barcode, allow_alphanumeric=False)
 
     # Check cache first
-    cached_item = await _cache_service.get("items", barcode)
+    cached_item = await _cache_service.get("items", normalized_barcode)
     if cached_item:
         logger.debug(f"Item found in cache: {barcode}")
         return ERPItem(**cached_item)
 
     # Fallback to MongoDB
-    item = await _db.erp_items.find_one({"barcode": barcode})
+    regex_match = {"$regex": f"^{re.escape(normalized_barcode)}$", "$options": "i"}
+    item = await _db.erp_items.find_one(
+        {
+            "$or": [
+                {"barcode": normalized_barcode},
+                {"autobarcode": normalized_barcode},
+                {"manual_barcode": normalized_barcode},
+                {"item_code": normalized_barcode},
+                {"item_code": regex_match},
+            ]
+        }
+    )
     if not item:
         error = get_error_message("DB_ITEM_NOT_FOUND", {"barcode": barcode})
-        logger.warning(f"Item not found in MongoDB: barcode={barcode}")
+        logger.warning(f"Item not found in MongoDB: barcode={normalized_barcode}")
         raise HTTPException(
             status_code=error["status_code"],
             detail={
                 "message": error["message"],
-                "detail": f"{error['detail']} Barcode: {barcode}.",
+                "detail": f"{error['detail']} Barcode: {normalized_barcode}.",
                 "code": error["code"],
                 "category": error["category"],
-                "barcode": barcode,
+                "barcode": normalized_barcode,
                 "source": "mongodb",
             },
         )
 
     # Cache for 1 hour
-    await _cache_service.set("items", barcode, item, ttl=3600)
-    logger.debug(f"Item fetched from MongoDB: barcode={barcode}")
+    await _cache_service.set("items", normalized_barcode, item, ttl=3600)
+    logger.debug(f"Item fetched from MongoDB: barcode={normalized_barcode}")
 
     return ERPItem(**item)
 
@@ -104,8 +183,21 @@ async def refresh_item_stock(
     if _db is None or _cache_service is None:
         raise HTTPException(status_code=503, detail="Service not initialized")
 
-    # Get from MongoDB
-    item = await _db.erp_items.find_one({"item_code": item_code})
+    # For refresh-stock we accept both numeric barcodes and item codes
+    # We disable strict numeric checks because item codes might be numeric but not follow barcode rules
+    normalized_code = _normalize_barcode_input(item_code, strict_numeric=False)
+
+    regex_match = {"$regex": f"^{re.escape(normalized_code)}$", "$options": "i"}
+    item = await _db.erp_items.find_one(
+        {
+            "$or": [
+                {"item_code": normalized_code},
+                {"item_code": regex_match},
+                {"barcode": normalized_code},
+                {"manual_barcode": normalized_code},
+            ]
+        }
+    )
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -199,9 +291,7 @@ async def get_all_items(
 
 @router.get("/items/search")
 async def search_items_compatibility(
-    query: Optional[str] = Query(
-        None, description="Search term (legacy param 'query')"
-    ),
+    query: Optional[str] = Query(None, description="Search term (legacy param 'query')"),
     search: Optional[str] = Query(None, description="Alternate search param"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),

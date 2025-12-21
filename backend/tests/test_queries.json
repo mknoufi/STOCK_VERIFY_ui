@@ -1,0 +1,22 @@
+[
+  {
+    "query": "What is the stock count for item 12345?",
+    "expected_response": "The stock count for item 12345 is 50."
+  },
+  {
+    "query": "List all items with low stock levels.",
+    "expected_response": "Items with low stock levels: Item 67890 (5 units), Item 54321 (2 units)."
+  },
+  {
+    "query": "What is the stock count for item 67890?",
+    "expected_response": "The stock count for item 67890 is 5."
+  },
+  {
+    "query": "Update the stock count for item 54321 to 10.",
+    "expected_response": "Stock count for item 54321 updated to 10."
+  },
+  {
+    "query": "Check if item 98765 is in stock.",
+    "expected_response": "Item 98765 is in stock with 20 units."
+  }
+]

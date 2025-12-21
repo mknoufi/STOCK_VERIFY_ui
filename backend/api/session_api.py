@@ -19,9 +19,7 @@ _db: Optional[AsyncIOMotorDatabase[Any]] = None
 _activity_log_service: Optional[ActivityLogService] = None
 
 
-def init_session_api(
-    db: AsyncIOMotorDatabase, activity_log_service: ActivityLogService
-):
+def init_session_api(db: AsyncIOMotorDatabase, activity_log_service: ActivityLogService):
     global _db, _activity_log_service
     _db = db
     _activity_log_service = activity_log_service
@@ -41,17 +39,13 @@ async def create_session(
     if not warehouse:
         raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
     if len(warehouse) < 2:
-        raise HTTPException(
-            status_code=400, detail="Warehouse name must be at least 2 characters"
-        )
+        raise HTTPException(status_code=400, detail="Warehouse name must be at least 2 characters")
     if len(warehouse) > 100:
         raise HTTPException(
             status_code=400, detail="Warehouse name must be less than 100 characters"
         )
     # Sanitize warehouse name (remove potentially dangerous characters)
-    warehouse = (
-        warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
-    )
+    warehouse = warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
 
     session = Session(
         warehouse=warehouse,
@@ -90,9 +84,7 @@ async def get_sessions(
 
     if current_user["role"] == "supervisor":
         total = await _db.sessions.count_documents({})
-        sessions_cursor = (
-            _db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
-        )
+        sessions_cursor = _db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
     else:
         filter_query = {"staff_user": current_user["username"]}
         total = await _db.sessions.count_documents(filter_query)
@@ -107,17 +99,35 @@ async def get_sessions(
         sessions_cursor.batch_size(min(page_size, 100))
 
     sessions = await sessions_cursor.to_list(page_size)
+    session_items = []
+    for session in sessions:
+        normalized = dict(session)
+        normalized.pop("_id", None)
+        session_items.append(Session(**normalized))
+
+    total_pages = (total + page_size - 1) // page_size if total else 0
+    has_next = (skip + len(session_items)) < total
+
+    has_previous = page > 1
+
+    legacy_pagination = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": total_pages,
+        "has_next": has_next,
+        "has_prev": has_previous,
+    }
 
     return {
-        "items": [Session(**session) for session in sessions],
-        "pagination": {
-            "page": page,
-            "page_size": page_size,
-            "total": total,
-            "total_pages": (total + page_size - 1) // page_size,
-            "has_next": skip + page_size < total,
-            "has_prev": page > 1,
-        },
+        "items": session_items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "has_next": has_next,
+        "has_previous": has_previous,
+        "pagination": legacy_pagination,
     }
 
 
@@ -340,9 +350,7 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
 
         # Transform results
         sessions_by_date = {item["_id"]: item["count"] for item in by_date}
-        variance_by_warehouse = {
-            item["_id"]: item["total_variance"] for item in by_warehouse
-        }
+        variance_by_warehouse = {item["_id"]: item["total_variance"] for item in by_warehouse}
         items_by_staff = {item["_id"]: item["total_items"] for item in by_staff}
 
         return {

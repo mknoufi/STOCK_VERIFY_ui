@@ -39,20 +39,14 @@ async def list_available_permissions():
         "data": {
             "permissions": [p.value for p in Permission],
             "categories": {
-                "session": [
-                    p.value for p in Permission if p.value.startswith("session.")
-                ],
-                "count_line": [
-                    p.value for p in Permission if p.value.startswith("count_line.")
-                ],
+                "session": [p.value for p in Permission if p.value.startswith("session.")],
+                "count_line": [p.value for p in Permission if p.value.startswith("count_line.")],
                 "item": [
                     p.value
                     for p in Permission
                     if p.value.startswith("item.") or p.value.startswith("mrp.")
                 ],
-                "export": [
-                    p.value for p in Permission if p.value.startswith("export.")
-                ],
+                "export": [p.value for p in Permission if p.value.startswith("export.")],
                 "logs": [p.value for p in Permission if "log" in p.value],
                 "admin": [
                     p.value
@@ -62,12 +56,8 @@ async def list_available_permissions():
                     or p.value.startswith("db_mapping.")
                 ],
                 "sync": [p.value for p in Permission if p.value.startswith("sync.")],
-                "review": [
-                    p.value for p in Permission if p.value.startswith("review.")
-                ],
-                "report": [
-                    p.value for p in Permission if p.value.startswith("report.")
-                ],
+                "review": [p.value for p in Permission if p.value.startswith("review.")],
+                "report": [p.value for p in Permission if p.value.startswith("report.")],
             },
         },
     }
@@ -218,9 +208,7 @@ async def remove_user_permissions(
             },
         )
 
-    success = await remove_permissions_from_user(
-        db, username, permission_update.permissions
-    )
+    success = await remove_permissions_from_user(db, username, permission_update.permissions)
 
     if not success:
         raise HTTPException(
@@ -276,9 +264,7 @@ async def disable_user_permissions(
             },
         )
 
-    success = await disable_permissions_for_user(
-        db, username, permission_update.permissions
-    )
+    success = await disable_permissions_for_user(db, username, permission_update.permissions)
 
     if not success:
         raise HTTPException(
@@ -334,9 +320,7 @@ async def enable_user_permissions(
             },
         )
 
-    success = await enable_permissions_for_user(
-        db, username, permission_update.permissions
-    )
+    success = await enable_permissions_for_user(db, username, permission_update.permissions)
 
     if not success:
         raise HTTPException(

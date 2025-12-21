@@ -1,4 +1,0 @@
-{
-  "summary": "Continued monitoring TestSprite test execution. Tests are still running after 7+ minutes, which is within the expected 5-15 minute range. Process is active, tunnel is established, and tests are executing. No completion messages or report files yet. Will continue monitoring until tests complete.",
-  "current_status": "TestSprite tests running normally. Process active (PID: 15817), runtime ~7 minutes. Tests executing with fixed port configuration (19006). Monitoring for completion and report generation."
-}

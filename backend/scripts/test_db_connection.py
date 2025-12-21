@@ -20,8 +20,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 try:
     from backend.config import settings
 except ImportError:
-    import os
-
     from dotenv import load_dotenv
 
     load_dotenv()
@@ -86,9 +84,7 @@ async def test_mongodb_connection():
         user = await db.users.find_one({})
         if user:
             print("   ✅ Users: Found")
-            print(
-                f"      Sample: {user.get('username', 'N/A')} ({user.get('role', 'N/A')})"
-            )
+            print(f"      Sample: {user.get('username', 'N/A')} ({user.get('role', 'N/A')})")
         else:
             print("   ❌ Users: Not found")
 
@@ -129,9 +125,7 @@ async def test_backend_api():
 
     # Test items endpoint (requires auth, but we can check if it exists)
     try:
-        response = requests.get(
-            "http://localhost:8000/api/erp/items/barcode/523658", timeout=5
-        )
+        response = requests.get("http://localhost:8000/api/erp/items/barcode/523658", timeout=5)
         if response.status_code == 200:
             print("✅ Item Lookup API: SUCCESS")
             item = response.json()

@@ -16,6 +16,16 @@ from backend.services.redis_service import RedisService
 logger = logging.getLogger(__name__)
 
 
+def _decode_message_data(data: Any) -> Any:
+    """Decode message data from bytes and parse JSON if applicable."""
+    if isinstance(data, bytes):
+        data = data.decode("utf-8")
+    try:
+        return json.loads(data)
+    except (json.JSONDecodeError, TypeError):
+        return data
+
+
 class PubSubService:
     """
     Redis Pub/Sub service for real-time updates
@@ -71,37 +81,28 @@ class PubSubService:
                 try:
                     if self.pubsub is None:
                         break
-                    message = await self.pubsub.get_message(
-                        ignore_subscribe_messages=True, timeout=1.0
-                    )
-
-                    if message and message["type"] == "message":
-                        channel = message["channel"]
-                        data = message["data"]
-
-                        # Decode if bytes
-                        if isinstance(data, bytes):
-                            data = data.decode("utf-8")
-
-                        # Try to parse JSON
-                        try:
-                            data = json.loads(data)
-                        except (json.JSONDecodeError, TypeError):
-                            pass
-
-                        # Call handlers
-                        await self._handle_message(channel, data)
-
+                    await self._process_next_message()
                 except asyncio.CancelledError:
                     break
                 except Exception as e:
                     logger.error(f"Error in pub/sub listener: {str(e)}")
                     await asyncio.sleep(1)
-
         except Exception as e:
             logger.error(f"Pub/Sub listener crashed: {str(e)}")
         finally:
             self._is_listening = False
+
+    async def _process_next_message(self) -> None:
+        """Get and process the next message from pub/sub."""
+        if self.pubsub is None:
+            return
+
+        message = await self.pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+
+        if message and message["type"] == "message":
+            channel = message["channel"]
+            data = _decode_message_data(message["data"])
+            await self._handle_message(channel, data)
 
     async def _handle_message(self, channel: str, data: Any) -> None:
         """Handle incoming message"""
@@ -136,9 +137,7 @@ class PubSubService:
         await self.pubsub.subscribe(channel)
         logger.info(f"✓ Subscribed to channel: {channel}")
 
-    async def unsubscribe(
-        self, channel: str, handler: Optional[Callable] = None
-    ) -> None:
+    async def unsubscribe(self, channel: str, handler: Optional[Callable] = None) -> None:
         """
         Unsubscribe from a channel
 
@@ -152,9 +151,7 @@ class PubSubService:
         if handler:
             # Remove specific handler
             if channel in self.subscribers:
-                self.subscribers[channel] = [
-                    h for h in self.subscribers[channel] if h != handler
-                ]
+                self.subscribers[channel] = [h for h in self.subscribers[channel] if h != handler]
         else:
             # Remove all handlers
             if channel in self.subscribers:
@@ -199,9 +196,7 @@ class PubSubService:
         message = {"event": event, "rack_id": rack_id, "data": data}
         return await self.publish(channel, message)
 
-    async def publish_session_update(
-        self, session_id: str, event: str, data: dict
-    ) -> int:
+    async def publish_session_update(self, session_id: str, event: str, data: dict) -> int:
         """
         Publish session update
 
@@ -238,9 +233,7 @@ class PubSubService:
         channel = f"rack:updates:{rack_id}"
         await self.subscribe(channel, handler)
 
-    async def subscribe_to_session_updates(
-        self, session_id: str, handler: Callable
-    ) -> None:
+    async def subscribe_to_session_updates(self, session_id: str, handler: Callable) -> None:
         """Subscribe to session updates"""
         channel = f"session:updates:{session_id}"
         await self.subscribe(channel, handler)

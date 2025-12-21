@@ -35,12 +35,10 @@ class FieldDefinitionCreate(BaseModel):
     field_name: str = Field(..., description="Internal field name")
     field_type: str = Field(..., description="Field type")
     display_label: str = Field(..., description="Display label")
-    db_mapping: Optional[str] = Field(None, description="Database field mapping")
-    options: Optional[list[str]] = Field(None, description="Options for select types")
-    validation_rules: dict[str, Optional[Any]] = Field(
-        None, description="Validation rules"
-    )
-    default_value: Optional[Any] = Field(None, description="Default value")
+    db_mapping: Optional[str] = Field(default=None, description="Database field mapping")
+    options: Optional[list[str]] = Field(default=None, description="Options for select types")
+    validation_rules: dict[str, Optional[Any]] = Field(default=None, description="Validation rules")
+    default_value: Optional[Any] = Field(default=None, description="Default value")
     required: bool = Field(False, description="Is field required")
     visible: bool = Field(True, description="Is field visible")
     searchable: bool = Field(False, description="Is field searchable")
@@ -382,8 +380,7 @@ async def get_items_with_fields(
     **Example:** `/api/dynamic-fields/items?field_name=warranty_period&field_value=2 years`
     """
     try:
-        field_filters = None
-        field_filters = None
+        field_filters: dict[str, Optional[Any]] = None
         if field_name and field_value:
             field_filters = {field_name: field_value}
 

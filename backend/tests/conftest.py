@@ -1,7 +1,5 @@
 """Comprehensive pytest configuration for backend testing suite."""
 
-# ruff: noqa: E402
-
 import asyncio
 import os
 import shutil
@@ -12,6 +10,15 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from backend.services.cache_service import CacheService
+from backend.tests.utils.in_memory_db import (
+    InMemoryDatabase,
+    setup_server_with_in_memory_db,
+)
 
 # Ensure backend package root is importable when running tests from project root
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -37,17 +44,8 @@ os.environ.update(
     }
 )
 
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from motor.motor_asyncio import AsyncIOMotorClient
-
-from backend.services.cache_service import CacheService
 
 # Import test utilities and mocks
-from backend.tests.utils.in_memory_db import (
-    InMemoryDatabase,
-    setup_server_with_in_memory_db,
-)
 
 # Provide Path symbol for legacy tests that expect it in globals
 globals().setdefault("Path", Path)
@@ -76,9 +74,7 @@ async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None
     """Provide an async client for API testing."""
     from backend.server import app
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
 

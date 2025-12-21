@@ -1,4 +1,0 @@
-{
-  "summary": "TestSprite test execution completed. All 19 tests failed due to timeout (15 minutes). Port configuration issue was fixed (tests now use 19006), but application is not responding to test interactions. Generated comprehensive test report analyzing failures and providing recommendations. Reports available: raw_report.md and testsprite-mcp-test-report.md.",
-  "current_status": "Test execution complete. All tests failed with timeout errors. Port fix successful but application responsiveness issues prevent test completion. Comprehensive report generated with analysis and recommendations. Next steps: investigate application responsiveness, verify manual functionality, and re-run tests after fixes."
-}

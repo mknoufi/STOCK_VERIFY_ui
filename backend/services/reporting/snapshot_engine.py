@@ -126,7 +126,7 @@ class SnapshotEngine:
             tags: Filter by tags
             limit: Max results
         """
-        query = {}
+        query: dict[str, Any] = {}
 
         if created_by:
             query["created_by"] = created_by

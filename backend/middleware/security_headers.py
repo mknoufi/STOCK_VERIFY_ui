@@ -55,9 +55,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 ),
             ),
             # Referrer Policy
-            "Referrer-Policy": options.get(
-                "REFERRER_POLICY", "strict-origin-when-cross-origin"
-            ),
+            "Referrer-Policy": options.get("REFERRER_POLICY", "strict-origin-when-cross-origin"),
             # Permissions Policy (formerly Feature Policy)
             "Permissions-Policy": options.get(
                 "PERMISSIONS_POLICY", "geolocation=(), microphone=(), camera=()"

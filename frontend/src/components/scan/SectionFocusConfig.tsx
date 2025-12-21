@@ -85,7 +85,7 @@ export const SectionFocusConfig: React.FC = () => {
               <PremiumInput
                 label="Floor"
                 value={selectedFloor}
-                onChangeText={() => {}}
+                onChangeText={() => { }}
                 placeholder="Select Floor"
                 editable={false}
                 leftIcon="layers-outline"

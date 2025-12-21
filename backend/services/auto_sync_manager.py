@@ -133,49 +133,50 @@ class AutoSyncManager:
         self._stats["connection_checks"] += 1
 
         try:
-            # Test connection
             is_available = self.sql_connector.test_connection()
-
-            # Connection state changed
-            if is_available and not self._sql_available:
-                # Connection restored
-                logger.info("✅ SQL Server connection restored - triggering sync")
-                self._sql_available = True
-                self._stats["connection_restored"] += 1
-                self._stats["last_connection_time"] = datetime.utcnow().isoformat()
-
-                # Trigger sync
-                await self._trigger_sync()
-
-                # Callback
-                if self._on_connection_restored:
-                    try:
-                        await self._on_connection_restored()
-                    except Exception as e:
-                        logger.error(f"Error in connection restored callback: {e}")
-
-            elif not is_available and self._sql_available:
-                # Connection lost
-                logger.warning("⚠️ SQL Server connection lost")
-                self._sql_available = False
-                self._stats["connection_lost"] += 1
-
-                # Stop sync service
-                if self._sync_service:
-                    await self._sync_service.stop()
-
-                # Callback
-                if self._on_connection_lost:
-                    try:
-                        await self._on_connection_lost()
-                    except Exception as e:
-                        logger.error(f"Error in connection lost callback: {e}")
-
+            await self._handle_connection_state_change(is_available)
         except Exception as e:
             logger.error(f"Error checking SQL Server connection: {e}")
             if self._sql_available:
                 self._sql_available = False
                 self._stats["connection_lost"] += 1
+
+    async def _handle_connection_state_change(self, is_available: bool) -> None:
+        """Handle SQL Server connection state changes."""
+        if is_available and not self._sql_available:
+            await self._handle_connection_restored()
+        elif not is_available and self._sql_available:
+            await self._handle_connection_lost()
+
+    async def _handle_connection_restored(self) -> None:
+        """Handle connection restored event."""
+        logger.info("✅ SQL Server connection restored - triggering sync")
+        self._sql_available = True
+        self._stats["connection_restored"] += 1
+        self._stats["last_connection_time"] = datetime.utcnow().isoformat()
+
+        await self._trigger_sync()
+
+        if self._on_connection_restored:
+            try:
+                await self._on_connection_restored()
+            except Exception as e:
+                logger.error(f"Error in connection restored callback: {e}")
+
+    async def _handle_connection_lost(self) -> None:
+        """Handle connection lost event."""
+        logger.warning("⚠️ SQL Server connection lost")
+        self._sql_available = False
+        self._stats["connection_lost"] += 1
+
+        if self._sync_service:
+            await self._sync_service.stop()
+
+        if self._on_connection_lost:
+            try:
+                await self._on_connection_lost()
+            except Exception as e:
+                logger.error(f"Error in connection lost callback: {e}")
 
     async def _trigger_sync(self):
         """Trigger sync from SQL Server to MongoDB"""
@@ -185,9 +186,7 @@ class AutoSyncManager:
 
         # Check if enough time has passed since last sync
         if self._last_sync_attempt:
-            time_since_last = (
-                datetime.utcnow() - self._last_sync_attempt
-            ).total_seconds()
+            time_since_last = (datetime.utcnow() - self._last_sync_attempt).total_seconds()
             if time_since_last < self.sync_interval:
                 logger.info(
                     f"Sync skipped - only {time_since_last:.0f}s since last sync (interval: {self.sync_interval}s)"
@@ -247,9 +246,7 @@ class AutoSyncManager:
             "sql_available": self._sql_available,
             "sync_in_progress": self._sync_in_progress,
             "last_connection_check": (
-                self._last_connection_check.isoformat()
-                if self._last_connection_check
-                else None
+                self._last_connection_check.isoformat() if self._last_connection_check else None
             ),
             "last_sync_attempt": (
                 self._last_sync_attempt.isoformat() if self._last_sync_attempt else None

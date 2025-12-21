@@ -14,6 +14,47 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
+def _build_error_filter(
+    severity: Optional[str],
+    error_type: Optional[str],
+    endpoint: Optional[str],
+    user: Optional[str],
+    resolved: Optional[bool],
+    start_date: Optional[datetime],
+    end_date: Optional[datetime],
+) -> dict[str, Any]:
+    """Build MongoDB filter query for error logs."""
+    filter_query: dict[str, Any] = {}
+
+    if severity:
+        filter_query["severity"] = severity
+    if error_type:
+        filter_query["error_type"] = error_type
+    if endpoint:
+        filter_query["endpoint"] = endpoint
+    if user:
+        filter_query["user"] = user
+    if resolved is not None:
+        filter_query["resolved"] = resolved
+
+    if start_date or end_date:
+        filter_query["timestamp"] = {}
+        if start_date:
+            filter_query["timestamp"]["$gte"] = start_date
+        if end_date:
+            filter_query["timestamp"]["$lte"] = end_date
+
+    return filter_query
+
+
+def _process_error_for_response(error: dict[str, Any]) -> None:
+    """Process error document for API response (in-place modification)."""
+    error["id"] = str(error["_id"])
+    del error["_id"]
+    if error.get("stack_trace") and len(error["stack_trace"]) > 500:
+        error["stack_trace_preview"] = error["stack_trace"][:500] + "..."
+
+
 class ErrorLog(BaseModel):
     """Error log entry model"""
 
@@ -100,9 +141,7 @@ class ErrorLogService:
             if include_stack_trace:
                 try:
                     stack_trace = "".join(
-                        traceback.format_exception(
-                            type(error), error, error.__traceback__
-                        )
+                        traceback.format_exception(type(error), error, error.__traceback__)
                     )
                 except Exception:
                     stack_trace = traceback.format_exc()
@@ -233,48 +272,20 @@ class ErrorLogService:
             Dictionary with errors and pagination info
         """
         try:
-            # Build filter query
-            filter_query = {}
+            filter_query = _build_error_filter(
+                severity, error_type, endpoint, user, resolved, start_date, end_date
+            )
 
-            if severity:
-                filter_query["severity"] = severity
-            if error_type:
-                filter_query["error_type"] = error_type
-            if endpoint:
-                filter_query["endpoint"] = endpoint
-            if user:
-                filter_query["user"] = user
-            if resolved is not None:
-                filter_query["resolved"] = resolved
-            if start_date or end_date:
-                filter_query["timestamp"] = {}
-                if start_date:
-                    filter_query["timestamp"]["$gte"] = start_date
-                if end_date:
-                    filter_query["timestamp"]["$lte"] = end_date
-
-            # Count total
             total = await self.collection.count_documents(filter_query)
-
-            # Calculate pagination
             skip = (page - 1) * page_size
 
-            # Fetch errors
             cursor = (
-                self.collection.find(filter_query)
-                .sort("timestamp", -1)
-                .skip(skip)
-                .limit(page_size)
+                self.collection.find(filter_query).sort("timestamp", -1).skip(skip).limit(page_size)
             )
             errors = await cursor.to_list(page_size)
 
-            # Convert ObjectId to string and clean up
             for error in errors:
-                error["id"] = str(error["_id"])
-                del error["_id"]
-                # Truncate stack trace for list view (full trace available in detail view)
-                if error.get("stack_trace") and len(error["stack_trace"]) > 500:
-                    error["stack_trace_preview"] = error["stack_trace"][:500] + "..."
+                _process_error_for_response(error)
 
             return {
                 "errors": errors,
@@ -354,9 +365,7 @@ class ErrorLogService:
             warning_count = await self.collection.count_documents(
                 {**filter_query, "severity": "warning"}
             )
-            info_count = await self.collection.count_documents(
-                {**filter_query, "severity": "info"}
-            )
+            info_count = await self.collection.count_documents({**filter_query, "severity": "info"})
 
             # Unresolved errors
             unresolved_count = await self.collection.count_documents(
@@ -410,12 +419,10 @@ class ErrorLogService:
                 "unresolved": unresolved_count,
                 "recent_24h": recent_count,
                 "top_error_types": [
-                    {"type": item["_id"], "count": item["count"]}
-                    for item in top_error_types
+                    {"type": item["_id"], "count": item["count"]} for item in top_error_types
                 ],
                 "top_endpoints": [
-                    {"endpoint": item["_id"], "count": item["count"]}
-                    for item in top_endpoints
+                    {"endpoint": item["_id"], "count": item["count"]} for item in top_endpoints
                 ],
             }
         except Exception as e:

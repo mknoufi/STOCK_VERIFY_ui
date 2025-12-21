@@ -181,6 +181,95 @@ async def update_item_master(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+def _calculate_variance(request: VerificationRequest, system_qty: float) -> Optional[float]:
+    """Calculates the variance based on verified and damaged quantities."""
+    if request.verified_qty is not None:
+        total_assets = request.verified_qty + (request.damaged_qty or 0.0)
+        return total_assets - system_qty
+    return None
+
+
+def _build_item_update_doc(
+    request: VerificationRequest, current_user: dict, existing_item: dict
+) -> dict[str, Any]:
+    """Builds the update document for the erp_items collection."""
+    update_fields = {
+        "verified": request.verified,
+        "verified_by": current_user["username"],
+        "verified_at": datetime.utcnow(),
+        "last_scanned_at": datetime.utcnow(),
+    }
+
+    if request.verified_qty is not None:
+        update_fields["verified_qty"] = request.verified_qty
+        update_fields["variance"] = _calculate_variance(
+            request, existing_item.get("stock_qty", 0.0)
+        )
+
+    # Map request fields to update_fields, handling None values
+    field_mapping = {
+        "damaged_qty": "damaged_qty",
+        "non_returnable_damaged_qty": "non_returnable_damaged_qty",
+        "item_condition": "item_condition",
+        "serial_number": "serial_number",
+        "is_serialized": "is_serialized",
+        "notes": "verification_notes",
+        "session_id": "session_id",
+    }
+
+    for req_field, doc_field in field_mapping.items():
+        req_value = getattr(request, req_field)
+        if req_value is not None:  # Check for None explicitly, as 0.0 or False are valid
+            update_fields[doc_field] = req_value
+
+    # Special handling for serial_number to set is_serialized
+    if request.serial_number:
+        update_fields["is_serialized"] = True
+
+    # Special handling for floor and rack
+    if request.floor:
+        update_fields["verified_floor"] = request.floor
+        if existing_item.get("floor") in (None, ""):
+            update_fields["floor"] = request.floor
+    if request.rack:
+        update_fields["verified_rack"] = request.rack
+        if existing_item.get("rack") in (None, ""):
+            update_fields["rack"] = request.rack
+
+    return {"$set": update_fields}
+
+
+def _build_verification_log_doc(
+    request: VerificationRequest,
+    current_user: dict,
+    item: dict,
+    variance: Optional[float],
+    is_serialized_from_update: Optional[bool],
+) -> dict[str, Any]:
+    """Builds the document for verification_logs and item_variances collections."""
+    return {
+        "item_code": item.get("item_code", ""),
+        "item_name": item.get("item_name", ""),
+        "system_qty": item.get("stock_qty", 0.0),
+        "verified_qty": request.verified_qty,
+        "damaged_qty": request.damaged_qty,
+        "non_returnable_damaged_qty": request.non_returnable_damaged_qty,
+        "variance": variance,
+        "verified_by": current_user["username"],
+        "verified_at": datetime.utcnow(),
+        "category": item.get("category", ""),
+        "subcategory": item.get("subcategory", ""),
+        "floor": request.floor or item.get("floor", ""),
+        "rack": request.rack or item.get("rack", ""),
+        "warehouse": item.get("warehouse", ""),
+        "session_id": request.session_id,
+        "count_line_id": request.count_line_id,
+        "item_condition": request.item_condition,
+        "serial_number": request.serial_number,
+        "is_serialized": is_serialized_from_update,
+    }
+
+
 @verification_router.patch("/{item_code}/verify")
 async def verify_item(
     item_code: str,
@@ -191,97 +280,27 @@ async def verify_item(
     Mark an item as verified/unverified with user tracking and timestamp
     """
     try:
-        # Get current item
         item = await db.erp_items.find_one({"item_code": item_code})
         if not item:
             raise HTTPException(status_code=404, detail=f"Item {item_code} not found")
 
-        # Calculate variance if verified_qty provided
-        # Variance = (Verified/Good + Returnable Damage) - System Qty
-        variance = None
-        if request.verified_qty is not None:
-            system_qty = item.get("stock_qty", 0.0)
-            total_assets = request.verified_qty + (request.damaged_qty or 0.0)
-            variance = total_assets - system_qty
-
-        # Update item with verification data
-        update_doc = {
-            "$set": {
-                "verified": request.verified,
-                "verified_by": current_user["username"],
-                "verified_at": datetime.utcnow(),
-                "last_scanned_at": datetime.utcnow(),
-            }
-        }
-
-        if request.verified_qty is not None:
-            update_doc["$set"]["verified_qty"] = request.verified_qty
-            update_doc["$set"]["variance"] = variance
-
-        # New fields
-        if request.damaged_qty is not None:
-            update_doc["$set"]["damaged_qty"] = request.damaged_qty
-        if request.non_returnable_damaged_qty is not None:
-            update_doc["$set"]["non_returnable_damaged_qty"] = (
-                request.non_returnable_damaged_qty
-            )
-        if request.item_condition:
-            update_doc["$set"]["item_condition"] = request.item_condition
-        if request.serial_number:
-            update_doc["$set"]["serial_number"] = request.serial_number
-            update_doc["$set"]["is_serialized"] = True
-        if request.is_serialized is not None:
-            update_doc["$set"]["is_serialized"] = request.is_serialized
-        if request.floor:
-            update_doc["$set"]["verified_floor"] = request.floor
-            if item.get("floor") in (None, ""):
-                update_doc["$set"]["floor"] = request.floor
-        if request.rack:
-            update_doc["$set"]["verified_rack"] = request.rack
-            if item.get("rack") in (None, ""):
-                update_doc["$set"]["rack"] = request.rack
-        if request.session_id:
-            update_doc["$set"]["session_id"] = request.session_id
-
-        if request.notes:
-            update_doc["$set"]["verification_notes"] = request.notes
+        variance = _calculate_variance(request, item.get("stock_qty", 0.0))
+        update_doc = _build_item_update_doc(request, current_user, item)
 
         await db.erp_items.update_one({"item_code": item_code}, update_doc)
 
-        # Create variance record if there's a variance OR if we are just recording a verification
-        # We should probably record every verification event now, not just variances,
-        # to track the "Session" progress.
+        # Get the actual is_serialized value that was set in the update_doc
+        is_serialized_from_update = update_doc["$set"].get("is_serialized")
 
-        verification_log = {
-            "item_code": item_code,
-            "item_name": item.get("item_name", ""),
-            "system_qty": item.get("stock_qty", 0.0),
-            "verified_qty": request.verified_qty,
-            "damaged_qty": request.damaged_qty,
-            "non_returnable_damaged_qty": request.non_returnable_damaged_qty,
-            "variance": variance,
-            "verified_by": current_user["username"],
-            "verified_at": datetime.utcnow(),
-            "category": item.get("category", ""),
-            "subcategory": item.get("subcategory", ""),
-            "floor": request.floor or item.get("floor", ""),
-            "rack": request.rack or item.get("rack", ""),
-            "warehouse": item.get("warehouse", ""),
-            "session_id": request.session_id,
-            "count_line_id": request.count_line_id,
-            "item_condition": request.item_condition,
-            "serial_number": request.serial_number,
-            "is_serialized": update_doc["$set"].get("is_serialized"),
-        }
+        verification_log = _build_verification_log_doc(
+            request, current_user, item, variance, is_serialized_from_update
+        )
 
-        # Insert into verification_logs (new collection for full history)
         await db.verification_logs.insert_one(verification_log)
 
-        # Maintain legacy variance collection for backward compatibility if variance exists
         if variance is not None and variance != 0:
             await db.item_variances.insert_one(verification_log)
 
-        # Get updated item
         updated_item = await db.erp_items.find_one({"item_code": item_code})
         updated_item["_id"] = str(updated_item["_id"])
 
@@ -332,7 +351,7 @@ async def get_filtered_items(
         verified_filter["verified"] = True
 
         items_task = (
-            db.erp_items.find(filter_query)
+            db.erp_items.find(filter_query, {"_id": 0})  # Added projection to exclude _id
             .skip(skip)
             .limit(limit)
             .to_list(length=limit)
@@ -378,6 +397,7 @@ async def export_items_csv(
     warehouse: Optional[str] = Query(None),
     verified: Optional[bool] = Query(None),
     search: Optional[str] = Query(None),
+    max_rows: int = Query(10000, ge=1, le=100000, description="Maximum rows to export"),
     current_user: dict = Depends(get_current_user),
 ):
     """
@@ -394,12 +414,7 @@ async def export_items_csv(
             search=search,
         )
 
-        # Get all matching items
-        cursor = db.erp_items.find(filter_query)
-        items = await cursor.to_list(length=None)
-
-        # Create CSV in memory
-        output = io.StringIO()
+        # Define CSV fieldnames
         fieldnames = [
             "item_code",
             "item_name",
@@ -417,39 +432,70 @@ async def export_items_csv(
             "verified_by",
             "verified_at",
             "last_scanned_at",
+            "verified_qty",
+            "damaged_qty",
+            "non_returnable_damaged_qty",
+            "variance",
+            "item_condition",
+            "serial_number",
+            "is_serialized",
+            "session_id",
+            "verification_notes",
         ]
 
-        writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
-        writer.writeheader()
+        async def generate_csv_rows():
+            # Create a StringIO object to write CSV data to
+            output = io.StringIO()
+            writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
+            writer.writeheader()
+            yield output.getvalue()  # Yield header row
+            output.seek(0)
+            output.truncate(0)
 
-        for item in items:
-            row = {
-                "item_code": item.get("item_code", ""),
-                "item_name": item.get("item_name", ""),
-                "barcode": item.get("barcode", ""),
-                "stock_qty": item.get("stock_qty", 0.0),
-                "mrp": item.get("mrp", 0.0),
-                "category": item.get("category", ""),
-                "subcategory": item.get("subcategory", ""),
-                "uom_code": item.get("uom_code", ""),
-                "uom_name": item.get("uom_name", ""),
-                "floor": item.get("floor", ""),
-                "rack": item.get("rack", ""),
-                "warehouse": item.get("warehouse", ""),
-                "verified": "Yes" if item.get("verified", False) else "No",
-                "verified_by": item.get("verified_by", ""),
-                "verified_at": serialize_mongo_datetime(item.get("verified_at")),
-                "last_scanned_at": serialize_mongo_datetime(
-                    item.get("last_scanned_at")
-                ),
-            }
-            writer.writerow(row)
+            # Get all matching items with a limit
+            cursor = db.erp_items.find(filter_query).limit(max_rows)
 
-        output.seek(0)
+            count = 0
+            async for item in cursor:
+                if count >= max_rows:
+                    break
+                row = {
+                    "item_code": item.get("item_code", ""),
+                    "item_name": item.get("item_name", ""),
+                    "barcode": item.get("barcode", ""),
+                    "stock_qty": item.get("stock_qty", 0.0),
+                    "mrp": item.get("mrp", 0.0),
+                    "category": item.get("category", ""),
+                    "subcategory": item.get("subcategory", ""),
+                    "uom_code": item.get("uom_code", ""),
+                    "uom_name": item.get("uom_name", ""),
+                    "floor": item.get("floor", ""),
+                    "rack": item.get("rack", ""),
+                    "warehouse": item.get("warehouse", ""),
+                    "verified": "Yes" if item.get("verified", False) else "No",
+                    "verified_by": item.get("verified_by", ""),
+                    "verified_at": serialize_mongo_datetime(item.get("verified_at")),
+                    "last_scanned_at": serialize_mongo_datetime(item.get("last_scanned_at")),
+                    "verified_qty": item.get("verified_qty", 0.0),
+                    "damaged_qty": item.get("damaged_qty", 0.0),
+                    "non_returnable_damaged_qty": item.get("non_returnable_damaged_qty", 0.0),
+                    "variance": item.get("variance", 0.0),
+                    "item_condition": item.get("item_condition", ""),
+                    "serial_number": item.get("serial_number", ""),
+                    "is_serialized": ("Yes" if item.get("is_serialized", False) else "No"),
+                    "session_id": item.get("session_id", ""),
+                    "verification_notes": item.get("verification_notes", ""),
+                }
+                writer.writerow(row)
+                yield output.getvalue()  # Yield the current row
+                output.seek(0)
+                output.truncate(0)  # Clear the buffer for the next row
+                count += 1
+
         filename = f"items_export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
 
         return StreamingResponse(
-            iter([output.getvalue()]),
+            generate_csv_rows(),
             media_type="text/csv",
             headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
@@ -495,10 +541,7 @@ async def get_variances(
 
         # Get variances
         cursor = (
-            db.item_variances.find(filter_query)
-            .sort("verified_at", -1)
-            .skip(skip)
-            .limit(limit)
+            db.item_variances.find(filter_query).sort("verified_at", -1).skip(skip).limit(limit)
         )
         variances = await cursor.to_list(length=limit)
 
@@ -521,9 +564,7 @@ async def get_variances(
 
     except Exception as e:
         logger.error(f"Error getting variances: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get variances: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get variances: {str(e)}")
 
 
 @verification_router.get("/live/users")
@@ -572,9 +613,7 @@ async def get_live_users(current_user: dict = Depends(get_current_user)):
 
     except Exception as e:
         logger.error(f"Error getting live users: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get live users: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get live users: {str(e)}")
 
 
 @verification_router.get("/live/verifications")
@@ -608,9 +647,7 @@ async def get_live_verifications(
                     "item_name": item.get("item_name", ""),
                     "verified_by": item.get("verified_by", ""),
                     "verified_at": (
-                        item.get("verified_at").isoformat()
-                        if item.get("verified_at")
-                        else None
+                        item.get("verified_at").isoformat() if item.get("verified_at") else None
                     ),
                     "floor": item.get("floor", ""),
                     "rack": item.get("rack", ""),
@@ -623,6 +660,4 @@ async def get_live_verifications(
 
     except Exception as e:
         logger.error(f"Error getting live verifications: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get live verifications: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get live verifications: {str(e)}")

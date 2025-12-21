@@ -188,3 +188,6 @@ expo-new
 .cursor/mcp.json
 .git_backup_*
 backend/venv_test/
+
+# Lint reports
+**/lint-output.json

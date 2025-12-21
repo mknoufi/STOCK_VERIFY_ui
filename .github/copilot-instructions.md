@@ -6,14 +6,14 @@ These rules help AI coding agents work productively and safely in this repo. Foc
 - Backend: FastAPI (Python 3.10+), MongoDB primary store, read‑only SQL Server via pyodbc.
 - Frontend: React Native + Expo (TypeScript) with file‑based routing and Zustand.
 - Default local ports: backend `8001`, Expo dev (`8081`, `19000-19002`, `19006`), Docker frontend `3000`.
-- Core files: `backend/server.py`, `backend/config.py`, `backend/db_mapping_config.py`, `backend/api_mapping.py`.
+- Core files: `backend/server.py`, `backend/config.py`, `backend/db_mapping_config.py`, `backend/api/mapping_api.py`.
 
 ## Architecture Essentials
 - Multi‑DB: MongoDB holds app state; SQL Server is read‑only ERP source. Keep writes in Mongo; use SQL only for lookups/sync.
 - Auth: JWT everywhere. Backends enforce `Authorization: Bearer ...` in `/api/*` routes. Use `Depends(get_current_user)` for new protected routes.
 - CORS: Do not use wildcard. Configure via env `CORS_ALLOW_ORIGINS` (comma‑separated) or dev defaults in `server.py`.
 - Dynamic systems: Dynamic fields and reports are first‑class (see `DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md`). Don’t hard‑code schema where dynamic config exists.
-- Mapping: SQL mapping lives in `backend/db_mapping_config.py`; discovery/test endpoints in `backend/api_mapping.py` under `/api/mapping`.
+- Mapping: SQL mapping lives in `backend/db_mapping_config.py`; discovery/test endpoints in `backend/api/mapping_api.py` under `/api/mapping`.
 
 ## Run & Debug
 - Easiest start (macOS): `./start.sh` (spawns two Terminal tabs; backend `8001`). Stop with `./stop.sh`.

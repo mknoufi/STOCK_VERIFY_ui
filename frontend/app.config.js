@@ -22,7 +22,13 @@ function getBackendUrl() {
   const DEFAULT_PORT = "8001";
   let backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-  // 1. Try to read from backend_port.json (Source of Truth)
+  // 1. If env var is set, use it (Highest Priority - Docker/CI)
+  if (backendUrl) {
+    console.log(`[Expo Config] Using Backend URL from Env: ${backendUrl}`);
+    return backendUrl;
+  }
+
+  // 2. Try to read from backend_port.json (Local Development Source of Truth)
   try {
     const backendPortPath = path.resolve(__dirname, "../backend_port.json");
     if (fs.existsSync(backendPortPath)) {
@@ -44,12 +50,6 @@ function getBackendUrl() {
     }
   } catch (e) {
     console.log("[Expo Config] Could not read backend_port.json");
-  }
-
-  // 2. If env var is set, use it
-  if (backendUrl) {
-    console.log(`[Expo Config] Using Backend URL from Env: ${backendUrl}`);
-    return backendUrl;
   }
 
   // 3. Fallback to auto-detection

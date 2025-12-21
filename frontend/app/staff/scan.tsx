@@ -24,6 +24,7 @@ import {
   TextInput,
   Dimensions,
   ActivityIndicator,
+  Keyboard,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as Haptics from "expo-haptics";
@@ -72,6 +73,13 @@ export default function ScanScreen() {
   const { sessionType } = useScanSessionStore();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
+
+  // Multi-read validation for accurate scanning
+  const scanBufferRef = useRef<{ code: string; count: number; timestamp: number }[]>([]);
+  const SCAN_CONFIDENCE_THRESHOLD = 2; // Require 2 consistent reads
+  const SCAN_BUFFER_TIMEOUT = 1500; // Clear buffer after 1.5s of no scans
+  const SCAN_BUFFER_MAX_SIZE = 5; // Keep last 5 reads
+
   // States
   const [isScanning, setIsScanning] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,7 +109,7 @@ export default function ScanScreen() {
   }, []);
 
   const handleSearch = useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
+    if (!query || query.length < 3) {
       setSearchResults([]);
       setShowResults(false);
       return;
@@ -224,19 +232,68 @@ export default function ScanScreen() {
       return;
     }
     setScanned(false); // Reset scanned state when opening camera
+    scanBufferRef.current = []; // Clear scan buffer for fresh start
     setIsScanning(true);
   };
 
   const handleBarcodeScan = async ({ data }: { data: string }) => {
     if (scanned) return; // Prevent multiple scans
-    setScanned(true); // Mark as scanned
+
+    const now = Date.now();
+    const trimmedData = data.trim();
+
+    // Clean old entries from buffer (older than timeout)
+    scanBufferRef.current = scanBufferRef.current.filter(
+      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT
+    );
+
+    // Find existing entry for this barcode
+    const existingIndex = scanBufferRef.current.findIndex(
+      (entry) => entry.code === trimmedData
+    );
+
+    if (existingIndex >= 0 && scanBufferRef.current[existingIndex]) {
+      // Increment count for existing barcode
+      scanBufferRef.current[existingIndex]!.count += 1;
+      scanBufferRef.current[existingIndex]!.timestamp = now;
+    } else {
+      // Add new barcode to buffer
+      scanBufferRef.current.push({
+        code: trimmedData,
+        count: 1,
+        timestamp: now,
+      });
+
+      // Keep buffer size manageable
+      if (scanBufferRef.current.length > SCAN_BUFFER_MAX_SIZE) {
+        scanBufferRef.current.shift();
+      }
+    }
+
+    // Find the barcode with highest confidence (most reads)
+    const confident = scanBufferRef.current.find(
+      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD
+    );
+
+    // Only proceed if we have confident read
+    if (!confident) {
+      // Light haptic to indicate scan detected but not yet confirmed
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      return;
+    }
+
+    // We have a confident scan - proceed
+    setScanned(true);
+    scanBufferRef.current = []; // Clear buffer after successful scan
 
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
 
     // Deduplication check
-    const { isDuplicate } = scanDeduplicationService.checkDuplicate(data);
+    const { isDuplicate } = scanDeduplicationService.checkDuplicate(confident.code);
     if (isDuplicate) {
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -248,7 +305,7 @@ export default function ScanScreen() {
     }
 
     setIsScanning(false);
-    await handleLookup(data);
+    await handleLookup(confident.code);
   };
 
   const handleLookup = async (barcode: string) => {
@@ -327,14 +384,23 @@ export default function ScanScreen() {
 
   const handleManualSearch = () => {
     if (searchQuery.trim()) {
-      handleLookup(searchQuery);
+      // Only trigger direct lookup if it looks like a barcode (starts with 51, 52, 53)
+      // Otherwise, just let the search results stay (don't auto-select)
+      if (searchQuery.startsWith("51") || searchQuery.startsWith("52") || searchQuery.startsWith("53")) {
+        handleLookup(searchQuery);
+      } else {
+        // Ensure results are shown (they should be from debounce)
+        Keyboard.dismiss();
+      }
     }
   };
 
-  const handleSearchResultPress = (item: any) => {
-    setShowResults(false);
-    // Prefer barcode, then item_code
-    handleLookup(item.barcode || item.item_code);
+  const handleSearchResultPress = async (item: any) => {
+    const code = item.barcode || item.item_code;
+    if (!code) return;
+    // Keep results visible until lookup finishes to avoid layout jump at the bottom
+    await handleLookup(code);
+    requestAnimationFrame(() => setShowResults(false));
   };
 
   const handleRecentItemPress = (item: any) => {
@@ -412,7 +478,20 @@ export default function ScanScreen() {
           style={styles.camera}
           onBarcodeScanned={scanned ? undefined : handleBarcodeScan}
           barcodeScannerSettings={{
-            barcodeTypes: ["ean13", "ean8", "qr", "code128"],
+            barcodeTypes: [
+              // 1D Barcodes - Full support
+              "ean13",
+              "ean8",
+              "upc_a",
+              "upc_e",
+              "code128",
+              "code39",
+              "code93",
+              "codabar",
+              "itf14",
+              // 2D Codes
+              "qr",
+            ],
           }}
         >
           {/* AR-style overlay */}
@@ -586,10 +665,15 @@ export default function ScanScreen() {
                       style={{ padding: 10 }}
                     />
                   ) : searchResults.length > 0 ? (
-                    <View style={styles.resultsList}>
-                      {searchResults.slice(0, 5).map((item) => (
+                    <ScrollView
+                      style={styles.resultsList}
+                      contentContainerStyle={styles.resultsListContent}
+                      keyboardShouldPersistTaps="handled"
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {searchResults.map((item) => (
                         <TouchableOpacity
-                          key={item.id || item.item_code}
+                          key={item.barcode || item.item_code || item.id}
                           style={styles.resultItem}
                           onPress={() => handleSearchResultPress(item)}
                         >
@@ -605,7 +689,7 @@ export default function ScanScreen() {
                               {item.item_name || item.name}
                             </Text>
                             <Text style={styles.resultCode}>
-                              {item.item_code}
+                              {item.barcode || item.item_code || "—"}
                             </Text>
                           </View>
                           <Ionicons
@@ -615,7 +699,7 @@ export default function ScanScreen() {
                           />
                         </TouchableOpacity>
                       ))}
-                    </View>
+                    </ScrollView>
                   ) : (
                     debouncedSearchQuery.length >= 2 && (
                       <View style={styles.semanticSearchContainer}>
@@ -983,6 +1067,9 @@ const styles = StyleSheet.create({
   },
   resultsList: {
     maxHeight: 200,
+  },
+  resultsListContent: {
+    paddingBottom: 4,
   },
   resultItem: {
     flexDirection: "row",

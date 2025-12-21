@@ -236,7 +236,7 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 };
 
 // Helper function for repeat animation (simplified)
-const withRepeat = (animation: any, times: number, reverse: boolean) => {
+const withRepeat = (animation: any, _times: number, _reverse: boolean) => {
   // This is a simplified version - in production, use reanimated's withRepeat
   return animation;
 };

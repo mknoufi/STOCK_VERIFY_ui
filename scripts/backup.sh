@@ -25,15 +25,24 @@ BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
 echo "Starting MongoDB backup: ${BACKUP_NAME}"
 
 # Perform mongodump
-mongodump \
-    --host="${MONGO_HOST}" \
-    --port="${MONGO_PORT}" \
-    --username="${MONGO_USERNAME}" \
-    --password="${MONGO_PASSWORD}" \
-    --authenticationDatabase=admin \
-    --db="${MONGO_DATABASE}" \
-    --out="${BACKUP_PATH}" \
-    --gzip
+if [ -n "$MONGO_PASSWORD" ]; then
+    mongodump \
+        --host="${MONGO_HOST}" \
+        --port="${MONGO_PORT}" \
+        --username="${MONGO_USERNAME}" \
+        --password="${MONGO_PASSWORD}" \
+        --authenticationDatabase=admin \
+        --db="${MONGO_DATABASE}" \
+        --out="${BACKUP_PATH}" \
+        --gzip
+else
+    mongodump \
+        --host="${MONGO_HOST}" \
+        --port="${MONGO_PORT}" \
+        --db="${MONGO_DATABASE}" \
+        --out="${BACKUP_PATH}" \
+        --gzip
+fi
 
 # Check if backup was successful
 if [ $? -eq 0 ]; then

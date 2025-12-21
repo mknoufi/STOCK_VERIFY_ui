@@ -30,9 +30,7 @@ try:
         bcrypt.checkpw(b"test", test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(
-            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
-        )
+        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
@@ -92,9 +90,7 @@ def _verify_bcrypt_fallback(password_bytes: bytes, hashed_password: str) -> bool
             logger.error(f"Password hash is not a string: {type(hashed_password)}")
             return False
     except ImportError:
-        logger.error(
-            "bcrypt module not available - password verification cannot proceed"
-        )
+        logger.error("bcrypt module not available - password verification cannot proceed")
         return False
     except Exception as e:
         logger.error(f"Direct bcrypt verification failed: {type(e).__name__}: {str(e)}")
@@ -106,9 +102,7 @@ def get_password_hash(password: str) -> str:
     return str(pwd_context.hash(password))
 
 
-def create_access_token(
-    data: dict[str, Any], secret_key: str = None, algorithm: str = None
-) -> str:
+def create_access_token(data: dict[str, Any], secret_key: str = None, algorithm: str = None) -> str:
     """Create a JWT access token from user data"""
     key = secret_key if secret_key else SECRET_KEY
     algo = algorithm if algorithm else ALGORITHM

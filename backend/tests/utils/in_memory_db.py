@@ -37,9 +37,7 @@ def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
     return True
 
 
-def _match_filter(
-    document: dict[str, Any], filter_query: dict[str, Optional[Any]]
-) -> bool:
+def _match_filter(document: dict[str, Any], filter_query: dict[str, Optional[Any]]) -> bool:
     """Basic Mongo-style filter matching."""
     if not filter_query:
         return True
@@ -96,9 +94,7 @@ class InMemoryCursor:
 
     def sort(self, key: str, direction: int) -> InMemoryCursor:
         reverse = direction < 0
-        self._documents.sort(
-            key=lambda doc: doc.get(key, datetime.min), reverse=reverse
-        )
+        self._documents.sort(key=lambda doc: doc.get(key, datetime.min), reverse=reverse)
         return self
 
     def skip(self, count: int) -> InMemoryCursor:
@@ -124,9 +120,7 @@ class InMemoryCollection:
     def _ensure_id(self, document: dict[str, Any]) -> None:
         document.setdefault("_id", uuid.uuid4().hex)
 
-    async def find_one(
-        self, filter: dict[str, Any], *args, **kwargs
-    ) -> dict[str, Optional[Any]]:
+    async def find_one(self, filter: dict[str, Any], *args, **kwargs) -> dict[str, Optional[Any]]:
         print(f"DEBUG: find_one called with {filter}")
         for doc in self._documents:
             if _match_filter(doc, filter):
@@ -135,9 +129,7 @@ class InMemoryCollection:
         print("DEBUG: find_one no match")
         return None
 
-    async def insert_one(
-        self, document: dict[str, Any], *args, **kwargs
-    ) -> InsertOneResult:
+    async def insert_one(self, document: dict[str, Any], *args, **kwargs) -> InsertOneResult:
         print("DEBUG: insert_one called")
         doc_copy = copy.deepcopy(document)
         self._ensure_id(doc_copy)
@@ -170,9 +162,7 @@ class InMemoryCollection:
             _apply_update(new_doc, update)
             self._ensure_id(new_doc)
             self._documents.append(new_doc)
-            return UpdateResult(
-                matched_count=0, modified_count=1, upserted_id=new_doc["_id"]
-            )
+            return UpdateResult(matched_count=0, modified_count=1, upserted_id=new_doc["_id"])
 
         return UpdateResult(matched_count=0, modified_count=0)
 
@@ -187,9 +177,7 @@ class InMemoryCollection:
         self._documents = to_keep
         return DeleteResult(deleted_count=deleted)
 
-    async def count_documents(
-        self, filter_query: dict[str, Optional[Any]] = None
-    ) -> int:
+    async def count_documents(self, filter_query: dict[str, Optional[Any]] = None) -> int:
         return sum(1 for doc in self._documents if _match_filter(doc, filter_query))
 
     def find(
@@ -230,6 +218,7 @@ class InMemoryDatabase:
         self.error_logs = InMemoryCollection()
         self.sessions = InMemoryCollection()
         self.count_lines = InMemoryCollection()
+        self.unknown_items = InMemoryCollection()
         self.erp_items = InMemoryCollection()
         self.erp_sync_metadata = InMemoryCollection()
         self.erp_config = InMemoryCollection()
@@ -248,16 +237,13 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     Patch the FastAPI server module to use an in-memory database and lightweight services.
     Returns the database instance for further customization in tests.
     """
+    from typing import cast
 
     import backend.server as server_module
     from backend.db.runtime import set_client, set_db
-    from backend.services.runtime import set_refresh_token_service
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     print("DEBUG: Imported server module")
-
-    from typing import cast
-
-    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     fake_db = InMemoryDatabase()
     monkeypatch.setattr(server_module, "db", fake_db)
@@ -265,6 +251,31 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     # Initialize runtime database reference for tests
     set_db(cast(AsyncIOMotorDatabase, fake_db))
     set_client(cast(AsyncIOMotorClient, fake_db.client))
+
+    # Setup core services
+    _setup_core_services(monkeypatch, fake_db, server_module)
+
+    # Setup mocked external services
+    _setup_mock_services(monkeypatch, server_module)
+
+    # Setup cache and Redis
+    fake_redis_service = _setup_cache_and_redis(monkeypatch, server_module)
+
+    # Initialize APIs
+    _initialize_apis(monkeypatch, fake_db, server_module, fake_redis_service)
+
+    # Setup auth and seed users
+    _setup_auth_and_seed_users(monkeypatch, fake_db, server_module)
+
+    return fake_db
+
+
+def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
+    """Setup core services like refresh tokens, activity logs, error logs."""
+    from typing import cast
+
+    from backend.services.runtime import set_refresh_token_service
+    from motor.motor_asyncio import AsyncIOMotorDatabase
 
     refresh_service = RefreshTokenService(
         cast(AsyncIOMotorDatabase, fake_db),
@@ -274,12 +285,8 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     server_module.refresh_token_service = refresh_service
     set_refresh_token_service(refresh_service)
 
-    server_module.activity_log_service = ActivityLogService(
-        cast(AsyncIOMotorDatabase, fake_db)
-    )
-    server_module.error_log_service = ErrorLogService(
-        cast(AsyncIOMotorDatabase, fake_db)
-    )
+    server_module.activity_log_service = ActivityLogService(cast(AsyncIOMotorDatabase, fake_db))
+    server_module.error_log_service = ErrorLogService(cast(AsyncIOMotorDatabase, fake_db))
 
     class _NoOpMigrationManager:
         async def ensure_indexes(self):
@@ -291,9 +298,12 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     monkeypatch.setattr(server_module, "migration_manager", _NoOpMigrationManager())
     monkeypatch.setenv("RATE_LIMIT_ENABLED", "false")
 
-    # Mock SQL Connector
+
+def _setup_mock_services(monkeypatch, server_module) -> None:
+    """Setup mocked SQL connector, health service, auto sync, and export service."""
     from unittest.mock import AsyncMock, MagicMock
 
+    # Mock SQL Connector
     mock_sql = MagicMock()
     mock_sql.connect.return_value = None
     mock_sql.test_connection.return_value = False
@@ -305,11 +315,7 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     mock_health.stop = MagicMock()
     mock_health.check_mongo_health = AsyncMock(return_value={"status": "healthy"})
     mock_health.check_sql_server_health = AsyncMock(return_value={"status": "healthy"})
-    # Patch the class
-    monkeypatch.setattr(
-        server_module, "DatabaseHealthService", MagicMock(return_value=mock_health)
-    )
-    # Patch the existing instance if it exists
+    monkeypatch.setattr(server_module, "DatabaseHealthService", MagicMock(return_value=mock_health))
     if hasattr(server_module, "database_health_service"):
         monkeypatch.setattr(server_module, "database_health_service", mock_health)
 
@@ -317,9 +323,7 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     mock_auto_sync = MagicMock()
     mock_auto_sync.start = AsyncMock()
     mock_auto_sync.stop = AsyncMock()
-    monkeypatch.setattr(
-        server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync)
-    )
+    monkeypatch.setattr(server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync))
     if hasattr(server_module, "auto_sync_manager"):
         monkeypatch.setattr(server_module, "auto_sync_manager", mock_auto_sync)
 
@@ -333,46 +337,68 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
         MagicMock(return_value=mock_export_service),
     )
     if hasattr(server_module, "scheduled_export_service"):
-        monkeypatch.setattr(
-            server_module, "scheduled_export_service", mock_export_service
-        )
+        monkeypatch.setattr(server_module, "scheduled_export_service", mock_export_service)
 
-    # Mock CacheService to avoid Redis connection attempts
+
+def _setup_cache_and_redis(monkeypatch, server_module) -> Any:
+    """Setup cache service and Redis mock."""
+    from unittest.mock import AsyncMock
+
     from backend.services.cache_service import CacheService
     from backend.services.runtime import set_cache_service
 
     mock_cache = CacheService(redis_url=None)  # Force in-memory
     mock_cache.initialize = AsyncMock()  # type: ignore
     monkeypatch.setattr(server_module, "cache_service", mock_cache)
-
-    # Initialize runtime cache service for tests
     set_cache_service(mock_cache)
 
-    # Manually initialize verification API since lifespan might not run
+    # Setup fake Redis service
+    from backend.services import redis_service as redis_module
+    from backend.services.redis_service import get_redis as redis_dependency
+
+    fake_redis_service = _FakeRedisService()
+
+    async def _override_get_redis():  # type: ignore
+        return fake_redis_service
+
+    monkeypatch.setattr(redis_module, "redis_service", fake_redis_service)
+    monkeypatch.setattr(redis_module, "get_redis", _override_get_redis)
+    server_module.app.dependency_overrides[redis_dependency] = _override_get_redis
+
+    return mock_cache
+
+
+def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None:
+    """Initialize all API modules with the fake database."""
+    from typing import cast
+
+    from backend.api.count_lines_api import init_count_lines_api
     from backend.api.erp_api import init_erp_api
     from backend.api.item_verification_api import init_verification_api
+    from backend.api.session_api import init_session_api
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     init_verification_api(cast(AsyncIOMotorDatabase, fake_db))
-    init_erp_api(cast(AsyncIOMotorDatabase, fake_db), mock_cache)
-
-    # Initialize Session and Count Lines APIs
-    from backend.api.count_lines_api import init_count_lines_api
-    from backend.api.session_api import init_session_api
+    init_erp_api(cast(AsyncIOMotorDatabase, fake_db), cache_service)
 
     # Patch the server module's database and client
     server_module.db = cast(AsyncIOMotorDatabase, fake_db)
     server_module.client = cast(AsyncIOMotorClient, fake_db.client)
 
     # Initialize APIs that depend on global db
-    init_session_api(
-        cast(AsyncIOMotorDatabase, fake_db), server_module.activity_log_service
-    )
+    init_session_api(cast(AsyncIOMotorDatabase, fake_db), server_module.activity_log_service)
     init_count_lines_api(server_module.activity_log_service)
 
+
+def _setup_auth_and_seed_users(monkeypatch, fake_db, server_module) -> None:
+    """Setup authentication overrides and seed default test users."""
+    from typing import cast
+
+    from backend.auth import dependencies as auth_deps_module
+    from motor.motor_asyncio import AsyncIOMotorDatabase
+
     # Patch server module's auth settings to match test env
-    server_module.SECRET_KEY = os.getenv(
-        "JWT_SECRET", "test-jwt-secret-key-for-testing-only"
-    )
+    server_module.SECRET_KEY = os.getenv("JWT_SECRET", "test-jwt-secret-key-for-testing-only")
     server_module.ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
     # Mock get_current_user to debug if it's even called
@@ -381,21 +407,12 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
         return {"username": "staff1", "role": "staff", "full_name": "Staff Member"}
 
     # Override both the server module's dependency and the auth module's dependency
-    server_module.app.dependency_overrides[server_module.get_current_user] = (
-        mock_get_current_user
-    )
-
-    from backend.auth import dependencies as auth_deps_module
-
+    server_module.app.dependency_overrides[server_module.get_current_user] = mock_get_current_user
     server_module.app.dependency_overrides[auth_deps_module.get_current_user] = (
         mock_get_current_user
     )
 
-    # Also patch the global variables in server module if they are used directly
-    # (They are used in get_current_user in server.py)
-
     # Initialize Auth Dependencies
-
     init_auth_dependencies(
         cast(AsyncIOMotorDatabase, fake_db),
         os.getenv("JWT_SECRET", "test-jwt-secret-key-for-testing-only"),
@@ -403,6 +420,12 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     )
 
     # Seed default users expected by various tests (staff1, supervisor, admin)
+    _seed_default_users(fake_db, server_module)
+
+
+def _seed_default_users(fake_db, server_module) -> None:
+    """Seed default test users."""
+
     def _seed_user(username: str, password: str, full_name: str, role: str):
         fake_db.users._documents.append(
             {
@@ -421,4 +444,96 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     _seed_user("supervisor", "super123", "Supervisor", "supervisor")
     _seed_user("admin", "admin123", "Administrator", "admin")
 
-    return fake_db
+
+class _FakeRedisService:
+    """Minimal Redis substitute for unit tests."""
+
+    def __init__(self) -> None:
+        self.is_connected = True
+
+        class _Client:
+            async def scan(self, *_args, **_kwargs):
+                return 0, []
+
+        self.client = _Client()
+
+    async def connect(self) -> None:
+        self.is_connected = True
+
+    async def disconnect(self) -> None:
+        self.is_connected = False
+
+    async def set(
+        self,
+        _key: str,
+        _value: Any,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        nx: bool = False,
+        xx: bool = False,
+    ) -> bool:
+        return True
+
+    async def get(self, _key: str) -> Optional[str]:
+        return None
+
+    async def delete(self, *_keys: str) -> int:
+        return 0
+
+    async def exists(self, *_keys: str) -> int:
+        return 0
+
+    async def expire(self, _key: str, _seconds: int) -> bool:
+        return True
+
+    async def ttl(self, _key: str) -> int:
+        return -1
+
+    async def incr(self, _key: str) -> int:
+        return 1
+
+    async def decr(self, _key: str) -> int:
+        return 0
+
+    async def hget(self, *_args, **_kwargs):
+        return None
+
+    async def hset(self, *_args, **_kwargs):
+        return 0
+
+    async def hgetall(self, *_args, **_kwargs):
+        return {}
+
+    async def hdel(self, *_args, **_kwargs):
+        return 0
+
+    async def sadd(self, *_args, **_kwargs):
+        return 0
+
+    async def smembers(self, *_args, **_kwargs):
+        return set()
+
+    async def srem(self, *_args, **_kwargs):
+        return 0
+
+    async def zadd(self, *_args, **_kwargs):
+        return 0
+
+    async def zrange(self, *_args, **_kwargs):
+        return []
+
+    async def publish(self, *_args, **_kwargs):
+        return 0
+
+    async def pipeline(self):  # pragma: no cover - simple stub
+        class _Pipeline:
+            async def hset(self, *_args, **_kwargs):
+                return self
+
+            async def expire(self, *_args, **_kwargs):
+                return self
+
+            async def execute(self):
+                return []
+
+        return _Pipeline()

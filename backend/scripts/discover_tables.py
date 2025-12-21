@@ -166,31 +166,25 @@ def get_sample_data(
         return f"Error: {e}"
 
 
-def main():
-    conn = connect()
-    if not conn:
-        return
+# Discovery search terms for Stock Counting domain
+_SEARCH_TERMS = [
+    "Stock",
+    "Item",
+    "Count",
+    "Onhand",
+    "OnHand",
+    "Batch",
+    "Lot",
+    "Inventory",
+    "Warehouse",
+    "BU",
+    "Document",
+]
 
-    print("\n" + "=" * 80)
-    print("🔍 DISCOVERING E_MART_KITCHEN_CARE DATABASE STRUCTURE")
-    print("=" * 80 + "\n")
 
-    # Search for relevant tables based on Stock Counting domain
-    search_terms = [
-        "Stock",
-        "Item",
-        "Count",
-        "Onhand",
-        "OnHand",
-        "Batch",
-        "Lot",
-        "Inventory",
-        "Warehouse",
-        "BU",
-        "Document",
-    ]
-
-    discovered_tables = {}
+def _discover_tables_by_terms(conn: pymssql.Connection, search_terms: list[str]) -> dict[str, dict]:
+    """Search for tables matching domain-specific terms."""
+    discovered_tables: dict[str, dict] = {}
 
     for term in search_terms:
         print(f"\n🔎 Searching for tables matching: '{term}'")
@@ -201,58 +195,81 @@ def main():
             for table in tables:
                 table_name = table["TABLE_NAME"]
                 schema = table["TABLE_SCHEMA"]
-
                 if table_name not in discovered_tables:
                     discovered_tables[table_name] = {
                         "schema": schema,
                         "type": table["TABLE_TYPE"],
                         "matched_terms": [],
                     }
-
                 discovered_tables[table_name]["matched_terms"].append(term)
                 print(f"  ✓ [{schema}].[{table_name}] ({table['TABLE_TYPE']})")
         else:
             print("  ⚠️  No tables found")
 
-    # Get detailed info for promising tables
-    print("\n\n" + "=" * 80)
-    print("📋 DETAILED TABLE ANALYSIS")
-    print("=" * 80)
+    return discovered_tables
 
+
+def _analyze_priority_tables(
+    conn: pymssql.Connection, discovered_tables: dict[str, dict]
+) -> list[str]:
+    """Analyze high-priority tables and print detailed info."""
     priority_tables = [
         t
         for t in discovered_tables.keys()
         if any(keyword in t.lower() for keyword in ["stock", "item", "count", "onhand"])
     ]
 
-    for table_name in sorted(priority_tables)[:10]:  # Top 10 most relevant
-        info = discovered_tables[table_name]
-        schema = info["schema"]
+    for table_name in sorted(priority_tables)[:10]:
+        _print_table_analysis(conn, table_name, discovered_tables[table_name])
 
-        print(f"\n\n📊 Table: [{schema}].[{table_name}]")
-        print(f"   Type: {info['type']}")
-        print(f"   Matched: {', '.join(info['matched_terms'])}")
-        print("\n   Columns:")
-        print("   " + "-" * 70)
+    return priority_tables
 
-        columns = get_table_columns(conn, table_name, schema)
-        for col in columns[:15]:  # First 15 columns
-            nullable = "NULL" if col["IS_NULLABLE"] == "YES" else "NOT NULL"
-            print(f"   • {col['COLUMN_NAME']:30} {col['DATA_TYPE']:15} {nullable}")
 
-        if len(columns) > 15:
-            print(f"   ... and {len(columns) - 15} more columns")
+def _print_table_analysis(conn: pymssql.Connection, table_name: str, info: dict) -> None:
+    """Print detailed analysis for a single table."""
+    schema = info["schema"]
+    print(f"\n\n📊 Table: [{schema}].[{table_name}]")
+    print(f"   Type: {info['type']}")
+    print(f"   Matched: {', '.join(info['matched_terms'])}")
+    print("\n   Columns:")
+    print("   " + "-" * 70)
 
-        print("\n   Sample Data (first 2 rows):")
-        print("   " + "-" * 70)
-        samples = get_sample_data(conn, table_name, schema, limit=2)
-        if isinstance(samples, list) and samples:
-            for i, row in enumerate(samples, 1):
-                print(f"   Row {i}:")
-                for key, value in list(row.items())[:5]:  # First 5 fields
-                    print(f"     {key}: {value}")
-        else:
-            print(f"   {samples}")
+    columns = get_table_columns(conn, table_name, schema)
+    for col in columns[:15]:
+        nullable = "NULL" if col["IS_NULLABLE"] == "YES" else "NOT NULL"
+        print(f"   • {col['COLUMN_NAME']:30} {col['DATA_TYPE']:15} {nullable}")
+
+    if len(columns) > 15:
+        print(f"   ... and {len(columns) - 15} more columns")
+
+    print("\n   Sample Data (first 2 rows):")
+    print("   " + "-" * 70)
+    samples = get_sample_data(conn, table_name, schema, limit=2)
+    if isinstance(samples, list) and samples:
+        for i, row in enumerate(samples, 1):
+            print(f"   Row {i}:")
+            for key, value in list(row.items())[:5]:
+                print(f"     {key}: {value}")
+    else:
+        print(f"   {samples}")
+
+
+def main():
+    conn = connect()
+    if not conn:
+        return
+
+    print("\n" + "=" * 80)
+    print("🔍 DISCOVERING E_MART_KITCHEN_CARE DATABASE STRUCTURE")
+    print("=" * 80 + "\n")
+
+    discovered_tables = _discover_tables_by_terms(conn, _SEARCH_TERMS)
+
+    print("\n\n" + "=" * 80)
+    print("📋 DETAILED TABLE ANALYSIS")
+    print("=" * 80)
+
+    priority_tables = _analyze_priority_tables(conn, discovered_tables)
 
     print("\n\n" + "=" * 80)
     print("✅ DISCOVERY COMPLETE")

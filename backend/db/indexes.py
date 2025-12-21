@@ -7,7 +7,9 @@ Optimized indexes for 20 concurrent users and fast queries
 # field_spec: List of (field, direction) tuples
 # options: Index options dict
 
-INDEXES: dict[str, list[tuple[list[tuple[str, int]], dict]]] = {
+from typing import Union
+
+INDEXES: dict[str, list[tuple[list[tuple[str, Union[int, str]]], dict]]] = {
     # Verification Records Collection
     "verification_records": [
         # Unique client record ID

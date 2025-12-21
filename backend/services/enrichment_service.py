@@ -13,6 +13,101 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 logger = logging.getLogger(__name__)
 
 
+# Validation helper functions
+def _validate_serial_number(value: str) -> Optional[str]:
+    """Validate serial number format."""
+    serial = str(value).strip()
+    if serial and not re.match(r"^[A-Z0-9\-]+$", serial, re.IGNORECASE):
+        return "Serial number must contain only letters, numbers, and hyphens"
+    return None
+
+
+def _validate_mrp(value: Any) -> Optional[str]:
+    """Validate MRP value."""
+    try:
+        mrp = float(value)
+        if mrp < 0:
+            return "MRP must be greater than or equal to 0"
+    except (ValueError, TypeError):
+        return "MRP must be a valid number"
+    return None
+
+
+def _validate_hsn_code(value: str) -> Optional[str]:
+    """Validate HSN code format (4 or 8 digits)."""
+    hsn = str(value).strip()
+    if hsn and not re.match(r"^\d{4}(\d{4})?$", hsn):
+        return "HSN code must be 4 or 8 digits"
+    return None
+
+
+def _validate_barcode(value: str) -> Optional[str]:
+    """Validate barcode format (8-13 digits)."""
+    barcode = str(value).strip()
+    if barcode and not re.match(r"^\d{8,13}$", barcode):
+        return "Barcode must be 8-13 digits"
+    return None
+
+
+def _validate_condition(value: str, valid_conditions: list[str]) -> Optional[str]:
+    """Validate condition value against allowed list."""
+    if value.lower() not in valid_conditions:
+        return f"Condition must be one of: {', '.join(valid_conditions)}"
+    return None
+
+
+# Field validators mapping
+_FIELD_VALIDATORS = {
+    "serial_number": _validate_serial_number,
+    "mrp": _validate_mrp,
+    "hsn_code": _validate_hsn_code,
+    "barcode": _validate_barcode,
+}
+
+_VALID_CONDITIONS = ["good", "damaged", "obsolete", "new"]
+_ENRICHABLE_FIELDS = [
+    "serial_number",
+    "mrp",
+    "hsn_code",
+    "barcode",
+    "location",
+    "condition",
+    "notes",
+]
+
+
+def _process_enrichment_fields(
+    enrichment_data: dict[str, Any],
+    existing_item: dict[str, Any],
+    update_fields: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Process enrichment fields and track corrections."""
+    corrections: dict[str, dict[str, Any]] = {}
+    for field, new_value in enrichment_data.items():
+        if field not in _ENRICHABLE_FIELDS:
+            continue
+        if new_value is None or not str(new_value).strip():
+            continue
+
+        old_value = existing_item.get(field)
+        update_fields[field] = new_value
+
+        # Track correction type
+        if old_value is None or old_value == "":
+            action = "added"
+        elif old_value != new_value:
+            action = "corrected"
+        else:
+            continue  # No change
+
+        corrections[field] = {
+            "old_value": old_value,
+            "new_value": new_value,
+            "action": action,
+        }
+    return corrections
+
+
 class EnrichmentService:
     """
     Service for managing item data enrichment and corrections
@@ -65,37 +160,9 @@ class EnrichmentService:
 
             # Build update document
             update_fields = {}
-            corrections = {}
 
             # Process each enrichment field
-            for field, new_value in enrichment_data.items():
-                if field in [
-                    "serial_number",
-                    "mrp",
-                    "hsn_code",
-                    "barcode",
-                    "location",
-                    "condition",
-                    "notes",
-                ]:
-                    old_value = existing_item.get(field)
-
-                    if new_value is not None and str(new_value).strip():
-                        update_fields[field] = new_value
-
-                        # Track correction type
-                        if old_value is None or old_value == "":
-                            corrections[field] = {
-                                "old_value": old_value,
-                                "new_value": new_value,
-                                "action": "added",
-                            }
-                        elif old_value != new_value:
-                            corrections[field] = {
-                                "old_value": old_value,
-                                "new_value": new_value,
-                                "action": "corrected",
-                            }
+            corrections = _process_enrichment_fields(enrichment_data, existing_item, update_fields)
 
             # Add enrichment metadata
             update_fields["last_enriched_at"] = datetime.utcnow()
@@ -166,42 +233,18 @@ class EnrichmentService:
         """
         errors = []
 
-        # Serial number validation
-        if "serial_number" in data and data["serial_number"]:
-            serial = str(data["serial_number"]).strip()
-            if serial and not re.match(r"^[A-Z0-9\-]+$", serial, re.IGNORECASE):
-                errors.append(
-                    "Serial number must contain only letters, numbers, and hyphens"
-                )
+        # Run field-specific validators
+        for field, validator in _FIELD_VALIDATORS.items():
+            if field in data and data[field] is not None:
+                error = validator(data[field])
+                if error:
+                    errors.append(error)
 
-        # MRP validation
-        if "mrp" in data and data["mrp"] is not None:
-            try:
-                mrp = float(data["mrp"])
-                if mrp < 0:
-                    errors.append("MRP must be greater than or equal to 0")
-            except (ValueError, TypeError):
-                errors.append("MRP must be a valid number")
-
-        # HSN code validation (4 or 8 digits)
-        if "hsn_code" in data and data["hsn_code"]:
-            hsn = str(data["hsn_code"]).strip()
-            if hsn and not re.match(r"^\d{4}(\d{4})?$", hsn):
-                errors.append("HSN code must be 4 or 8 digits")
-
-        # Barcode validation (EAN-13: 13 digits)
-        if "barcode" in data and data["barcode"]:
-            barcode = str(data["barcode"]).strip()
-            if barcode and not re.match(r"^\d{8,13}$", barcode):
-                errors.append("Barcode must be 8-13 digits")
-
-        # Condition validation
+        # Condition validation (special case with valid list)
         if "condition" in data and data["condition"]:
-            valid_conditions = ["good", "damaged", "obsolete", "new"]
-            if data["condition"].lower() not in valid_conditions:
-                errors.append(
-                    f"Condition must be one of: {', '.join(valid_conditions)}"
-                )
+            error = _validate_condition(data["condition"], _VALID_CONDITIONS)
+            if error:
+                errors.append(error)
 
         return {"is_valid": len(errors) == 0, "errors": errors}
 
@@ -316,9 +359,7 @@ class EnrichmentService:
 
         # Get overall data completeness
         total_items = await self.db.erp_items.count_documents({})
-        complete_items = await self.db.erp_items.count_documents(
-            {"data_complete": True}
-        )
+        complete_items = await self.db.erp_items.count_documents({"data_complete": True})
 
         return {
             "total_enrichments": total_enrichments,
@@ -352,19 +393,12 @@ class EnrichmentService:
         query = {"data_complete": complete}
 
         total = await self.db.erp_items.count_documents(query)
-        items = (
-            await self.db.erp_items.find(query)
-            .skip(skip)
-            .limit(limit)
-            .to_list(length=limit)
-        )
+        items = await self.db.erp_items.find(query).skip(skip).limit(limit).to_list(length=limit)
 
         # Add missing fields info for incomplete items
         if not complete:
             for item in items:
-                completeness = await self.calculate_completeness(
-                    item["item_code"], item
-                )
+                completeness = await self.calculate_completeness(item["item_code"], item)
                 item["missing_fields"] = completeness["missing_fields"]
                 item["completion_percentage"] = completeness["percentage"]
 
@@ -397,9 +431,7 @@ class EnrichmentService:
                 item_code = enrichment.get("item_code")
                 if not item_code:
                     results["failed"] += 1
-                    results["errors"].append(
-                        {"item_code": None, "error": "Missing item_code"}
-                    )
+                    results["errors"].append({"item_code": None, "error": "Missing item_code"})
                     continue
 
                 # Record enrichment
@@ -475,9 +507,7 @@ class EnrichmentService:
             {"$limit": limit},
         ]
 
-        leaderboard = await self.db.enrichments.aggregate(pipeline).to_list(
-            length=limit
-        )
+        leaderboard = await self.db.enrichments.aggregate(pipeline).to_list(length=limit)
 
         return [
             {

@@ -46,6 +46,8 @@ def _serialize_note(doc: dict[str, Any]) -> Note:
 @router.get("/notes", response_model=dict[str, Any])
 async def list_notes(
     q: Optional[str] = Query(default=None, description="Search query"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(10, ge=1, le=100, description="Number of items per page"),
     current_user: dict[str, Any] = Depends(get_current_user),
 ):
     try:
@@ -59,13 +61,29 @@ async def list_notes(
                     {"content": {"$regex": safe_q, "$options": "i"}},
                 ]
             }
-        cursor = coll.find(query).sort("created_at", -1)
+
+        total_items = await coll.count_documents(query)
+        skip = (page - 1) * page_size
+        limit = page_size
+
+        cursor = coll.find(query).sort("created_at", -1).skip(skip).limit(limit)
         items: list[Note] = [_serialize_note(doc) async for doc in cursor]
-        return {"success": True, "data": items, "error": None}
+
+        total_pages = (total_items + page_size - 1) // page_size if total_items > 0 else 0
+
+        return {
+            "success": True,
+            "data": items,
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_items": total_items,
+                "total_pages": total_pages,
+            },
+            "error": None,
+        }
     except Exception as e:
-        raise create_safe_error_response(
-            500, "Failed to fetch notes", "NOTES_LIST_ERROR", str(e)
-        )
+        raise create_safe_error_response(500, "Failed to fetch notes", "NOTES_LIST_ERROR", str(e))
 
 
 @router.post("/notes", response_model=dict[str, Any])
@@ -87,9 +105,7 @@ async def create_note(
         doc["_id"] = res.inserted_id
         return {"success": True, "data": _serialize_note(doc), "error": None}
     except Exception as e:
-        raise create_safe_error_response(
-            500, "Failed to create note", "NOTES_CREATE_ERROR", str(e)
-        )
+        raise create_safe_error_response(500, "Failed to create note", "NOTES_CREATE_ERROR", str(e))
 
 
 @router.delete("/notes/{note_id}", response_model=dict[str, Any])
@@ -126,6 +142,4 @@ async def delete_note(
     except HTTPException:
         raise
     except Exception as e:
-        raise create_safe_error_response(
-            500, "Failed to delete note", "NOTES_DELETE_ERROR", str(e)
-        )
+        raise create_safe_error_response(500, "Failed to delete note", "NOTES_DELETE_ERROR", str(e))

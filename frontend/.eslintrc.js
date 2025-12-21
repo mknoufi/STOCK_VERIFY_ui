@@ -8,5 +8,7 @@ module.exports = {
       varsIgnorePattern: '^_',
       caughtErrorsIgnorePattern: '^_',
     }],
+    // Disable false positive for string comparisons in JSX expressions
+    'react-native/no-raw-text': 'off',
   },
 };

@@ -1,4 +1,0 @@
-{
-  "summary": "Set up TestSprite testing framework. Generated code summary, standardized PRD, and frontend test plan. Attempted to run tests but frontend web server is not running on port 19006. Started frontend web server in background. TestSprite requires the frontend to be accessible before running tests.",
-  "current_status": "TestSprite is configured and ready. Frontend web server is starting. Once accessible on port 19006, tests can be executed using: node /Users/noufi1/.npm/_npx/8ddf6bea01b2519d/node_modules/@testsprite/testsprite-mcp/dist/index.js generateCodeAndExecute"
-}

@@ -13,6 +13,39 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
+def _build_activity_filter(
+    user: Optional[str],
+    role: Optional[str],
+    action: Optional[str],
+    entity_type: Optional[str],
+    status: Optional[str],
+    start_date: Optional[datetime],
+    end_date: Optional[datetime],
+) -> dict[str, Any]:
+    """Build MongoDB filter query for activity logs."""
+    filter_query: dict[str, Any] = {}
+
+    if user:
+        filter_query["user"] = user
+    if role:
+        filter_query["role"] = role
+    if action:
+        filter_query["action"] = action
+    if entity_type:
+        filter_query["entity_type"] = entity_type
+    if status:
+        filter_query["status"] = status
+
+    if start_date or end_date:
+        filter_query["timestamp"] = {}
+        if start_date:
+            filter_query["timestamp"]["$gte"] = start_date
+        if end_date:
+            filter_query["timestamp"]["$lte"] = end_date
+
+    return filter_query
+
+
 class ActivityLog(BaseModel):
     """Activity log entry model"""
 
@@ -123,42 +156,18 @@ class ActivityLogService:
             Dictionary with activities and pagination info
         """
         try:
-            # Build filter query
-            filter_query = {}
+            filter_query = _build_activity_filter(
+                user, role, action, entity_type, status, start_date, end_date
+            )
 
-            if user:
-                filter_query["user"] = user
-            if role:
-                filter_query["role"] = role
-            if action:
-                filter_query["action"] = action
-            if entity_type:
-                filter_query["entity_type"] = entity_type
-            if status:
-                filter_query["status"] = status
-            if start_date or end_date:
-                filter_query["timestamp"] = {}
-                if start_date:
-                    filter_query["timestamp"]["$gte"] = start_date
-                if end_date:
-                    filter_query["timestamp"]["$lte"] = end_date
-
-            # Count total
             total = await self.collection.count_documents(filter_query)
-
-            # Calculate pagination
             skip = (page - 1) * page_size
 
-            # Fetch activities
             cursor = (
-                self.collection.find(filter_query)
-                .sort("timestamp", -1)
-                .skip(skip)
-                .limit(page_size)
+                self.collection.find(filter_query).sort("timestamp", -1).skip(skip).limit(page_size)
             )
             activities = await cursor.to_list(page_size)
 
-            # Convert ObjectId to string
             for activity in activities:
                 activity["id"] = str(activity["_id"])
                 del activity["_id"]
@@ -178,16 +187,10 @@ class ActivityLogService:
             logger.error(f"Failed to retrieve activities: {str(e)}")
             raise
 
-    async def get_user_activities(
-        self, username: str, limit: int = 100
-    ) -> list[dict[str, Any]]:
+    async def get_user_activities(self, username: str, limit: int = 100) -> list[dict[str, Any]]:
         """Get recent activities for a specific user"""
         try:
-            cursor = (
-                self.collection.find({"user": username})
-                .sort("timestamp", -1)
-                .limit(limit)
-            )
+            cursor = self.collection.find({"user": username}).sort("timestamp", -1).limit(limit)
             activities = await cursor.to_list(limit)
 
             for activity in activities:
@@ -219,9 +222,7 @@ class ActivityLogService:
             success_count = await self.collection.count_documents(
                 {**filter_query, "status": "success"}
             )
-            error_count = await self.collection.count_documents(
-                {**filter_query, "status": "error"}
-            )
+            error_count = await self.collection.count_documents({**filter_query, "status": "error"})
             warning_count = await self.collection.count_documents(
                 {**filter_query, "status": "warning"}
             )
@@ -252,12 +253,9 @@ class ActivityLogService:
                     "warning": warning_count,
                 },
                 "top_actions": [
-                    {"action": item["_id"], "count": item["count"]}
-                    for item in top_actions
+                    {"action": item["_id"], "count": item["count"]} for item in top_actions
                 ],
-                "top_users": [
-                    {"user": item["_id"], "count": item["count"]} for item in top_users
-                ],
+                "top_users": [{"user": item["_id"], "count": item["count"]} for item in top_users],
             }
         except Exception as e:
             logger.error(f"Failed to get statistics: {str(e)}")

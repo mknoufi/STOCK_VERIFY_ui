@@ -1,17 +1,21 @@
 """
 Batch Sync API - High-performance batch synchronization
 Handles offline queue sync with conflict detection and retry logic
+and preserves backward compatibility with legacy offline payloads.
 """
 
 import logging
 import time
 import uuid
+from copy import deepcopy
+from datetime import datetime
 from typing import Any, Optional
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
+from backend.api.schemas import Session
 from backend.auth.dependencies import get_current_user_async as get_current_user
 from backend.middleware.security import batch_rate_limiter
 from backend.services.circuit_breaker import get_circuit_breaker
@@ -20,6 +24,18 @@ from backend.services.redis_service import get_redis
 from backend.services.sync_conflicts_service import SyncConflictsService
 
 logger = logging.getLogger(__name__)
+
+
+class LegacySyncOperation(BaseModel):
+    """Legacy offline queue operation structure"""
+
+    id: str
+    type: str
+    data: dict[str, Any]
+    timestamp: Optional[str] = None
+
+    model_config = ConfigDict(extra="allow")
+
 
 router = APIRouter(prefix="/api/sync", tags=["Sync"])
 
@@ -37,9 +53,7 @@ class SyncRecord(BaseModel):
     item_code: str = Field(..., description="Item code")
     verified_qty: float = Field(..., description="Verified quantity")
     damage_qty: float = Field(0, description="Damage quantity")
-    serial_numbers: list[str] = Field(
-        default_factory=list, description="Serial numbers"
-    )
+    serial_numbers: list[str] = Field(default_factory=list, description="Serial numbers")
     mfg_date: Optional[str] = Field(None, description="Manufacturing date")
     mrp: Optional[float] = Field(None, description="MRP")
     uom: Optional[str] = Field(None, description="Unit of measure")
@@ -53,10 +67,18 @@ class SyncRecord(BaseModel):
 
 
 class BatchSyncRequest(BaseModel):
-    """Batch sync request"""
+    """Batch sync request supporting modern records and legacy operations"""
 
-    records: list[SyncRecord] = Field(..., description="Records to sync")
+    records: list[SyncRecord] = Field(
+        default_factory=list, description="Structured records to sync"
+    )
+    operations: list[LegacySyncOperation] = Field(
+        default_factory=list,
+        description="Legacy operations array used by earlier clients",
+    )
     batch_id: Optional[str] = Field(None, description="Client batch ID for tracking")
+
+    model_config = ConfigDict(extra="ignore")
 
 
 class SyncConflict(BaseModel):
@@ -76,12 +98,20 @@ class SyncError(BaseModel):
     message: str
 
 
+class SyncResult(BaseModel):
+    """Per-record sync result for backward compatibility"""
+
+    id: str = Field(..., description="Client record identifier")
+    success: bool = Field(..., description="Whether the record synced successfully")
+    message: Optional[str] = Field(
+        None, description="Optional error or conflict message for the record"
+    )
+
+
 class BatchSyncResponse(BaseModel):
     """Batch sync response"""
 
-    ok: list[str] = Field(
-        default_factory=list, description="Successfully synced record IDs"
-    )
+    ok: list[str] = Field(default_factory=list, description="Successfully synced record IDs")
     conflicts: list[SyncConflict] = Field(
         default_factory=list, description="Records with conflicts"
     )
@@ -89,6 +119,15 @@ class BatchSyncResponse(BaseModel):
     batch_id: Optional[str] = Field(None, description="Batch ID from request")
     processing_time_ms: float = Field(..., description="Server processing time")
     total_records: int = Field(..., description="Total records in batch")
+    results: list[SyncResult] = Field(
+        default_factory=list,
+        description="Backward compatible per-record results (id/success/message)",
+    )
+    processed_count: Optional[int] = Field(
+        None, description="Legacy summary: total operations processed"
+    )
+    success_count: Optional[int] = Field(None, description="Legacy summary: successful operations")
+    failed_count: Optional[int] = Field(None, description="Legacy summary: failed operations")
 
 
 # Sync Logic
@@ -167,9 +206,7 @@ async def validate_record(
     return None
 
 
-async def sync_single_record(
-    record: SyncRecord, db, user_id: str
-) -> tuple[bool, Optional[str]]:
+async def sync_single_record(record: SyncRecord, db, user_id: str) -> tuple[bool, Optional[str]]:
     """
     Sync a single record to database
 
@@ -268,6 +305,21 @@ async def sync_batch(
             headers={"Retry-After": str(rate_info.get("retry_after", 60))},
         )
 
+    # Legacy payloads only provided an operations array
+    if not request.records and request.operations:
+        return await _process_legacy_operations(
+            operations=request.operations,
+            batch_id=request.batch_id,
+            current_user=current_user,
+            start_time=start_time,
+        )
+
+    if not request.records:
+        raise HTTPException(
+            status_code=400,
+            detail="No records provided for batch sync",
+        )
+
     # Get database
     from backend.server import db
 
@@ -311,9 +363,7 @@ async def sync_batch(
                 conflicts.append(conflict)
             else:
                 # Sync valid record
-                success, error_msg = await sync_single_record(
-                    record, db, current_user["username"]
-                )
+                success, error_msg = await sync_single_record(record, db, current_user["username"])
 
                 if success:
                     ok_records.append(record.client_record_id)
@@ -343,6 +393,19 @@ async def sync_batch(
         f"({processing_time:.2f}ms)"
     )
 
+    # Build per-record results for legacy clients that expect flat success flags
+    results = [SyncResult(id=record_id, success=True, message=None) for record_id in ok_records]
+
+    results.extend(
+        SyncResult(id=conflict.client_record_id, success=False, message=conflict.message)
+        for conflict in conflicts
+    )
+
+    results.extend(
+        SyncResult(id=error.client_record_id, success=False, message=error.message)
+        for error in errors
+    )
+
     return BatchSyncResponse(
         ok=ok_records,
         conflicts=conflicts,
@@ -350,6 +413,10 @@ async def sync_batch(
         batch_id=request.batch_id,
         processing_time_ms=processing_time,
         total_records=len(request.records),
+        results=results,
+        processed_count=len(request.records),
+        success_count=len(ok_records),
+        failed_count=len(request.records) - len(ok_records),
     )
 
 
@@ -383,3 +450,150 @@ async def session_heartbeat(
         "rack_renewed": rack_renewed,
         "timestamp": time.time(),
     }
+
+
+async def _process_session_op(
+    session_data: dict[str, Any],
+    current_user: dict[str, Any],
+    id_mapping: dict[str, str],
+    db: Any,
+) -> str:
+    """Process a session sync operation."""
+    warehouse = (session_data.get("warehouse") or "").strip()
+    if not warehouse:
+        raise ValueError("Missing warehouse for session operation")
+
+    staff_user = current_user.get("username", "unknown_user")
+    staff_name = current_user.get("full_name") or staff_user
+
+    raw_type = session_data.get("type")
+    normalized_type = raw_type.strip().upper() if isinstance(raw_type, str) else "STANDARD"
+    if normalized_type not in {"STANDARD", "BLIND", "STRICT"}:
+        normalized_type = "STANDARD"
+
+    session = Session(
+        warehouse=warehouse,
+        staff_user=staff_user,
+        staff_name=staff_name,
+        status=session_data.get("status", "OPEN"),
+        type=normalized_type,
+    )
+
+    session_doc = session.model_dump()
+    offline_id = session_data.get("session_id") or session_data.get("id")
+    if offline_id:
+        session_doc["offline_id"] = offline_id
+        id_mapping[str(offline_id)] = session.id
+
+    session_doc.update({"created_offline": True, "synced_at": datetime.utcnow()})
+    await db.sessions.insert_one(session_doc)
+    return "Session synced"
+
+
+async def _process_count_line_op(
+    line_data: dict[str, Any],
+    current_user: dict[str, Any],
+    id_mapping: dict[str, str],
+    db: Any,
+) -> str:
+    """Process a count_line sync operation."""
+    temp_session_id = line_data.get("session_id")
+    if temp_session_id is not None:
+        lookup_key = str(temp_session_id)
+        if lookup_key in id_mapping:
+            line_data["session_id"] = id_mapping[lookup_key]
+
+    line_data.setdefault("counted_by", current_user.get("username"))
+    line_data.setdefault("counted_at", datetime.utcnow())
+    line_data.setdefault("synced_at", datetime.utcnow())
+    await db.count_lines.insert_one(line_data)
+    return "Count line synced"
+
+
+async def _process_unknown_item_op(
+    item_data: dict[str, Any],
+    current_user: dict[str, Any],
+    id_mapping: dict[str, str],
+    db: Any,
+) -> str:
+    """Process an unknown_item sync operation."""
+    temp_session_id = item_data.get("session_id")
+    if temp_session_id is not None:
+        lookup_key = str(temp_session_id)
+        if lookup_key in id_mapping:
+            item_data["session_id"] = id_mapping[lookup_key]
+
+    item_data.setdefault("reported_by", current_user.get("username"))
+    item_data.setdefault("reported_at", datetime.utcnow())
+    item_data.setdefault("synced_at", datetime.utcnow())
+    await db.unknown_items.insert_one(item_data)
+    return "Unknown item synced"
+
+
+# Operation type → handler mapping
+_LEGACY_OP_HANDLERS: dict[str, Any] = {
+    "session": _process_session_op,
+    "count_line": _process_count_line_op,
+    "unknown_item": _process_unknown_item_op,
+}
+
+
+async def _process_legacy_operations(
+    operations: list[LegacySyncOperation],
+    batch_id: Optional[str],
+    current_user: dict[str, Any],
+    start_time: float,
+) -> BatchSyncResponse:
+    """Handle legacy offline queue operations payloads."""
+
+    from backend.server import db
+
+    id_mapping: dict[str, str] = {}
+    results: list[SyncResult] = []
+    ok_ids: list[str] = []
+    error_entries: list[SyncError] = []
+
+    ordered_ops = sorted(operations, key=lambda op: op.timestamp or "")
+
+    for op in ordered_ops:
+        success = False
+        message: Optional[str] = None
+
+        try:
+            handler = _LEGACY_OP_HANDLERS.get(op.type)
+            if handler:
+                data = deepcopy(op.data)
+                message = await handler(data, current_user, id_mapping, db)
+                success = True
+            else:
+                message = f"Unknown operation type: {op.type}"
+        except Exception as exc:
+            logger.error(f"Legacy sync operation failed ({op.id}): {exc}")
+            message = str(exc)
+
+        results.append(SyncResult(id=op.id, success=success, message=message))
+        if success:
+            ok_ids.append(op.id)
+        else:
+            error_entries.append(
+                SyncError(
+                    client_record_id=op.id,
+                    error_type="legacy_sync_error",
+                    message=message or "Unknown legacy sync error",
+                )
+            )
+
+    processing_time = (time.time() - start_time) * 1000
+
+    return BatchSyncResponse(
+        ok=ok_ids,
+        conflicts=[],
+        errors=error_entries,
+        batch_id=batch_id,
+        processing_time_ms=processing_time,
+        total_records=len(operations),
+        results=results,
+        processed_count=len(operations),
+        success_count=len(ok_ids),
+        failed_count=len(operations) - len(ok_ids),
+    )

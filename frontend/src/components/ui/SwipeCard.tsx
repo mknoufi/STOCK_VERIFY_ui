@@ -54,7 +54,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
   leftActions = [],
   rightActions = [],
   style,
-  onSwipeComplete,
+  onSwipeComplete: _onSwipeComplete,
 }) => {
   const translateX = useSharedValue(0);
   const contextX = useSharedValue(0);
@@ -80,7 +80,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
 
       translateX.value = Math.max(minSwipe, Math.min(maxSwipe, newValue));
     })
-    .onEnd((event) => {
+    .onEnd((_event) => {
       // Determine if we should snap to action position
       if (translateX.value > SWIPE_THRESHOLD / 2 && leftActions.length > 0) {
         translateX.value = withSpring(SWIPE_THRESHOLD);

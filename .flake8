@@ -11,7 +11,9 @@ exclude =
     .git,
     __pycache__,
     .venv,
+    .venv311,
     venv,
+    env,
     node_modules,
     migrations,
     build,
@@ -19,4 +21,12 @@ exclude =
     *.egg-info
 per-file-ignores =
     __init__.py:F401
+    # Files that require sys.path manipulation before imports
+    backend/core/lifespan.py:E402
+    backend/scripts/backfill_new_fields.py:E402
+    backend/scripts/create_feature_indexes.py:E402
+    backend/scripts/set_supervisor_pin.py:E402
+    backend/scripts/test_db_connection.py:E402
+    backend/api/admin_control_api.py:E402
+    backend/api/legacy_routes.py:E402
 max-complexity = 10

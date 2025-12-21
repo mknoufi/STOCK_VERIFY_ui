@@ -134,5 +134,14 @@
     "extensions.closeExtensionDetailsOnViewChange": true,
     "githubPullRequests.ignoredPullRequestBranches": [
         "main"
-    ]
+    ],
+    "frontMatter.framework.id": "other",
+    "frontMatter.content.publicFolder": "",
+    "frontMatter.content.pageFolders": [
+        {
+            "title": "frontend",
+            "path": "[[workspace]]/frontend"
+        }
+    ],
+    "cli.executable.path": "/Users/noufi1/.windup/tooling/vscode/windup-cli-6.2.5.Final/bin/windup-cli"
 }

@@ -1,4 +1,0 @@
-{
-  "summary": "Restarted TestSprite test execution. Frontend web server confirmed running on port 19006. Removed execution lock file. Started TestSprite test generation and execution in background. Tests are now running and will generate results in testsprite_tests/tmp/ directory. Process may take 5-15 minutes to complete.",
-  "current_status": "TestSprite tests are executing in the background. Frontend is accessible on port 19006. Test results will be available in testsprite_tests/tmp/raw_report.md and testsprite_tests/testsprite-mcp-test-report.md once execution completes."
-}

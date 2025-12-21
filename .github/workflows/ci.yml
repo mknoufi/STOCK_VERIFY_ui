@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, verified, develop]
+    branches: [main, verified, develop, final]
   pull_request:
     branches: [main, verified, develop]
 
@@ -12,7 +12,7 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.11"
-  NODE_VERSION: "18"  # Use LTS version for better stability
+  NODE_VERSION: "18.18.2" # Enforce minimum Node 18.18 per migration plan
 
 jobs:
   # Python Backend CI
@@ -89,53 +89,10 @@ jobs:
           cache: "npm"
           cache-dependency-path: ./frontend/package-lock.json
 
-      - name: Install dependencies with retry
-        id: npm-install
-        run: |
-          # Disable automatic exit on error to handle retries manually
-          set +e
-          MAX_RETRIES=3
-          RETRY_COUNT=0
-          BACKOFF=10
-
-          install_deps() {
-            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES: Running npm install --omit=optional --ignore-scripts"
-            npm install --omit=optional --ignore-scripts
-            return $?
-          }
-
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            install_deps
-            EXIT_CODE=$?
-
-            if [ $EXIT_CODE -eq 0 ]; then
-              echo "npm install succeeded on attempt $((RETRY_COUNT + 1))"
-              exit 0
-            fi
-
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-
-            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-              echo "Install failed. Retrying in ${BACKOFF} seconds..."
-              sleep $BACKOFF
-              BACKOFF=$((BACKOFF * 2))
-              # Clear npm cache before retry to ensure clean state
-              npm cache clean --force 2>/dev/null || true
-            fi
-          done
-
-          echo "All retry attempts failed. Attempting fallback installation..."
-          # Fallback: Try installing core dependencies manually
-          npm install react@19.1.0 react-native@0.81.5 react-dom@19.1.0 @expo/vector-icons@^15.0.3 expo-router@~6.0.19 --omit=optional --ignore-scripts
-          EXIT_CODE=$?
-
-          if [ $EXIT_CODE -eq 0 ]; then
-            echo "Fallback installation succeeded"
-            exit 0
-          fi
-
-          echo "All installation attempts failed"
-          exit 1
+      - name: Install dependencies
+        env:
+          SKIP_POSTINSTALL: "true"
+        run: npm install --ignore-scripts --legacy-peer-deps
       - name: Run ESLint
         run: npm run lint
 

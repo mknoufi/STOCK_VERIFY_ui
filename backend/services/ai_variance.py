@@ -1,7 +1,86 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
+
+
+def _build_item_risk_pipeline(item_codes: list[str]) -> list[dict[str, Any]]:
+    """Build MongoDB aggregation pipeline for item risk calculation."""
+    return [
+        {"$match": {"item_code": {"$in": item_codes}}},
+        {"$sort": {"counted_at": -1}},
+        {
+            "$group": {
+                "_id": "$item_code",
+                "total_counts": {"$sum": 1},
+                "variance_count": {
+                    "$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}
+                },
+            }
+        },
+    ]
+
+
+def _build_category_risk_pipeline(categories: list[str]) -> list[dict[str, Any]]:
+    """Build MongoDB aggregation pipeline for category risk calculation."""
+    return [
+        {"$match": {"category": {"$in": categories}}},
+        {
+            "$group": {
+                "_id": "$category",
+                "total_counts": {"$sum": 1},
+                "variance_count": {
+                    "$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}
+                },
+            }
+        },
+    ]
+
+
+def _calculate_hybrid_risk(
+    heuristic: float, historical: float, total_counts: int, min_counts: int = 5
+) -> float:
+    """Calculate hybrid risk from heuristic and historical data."""
+    if total_counts < min_counts:
+        return heuristic
+    return (heuristic * 0.4) + (historical * 0.6)
+
+
+def _build_risk_item(
+    item: dict[str, Any],
+    item_risk: float,
+    cat_risk: float,
+    category_heuristics: dict[str, float],
+) -> Optional[dict[str, Any]]:
+    """Build a high-risk item dict if risk exceeds threshold."""
+    category = item.get("category", "General")
+
+    # Skip items with existing variance
+    if item.get("variance_reason"):
+        return None
+
+    # Calculate total risk
+    if item_risk == 0.0 and category in category_heuristics:
+        total_risk = cat_risk
+    else:
+        total_risk = (item_risk * 0.7) + (cat_risk * 0.3)
+
+    if total_risk <= 0.4:
+        return None
+
+    reason = (
+        "Historical variance pattern"
+        if item_risk > cat_risk
+        else f"High-risk category: {category}"
+    )
+
+    return {
+        "item_code": item.get("item_code"),
+        "item_name": item.get("item_name", "Unknown Item"),
+        "category": category,
+        "risk_score": round(total_risk, 2),
+        "reason": reason,
+    }
 
 
 class AIVarianceService:
@@ -142,102 +221,15 @@ class AIVarianceService:
             )
 
             # 3. Bulk calculate historical item risks
-            item_risk_map = {}
-            if item_codes:
-                item_pipeline = [
-                    {"$match": {"item_code": {"$in": item_codes}}},
-                    {
-                        "$sort": {"counted_at": -1}
-                    },  # Note: This might be slow if variances is huge, but we need recency
-                    {
-                        "$group": {
-                            "_id": "$item_code",
-                            "total_counts": {"$sum": 1},
-                            "variance_count": {
-                                "$sum": {
-                                    "$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]
-                                }
-                            },
-                        }
-                    },
-                ]
-                item_results = await db.variances.aggregate(item_pipeline).to_list(
-                    length=len(item_codes)
-                )
-                for res in item_results:
-                    if res["total_counts"] > 0:
-                        item_risk_map[res["_id"]] = (
-                            float(res["variance_count"]) / res["total_counts"]
-                        )
+            item_risk_map = await self._calculate_item_risks(db, item_codes)
 
             # 4. Bulk calculate category risks
-            cat_risk_map = {}
-            if categories:
-                cat_pipeline = [
-                    {"$match": {"category": {"$in": categories}}},
-                    {
-                        "$group": {
-                            "_id": "$category",
-                            "total_counts": {"$sum": 1},
-                            "variance_count": {
-                                "$sum": {
-                                    "$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]
-                                }
-                            },
-                        }
-                    },
-                ]
-                cat_results = await db.variances.aggregate(cat_pipeline).to_list(
-                    length=len(categories)
-                )
-                for res in cat_results:
-                    heuristic = self.category_heuristics.get(
-                        res["_id"], self.default_risk
-                    )
-                    if res["total_counts"] < 5:
-                        cat_risk_map[res["_id"]] = heuristic
-                    else:
-                        historical = float(res["variance_count"]) / res["total_counts"]
-                        cat_risk_map[res["_id"]] = (heuristic * 0.4) + (
-                            historical * 0.6
-                        )
+            cat_risk_map = await self._calculate_category_risks(db, categories)
 
             # 5. Process items with pre-calculated risks
-            high_risk_items = []
-            for item in counted_items:
-                item_code = item.get("item_code")
-                category = item.get("category", "General")
-
-                if item.get("variance_reason"):
-                    continue
-
-                item_risk = item_risk_map.get(item_code, 0.0)
-                cat_risk = cat_risk_map.get(
-                    category, self.category_heuristics.get(category, self.default_risk)
-                )
-
-                # If we have no item-specific history and are relying purely on
-                # heuristic category risk, use the category risk directly so
-                # high-risk categories like Electronics still surface.
-                if item_risk == 0.0 and category in self.category_heuristics:
-                    total_risk = cat_risk
-                else:
-                    total_risk = (item_risk * 0.7) + (cat_risk * 0.3)
-
-                if total_risk > 0.4:
-                    high_risk_items.append(
-                        {
-                            "item_code": item_code,
-                            "item_name": item.get("item_name", "Unknown Item"),
-                            "category": category,
-                            "risk_score": round(total_risk, 2),
-                            "reason": (
-                                "Historical variance pattern"
-                                if item_risk > cat_risk
-                                else f"High-risk category: {category}"
-                            ),
-                        }
-                    )
+            high_risk_items = self._process_items_for_risks(
+                counted_items, item_risk_map, cat_risk_map
+            )
 
             high_risk_items.sort(key=lambda x: x["risk_score"], reverse=True)
             return high_risk_items[:limit]
@@ -245,6 +237,72 @@ class AIVarianceService:
         except Exception as e:
             logger.error(f"Error predicting session risks for {session_id}: {e}")
             return []
+
+    async def _calculate_item_risks(
+        self, db, item_codes: list[str]
+    ) -> dict[str, float]:
+        """Calculate item risk scores from historical variances."""
+        if not item_codes:
+            return {}
+
+        pipeline = _build_item_risk_pipeline(item_codes)
+        results = await db.variances.aggregate(pipeline).to_list(length=len(item_codes))
+
+        risk_map = {}
+        for res in results:
+            if res["total_counts"] > 0:
+                risk_map[res["_id"]] = (
+                    float(res["variance_count"]) / res["total_counts"]
+                )
+        return risk_map
+
+    async def _calculate_category_risks(
+        self, db, categories: list[str]
+    ) -> dict[str, float]:
+        """Calculate category risk scores with hybrid heuristic/historical."""
+        if not categories:
+            return {}
+
+        pipeline = _build_category_risk_pipeline(categories)
+        results = await db.variances.aggregate(pipeline).to_list(length=len(categories))
+
+        risk_map = {}
+        for res in results:
+            heuristic = self.category_heuristics.get(res["_id"], self.default_risk)
+            historical = (
+                float(res["variance_count"]) / res["total_counts"]
+                if res["total_counts"] > 0
+                else 0
+            )
+            risk_map[res["_id"]] = _calculate_hybrid_risk(
+                heuristic, historical, res["total_counts"]
+            )
+        return risk_map
+
+    def _process_items_for_risks(
+        self,
+        counted_items: list[dict[str, Any]],
+        item_risk_map: dict[str, float],
+        cat_risk_map: dict[str, float],
+    ) -> list[dict[str, Any]]:
+        """Process counted items and build high-risk items list."""
+        high_risk_items = []
+        for item in counted_items:
+            item_code = item.get("item_code")
+            category = item.get("category", "General")
+
+            item_risk = item_risk_map.get(item_code, 0.0)
+            cat_risk = cat_risk_map.get(
+                category, self.category_heuristics.get(category, self.default_risk)
+            )
+
+            risk_item = _build_risk_item(
+                item, item_risk, cat_risk, self.category_heuristics
+            )
+            if risk_item:
+                high_risk_items.append(risk_item)
+
+        return high_risk_items
 
 
 # Singleton instance

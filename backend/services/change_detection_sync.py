@@ -95,9 +95,7 @@ class ChangeDetectionSyncService:
             """
 
             # Add modified date filter if available
-            modified_column = mapping.get("query_options", {}).get(
-                "modified_date_column"
-            )
+            modified_column = mapping.get("query_options", {}).get("modified_date_column")
             if modified_column and last_sync_time:
                 query += f" WHERE {modified_column} >= ?"
 
@@ -110,47 +108,7 @@ class ChangeDetectionSyncService:
                     {"error": str(e), "last_sync_time": last_sync_time},
                 )
             )
-        # If ModifiedDate column exists, use it for change detection
-        # Otherwise, we'll fetch all and compare with MongoDB
-        if last_sync_time:
-            # SQL Server 2008 R2 compatible - use ModifiedDate if exists
-            return """
-                SELECT DISTINCT
-                    P.ProductID as item_id,
-                    P.ProductCode as item_code,
-                    COALESCE(PB.RefItemName, P.ProductName) as item_name,
-                    CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
-                    PB.Stock as stock_qty,
-                    COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
-                FROM dbo.Products P
-                INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                WHERE P.IsActive = 1
-                  AND PB.AutoBarcode IS NOT NULL
-                  AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
-                  AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
-                  AND (COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) > ? OR PB.ModifiedDate > ?)
-                ORDER BY P.ProductCode
-            """
-        else:
-            # First sync - get all active products with 6-digit AutoBarcode
-            return """
-                SELECT DISTINCT
-                    P.ProductID as item_id,
-                    P.ProductCode as item_code,
-                    COALESCE(PB.RefItemName, P.ProductName) as item_name,
-                    CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
-                    PB.Stock as stock_qty,
-                    COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
-                FROM dbo.Products P
-                INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                WHERE P.IsActive = 1
-                  AND PB.AutoBarcode IS NOT NULL
-                  AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
-                  AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
-                ORDER BY P.ProductCode
-            """
+            # unreachable fallback query removed (after return)
 
     def _build_update_operations(
         self, changes: list[ProductData]
@@ -225,9 +183,7 @@ class ChangeDetectionSyncService:
             )
 
     @result_function(SyncError)
-    async def _apply_changes_to_mongodb(
-        self, changes: list[ProductData]
-    ) -> dict[str, int]:
+    async def _apply_changes_to_mongodb(self, changes: list[ProductData]) -> dict[str, int]:
         """Apply changes to MongoDB."""
         if not changes:
             return Ok({"matched": 0, "modified": 0})
@@ -298,9 +254,7 @@ class ChangeDetectionSyncService:
             )
 
             # Update and return stats
-            return self._finalize_sync(
-                start_time, len(changed_products), stats["modified"]
-            )
+            return self._finalize_sync(start_time, len(changed_products), stats["modified"])
 
         except Exception as e:
             error = DatabaseError("Unexpected error during sync", {"error": str(e)})
@@ -428,9 +382,7 @@ class ChangeDetectionSyncService:
             except asyncio.CancelledError:
                 logger.debug("Sync task cancelled successfully")
             except Exception as e:
-                error = SyncError(
-                    "Error while stopping sync service", {"error": str(e)}
-                )
+                error = SyncError("Error while stopping sync service", {"error": str(e)})
                 logger.error(str(error))
                 return Fail(error)
 
@@ -464,9 +416,7 @@ class ChangeDetectionSyncService:
         # Add additional calculated metrics
         if self._sync_stats["total_syncs"] > 0:
             success_rate = (
-                self._sync_stats["successful_syncs"]
-                / self._sync_stats["total_syncs"]
-                * 100
+                self._sync_stats["successful_syncs"] / self._sync_stats["total_syncs"] * 100
             )
             status["success_rate"] = f"{success_rate:.1f}%"
 

@@ -1,4 +1,0 @@
-{
-  "summary": "Set up monitoring for TestSprite full test suite execution. Tests are actively running (process 79419, lock file present). Monitoring script created to check every 30 seconds for completion. Tests will generate reports in testsprite_tests/tmp/raw_report.md and testsprite_tests/testsprite-mcp-test-report.md when complete. Estimated completion: 5-15 minutes from start time.",
-  "current_status": "TestSprite full test suite (19 test cases) is executing. Monitoring active. Tests cover authentication, barcode scanning, item verification, navigation, role-based access, offline support, and cross-platform compatibility. Frontend accessible on port 19006. Will notify when tests complete."
-}

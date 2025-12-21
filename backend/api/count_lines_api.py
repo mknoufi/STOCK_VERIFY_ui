@@ -39,9 +39,7 @@ def _require_supervisor(current_user: dict):
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(
-    erp_item: dict, line_data: CountLineCreate, variance: float
-) -> list[str]:
+def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
     """Detect high-risk correction patterns"""
     risk_flags = []
 
@@ -67,17 +65,11 @@ def detect_risk_flags(
         risk_flags.append("HIGH_VALUE_VARIANCE")
 
     # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (
-        not line_data.serial_numbers or len(line_data.serial_numbers) == 0
-    ):
+    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
         risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
 
     # Rule 5: Correction without reason when variance exists
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         risk_flags.append("MISSING_CORRECTION_REASON")
 
     # Rule 6: MRP change without reason
@@ -106,9 +98,7 @@ def detect_risk_flags(
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(
-    erp_mrp: float, counted_mrp: float, counted_qty: float
-) -> float:
+def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
@@ -139,11 +129,7 @@ async def create_count_line(
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
     # Validate mandatory correction reason for variance
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         raise HTTPException(
             status_code=400,
             detail="Correction reason is mandatory when variance exists",
@@ -171,9 +157,7 @@ async def create_count_line(
         }
     )
     duplicate_check = (
-        await duplicate_result
-        if inspect.isawaitable(duplicate_result)
-        else duplicate_result
+        await duplicate_result if inspect.isawaitable(duplicate_result) else duplicate_result
     )
     if duplicate_check > 0:
         risk_flags.append("DUPLICATE_CORRECTION")
@@ -203,19 +187,13 @@ async def create_count_line(
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
         "correction_reason": (
-            line_data.correction_reason.model_dump()
-            if line_data.correction_reason
-            else None
+            line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs]
-            if line_data.photo_proofs
-            else None
+            [p.model_dump() for p in line_data.photo_proofs] if line_data.photo_proofs else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump()
-            if line_data.correction_metadata
-            else None
+            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
         ),
         "approval_status": approval_status,
         "approval_by": None,
@@ -505,6 +483,62 @@ async def get_count_lines_route(
     )
 
 
+async def _find_count_line(db, line_id: str) -> Optional[dict]:
+    """Find a count line by id or _id."""
+    count_line = await db.count_lines.find_one({"id": line_id})
+    if count_line:
+        return count_line
+    try:
+        return await db.count_lines.find_one({"_id": ObjectId(line_id)})
+    except Exception:
+        return None
+
+
+async def _recalculate_session_stats(db, session_id: str) -> None:
+    """Re-calculate session stats after line deletion."""
+    try:
+        pipeline: list[dict[str, Any]] = [
+            {"$match": {"session_id": session_id}},
+            {
+                "$group": {
+                    "_id": None,
+                    "total_items": {"$sum": 1},
+                    "total_variance": {"$sum": "$variance"},
+                }
+            },
+        ]
+        stats = await db.count_lines.aggregate(pipeline).to_list(1)
+        update_data = {
+            "total_items": stats[0]["total_items"] if stats else 0,
+            "total_variance": stats[0]["total_variance"] if stats else 0,
+        }
+        await db.sessions.update_one({"id": session_id}, {"$set": update_data})
+    except Exception as e:
+        logger.error(f"Failed to update session stats after delete: {str(e)}")
+
+
+async def _log_delete_activity(
+    count_line: dict, line_id: str, current_user: dict, request: Request
+) -> None:
+    """Log the delete activity if activity log service is available."""
+    if not _activity_log_service:
+        return
+    await _activity_log_service.log_activity(
+        user=current_user["username"],
+        role=current_user.get("role", ""),
+        action="delete_count_line",
+        entity_type="count_line",
+        entity_id=str(count_line.get("id", line_id)),
+        details={
+            "item_code": count_line.get("item_code"),
+            "session_id": count_line.get("session_id"),
+            "counted_qty": count_line.get("counted_qty"),
+        },
+        ip_address=request.client.host if request and request.client else None,
+        user_agent=request.headers.get("user-agent") if request else None,
+    )
+
+
 @router.delete("/count-lines/{line_id}")
 async def delete_count_line(
     line_id: str,
@@ -512,73 +546,22 @@ async def delete_count_line(
     current_user: dict = Depends(get_current_user),
 ):
     """Delete a count line (requires supervisor override)."""
-    # Double check permissions (safeguard, though frontend should have verified PIN)
     if current_user["role"] not in ["supervisor", "admin"]:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
 
     db = _get_db_client()
 
     try:
-        # Find the line first to get details for logging
-        # Check by 'id' (UUID string) or '_id' (ObjectId)
-        count_line = await db.count_lines.find_one({"id": line_id})
-        if not count_line:
-            try:
-                count_line = await db.count_lines.find_one({"_id": ObjectId(line_id)})
-            except Exception:
-                pass
-
+        count_line = await _find_count_line(db, line_id)
         if not count_line:
             raise HTTPException(status_code=404, detail="Count line not found")
 
-        # Delete the line
         result = await db.count_lines.delete_one({"_id": count_line["_id"]})
-
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Count line not found")
 
-        # Re-calculate session stats
-        try:
-            pipeline: list[dict[str, Any]] = [
-                {"$match": {"session_id": count_line["session_id"]}},
-                {
-                    "$group": {
-                        "_id": None,
-                        "total_items": {"$sum": 1},
-                        "total_variance": {"$sum": "$variance"},
-                    }
-                },
-            ]
-            stats = await db.count_lines.aggregate(pipeline).to_list(1)
-
-            update_data = {
-                "total_items": stats[0]["total_items"] if stats else 0,
-                "total_variance": stats[0]["total_variance"] if stats else 0,
-            }
-
-            await db.sessions.update_one(
-                {"id": count_line["session_id"]},
-                {"$set": update_data},
-            )
-        except Exception as e:
-            logger.error(f"Failed to update session stats after delete: {str(e)}")
-
-        # Log the activity
-        if _activity_log_service:
-            await _activity_log_service.log_activity(
-                user=current_user["username"],
-                role=current_user.get("role", ""),
-                action="delete_count_line",
-                entity_type="count_line",
-                entity_id=str(count_line.get("id", line_id)),
-                details={
-                    "item_code": count_line.get("item_code"),
-                    "session_id": count_line.get("session_id"),
-                    "counted_qty": count_line.get("counted_qty"),
-                },
-                ip_address=request.client.host if request and request.client else None,
-                user_agent=request.headers.get("user-agent") if request else None,
-            )
+        await _recalculate_session_stats(db, count_line["session_id"])
+        await _log_delete_activity(count_line, line_id, current_user, request)
 
         return {"success": True, "message": "Count line deleted successfully"}
 

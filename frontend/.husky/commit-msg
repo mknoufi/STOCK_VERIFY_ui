@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Validate commit message format (conventional commits)
+if ! head -1 "$1" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}"; then
+    echo "❌ Invalid commit message format!"
+    echo ""
+    echo "Expected format: <type>(<scope>): <subject>"
+    echo ""
+    echo "Types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert"
+    echo ""
+    echo "Examples:"
+    echo "  feat(auth): add login screen"
+    echo "  fix(scan): resolve barcode detection issue"
+    echo "  docs: update README"
+    echo ""
+    exit 1
+fi

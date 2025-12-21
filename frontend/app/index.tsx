@@ -1,11 +1,5 @@
-import React, { useEffect } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  StyleSheet,
-  View,
-  Text,
-} from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { ActivityIndicator, Platform, StyleSheet, View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -13,45 +7,35 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAuthStore } from "../src/store/authStore";
 import { AuroraBackground } from "../src/components/ui/AuroraBackground";
 import { GlassCard } from "../src/components/ui/GlassCard";
-import { modernTypography, modernColors, modernSpacing } from "../src/styles/modernDesignSystem";
+import { useThemeContext } from "../src/theme/ThemeContext";
+import type { AppTheme } from "../src/theme/themes";
 
 export default function Index() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
+  const { theme } = useThemeContext();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
-    // Auth redirection logic
-    const checkAuth = async () => {
-      // Small delay for animation/UX
-      setTimeout(() => {
-        if (!user) {
-          router.replace("/welcome");
-          return;
-        }
+    if (isLoading) return;
+    if (!user) {
+      router.replace("/welcome");
+      return;
+    }
 
-        if (Platform.OS === "web") {
-          // Web specific routing
-          if (user.role === "supervisor" || user.role === "admin") {
-            router.replace("/admin/metrics" as any);
-          } else {
-            router.replace("/staff/home" as any);
-          }
-        } else {
-          // Mobile routing
-          if (user.role === "supervisor" || user.role === "admin") {
-            router.replace("/supervisor/dashboard" as any);
-          } else {
-            router.replace("/staff/home" as any);
-          }
-        }
-      }, 1500); // 1.5s delay to show the beautiful splash
-    };
+    const isSupervisor = user.role === "supervisor" || user.role === "admin";
+    const targetRoute =
+      Platform.OS === "web" && isSupervisor
+        ? "/admin/metrics"
+        : isSupervisor
+          ? "/supervisor/dashboard"
+          : "/staff/home";
 
-    checkAuth();
-  }, [user, router]);
+    router.replace(targetRoute as any);
+  }, [isLoading, user, router]);
 
   return (
-    <AuroraBackground variant="primary" intensity="high" animated={true}>
+    <AuroraBackground variant="primary" intensity="high" animated>
       <StatusBar style="light" />
       <View style={styles.container}>
         <Animated.View
@@ -68,7 +52,7 @@ export default function Index() {
             </View>
 
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={modernColors.primary[400]} />
+              <ActivityIndicator size="large" color={theme.colors.accentLight} />
               <Text style={styles.loadingText}>Initializing Secure Environment...</Text>
             </View>
           </GlassCard>
@@ -85,70 +69,76 @@ export default function Index() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: modernSpacing.xl,
-  },
-  contentContainer: {
-    width: "100%",
-    maxWidth: 400,
-    alignItems: 'center',
-  },
-  card: {
-    width: "100%",
-    alignItems: "center",
-    paddingVertical: modernSpacing["3xl"],
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: modernSpacing["2xl"],
-  },
-  iconPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: modernColors.primary[500],
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: modernSpacing.md,
-    shadowColor: modernColors.primary[500],
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  iconText: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
-  title: {
-    ...modernTypography.h2,
-    color: modernColors.text.primary,
-    textAlign: "center",
-    marginBottom: modernSpacing.xs,
-  },
-  subtitle: {
-    ...modernTypography.body.medium,
-    color: modernColors.text.secondary,
-    textAlign: "center",
-    letterSpacing: 1,
-  },
-  loadingContainer: {
-    alignItems: "center",
-    gap: modernSpacing.md,
-  },
-  loadingText: {
-    ...modernTypography.body.small,
-    color: modernColors.text.tertiary,
-  },
-  versionText: {
-    position: 'absolute',
-    bottom: 50,
-    ...modernTypography.label.small,
-    color: "rgba(255,255,255,0.3)",
-  }
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: theme.spacing.xl,
+    },
+    contentContainer: {
+      width: "100%",
+      maxWidth: 400,
+      alignItems: "center",
+    },
+    card: {
+      width: "100%",
+      alignItems: "center",
+      paddingVertical: theme.spacing.xxl,
+    },
+    logoContainer: {
+      alignItems: "center",
+      marginBottom: theme.spacing.xl,
+    },
+    iconPlaceholder: {
+      width: 80,
+      height: 80,
+      borderRadius: 24,
+      backgroundColor: theme.colors.accent,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: theme.spacing.md,
+      shadowColor: theme.colors.accent,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.4,
+      shadowRadius: 12,
+      elevation: 10,
+    },
+    iconText: {
+      fontSize: 32,
+      fontWeight: "bold",
+      color: "#ffffff",
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: "600",
+      color: theme.colors.text,
+      textAlign: "center",
+      marginBottom: theme.spacing.xs,
+      letterSpacing: -0.25,
+    },
+    subtitle: {
+      fontSize: 16,
+      fontWeight: "400",
+      color: theme.colors.textSecondary,
+      textAlign: "center",
+      letterSpacing: 0.5,
+    },
+    loadingContainer: {
+      alignItems: "center",
+      gap: theme.spacing.md,
+    },
+    loadingText: {
+      fontSize: 14,
+      fontWeight: "400",
+      color: theme.colors.muted,
+    },
+    versionText: {
+      position: "absolute",
+      bottom: 50,
+      fontSize: 12,
+      fontWeight: "500",
+      color: "rgba(255,255,255,0.3)",
+    },
+  });

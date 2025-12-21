@@ -34,9 +34,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
 
         # Log request with ID (only for non-health endpoints to reduce noise)
         if not request.url.path.startswith("/health"):
-            logger.debug(
-                f"Request: {request.method} {request.url.path} [Request-ID: {request_id}]"
-            )
+            logger.debug(f"Request: {request.method} {request.url.path} [Request-ID: {request_id}]")
 
         # Process request
         response = await call_next(request)

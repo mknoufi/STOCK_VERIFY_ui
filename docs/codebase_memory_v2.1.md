@@ -12,13 +12,13 @@
 |--------|-------------|----------|
 | Backend | FastAPI | 0.115.6 |
 | Backend | Python | 3.10+ |
-| Database | MongoDB | 6.x (Motor 3.4.0) |
+| Database | MongoDB | 8.0 (Motor 3.7.1) |
 | Database | SQL Server | 2019 (Read-only) |
 | Frontend | React Native | 0.81.5 |
 | Frontend | Expo | ~54.0 (Stable) |
-| State | Zustand | 5.0.8 |
+| State | Zustand | 5.0.9 |
 | Styling | NativeWind | 3.5.2 |
-| Auth | JWT (Authlib) | 1.3.0 |
+| Auth | JWT (Authlib) | ≥1.4.0 |
 
 ---
 

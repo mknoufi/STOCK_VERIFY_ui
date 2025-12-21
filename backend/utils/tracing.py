@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ def _is_tracing_enabled() -> bool:
     return False
 
 
-def init_tracing(service_name: str | None = None) -> None:
+def init_tracing(service_name: Optional[str] = None) -> None:
     """Initialize OpenTelemetry tracing for the FastAPI app.
 
     This sets a global TracerProvider with an OTLP HTTP exporter pointing to

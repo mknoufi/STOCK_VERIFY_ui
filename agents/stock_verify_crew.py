@@ -20,7 +20,6 @@ from pathlib import Path
 try:
     from crewai import Agent, Crew, Process, Task
     from crewai.tools import tool
-    from langchain_community.tools import DuckDuckGoSearchRun
 except ImportError:
     print("Please install required packages: pip install -r agents/requirements.txt")
     sys.exit(1)

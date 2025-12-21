@@ -58,7 +58,7 @@ class RedisService:
             self._client = Redis(connection_pool=self._pool)
 
             # Test connection
-            await self._client.ping()
+            await self._client.ping()  # type: ignore
             self._is_connected = True
 
             logger.info(
@@ -86,7 +86,7 @@ class RedisService:
 
             # Ping test
             start = asyncio.get_event_loop().time()
-            await self._client.ping()
+            await self._client.ping()  # type: ignore
             latency = (asyncio.get_event_loop().time() - start) * 1000
 
             # Get info
@@ -144,7 +144,7 @@ class RedisService:
             nx: Only set if key doesn't exist (SETNX)
             xx: Only set if key exists
         """
-        return await self.client.set(key, value, ex=ex, px=px, nx=nx, xx=xx)
+        return await self.client.set(key, value, ex=ex, px=px, nx=nx, xx=xx)  # type: ignore
 
     async def delete(self, *keys: str) -> int:
         """Delete one or more keys"""
@@ -172,45 +172,43 @@ class RedisService:
 
     async def hget(self, name: str, key: str) -> Optional[str]:
         """Get hash field value"""
-        return await self.client.hget(name, key)
+        return await self.client.hget(name, key)  # type: ignore
 
     async def hset(self, name: str, key: str, value: Union[str, int, float]) -> int:
         """Set hash field value"""
-        return await self.client.hset(name, key, value)
+        return await self.client.hset(name, key, value)  # type: ignore
 
     async def hgetall(self, name: str) -> dict:
         """Get all hash fields"""
-        return await self.client.hgetall(name)
+        return await self.client.hgetall(name)  # type: ignore
 
     async def hdel(self, name: str, *keys: str) -> int:
         """Delete hash fields"""
-        return await self.client.hdel(name, *keys)
+        return await self.client.hdel(name, *keys)  # type: ignore
 
     async def sadd(self, name: str, *values: str) -> int:
         """Add members to set"""
-        return await self.client.sadd(name, *values)
+        return await self.client.sadd(name, *values)  # type: ignore
 
-    async def smembers(self, name: str) -> set:
+    async def smembers(self, name: str) -> "set[str]":
         """Get all set members"""
-        return await self.client.smembers(name)
+        return await self.client.smembers(name)  # type: ignore
 
     async def srem(self, name: str, *values: str) -> int:
         """Remove members from set"""
-        return await self.client.srem(name, *values)
+        return await self.client.srem(name, *values)  # type: ignore
 
     async def zadd(self, name: str, mapping: dict, nx: bool = False) -> int:
         """Add members to sorted set"""
-        return await self.client.zadd(name, mapping, nx=nx)
+        return await self.client.zadd(name, mapping, nx=nx)  # type: ignore
 
-    async def zrange(
-        self, name: str, start: int, end: int, withscores: bool = False
-    ) -> list:
+    async def zrange(self, name: str, start: int, end: int, withscores: bool = False) -> list:
         """Get sorted set range"""
-        return await self.client.zrange(name, start, end, withscores=withscores)
+        return await self.client.zrange(name, start, end, withscores=withscores)  # type: ignore
 
     async def publish(self, channel: str, message: str) -> int:
         """Publish message to channel"""
-        return await self.client.publish(channel, message)
+        return await self.client.publish(channel, message)  # type: ignore
 
     async def pipeline(self):
         """Create pipeline for batch operations"""

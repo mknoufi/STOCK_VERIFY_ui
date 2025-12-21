@@ -4,14 +4,28 @@ const os = require("os");
 
 function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
+  const allAddresses = [];
+
+  // Collect all valid IPv4 addresses
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name]) {
-      // Skip internal (i.e. 127.0.0.1) and non-ipv4 addresses
       if (iface.family === "IPv4" && !iface.internal) {
-        return iface.address;
+        allAddresses.push({ name, address: iface.address });
       }
     }
   }
+
+  // Priority 1: en0 (standard Mac WiFi)
+  const en0 = allAddresses.find(idx => idx.name === 'en0');
+  if (en0) return en0.address;
+
+  // Priority 2: 192.168.0.x (common home WiFi subnet)
+  const zeroSubnet = allAddresses.find(idx => idx.address.startsWith('192.168.0.'));
+  if (zeroSubnet) return zeroSubnet.address;
+
+  // Priority 3: First available
+  if (allAddresses.length > 0) return allAddresses[0].address;
+
   return "localhost";
 }
 

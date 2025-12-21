@@ -48,6 +48,16 @@ async def get_connection_pool_metrics(current_user: dict = Depends(get_current_u
         )
 
 
+def _safe_get_metrics(obj: Any, method_name: str, fallback_name: str) -> dict[str, Any]:
+    """Safely call a metrics method on an object."""
+    if not hasattr(obj, method_name):
+        return {}
+    try:
+        return getattr(obj, method_name)()
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @router.get("/system", response_model=ApiResponse[dict[str, Any]])
 async def get_system_metrics(current_user: dict = Depends(get_current_user)):
     """
@@ -55,6 +65,8 @@ async def get_system_metrics(current_user: dict = Depends(get_current_user)):
     Requires authentication
     """
     try:
+        from datetime import datetime
+
         from backend.server import (
             cache_service,
             database_health_service,
@@ -63,44 +75,18 @@ async def get_system_metrics(current_user: dict = Depends(get_current_user)):
         )
 
         metrics: dict[str, Any] = {
-            "timestamp": None,
+            "timestamp": datetime.utcnow().isoformat(),
             "services": {},
         }
 
-        # Monitoring service metrics
-        if hasattr(monitoring_service, "get_metrics"):
-            try:
-                monitoring_metrics = monitoring_service.get_metrics()
-                metrics["monitoring"] = monitoring_metrics
-            except Exception as e:
-                metrics["monitoring"] = {"error": str(e)}
-
-        # Cache service metrics
-        if hasattr(cache_service, "get_status"):
-            try:
-                cache_status = cache_service.get_status()
-                metrics["services"]["cache"] = cache_status
-            except Exception as e:
-                metrics["services"]["cache"] = {"error": str(e)}
-
-        # Rate limiter metrics
-        if hasattr(rate_limiter, "get_stats"):
-            try:
-                rate_limiter_stats = rate_limiter.get_stats()
-                metrics["services"]["rate_limiter"] = rate_limiter_stats
-            except Exception as e:
-                metrics["services"]["rate_limiter"] = {"error": str(e)}
-
-        # Database health
-        try:
-            mongo_health = database_health_service.check_mongodb_health()
-            metrics["services"]["mongodb"] = mongo_health
-        except Exception as e:
-            metrics["services"]["mongodb"] = {"error": str(e)}
-
-        from datetime import datetime
-
-        metrics["timestamp"] = datetime.utcnow().isoformat()
+        metrics["monitoring"] = _safe_get_metrics(monitoring_service, "get_metrics", "monitoring")
+        metrics["services"]["cache"] = _safe_get_metrics(cache_service, "get_status", "cache")
+        metrics["services"]["rate_limiter"] = _safe_get_metrics(
+            rate_limiter, "get_stats", "rate_limiter"
+        )
+        metrics["services"]["mongodb"] = _safe_get_metrics(
+            database_health_service, "check_mongodb_health", "mongodb"
+        )
 
         return ApiResponse.success_response(
             data=metrics,

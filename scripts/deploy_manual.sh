@@ -7,7 +7,10 @@ MONGO_DATA_DIR="$PROJECT_ROOT/mongodb_data"
 LOG_DIR="$PROJECT_ROOT/logs"
 BACKEND_PORT=8001
 # Use the user's detected IP
-HOST_IP="192.168.31.212"
+HOST_IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1 || echo "192.168.1.47")
+if [ -z "$HOST_IP" ]; then
+    HOST_IP="127.0.0.1"
+fi
 
 # Create directories
 mkdir -p "$MONGO_DATA_DIR"

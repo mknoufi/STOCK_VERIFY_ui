@@ -4,12 +4,17 @@ caching, validation, and performance monitoring
 """
 
 import logging
+import re
 import time
 from datetime import datetime
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
+# Share barcode normalization logic with the ERP API so that
+# both endpoints enforce consistent validation rules.
+from backend.api.erp_api import _normalize_barcode_input
 
 # Import from auth module to avoid circular imports
 from backend.auth.dependencies import get_current_user_async as get_current_user
@@ -34,41 +39,29 @@ def init_enhanced_api(database, cache_svc, monitoring_svc):
     monitoring_service = monitoring_svc
 
 
+_ALPHANUMERIC_PATTERN = re.compile(r"^[A-Z0-9_\-]+$")
+
+
 def _validate_barcode_format(barcode: Optional[str]) -> str:
-    """Validate barcode strictly: 6 digits, starts with 51, 52, or 53"""
-    if not barcode or len(barcode.strip()) == 0:
-        raise HTTPException(status_code=400, detail="Barcode cannot be empty")
+    """Validate barcode input using the shared ERP normalization rules.
 
-    barcode = barcode.strip()
+    Enhanced barcode lookups should behave consistently with the core ERP
+    ``/erp/items/barcode/{barcode}`` endpoint, including the stricter
+    numeric prefix and length rules.
+    """
 
-    # STRICT VALIDATION: Barcode must be exactly 6 digits and start with 51, 52, or 53
-    # UPDATE: Relaxed validation to allow item codes for generic lookup
-    allowed_prefixes = ("51", "52", "53")
-    is_correct_length = len(barcode) == 6
-    has_correct_prefix = barcode.startswith(allowed_prefixes)
-
-    # Check if numeric
-    if not barcode.isdigit():
+    if barcode is None:
         raise HTTPException(
             status_code=400,
             detail={
-                "message": "Invalid barcode: must be numeric",
-                "barcode": barcode,
-                "error_code": "INVALID_BARCODE_FORMAT",
+                "message": "Barcode cannot be empty",
+                "error_code": "INVALID_BARCODE_EMPTY",
             },
         )
 
-    if not is_correct_length or not has_correct_prefix:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "message": "Invalid barcode. Must be exactly 6 digits and start with 51, 52, or 53.",
-                "barcode": barcode,
-                "error_code": "INVALID_BARCODE",
-                "requirements": "6 digits, starts with 51-53",
-            },
-        )
-    return barcode
+    # Delegate to the shared normalizer and disallow alphanumeric-only codes
+    # for the enhanced barcode endpoint.
+    return _normalize_barcode_input(barcode, allow_alphanumeric=False)
 
 
 # Enhanced router with comprehensive item management
@@ -105,25 +98,27 @@ async def get_item_by_barcode_enhanced(
         if monitoring_service:
             monitoring_service.track_request("enhanced_barcode_lookup", request)
 
-        # Validate barcode format
-        _validate_barcode_format(barcode)
+        # Validate barcode format and normalize input
+        normalized_barcode = _validate_barcode_format(barcode)
 
         # Determine data source strategy
         if force_source:
-            item_data, source = await _fetch_from_specific_source(barcode, force_source)
+            item_data, source = await _fetch_from_specific_source(
+                normalized_barcode, force_source
+            )
         else:
-            item_data, source = await _fetch_with_fallback_strategy(barcode)
+            item_data, source = await _fetch_with_fallback_strategy(normalized_barcode)
 
         response_time = (time.time() - start_time) * 1000
 
         # Return 404 if item not found
         if not item_data or source == "not_found":
-            logger.warning(f"Item not found for barcode: {barcode}")
+            logger.warning(f"Item not found for barcode: {normalized_barcode}")
             raise HTTPException(
                 status_code=404,
                 detail={
                     "message": "Item not found",
-                    "barcode": barcode,
+                    "barcode": normalized_barcode,
                     "source": "not_found",
                     "response_time_ms": response_time,
                 },
@@ -131,7 +126,7 @@ async def get_item_by_barcode_enhanced(
 
         # Log performance
         logger.info(
-            f"Enhanced barcode lookup: {barcode} from {source} in {response_time:.2f}ms"
+            f"Enhanced barcode lookup: {normalized_barcode} from {source} in {response_time:.2f}ms"
         )
 
         # Prepare response
@@ -142,7 +137,7 @@ async def get_item_by_barcode_enhanced(
                     "source": source,
                     "response_time_ms": response_time,
                     "timestamp": datetime.utcnow().isoformat(),
-                    "barcode_searched": barcode,
+                    "barcode_searched": normalized_barcode,
                     "user": current_user["username"],
                 }
                 if include_metadata
@@ -154,7 +149,7 @@ async def get_item_by_barcode_enhanced(
         if item_data and cache_service:
             await cache_service.set_async(
                 "items",
-                f"enhanced_{barcode}",
+                f"enhanced_{normalized_barcode}",
                 response_data,
                 ttl=1800,  # 30 minutes
             )
@@ -187,12 +182,15 @@ async def _fetch_from_specific_source(
     """Fetch item from a specific data source"""
 
     if source == "mongodb":
+        regex_match = {"$regex": f"^{re.escape(barcode)}$", "$options": "i"}
         item = await db.erp_items.find_one(
             {
                 "$or": [
                     {"barcode": barcode},
                     {"autobarcode": barcode},
+                    {"manual_barcode": barcode},
                     {"item_code": barcode},
+                    {"item_code": regex_match},
                 ]
             }
         )
@@ -227,12 +225,15 @@ async def _fetch_with_fallback_strategy(barcode: str) -> tuple[Optional[dict], s
 
     # Strategy 2: MongoDB (primary app database)
     try:
+        regex_match = {"$regex": f"^{re.escape(barcode)}$", "$options": "i"}
         mongo_item = await db.erp_items.find_one(
             {
                 "$or": [
                     {"barcode": barcode},
                     {"autobarcode": barcode},
+                    {"manual_barcode": barcode},
                     {"item_code": barcode},
+                    {"item_code": regex_match},
                 ]
             }
         )

@@ -93,7 +93,7 @@ class Settings(PydanticBaseSettings):
     # - MONGO_URL (preferred)
     # - MONGODB_URI / MONGODB_URL (common in many deploy setups)
     MONGO_URL: str = Field(default="mongodb://localhost:27017")
-
+    DB_NAME: str = "stock_verification"
 
     @validator("MONGO_URL", pre=True, always=True)
     def validate_and_detect_mongo_url(cls, v):

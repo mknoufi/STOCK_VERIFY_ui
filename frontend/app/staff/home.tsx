@@ -21,7 +21,6 @@ import { useSessionsQuery } from "../../src/hooks/useSessionsQuery";
 import { SESSION_PAGE_SIZE } from "../../src/constants/config";
 import { PremiumInput } from "../../src/components/premium/PremiumInput";
 import { SessionType } from "../../src/types";
-
 import { useThemeContext } from "../../src/theme/ThemeContext";
 import {
   FloatingScanButton,
@@ -29,6 +28,18 @@ import {
   ScreenContainer,
 } from "../../src/components/ui";
 import { SectionLists } from "./components/SectionLists";
+
+interface Zone {
+  id: string;
+  zone_name: string;
+}
+
+interface Warehouse {
+  id: string;
+  warehouse_name: string;
+}
+
+
 
 export default function StaffHome() {
   const router = useRouter();
@@ -47,8 +58,8 @@ export default function StaffHome() {
   const [showFloorPicker, setShowFloorPicker] = useState(false);
 
   // Dynamic Location State
-  const [zones, setZones] = useState<string[]>([]);
-  const [warehouses, setWarehouses] = useState<string[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
 
   // Queries
@@ -282,6 +293,7 @@ export default function StaffHome() {
     try {
       setIsLoadingLocations(true);
       const data = await getWarehouses(type);
+      console.log("🔍 Warehouse Data for type", type, ":", JSON.stringify(data));
       setWarehouses(data);
     } catch (error) {
       console.error("Failed to fetch warehouses", error);
@@ -468,25 +480,25 @@ export default function StaffHome() {
                   ) : (
                     zones.map((zone) => (
                       <TouchableOpacity
-                        key={zone}
+                        key={zone.id || zone.zone_name}
                         style={[
                           styles.locationTypeButton,
                           {
                             backgroundColor:
-                              locationType === zone
+                              locationType === zone.zone_name
                                 ? "#0EA5E915"
                                 : isDark
                                   ? "#1E293B"
                                   : "#F8FAFC",
                             borderColor:
-                              locationType === zone
+                              locationType === zone.zone_name
                                 ? "#0EA5E9"
                                 : isDark
                                   ? "#334155"
                                   : "#E2E8F0",
                           },
                         ]}
-                        onPress={() => handleLocationTypeChange(zone)}
+                        onPress={() => handleLocationTypeChange(zone.zone_name)}
                         activeOpacity={0.7}
                       >
                         <View
@@ -494,7 +506,7 @@ export default function StaffHome() {
                             styles.locationIcon,
                             {
                               backgroundColor:
-                                locationType === zone
+                                locationType === zone.zone_name
                                   ? "#0EA5E920"
                                   : isDark
                                     ? "#334155"
@@ -503,10 +515,14 @@ export default function StaffHome() {
                           ]}
                         >
                           <Ionicons
-                            name={zone.toLowerCase().includes("showroom") ? "storefront" : "cube"}
+                            name={
+                              zone.zone_name.toLowerCase().includes("showroom")
+                                ? "storefront"
+                                : "cube"
+                            }
                             size={24}
                             color={
-                              locationType === zone
+                              locationType === zone.zone_name
                                 ? "#0EA5E9"
                                 : isDark
                                   ? "#94A3B8"
@@ -519,7 +535,7 @@ export default function StaffHome() {
                             styles.locationTypeText,
                             {
                               color:
-                                locationType === zone
+                                locationType === zone.zone_name
                                   ? "#0EA5E9"
                                   : isDark
                                     ? "#F8FAFC"
@@ -527,9 +543,9 @@ export default function StaffHome() {
                             },
                           ]}
                         >
-                          {zone}
+                          {zone.zone_name}
                         </Text>
-                        {locationType === zone ? (
+                        {locationType === zone.zone_name ? (
                           <View style={styles.checkBadge}>
                             <Ionicons name="checkmark" size={14} color="#FFFFFF" />
                           </View>
@@ -672,14 +688,15 @@ export default function StaffHome() {
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal >
 
       {/* Floor Picker Modal */}
-      <Modal
+      < Modal
         visible={showFloorPicker}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowFloorPicker(false)}
+        onRequestClose={() => setShowFloorPicker(false)
+        }
       >
         <View style={styles.floorPickerOverlay}>
           <TouchableOpacity
@@ -715,21 +732,27 @@ export default function StaffHome() {
             <ScrollView>
               {isLoadingLocations ? (
                 <ActivityIndicator color={isDark ? "#F8FAFC" : "#0F172A"} style={{ padding: 20 }} />
+              ) : warehouses.length === 0 ? (
+                <View style={{ padding: 20, alignItems: "center" }}>
+                  <Text style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 16 }}>
+                    No floors available
+                  </Text>
+                </View>
               ) : (
                 warehouses.map((floor) => (
                   <TouchableOpacity
-                    key={floor}
+                    key={floor.id || floor.warehouse_name}
                     style={[
                       styles.modalOption,
                       {
                         backgroundColor:
-                          selectedFloor === floor
+                          selectedFloor === floor.warehouse_name
                             ? "#0EA5E910"
                             : "transparent",
                       },
                     ]}
                     onPress={() => {
-                      setSelectedFloor(floor);
+                      setSelectedFloor(floor.warehouse_name);
                       setShowFloorPicker(false);
                       if (Platform.OS !== "web") Haptics.selectionAsync();
                     }}
@@ -739,28 +762,29 @@ export default function StaffHome() {
                         styles.modalOptionText,
                         {
                           color:
-                            selectedFloor === floor
+                            selectedFloor === floor.warehouse_name
                               ? "#0EA5E9"
                               : isDark
                                 ? "#F8FAFC"
                                 : "#0F172A",
-                          fontWeight: selectedFloor === floor ? "700" : "400",
+                          fontWeight: selectedFloor === floor.warehouse_name ? "700" : "400",
                         },
                       ]}
                     >
-                      {floor}
+                      {floor.warehouse_name}
                     </Text>
-                    {selectedFloor === floor && (
+                    {selectedFloor === floor.warehouse_name && (
                       <Ionicons name="checkmark" size={20} color="#0EA5E9" />
                     )}
                   </TouchableOpacity>
                 ))
-              )}
+              )
+              }
             </ScrollView>
           </View>
         </View>
-      </Modal>
-    </ScreenContainer>
+      </Modal >
+    </ScreenContainer >
   );
 }
 

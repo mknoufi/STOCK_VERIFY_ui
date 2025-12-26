@@ -41,12 +41,23 @@ export interface OfflineQueueItem {
 }
 
 export interface CachedSession {
-  session_id: string;
+  id: string;
   warehouse: string;
+  staff_user: string;
+  staff_name: string;
   status: string;
-  created_by: string;
-  created_at: string;
+  type: string;
+  started_at: string;
+  closed_at?: string;
+  reconciled_at?: string;
+  total_items?: number;
+  total_variance?: number;
+  notes?: string;
   cached_at: string;
+  // Legacy fields fallback
+  session_id?: string;
+  created_by?: string;
+  created_at?: string;
 }
 
 export interface CachedCountLine {
@@ -244,22 +255,42 @@ export const clearOfflineQueue = async () => {
 
 // Session Cache Operations
 export const cacheSession = async (
-  session: Omit<CachedSession, "cached_at">,
+  session: Omit<CachedSession, "cached_at"> | any, // Use any to allow backend objects to be passed in
 ) => {
   try {
-    const cachedSession: CachedSession = {
-      ...session,
+    // Normalization logic
+    const normalizedSession: CachedSession = {
+      id: session.id || session.session_id || `temp_${Date.now()}`,
+      warehouse: session.warehouse,
+      status: session.status,
+      type: session.type || "STANDARD",
+      staff_user: session.staff_user || session.created_by || "unknown",
+      staff_name: session.staff_name || "Staff",
+      started_at: session.started_at || session.created_at || new Date().toISOString(),
+      closed_at: session.closed_at,
+      reconciled_at: session.reconciled_at,
+      total_items: session.total_items,
+      total_variance: session.total_variance,
+      notes: session.notes,
       cached_at: new Date().toISOString(),
     };
+
+    if (!normalizedSession.id || normalizedSession.id === "undefined") {
+        console.warn("Attempted to cache session with invalid ID:", session);
+        return normalizedSession;
+    }
 
     const existingCache = await getSessionsCache();
     const updatedCache = {
       ...existingCache,
-      [session.session_id]: cachedSession,
+      [normalizedSession.id]: normalizedSession,
     };
 
+    // Remove any undefined keys if present
+    delete (updatedCache as any)["undefined"];
+
     await storage.set(STORAGE_KEYS.SESSIONS_CACHE, updatedCache);
-    return cachedSession;
+    return normalizedSession;
   } catch (error) {
     __DEV__ && console.error("Error caching session:", error);
     throw error;
@@ -276,6 +307,16 @@ export const getSessionsCache = async (): Promise<
         defaultValue: {},
       },
     );
+
+    // Self-healing: remove undefined keys
+    if (cache && (cache as any)["undefined"]) {
+        __DEV__ && console.log("🧹 Cleaning up invalid 'undefined' session cache entry");
+        const cleanCache = { ...cache };
+        delete (cleanCache as any)["undefined"];
+        await storage.set(STORAGE_KEYS.SESSIONS_CACHE, cleanCache);
+        return cleanCache;
+    }
+
     return cache ?? {};
   } catch (error) {
     __DEV__ && console.error("Error getting sessions cache:", error);

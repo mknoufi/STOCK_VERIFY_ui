@@ -57,3 +57,10 @@ These rules help AI coding agents work productively and safely in this repo. Foc
 - Run end‑to‑end locally: `./start.sh` → open API docs at `http://localhost:8001/api/docs` and Expo dev tools.
 
 References: `ARCHITECTURE.md`, `API_CONTRACTS.md`, `API_REFERENCE.md`, `DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md`, `Makefile`, `docker-compose.yml`, `RUN_APP.md`.
+
+## Active Technologies
+- Python 3.10+ (Backend), TypeScript 5.0+ (Frontend) + FastAPI, React Native (Expo), MongoDB, SQL Server (pyodbc) (002-system-modernization-and-enhancements)
+- MongoDB (Primary), SQL Server (Read-only ERP), Redis (Optional Cache) (002-system-modernization-and-enhancements)
+
+## Recent Changes
+- 002-system-modernization-and-enhancements: Added Python 3.10+ (Backend), TypeScript 5.0+ (Frontend) + FastAPI, React Native (Expo), MongoDB, SQL Server (pyodbc)

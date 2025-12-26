@@ -27,3 +27,19 @@ MONGO_PID=$!
 
 echo "✅ MongoDB started with PID: $MONGO_PID"
 echo "   To stop it, run: kill $MONGO_PID"
+
+echo "⏳ Waiting for MongoDB to be ready..."
+# Wait for port 27017 to be open
+MAX_RETRIES=30
+COUNT=0
+while [ $COUNT -lt $MAX_RETRIES ]; do
+    if nc -z localhost 27017 2>/dev/null; then
+        echo "✅ MongoDB is ready!"
+        exit 0
+    fi
+    sleep 1
+    ((COUNT++))
+done
+
+echo "⚠️  MongoDB started but port 27017 is not accessible yet."
+exit 0

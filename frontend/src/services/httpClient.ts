@@ -1,6 +1,7 @@
 import axios from "axios";
 import Constants from "expo-constants";
 import { useAuthStore } from "./authStore";
+import { secureStorage } from "./storage/secureStorage";
 
 // Logic to determine the backend URL
 // Priority:
@@ -84,6 +85,11 @@ apiClient.interceptors.response.use(
       // Handle session expiration (401 Unauthorized)
       if (error.response.status === 401) {
         console.warn("[API] Session expired or unauthorized. Logging out...");
+
+        // Clear storage immediately to prevent stale token persistence
+        secureStorage.removeItem("auth_token").catch(console.error);
+        secureStorage.removeItem("refresh_token").catch(console.error);
+
         useAuthStore.getState().logout();
       }
     } else if (error.request) {

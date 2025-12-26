@@ -15,6 +15,7 @@ echo "🚀 Starting Stock Verify Application..."
 echo "📍 Detected Local IP: $LOCAL_IP"
 echo "🛑 Stopping any running instances first..."
 "$SCRIPT_DIR/scripts/stop_all.sh" 2>/dev/null || true
+rm -f "$SCRIPT_DIR/backend_port.json" # Clean up old port file
 sleep 2
 
 echo ""
@@ -28,34 +29,45 @@ tell application "Terminal"
 end tell
 APPLESCRIPT
 
-echo "⏳ Waiting for Backend to initialize on $LOCAL_IP:$PORT..."
+echo "⏳ Waiting for Backend to initialize and write likely port..."
 
-# Loop to check health
-MAX_RETRIES=30
+# Loop to check for backend_port.json and then health
+MAX_RETRIES=60
 COUNT=0
 BACKEND_READY=false
+DETECTED_PORT=""
 
 while [ $COUNT -lt $MAX_RETRIES ]; do
-    # Check IP
-    if curl -s "http://$LOCAL_IP:$PORT/api/health" > /dev/null; then
-        BACKEND_READY=true
-        echo "✅ Connection confirmed: http://$LOCAL_IP:$PORT/api/health"
-        break
-    fi
-    # Check localhost
-    if curl -s "http://localhost:$PORT/api/health" > /dev/null; then
-        BACKEND_READY=true
-        echo "✅ Connection confirmed: http://localhost:$PORT/api/health"
-        break
+    # 1. Check for backend_port.json
+    if [ -f "$SCRIPT_DIR/backend_port.json" ]; then
+        # Try to read port using python (available on mac) to avoid jq dependency
+        DETECTED_PORT=$(python3 -c "import json; print(json.load(open('$SCRIPT_DIR/backend_port.json'))['port'])" 2>/dev/null)
+
+        if [ ! -z "$DETECTED_PORT" ]; then
+            # 2. Check health using detected port
+            if curl -s "http://$LOCAL_IP:$DETECTED_PORT/api/health" > /dev/null; then
+                BACKEND_READY=true
+                PORT=$DETECTED_PORT
+                echo "✅ Connection confirmed: http://$LOCAL_IP:$PORT/api/health"
+                break
+            fi
+            # Check localhost fallback
+            if curl -s "http://localhost:$DETECTED_PORT/api/health" > /dev/null; then
+                BACKEND_READY=true
+                PORT=$DETECTED_PORT
+                echo "✅ Connection confirmed: http://localhost:$PORT/api/health"
+                break
+            fi
+        fi
     fi
 
     echo "   ... waiting for backend ($COUNT/$MAX_RETRIES)"
-    sleep 2
+    sleep 1
     ((COUNT++))
 done
 
 if [ "$BACKEND_READY" = true ]; then
-    echo "✅ Backend is UP and reachable!"
+    echo "✅ Backend is UP and reachable on port $PORT!"
 
     echo "🚀 Starting Frontend..."
 

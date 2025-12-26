@@ -382,7 +382,7 @@ export default function LoginScreen() {
                                 height: responsive.keypadButtonSize,
                                 borderRadius: responsive.keypadButtonSize / 2,
                               }]}
-                              onPress={() => handlePinDigit(digit)}
+                              onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
                             >

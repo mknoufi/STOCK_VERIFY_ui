@@ -102,6 +102,11 @@ async def get_sessions(
     )
     sessions = await sessions_cursor.to_list(length=page_size)
 
+    # DEBUG LOGGING
+    logger.info(f"SESSION QUERY: {query}")
+    logger.info(f"SESSIONS FOUND: {len(sessions)} (Total: {total})")
+    # END DEBUG LOGGING
+
     # Convert to response models
     result = []
     for session in sessions:

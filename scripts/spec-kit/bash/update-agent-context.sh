@@ -293,6 +293,8 @@ create_new_agent_file() {
 
     local commands
     commands=$(get_commands_for_language "$NEW_LANG")
+    # Escape ampersands for sed replacement
+    commands=${commands//&/\\&}
 
     local language_conventions
     language_conventions=$(get_language_conventions "$NEW_LANG")
@@ -331,7 +333,7 @@ create_new_agent_file() {
         "s|\[DATE\]|$current_date|"
         "s|\[EXTRACTED FROM ALL PLAN.MD FILES\]|$tech_stack|"
         "s|\[ACTUAL STRUCTURE FROM PLANS\]|$project_structure|g"
-        "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$commands|"
+        "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$commands|g"
         "s|\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]|$language_conventions|"
         "s|\[LAST 3 FEATURES AND WHAT THEY ADDED\]|$recent_change|"
     )

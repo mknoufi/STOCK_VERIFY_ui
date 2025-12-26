@@ -37,6 +37,30 @@ def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
     return True
 
 
+def _matches_exists_logic(
+    document: dict[str, Any], key: str, value: dict[str, Any]
+) -> bool:
+    """Helper to handle $exists operator logic."""
+    should_exist = value["$exists"]
+    does_exist = key in document
+
+    if does_exist != should_exist:
+        return False
+
+    # If we effectively passed the existence check, see if there are other operators
+    condition_without_exists = {k: v for k, v in value.items() if k != "$exists"}
+    if not condition_without_exists:
+        return True
+
+    # If the field doesn't exist but we passed requirements (e.g. $exists: False),
+    # we shouldn't evaluate other operators against None usually.
+    if not does_exist:
+        return True
+
+    doc_value = document.get(key)
+    return _match_condition(doc_value, condition_without_exists)
+
+
 def _match_filter(
     document: dict[str, Any], filter_query: dict[str, Optional[Any]]
 ) -> bool:
@@ -50,6 +74,12 @@ def _match_filter(
                 return False
             continue
 
+        # Handle $exists specifically
+        if isinstance(value, dict) and "$exists" in value:
+            if not _matches_exists_logic(document, key, value):
+                return False
+            continue
+
         doc_value = document.get(key)
         if isinstance(value, dict):
             if not _match_condition(doc_value, value):
@@ -57,7 +87,6 @@ def _match_filter(
         else:
             if doc_value != value:
                 return False
-
     return True
 
 

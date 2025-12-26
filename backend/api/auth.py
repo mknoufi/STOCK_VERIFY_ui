@@ -646,18 +646,19 @@ async def change_pin(
 ) -> dict[str, Any]:
     """
     Change user PIN.
-    Validates current PIN before allowing change.
+    Validates current PIN or current password before allowing change.
     """
     body = await request.json()
     current_pin = body.get("current_pin")
+    current_password = body.get("current_password")
     new_pin = body.get("new_pin")
 
-    if not current_pin or not new_pin:
+    if not new_pin:
         raise HTTPException(
             status_code=400,
             detail={
                 "error_code": "MISSING_FIELDS",
-                "message": "Both current_pin and new_pin are required",
+                "message": "new_pin is required",
             },
         )
 
@@ -695,40 +696,90 @@ async def change_pin(
             },
         )
 
-    # Verify current PIN
+    # Verify identity
     db = get_db()
     user = await db.users.find_one({"username": current_user["username"]})
 
-    if not user or "pin_hash" not in user:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error_code": "NO_PIN_SET",
-                "message": "No PIN is currently set for this user",
-            },
-        )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-    if not verify_password(current_pin, user["pin_hash"]):
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error_code": "WRONG_CURRENT_PIN",
-                "message": "Current PIN is incorrect",
-            },
-        )
+    # If verifying via current_password
+    if current_password:
+        if "hashed_password" not in user:
+            # Legacy or weird state
+            raise HTTPException(status_code=400, detail="Cannot verify password")
+        if not verify_password(current_password, user["hashed_password"]):
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "WRONG_Current_PASSWORD",
+                    "message": "Current password is incorrect",
+                },
+            )
+
+    # If verifying via current_pin
+    elif current_pin:
+        if "pin_hash" not in user:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "NO_PIN_SET",
+                    "message": "No PIN is currently set. Use password to set a new PIN.",
+                },
+            )
+        if not verify_password(current_pin, user["pin_hash"]):
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "WRONG_CURRENT_PIN",
+                    "message": "Current PIN is incorrect",
+                },
+            )
+    else:
+        # Neither provided
+        # If user has no PIN, they MUST provide password to set it
+        # If user has a PIN, they must provide one of them
+        if "pin_hash" in user:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "AUTH_REQUIRED",
+                    "message": "Please provide current_pin or current_password",
+                },
+            )
+        else:
+            # Even if no PIN is set, we prefer they verify password for sensitive action
+            # But if that's the only way... let's enforce password if they have one.
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "AUTH_REQUIRED",
+                    "message": "Please provide current_password to set a PIN",
+                },
+            )
 
     # Update PIN
+    from backend.utils.crypto_utils import get_pin_lookup_hash
+
     new_pin_hash = get_password_hash(new_pin)
+    pin_lookup_hash = get_pin_lookup_hash(new_pin)
+
     await db.users.update_one(
         {"username": current_user["username"]},
-        {"$set": {"pin_hash": new_pin_hash, "updated_at": datetime.now()}},
+        {
+            "$set": {
+                "pin_hash": new_pin_hash,
+                "pin_lookup_hash": pin_lookup_hash,
+                "updated_at": datetime.now(),
+            }
+        },
     )
 
     logger.info(f"PIN changed for user: {current_user['username']}")
 
     return {
         "success": True,
-        "message": "PIN changed successfully",
+        "message": "PIN updated successfully",
     }
 
 

@@ -55,13 +55,17 @@ export const createSession = async (
   try {
     if (!isOnline()) {
       // Create offline session
+      // Create offline session
       const offlineSession = {
-        session_id: `offline_${Date.now()}`,
+        id: `offline_${Date.now()}`,
         warehouse,
-        type: sessionType || "general", // Default to general if not specified
-        status: "active",
-        created_by: "offline_user",
-        created_at: new Date().toISOString(),
+        status: "OPEN",
+        type: sessionType || "STANDARD",
+        staff_user: "offline_user",
+        staff_name: "Offline User",
+        started_at: new Date().toISOString(),
+        total_items: 0,
+        total_variance: 0,
       };
 
       await cacheSession(offlineSession);
@@ -87,12 +91,17 @@ export const createSession = async (
       );
 
     // Fallback to offline mode
+    // Fallback to offline mode
     const offlineSession = {
-      session_id: `offline_${Date.now()}`,
+      id: `offline_${Date.now()}`,
       warehouse,
-      status: "active",
-      created_by: "offline_user",
-      created_at: new Date().toISOString(),
+      status: "OPEN",
+      type: sessionType || "STANDARD",
+      staff_user: "offline_user",
+      staff_name: "Offline User",
+      started_at: new Date().toISOString(),
+      total_items: 0,
+      total_variance: 0,
     };
 
     await cacheSession(offlineSession);

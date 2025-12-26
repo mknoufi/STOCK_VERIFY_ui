@@ -71,10 +71,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             # Remove server information
             "X-Powered-By": None,  # Remove default X-Powered-By
             # Additional security headers
-            "X-Permitted-Cross-Domain-Policies": "none",
-            "Cross-Origin-Embedder-Policy": options.get("COEP", "require-corp"),
-            "Cross-Origin-Opener-Policy": options.get("COOP", "same-origin"),
-            "Cross-Origin-Resource-Policy": options.get("CORP", "same-origin"),
+            "X-Permitted-Cross-Domain-Policies": "all",  # Allow cross-domain for dev
+            "Cross-Origin-Embedder-Policy": options.get(
+                "COEP", "unsafe-none"
+            ),  # Relaxed for dev
+            "Cross-Origin-Opener-Policy": options.get(
+                "COOP", "same-origin-allow-popups"
+            ),  # Allow popups
+            "Cross-Origin-Resource-Policy": options.get(
+                "CORP", "cross-origin"
+            ),  # Allow cross-origin (frontend <-> backend)
         }
 
         # Remove None values

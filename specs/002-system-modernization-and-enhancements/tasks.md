@@ -14,13 +14,13 @@
 - [x] **[Docs]** Update `STARTUP_GUIDE.md` with new environment setup instructions. <!-- id: 5 -->
 
 ## Phase 2: Backend: Real-time & Auth
-- [ ] **[WebSocket]** Create `backend/services/websocket_service.py` (ConnectionManager). <!-- id: 6 -->
-- [ ] **[Test]** Add unit tests for `websocket_service.py`. <!-- id: 21 -->
-- [ ] **[WebSocket]** Create `backend/api/websocket_api.py` endpoints. <!-- id: 7 -->
-- [ ] **[Test]** Add integration tests for WebSocket endpoints. <!-- id: 22 -->
-- [ ] **[Auth]** Update `User` model with `pin_hash`. <!-- id: 8 -->
-- [ ] **[Auth]** Implement `POST /api/auth/pin/change` endpoint. <!-- id: 9 -->
-- [ ] **[Auth]** Implement `POST /api/auth/login/pin` endpoint. <!-- id: 10 -->
+- [x] **[WebSocket]** Create `backend/services/websocket_service.py` (ConnectionManager). <!-- id: 6 -->
+- [x] **[Test]** Add unit tests for `websocket_service.py`. <!-- id: 21 -->
+- [x] **[WebSocket]** Create `backend/api/websocket_api.py` endpoints. <!-- id: 7 -->
+- [x] **[Test]** Add integration tests for WebSocket endpoints. <!-- id: 22 -->
+- [x] **[Auth]** Update `User` model with `pin_hash`. <!-- id: 8 -->
+- [x] **[Auth]** Implement `POST /api/auth/pin/change` endpoint. <!-- id: 9 -->
+- [x] **[Auth]** Implement `POST /api/auth/login/pin` endpoint. <!-- id: 10 -->
 - [ ] **[Test]** Add tests for PIN change and login flows. <!-- id: 23 -->
 
 ## Phase 3: Backend: User Preferences & Items

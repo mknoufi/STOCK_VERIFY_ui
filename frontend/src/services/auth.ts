@@ -80,6 +80,7 @@ export const authService = {
    */
   async logout(): Promise<void> {
     await useAuthStore.getState().logout();
+    await secureStorage.removeItem(TOKEN_STORAGE_KEY);
     await secureStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
   }
 };

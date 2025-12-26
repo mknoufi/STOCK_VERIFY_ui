@@ -47,7 +47,7 @@ import {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Services that should not show toggle button (read-only status)
-// eslint-disable-next-line react-native/no-raw-text
+
 const NON_TOGGLEABLE_SERVICES: readonly string[] = [
   /* database */ 'database',
   /* sql_server */ 'sql_server',

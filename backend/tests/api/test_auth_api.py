@@ -86,7 +86,7 @@ async def test_change_pin_success(async_client: AsyncClient, auth_headers, test_
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
-    assert data["message"] == "PIN changed successfully"
+    assert data["message"] == "PIN updated successfully"
 
     # Verify in DB
     user = await test_db.users.find_one({"username": TEST_USERNAME})

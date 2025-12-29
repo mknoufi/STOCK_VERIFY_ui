@@ -141,9 +141,7 @@ class ErrorLogService:
             if include_stack_trace:
                 try:
                     stack_trace = "".join(
-                        traceback.format_exception(
-                            type(error), error, error.__traceback__
-                        )
+                        traceback.format_exception(type(error), error, error.__traceback__)
                     )
                 except Exception:
                     stack_trace = traceback.format_exc()
@@ -282,10 +280,7 @@ class ErrorLogService:
             skip = (page - 1) * page_size
 
             cursor = (
-                self.collection.find(filter_query)
-                .sort("timestamp", -1)
-                .skip(skip)
-                .limit(page_size)
+                self.collection.find(filter_query).sort("timestamp", -1).skip(skip).limit(page_size)
             )
             errors = await cursor.to_list(page_size)
 
@@ -370,9 +365,7 @@ class ErrorLogService:
             warning_count = await self.collection.count_documents(
                 {**filter_query, "severity": "warning"}
             )
-            info_count = await self.collection.count_documents(
-                {**filter_query, "severity": "info"}
-            )
+            info_count = await self.collection.count_documents({**filter_query, "severity": "info"})
 
             # Unresolved errors
             unresolved_count = await self.collection.count_documents(
@@ -426,12 +419,10 @@ class ErrorLogService:
                 "unresolved": unresolved_count,
                 "recent_24h": recent_count,
                 "top_error_types": [
-                    {"type": item["_id"], "count": item["count"]}
-                    for item in top_error_types
+                    {"type": item["_id"], "count": item["count"]} for item in top_error_types
                 ],
                 "top_endpoints": [
-                    {"endpoint": item["_id"], "count": item["count"]}
-                    for item in top_endpoints
+                    {"endpoint": item["_id"], "count": item["count"]} for item in top_endpoints
                 ],
             }
         except Exception as e:

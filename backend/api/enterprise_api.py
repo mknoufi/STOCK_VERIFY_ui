@@ -46,9 +46,7 @@ class FeatureFlagRequest(BaseModel):
 class DataSubjectRequestCreate(BaseModel):
     """GDPR data subject request"""
 
-    request_type: str = Field(
-        ..., pattern="^(access|erasure|rectification|portability)$"
-    )
+    request_type: str = Field(..., pattern="^(access|erasure|rectification|portability)$")
     subject_id: str
     subject_email: Optional[str] = None
     notes: Optional[str] = None
@@ -177,13 +175,9 @@ async def add_to_ip_list(
 
     from backend.services.enterprise_security import IPListType
 
-    list_type = (
-        IPListType.WHITELIST if entry.list_type == "whitelist" else IPListType.BLACKLIST
-    )
+    list_type = IPListType.WHITELIST if entry.list_type == "whitelist" else IPListType.BLACKLIST
     expires_at = (
-        datetime.utcnow() + timedelta(hours=entry.expires_hours)
-        if entry.expires_hours
-        else None
+        datetime.utcnow() + timedelta(hours=entry.expires_hours) if entry.expires_hours else None
     )
 
     success = await security_service.add_to_ip_list(
@@ -243,9 +237,7 @@ async def unlock_account(
     if not security_service:
         raise HTTPException(503, "Security service not available")
 
-    success = await security_service.unlock_account(
-        body.username, current_user.get("username")
-    )
+    success = await security_service.unlock_account(body.username, current_user.get("username"))
 
     return {"status": "success" if success else "failed"}
 
@@ -623,9 +615,7 @@ async def get_enterprise_metrics(
 
 
 @enterprise_router.get("/metrics/prometheus")
-async def get_prometheus_metrics(
-    request: Request, current_user: dict = Depends(require_admin)
-):
+async def get_prometheus_metrics(request: Request, current_user: dict = Depends(require_admin)):
     """Get metrics in Prometheus format"""
     from fastapi.responses import PlainTextResponse
 

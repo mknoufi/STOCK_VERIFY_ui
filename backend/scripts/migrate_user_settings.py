@@ -66,9 +66,7 @@ async def migrate_user_settings(db: AsyncIOMotorDatabase) -> dict:
 
             try:
                 # Check if user already has settings
-                existing_settings = await settings_collection.find_one(
-                    {"user_id": user_id}
-                )
+                existing_settings = await settings_collection.find_one({"user_id": user_id})
 
                 if existing_settings:
                     stats["users_with_settings"] += 1

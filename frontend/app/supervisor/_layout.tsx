@@ -57,4 +57,3 @@ const styles = StyleSheet.create({
     backgroundColor: auroraTheme.colors.background.primary,
   },
 });
-

@@ -102,7 +102,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
   // Footer component for infinite scroll
   const renderFooter = useCallback(() => {
     if (!hasNextPage) return null;
-    
+
     if (isLoadingMore) {
       return (
         <View style={styles.loadingMoreContainer}>
@@ -250,7 +250,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           <FlatList
             data={searchResults}
             renderItem={renderSearchResultItem}
-            keyExtractor={(item, index) => 
+            keyExtractor={(item, index) =>
               `search-${index}-${item.item_code || 'no-code'}-${item.barcode || 'no-barcode'}`
             }
             style={styles.searchResultsFlatList}

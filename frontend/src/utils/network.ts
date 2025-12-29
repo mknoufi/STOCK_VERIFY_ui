@@ -1,6 +1,6 @@
 /**
  * Network State Detection Utilities
- * 
+ *
  * Provides three-state network model for reliable offline-first logic.
  * Addresses the issue where unknown network state defaults to online.
  */
@@ -74,7 +74,7 @@ export function getNetworkStatus(): NetworkCheckResult {
 /**
  * Simple boolean check for "is definitively online".
  * Treats UNKNOWN as OFFLINE for safety (conservative approach).
- * 
+ *
  * Use this for write operations where you need certainty.
  */
 export function isDefinitelyOnline(): boolean {
@@ -85,7 +85,7 @@ export function isDefinitelyOnline(): boolean {
 /**
  * Check if we should attempt API calls.
  * More lenient - will attempt if not definitely offline.
- * 
+ *
  * Use this for read operations where cache fallback exists.
  */
 export function shouldAttemptApiCall(): boolean {
@@ -95,7 +95,7 @@ export function shouldAttemptApiCall(): boolean {
 
 /**
  * Check if we're definitively offline.
- * 
+ *
  * Use this to skip API calls entirely when we know it will fail.
  */
 export function isDefinitelyOffline(): boolean {
@@ -105,7 +105,7 @@ export function isDefinitelyOffline(): boolean {
 
 /**
  * Check if network state is unknown/indeterminate.
- * 
+ *
  * Use this to show appropriate UI warnings.
  */
 export function isNetworkUnknown(): boolean {
@@ -115,7 +115,7 @@ export function isNetworkUnknown(): boolean {
 
 /**
  * Legacy compatibility: isOnline function
- * 
+ *
  * @deprecated Use getNetworkStatus() or isDefinitelyOnline() for better semantics
  */
 export function isOnline(): boolean {

@@ -75,6 +75,13 @@ export const createSession = async (
 ) => {
   const warehouse = typeof params === "string" ? params : params.warehouse;
   const sessionType = typeof params !== "string" ? params.type : undefined;
+  const networkStatus = getNetworkStatus();
+
+  log.debug("Create session requested", {
+    warehouse,
+    type: sessionType,
+    networkStatus: networkStatus.status,
+  });
 
   // Helper to create offline session - single source of truth
   const createOfflineSession = () => ({
@@ -97,6 +104,10 @@ export const createSession = async (
       const offlineSession = createOfflineSession();
       await cacheSession(offlineSession);
       await addToOfflineQueue("session", offlineSession);
+      log.debug("Created offline session", {
+        id: offlineSession.id,
+        source: offlineSession._source,
+      });
       return offlineSession;
     }
 
@@ -107,6 +118,10 @@ export const createSession = async (
 
     const response = await api.post("/api/sessions", payload);
     await cacheSession(response.data);
+    log.debug("Created session via API", {
+      id: response.data?.id,
+      status: response.data?.status,
+    });
     return response.data;
   } catch (error) {
     log.warn("Error creating session, switching to offline mode", {
@@ -117,6 +132,10 @@ export const createSession = async (
     const offlineSession = createOfflineSession();
     await cacheSession(offlineSession);
     await addToOfflineQueue("session", offlineSession);
+    log.debug("Created offline session after API error", {
+      id: offlineSession.id,
+      source: offlineSession._source,
+    });
     return offlineSession;
   }
 };
@@ -188,8 +207,38 @@ export const getSessions = async (page: number = 1, pageSize: number = 20) => {
       }
     }
 
+    // Merge in cached sessions not returned by the API (e.g., offline-created)
+    let mergedSessions = sessions;
+    try {
+      const cache = await getSessionsCache();
+      const cachedSessions = Object.values(cache);
+      const user = useAuthStore.getState().user;
+      const isSupervisor = user?.role === "supervisor";
+      const visibleCached = isSupervisor
+        ? cachedSessions
+        : cachedSessions.filter(
+            (session) => session.staff_user === user?.username,
+          );
+
+      if (visibleCached.length > 0) {
+        const seenIds = new Set(
+          sessions
+            .map((session: any) => session?.id || session?.session_id || session?._id)
+            .filter(Boolean),
+        );
+        const missingCached = visibleCached.filter(
+          (session) => !seenIds.has(session.id),
+        );
+        if (missingCached.length > 0) {
+          mergedSessions = [...sessions, ...missingCached];
+        }
+      }
+    } catch (cacheError) {
+      __DEV__ && console.warn("Unable to merge cached sessions:", cacheError);
+    }
+
     return {
-      items: sessions,
+      items: mergedSessions,
       pagination,
     };
   } catch (error: any) {

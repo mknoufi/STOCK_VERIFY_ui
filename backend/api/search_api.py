@@ -225,9 +225,7 @@ async def search_optimized_post(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> ApiResponse[OptimizedSearchResponse]:
     """POST version of optimized search (for compatibility)"""
-    return await search_optimized(
-        q=q, limit=limit, offset=offset, current_user=current_user
-    )
+    return await search_optimized(q=q, limit=limit, offset=offset, current_user=current_user)
 
 
 @router.get(

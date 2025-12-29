@@ -27,7 +27,9 @@ def run_powershell(cmd):
 
 def get_sql_server_services():
     """Get SQL Server services"""
-    cmd = 'Get-Service | Where-Object {$_.DisplayName -like "*SQL Server*"} | Format-Table -AutoSize'
+    cmd = (
+        'Get-Service | Where-Object {$_.DisplayName -like "*SQL Server*"} | Format-Table -AutoSize'
+    )
     return run_powershell(cmd)
 
 

@@ -59,9 +59,7 @@ class EnrichmentResponse(BaseModel):
 class BulkEnrichmentRequest(BaseModel):
     """Request model for bulk enrichment"""
 
-    enrichments: list[EnrichmentRequest] = Field(
-        ..., description="List of enrichment records"
-    )
+    enrichments: list[EnrichmentRequest] = Field(..., description="List of enrichment records")
 
 
 class DataCompletenessResponse(BaseModel):
@@ -93,9 +91,7 @@ async def record_item_enrichment(
     - Notes
     """
     if not enrichment_service:
-        raise HTTPException(
-            status_code=500, detail="Enrichment service not initialized"
-        )
+        raise HTTPException(status_code=500, detail="Enrichment service not initialized")
 
     try:
         # Extract enrichment data
@@ -143,14 +139,10 @@ async def record_item_enrichment(
         raise
     except Exception as e:
         logger.error(f"Enrichment API error for {request.item_code}: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to record enrichment: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to record enrichment: {str(e)}")
 
 
-@enrichment_router.get(
-    "/completeness/{item_code}", response_model=DataCompletenessResponse
-)
+@enrichment_router.get("/completeness/{item_code}", response_model=DataCompletenessResponse)
 async def check_data_completeness(
     item_code: str, current_user: dict[str, Any] = Depends(get_current_user)
 ) -> DataCompletenessResponse:
@@ -159,9 +151,7 @@ async def check_data_completeness(
     Returns which fields are missing
     """
     if not enrichment_service:
-        raise HTTPException(
-            status_code=500, detail="Enrichment service not initialized"
-        )
+        raise HTTPException(status_code=500, detail="Enrichment service not initialized")
 
     try:
         completeness = await enrichment_service.calculate_completeness(item_code)
@@ -177,9 +167,7 @@ async def check_data_completeness(
 
     except Exception as e:
         logger.error(f"Completeness check error for {item_code}: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to check completeness: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to check completeness: {str(e)}")
 
 
 @enrichment_router.get("/stats")
@@ -194,9 +182,7 @@ async def get_enrichment_statistics(
     Shows overall enrichment progress and activity
     """
     if not enrichment_service:
-        raise HTTPException(
-            status_code=500, detail="Enrichment service not initialized"
-        )
+        raise HTTPException(status_code=500, detail="Enrichment service not initialized")
 
     try:
         stats = await enrichment_service.get_enrichment_stats(
@@ -207,9 +193,7 @@ async def get_enrichment_statistics(
 
     except Exception as e:
         logger.error(f"Enrichment stats error: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get enrichment stats: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get enrichment stats: {str(e)}")
 
 
 @enrichment_router.get("/incomplete")
@@ -224,9 +208,7 @@ async def get_incomplete_items(
     Used to assign enrichment tasks to staff
     """
     if not enrichment_service:
-        raise HTTPException(
-            status_code=500, detail="Enrichment service not initialized"
-        )
+        raise HTTPException(status_code=500, detail="Enrichment service not initialized")
 
     try:
         items = await enrichment_service.get_items_needing_enrichment(
@@ -237,9 +219,7 @@ async def get_incomplete_items(
 
     except Exception as e:
         logger.error(f"Get incomplete items error: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get incomplete items: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get incomplete items: {str(e)}")
 
 
 @enrichment_router.get("/leaderboard")
@@ -254,9 +234,7 @@ async def get_enrichment_leaderboard_endpoint(
     Shows top contributors to data enrichment
     """
     if not enrichment_service:
-        raise HTTPException(
-            status_code=500, detail="Enrichment service not initialized"
-        )
+        raise HTTPException(status_code=500, detail="Enrichment service not initialized")
 
     try:
         leaderboard = await enrichment_service.get_enrichment_leaderboard(
@@ -267,9 +245,7 @@ async def get_enrichment_leaderboard_endpoint(
 
     except Exception as e:
         logger.error(f"Leaderboard error: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get leaderboard: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get leaderboard: {str(e)}")
 
 
 @enrichment_router.post("/bulk")
@@ -281,15 +257,11 @@ async def bulk_import_enrichments_endpoint(
     Admin/Supervisor can upload Excel with enrichment data
     """
     if not enrichment_service:
-        raise HTTPException(
-            status_code=500, detail="Enrichment service not initialized"
-        )
+        raise HTTPException(status_code=500, detail="Enrichment service not initialized")
 
     # Check if user has permission for bulk import
     if current_user.get("role") not in ["admin", "supervisor"]:
-        raise HTTPException(
-            status_code=403, detail="Only admin/supervisor can perform bulk import"
-        )
+        raise HTTPException(status_code=403, detail="Only admin/supervisor can perform bulk import")
 
     try:
         enrichments = [e.dict() for e in request.enrichments]
@@ -316,9 +288,7 @@ async def validate_enrichment_data_endpoint(
     Frontend can use this to validate user input
     """
     if not enrichment_service:
-        raise HTTPException(
-            status_code=500, detail="Enrichment service not initialized"
-        )
+        raise HTTPException(status_code=500, detail="Enrichment service not initialized")
 
     try:
         enrichment_data = {

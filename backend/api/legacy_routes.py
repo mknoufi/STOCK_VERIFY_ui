@@ -7,7 +7,7 @@ import sys
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, cast
 
 import jwt
 from bson import ObjectId
@@ -15,7 +15,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
-from pydantic import BaseModel, Field, field_validator, model_validator
 from starlette.requests import Request
 
 # Add project root to path for direct execution (debugging)
@@ -28,6 +27,13 @@ if str(project_root) not in sys.path:
 # New feature API routers
 # Phase 1-3: New Upgrade APIs
 # New feature services
+from backend.api.schemas import (  # noqa: E402
+    ApiResponse,
+    CountLineCreate,
+    Session,
+    SessionCreate,
+    TokenResponse,
+)
 from backend.config import settings  # noqa: E402
 from backend.error_messages import get_error_message  # noqa: E402
 
@@ -35,21 +41,6 @@ from backend.error_messages import get_error_message  # noqa: E402
 # Production services
 # from backend.services.connection_pool import SQLServerConnectionPool  # Legacy pool removed
 from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
-from backend.api.schemas import (  # noqa: E402
-    ApiResponse,
-    CorrectionMetadata,
-    CorrectionReason,
-    CountLineCreate,
-    PhotoProof,
-    Session,
-    SessionCreate,
-    TokenResponse,
-    UnknownItem,
-    UnknownItemCreate,
-    UserInfo,
-    UserLogin,
-    UserRegister,
-)
 from backend.services.errors import (  # noqa: E402
     AuthenticationError,
     AuthorizationError,
@@ -227,9 +218,7 @@ try:
         bcrypt.checkpw(b"test", test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(
-            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
-        )
+        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
@@ -620,9 +609,7 @@ async def log_failed_login_attempt(
         logger.error(f"Failed to log login attempt: {str(e)}")
 
 
-async def log_successful_login(
-    user: dict[str, Any], ip_address: str, request: Request
-) -> None:
+async def log_successful_login(user: dict[str, Any], ip_address: str, request: Request) -> None:
     """Log a successful login."""
     try:
         await db.login_attempts.insert_one(
@@ -669,9 +656,7 @@ async def refresh_token(request: Request) -> Result[dict[str, Any], Exception]:
             return Fail(ValidationError("Refresh token is required"))
 
         # Find refresh token in database
-        token_doc = await db.refresh_tokens.find_one(
-            {"token": refresh_token, "is_revoked": False}
-        )
+        token_doc = await db.refresh_tokens.find_one({"token": refresh_token, "is_revoked": False})
 
         if not token_doc:
             return Fail(AuthenticationError("Invalid or expired refresh token"))
@@ -758,17 +743,13 @@ async def create_session(
     if not warehouse:
         raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
     if len(warehouse) < 2:
-        raise HTTPException(
-            status_code=400, detail="Warehouse name must be at least 2 characters"
-        )
+        raise HTTPException(status_code=400, detail="Warehouse name must be at least 2 characters")
     if len(warehouse) > 100:
         raise HTTPException(
             status_code=400, detail="Warehouse name must be less than 100 characters"
         )
     # Sanitize warehouse name (remove potentially dangerous characters)
-    warehouse = (
-        warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
-    )
+    warehouse = warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
 
     session = Session(
         warehouse=warehouse,
@@ -805,9 +786,7 @@ async def get_sessions(
 
     if current_user["role"] == "supervisor":
         total = await db.sessions.count_documents({})
-        sessions_cursor = (
-            db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
-        )
+        sessions_cursor = db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
     else:
         filter_query = {"staff_user": current_user["username"]}
         total = await db.sessions.count_documents(filter_query)
@@ -1043,9 +1022,7 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
 
         # Transform results
         sessions_by_date = {item["_id"]: item["count"] for item in by_date}
-        variance_by_warehouse = {
-            item["_id"]: item["total_variance"] for item in by_warehouse
-        }
+        variance_by_warehouse = {item["_id"]: item["total_variance"] for item in by_warehouse}
         items_by_staff = {item["_id"]: item["total_items"] for item in by_staff}
 
         return {
@@ -1094,9 +1071,7 @@ async def get_session_by_id(
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(
-    erp_item: dict, line_data: CountLineCreate, variance: float
-) -> list[str]:
+def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
     """Detect high-risk correction patterns"""
     risk_flags = []
 
@@ -1122,17 +1097,11 @@ def detect_risk_flags(
         risk_flags.append("HIGH_VALUE_VARIANCE")
 
     # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (
-        not line_data.serial_numbers or len(line_data.serial_numbers) == 0
-    ):
+    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
         risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
 
     # Rule 5: Correction without reason when variance exists
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         risk_flags.append("MISSING_CORRECTION_REASON")
 
     # Rule 6: MRP change without reason
@@ -1161,9 +1130,7 @@ def detect_risk_flags(
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(
-    erp_mrp: float, counted_mrp: float, counted_qty: float
-) -> float:
+def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
@@ -1191,11 +1158,7 @@ async def create_count_line(
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
     # Validate mandatory correction reason for variance
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         raise HTTPException(
             status_code=400,
             detail="Correction reason is mandatory when variance exists",
@@ -1250,19 +1213,13 @@ async def create_count_line(
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
         "correction_reason": (
-            line_data.correction_reason.model_dump()
-            if line_data.correction_reason
-            else None
+            line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs]
-            if line_data.photo_proofs
-            else None
+            [p.model_dump() for p in line_data.photo_proofs] if line_data.photo_proofs else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump()
-            if line_data.correction_metadata
-            else None
+            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
         ),
         "approval_status": approval_status,
         "approval_by": None,

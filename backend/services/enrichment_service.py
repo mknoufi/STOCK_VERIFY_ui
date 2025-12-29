@@ -162,9 +162,7 @@ class EnrichmentService:
             update_fields = {}
 
             # Process each enrichment field
-            corrections = _process_enrichment_fields(
-                enrichment_data, existing_item, update_fields
-            )
+            corrections = _process_enrichment_fields(enrichment_data, existing_item, update_fields)
 
             # Add enrichment metadata
             update_fields["last_enriched_at"] = datetime.utcnow()
@@ -361,9 +359,7 @@ class EnrichmentService:
 
         # Get overall data completeness
         total_items = await self.db.erp_items.count_documents({})
-        complete_items = await self.db.erp_items.count_documents(
-            {"data_complete": True}
-        )
+        complete_items = await self.db.erp_items.count_documents({"data_complete": True})
 
         return {
             "total_enrichments": total_enrichments,
@@ -397,19 +393,12 @@ class EnrichmentService:
         query = {"data_complete": complete}
 
         total = await self.db.erp_items.count_documents(query)
-        items = (
-            await self.db.erp_items.find(query)
-            .skip(skip)
-            .limit(limit)
-            .to_list(length=limit)
-        )
+        items = await self.db.erp_items.find(query).skip(skip).limit(limit).to_list(length=limit)
 
         # Add missing fields info for incomplete items
         if not complete:
             for item in items:
-                completeness = await self.calculate_completeness(
-                    item["item_code"], item
-                )
+                completeness = await self.calculate_completeness(item["item_code"], item)
                 item["missing_fields"] = completeness["missing_fields"]
                 item["completion_percentage"] = completeness["percentage"]
 
@@ -442,9 +431,7 @@ class EnrichmentService:
                 item_code = enrichment.get("item_code")
                 if not item_code:
                     results["failed"] += 1
-                    results["errors"].append(
-                        {"item_code": None, "error": "Missing item_code"}
-                    )
+                    results["errors"].append({"item_code": None, "error": "Missing item_code"})
                     continue
 
                 # Record enrichment
@@ -520,9 +507,7 @@ class EnrichmentService:
             {"$limit": limit},
         ]
 
-        leaderboard = await self.db.enrichments.aggregate(pipeline).to_list(
-            length=limit
-        )
+        leaderboard = await self.db.enrichments.aggregate(pipeline).to_list(length=limit)
 
         return [
             {

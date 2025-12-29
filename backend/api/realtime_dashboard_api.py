@@ -211,9 +211,7 @@ async def get_dashboard_data(
         filters=parse_filters(config.filters),
         columns=default_columns,
         sort_by=config.sort_by,
-        sort_order=SortOrder(config.sort_order)
-        if config.sort_order
-        else SortOrder.DESC,
+        sort_order=SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC,
         page=config.page,
         page_size=config.page_size,
         include_aggregations=True,
@@ -316,9 +314,7 @@ async def get_dashboard_stats(
                         {
                             "$match": {
                                 "counted_at": {
-                                    "$gte": datetime.utcnow().replace(
-                                        hour=0, minute=0, second=0
-                                    )
+                                    "$gte": datetime.utcnow().replace(hour=0, minute=0, second=0)
                                 }
                             }
                         },
@@ -344,9 +340,7 @@ async def get_dashboard_stats(
         data = stats.get(key, [])
         return data[0]["count"] if data else 0
 
-    variance_stats = (
-        stats.get("variance_stats", [{}])[0] if stats.get("variance_stats") else {}
-    )
+    variance_stats = stats.get("variance_stats", [{}])[0] if stats.get("variance_stats") else {}
 
     return {
         "success": True,
@@ -360,9 +354,7 @@ async def get_dashboard_stats(
             "negative_variance": variance_stats.get("negative", 0),
             "avg_variance": variance_stats.get("avg_variance", 0),
             "verification_rate": (
-                (get_count("verified") / get_count("total") * 100)
-                if get_count("total") > 0
-                else 0
+                (get_count("verified") / get_count("total") * 100) if get_count("total") > 0 else 0
             ),
         },
         "by_warehouse": [
@@ -476,9 +468,7 @@ async def dashboard_stream(
 # ==========================================
 
 
-async def _ws_get_report(
-    service: AdvancedReportService, config: DashboardConfig
-) -> dict:
+async def _ws_get_report(service: AdvancedReportService, config: DashboardConfig) -> dict:
     """Generate report for WebSocket response."""
     return await service.generate_verified_items_report(
         ReportConfig(
@@ -487,9 +477,7 @@ async def _ws_get_report(
             page=config.page,
             page_size=config.page_size,
             sort_by=config.sort_by,
-            sort_order=SortOrder(config.sort_order)
-            if config.sort_order
-            else SortOrder.DESC,
+            sort_order=SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC,
         )
     )
 
@@ -503,9 +491,7 @@ async def _ws_handle_config_update(
     new_config = DashboardConfig(**data.get("config", {}))
     manager.set_config(user_id, new_config)
     result = await _ws_get_report(service, new_config)
-    await manager.send_personal_message(
-        {"type": "data_update", "payload": result}, user_id
-    )
+    await manager.send_personal_message({"type": "data_update", "payload": result}, user_id)
     return new_config
 
 
@@ -516,9 +502,7 @@ async def _ws_handle_refresh(
 ) -> None:
     """Handle refresh message."""
     result = await _ws_get_report(service, config)
-    await manager.send_personal_message(
-        {"type": "data_update", "payload": result}, user_id
-    )
+    await manager.send_personal_message({"type": "data_update", "payload": result}, user_id)
 
 
 async def _ws_handle_get_item_details(data: dict, user_id: str, db) -> None:
@@ -528,9 +512,7 @@ async def _ws_handle_get_item_details(data: dict, user_id: str, db) -> None:
         item = await db.count_lines.find_one({"id": item_id})
         if item:
             item.pop("_id", None)
-            await manager.send_personal_message(
-                {"type": "item_details", "payload": item}, user_id
-            )
+            await manager.send_personal_message({"type": "item_details", "payload": item}, user_id)
 
 
 # ==========================================
@@ -541,9 +523,7 @@ async def _ws_handle_auto_refresh(
     """Handle auto-refresh on timeout."""
     if config.auto_refresh:
         result = await _ws_get_report(service, config)
-        await manager.send_personal_message(
-            {"type": "auto_refresh", "payload": result}, user_id
-        )
+        await manager.send_personal_message({"type": "auto_refresh", "payload": result}, user_id)
 
 
 async def _ws_process_message(
@@ -585,9 +565,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
 
         # Send initial data
         result = await _ws_get_report(service, config)
-        await manager.send_personal_message(
-            {"type": "initial_data", "payload": result}, user_id
-        )
+        await manager.send_personal_message({"type": "initial_data", "payload": result}, user_id)
 
         # Listen for client messages
         while True:
@@ -627,9 +605,7 @@ async def export_dashboard_csv(
         page=1,
         page_size=10000,  # Max export
         sort_by=config.sort_by,
-        sort_order=SortOrder(config.sort_order)
-        if config.sort_order
-        else SortOrder.DESC,
+        sort_order=SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC,
     )
 
     result = await service.generate_verified_items_report(report_config)
@@ -668,9 +644,7 @@ async def export_dashboard_xlsx(
         page=1,
         page_size=10000,
         sort_by=config.sort_by,
-        sort_order=SortOrder(config.sort_order)
-        if config.sort_order
-        else SortOrder.DESC,
+        sort_order=SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC,
     )
 
     result = await service.generate_verified_items_report(report_config)

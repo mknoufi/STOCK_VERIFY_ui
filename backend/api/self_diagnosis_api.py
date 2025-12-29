@@ -159,9 +159,7 @@ async def attempt_auto_fix(
             "fix_attempted": True,
             "fix_successful": fix_result.is_success,
             "fix_result": (
-                fix_result.unwrap_or(None)
-                if fix_result.is_success
-                else fix_result._error_message
+                fix_result.unwrap_or(None) if fix_result.is_success else fix_result._error_message
             ),
             "diagnosis": diagnosis.to_dict(),
         }
@@ -184,6 +182,4 @@ async def get_error_patterns(current_user: dict = Depends(get_current_user)):
         }
     except Exception as e:
         logger.error(f"Pattern retrieval failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Pattern retrieval failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Pattern retrieval failed: {str(e)}")

@@ -35,9 +35,7 @@ async def get_session_predictions(
             # We still allow it for now but in production we would restrict
             pass
 
-        predictions_data = await ai_variance_service.predict_session_risks(
-            db, session_id, limit
-        )
+        predictions_data = await ai_variance_service.predict_session_risks(db, session_id, limit)
 
         predictions = [RiskPrediction(**p) for p in predictions_data]
 

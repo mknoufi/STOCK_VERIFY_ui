@@ -31,11 +31,11 @@
 - [ ] **[Test]** Add performance/load tests for enhanced item search. <!-- id: 25 -->
 
 ## Phase 4: Frontend: Core & Settings
-- [ ] **[Context]** Create `frontend/src/context/ThemeContext.tsx`. <!-- id: 14 -->
-- [ ] **[Test]** Add unit tests for ThemeContext. <!-- id: 26 -->
-- [ ] **[Service]** Create `frontend/src/services/websocket.ts` client. <!-- id: 15 -->
-- [ ] **[UI]** Create `SettingsScreen.tsx` with Theme and Font controls. <!-- id: 16 -->
-- [ ] **[UI]** Integrate `UserPreferences` API with Settings screen. <!-- id: 17 -->
+- [x] **[Context]** Create `frontend/src/context/ThemeContext.tsx`. <!-- id: 14 -->
+- [x] **[Test]** Add unit tests for ThemeContext. <!-- id: 26 -->
+- [x] **[Service]** Create `frontend/src/services/websocket.ts` client. <!-- id: 15 -->
+- [x] **[UI]** Create `SettingsScreen.tsx` with Theme and Font controls. <!-- id: 16 -->
+- [x] **[UI]** Integrate `UserPreferences` API with Settings screen. <!-- id: 17 -->
 
 ## Phase 5: Offline Support
 - [ ] **[Lib]** Setup local database (expo-sqlite) in `frontend/src/services/offline/db.ts`. <!-- id: 18 -->

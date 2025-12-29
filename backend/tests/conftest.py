@@ -21,6 +21,7 @@ os.environ.update(
         "MONGO_URL": "mongodb://localhost:27017/stock_count_test",
         "DB_NAME": "stock_count_test",
         "JWT_SECRET": "test-jwt-secret-key-for-testing-only",
+        "JWT_REFRESH_SECRET": "test-jwt-refresh-secret-key-for-testing-must-be-at-least-32-chars",
         "JWT_ALGORITHM": "HS256",
         "REDIS_URL": "redis://localhost:6379/15",  # Use database 15 for testing
         # 'SQL_SERVER_HOST': 'localhost',  # Disabled to prevent connection pool hang

@@ -34,7 +34,7 @@
 
 ### Staff Role
 - ✅ `staff/scan.tsx` - ScreenContainer
-- ✅ `staff/history.tsx` - ScreenContainer  
+- ✅ `staff/history.tsx` - ScreenContainer
 - ✅ `staff/item-detail.tsx` - ScreenContainer
 - ✅ `staff/appearance.tsx` - ScreenContainer
 - ⚠️ Pending: `staff/settings.tsx`, `staff/sessions.tsx` (if exist)
@@ -150,7 +150,7 @@ xs:  4px     | sm:  8px     | md:  12px
 lg:  16px    | xl:  24px    | 2xl: 32px
 ```
 
-### Type Scale  
+### Type Scale
 ```
 Label:    12px/500
 Body:     14px/400
@@ -238,5 +238,5 @@ See these files for detailed information:
 
 ---
 
-**Last Updated:** 2025-12-23  
+**Last Updated:** 2025-12-23
 **Status:** ✅ Production Ready

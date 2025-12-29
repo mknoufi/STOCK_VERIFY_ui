@@ -571,4 +571,3 @@ export const useResponsiveHelpers = () => {
     },
   }), [width, height, isWeb, isTablet]);
 };
-

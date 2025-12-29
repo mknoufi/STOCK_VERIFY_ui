@@ -6,7 +6,7 @@
 /**
  * Error severity levels for categorizing error handling behavior
  */
-export type ErrorSeverity = 
+export type ErrorSeverity =
   | 'USER'       // User-facing errors that can be recovered by user action
   | 'SYSTEM'     // System errors that require technical intervention
   | 'NETWORK'    // Network-related transient errors that may resolve on retry
@@ -58,7 +58,7 @@ export interface AppErrorOptions {
 
 /**
  * AppError - Domain error wrapper for consistent error handling.
- * 
+ *
  * Usage:
  * ```ts
  * throw new AppError({

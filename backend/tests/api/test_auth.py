@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from backend.api.auth import (
     UserRegister,
     check_rate_limit,

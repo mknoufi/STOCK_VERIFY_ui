@@ -14,9 +14,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os
 
-from backend.sql_server_connector import SQLServerConnector
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
+
+from backend.sql_server_connector import SQLServerConnector
 
 # Load environment variables
 load_dotenv()

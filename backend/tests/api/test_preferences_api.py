@@ -5,7 +5,6 @@ Tests for User Preferences API
 from unittest.mock import AsyncMock
 
 import pytest
-
 from backend.api.preferences_api import (
     UserPreferencesUpdate,
     get_my_preferences,

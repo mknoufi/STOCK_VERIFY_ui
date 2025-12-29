@@ -1,8 +1,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import HTTPException
-
 from backend.api.item_verification_api import (
     ItemUpdateRequest,
     VerificationRequest,
@@ -11,6 +9,7 @@ from backend.api.item_verification_api import (
     update_item_master,
     verify_item,
 )
+from fastapi import HTTPException
 
 
 @pytest.fixture(autouse=True)

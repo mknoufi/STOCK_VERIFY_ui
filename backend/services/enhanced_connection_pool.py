@@ -88,6 +88,7 @@ class EnhancedSQLServerConnectionPool:
 
     def _build_connection_string(self) -> str:
         """Build optimized ODBC connection string using shared utility"""
+        print("DEBUG: EnhancedConnectionPool building connection string")
         return SQLServerConnectionBuilder.build_connection_string(
             host=self.host,
             database=self.database,

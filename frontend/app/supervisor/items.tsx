@@ -22,16 +22,16 @@ import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
-import { ItemVerificationAPI } from "../../src/services/api/itemVerificationApi";
-import { ItemFilters, FilterValues } from "../../src/components/ItemFilters";
+import { ItemVerificationAPI } from "../../src/domains/inventory/services/itemVerificationApi";
+import { ItemFilters, FilterValues } from "../../src/domains/inventory/components/ItemFilters";
 import { exportItemsToCSV, downloadCSV } from "../../src/utils/csvExport";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   StatsCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
 
 const getLocalFileUri = (filename: string) => {
   const baseDir =
@@ -161,12 +161,12 @@ export default function ItemsScreen() {
           // Could navigate to item detail
           if (Platform.OS !== "web") Haptics.selectionAsync();
         }}
-        style={{ marginBottom: auroraTheme.spacing.sm }}
+        style={{ marginBottom: theme.spacing.sm }}
       >
         <GlassCard
-          variant="light"
-          padding={auroraTheme.spacing.md}
-          borderRadius={auroraTheme.borderRadius.lg}
+          intensity={15}
+          padding={theme.spacing.md}
+          borderRadius={theme.borderRadius.lg}
         >
           <View style={styles.itemHeader}>
             <View style={styles.itemHeaderLeft}>
@@ -178,7 +178,7 @@ export default function ItemsScreen() {
                 <Ionicons
                   name="checkmark-circle"
                   size={14}
-                  color={auroraTheme.colors.success[500]}
+                  color={theme.colors.success.main}
                 />
               </View>
             )}
@@ -204,7 +204,7 @@ export default function ItemsScreen() {
               <Ionicons
                 name="location-outline"
                 size={14}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
               <Text style={styles.locationText}>
                 {[item.floor, item.rack].filter(Boolean).join(" / ")}
@@ -226,7 +226,7 @@ export default function ItemsScreen() {
               <Ionicons
                 name="person-outline"
                 size={12}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
               <Text style={styles.verificationInfoText}>
                 Verified by {item.verified_by}
@@ -241,7 +241,7 @@ export default function ItemsScreen() {
   };
 
   return (
-    <AuroraBackground variant="secondary" intensity="medium" animated>
+    <ScreenContainer>
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
@@ -257,7 +257,7 @@ export default function ItemsScreen() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -277,14 +277,14 @@ export default function ItemsScreen() {
             disabled={items.length === 0}
           >
             <GlassCard
-              variant="medium"
+              intensity={20}
               padding={8}
-              borderRadius={auroraTheme.borderRadius.full}
+              borderRadius={theme.borderRadius.full}
             >
               <Ionicons
                 name="download-outline"
                 size={20}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </GlassCard>
           </AnimatedPressable>
@@ -321,9 +321,9 @@ export default function ItemsScreen() {
         {/* Filters */}
         <Animated.View entering={FadeInDown.delay(300).springify()}>
           <GlassCard
-            variant="light"
-            padding={auroraTheme.spacing.sm}
-            style={{ marginBottom: auroraTheme.spacing.md }}
+            intensity={10}
+            padding={theme.spacing.sm}
+            style={{ marginBottom: theme.spacing.md }}
           >
             <ItemFilters
               onFilterChange={setFilters}
@@ -338,7 +338,7 @@ export default function ItemsScreen() {
             <Ionicons
               name="cube-outline"
               size={64}
-              color={auroraTheme.colors.text.tertiary}
+              color={theme.colors.text.tertiary}
             />
             <Text style={styles.emptyText}>No items found</Text>
             <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
@@ -356,8 +356,8 @@ export default function ItemsScreen() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={handleRefresh}
-                  tintColor={auroraTheme.colors.primary[500]}
-                  colors={[auroraTheme.colors.primary[500]]}
+                  tintColor={theme.colors.primary[500]}
+                  colors={[theme.colors.primary[500]]}
                 />
               }
               onEndReached={handleLoadMore}
@@ -367,7 +367,7 @@ export default function ItemsScreen() {
                   <View style={{ paddingVertical: 20 }}>
                     <ActivityIndicator
                       size="small"
-                      color={auroraTheme.colors.primary[500]}
+                      color={theme.colors.primary[500]}
                     />
                   </View>
                 ) : (
@@ -378,7 +378,7 @@ export default function ItemsScreen() {
           </View>
         )}
       </View>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 60,
-    paddingHorizontal: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   centered: {
     flex: 1,
@@ -398,127 +398,124 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
+    fontSize: 32,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   exportButton: {
     //
   },
   statsContainer: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.sm,
-    marginBottom: auroraTheme.spacing.md,
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   listContent: {
-    paddingBottom: auroraTheme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
   },
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: auroraTheme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
   itemHeaderLeft: {
     flex: 1,
   },
   itemName: {
-    fontFamily: auroraTheme.typography.fontFamily.body,
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   itemCode: {
-    fontFamily: auroraTheme.typography.fontFamily.body,
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 14,
+    color: theme.colors.text.tertiary,
   },
   verifiedBadge: {
-    backgroundColor: "rgba(34, 197, 94, 0.15)", // Success color with opacity
-    borderRadius: auroraTheme.borderRadius.full,
+    backgroundColor: "rgba(16, 185, 129, 0.15)", // Emerald color with opacity
+    borderRadius: theme.borderRadius.full,
     padding: 4,
   },
   itemDetails: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.lg,
-    marginBottom: auroraTheme.spacing.sm,
+    gap: theme.spacing.lg,
+    marginBottom: theme.spacing.sm,
     backgroundColor: "rgba(255,255,255,0.03)",
-    padding: auroraTheme.spacing.xs,
-    borderRadius: auroraTheme.borderRadius.sm,
+    padding: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
   },
   detailRow: {
     //
   },
   detailLabel: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.tertiary,
     marginBottom: 2,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: auroraTheme.typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
   },
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.xs,
+    gap: theme.spacing.xs,
     marginBottom: 4, // Added margin bottom for spacing
   },
   locationText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 12,
+    color: theme.colors.text.secondary,
   },
   categoryText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.tertiary,
     fontStyle: "italic",
   },
   verificationInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.xs,
-    marginTop: auroraTheme.spacing.sm,
+    gap: theme.spacing.xs,
+    marginTop: theme.spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: auroraTheme.colors.border.light,
-    paddingTop: auroraTheme.spacing.xs,
+    borderTopColor: "rgba(255,255,255,0.05)",
+    paddingTop: theme.spacing.xs,
   },
   verificationInfoText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.tertiary,
   },
   emptyText: {
-    fontSize: auroraTheme.typography.fontSize.lg,
+    fontSize: 20,
     fontWeight: "500",
-    color: auroraTheme.colors.text.secondary,
-    marginTop: auroraTheme.spacing.md,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing.md,
   },
   emptySubtext: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.tertiary,
-    marginTop: auroraTheme.spacing.xs,
+    fontSize: 16,
+    color: theme.colors.text.tertiary,
+    marginTop: theme.spacing.xs,
   },
 });

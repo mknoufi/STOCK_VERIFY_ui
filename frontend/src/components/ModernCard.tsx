@@ -9,7 +9,7 @@
  * - Better shadows and borders
  */
 
-import React, { useMemo } from "react";
+import React from "react";
 import {
   View,
   Text,

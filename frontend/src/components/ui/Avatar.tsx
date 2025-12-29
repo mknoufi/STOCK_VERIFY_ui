@@ -14,12 +14,7 @@ import {
   TextStyle,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  colorPalette,
-  spacing,
-  typography,
-  borderRadius,
-} from "@/theme/designTokens";
+import { colorPalette, typography } from "@/theme/designTokens";
 
 export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 

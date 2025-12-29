@@ -26,6 +26,10 @@ sleep 2
 
 echo "🚀 Starting frontend (Expo)..."
 
+# Update IP address in .env based on backend_port.json
+echo "🔄 Updating Frontend configuration..."
+npm run update-ip
+
 # Clear caches and start
 rm -rf .metro-cache node_modules/.cache ~/.expo/cache .expo 2>/dev/null || true
 

@@ -46,7 +46,7 @@ class DataSubjectRequest(BaseModel):
     completed_at: Optional[datetime] = None
     processed_by: Optional[str] = None
     notes: Optional[str] = None
-    data_exported: dict[str, Optional[Any]] = None
+    data_exported: Optional[dict[str, Optional[Any]]] = None
 
 
 class DataGovernanceService:
@@ -146,7 +146,7 @@ class DataGovernanceService:
 
     async def apply_retention_policies(self) -> dict[str, Any]:
         """Apply all retention policies (delete expired data)"""
-        results = {}
+        results: dict[str, Any] = {}
 
         async for policy_doc in self.policies_collection.find():
             policy = RetentionPolicy(
@@ -384,7 +384,9 @@ class DataGovernanceService:
             requests.append(doc)
         return requests
 
-    async def get_request_status(self, request_id: str) -> dict[str, Optional[Any]]:
+    async def get_request_status(
+        self, request_id: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Get status of a data subject request"""
         doc = await self.requests_collection.find_one({"_id": request_id})
         if doc:

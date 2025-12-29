@@ -15,7 +15,7 @@ import {
 } from "@/components/ui";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import { getAvailableReports, generateReport } from "../../src/services/api";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 
@@ -28,7 +28,7 @@ interface Report {
 
 export default function ReportsScreen() {
   const router = useRouter();
-  const { hasRole } = usePermissions();
+  const { hasRole } = usePermission();
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<Report[]>([]);
   const [generating, setGenerating] = useState<string | null>(null);

@@ -1,18 +1,37 @@
 {
+  "private": true,
   "devDependencies": {
+    "@expo/cli": "~54.0.16",
+    "@nx/docker": "22.3.3",
+    "@nx/eslint": "22.3.3",
+    "@nx/expo": "22.3.3",
+    "@nx/jest": "22.3.3",
+    "@nx/react-native": "22.3.3",
+    "@nx/storybook": "22.3.3",
+    "@nx/web": "22.3.3",
     "@testsprite/testsprite-mcp": "^0.0.18",
     "@typescript-eslint/eslint-plugin": "^8.50.0",
     "@typescript-eslint/parser": "^8.50.0",
     "eslint": "^9.39.2",
-    "eslint-config-expo": "^10.0.0"
+    "eslint-config-expo": "^10.0.0",
+    "jest": "^30.0.2",
+    "metro-config": "~0.83.0",
+    "metro-resolver": "~0.83.0",
+    "nx": "22.3.3",
+    "storybook": "10.1.10"
   },
   "dependencies": {
-    "@expo/vector-icons": "^15.0.3",
     "cursor10x-mcp": "^1.5.0",
-    "expo": "^54.0.30",
-    "expo-router": "~6.0.19",
+    "expo": "~54.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-native": "^0.81.5"
+    "react-native": "0.81.5",
+    "react-native-modal": "^14.0.0-rc.1"
+  },
+  "name": "STOCK_VERIFY_2-db-maped",
+  "version": "1.0.0",
+  "scripts": {
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   }
 }

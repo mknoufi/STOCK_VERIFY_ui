@@ -233,33 +233,6 @@ EOF
     systemctl restart auditd
 fi
 
-# 13. Docker Security (if using Docker)
-if command -v docker &> /dev/null; then
-    echo "🐳 Configuring Docker security..."
-
-    # Add appuser to docker group
-    usermod -aG docker appuser
-
-    # Enable Docker content trust
-    echo 'export DOCKER_CONTENT_TRUST=1' >> /etc/environment
-
-    # Configure Docker daemon
-    mkdir -p /etc/docker
-    cat > /etc/docker/daemon.json <<EOF
-{
-    "log-driver": "json-file",
-    "log-opts": {
-        "max-size": "10m",
-        "max-file": "3"
-    },
-    "live-restore": true,
-    "userland-proxy": false,
-    "no-new-privileges": true
-}
-EOF
-    systemctl restart docker
-fi
-
 # 14. Install and Configure AIDE (File Integrity)
 echo "🔍 Initializing file integrity monitoring..."
 aideinit

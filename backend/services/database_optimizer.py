@@ -16,6 +16,32 @@ from pymongo.errors import ConnectionFailure
 logger = logging.getLogger(__name__)
 
 
+# Collection → Index definitions mapping for data-driven indexing
+_INDEX_DEFINITIONS: dict[str, list[tuple[Any, dict[str, Any]]]] = {
+    "erp_items": [
+        ("item_code", {"unique": True}),
+        ("barcode", {}),
+        ([("item_name", "text")], {}),
+    ],
+    "count_lines": [
+        ("session_id", {}),
+        ("item_code", {}),
+        ([("session_id", 1), ("item_code", 1)], {}),
+    ],
+    "sessions": [
+        ("created_at", {}),
+        ("status", {}),
+    ],
+}
+
+
+def _build_index_name(field_or_keys: Any) -> str:
+    """Build expected MongoDB index name from field definition."""
+    if isinstance(field_or_keys, list):
+        return "_".join(f"{k}_{v}" for k, v in field_or_keys)
+    return f"{field_or_keys}_1"
+
+
 class DatabaseOptimizer:
     """
     Optimizes database connections and queries for better performance
@@ -213,53 +239,18 @@ class DatabaseOptimizer:
         collection = db[collection_name]
 
         try:
-            # Get existing indexes
             existing_indexes = await collection.list_indexes().to_list(None)
-            index_names = [idx["name"] for idx in existing_indexes]
+            index_names = {idx["name"] for idx in existing_indexes}
+            optimizations: list[str] = []
 
-            optimizations = []
-
-            # Common index optimizations
-            if collection_name == "erp_items":
-                if "item_code_1" not in index_names:
+            # Use data-driven index definitions
+            for field_or_keys, opts in _INDEX_DEFINITIONS.get(collection_name, []):
+                expected_name = _build_index_name(field_or_keys)
+                if expected_name not in index_names:
                     await collection.create_index(
-                        "item_code", unique=True, background=True
+                        field_or_keys, background=True, **opts
                     )
-                    optimizations.append("item_code")
-
-                if "barcode_1" not in index_names:
-                    await collection.create_index("barcode", background=True)
-                    optimizations.append("barcode")
-
-                if "item_name_text" not in index_names:
-                    await collection.create_index(
-                        [("item_name", "text")], background=True
-                    )
-                    optimizations.append("item_name_text")
-
-            elif collection_name == "count_lines":
-                if "session_id_1" not in index_names:
-                    await collection.create_index("session_id", background=True)
-                    optimizations.append("session_id")
-
-                if "item_code_1" not in index_names:
-                    await collection.create_index("item_code", background=True)
-                    optimizations.append("item_code")
-
-                if "session_id_1_item_code_1" not in index_names:
-                    await collection.create_index(
-                        [("session_id", 1), ("item_code", 1)], background=True
-                    )
-                    optimizations.append("session_id_item_code")
-
-            elif collection_name == "sessions":
-                if "created_at_1" not in index_names:
-                    await collection.create_index("created_at", background=True)
-                    optimizations.append("created_at")
-
-                if "status_1" not in index_names:
-                    await collection.create_index("status", background=True)
-                    optimizations.append("status")
+                    optimizations.append(expected_name)
 
             if optimizations:
                 logger.info(

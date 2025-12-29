@@ -12,6 +12,37 @@ from typing import Any, Optional
 logger = logging.getLogger(__name__)
 
 
+# --------------------------------------------------------------------------- #
+# Operator-to-MongoDB mapping (reduces cyclomatic complexity)
+# --------------------------------------------------------------------------- #
+_SIMPLE_OPS = {
+    "ne": "$ne",
+    "gt": "$gt",
+    "gte": "$gte",
+    "lt": "$lt",
+    "lte": "$lte",
+    "in": "$in",
+    "nin": "$nin",
+    "exists": "$exists",
+}
+
+_AGG_OPS = {
+    "sum": "$sum",
+    "avg": "$avg",
+    "min": "$min",
+    "max": "$max",
+}
+
+
+def _apply_operator(mongo_condition: dict, op: str, value: Any) -> None:
+    """Apply a single operator to mongo_condition dict."""
+    if op in _SIMPLE_OPS:
+        mongo_condition[_SIMPLE_OPS[op]] = value
+    elif op == "regex":
+        mongo_condition["$regex"] = value
+        mongo_condition["$options"] = "i"  # Case insensitive
+
+
 class QueryBuilder:
     """
     Build MongoDB aggregation pipelines from query specifications
@@ -177,32 +208,12 @@ class QueryBuilder:
                 logger.warning(f"Rejected invalid filter key: {field}")
                 continue
             if isinstance(condition, dict):
-                # Operator-based condition
                 mongo_condition = {}
-
                 for op, value in condition.items():
                     if op == "eq":
                         match_conditions[field] = value
-                    elif op == "ne":
-                        mongo_condition["$ne"] = value
-                    elif op == "gt":
-                        mongo_condition["$gt"] = value
-                    elif op == "gte":
-                        mongo_condition["$gte"] = value
-                    elif op == "lt":
-                        mongo_condition["$lt"] = value
-                    elif op == "lte":
-                        mongo_condition["$lte"] = value
-                    elif op == "in":
-                        mongo_condition["$in"] = value
-                    elif op == "nin":
-                        mongo_condition["$nin"] = value
-                    elif op == "regex":
-                        mongo_condition["$regex"] = value
-                        mongo_condition["$options"] = "i"  # Case insensitive
-                    elif op == "exists":
-                        mongo_condition["$exists"] = value
-
+                    else:
+                        _apply_operator(mongo_condition, op, value)
                 if mongo_condition:
                     match_conditions[field] = mongo_condition
             else:
@@ -223,7 +234,7 @@ class QueryBuilder:
             group_by: Fields to group by
             aggregations: {field: function} - e.g., {"verified_qty": "sum"}
         """
-        group_stage = {"$group": {"_id": {}}}
+        group_stage: dict[str, Any] = {"$group": {"_id": {}}}
 
         # Group by fields
         if group_by:
@@ -238,17 +249,12 @@ class QueryBuilder:
             for field, func in aggregations.items():
                 if func not in self.AGGREGATIONS:
                     raise ValueError(f"Invalid aggregation function: {func}")
-
-                if func == "sum":
-                    group_stage["$group"][f"{field}_{func}"] = {"$sum": f"${field}"}
-                elif func == "avg":
-                    group_stage["$group"][f"{field}_{func}"] = {"$avg": f"${field}"}
-                elif func == "min":
-                    group_stage["$group"][f"{field}_{func}"] = {"$min": f"${field}"}
-                elif func == "max":
-                    group_stage["$group"][f"{field}_{func}"] = {"$max": f"${field}"}
-                elif func == "count":
+                if func == "count":
                     group_stage["$group"][f"{field}_{func}"] = {"$sum": 1}
+                elif func in _AGG_OPS:
+                    group_stage["$group"][f"{field}_{func}"] = {
+                        _AGG_OPS[func]: f"${field}"
+                    }
 
         return group_stage
 

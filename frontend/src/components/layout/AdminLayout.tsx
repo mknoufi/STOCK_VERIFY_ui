@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
   ViewStyle,
   TouchableOpacity,
 } from "react-native";
@@ -39,7 +39,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const rawSegments = useSegments();
   const segments = Array.isArray(rawSegments) ? rawSegments : [];
-  const { width } = Dimensions.get("window");
+  const { width } = useWindowDimensions();
   const isMobile = width < breakpoints.tablet;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);

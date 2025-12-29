@@ -1,0 +1,14 @@
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.git/
+Dockerfile*
+.dockerignore
+*.log*
+.env*
+coverage/
+dist/
+build/
+.DS_Store

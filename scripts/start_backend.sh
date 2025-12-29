@@ -18,10 +18,15 @@ pkill -f "uvicorn.*server" 2>/dev/null || true
 # Wait for ports to be released
 sleep 2
 
+echo "🍃 Starting Local MongoDB..."
+"$SCRIPT_DIR/start_local_db.sh"
+
 echo "🚀 Starting backend server..."
 
 # Set PYTHONPATH and start
 export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+export USE_CONNECTION_POOL=False
+export SQL_SERVER_HOST="" # Unset to skip blocking connection check
 cd "$BACKEND_DIR"
 
-python3 server.py
+python3 server.py 2>&1 | tee backend_startup.log

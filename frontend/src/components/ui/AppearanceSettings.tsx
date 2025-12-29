@@ -2,17 +2,19 @@
  * AppearanceSettings Component
  *
  * Complete appearance customization section for Settings screen
- * Combines Theme, Pattern, and Layout pickers
+ * Combines Theme, Pattern, Layout, Font Size, and Color pickers
  */
 
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useThemeContext } from "../../theme/ThemeContext";
+import { useSettingsStore } from "../../store/settingsStore";
 import { ThemePicker } from "./ThemePicker";
 import { PatternPicker } from "./PatternPicker";
 import { LayoutPicker } from "./LayoutPicker";
 import { GlassCard } from "./GlassCard";
+import { FontSizeSlider, ColorPicker, type ColorId } from "../settings";
 
 interface AppearanceSettingsProps {
   showTitle?: boolean;
@@ -26,6 +28,16 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
   compact = false,
 }) => {
   const { theme } = useThemeContext();
+  const { settings, setSetting } = useSettingsStore();
+
+  const handleFontSizeChange = (value: number) => {
+    setSetting("fontSizeValue", value);
+  };
+
+  const handleColorChange = (color: string, colorId: ColorId) => {
+    setSetting("primaryColor", color);
+    setSetting("primaryColorId", colorId);
+  };
 
   const content = (
     <View style={styles.container}>
@@ -65,8 +77,32 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
         </GlassCard>
       </Animated.View>
 
-      {/* Preview Card */}
+      {/* Font Size */}
+      <Animated.View entering={FadeInDown.delay(350).springify()}>
+        <GlassCard variant="medium" padding={0} style={styles.section}>
+          <FontSizeSlider
+            value={
+              typeof settings.fontSizeValue === "number"
+                ? settings.fontSizeValue
+                : 16
+            }
+            onValueChange={handleFontSizeChange}
+          />
+        </GlassCard>
+      </Animated.View>
+
+      {/* Primary Color */}
       <Animated.View entering={FadeInDown.delay(400).springify()}>
+        <GlassCard variant="medium" padding={0} style={styles.section}>
+          <ColorPicker
+            value={settings.primaryColorId || settings.primaryColor}
+            onValueChange={handleColorChange}
+          />
+        </GlassCard>
+      </Animated.View>
+
+      {/* Preview Card */}
+      <Animated.View entering={FadeInDown.delay(450).springify()}>
         <GlassCard variant="strong" padding={20} style={styles.section}>
           <Text style={[styles.previewTitle, { color: theme.colors.text }]}>
             Preview

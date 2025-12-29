@@ -1,4 +1,0 @@
-{
-  "summary": "Started full TestSprite test suite execution with all 19 test cases. Test execution is running in the background. Frontend web server is accessible on port 19006. Tests will cover authentication, barcode scanning, item verification, navigation, role-based access, offline support, and cross-platform compatibility. Execution may take 5-15 minutes to complete.",
-  "current_status": "Full test suite is executing in the background. TestSprite is generating and running tests for all 19 test cases from the frontend test plan. Results will be available in testsprite_tests/tmp/raw_report.md once execution completes. Monitor progress via /tmp/testsprite-full-test.log."
-}

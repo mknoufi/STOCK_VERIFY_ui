@@ -80,3 +80,7 @@ export type {
   ContentMode,
   LoadingType,
 } from "./ScreenContainer";
+
+// Responsive Typography
+export { ResponsiveText } from "./ResponsiveText";
+export type { ResponsiveTextProps, TextVariant } from "./ResponsiveText";

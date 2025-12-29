@@ -19,7 +19,7 @@ interface MRPVariantSelectorProps {
 
 export const MRPVariantSelector: React.FC<MRPVariantSelectorProps> = ({
   variants,
-  currentMrp,
+  currentMrp: _currentMrp,
   parsedMrpValue,
   onVariantSelect,
   mrpDifference = null,

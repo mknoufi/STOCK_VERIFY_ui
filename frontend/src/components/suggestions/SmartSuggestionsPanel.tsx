@@ -19,7 +19,7 @@ import {
 import {
   SuggestionItem,
   smartSuggestionsService,
-} from "@/services/smartSuggestionsService";
+} from "@/domains/inventory/services/smartSuggestionsService";
 import * as Haptics from "expo-haptics";
 
 // Enable LayoutAnimation on Android
@@ -232,9 +232,9 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                         translateY:
                           displayedSuggestions.length > index
                             ? fadeAnimation.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [20, 0],
-                              })
+                              inputRange: [0, 1],
+                              outputRange: [20, 0],
+                            })
                             : 0,
                       },
                     ],

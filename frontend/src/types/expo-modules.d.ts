@@ -158,7 +158,7 @@ declare module "expo-sharing" {
 }
 
 declare module "expo-image" {
-  import { ViewProps, ImageSourcePropType } from "react-native";
+  import { ViewProps } from "react-native";
 
   export type ImageContentFit =
     | "cover"
@@ -209,69 +209,4 @@ declare module "expo-image" {
 
   export const Image: React.FC<ImageProps>;
   export default Image;
-}
-
-declare module "react-native-awesome-gallery" {
-  import { ViewProps } from "react-native";
-
-  export interface GalleryProps<T = unknown> extends ViewProps {
-    data: T[];
-    renderItem: (props: { item: T; index: number }) => React.ReactElement;
-    keyExtractor?: (item: T, index: number) => string;
-    initialIndex?: number;
-    onIndexChange?: (index: number) => void;
-    onSwipeToClose?: () => void;
-    loop?: boolean;
-    onTap?: () => void;
-    onDoubleTap?: () => void;
-    onScaleChange?: (scale: number) => void;
-    maxScale?: number;
-    pinchEnabled?: boolean;
-    swipeEnabled?: boolean;
-    doubleTapEnabled?: boolean;
-    disableTransitionOnScaledImage?: boolean;
-    hideAdjacentImagesOnScaledImage?: boolean;
-    disableVerticalSwipe?: boolean;
-    disableSwipeUp?: boolean;
-    containerDimensions?: { width: number; height: number };
-    style?: ViewProps["style"];
-    emptySpaceWidth?: number;
-    doubleTapScale?: number;
-    doubleTapInterval?: number;
-  }
-
-  export default function Gallery<T = unknown>(
-    props: GalleryProps<T>,
-  ): React.ReactElement;
-}
-
-declare module "react-native-spinkit" {
-  import { ViewProps } from "react-native";
-
-  export type SpinnerType =
-    | "CircleFlip"
-    | "Bounce"
-    | "Wave"
-    | "WanderingCubes"
-    | "Pulse"
-    | "ChasingDots"
-    | "ThreeBounce"
-    | "Circle"
-    | "FadingCircle"
-    | "FadingCircleAlt"
-    | "9CubeGrid"
-    | "FoldingCube"
-    | "Plane"
-    | "Arc"
-    | "ArcAlt";
-
-  export interface SpinnerProps extends ViewProps {
-    type?: SpinnerType;
-    color?: string;
-    size?: number;
-    isVisible?: boolean;
-  }
-
-  const Spinner: React.FC<SpinnerProps>;
-  export default Spinner;
 }

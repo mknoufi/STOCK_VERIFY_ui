@@ -1,44 +1,31 @@
 {
-  "mcpServers": {
-    "TestSprite": {
+  "servers": {
+    "mongodb": {
       "command": "npx",
       "args": [
-        "@testsprite/testsprite-mcp@latest"
+        "-y",
+        "mcp-mongo-server"
       ],
       "env": {
-        "API_KEY": "sk-user-YGTgM4XWFpvq3GBiFSvRWEKoLvWrs51C6Ey90_Wnp5GBUoqvcgs2CV-8sPXX_cIaWslyRhgnexxTJzIMyjwE_-yuPR_oPIzNZm5GPeTQv4fuFgjFi50QnXl2VFziie3RRQE"
+        "MCP_MONGODB_URI": "${env:MONGO_URL}",
+        "MCP_MONGODB_READONLY": "true"
       }
     },
-    "context7": {
+    "mongodb-dev": {
       "command": "npx",
       "args": [
         "-y",
-        "@upstash/context7-mcp@latest"
-      ]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic/mcp-playwright@latest"
-      ]
-    },
-    "memory": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic/mcp-memory@latest"
-      ]
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic/mcp-filesystem@latest",
-        "/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped"
+        "mcp-mongo-server",
+        "mongodb://localhost:27017/stock_verification"
       ]
     }
   },
-  "inputs": [],
-  "servers": {}
+  "inputs": [
+    {
+      "id": "mongoUri",
+      "type": "promptString",
+      "description": "MongoDB connection URI",
+      "default": "mongodb://localhost:27017/stock_verification"
+    }
+  ]
 }

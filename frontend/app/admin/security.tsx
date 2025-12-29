@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   LoadingSpinner,
   ScreenHeader,
@@ -34,7 +34,7 @@ const isTablet = width > 768;
 
 export default function SecurityScreen() {
   const router = useRouter();
-  const { hasRole } = usePermissions();
+  const { hasRole } = usePermission();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [summary, setSummary] = useState<any>(null);

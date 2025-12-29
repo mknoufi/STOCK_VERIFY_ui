@@ -10,14 +10,8 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withTiming,
 } from "react-native-reanimated";
-import {
-  colorPalette,
-  spacing,
-  typography,
-  borderRadius,
-} from "@/theme/designTokens";
+import { colorPalette, spacing, typography } from "@/theme/designTokens";
 
 export type ProgressBarVariant = "default" | "success" | "warning" | "error";
 export type ProgressBarSize = "sm" | "md" | "lg";
@@ -56,7 +50,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   showLabel = false,
   label,
   animated = true,
-  indeterminate = false,
+  indeterminate: _indeterminate = false,
   style,
 }) => {
   const progressValue = useSharedValue(0);
@@ -74,7 +68,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     } else {
       progressValue.value = clampedProgress;
     }
-  }, [progress, animated]);
+  }, [progress, animated, progressValue]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: `${progressValue.value}%`,

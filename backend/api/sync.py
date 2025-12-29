@@ -32,7 +32,7 @@ class OperationResult(BaseModel):
     id: str
     success: bool
     message: Optional[str] = None
-    data: dict[str, Optional[Any]] = (
+    data: Optional[dict[str, Optional[Any]]] = (
         None  # Return created data if needed (e.g. server IDs)
     )
 

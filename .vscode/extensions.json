@@ -1,25 +1,20 @@
 {
-    // Extension recommendations for this workspace
-    "recommendations": [
-        // Python
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "charliermarsh.ruff",
-        // JavaScript/TypeScript
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        // React Native
-        "msjsdiag.vscode-react-native",
-        // Database
-        "mongodb.mongodb-vscode",
-        // Docker
-        "ms-azuretools.vscode-docker",
-        // Git
-        "eamodio.gitlens",
-        // General
-        "editorconfig.editorconfig",
-        "gruntfuggly.todo-tree",
-        "streetsidesoftware.code-spell-checker",
-        "vscjava.migrate-java-to-azure"
-    ]
+  "recommendations": [
+    "github.copilot",
+    "github.copilot-chat",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "mongodb.mongodb-vscode",
+    "redis.redis-vscode",
+    "rangav.vscode-thunder-client",
+    "usernamehw.errorlens"
+  ],
+  "unwantedRecommendations": [
+    "tabnine.tabnine-vscode",
+    "codeium.codeium"
+  ]
 }

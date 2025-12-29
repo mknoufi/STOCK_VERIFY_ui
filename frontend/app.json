@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "scheme": "stockverify",
+    "ios": {
+      "bundleIdentifier": "com.anonymous.frontend"
+    },
+    "android": {
+      "package": "com.anonymous.frontend"
+    }
+  }
+}

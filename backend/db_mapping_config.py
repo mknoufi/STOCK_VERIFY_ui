@@ -361,6 +361,16 @@ SQL_TEMPLATES = {
           AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
           AND P.IsActive = 1
     """,
+    "get_all_warehouses": """
+        SELECT WarehouseID as warehouse_id, WarehouseName as warehouse_name
+        FROM dbo.Warehouses
+        ORDER BY WarehouseName
+    """,
+    "get_all_zones": """
+        SELECT ZoneID as zone_id, ZoneName as zone_name
+        FROM dbo.Zone
+        ORDER BY ZoneName
+    """,
 }
 
 # Data type mappings

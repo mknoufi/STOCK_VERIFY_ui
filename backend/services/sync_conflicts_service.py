@@ -123,7 +123,9 @@ class SyncConflictsService:
 
         return conflicts
 
-    async def get_conflict_by_id(self, conflict_id: str) -> dict[str, Optional[Any]]:
+    async def get_conflict_by_id(
+        self, conflict_id: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Get a specific conflict by ID"""
         conflict = await self.db.sync_conflicts.find_one({"_id": ObjectId(conflict_id)})
 
@@ -137,7 +139,7 @@ class SyncConflictsService:
         conflict_id: str,
         resolution: ConflictResolution,
         resolved_by: str,
-        merged_data: dict[str, Optional[Any]] = None,
+        merged_data: Optional[dict[str, Optional[Any]]] = None,
     ) -> dict[str, Any]:
         """
         Resolve a sync conflict
@@ -185,9 +187,12 @@ class SyncConflictsService:
 
         # Apply resolved data to entity if not ignored
         if resolution != ConflictResolution.IGNORE and resolved_data:
-            await self._apply_resolved_data(
-                conflict["entity_type"], conflict["entity_id"], resolved_data
-            )
+            entity_type = conflict.get("entity_type")
+            entity_id = conflict.get("entity_id")
+            if entity_type and entity_id:
+                await self._apply_resolved_data(
+                    str(entity_type), str(entity_id), resolved_data
+                )
 
         logger.info(
             f"Conflict {conflict_id} resolved with {resolution.value} by {resolved_by}"

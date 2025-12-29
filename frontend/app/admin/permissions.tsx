@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   LoadingSpinner,
   ScreenHeader,
@@ -25,7 +25,7 @@ import { auroraTheme } from "../../src/theme/auroraTheme";
 
 export default function PermissionsScreen() {
   const router = useRouter();
-  const { hasRole } = usePermissions();
+  const { hasRole } = usePermission();
   const [loading, setLoading] = useState(true);
   const [availablePermissions, setAvailablePermissions] = useState<any>(null);
   const [selectedUsername, setSelectedUsername] = useState("");

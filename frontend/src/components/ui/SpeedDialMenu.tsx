@@ -16,7 +16,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -31,8 +30,6 @@ import Animated, {
   SharedValue,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export interface SpeedDialAction {
   icon: keyof typeof Ionicons.glyphMap;
@@ -114,9 +111,9 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
               action.color
                 ? [action.color, action.color]
                 : [
-                    auroraTheme.colors.aurora.secondary[0],
-                    auroraTheme.colors.aurora.secondary[1],
-                  ]
+                  auroraTheme.colors.aurora.secondary[0],
+                  auroraTheme.colors.aurora.secondary[1],
+                ]
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -157,7 +154,7 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
       animationProgress.value = withTiming(0, { duration: 200 });
       mainRotation.value = withSpring(0, { damping: 12 });
     }
-  }, [isOpen]);
+  }, [isOpen, animationProgress, mainRotation]);
 
   const toggleMenu = () => {
     if (Platform.OS !== "web") {

@@ -14,7 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   getServicesStatus,
   getSystemIssues,
@@ -55,7 +55,7 @@ interface ServicesStatus {
 
 export default function ControlPanelScreen() {
   const router = useRouter();
-  const { hasRole } = usePermissions();
+  const { hasRole } = usePermission();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [services, setServices] = useState<ServicesStatus | null>(null);
@@ -232,8 +232,8 @@ export default function ControlPanelScreen() {
       Alert.alert(
         "Error",
         error.response?.data?.detail ||
-          error?.message ||
-          `Failed to ${action} ${service}`,
+        error?.message ||
+        `Failed to ${action} ${service}`,
       );
     }
   };
@@ -430,7 +430,7 @@ export default function ControlPanelScreen() {
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={24} color="#007AFF" />
-          {!isWeb && <Text style={styles.backButtonText}>Back</Text>}
+          {!isWeb ? <Text style={styles.backButtonText}>Back</Text> : null}
         </TouchableOpacity>
         <View style={styles.titleContainer}>
           <Ionicons
@@ -723,11 +723,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#333",
     ...(Platform.OS === "web"
       ? {
-          position: "sticky" as const,
-          top: 0,
-          zIndex: 100,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-        }
+        position: "sticky" as const,
+        top: 0,
+        zIndex: 100,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+      }
       : {}),
   } as any,
   headerWeb: {

@@ -10,12 +10,49 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { colors, spacing, gradients } from "@/styles/globalStyles";
 import { useAuthStore } from "@/store/authStore";
+import { getRouteForRole, type UserRole } from "@/utils/roleNavigation";
+
+const GlassSurface = ({
+  children,
+  style,
+  intensity = 20,
+  tint = "light",
+}: {
+  children: React.ReactNode;
+  style?: any;
+  intensity?: number;
+  tint?: "light" | "dark" | "default";
+}) => {
+  if (Platform.OS === "web") {
+    return (
+      <View
+        style={[
+          style,
+          {
+            backgroundColor: "rgba(255,255,255,0.08)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.12)",
+          },
+        ]}
+      >
+        {children}
+      </View>
+    );
+  }
+
+  return (
+    <BlurView intensity={intensity} tint={tint} style={style}>
+      {children}
+    </BlurView>
+  );
+};
 
 const FeatureCard = ({
   icon,
@@ -30,12 +67,12 @@ const FeatureCard = ({
     entering={FadeInDown.delay(delay).springify()}
     style={styles.featureWrapper}
   >
-    <BlurView intensity={20} tint="light" style={styles.featureCard}>
+    <GlassSurface intensity={20} tint="light" style={styles.featureCard}>
       <View style={styles.iconCircle}>
         <Ionicons name={icon} size={24} color={colors.primary} />
       </View>
       <Text style={styles.featureText}>{title}</Text>
-    </BlurView>
+    </GlassSurface>
   </Animated.View>
 );
 
@@ -43,6 +80,7 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const { user, isLoading } = useAuthStore();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isDesktop = width >= 1024; // Simple desktop check
 
   // Redirect if user is already logged in
@@ -52,21 +90,15 @@ export default function WelcomeScreen() {
         console.log("🔄 [WELCOME] User already logged in, redirecting:", {
           role: user.role,
         });
-      if (
-        Platform.OS === "web" &&
-        (user.role === "supervisor" || user.role === "admin")
-      ) {
-        router.replace("/admin/metrics" as any);
-      } else if (user.role === "supervisor" || user.role === "admin") {
-        router.replace("/supervisor/dashboard" as any);
-      } else {
-        router.replace("/staff/home" as any);
-      }
+      const target = getRouteForRole(user.role as UserRole);
+      router.replace(target as any);
     }
   }, [user, isLoading, router]);
 
   const handlePress = (route: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     router.push(route as any);
   };
 
@@ -74,7 +106,7 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={["#121212", "#0A0A0A", "#000000"]}
+        colors={["#020617", "#0F172A", "#020617"]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -82,7 +114,11 @@ export default function WelcomeScreen() {
       <View style={styles.decorativeCircle1} />
       <View style={styles.decorativeCircle2} />
 
-      <View style={[styles.content, { maxWidth: isDesktop ? 600 : "100%" }]}>
+      <View style={[styles.content, {
+        maxWidth: isDesktop ? 600 : "100%",
+        paddingTop: Platform.OS === "ios" ? insets.top + 20 : 40,
+        paddingBottom: insets.bottom + 20
+      }]}>
         {/* Header Section */}
         <Animated.View
           entering={FadeInUp.duration(1000).springify()}
@@ -103,7 +139,7 @@ export default function WelcomeScreen() {
           <Text style={styles.title}>Lavanya E-Mart</Text>
           <Text style={styles.subtitle}>Stock Verification System</Text>
           <View style={styles.versionBadge}>
-            <Text style={styles.versionText}>v2.0 Premium</Text>
+            <Text style={styles.versionText}>v2.5 Enterprise</Text>
           </View>
         </Animated.View>
 
@@ -116,8 +152,8 @@ export default function WelcomeScreen() {
           />
           <FeatureCard icon="sync-outline" title="Live Sync" delay={600} />
           <FeatureCard
-            icon="stats-chart-outline"
-            title="Analytics"
+            icon="shield-checkmark-outline"
+            title="Verified"
             delay={800}
           />
         </View>
@@ -148,9 +184,9 @@ export default function WelcomeScreen() {
             activeOpacity={0.7}
             style={styles.registerButtonWrapper}
           >
-            <BlurView intensity={10} tint="light" style={styles.registerButton}>
+            <GlassSurface intensity={10} tint="light" style={styles.registerButton}>
               <Text style={styles.registerButtonText}>Create Account</Text>
-            </BlurView>
+            </GlassSurface>
           </TouchableOpacity>
         </Animated.View>
 
@@ -173,7 +209,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: "space-between",
-    paddingVertical: Platform.OS === "ios" ? 60 : 40,
     paddingHorizontal: spacing.lg,
     zIndex: 1,
     width: "100%",
@@ -185,8 +220,8 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: colors.primary,
-    opacity: 0.1,
+    backgroundColor: "#0EA5E9",
+    opacity: 0.05,
     transform: [{ scale: 1.5 }],
   },
   decorativeCircle2: {
@@ -196,27 +231,26 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: colors.secondary,
-    opacity: 0.1,
+    backgroundColor: "#10B981",
+    opacity: 0.05,
     transform: [{ scale: 1.5 }],
   },
   header: {
     alignItems: "center",
-    marginTop: spacing.xl,
+    marginTop: 40,
   },
   logoContainer: {
-    marginBottom: spacing.lg,
+    marginBottom: 24,
     alignItems: "center",
     justifyContent: "center",
   },
   logoBackground: {
     width: 120,
     height: 120,
-    borderRadius: 40,
+    borderRadius: 35,
     justifyContent: "center",
     alignItems: "center",
-    transform: [{ rotate: "-5deg" }],
-    shadowColor: colors.primary,
+    shadowColor: "#0EA5E9",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -227,42 +261,42 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 120,
     height: 120,
-    borderRadius: 40,
-    backgroundColor: colors.primary,
-    opacity: 0.3,
-    transform: [{ scale: 1.2 }, { rotate: "-5deg" }],
+    borderRadius: 35,
+    backgroundColor: "#0EA5E9",
+    opacity: 0.2,
+    transform: [{ scale: 1.1 }],
     zIndex: 1,
   },
   title: {
-    fontSize: 40,
-    fontWeight: "800",
+    fontSize: 42,
+    fontWeight: "900",
     color: "#fff",
-    marginBottom: 8,
+    marginBottom: 4,
     textAlign: "center",
     letterSpacing: -1,
-    textShadowColor: "rgba(0,0,0,0.5)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 18,
-    color: "rgba(255,255,255,0.7)",
+    color: "#94A3B8",
     marginBottom: 16,
     textAlign: "center",
     fontWeight: "500",
+    letterSpacing: 0.5,
   },
   versionBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "rgba(14, 165, 233, 0.15)",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(14, 165, 233, 0.3)",
   },
   versionText: {
-    color: "rgba(255,255,255,0.6)",
+    color: "#0EA5E9",
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   featuresContainer: {
     flexDirection: "row",
@@ -275,26 +309,26 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     padding: 16,
-    borderRadius: 20,
+    borderRadius: 24,
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     overflow: "hidden",
     height: 110,
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(255, 255, 255, 0.05)",
   },
   iconCircle: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    borderRadius: 16,
+    backgroundColor: "rgba(14, 165, 233, 0.1)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
   },
   featureText: {
-    color: "#fff",
+    color: "#94A3B8",
     fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
@@ -311,8 +345,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   loginButton: {
-    height: 60,
-    borderRadius: 16,
+    height: 64,
+    borderRadius: 18,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -321,19 +355,20 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
   registerButtonWrapper: {
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: "hidden",
   },
   registerButton: {
-    height: 60,
+    height: 64,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(255, 255, 255, 0.05)",
   },
   registerButtonText: {
     color: "#fff",
@@ -342,14 +377,15 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: "center",
-    marginTop: spacing.lg,
+    marginTop: 24,
   },
   footerText: {
-    color: "rgba(255,255,255,0.4)",
+    color: "#64748B",
     fontSize: 12,
+    fontWeight: "600",
   },
   footerSubtext: {
-    color: "rgba(255,255,255,0.3)",
+    color: "#475569",
     fontSize: 10,
     marginTop: 4,
   },

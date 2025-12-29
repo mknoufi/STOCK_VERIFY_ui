@@ -1,0 +1,141 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║                      SQL SERVER SETUP - QUICK REFERENCE                        ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📍 SETUP LOCATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Workspace: /Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ FASTEST METHOD (1 Command)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Interactive mode - prompts you for credentials
+./scripts/setup_sql_and_sync.sh
+
+# OR command-line mode - all at once
+./scripts/setup_sql_and_sync.sh 192.168.1.100 1433 ERP admin MyPassword123
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 WHAT THE SCRIPT DOES AUTOMATICALLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Tests SQL Server connection
+✅ Stops previous backend instance
+✅ Sets environment variables
+✅ Starts backend with ERP connectivity
+✅ Verifies system health
+✅ Gets authentication token
+✅ Triggers data sync (items → MongoDB)
+✅ Verifies sync completed successfully
+
+Total time: ~2-15 minutes (depending on data volume)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 CREDENTIALS YOU'LL NEED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ask your SQL Server admin for:
+  1. Host/IP address         e.g., 192.168.1.100 or erp.company.com
+  2. Port                    e.g., 1433 (usually default)
+  3. Database name           e.g., ERP, InventoryDB, Northwind
+  4. Username                e.g., readonly_user, erp_app
+  5. Password                e.g., P@ssw0rd123
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📄 ALTERNATIVE: MANUAL SETUP (if script has issues)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Create environment file:
+   cp .env.sql_server.example .env
+
+2. Edit with your credentials:
+   nano .env
+   
+   (Update these 5 lines:)
+   export SQL_SERVER_HOST="192.168.1.100"
+   export SQL_SERVER_PORT="1433"
+   export SQL_SERVER_DATABASE="ERP"
+   export SQL_SERVER_USER="admin"
+   export SQL_SERVER_PASSWORD="MyPassword"
+
+3. Load environment:
+   source .env
+
+4. Start backend:
+   cd backend
+   python3 -m backend.server
+
+5. Follow SQL_SERVER_SETUP_GUIDE.md for remaining manual steps
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ AFTER SETUP - VERIFY IT WORKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check system health:
+  curl http://localhost:8001/health | jq .dependencies.sql_server
+
+Expected: "status": "healthy"
+
+Search for items:
+  curl -X GET "http://localhost:8001/api/items/search/optimized?q=51" \
+    -H "Authorization: Bearer YOUR_TOKEN"
+
+Run barcode analysis:
+  python3 scripts/find_missing_barcodes.py
+
+Open web app:
+  http://localhost:19006
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🆘 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"Connection refused"
+  → Is SQL Server running? Check with admin
+  → Is firewall blocking port 1433? Check network
+
+"Login failed for user"
+  → Wrong password? Ask admin to reset
+  → Wrong username? Verify exact spelling
+
+"Cannot open database"
+  → Wrong database name? Verify exact spelling
+  → User doesn't have access? Ask admin for permissions
+
+"Sync timeout"
+  → Large database? May take 10+ minutes
+  → Check network stability
+  → Monitor with: tail -f backend/logs/app.log
+
+"No items found after sync"
+  → Check database actually has data
+  → Review SQL_SERVER_SETUP_GUIDE.md troubleshooting section
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Full guide:        SQL_SERVER_SETUP_GUIDE.md
+Env template:      .env.sql_server.example
+Setup script:      scripts/setup_sql_and_sync.sh
+Barcode analysis:  scripts/find_missing_barcodes.py
+
+API Docs:          http://localhost:8001/api/docs
+Health check:      http://localhost:8001/health
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 READY TO START?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When you have SQL Server credentials, run:
+
+  ./scripts/setup_sql_and_sync.sh
+
+And that's it! The script handles everything else.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

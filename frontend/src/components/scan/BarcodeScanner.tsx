@@ -1,8 +1,9 @@
 /**
  * BarcodeScanner Component
- * Camera-based barcode scanner with continuous scan mode
+ * Camera-based barcode scanner optimized for 1D barcodes
+ * Features: 1D-only mode, scan throttling, haptic feedback, visual overlay
  */
-import React from "react";
+import React, { useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -14,6 +15,13 @@ import {
 import { CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { ScannerMode } from "@/types/scan";
+import {
+  SCANNER_CONFIG,
+  ScanThrottleManager,
+  BarcodeValidator,
+} from "@/config/scannerConfig";
+import { ScanAreaOverlay } from "./ScanAreaOverlay";
+import { hapticService } from "@/services/hapticService";
 
 interface BarcodeScannerProps {
   visible: boolean;
@@ -44,6 +52,54 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   onClose,
   onToggleContinuousMode,
 }) => {
+  // Scan throttle manager to prevent duplicate scans
+  const throttleManagerRef = useRef<ScanThrottleManager>(
+    new ScanThrottleManager()
+  );
+
+  // Track scan feedback state for visual overlay
+  const [scanState, setScanState] = React.useState<
+    "idle" | "success" | "error"
+  >("idle");
+
+  // Reset scan state after feedback
+  React.useEffect(() => {
+    if (scanState !== "idle") {
+      const timer = setTimeout(() => setScanState("idle"), 500);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [scanState]);
+
+  // Throttled barcode scan handler
+  const handleBarcodeScanned = useCallback(
+    (data: { data: string; type?: string }) => {
+      const barcode = data.data;
+
+      // Validate barcode format
+      if (!BarcodeValidator.isValidStockBarcode(barcode)) {
+        return;
+      }
+
+      // Check throttle - prevent duplicate scans
+      if (!throttleManagerRef.current.shouldProcessScan(barcode)) {
+        return;
+      }
+
+      // Provide haptic feedback
+      if (SCANNER_CONFIG.haptics.enabled) {
+        hapticService.scanSuccess();
+      }
+
+      // Update visual state
+      setScanState("success");
+
+      // Call parent handler
+      onBarcodeScanned(data);
+    },
+    [onBarcodeScanned]
+  );
+
   if (isWeb) {
     return null;
   }
@@ -71,23 +127,9 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
           style={StyleSheet.absoluteFillObject}
           facing="back"
           barcodeScannerSettings={{
-            barcodeTypes: [
-              "qr",
-              "pdf417",
-              "aztec",
-              "ean13",
-              "ean8",
-              "code128",
-              "code39",
-              "code93",
-              "codabar",
-              "upc_a",
-              "upc_e",
-              "itf14",
-              "datamatrix",
-            ],
+            barcodeTypes: SCANNER_CONFIG.barcodeTypes as any,
           }}
-          onBarcodeScanned={onBarcodeScanned}
+          onBarcodeScanned={handleBarcodeScanned}
         />
         <View style={styles.scannerOverlay}>
           <View style={styles.scannerTopBar}>
@@ -174,12 +216,12 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             </View>
           )}
 
-          <View style={styles.scannerFrame}>
-            <View style={[styles.scannerCorner, styles.cornerTopLeft]} />
-            <View style={[styles.scannerCorner, styles.cornerTopRight]} />
-            <View style={[styles.scannerCorner, styles.cornerBottomLeft]} />
-            <View style={[styles.scannerCorner, styles.cornerBottomRight]} />
-          </View>
+          {/* Enhanced scan area overlay with animations */}
+          <ScanAreaOverlay
+            feedbackState={scanState}
+            hintText={scannerInstruction}
+          />
+
           <View style={styles.scannerInstructionContainer}>
             <Text style={styles.scannerText}>{scannerInstruction}</Text>
             <Text style={styles.scannerSubtext}>{scannerSubtext}</Text>
@@ -274,41 +316,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     flex: 1,
-  },
-  scannerFrame: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scannerCorner: {
-    position: "absolute",
-    width: 50,
-    height: 50,
-    borderColor: "#3B82F6",
-  },
-  cornerTopLeft: {
-    top: "30%",
-    left: "15%",
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-  },
-  cornerTopRight: {
-    top: "30%",
-    right: "15%",
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-  },
-  cornerBottomLeft: {
-    bottom: "30%",
-    left: "15%",
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-  },
-  cornerBottomRight: {
-    bottom: "30%",
-    right: "15%",
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
   },
   scannerInstructionContainer: {
     position: "absolute",

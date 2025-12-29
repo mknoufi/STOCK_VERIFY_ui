@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: Stock Verify API (Excerpt)
+  version: "v-current"
+  description: |
+    Minimal OpenAPI excerpt for documentation purposes.
+    This file is not intended to be complete or authoritative; validate against `/api/docs`.
+
+servers:
+  - url: http://localhost:8001
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        expires_in: { type: integer }
+      required: [access_token, refresh_token, expires_in]
+
+    Session:
+      type: object
+      properties:
+        id: { type: string }
+        warehouse: { type: string }
+        staff_user: { type: string }
+        staff_name: { type: string }
+        type: { type: string }
+        status: { type: string }
+        started_at: { type: string, format: date-time }
+
+    PaginatedSessions:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Session' }
+        total: { type: integer }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_pages: { type: integer }
+        has_next: { type: boolean }
+        has_previous: { type: boolean }
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                password: { type: string }
+              required: [username, password]
+      responses:
+        '200':
+          description: Tokens
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+
+  /api/sessions:
+    get:
+      summary: List sessions (paginated)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Paginated sessions
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedSessions' }
+    post:
+      summary: Create session
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                warehouse: { type: string }
+                type: { type: string }
+              required: [warehouse]
+      responses:
+        '200':
+          description: Created session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+
+  /api/v2/erp/items/barcode/{barcode}/enhanced:
+    get:
+      summary: Enhanced item lookup by barcode
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: barcode
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Item data (shape varies by endpoint)
+
+  /api/v2/erp/items/{item_code}/verify:
+    patch:
+      summary: Verify/unverify an item
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: item_code
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Verification result (shape varies by endpoint)
+
+  /api/sync/batch:
+    post:
+      summary: Submit offline batch sync
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Batch payload; see backend/api/sync_batch_api.py for exact schema.
+      responses:
+        '200':
+          description: Batch sync response (includes conflict detection)
+
+  /api/reports/query/preview:
+    post:
+      summary: Preview a report query
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Preview results
+
+  /api/reports/snapshots:
+    get:
+      summary: List report snapshots
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Snapshot list
+    post:
+      summary: Create a report snapshot
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Snapshot created

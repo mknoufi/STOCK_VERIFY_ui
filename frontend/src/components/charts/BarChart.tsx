@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import Svg, { Rect, Line, Text as SvgText, G } from "react-native-svg";
 import {
   modernColors,
@@ -12,8 +12,6 @@ import {
   modernSpacing,
 } from "../../styles/modernDesignSystem";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;
 const CHART_HEIGHT = 200;
 const PADDING = 20;
 const BAR_SPACING = 8;
@@ -35,8 +33,11 @@ export const BarChart: React.FC<BarChartProps> = ({
   data,
   title,
   showValues = true,
-  horizontal = false,
+  horizontal: _horizontal = false,
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidthTotal = screenWidth - modernSpacing.lg * 2 - 80;
+
   if (!data || data.length === 0) {
     return (
       <View style={styles.container}>
@@ -48,7 +49,7 @@ export const BarChart: React.FC<BarChartProps> = ({
     );
   }
 
-  const chartWidth = CHART_WIDTH - PADDING * 2;
+  const chartWidth = chartWidthTotal - PADDING * 2;
   const chartHeight = CHART_HEIGHT - PADDING * 2;
 
   const maxValue = Math.max(...data.map((d) => d.value));
@@ -60,7 +61,7 @@ export const BarChart: React.FC<BarChartProps> = ({
     <View style={styles.container}>
       {title && <Text style={styles.title}>{title}</Text>}
       <View style={styles.chartContainer}>
-        <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
+        <Svg width={chartWidthTotal} height={CHART_HEIGHT}>
           {/* Grid lines */}
           {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
             const y = PADDING + chartHeight - chartHeight * ratio;

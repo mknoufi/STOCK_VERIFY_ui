@@ -6,7 +6,7 @@ import * as offlineStorage from '../offline/offlineStorage';
 jest.mock('../api/api');
 jest.mock('../offline/offlineStorage');
 jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock').default
 );
 
 describe('syncOfflineQueue', () => {

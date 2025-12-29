@@ -70,7 +70,7 @@ export class AnimationService {
   static createScale(
     from: number = 0,
     to: number = 1,
-    duration: number = 300,
+    _duration: number = 300,
   ): Animated.Value {
     const scale = new Animated.Value(from);
     Animated.spring(scale, {

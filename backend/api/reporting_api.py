@@ -27,10 +27,16 @@ class QuerySpec(BaseModel):
     """Query specification"""
 
     collection: str = Field(..., description="Collection to query")
-    filters: dict[str, Optional[Any]] = Field(None, description="Filter conditions")
+    filters: dict[str, Optional[Any]] = Field(
+        default=None, description="Filter conditions"
+    )
     group_by: Optional[list[str]] = Field(None, description="Group by fields")
-    aggregations: dict[str, Optional[str]] = Field(None, description="Aggregations")
-    sort: dict[str, Optional[int]] = Field(None, description="Sort specification")
+    aggregations: dict[str, Optional[str]] = Field(
+        default=None, description="Aggregations"
+    )
+    sort: dict[str, Optional[int]] = Field(
+        default=None, description="Sort specification"
+    )
     limit: Optional[int] = Field(None, description="Limit results")
 
 

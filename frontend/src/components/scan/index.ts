@@ -15,3 +15,5 @@ export { ItemSearch } from "./ItemSearch";
 export { QuantityInputForm } from "./QuantityInputForm";
 export { SerialNumberEntry } from "./SerialNumberEntry";
 export { BarcodeScanner } from "./BarcodeScanner";
+export { ScanAreaOverlay } from "./ScanAreaOverlay";
+export { ScanFeedback, ScanToast, ScanIndicator } from "./ScanFeedback";

@@ -6,14 +6,14 @@ These rules help AI coding agents work productively and safely in this repo. Foc
 - Backend: FastAPI (Python 3.10+), MongoDB primary store, read‑only SQL Server via pyodbc.
 - Frontend: React Native + Expo (TypeScript) with file‑based routing and Zustand.
 - Default local ports: backend `8001`, Expo dev (`8081`, `19000-19002`, `19006`), Docker frontend `3000`.
-- Core files: `backend/server.py`, `backend/config.py`, `backend/db_mapping_config.py`, `backend/api_mapping.py`.
+- Core files: `backend/server.py`, `backend/config.py`, `backend/db_mapping_config.py`, `backend/api/mapping_api.py`.
 
 ## Architecture Essentials
 - Multi‑DB: MongoDB holds app state; SQL Server is read‑only ERP source. Keep writes in Mongo; use SQL only for lookups/sync.
 - Auth: JWT everywhere. Backends enforce `Authorization: Bearer ...` in `/api/*` routes. Use `Depends(get_current_user)` for new protected routes.
 - CORS: Do not use wildcard. Configure via env `CORS_ALLOW_ORIGINS` (comma‑separated) or dev defaults in `server.py`.
 - Dynamic systems: Dynamic fields and reports are first‑class (see `DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md`). Don’t hard‑code schema where dynamic config exists.
-- Mapping: SQL mapping lives in `backend/db_mapping_config.py`; discovery/test endpoints in `backend/api_mapping.py` under `/api/mapping`.
+- Mapping: SQL mapping lives in `backend/db_mapping_config.py`; discovery/test endpoints in `backend/api/mapping_api.py` under `/api/mapping`.
 
 ## Run & Debug
 - Easiest start (macOS): `./start.sh` (spawns two Terminal tabs; backend `8001`). Stop with `./stop.sh`.
@@ -32,6 +32,10 @@ These rules help AI coding agents work productively and safely in this repo. Foc
 ## Conventions & Patterns
 - API prefix: Most app routes mount under `/api` via `api_router`. Use `app.include_router(router, prefix="/api")` as in `server.py`.
 - SQL access: Always parameterize pyodbc queries with `?` placeholders (see `SQL_TEMPLATES` in `db_mapping_config.py`). Avoid string concatenation.
+- Barcode Validation: ERP items follow a strict 6-digit numeric rule. Valid prefixes are 51, 52, and 53. Normalization is handled by `_normalize_barcode_input` in `erp_api.py`.
+- Frontend Data Flow: `frontend/src/services/api/api.ts` contains a normalization layer that maps backend fields (e.g., `sale_price`, `uom_name`) to stable frontend models. Always check this layer when adding new fields.
+- Testing Mocks: When testing services that interact with MongoDB (like `SQLSyncService`), ensure that internal collection attributes are mocked as `AsyncMock` (e.g., `mock_db.sync_metadata.update_one = AsyncMock(...)`) to avoid `TypeError` during await.
+- Enhanced API: `backend/api/enhanced_item_api.py` (V2) provides optimized lookups with caching and monitoring. It must maintain parity with V1 validation rules.
 - Rate limiting, pooling, and sync intervals are env‑driven (see `config.py`). Prefer settings over hard‑coded constants.
 - Frontend calls: Centralize via `frontend/services/*` with Axios; include JWT and honor `EXPO_PUBLIC_BACKEND_URL`.
 - Error shape: Consistent `{ "detail": ..., "error_code": ..., "timestamp": ... }` per `API_CONTRACTS.md`.
@@ -53,3 +57,10 @@ These rules help AI coding agents work productively and safely in this repo. Foc
 - Run end‑to‑end locally: `./start.sh` → open API docs at `http://localhost:8001/api/docs` and Expo dev tools.
 
 References: `ARCHITECTURE.md`, `API_CONTRACTS.md`, `API_REFERENCE.md`, `DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md`, `Makefile`, `docker-compose.yml`, `RUN_APP.md`.
+
+## Active Technologies
+- Python 3.10+ (Backend), TypeScript 5.0+ (Frontend) + FastAPI, React Native (Expo), MongoDB, SQL Server (pyodbc) (002-system-modernization-and-enhancements)
+- MongoDB (Primary), SQL Server (Read-only ERP), Redis (Optional Cache) (002-system-modernization-and-enhancements)
+
+## Recent Changes
+- 002-system-modernization-and-enhancements: Added Python 3.10+ (Backend), TypeScript 5.0+ (Frontend) + FastAPI, React Native (Expo), MongoDB, SQL Server (pyodbc)

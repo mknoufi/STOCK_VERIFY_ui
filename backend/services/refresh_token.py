@@ -79,7 +79,9 @@ class RefreshTokenService:
         except Exception as e:
             logger.error(f"Error cleaning up tokens: {str(e)}")
 
-    async def verify_refresh_token(self, token: str) -> dict[str, Optional[Any]]:
+    async def verify_refresh_token(
+        self, token: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Verify and return refresh token payload"""
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
@@ -135,7 +137,7 @@ class RefreshTokenService:
 
     async def refresh_access_token(
         self, refresh_token: str
-    ) -> dict[str, Optional[Any]]:
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Generate new access token from refresh token"""
         payload = await self.verify_refresh_token(refresh_token)
 
@@ -146,7 +148,7 @@ class RefreshTokenService:
         role = payload.get("role")
 
         # Fetch user profile to include in response; keep failures non-fatal
-        user_profile: dict[str, Optional[Any]] = None
+        user_profile: Optional[dict[str, Optional[Any]]] = None
         if username:
             try:
                 user_profile = await self.db.users.find_one({"username": username})

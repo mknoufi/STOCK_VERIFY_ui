@@ -1,5 +1,6 @@
 import logging
-from typing import Any
+from datetime import datetime, timedelta
+from typing import Any, Optional
 
 from passlib.context import CryptContext
 
@@ -107,9 +108,23 @@ def get_password_hash(password: str) -> str:
 
 
 def create_access_token(
-    data: dict[str, Any], secret_key: str = None, algorithm: str = None
+    data: dict[str, Any],
+    secret_key: Optional[str] = None,
+    algorithm: Optional[str] = None,
+    expires_delta: Optional[timedelta] = None,
 ) -> str:
     """Create a JWT access token from user data"""
-    key = secret_key if secret_key else SECRET_KEY
-    algo = algorithm if algorithm else ALGORITHM
-    return str(jwt.encode(data, key, algorithm=algo))
+    # Use settings.JWT_SECRET directly to ensure we get the latest value (e.g. during tests)
+    key = secret_key if secret_key else str(settings.JWT_SECRET)
+    algo = algorithm if algorithm else str(settings.JWT_ALGORITHM)
+
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            minutes=getattr(settings, "ACCESS_TOKEN_EXPIRE_MINUTES", 15)
+        )
+
+    to_encode.update({"exp": expire, "type": "access"})
+    return str(jwt.encode(to_encode, key, algorithm=algo))

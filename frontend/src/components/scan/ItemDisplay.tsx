@@ -153,7 +153,7 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
               <View style={styles.qtyBox}>
                 <Text style={styles.qtyLabel}>Sales Price</Text>
                 <Text style={styles.qtyValueSmall}>
-                  ₹{item.sales_price ?? "0.00"}
+                  ₹{item.sale_price ?? item.sales_price ?? "0.00"}
                 </Text>
               </View>
 
@@ -173,6 +173,7 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
       prevProps.item.id === nextProps.item.id &&
       prevProps.item.stock_qty === nextProps.item.stock_qty &&
       prevProps.item.mrp === nextProps.item.mrp &&
+      prevProps.item.sale_price === nextProps.item.sale_price &&
       prevProps.item.sales_price === nextProps.item.sales_price &&
       prevProps.refreshingStock === nextProps.refreshingStock
     );

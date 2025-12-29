@@ -4,10 +4,10 @@ import sys
 
 import httpx
 
-# Add backend to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
 from backend.config import settings
+
+# Add backend to path for module imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 BASE_URL = f"http://localhost:{settings.PORT}"
 

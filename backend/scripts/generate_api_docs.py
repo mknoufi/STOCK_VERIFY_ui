@@ -702,10 +702,9 @@ def save_api_documentation(app: FastAPI, output_dir: str = "/tmp/"):
     return openapi_schema
 
 
-def generate_markdown_documentation(openapi_schema: dict[str, Any]) -> str:
-    """Generate Markdown API reference documentation"""
-
-    md_content = f"""# {openapi_schema["info"]["title"]}
+def _generate_md_header(openapi_schema: dict[str, Any]) -> str:
+    """Generate the Markdown header section."""
+    return f"""# {openapi_schema["info"]["title"]}
 
 Version: {openapi_schema["info"]["version"]}
 
@@ -731,89 +730,99 @@ Get your token by calling the `/auth/login` endpoint.
 
 """
 
-    # Group endpoints by tags
-    endpoints_by_tag = {}
+
+def _group_endpoints_by_tag(openapi_schema: dict[str, Any]) -> dict[str, list[dict]]:
+    """Group endpoints by their tags."""
+    endpoints_by_tag: dict[str, list[dict]] = {}
     for path, methods in openapi_schema.get("paths", {}).items():
         for method, operation in methods.items():
             tags = operation.get("tags", ["General"])
             tag = tags[0] if tags else "General"
-
             if tag not in endpoints_by_tag:
                 endpoints_by_tag[tag] = []
-
             endpoints_by_tag[tag].append(
                 {"path": path, "method": method.upper(), "operation": operation}
             )
+    return endpoints_by_tag
 
-    # Generate markdown for each tag
+
+def _generate_parameters_md(parameters: list[dict]) -> str:
+    """Generate markdown for API parameters."""
+    if not parameters:
+        return ""
+    lines = [
+        "**Parameters:**\n",
+        "| Name | Type | Required | Description |",
+        "|------|------|----------|-------------|",
+    ]
+    for param in parameters:
+        name = param.get("name", "")
+        param_type = param.get("schema", {}).get("type", "string")
+        required = "Yes" if param.get("required", False) else "No"
+        desc = param.get("description", "")
+        lines.append(f"| {name} | {param_type} | {required} | {desc} |")
+    return "\n".join(lines) + "\n\n"
+
+
+def _generate_request_examples_md(request_body: dict) -> str:
+    """Generate markdown for request body examples."""
+    if not request_body:
+        return ""
+    content = request_body.get("content", {}).get("application/json", {})
+    examples = content.get("examples", {})
+    if not examples:
+        return ""
+
+    md = "**Request Examples:**\n\n"
+    for example_name, example_data in examples.items():
+        summary = example_data.get("summary", example_name)
+        value = example_data.get("value", {})
+        md += f"*{summary}:*\n```json\n{json.dumps(value, indent=2)}\n```\n\n"
+    return md
+
+
+def _generate_responses_md(responses: dict) -> str:
+    """Generate markdown for API responses."""
+    if not responses:
+        return ""
+    md = "**Responses:**\n\n"
+    for status_code, response in responses.items():
+        description = response.get("description", "")
+        content = response.get("content", {}).get("application/json", {})
+        example = content.get("example")
+        md += f"**{status_code}** - {description}\n\n"
+        if example:
+            md += f"```json\n{json.dumps(example, indent=2)}\n```\n\n"
+    return md
+
+
+def _generate_endpoint_md(endpoint: dict) -> str:
+    """Generate markdown for a single endpoint."""
+    path = endpoint["path"]
+    method = endpoint["method"]
+    operation = endpoint["operation"]
+    summary = operation.get("summary", f"{method} {path}")
+    description = operation.get("description", "")
+
+    md = f"#### {method} {path}\n\n**{summary}**\n\n"
+    if description:
+        md += f"{description}\n\n"
+    md += _generate_parameters_md(operation.get("parameters", []))
+    md += _generate_request_examples_md(operation.get("requestBody", {}))
+    md += _generate_responses_md(operation.get("responses", {}))
+    md += "---\n\n"
+    return md
+
+
+def generate_markdown_documentation(openapi_schema: dict[str, Any]) -> str:
+    """Generate Markdown API reference documentation"""
+    md_content = _generate_md_header(openapi_schema)
+    endpoints_by_tag = _group_endpoints_by_tag(openapi_schema)
+
     for tag, endpoints in endpoints_by_tag.items():
         md_content += f"### {tag}\n\n"
-
         for endpoint in endpoints:
-            path = endpoint["path"]
-            method = endpoint["method"]
-            operation = endpoint["operation"]
-
-            summary = operation.get("summary", f"{method} {path}")
-            description = operation.get("description", "")
-
-            md_content += f"#### {method} {path}\n\n"
-            md_content += f"**{summary}**\n\n"
-
-            if description:
-                md_content += f"{description}\n\n"
-
-            # Parameters
-            parameters = operation.get("parameters", [])
-            if parameters:
-                md_content += "**Parameters:**\n\n"
-                md_content += "| Name | Type | Required | Description |\n"
-                md_content += "|------|------|----------|-------------|\n"
-
-                for param in parameters:
-                    name = param.get("name", "")
-                    param_type = param.get("schema", {}).get("type", "string")
-                    required = "Yes" if param.get("required", False) else "No"
-                    desc = param.get("description", "")
-                    md_content += f"| {name} | {param_type} | {required} | {desc} |\n"
-
-                md_content += "\n"
-
-            # Request body examples
-            request_body = operation.get("requestBody", {})
-            if request_body:
-                content = request_body.get("content", {}).get("application/json", {})
-                examples = content.get("examples", {})
-
-                if examples:
-                    md_content += "**Request Examples:**\n\n"
-                    for example_name, example_data in examples.items():
-                        summary = example_data.get("summary", example_name)
-                        value = example_data.get("value", {})
-
-                        md_content += f"*{summary}:*\n"
-                        md_content += "```json\n"
-                        md_content += json.dumps(value, indent=2)
-                        md_content += "\n```\n\n"
-
-            # Response examples
-            responses = operation.get("responses", {})
-            if responses:
-                md_content += "**Responses:**\n\n"
-
-                for status_code, response in responses.items():
-                    description = response.get("description", "")
-                    content = response.get("content", {}).get("application/json", {})
-                    example = content.get("example")
-
-                    md_content += f"**{status_code}** - {description}\n\n"
-
-                    if example:
-                        md_content += "```json\n"
-                        md_content += json.dumps(example, indent=2)
-                        md_content += "\n```\n\n"
-
-            md_content += "---\n\n"
+            md_content += _generate_endpoint_md(endpoint)
 
     return md_content
 

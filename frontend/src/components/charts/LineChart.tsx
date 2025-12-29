@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
+import { View, Text, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import Svg, {
   Polyline,
   Circle,
@@ -18,8 +18,6 @@ import {
   modernSpacing,
 } from "../../styles/modernDesignSystem";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;
 const CHART_HEIGHT = 200;
 const PADDING = 20;
 
@@ -48,6 +46,9 @@ export const LineChart: React.FC<LineChartProps> = ({
   yAxisLabel,
   xAxisLabel,
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidthTotal = screenWidth - modernSpacing.lg * 2 - 80;
+
   if (!data || data.length === 0) {
     return (
       <View style={styles.container}>
@@ -60,7 +61,7 @@ export const LineChart: React.FC<LineChartProps> = ({
   }
 
   // Calculate chart dimensions
-  const chartWidth = CHART_WIDTH - PADDING * 2;
+  const chartWidth = chartWidthTotal - PADDING * 2;
   const chartHeight = CHART_HEIGHT - PADDING * 2;
 
   // Find min/max values
@@ -97,7 +98,7 @@ export const LineChart: React.FC<LineChartProps> = ({
     .filter(
       (_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1,
     )
-    .map((point, i) => ({
+    .map((point, _i) => ({
       x: PADDING + data.indexOf(point) * scaleX,
       label: String(point.x),
     }));
@@ -107,7 +108,7 @@ export const LineChart: React.FC<LineChartProps> = ({
       {title && <Text style={styles.title}>{title}</Text>}
       {yAxisLabel && <Text style={styles.yAxisLabel}>{yAxisLabel}</Text>}
       <View style={styles.chartContainer}>
-        <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
+        <Svg width={chartWidthTotal} height={CHART_HEIGHT}>
           {/* Grid lines */}
           {showGrid &&
             gridLines.map((line, i) => (

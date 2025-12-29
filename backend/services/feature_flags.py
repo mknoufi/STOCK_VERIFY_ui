@@ -174,7 +174,7 @@ class FeatureFlagService:
 
     async def update_flag(
         self, key: str, updated_by: Optional[str] = None, **updates
-    ) -> FeatureFlag:
+    ) -> Optional[FeatureFlag]:
         """Update a feature flag"""
         updates["updated_at"] = datetime.utcnow()
         updates["updated_by"] = updated_by
@@ -202,7 +202,7 @@ class FeatureFlagService:
             return True
         return False
 
-    async def get_flag(self, key: str) -> FeatureFlag:
+    async def get_flag(self, key: str) -> Optional[FeatureFlag]:
         """Get a feature flag by key"""
         if not self._is_cache_valid():
             await self._load_cache()

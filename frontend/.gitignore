@@ -5,10 +5,8 @@
 expo-env.d.ts
 # @end expo-cli
 
-# Expo cache files
-.expo/cache/
-.expo/devices.json
-.expo/types/
+# Expo generated files
+.expo/
 
 # Node modules
 node_modules/

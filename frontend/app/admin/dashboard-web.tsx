@@ -41,10 +41,9 @@ import {
   getSessionsAnalytics,
   getAvailableReports,
   generateReport,
-  getSyncStats,
-  getVarianceTrend,
-  getStaffPerformance,
   getSessions,
+  getDiagnosisHealth,
+  diagnoseError,
 } from "../../src/services/api";
 
 import { AuroraBackground } from "../../src/components/ui/AuroraBackground";
@@ -59,9 +58,8 @@ import { useAuthStore } from "../../src/store/authStore";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
-const isTablet = SCREEN_WIDTH > 768;
 
-type DashboardTab = "overview" | "monitoring" | "reports" | "analytics";
+type DashboardTab = "overview" | "monitoring" | "reports" | "analytics" | "diagnosis";
 
 // Typography helper to map Aurora tokens to styles
 const typography = {
@@ -113,7 +111,7 @@ export default function DashboardWeb() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [, setLastUpdate] = useState<Date>(new Date());
 
   // Data States
   const [systemStats, setSystemStats] = useState<any>(null);
@@ -123,11 +121,12 @@ export default function DashboardWeb() {
   const [metrics, setMetrics] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
   const [sessionsAnalytics, setSessionsAnalytics] = useState<any>(null);
+  const [diagnosisHealth, setDiagnosisHealth] = useState<any>(null);
 
   // Report Modal State
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
-  const [reportFilters, setReportFilters] = useState<any>({});
+  const [reportFilters] = useState<any>({});
   const [generating, setGenerating] = useState(false);
 
   // Analytics State
@@ -144,12 +143,13 @@ export default function DashboardWeb() {
         servicesRes,
         statsRes,
         metricsRes,
-        healthRes,
+        _healthRes,
         reportsRes,
         issuesRes,
         healthScoreRes,
-        sessionsRes,
+        _sessionsRes,
         analyticsRes,
+        diagnosisHealthRes,
       ] = await Promise.allSettled([
         getServicesStatus().catch(() => ({ data: null })),
         getSystemStats().catch(() => ({ data: null })),
@@ -163,6 +163,7 @@ export default function DashboardWeb() {
         getSystemHealthScore().catch(() => ({ data: null })),
         getSessions(1, 100).catch(() => ({ data: { sessions: [] } })),
         getSessionsAnalytics().catch(() => ({ data: null })),
+        getDiagnosisHealth().catch(() => ({ data: null })),
       ]);
 
       if (servicesRes.status === "fulfilled")
@@ -177,6 +178,8 @@ export default function DashboardWeb() {
         setHealthScore(healthScoreRes.value?.data?.score);
       if (analyticsRes.status === "fulfilled")
         setSessionsAnalytics(analyticsRes.value?.data);
+      if (diagnosisHealthRes.status === "fulfilled")
+        setDiagnosisHealth(diagnosisHealthRes.value);
 
       setLastUpdate(new Date());
     } catch (error) {
@@ -247,11 +250,27 @@ export default function DashboardWeb() {
   };
 
   const prepareSessionChartData = () => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    return days.map((day) => ({
-      x: day,
-      y: Math.floor(Math.random() * 50) + 10,
-    }));
+    if (!sessionsAnalytics?.sessions_by_date || Object.keys(sessionsAnalytics.sessions_by_date).length === 0) {
+      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      return days.map((day) => ({
+        x: day,
+        y: 0,
+      }));
+    }
+
+    // Sort dates and take last 7 days
+    const sortedDates = Object.keys(sessionsAnalytics.sessions_by_date).sort();
+    const last7Dates = sortedDates.slice(-7);
+
+    return last7Dates.map((date) => {
+      const count = sessionsAnalytics.sessions_by_date[date];
+      const dateObj = new Date(date);
+      const label = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+      return {
+        x: label,
+        y: count,
+      };
+    });
   };
 
   const prepareStatusChartData = () => {
@@ -271,6 +290,149 @@ export default function DashboardWeb() {
       },
     ];
   };
+
+  const handleAutoFix = async (issueId: string) => {
+    try {
+      setRefreshing(true);
+      const result = await diagnoseError({ error_type: issueId, error_message: "auto_fix" });
+      if (result.fixed) {
+        Alert.alert("Success", "Issue has been automatically resolved.");
+        await loadDashboardData(true);
+      } else {
+        Alert.alert(
+          "Failed",
+          "Could not auto-fix this issue. Please check logs.",
+        );
+      }
+    } catch (error) {
+      console.error("Auto-fix error:", error);
+      Alert.alert("Error", "An error occurred while trying to fix the issue.");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const renderDiagnosis = () => (
+    <Animated.View
+      entering={FadeInDown.delay(200).springify()}
+      style={styles.tabContent}
+    >
+      <GlassCard variant="medium" style={styles.diagnosisCard}>
+        <View style={styles.diagnosisHeader}>
+          <View>
+            <Text style={styles.sectionTitle}>System Self-Diagnosis</Text>
+            <Text style={styles.sectionSubtitle}>
+              Automated health checks and issue resolution
+            </Text>
+          </View>
+          <View style={styles.healthBadge}>
+            <Text style={styles.healthScoreText}>
+              {diagnosisHealth?.health_score || 0}%
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.diagnosisStats}>
+          <View style={styles.diagStatItem}>
+            <Text style={styles.diagStatValue}>
+              {diagnosisHealth?.total_issues || 0}
+            </Text>
+            <Text style={styles.diagStatLabel}>Total Issues</Text>
+          </View>
+          <View style={styles.diagStatItem}>
+            <Text
+              style={[
+                styles.diagStatValue,
+                { color: auroraTheme.colors.error[500] },
+              ]}
+            >
+              {diagnosisHealth?.critical_issues || 0}
+            </Text>
+            <Text style={styles.diagStatLabel}>Critical</Text>
+          </View>
+          <View style={styles.diagStatItem}>
+            <Text
+              style={[
+                styles.diagStatValue,
+                { color: auroraTheme.colors.success[500] },
+              ]}
+            >
+              {diagnosisHealth?.resolved_issues || 0}
+            </Text>
+            <Text style={styles.diagStatLabel}>Auto-Fixed</Text>
+          </View>
+        </View>
+
+        <View style={styles.issuesList}>
+          {diagnosisHealth?.issues && diagnosisHealth.issues.length > 0 ? (
+            diagnosisHealth.issues.map((issue: any, index: number) => (
+              <View key={index} style={styles.issueRow}>
+                <View
+                  style={[
+                    styles.issueIcon,
+                    {
+                      backgroundColor:
+                        issue.severity === "critical"
+                          ? auroraTheme.colors.error[500] + "20"
+                          : auroraTheme.colors.warning[500] + "20",
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={issue.severity === "critical" ? "alert-circle" : "warning"}
+                    size={20}
+                    color={
+                      issue.severity === "critical"
+                        ? auroraTheme.colors.error[500]
+                        : auroraTheme.colors.warning[500]
+                    }
+                  />
+                </View>
+                <View style={styles.issueInfo}>
+                  <Text style={styles.issueTitle}>
+                    {issue.title || issue.type}
+                  </Text>
+                  <Text style={styles.issueDesc}>
+                    {issue.description || issue.message}
+                  </Text>
+                  {issue.auto_fix_available && (
+                    <TouchableOpacity
+                      style={styles.autoFixButton}
+                      onPress={() => handleAutoFix(issue.id)}
+                    >
+                      <Ionicons
+                        name="build-outline"
+                        size={14}
+                        color={auroraTheme.colors.primary[400]}
+                      />
+                      <Text style={styles.autoFixText}>Auto-Fix Available</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View style={styles.issueTime}>
+                  <Text style={styles.timeText}>
+                    {new Date(issue.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Text>
+                </View>
+              </View>
+            ))
+          ) : (
+            <View style={styles.noIssues}>
+              <Ionicons
+                name="checkmark-circle"
+                size={48}
+                color={auroraTheme.colors.success[500]}
+              />
+              <Text style={styles.noIssuesText}>No system issues detected</Text>
+            </View>
+          )}
+        </View>
+      </GlassCard>
+    </Animated.View>
+  );
 
   const renderOverview = () => (
     <Animated.View
@@ -332,7 +494,7 @@ export default function DashboardWeb() {
           <Text style={styles.quickStatValue}>
             {servicesStatus
               ? Object.values(servicesStatus).filter((s: any) => s.running)
-                  .length
+                .length
               : 0}
             /4
           </Text>
@@ -623,6 +785,7 @@ export default function DashboardWeb() {
                 "monitoring",
                 "reports",
                 "analytics",
+                "diagnosis",
               ] as DashboardTab[]
             ).map((tab) => (
               <TouchableOpacity
@@ -658,6 +821,7 @@ export default function DashboardWeb() {
             {activeTab === "monitoring" && renderMonitoring()}
             {activeTab === "reports" && renderReports()}
             {activeTab === "analytics" && renderAnalytics()}
+            {activeTab === "diagnosis" && renderDiagnosis()}
           </ScrollView>
 
           {/* Report Modal */}
@@ -926,6 +1090,116 @@ const styles = StyleSheet.create({
   metricValue: {
     ...typography.h2,
     fontSize: 24,
+  },
+  diagnosisCard: {
+    padding: 20,
+  },
+  diagnosisHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  sectionSubtitle: {
+    ...typography.small,
+    color: auroraTheme.colors.text.secondary,
+    marginTop: 4,
+  },
+  healthBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: auroraTheme.colors.primary[500] + "20",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: auroraTheme.colors.primary[500],
+  },
+  healthScoreText: {
+    ...typography.h3,
+    color: auroraTheme.colors.primary[400],
+  },
+  diagnosisStats: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  diagStatItem: {
+    alignItems: "center",
+  },
+  diagStatValue: {
+    ...typography.h2,
+    fontSize: 28,
+  },
+  diagStatLabel: {
+    ...typography.small,
+    marginTop: 4,
+  },
+  issuesList: {
+    gap: 12,
+  },
+  issueRow: {
+    flexDirection: "row",
+    padding: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: 12,
+    alignItems: "center",
+    gap: 16,
+  },
+  issueIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  issueInfo: {
+    flex: 1,
+  },
+  issueTitle: {
+    ...typography.bodyStrong,
+    fontSize: 16,
+  },
+  issueDesc: {
+    ...typography.small,
+    color: auroraTheme.colors.text.secondary,
+    marginTop: 2,
+  },
+  autoFixButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: auroraTheme.colors.primary[500] + "20",
+    borderRadius: 6,
+    alignSelf: "flex-start",
+  },
+  autoFixText: {
+    ...typography.label,
+    color: auroraTheme.colors.primary[400],
+    fontSize: 11,
+  },
+  issueTime: {
+    alignItems: "flex-end",
+  },
+  timeText: {
+    ...typography.small,
+    fontSize: 10,
+    color: auroraTheme.colors.text.secondary,
+  },
+  noIssues: {
+    alignItems: "center",
+    paddingVertical: 40,
+    gap: 16,
+  },
+  noIssuesText: {
+    ...typography.body,
+    color: auroraTheme.colors.text.secondary,
   },
   reportsGrid: {
     flexDirection: "row",

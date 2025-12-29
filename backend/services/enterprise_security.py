@@ -414,7 +414,9 @@ class EnterpriseSecurityService:
 
         return session_id
 
-    async def validate_session(self, session_id: str) -> dict[str, Optional[Any]]:
+    async def validate_session(
+        self, session_id: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Validate and refresh session"""
         now = datetime.utcnow()
 
@@ -506,7 +508,7 @@ class EnterpriseSecurityService:
         start_date: Optional[datetime] = None,
     ) -> list[dict[str, Any]]:
         """Get recent security events"""
-        query = {}
+        query: dict[str, Any] = {}
         if event_type:
             query["event_type"] = event_type
         if severity:

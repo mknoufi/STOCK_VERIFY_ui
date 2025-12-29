@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useMemo } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
+import { View, StyleSheet, useWindowDimensions } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -21,8 +21,6 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface Particle {
   id: number;
@@ -109,7 +107,7 @@ const ParticleElement: React.FC<{
         ),
       );
     }
-  }, [animated]);
+  }, [animated, opacity, particle.delay, particle.opacity, scale, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }, { scale: scale.value }],
@@ -145,16 +143,18 @@ export const ParticleField: React.FC<ParticleFieldProps> = ({
   maxSize = 6,
   animated = true,
 }) => {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
   const particles = useMemo<Particle[]>(() => {
     return Array.from({ length: count }).map((_, index) => ({
       id: index,
-      x: Math.random() * SCREEN_WIDTH,
-      y: Math.random() * SCREEN_HEIGHT,
+      x: Math.random() * screenWidth,
+      y: Math.random() * screenHeight,
       size: minSize + Math.random() * (maxSize - minSize),
       opacity: 0.2 + Math.random() * 0.4,
       delay: Math.random() * 2000,
     }));
-  }, [count, minSize, maxSize]);
+  }, [count, minSize, maxSize, screenWidth, screenHeight]);
 
   return (
     <View style={styles.container} pointerEvents="none">

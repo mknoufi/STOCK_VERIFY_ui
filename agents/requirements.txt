@@ -31,3 +31,6 @@ tenacity>=8.0.0  # Retry logic
 # Optional: Local LLM support
 # ollama>=0.1.0
 # llama-cpp-python>=0.2.0
+
+# Tracing
+langsmith[otel]>=0.3.45

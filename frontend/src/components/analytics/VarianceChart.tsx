@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import {
   colorPalette,
   spacing,
@@ -24,7 +24,7 @@ export const VarianceChart: React.FC<VarianceChartProps> = ({
   data,
   title = "Variance Trends",
 }) => {
-  const screenWidth = Dimensions.get("window").width;
+  const { width: screenWidth } = useWindowDimensions();
   const chartWidth = screenWidth - spacing.base * 2;
 
   // Prepare chart data

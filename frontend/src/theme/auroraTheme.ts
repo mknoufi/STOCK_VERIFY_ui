@@ -186,6 +186,8 @@ export const auroraColors = {
     verified: "#06B6D4",
     warning: "#FBBF24",
   },
+  // Shimmer effect colors
+  shimmer: ["#1E293B", "#334155", "#1E293B"] as const,
 };
 
 // ==========================================

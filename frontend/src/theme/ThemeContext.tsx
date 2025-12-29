@@ -6,6 +6,8 @@
  * - System theme auto-detection
  * - Persistent storage via MMKV
  * - Pattern selection
+ * - Dynamic font size
+ * - Dynamic primary color
  */
 
 import React, {
@@ -19,6 +21,7 @@ import React, {
 import { useColorScheme, Appearance } from "react-native";
 import { themes, AppTheme } from "./themes";
 import { mmkvStorage } from "../services/mmkvStorage";
+import { useSettingsStore } from "../store/settingsStore";
 
 // Available theme keys
 export type ThemeKey =
@@ -61,6 +64,10 @@ interface ThemeContextType {
   pattern: PatternType;
   layout: LayoutArrangement;
 
+  // Dynamic styling from settings
+  fontSize: number;
+  primaryColor: string;
+
   // Actions
   setThemeKey: (key: ThemeKey) => void;
   setThemeMode: (mode: ThemeMode) => void;
@@ -70,6 +77,7 @@ interface ThemeContextType {
 
   // Helpers
   getThemeColor: (colorPath: string) => string;
+  getFontSize: (scale?: number) => number;
   availableThemes: { key: ThemeKey; name: string; preview: string[] }[];
   availablePatterns: { key: PatternType; name: string; icon: string }[];
   availableLayouts: { key: LayoutArrangement; name: string; icon: string }[];
@@ -121,18 +129,19 @@ const LAYOUT_METADATA: {
   name: string;
   icon: string;
 }[] = [
-  { key: "default", name: "Default", icon: "apps-outline" },
-  { key: "compact", name: "Compact", icon: "contract-outline" },
-  { key: "spacious", name: "Spacious", icon: "expand-outline" },
-  { key: "cards", name: "Cards", icon: "albums-outline" },
-  { key: "list", name: "List", icon: "list-outline" },
-  { key: "grid", name: "Grid", icon: "grid-outline" },
-];
+    { key: "default", name: "Default", icon: "apps-outline" },
+    { key: "compact", name: "Compact", icon: "contract-outline" },
+    { key: "spacious", name: "Spacious", icon: "expand-outline" },
+    { key: "cards", name: "Cards", icon: "albums-outline" },
+    { key: "list", name: "List", icon: "list-outline" },
+    { key: "grid", name: "Grid", icon: "grid-outline" },
+  ];
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const systemColorScheme = useColorScheme();
+  const { settings } = useSettingsStore();
 
   // State
   const [themeKey, setThemeKeyState] = useState<ThemeKey>("premium");
@@ -140,6 +149,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const [pattern, setPatternState] = useState<PatternType>("none");
   const [layout, setLayoutState] = useState<LayoutArrangement>("default");
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Get dynamic values from settings store
+  const fontSize = settings.fontSizeValue || 16;
+  const primaryColor = settings.primaryColor || "#6366F1";
 
   // Compute effective theme based on mode
   const effectiveThemeKey = useMemo((): ThemeKey => {
@@ -202,7 +215,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Listen for system theme changes
   useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+    const subscription = Appearance.addChangeListener(({ colorScheme: _colorScheme }) => {
       if (themeMode === "system") {
         // Theme will auto-update via effectiveThemeKey computation
       }
@@ -254,6 +267,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     [theme],
   );
 
+  // Helper to get scaled font size based on user preference
+  const getFontSize = useCallback(
+    (scale: number = 1): number => {
+      return Math.round(fontSize * scale);
+    },
+    [fontSize],
+  );
+
   const contextValue = useMemo<ThemeContextType>(
     () => ({
       theme: theme!,
@@ -262,12 +283,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       isDark,
       pattern,
       layout,
+      fontSize,
+      primaryColor,
       setThemeKey,
       setThemeMode,
       setPattern,
       setLayout,
       toggleDarkMode,
       getThemeColor,
+      getFontSize,
       availableThemes: THEME_METADATA,
       availablePatterns: PATTERN_METADATA,
       availableLayouts: LAYOUT_METADATA,
@@ -279,12 +303,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       isDark,
       pattern,
       layout,
+      fontSize,
+      primaryColor,
       setThemeKey,
       setThemeMode,
       setPattern,
       setLayout,
       toggleDarkMode,
       getThemeColor,
+      getFontSize,
     ],
   );
 
@@ -312,6 +339,9 @@ export const useThemeContext = (): ThemeContextType => {
   }
   return context;
 };
+
+// Alias for backward compatibility
+export const useTheme = useThemeContext;
 
 // Optional hook that doesn't throw (for components that may be outside provider)
 export const useThemeContextSafe = (): ThemeContextType | null => {

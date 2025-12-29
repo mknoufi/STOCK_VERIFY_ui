@@ -1,78 +1,77 @@
 /**
- * Modern Design System - Enhanced UI/UX Upgrade v3.0
- * Aurora Pro Color Scheme
+ * Modern Design System - Enhanced UI/UX Upgrade v3.5
+ * Deep Ocean & Emerald Color Scheme
  *
  * Features:
- * - Vibrant indigo-purple primary with modern gradients
- * - Enhanced typography scale
- * - Improved spacing system
- * - Advanced animations and transitions
- * - Glassmorphism effects
- * - Better accessibility support
+ * - Professional Sapphire Blue primary with Emerald accents
+ * - Refined typography scale for better readability
+ * - Optimized spacing system for modern mobile layouts
+ * - Subtle glassmorphism and depth effects
+ * - High-contrast accessibility support
  */
 
 import { StyleSheet, Platform } from "react-native";
 
 // ==========================================
-// MODERN COLOR PALETTE - AURORA PRO
+// MODERN COLOR PALETTE - DEEP OCEAN
 // ==========================================
 
 export const modernColors = {
-  // Primary Brand Colors - Vibrant Indigo
+  // Primary Brand Colors - Deep Sapphire
   primary: {
+    50: "#F0F9FF",
+    100: "#E0F2FE",
+    200: "#BAE6FD",
+    300: "#7DD3FC",
+    400: "#38BDF8",
+    500: "#0EA5E9", // Main primary - Sky Blue
+    600: "#0284C7",
+    700: "#0369A1",
+    800: "#075985",
+    900: "#0C4A6E",
+  },
+
+  // Secondary - Emerald Green (Success/Verification)
+  secondary: {
+    50: "#ECFDF5",
+    100: "#D1FAE5",
+    200: "#A7F3D0",
+    300: "#6EE7B7",
+    400: "#34D399",
+    500: "#10B981", // Main secondary - Emerald
+    600: "#059669",
+    700: "#047857",
+    800: "#065F46",
+    900: "#064E3B",
+  },
+
+  // Accent - Royal Blue / Indigo
+  accent: {
     50: "#EEF2FF",
     100: "#E0E7FF",
     200: "#C7D2FE",
     300: "#A5B4FC",
     400: "#818CF8",
-    500: "#6366F1", // Main primary - Vibrant Indigo
+    500: "#6366F1", // Main accent - Indigo
     600: "#4F46E5",
     700: "#4338CA",
     800: "#3730A3",
     900: "#312E81",
   },
 
-  // Secondary - Vibrant Teal/Cyan
-  secondary: {
-    50: "#ECFEFF",
-    100: "#CFFAFE",
-    200: "#A5F3FC",
-    300: "#67E8F9",
-    400: "#22D3EE",
-    500: "#06B6D4", // Main secondary - Cyan
-    600: "#0891B2",
-    700: "#0E7490",
-    800: "#155E75",
-    900: "#164E63",
-  },
-
-  // Accent - Vibrant Purple
-  accent: {
-    50: "#FAF5FF",
-    100: "#F3E8FF",
-    200: "#E9D5FF",
-    300: "#D8B4FE",
-    400: "#C084FC",
-    500: "#A855F7", // Main accent - Purple
-    600: "#9333EA",
-    700: "#7E22CE",
-    800: "#6B21A8",
-    900: "#581C87",
-  },
-
-  // Neutral Grays - Dark Mode Optimized
+  // Neutral Grays - Slate (Professional & Clean)
   neutral: {
-    50: "#FAFAFA",
-    100: "#F4F4F5",
-    200: "#E4E4E7",
-    300: "#D4D4D8",
-    400: "#A1A1AA",
-    500: "#71717A",
-    600: "#52525B",
-    700: "#3F3F46",
-    800: "#27272A",
-    900: "#18181B",
-    950: "#09090B",
+    50: "#F8FAFC",
+    100: "#F1F5F9",
+    200: "#E2E8F0",
+    300: "#CBD5E1",
+    400: "#94A3B8",
+    500: "#64748B",
+    600: "#475569",
+    700: "#334155",
+    800: "#1E293B",
+    900: "#0F172A",
+    950: "#020617",
   },
 
   // Semantic Colors - More Vibrant
@@ -106,57 +105,57 @@ export const modernColors = {
 
   // Background Colors (Dark Mode) - Deeper & Richer
   background: {
-    default: "#030712", // Very deep slate
+    default: "#020617", // Slate 950
     paper: "#0F172A", // Slate 900
     elevated: "#1E293B", // Slate 800
-    overlay: "rgba(3, 7, 18, 0.9)",
+    overlay: "rgba(2, 6, 23, 0.9)",
     glass: "rgba(15, 23, 42, 0.75)", // Glassmorphism
   },
 
   // Text Colors - Higher Contrast
   text: {
-    primary: "#FAFAFA", // Near white
-    secondary: "#A1A1AA", // Zinc 400
-    tertiary: "#71717A", // Zinc 500
-    disabled: "#52525B", // Zinc 600
-    inverse: "#09090B", // Zinc 950
-    link: "#818CF8", // Indigo 400
-    linkHover: "#A5B4FC", // Indigo 300
+    primary: "#F8FAFC", // Slate 50
+    secondary: "#94A3B8", // Slate 400
+    tertiary: "#64748B", // Slate 500
+    disabled: "#475569", // Slate 600
+    inverse: "#020617", // Slate 950
+    link: "#38BDF8", // Sky 400
+    linkHover: "#7DD3FC", // Sky 300
   },
 
   // Border Colors - Subtle & Clean
   border: {
-    light: "#27272A", // Zinc 800
-    medium: "#3F3F46", // Zinc 700
-    dark: "#52525B", // Zinc 600
-    focus: "#6366F1", // Indigo 500
+    light: "#1E293B", // Slate 800
+    medium: "#334155", // Slate 700
+    dark: "#475569", // Slate 600
+    focus: "#0EA5E9", // Sky 500
     error: "#EF4444", // Red 500
   },
 
   // Semantic Colors Shorthand (for backward compatibility)
   semantic: {
-    success: "#22C55E",
+    success: "#10B981",
     error: "#EF4444",
-    warning: "#EAB308",
+    warning: "#F59E0B",
     info: "#0EA5E9",
   },
 
-  // Gradient Definitions - More Vibrant
+  // Gradient Definitions - More Professional
   gradients: {
-    primary: ["#6366F1", "#8B5CF6", "#A855F7"] as const, // Indigo to Purple
-    secondary: ["#06B6D4", "#22D3EE", "#67E8F9"] as const, // Cyan spectrum
-    accent: ["#A855F7", "#C084FC", "#D8B4FE"] as const, // Purple spectrum
-    dark: ["#0F172A", "#030712", "#000000"] as const, // Deep background
-    surface: ["#1E293B", "#0F172A", "#030712"] as const, // Surface layers
-    aurora: ["#6366F1", "#A855F7", "#EC4899"] as const, // Rainbow aurora
-    success: ["#22C55E", "#16A34A"] as const,
-    warning: ["#EAB308", "#CA8A04"] as const,
+    primary: ["#0EA5E9", "#0284C7", "#0369A1"] as const, // Sky Blue spectrum
+    secondary: ["#10B981", "#059669", "#047857"] as const, // Emerald spectrum
+    accent: ["#6366F1", "#4F46E5", "#4338CA"] as const, // Indigo spectrum
+    dark: ["#0F172A", "#020617", "#000000"] as const, // Deep background
+    surface: ["#1E293B", "#0F172A", "#020617"] as const, // Surface layers
+    aurora: ["#0EA5E9", "#10B981", "#6366F1"] as const, // Sky to Emerald to Indigo
+    success: ["#10B981", "#059669"] as const,
+    warning: ["#F59E0B", "#D97706"] as const,
     error: ["#EF4444", "#DC2626"] as const,
-    glass: ["rgba(255, 255, 255, 0.12)", "rgba(255, 255, 255, 0.04)"] as const,
+    glass: ["rgba(255, 255, 255, 0.08)", "rgba(255, 255, 255, 0.02)"] as const,
     shimmer: [
-      "rgba(99, 102, 241, 0.1)",
-      "rgba(168, 85, 247, 0.15)",
-      "rgba(99, 102, 241, 0.1)",
+      "rgba(14, 165, 233, 0.1)",
+      "rgba(16, 185, 129, 0.15)",
+      "rgba(14, 165, 233, 0.1)",
     ] as const,
   },
 };
@@ -333,13 +332,13 @@ export const modernSpacing = {
   "4xl": 80,
 
   // Component-specific spacing
-  screenPadding: 24,
-  cardPadding: 20,
-  inputPadding: 16,
-  buttonPadding: 16,
-  sectionGap: 48,
-  elementGap: 16,
-  groupGap: 12,
+  screenPadding: 20,
+  cardPadding: 18,
+  inputPadding: 14,
+  buttonPadding: 14,
+  sectionGap: 32,
+  elementGap: 12,
+  groupGap: 8,
 };
 
 // ==========================================
@@ -348,20 +347,20 @@ export const modernSpacing = {
 
 export const modernBorderRadius = {
   none: 0,
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  "2xl": 24,
-  "3xl": 32,
+  xs: 6,
+  sm: 10,
+  md: 14,
+  lg: 18,
+  xl: 24,
+  "2xl": 32,
+  "3xl": 40,
   full: 9999,
 
   // Component-specific
-  button: 12,
-  card: 16,
-  input: 12,
-  modal: 24,
+  button: 14,
+  card: 20,
+  input: 14,
+  modal: 28,
   badge: 9999,
 };
 
@@ -711,8 +710,8 @@ export const modernCommonStyles = StyleSheet.create({
   flex1: { flex: 1 },
 });
 
-// Export all as default object
-export default {
+// Export all as named theme object
+export const theme = {
   colors: modernColors,
   typography: modernTypography,
   spacing: modernSpacing,
@@ -725,3 +724,6 @@ export default {
   breakpoints,
   commonStyles: modernCommonStyles,
 };
+
+// Export all as default object
+export default theme;

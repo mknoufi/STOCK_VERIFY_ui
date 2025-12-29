@@ -1,0 +1,252 @@
+asyncapi: 2.6.0
+info:
+  title: Stock Verify - Real-Time WebSocket API
+  version: 1.0.0
+  description: WebSocket events for real-time updates (Supervisors only)
+
+servers:
+  production:
+    url: wss://api.stockverify.local/ws
+    protocol: wss
+    description: Production WebSocket server
+
+channels:
+  /ws/updates:
+    description: Main WebSocket channel for real-time updates
+    subscribe:
+      summary: Receive real-time events
+      description: Supervisors receive session and item updates
+      message:
+        oneOf:
+          - $ref: '#/components/messages/SessionUpdate'
+          - $ref: '#/components/messages/ItemUpdate'
+          - $ref: '#/components/messages/CountComplete'
+          - $ref: '#/components/messages/SystemAlert'
+    publish:
+      summary: Send client events
+      description: Client heartbeat and subscription management
+      message:
+        oneOf:
+          - $ref: '#/components/messages/Heartbeat'
+          - $ref: '#/components/messages/Subscribe'
+
+components:
+  messages:
+    SessionUpdate:
+      name: session_update
+      summary: Count session state changed
+      contentType: application/json
+      payload:
+        type: object
+        required: [type, payload, timestamp]
+        properties:
+          type:
+            type: string
+            const: session_update
+          payload:
+            type: object
+            properties:
+              entity_id:
+                type: string
+                description: Session ID
+              entity_type:
+                type: string
+                const: session
+              action:
+                type: string
+                enum: [create, update, complete, delete]
+              data:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [active, paused, completed, cancelled]
+                  items_counted:
+                    type: integer
+                  total_items:
+                    type: integer
+                  progress_percent:
+                    type: number
+              actor:
+                $ref: '#/components/schemas/Actor'
+          timestamp:
+            type: string
+            format: date-time
+          target_roles:
+            type: array
+            items:
+              type: string
+            default: [supervisor]
+
+    ItemUpdate:
+      name: item_update
+      summary: Item count updated
+      contentType: application/json
+      payload:
+        type: object
+        required: [type, payload, timestamp]
+        properties:
+          type:
+            type: string
+            const: item_update
+          payload:
+            type: object
+            properties:
+              entity_id:
+                type: string
+                description: Item code
+              entity_type:
+                type: string
+                const: item
+              action:
+                type: string
+                enum: [update, lock, unlock]
+              data:
+                type: object
+                properties:
+                  item_code:
+                    type: string
+                  session_id:
+                    type: string
+                  physical_count:
+                    type: integer
+                  erp_quantity:
+                    type: integer
+                  variance:
+                    type: integer
+                  has_variance:
+                    type: boolean
+              actor:
+                $ref: '#/components/schemas/Actor'
+          timestamp:
+            type: string
+            format: date-time
+          target_roles:
+            type: array
+            items:
+              type: string
+            default: [supervisor]
+
+    CountComplete:
+      name: count_complete
+      summary: Session count completed
+      contentType: application/json
+      payload:
+        type: object
+        required: [type, payload, timestamp]
+        properties:
+          type:
+            type: string
+            const: count_complete
+          payload:
+            type: object
+            properties:
+              entity_id:
+                type: string
+              entity_type:
+                type: string
+                const: session
+              action:
+                type: string
+                const: complete
+              data:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  total_items:
+                    type: integer
+                  items_with_variance:
+                    type: integer
+                  accuracy_rate:
+                    type: number
+                  completed_by:
+                    type: string
+                  completed_at:
+                    type: string
+                    format: date-time
+              actor:
+                $ref: '#/components/schemas/Actor'
+          timestamp:
+            type: string
+            format: date-time
+          target_roles:
+            type: array
+            items:
+              type: string
+            default: [supervisor, admin]
+
+    SystemAlert:
+      name: system_alert
+      summary: System-level alert
+      contentType: application/json
+      payload:
+        type: object
+        required: [type, payload, timestamp]
+        properties:
+          type:
+            type: string
+            const: system_alert
+          payload:
+            type: object
+            properties:
+              severity:
+                type: string
+                enum: [info, warning, error, critical]
+              title:
+                type: string
+              message:
+                type: string
+              action_url:
+                type: string
+          timestamp:
+            type: string
+            format: date-time
+          target_roles:
+            type: array
+            items:
+              type: string
+
+    Heartbeat:
+      name: heartbeat
+      summary: Client heartbeat to keep connection alive
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          type:
+            type: string
+            const: heartbeat
+          timestamp:
+            type: string
+            format: date-time
+
+    Subscribe:
+      name: subscribe
+      summary: Subscribe to specific event types
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          type:
+            type: string
+            const: subscribe
+          events:
+            type: array
+            items:
+              type: string
+              enum: [session_update, item_update, count_complete, system_alert]
+
+  schemas:
+    Actor:
+      type: object
+      properties:
+        user_id:
+          type: string
+        username:
+          type: string
+        role:
+          type: string
+          enum: [admin, supervisor, staff]

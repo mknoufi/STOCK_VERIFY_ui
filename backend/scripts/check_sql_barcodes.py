@@ -1,0 +1,87 @@
+import logging
+import sys
+from pathlib import Path  # noqa: E402
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from backend.config import settings  # noqa: E402
+from backend.sql_server_connector import SQLServerConnector  # noqa: E402
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("check_sql_barcodes")
+
+
+def check_sql_barcodes():
+    sql_connector = SQLServerConnector()
+    try:
+        sql_connector.connect(
+            host=settings.SQL_SERVER_HOST,
+            port=settings.SQL_SERVER_PORT,
+            database=settings.SQL_SERVER_DATABASE,
+            user=settings.SQL_SERVER_USER,
+            password=settings.SQL_SERVER_PASSWORD,
+        )
+
+        # Query to get min, max and count of barcodes in the requested range
+        query = """
+            SELECT
+                MIN(CAST(AutoBarcode AS BIGINT)) as min_bc,
+                MAX(CAST(AutoBarcode AS BIGINT)) as max_bc,
+                COUNT(*) as total_count
+            FROM ProductBatches PB
+            INNER JOIN Products P ON PB.ProductID = P.ProductID
+            WHERE ISNUMERIC(AutoBarcode) = 1
+            AND CAST(AutoBarcode AS BIGINT) BETWEEN 510000 AND 5301000
+            AND P.IsActive = 1
+            AND LEN(CAST(AutoBarcode AS VARCHAR(50))) = 6
+        """
+        cursor = sql_connector.connection.cursor()
+        cursor.execute(query)
+        columns = [column[0] for column in cursor.description]
+        result = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        if result:
+            row = result[0]
+            print("\nSQL Server Barcode Stats (Range 510000 - 5301000):")
+            print(f"  Min Barcode: {row['min_bc']}")
+            print(f"  Max Barcode: {row['max_bc']}")
+            print(f"  Total Count: {row['total_count']}")
+
+            # Check for gaps by comparing count with range span
+            if row["min_bc"] and row["max_bc"]:
+                span = row["max_bc"] - row["min_bc"] + 1
+                gaps = span - row["total_count"]
+                print(f"  Theoretical Span: {span}")
+                print(f"  Missing in SQL: {gaps}")
+
+        # Sample some barcodes to see format
+        sample_query = """
+            SELECT TOP 10 AutoBarcode
+            FROM ProductBatches
+            WHERE ISNUMERIC(AutoBarcode) = 1
+            AND CAST(AutoBarcode AS BIGINT) >= 510000
+            ORDER BY CAST(AutoBarcode AS BIGINT) ASC
+        """
+        cursor.execute(sample_query)
+        columns = [column[0] for column in cursor.description]
+        samples = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        print("\nFirst 10 Barcodes in SQL (>= 510000):")
+        for s in samples:
+            print(f"  {s['AutoBarcode']}")
+
+        cursor.close()
+
+    except Exception as e:
+        logger.error(f"Error: {e}")
+    finally:
+        # SQLServerConnector doesn't have a close() but we should be fine
+        pass
+
+
+if __name__ == "__main__":
+    check_sql_barcodes()

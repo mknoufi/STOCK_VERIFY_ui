@@ -68,7 +68,7 @@ const statusConfig: Record<
 };
 
 export const SessionCard: React.FC<SessionCardProps> = ({
-  id,
+  id: _id,
   name,
   location,
   itemCount = 0,

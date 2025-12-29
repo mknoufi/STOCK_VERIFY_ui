@@ -5,7 +5,6 @@ export const flags = {
   enableSwipeActions: true,
   enableDebugMode: __DEV__,
   enableNetworkLogging: __DEV__,
-  enableMMKV: true,
   enableOfflineQueue: true,
   enableNotes: true,
 };

@@ -21,7 +21,7 @@ export const SafeView: React.FC<SafeViewProps> = ({
 }) => {
   const theme = useTheme();
 
-  const defaultFallback = (error: Error) => (
+  const defaultFallback = (_error: Error) => (
     <View
       style={[
         styles.errorContainer,

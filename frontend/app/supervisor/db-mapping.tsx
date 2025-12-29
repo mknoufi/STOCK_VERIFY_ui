@@ -1,7 +1,7 @@
 /**
  * Database Mapping Configuration Screen
  * Allows supervisors to select tables and columns for ERP mapping
- * Refactored to use Aurora Design System
+ * Deep Ocean Design System
  */
 
 import React, { useState, useEffect } from "react";
@@ -32,11 +32,11 @@ import {
 } from "../../src/services/api/api";
 import { useToast } from "../../src/components/feedback/ToastProvider";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
 
 interface Table {
   name: string;
@@ -199,6 +199,7 @@ export default function DatabaseMappingScreen() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
   useEffect(() => {
@@ -467,7 +468,7 @@ export default function DatabaseMappingScreen() {
   };
 
   return (
-    <AuroraBackground>
+    <ScreenContainer>
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
@@ -483,7 +484,7 @@ export default function DatabaseMappingScreen() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -500,16 +501,16 @@ export default function DatabaseMappingScreen() {
           {/* Connection Settings */}
           <Animated.View entering={FadeInDown.delay(200).springify()}>
             <GlassCard
-              variant="light"
-              padding={auroraTheme.spacing.md}
-              borderRadius={auroraTheme.borderRadius.lg}
+              intensity={15}
+              padding={theme.spacing.md}
+              borderRadius={theme.borderRadius.lg}
               style={styles.section}
             >
               <View style={styles.sectionHeader}>
                 <Ionicons
                   name="server-outline"
                   size={20}
-                  color={auroraTheme.colors.primary[500]}
+                  color={theme.colors.primary[500]}
                 />
                 <Text style={styles.sectionTitle}>Connection Settings</Text>
               </View>
@@ -522,7 +523,7 @@ export default function DatabaseMappingScreen() {
                     value={host}
                     onChangeText={setHost}
                     placeholder="SQL Server host"
-                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                    placeholderTextColor={theme.colors.text.tertiary}
                   />
                 </View>
                 <View style={styles.inputContainer}>
@@ -533,7 +534,7 @@ export default function DatabaseMappingScreen() {
                     onChangeText={setPort}
                     placeholder="1433"
                     keyboardType="numeric"
-                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                    placeholderTextColor={theme.colors.text.tertiary}
                   />
                 </View>
               </View>
@@ -546,7 +547,7 @@ export default function DatabaseMappingScreen() {
                     value={database}
                     onChangeText={setDatabase}
                     placeholder="Database name"
-                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                    placeholderTextColor={theme.colors.text.tertiary}
                   />
                 </View>
                 <View style={styles.inputContainer}>
@@ -556,7 +557,7 @@ export default function DatabaseMappingScreen() {
                     value={schema}
                     onChangeText={setSchema}
                     placeholder="dbo"
-                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                    placeholderTextColor={theme.colors.text.tertiary}
                   />
                 </View>
               </View>
@@ -569,7 +570,7 @@ export default function DatabaseMappingScreen() {
                     value={user}
                     onChangeText={setUser}
                     placeholder="Username"
-                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                    placeholderTextColor={theme.colors.text.tertiary}
                   />
                 </View>
                 <View style={styles.inputContainer}>
@@ -580,7 +581,7 @@ export default function DatabaseMappingScreen() {
                     onChangeText={setPassword}
                     placeholder="Password"
                     secureTextEntry
-                    placeholderTextColor={auroraTheme.colors.text.tertiary}
+                    placeholderTextColor={theme.colors.text.tertiary}
                   />
                 </View>
               </View>
@@ -588,7 +589,7 @@ export default function DatabaseMappingScreen() {
               <AnimatedPressable
                 style={[
                   styles.button,
-                  { backgroundColor: auroraTheme.colors.primary[500] },
+                  { backgroundColor: theme.colors.primary[500] },
                 ]}
                 onPress={handleLoadTables}
                 disabled={loading}
@@ -609,16 +610,16 @@ export default function DatabaseMappingScreen() {
           {tables.length > 0 && (
             <Animated.View entering={FadeInDown.delay(300).springify()}>
               <GlassCard
-                variant="light"
-                padding={auroraTheme.spacing.md}
-                borderRadius={auroraTheme.borderRadius.lg}
+                intensity={15}
+                padding={theme.spacing.md}
+                borderRadius={theme.borderRadius.lg}
                 style={styles.section}
               >
                 <View style={styles.sectionHeader}>
                   <Ionicons
                     name="list-outline"
                     size={20}
-                    color={auroraTheme.colors.primary[500]}
+                    color={theme.colors.primary[500]}
                   />
                   <Text style={styles.sectionTitle}>
                     Select Table ({tables.length})
@@ -633,8 +634,8 @@ export default function DatabaseMappingScreen() {
                         styles.tableItem,
                         selectedTable === table.name && {
                           backgroundColor:
-                            auroraTheme.colors.primary[500] + "20",
-                          borderColor: auroraTheme.colors.primary[500],
+                            theme.colors.primary[500] + "20",
+                          borderColor: theme.colors.primary[500],
                         },
                       ]}
                       onPress={() => handleLoadColumns(table.name)}
@@ -648,15 +649,15 @@ export default function DatabaseMappingScreen() {
                         size={20}
                         color={
                           selectedTable === table.name
-                            ? auroraTheme.colors.primary[500]
-                            : auroraTheme.colors.text.tertiary
+                            ? theme.colors.primary[500]
+                            : theme.colors.text.tertiary
                         }
                       />
                       <Text
                         style={[
                           styles.tableName,
                           selectedTable === table.name && {
-                            color: auroraTheme.colors.primary[500],
+                            color: theme.colors.primary[500],
                             fontWeight: "bold",
                           },
                         ]}
@@ -674,16 +675,16 @@ export default function DatabaseMappingScreen() {
           {selectedTable && columns.length > 0 && (
             <Animated.View entering={FadeInDown.delay(400).springify()}>
               <GlassCard
-                variant="light"
-                padding={auroraTheme.spacing.md}
-                borderRadius={auroraTheme.borderRadius.lg}
+                intensity={15}
+                padding={theme.spacing.md}
+                borderRadius={theme.borderRadius.lg}
                 style={styles.section}
               >
                 <View style={styles.sectionHeader}>
                   <Ionicons
                     name="git-merge-outline"
                     size={20}
-                    color={auroraTheme.colors.primary[500]}
+                    color={theme.colors.primary[500]}
                   />
                   <Text style={styles.sectionTitle}>
                     Map Columns ({columns.length} source cols)
@@ -699,7 +700,7 @@ export default function DatabaseMappingScreen() {
                           {field.label}
                           {field.required && (
                             <Text
-                              style={{ color: auroraTheme.colors.error[500] }}
+                              style={{ color: theme.colors.error.main }}
                             >
                               {" "}
                               *
@@ -713,8 +714,8 @@ export default function DatabaseMappingScreen() {
                           styles.columnSelector,
                           mappedColumn && {
                             backgroundColor:
-                              auroraTheme.colors.success[500] + "10",
-                            borderColor: auroraTheme.colors.success[500],
+                              theme.colors.success.main + "10",
+                            borderColor: theme.colors.success.main,
                           },
                         ]}
                         onPress={() => handleSelectColumn(field.key)}
@@ -724,10 +725,10 @@ export default function DatabaseMappingScreen() {
                             styles.columnSelectorText,
                             mappedColumn
                               ? {
-                                  color: auroraTheme.colors.success[500],
-                                  fontWeight: "600",
-                                }
-                              : { color: auroraTheme.colors.text.tertiary },
+                                color: theme.colors.success.main,
+                                fontWeight: "600",
+                              }
+                              : { color: theme.colors.text.tertiary },
                           ]}
                         >
                           {mappedColumn
@@ -741,8 +742,8 @@ export default function DatabaseMappingScreen() {
                           size={20}
                           color={
                             mappedColumn
-                              ? auroraTheme.colors.success[500]
-                              : auroraTheme.colors.text.tertiary
+                              ? theme.colors.success.main
+                              : theme.colors.text.tertiary
                           }
                         />
                       </AnimatedPressable>
@@ -756,7 +757,7 @@ export default function DatabaseMappingScreen() {
                   style={[
                     styles.actionButton,
                     {
-                      backgroundColor: auroraTheme.colors.warning[500],
+                      backgroundColor: theme.colors.warning.main,
                       flex: 1,
                     },
                   ]}
@@ -771,7 +772,7 @@ export default function DatabaseMappingScreen() {
                   style={[
                     styles.actionButton,
                     {
-                      backgroundColor: auroraTheme.colors.primary[500],
+                      backgroundColor: theme.colors.primary[500],
                       flex: 1,
                     },
                   ]}
@@ -799,15 +800,13 @@ export default function DatabaseMappingScreen() {
           animationType="fade"
           onRequestClose={() => setShowColumnModal(false)}
         >
-          <AuroraBackground
-            variant="primary"
-            intensity="high"
-            style={styles.modalOverlay}
+          <ScreenContainer
+            containerStyle={styles.modalOverlay}
           >
             <GlassCard
-              variant="modal"
-              padding={auroraTheme.spacing.lg}
-              borderRadius={auroraTheme.borderRadius.xl}
+              intensity={20}
+              padding={theme.spacing.lg}
+              borderRadius={theme.borderRadius.xl}
               style={styles.modalContent}
             >
               <View style={styles.modalHeader}>
@@ -822,7 +821,7 @@ export default function DatabaseMappingScreen() {
                   <Ionicons
                     name="close"
                     size={24}
-                    color={auroraTheme.colors.text.primary}
+                    color={theme.colors.text.primary}
                   />
                 </AnimatedPressable>
               </View>
@@ -853,16 +852,16 @@ export default function DatabaseMappingScreen() {
                     <Ionicons
                       name="add-circle-outline"
                       size={24}
-                      color={auroraTheme.colors.primary[500]}
+                      color={theme.colors.primary[500]}
                     />
                   </AnimatedPressable>
                 ))}
               </ScrollView>
             </GlassCard>
-          </AuroraBackground>
+          </ScreenContainer>
         </Modal>
       </View>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -870,109 +869,108 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 60,
-    paddingHorizontal: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
+    fontSize: 32,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   scrollView: {
     flex: 1,
   },
   section: {
-    marginBottom: auroraTheme.spacing.lg,
+    marginBottom: theme.spacing.lg,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: auroraTheme.spacing.md,
-    paddingBottom: auroraTheme.spacing.xs,
+    marginBottom: theme.spacing.md,
+    paddingBottom: theme.spacing.xs,
     borderBottomWidth: 1,
-    borderBottomColor: auroraTheme.colors.border.light,
+    borderBottomColor: "rgba(255,255,255,0.1)",
   },
   sectionTitle: {
-    fontSize: auroraTheme.typography.fontSize.lg,
+    fontSize: 20,
     fontWeight: "bold",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
   },
   inputGrid: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.md,
-    marginBottom: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   inputContainer: {
     flex: 1,
   },
   label: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 11,
+    color: theme.colors.text.secondary,
     marginBottom: 6,
     fontWeight: "600",
   },
   input: {
     backgroundColor: "rgba(255,255,255,0.05)",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     padding: 12,
-    borderRadius: auroraTheme.borderRadius.md,
-    fontSize: auroraTheme.typography.fontSize.md,
+    borderRadius: theme.borderRadius.md,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     padding: 14,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: theme.borderRadius.full,
     gap: 8,
-    marginTop: auroraTheme.spacing.xs,
+    marginTop: theme.spacing.xs,
   },
   buttonText: {
     color: "#fff",
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
     fontWeight: "600",
   },
   tableItem: {
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    borderRadius: auroraTheme.borderRadius.md,
+    borderRadius: theme.borderRadius.md,
     marginBottom: 8,
     gap: 12,
     borderWidth: 1,
     borderColor: "transparent",
   },
   tableName: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 16,
+    color: theme.colors.text.primary,
   },
   mappingRow: {
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   mappingHeader: {
     flexDirection: "row",
@@ -980,8 +978,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   fieldLabel: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 14,
+    color: theme.colors.text.primary,
     fontWeight: "600",
   },
   columnSelector: {
@@ -989,25 +987,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 12,
-    borderRadius: auroraTheme.borderRadius.md,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
     backgroundColor: "rgba(255,255,255,0.03)",
   },
   columnSelectorText: {
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
   },
   actions: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.md,
-    paddingVertical: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
   },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     padding: 14,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: theme.borderRadius.full,
     gap: 8,
   },
   modalOverlay: {
@@ -1026,22 +1024,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.md,
-    paddingBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: auroraTheme.colors.border.light,
+    borderBottomColor: "rgba(255,255,255,0.1)",
   },
   modalTitle: {
-    fontSize: auroraTheme.typography.fontSize.xl,
+    fontSize: 18,
     fontWeight: "bold",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
   },
   modalSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   modalScroll: {
-    marginBottom: auroraTheme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
   columnItem: {
     flexDirection: "row",
@@ -1056,8 +1054,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   columnName: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 16,
+    color: theme.colors.text.primary,
     fontWeight: "500",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
   },
@@ -1067,12 +1065,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   columnType: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.primary[500],
+    fontSize: 11,
+    color: theme.colors.primary[500],
     fontWeight: "bold",
   },
   columnMeta: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 11,
+    color: theme.colors.text.tertiary,
   },
 });

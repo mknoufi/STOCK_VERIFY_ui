@@ -13,7 +13,7 @@ import {
   View,
   StyleSheet,
   ViewStyle,
-  Dimensions,
+  useWindowDimensions,
   DimensionValue,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -25,8 +25,6 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface ShimmerProps {
   width?: DimensionValue;
@@ -47,18 +45,20 @@ export const Shimmer: React.FC<ShimmerProps> = ({
   variant = "dark",
   duration = 1500,
 }) => {
-  const translateX = useSharedValue(-SCREEN_WIDTH);
+  const { width: screenWidth } = useWindowDimensions();
+  const translateX = useSharedValue(-screenWidth);
 
   useEffect(() => {
+    translateX.value = -screenWidth;
     translateX.value = withRepeat(
-      withTiming(SCREEN_WIDTH, {
+      withTiming(screenWidth, {
         duration,
         easing: Easing.linear,
       }),
       -1,
       false,
     );
-  }, [duration]);
+  }, [duration, translateX, screenWidth]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
@@ -67,15 +67,15 @@ export const Shimmer: React.FC<ShimmerProps> = ({
   const colors: readonly [string, string, string] =
     variant === "dark"
       ? ([
-          auroraTheme.colors.neutral[800],
-          auroraTheme.colors.neutral[700],
-          auroraTheme.colors.neutral[800],
-        ] as const)
+        auroraTheme.colors.neutral[800],
+        auroraTheme.colors.neutral[700],
+        auroraTheme.colors.neutral[800],
+      ] as const)
       : ([
-          auroraTheme.colors.neutral[200],
-          auroraTheme.colors.neutral[100],
-          auroraTheme.colors.neutral[200],
-        ] as const);
+        auroraTheme.colors.neutral[200],
+        auroraTheme.colors.neutral[100],
+        auroraTheme.colors.neutral[200],
+      ] as const);
 
   return (
     <View
@@ -97,7 +97,7 @@ export const Shimmer: React.FC<ShimmerProps> = ({
         colors={colors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={[styles.gradient, animatedStyle]}
+        style={[styles.gradient, { width: screenWidth * 2 }, animatedStyle]}
       />
     </View>
   );
@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
   },
   gradient: {
     ...StyleSheet.absoluteFillObject,
-    width: SCREEN_WIDTH * 2,
   },
   textContainer: {
     gap: auroraTheme.spacing.sm,

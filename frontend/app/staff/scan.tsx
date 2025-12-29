@@ -22,12 +22,12 @@ import {
   Platform,
   TouchableOpacity,
   TextInput,
-  Dimensions,
   ActivityIndicator,
+  Keyboard,
+  useWindowDimensions,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import * as Haptics from "expo-haptics";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import Modal from "react-native-modal";
 import { Ionicons } from "@expo/vector-icons";
 import { useCameraPermissions, CameraView } from "expo-camera";
 import { LinearGradient } from "expo-linear-gradient";
@@ -43,36 +43,50 @@ import { useDebounce } from "use-debounce";
 import { useAuthStore } from "@/store/authStore";
 import { useScanSessionStore } from "@/store/scanSessionStore";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   FloatingScanButton,
   ScanFeedback,
   SyncStatusPill,
 } from "@/components/ui";
 import type { ScanFeedbackType } from "@/components/ui";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { theme } from "@/styles/modernDesignSystem";
+import { useThemeContext } from "@/theme/ThemeContext";
 import {
   getItemByBarcode,
   searchItems,
   updateSessionStatus,
 } from "@/services/api/api";
-import { sanitizeBarcode } from "@/utils/validation";
-import { scanDeduplicationService } from "@/services/scanDeduplicationService";
+import { scanDeduplicationService } from "@/domains/inventory/services/scanDeduplicationService";
 import { RecentItemsService } from "@/services/enhancedFeatures";
 import { searchItemsSemantic, identifyItem } from "@/services/api/api";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+import { hapticService } from "@/services/hapticService";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { toastService } from "@/services/utils/toastService";
+import { localDb } from "@/db/localDb";
+import { OfflineIndicator } from "@/components/common/OfflineIndicator";
+import { validateBarcode } from "@/utils/validation";
 
 export default function ScanScreen() {
+  const { theme: appTheme, isDark } = useThemeContext();
+  const { colors } = appTheme;
+  const { width } = useWindowDimensions();
   const { sessionId: rawSessionId } = useLocalSearchParams();
   const sessionId = Array.isArray(rawSessionId)
     ? rawSessionId[0]
     : rawSessionId;
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user: _user, logout } = useAuthStore();
   const { sessionType } = useScanSessionStore();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
+
+  // Multi-read validation for accurate scanning
+  const scanBufferRef = useRef<{ code: string; count: number; timestamp: number }[]>([]);
+  const SCAN_CONFIDENCE_THRESHOLD = 2; // Require 2 consistent reads
+  const SCAN_BUFFER_TIMEOUT = 1500; // Clear buffer after 1.5s of no scans
+  const SCAN_BUFFER_MAX_SIZE = 5; // Keep last 5 reads
+
   // States
   const [isScanning, setIsScanning] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,8 +95,10 @@ export default function ScanScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isAISearching, setIsAISearching] = useState(false);
-  const [searchMethod, setSearchMethod] = useState<"standard" | "semantic">("standard");
+  const [_searchMethod, setSearchMethod] = useState<"standard" | "semantic">("standard");
   const [scanned, setScanned] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showCloseSessionModal, setShowCloseSessionModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [recentItems, setRecentItems] = useState<any[]>([]);
@@ -92,6 +108,21 @@ export default function ScanScreen() {
   const [showScanFeedback, setShowScanFeedback] = useState(false);
   const [scanFeedbackType, setScanFeedbackType] =
     useState<ScanFeedbackType>("success");
+
+  // Real-time updates via WebSocket
+  const { lastMessage } = useWebSocket(sessionId);
+
+  useEffect(() => {
+    if (lastMessage && lastMessage.type === "ITEM_VERIFIED") {
+      console.log("[ScanScreen] Real-time update received:", lastMessage);
+      toastService.show(
+        `Item ${lastMessage.item_code} verified by ${lastMessage.user}`,
+        "info"
+      );
+      // Optionally refresh recent items or search results if they contain this item
+      loadRecentItems();
+    }
+  }, [lastMessage]);
   const [scanFeedbackMessage, setScanFeedbackMessage] = useState("");
 
   // Animation
@@ -102,7 +133,7 @@ export default function ScanScreen() {
   }, []);
 
   const handleSearch = useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
+    if (!query || query.length < 3) {
       setSearchResults([]);
       setShowResults(false);
       return;
@@ -114,8 +145,8 @@ export default function ScanScreen() {
       const results = await searchItems(query);
       setSearchResults(results);
       setShowResults(true);
-    } catch (error) {
-      console.error("Search error:", error);
+    } catch (_error) {
+      console.error("Search error:", _error);
     } finally {
       setIsSearching(false);
     }
@@ -131,12 +162,12 @@ export default function ScanScreen() {
         setSearchResults(results);
         setSearchMethod("semantic");
         setShowResults(true);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        hapticService.scanSuccess();
       } else {
-        Alert.alert("AI Search", "No semantic matches found for your query.");
+        toastService.show("No semantic matches found for your query", { type: "info" });
       }
-    } catch (error) {
-      Alert.alert("AI Search Error", "Failed to perform semantic search.");
+    } catch {
+      toastService.show("Failed to perform semantic search", { type: "error" });
     } finally {
       setIsAISearching(false);
     }
@@ -163,14 +194,14 @@ export default function ScanScreen() {
           setShowResults(true);
           setIsScanning(false);
           setSearchQuery(""); // Clear text search when using visual
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          hapticService.scanSuccess();
         } else {
-          Alert.alert("Visual AI", "Could not identify the item. Please try a different angle or manual search.");
+          toastService.show("Could not identify the item. Please try a different angle or manual search.", { type: "warning" });
         }
       }
     } catch (error) {
       console.error("Visual search error:", error);
-      Alert.alert("Visual AI Error", "Failed to process image for identification.");
+      toastService.show("Failed to process image for identification", { type: "error" });
     } finally {
       setIsAISearching(false);
       setLoading(false);
@@ -202,9 +233,7 @@ export default function ScanScreen() {
   }));
 
   const toggleQuickActions = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
+    hapticService.impact("medium");
 
     if (showQuickActions) {
       quickActionsScale.value = withTiming(0, { duration: 200 });
@@ -216,32 +245,73 @@ export default function ScanScreen() {
   };
 
   const handleScanPress = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    }
+    hapticService.impact("heavy");
 
     if (!permission?.granted) {
       requestPermission();
       return;
     }
     setScanned(false); // Reset scanned state when opening camera
+    scanBufferRef.current = []; // Clear scan buffer for fresh start
     setIsScanning(true);
   };
 
   const handleBarcodeScan = async ({ data }: { data: string }) => {
     if (scanned) return; // Prevent multiple scans
-    setScanned(true); // Mark as scanned
 
-    if (Platform.OS !== "web") {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const now = Date.now();
+    const trimmedData = data.trim();
+
+    // Clean old entries from buffer (older than timeout)
+    scanBufferRef.current = scanBufferRef.current.filter(
+      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT
+    );
+
+    // Find existing entry for this barcode
+    const existingIndex = scanBufferRef.current.findIndex(
+      (entry) => entry.code === trimmedData
+    );
+
+    if (existingIndex >= 0 && scanBufferRef.current[existingIndex]) {
+      // Increment count for existing barcode
+      scanBufferRef.current[existingIndex]!.count += 1;
+      scanBufferRef.current[existingIndex]!.timestamp = now;
+    } else {
+      // Add new barcode to buffer
+      scanBufferRef.current.push({
+        code: trimmedData,
+        count: 1,
+        timestamp: now,
+      });
+
+      // Keep buffer size manageable
+      if (scanBufferRef.current.length > SCAN_BUFFER_MAX_SIZE) {
+        scanBufferRef.current.shift();
+      }
     }
 
+    // Find the barcode with highest confidence (most reads)
+    const confident = scanBufferRef.current.find(
+      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD
+    );
+
+    // Only proceed if we have confident read
+    if (!confident) {
+      // Light haptic to indicate scan detected but not yet confirmed
+      hapticService.impact("light");
+      return;
+    }
+
+    // We have a confident scan - proceed
+    setScanned(true);
+    scanBufferRef.current = []; // Clear buffer after successful scan
+
+    hapticService.scanSuccess();
+
     // Deduplication check
-    const { isDuplicate } = scanDeduplicationService.checkDuplicate(data);
+    const { isDuplicate } = scanDeduplicationService.checkDuplicate(confident.code);
     if (isDuplicate) {
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      }
+      hapticService.notification("warning");
       // Show visual feedback for duplicate
       setScanFeedbackType("duplicate");
       setScanFeedbackMessage("This item was recently scanned");
@@ -249,19 +319,14 @@ export default function ScanScreen() {
     }
 
     setIsScanning(false);
-    await handleLookup(data);
+    await handleLookup(confident.code);
   };
 
   const handleLookup = async (barcode: string) => {
-    // Import validation helper
-    const { validateBarcode } = require("../../src/utils/validation");
-
     // Validate barcode with detailed error message
     const validation = validateBarcode(barcode);
     if (!validation.valid) {
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      }
+      hapticService.scanError();
       // Show user-friendly error in scan feedback
       setScanFeedbackType("error");
       setScanFeedbackMessage(validation.error || "Invalid barcode");
@@ -275,12 +340,22 @@ export default function ScanScreen() {
     setShowResults(false); // Hide results
 
     try {
-      const item = await getItemByBarcode(sanitized);
+      let item: any;
+      try {
+        // Always use the API layer lookup: it already handles offline cache fallback.
+        item = await getItemByBarcode(sanitized);
+      } catch (e) {
+        // As a last resort, try sqlite local DB (if present).
+        try {
+          console.log("Lookup failed, trying local DB fallback...");
+          item = await localDb.getItemByBarcode(sanitized);
+        } catch {
+          throw e;
+        }
+      }
 
       if (item) {
-        if (Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
+        hapticService.scanSuccess();
 
         // Show success feedback
         setScanFeedbackType("success");
@@ -297,29 +372,32 @@ export default function ScanScreen() {
         }
         await loadRecentItems();
 
-        // Navigate to detail
-        console.log("Navigating to item detail with:", {
-          barcode: item.item_code,
-          sessionId,
-        });
+        // Navigate to detail - use barcode (what was scanned) not item_code
+        // The barcode is what the user scanned and what the API can look up
+        const navigationBarcode = item.barcode || sanitized;
+        console.log("=== NAVIGATION DEBUG ===");
+        console.log("item.barcode:", item.barcode);
+        console.log("sanitized input:", sanitized);
+        console.log("final navigationBarcode:", navigationBarcode);
+        console.log("Full item before navigation:", JSON.stringify(item, null, 2));
+
         router.push({
           pathname: "/staff/item-detail",
-          params: { barcode: item.item_code, sessionId: sessionId as string },
+          params: { barcode: navigationBarcode, sessionId: sessionId as string },
         } as any);
       } else {
-        if (Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        }
+        hapticService.scanError();
         // Show error feedback
         setScanFeedbackType("error");
         setScanFeedbackMessage(`Item not found: ${barcode}`);
         setShowScanFeedback(true);
       }
     } catch (error: any) {
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      }
-      Alert.alert("Error", error.message || "Failed to lookup item");
+      hapticService.scanError();
+      // Prefer inline feedback instead of a modal to avoid interrupting scanning.
+      setScanFeedbackType("error");
+      setScanFeedbackMessage(error?.message || "Failed to lookup item");
+      setShowScanFeedback(true);
     } finally {
       setLoading(false);
     }
@@ -327,14 +405,31 @@ export default function ScanScreen() {
 
   const handleManualSearch = () => {
     if (searchQuery.trim()) {
-      handleLookup(searchQuery);
+      // Only trigger direct lookup if it looks like a barcode (starts with 51, 52, 53)
+      // Otherwise, just let the search results stay (don't auto-select)
+      if (searchQuery.startsWith("51") || searchQuery.startsWith("52") || searchQuery.startsWith("53")) {
+        handleLookup(searchQuery);
+      } else {
+        // Ensure results are shown (they should be from debounce)
+        Keyboard.dismiss();
+      }
     }
   };
 
-  const handleSearchResultPress = (item: any) => {
-    setShowResults(false);
-    // Prefer barcode, then item_code
-    handleLookup(item.barcode || item.item_code);
+  const handleSearchResultPress = async (item: any) => {
+    // Debug: Log the full item to understand what fields are available
+    console.log("=== handleSearchResultPress DEBUG ===");
+    console.log("Full item:", JSON.stringify(item, null, 2));
+    console.log("item.barcode:", item.barcode);
+    console.log("item.item_code:", item.item_code);
+
+    const code = item.barcode || item.item_code;
+    console.log("Using code for lookup:", code);
+
+    if (!code) return;
+    // Keep results visible until lookup finishes to avoid layout jump at the bottom
+    await handleLookup(code);
+    requestAnimationFrame(() => setShowResults(false));
   };
 
   const handleRecentItemPress = (item: any) => {
@@ -344,87 +439,74 @@ export default function ScanScreen() {
     }
   };
 
-  const handleLogout = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: logout,
-      },
-    ]);
+  const _handleLogout = () => {
+    hapticService.impact("medium");
+    setShowLogoutModal(true);
   };
 
   const [isFinishing, setIsFinishing] = useState(false);
 
-  const handleFinishRack = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const confirmFinishRack = async () => {
+    if (!sessionId) return;
+
+    setIsFinishing(true);
+    try {
+      await updateSessionStatus(sessionId, "closed");
+      hapticService.notification("success");
+      toastService.show("Rack marked as complete!", { type: "success" });
+      router.replace("/staff/home");
+    } catch (error: any) {
+      console.error("Failed to finish rack:", error);
+      toastService.show(error.message || "Failed to close session", { type: "error" });
+    } finally {
+      setIsFinishing(false);
+      setShowCloseSessionModal(false);
     }
-    Alert.alert(
-      "Finish Rack",
-      "Are you sure you want to mark this rack as complete? You won't be able to add more items to this section.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Finish Rack",
-          style: "default",
-          onPress: async () => {
-            if (!sessionId) {
-              Alert.alert("Error", "No active session to close.");
-              return;
-            }
-            setIsFinishing(true);
-            try {
-              await updateSessionStatus(sessionId, "closed");
-              if (Platform.OS !== "web") {
-                Haptics.notificationAsync(
-                  Haptics.NotificationFeedbackType.Success,
-                );
-              }
-              Alert.alert("Success", "Rack marked as complete!", [
-                {
-                  text: "OK",
-                  onPress: () => router.replace("/staff/home"),
-                },
-              ]);
-            } catch (error: any) {
-              console.error("Failed to finish rack:", error);
-              Alert.alert("Error", error.message || "Failed to close session.");
-            } finally {
-              setIsFinishing(false);
-            }
-          },
-        },
-      ],
-    );
+  };
+
+  const handleFinishRack = () => {
+    hapticService.impact("medium");
+    if (!sessionId) {
+      toastService.show("No active session to close", { type: "error" });
+      return;
+    }
+    setShowCloseSessionModal(true);
   };
 
   if (isScanning) {
     return (
       <View style={styles.cameraFullScreen}>
-        <StatusBar style="light" />
         <CameraView
           ref={cameraRef}
           style={styles.camera}
           onBarcodeScanned={scanned ? undefined : handleBarcodeScan}
           barcodeScannerSettings={{
-            barcodeTypes: ["ean13", "ean8", "qr", "code128"],
+            barcodeTypes: [
+              // 1D Barcodes - Full support
+              "ean13",
+              "ean8",
+              "upc_a",
+              "upc_e",
+              "code128",
+              "code39",
+              "code93",
+              "codabar",
+              "itf14",
+              // 2D Codes
+              "qr",
+            ],
           }}
         >
           {/* AR-style overlay */}
           <View style={styles.cameraOverlay}>
-            <View style={styles.scanFrame}>
-              <View style={[styles.corner, styles.cornerTopLeft]} />
-              <View style={[styles.corner, styles.cornerTopRight]} />
-              <View style={[styles.corner, styles.cornerBottomLeft]} />
-              <View style={[styles.corner, styles.cornerBottomRight]} />
+            <View style={[styles.scanFrame, { width: width * 0.7, height: width * 0.7 }]}>
+              <View style={[styles.corner, styles.cornerTopLeft, { borderColor: colors.accent }]} />
+              <View style={[styles.corner, styles.cornerTopRight, { borderColor: colors.accent }]} />
+              <View style={[styles.corner, styles.cornerBottomLeft, { borderColor: colors.accent }]} />
+              <View style={[styles.corner, styles.cornerBottomRight, { borderColor: colors.accent }]} />
             </View>
 
-            <Text style={styles.scanInstructions}>
+            <Text style={[styles.scanInstructions, { color: "#FFFFFF" }]}>
               Position barcode within the frame
             </Text>
 
@@ -435,7 +517,7 @@ export default function ScanScreen() {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={["rgba(111, 66, 193, 0.8)", "rgba(74, 54, 150, 0.9)"]}
+                colors={["rgba(14, 165, 233, 0.8)", "rgba(2, 132, 199, 0.9)"]}
                 style={styles.photoIdentifyGradient}
               >
                 <Ionicons name="camera" size={20} color="#FFF" />
@@ -450,7 +532,7 @@ export default function ScanScreen() {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={["rgba(0,0,0,0.6)", "rgba(0,0,0,0.8)"]}
+                colors={["rgba(15, 23, 42, 0.8)", "rgba(2, 6, 23, 0.9)"]}
                 style={styles.cancelButtonGradient}
               >
                 <Ionicons name="close" size={24} color="#FFF" />
@@ -464,361 +546,611 @@ export default function ScanScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-
-      <AuroraBackground variant="primary" intensity="low" animated={true}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
+    <ScreenContainer
+      header={{
+        title: "Scan Items",
+        subtitle:
+          sessionType !== "STANDARD"
+            ? `Session: ${sessionId || "None"} • ${sessionType}`
+            : `Session: ${sessionId || "None"}`,
+        showBackButton: true,
+        showUsername: false,
+        showLogoutButton: true,
+        customRightContent: <SyncStatusPill />,
+      }}
+      backgroundType="aurora"
+      auroraVariant="primary"
+      auroraIntensity="medium"
+      contentMode="static"
+      noPadding
+      statusBarStyle="light"
+      overlay={
+        <>
+          <OfflineIndicator />
+          <ScanFeedback
+            visible={showScanFeedback}
+            type={scanFeedbackType}
+            title={scanFeedbackMessage}
+            onDismiss={() => setShowScanFeedback(false)}
+            duration={2000}
+          />
+        </>
+      }
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Search Card */}
+        <Animated.View entering={FadeInDown.delay(100).springify()}>
+          <GlassCard
+            variant="medium"
+            intensity={20}
+            elevation="md"
+            style={styles.searchCard}
+          >
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Quick Search</Text>
+            <View style={[styles.searchInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons
-                name="arrow-back"
-                size={24}
-                color={auroraTheme.colors.text.primary}
+                name="search"
+                size={20}
+                color={colors.textSecondary}
+                style={styles.searchIcon}
               />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.headerTitle}>Scan Items</Text>
-              <View style={styles.headerSubtitleRow}>
-                <Text style={styles.headerSubtitle}>
-                  Session: {sessionId || "None"}
-                </Text>
-                {sessionType !== "STANDARD" && (
-                  <View
-                    style={[
-                      styles.modeBadge,
-                      sessionType === "BLIND"
-                        ? styles.modeBadgeBlind
-                        : styles.modeBadgeStrict,
-                    ]}
-                  >
-                    <Text style={styles.modeBadgeText}>{sessionType}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <SyncStatusPill />
-            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-              <Ionicons
-                name="log-out-outline"
-                size={24}
-                color={auroraTheme.colors.text.secondary}
+              <TextInput
+                style={[styles.searchInput, { color: colors.text }]}
+                placeholder="Enter barcode or item name..."
+                placeholderTextColor={colors.muted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleManualSearch}
+                returnKeyType="search"
               />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Search Card */}
-          <Animated.View entering={FadeInDown.delay(100).springify()}>
-            <GlassCard
-              variant="medium"
-              intensity={20}
-              elevation="md"
-              style={styles.searchCard}
-            >
-              <Text style={styles.cardTitle}>Quick Search</Text>
-              <View style={styles.searchInputContainer}>
-                <Ionicons
-                  name="search"
-                  size={20}
-                  color={auroraTheme.colors.text.secondary}
-                  style={styles.searchIcon}
-                />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Enter barcode or item name..."
-                  placeholderTextColor={auroraTheme.colors.text.tertiary}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleManualSearch}
-                  returnKeyType="search"
-                />
-                <View style={styles.searchActions}>
-                  {searchQuery.length > 0 && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSearchQuery("");
-                        setSearchResults([]);
-                        setShowResults(false);
-                        setSearchMethod("standard");
-                      }}
-                      style={styles.clearButton}
-                    >
-                      <Ionicons
-                        name="close-circle"
-                        size={20}
-                        color={auroraTheme.colors.text.tertiary}
-                      />
-                    </TouchableOpacity>
-                  )}
+              <View style={styles.searchActions}>
+                {searchQuery.length > 0 && (
                   <TouchableOpacity
-                    onPress={() => setIsScanning(true)}
-                    style={styles.aiButton}
+                    onPress={() => {
+                      setSearchQuery("");
+                      setSearchResults([]);
+                      setShowResults(false);
+                      setSearchMethod("standard");
+                    }}
+                    style={styles.clearButton}
                   >
                     <Ionicons
-                      name="camera-outline"
+                      name="close-circle"
                       size={20}
-                      color={auroraTheme.colors.accent[400]}
+                      color={colors.muted}
                     />
                   </TouchableOpacity>
-                </View>
+                )}
+                <TouchableOpacity
+                  onPress={() => setIsScanning(true)}
+                  style={styles.aiButton}
+                >
+                  <Ionicons
+                    name="camera-outline"
+                    size={20}
+                    color={colors.accent}
+                  />
+                </TouchableOpacity>
               </View>
+            </View>
 
-              {/* Live Search Results */}
-              {showResults && (
-                <View style={styles.searchResultsContainer}>
-                  {isSearching ? (
-                    <ActivityIndicator
-                      size="small"
-                      color={auroraTheme.colors.accent[500]}
-                      style={{ padding: 10 }}
-                    />
-                  ) : searchResults.length > 0 ? (
-                    <View style={styles.resultsList}>
-                      {searchResults.slice(0, 5).map((item) => (
-                        <TouchableOpacity
-                          key={item.id || item.item_code}
-                          style={styles.resultItem}
-                          onPress={() => handleSearchResultPress(item)}
-                        >
-                          <View style={styles.resultIcon}>
-                            <Ionicons
-                              name="cube-outline"
-                              size={18}
-                              color={auroraTheme.colors.text.secondary}
-                            />
-                          </View>
-                          <View style={styles.resultInfo}>
-                            <Text style={styles.resultName} numberOfLines={1}>
-                              {item.item_name || item.name}
-                            </Text>
-                            <Text style={styles.resultCode}>
-                              {item.item_code}
-                            </Text>
-                          </View>
-                          <Ionicons
-                            name="chevron-forward"
-                            size={16}
-                            color={auroraTheme.colors.text.tertiary}
-                          />
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  ) : (
-                    debouncedSearchQuery.length >= 2 && (
-                      <View style={styles.semanticSearchContainer}>
-                        <Text style={styles.noResultsText}>No direct matches found</Text>
-                        <TouchableOpacity
-                          style={styles.semanticSearchButton}
-                          onPress={handleSemanticSearch}
-                          disabled={isAISearching}
-                        >
-                          {isAISearching ? (
-                            <ActivityIndicator size="small" color={auroraTheme.colors.accent[400]} />
-                          ) : (
-                            <>
-                              <Ionicons name="sparkles-outline" size={16} color={auroraTheme.colors.accent[400]} />
-                              <Text style={styles.semanticSearchText}>Search by meaning (AI)</Text>
-                            </>
-                          )}
-                        </TouchableOpacity>
-                      </View>
-                    )
-                  )}
-                </View>
-              )}
-            </GlassCard>
-          </Animated.View>
-
-          {/* Recent Items */}
-          {recentItems.length > 0 && (
-            <Animated.View entering={FadeInUp.delay(200).springify()}>
-              <Text style={styles.sectionTitle}>Recent Items</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.recentItemsContainer}
-              >
-                {recentItems.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => handleRecentItemPress(item)}
-                    activeOpacity={0.7}
+            {/* Live Search Results */}
+            {showResults && (
+              <View style={[styles.searchResultsContainer, { borderTopColor: colors.border }]}>
+                {isSearching ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={colors.accent}
+                    style={{ padding: 10 }}
+                  />
+                ) : searchResults.length > 0 ? (
+                  <ScrollView
+                    style={styles.resultsList}
+                    contentContainerStyle={styles.resultsListContent}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
                   >
-                    <GlassCard
-                      variant="light"
-                      intensity={15}
-                      elevation="sm"
-                      padding={auroraTheme.spacing.md}
-                      style={styles.recentItemCard}
-                    >
-                      <View style={styles.recentItemIcon}>
+                    {searchResults.map((item, index) => (
+                      <TouchableOpacity
+                        key={`${item.barcode || item.item_code || item.id}-${index}`}
+                        style={[styles.resultItem, { borderBottomColor: colors.border }]}
+                        onPress={() => handleSearchResultPress(item)}
+                      >
+                        <View style={[styles.resultIcon, { backgroundColor: colors.surfaceElevated }]}>
+                          <Ionicons
+                            name="cube-outline"
+                            size={18}
+                            color={colors.textSecondary}
+                          />
+                        </View>
+                        <View style={styles.resultInfo}>
+                          <Text style={[styles.resultName, { color: colors.text }]} numberOfLines={1}>
+                            {item.item_name || item.name}
+                          </Text>
+                          <View style={styles.resultCodeRow}>
+                            <Text style={[styles.resultCode, { color: colors.textSecondary }]}>
+                              {item.barcode || item.item_code || "—"}
+                            </Text>
+                            {item.mrp != null && item.mrp > 0 && (
+                              <View style={[styles.mrpBadge, { backgroundColor: colors.warning + '15', borderColor: colors.warning + '30' }]}>
+                                <Text style={[styles.mrpBadgeText, { color: colors.warning }]}>₹{item.mrp}</Text>
+                              </View>
+                            )}
+                            {item.batch_id && (
+                              <View style={[styles.batchBadge, { backgroundColor: colors.accent + '10', borderColor: colors.accent + '20' }]}>
+                                <Text style={[styles.batchBadgeText, { color: colors.accent }]}>Batch: {item.batch_id}</Text>
+                              </View>
+                            )}
+                          </View>
+                          {(item.manual_barcode || item.unit2_barcode || item.unit_m_barcode) && (
+                            <View style={styles.altBarcodesRow}>
+                              {item.manual_barcode && (
+                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
+                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>Manual: {item.manual_barcode}</Text>
+                                </View>
+                              )}
+                              {item.unit2_barcode && (
+                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
+                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>Unit2: {item.unit2_barcode}</Text>
+                                </View>
+                              )}
+                              {item.unit_m_barcode && (
+                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
+                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>UnitM: {item.unit_m_barcode}</Text>
+                                </View>
+                              )}
+                            </View>
+                          )}
+                        </View>
                         <Ionicons
-                          name="cube-outline"
-                          size={24}
-                          color={auroraTheme.colors.primary[400]}
+                          name="chevron-forward"
+                          size={16}
+                          color={colors.muted}
                         />
-                      </View>
-                      <Text style={styles.recentItemCode} numberOfLines={1}>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : (
+                  debouncedSearchQuery.length >= 2 && (
+                    <View style={styles.semanticSearchContainer}>
+                      <Text style={[styles.noResultsText, { color: colors.textSecondary }]}>No direct matches found</Text>
+                      <TouchableOpacity
+                        style={[styles.semanticSearchButton, { borderColor: colors.accent + '30', backgroundColor: colors.accent + '05' }]}
+                        onPress={handleSemanticSearch}
+                        disabled={isAISearching}
+                      >
+                        {isAISearching ? (
+                          <ActivityIndicator size="small" color={colors.accent} />
+                        ) : (
+                          <>
+                            <Ionicons name="sparkles-outline" size={16} color={colors.accent} />
+                            <Text style={[styles.semanticSearchText, { color: colors.accent }]}>Search by meaning (AI)</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )
+                )}
+              </View>
+            )}
+          </GlassCard>
+        </Animated.View>
+
+        {/* Recent Items */}
+        {recentItems.length > 0 && (
+          <Animated.View entering={FadeInUp.delay(200).springify()}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Items</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.recentItemsContainer}
+            >
+              {recentItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleRecentItemPress(item)}
+                  activeOpacity={0.7}
+                >
+                  <GlassCard
+                    variant="light"
+                    intensity={15}
+                    elevation="sm"
+                    padding={16}
+                    style={styles.recentItemCard}
+                  >
+                    <View style={[styles.recentItemIcon, { backgroundColor: colors.accent + '15' }]}>
+                      <Ionicons
+                        name="cube-outline"
+                        size={24}
+                        color={colors.accent}
+                      />
+                    </View>
+                    <View style={styles.resultCodeRow}>
+                      <Text style={[styles.recentItemCode, { color: colors.textSecondary }]} numberOfLines={1}>
                         {item.item_code}
                       </Text>
-                      <Text style={styles.recentItemName} numberOfLines={2}>
-                        {item.item_name || "Unknown Item"}
-                      </Text>
-                    </GlassCard>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </Animated.View>
-          )}
-
-          {/* Stats Card */}
-          <Animated.View entering={FadeInUp.delay(300).springify()}>
-            <GlassCard
-              variant="medium"
-              intensity={20}
-              elevation="md"
-              style={styles.statsCard}
-            >
-              <Text style={styles.cardTitle}>Today&apos;s Progress</Text>
-              <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>0</Text>
-                  <Text style={styles.statLabel}>Scanned</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>0</Text>
-                  <Text style={styles.statLabel}>Verified</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>0</Text>
-                  <Text style={styles.statLabel}>Pending</Text>
-                </View>
-              </View>
-            </GlassCard>
-          </Animated.View>
-
-          {/* Finish Rack Button */}
-          <Animated.View entering={FadeInUp.delay(400).springify()}>
-            <TouchableOpacity
-              style={[
-                styles.finishRackButton,
-                isFinishing && styles.finishRackButtonDisabled,
-              ]}
-              onPress={handleFinishRack}
-              disabled={isFinishing}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={["#22C55E", "#16A34A"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.finishRackGradient}
-              >
-                {isFinishing ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <>
-                    <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-                    <Text style={styles.finishRackText}>Finish Rack</Text>
-                  </>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-          </Animated.View>
-
-          {/* Spacing for floating button */}
-          <View style={{ height: 120 }} />
-        </ScrollView>
-
-        {/* Floating Scan Button */}
-        <View style={styles.floatingButtonContainer}>
-          <FloatingScanButton onPress={handleScanPress} disabled={loading} />
-        </View>
-
-        {/* Quick Actions Menu */}
-        {showQuickActions && (
-          <Animated.View
-            style={[styles.quickActionsContainer, quickActionsStyle]}
-          >
-            <TouchableOpacity
-              style={styles.quickActionButton}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={auroraTheme.colors.aurora.secondary}
-                style={styles.quickActionGradient}
-              >
-                <Ionicons
-                  name="list"
-                  size={24}
-                  color={auroraTheme.colors.text.primary}
-                />
-              </LinearGradient>
-              <Text style={styles.quickActionLabel}>History</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickActionButton}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={auroraTheme.colors.aurora.success}
-                style={styles.quickActionGradient}
-              >
-                <Ionicons
-                  name="checkmark-done"
-                  size={24}
-                  color={auroraTheme.colors.text.primary}
-                />
-              </LinearGradient>
-              <Text style={styles.quickActionLabel}>Verify</Text>
-            </TouchableOpacity>
+                      {item.batch_id && (
+                        <View style={[styles.batchBadge, { backgroundColor: colors.accent + '10', borderColor: colors.accent + '20' }]}>
+                          <Text style={[styles.batchBadgeText, { color: colors.accent }]}>B</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.recentItemName, { color: colors.text }]} numberOfLines={2}>
+                      {item.item_name || "Unknown Item"}
+                    </Text>
+                  </GlassCard>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </Animated.View>
         )}
 
-        {/* Quick Actions Toggle */}
-        <TouchableOpacity
-          style={styles.quickActionsToggle}
-          onPress={toggleQuickActions}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={auroraTheme.colors.aurora.warm}
-            style={styles.quickActionsToggleGradient}
+        {/* Stats Card */}
+        <Animated.View entering={FadeInUp.delay(300).springify()}>
+          <GlassCard
+            variant="medium"
+            intensity={20}
+            elevation="md"
+            style={styles.statsCard}
           >
-            <Ionicons
-              name={showQuickActions ? "close" : "apps"}
-              size={24}
-              color={auroraTheme.colors.text.primary}
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-      </AuroraBackground>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Today&apos;s Progress</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Scanned</Text>
+              </View>
+              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Verified</Text>
+              </View>
+              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pending</Text>
+              </View>
+            </View>
+          </GlassCard>
+        </Animated.View>
 
-      {/* Scan Feedback Overlay */}
-      <ScanFeedback
-        visible={showScanFeedback}
-        type={scanFeedbackType}
-        title={scanFeedbackMessage}
-        onDismiss={() => setShowScanFeedback(false)}
-        duration={2000}
-      />
-    </View>
+        {/* Finish Rack Button */}
+        <Animated.View entering={FadeInUp.delay(400).springify()}>
+          <TouchableOpacity
+            style={[
+              styles.finishRackButton,
+              isFinishing && styles.finishRackButtonDisabled,
+            ]}
+            onPress={handleFinishRack}
+            disabled={isFinishing}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[...appTheme.gradients.success]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.finishRackGradient}
+            >
+              {isFinishing ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark-circle" size={24} color="#FFF" />
+                  <Text style={styles.finishRackText}>Finish Rack</Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Spacing for floating button */}
+        <View style={{ height: 120 }} />
+      </ScrollView>
+
+      {/* Floating Scan Button */}
+      <View style={styles.floatingButtonContainer}>
+        <FloatingScanButton onPress={handleScanPress} disabled={loading} />
+      </View>
+
+      {/* Quick Actions Menu */}
+      {showQuickActions && (
+        <Animated.View
+          style={[styles.quickActionsContainer, quickActionsStyle]}
+        >
+          <TouchableOpacity
+            style={styles.quickActionButton}
+            activeOpacity={0.7}
+          >
+            <LinearGradient
+              colors={[...appTheme.gradients.accent]}
+              style={styles.quickActionGradient}
+            >
+              <Ionicons
+                name="list"
+                size={24}
+                color="#FFF"
+              />
+            </LinearGradient>
+            <Text style={[styles.quickActionLabel, { color: colors.text }]}>History</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionButton}
+            activeOpacity={0.7}
+          >
+            <LinearGradient
+              colors={[...appTheme.gradients.success]}
+              style={styles.quickActionGradient}
+            >
+              <Ionicons
+                name="checkmark-done"
+                size={24}
+                color="#FFF"
+              />
+            </LinearGradient>
+            <Text style={[styles.quickActionLabel, { color: colors.text }]}>Verify</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {/* Quick Actions Toggle */}
+      <TouchableOpacity
+        style={styles.quickActionsToggle}
+        onPress={toggleQuickActions}
+        activeOpacity={0.8}
+      >
+        <LinearGradient
+          colors={[...appTheme.gradients.accent]}
+          style={styles.quickActionsToggleGradient}
+        >
+          <Ionicons
+            name={showQuickActions ? "close" : "apps"}
+            size={24}
+            color="#FFF"
+          />
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {/* Logout Confirmation Modal */}
+      {/* @ts-ignore */}
+      <Modal
+        isVisible={showLogoutModal}
+        onBackdropPress={() => setShowLogoutModal(false)}
+        onBackButtonPress={() => setShowLogoutModal(false)}
+        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        backdropOpacity={0.5}
+        useNativeDriver
+        hideModalContentWhileAnimating
+        statusBarTranslucent
+      >
+        <View
+          style={{
+            backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
+            borderRadius: 20,
+            padding: 24,
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
+        >
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              backgroundColor: "#EF444420",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons name="log-out" size={32} color="#EF4444" />
+          </View>
+
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "700",
+              color: isDark ? "#F8FAFC" : "#0F172A",
+              marginBottom: 8,
+              textAlign: "center",
+            }}
+          >
+            Log Out
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 15,
+              color: isDark ? "#94A3B8" : "#64748B",
+              textAlign: "center",
+              marginBottom: 24,
+              lineHeight: 22,
+            }}
+          >
+            Are you sure you want to log out?{"\n"}Any unsaved progress will be lost.
+          </Text>
+
+          <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                paddingVertical: 14,
+                borderRadius: 12,
+                backgroundColor: isDark ? "#334155" : "#F1F5F9",
+                alignItems: "center",
+              }}
+              onPress={() => setShowLogoutModal(false)}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: isDark ? "#F8FAFC" : "#0F172A",
+                }}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                paddingVertical: 14,
+                borderRadius: 12,
+                backgroundColor: "#EF4444",
+                alignItems: "center",
+              }}
+              onPress={() => {
+                setShowLogoutModal(false);
+                logout();
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                }}
+              >
+                Log Out
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Close Session Confirmation Modal */}
+      {/* @ts-ignore */}
+      <Modal
+        isVisible={showCloseSessionModal}
+        onBackdropPress={() => setShowCloseSessionModal(false)}
+        onBackButtonPress={() => setShowCloseSessionModal(false)}
+        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        backdropOpacity={0.5}
+        useNativeDriver
+        hideModalContentWhileAnimating
+        statusBarTranslucent
+      >
+        <View
+          style={{
+            backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
+            borderRadius: 20,
+            padding: 24,
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
+        >
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              backgroundColor: "#10B98120",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons name="checkmark-circle" size={32} color="#10B981" />
+          </View>
+
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "700",
+              color: isDark ? "#F8FAFC" : "#0F172A",
+              marginBottom: 8,
+              textAlign: "center",
+            }}
+          >
+            Finish Rack
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 15,
+              color: isDark ? "#94A3B8" : "#64748B",
+              textAlign: "center",
+              marginBottom: 24,
+              lineHeight: 22,
+            }}
+          >
+            Are you sure you want to mark this rack as complete?{"\n"}You won't be able to add more items to this section.
+          </Text>
+
+          <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                paddingVertical: 14,
+                borderRadius: 12,
+                backgroundColor: isDark ? "#334155" : "#F1F5F9",
+                alignItems: "center",
+              }}
+              onPress={() => setShowCloseSessionModal(false)}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: isDark ? "#F8FAFC" : "#0F172A",
+                }}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                paddingVertical: 14,
+                borderRadius: 12,
+                backgroundColor: "#10B981",
+                alignItems: "center",
+              }}
+              onPress={confirmFinishRack}
+              disabled={isFinishing}
+            >
+              {isFinishing ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "600",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  Finish Rack
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </ScreenContainer >
   );
 }
 
@@ -830,32 +1162,36 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: auroraTheme.spacing.lg,
+    paddingHorizontal: 20,
     paddingTop: Platform.OS === "ios" ? 60 : 40,
-    paddingBottom: auroraTheme.spacing.md,
+    paddingBottom: 14,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: 14,
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
   },
   headerTitle: {
-    fontSize: auroraTheme.typography.fontSize.xl,
-    fontWeight: auroraTheme.typography.fontWeight.bold,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 18,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
+    letterSpacing: -0.3,
   },
   headerSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 11,
+    color: theme.colors.text.secondary,
     marginTop: 2,
+    fontWeight: "500",
   },
   headerSubtitleRow: {
     flexDirection: "row",
@@ -869,59 +1205,64 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   modeBadgeBlind: {
-    backgroundColor: auroraTheme.colors.warning[500],
+    backgroundColor: "#F59E0B",
   },
   modeBadgeStrict: {
-    backgroundColor: auroraTheme.colors.error[500],
+    backgroundColor: "#EF4444",
   },
   modeBadgeText: {
-    fontSize: 10,
-    fontWeight: "bold",
+    fontSize: 9,
+    fontWeight: "700",
     color: "#FFF",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
   logoutButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: auroraTheme.spacing.lg,
+    padding: 20,
   },
   searchCard: {
-    marginBottom: auroraTheme.spacing.lg,
+    marginBottom: 18,
   },
   cardTitle: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    fontWeight: auroraTheme.typography.fontWeight.semibold,
-    color: auroraTheme.colors.text.primary,
-    marginBottom: auroraTheme.spacing.md,
+    fontSize: 14,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
+    marginBottom: 14,
+    letterSpacing: -0.2,
   },
   searchInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: auroraTheme.colors.background.secondary,
-    borderRadius: auroraTheme.borderRadius.input,
-    paddingHorizontal: auroraTheme.spacing.md,
-    height: 48,
+    backgroundColor: theme.colors.background.paper,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 46,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: theme.colors.border.light,
   },
   searchIcon: {
-    marginRight: auroraTheme.spacing.sm,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    fontSize: auroraTheme.typography.fontSize.base,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 15,
+    color: theme.colors.text.primary,
   },
   clearButton: {
-    padding: auroraTheme.spacing.xs,
+    padding: 4,
   },
   searchActions: {
     flexDirection: "row",
@@ -930,29 +1271,29 @@ const styles = StyleSheet.create({
   },
   aiButton: {
     padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(111, 66, 193, 0.1)",
+    borderRadius: 12,
+    backgroundColor: theme.colors.gradients.shimmer[0],
   },
   semanticSearchContainer: {
     padding: 12,
     alignItems: "center",
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.05)",
+    borderTopColor: theme.colors.border.light,
   },
   semanticSearchButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: "rgba(111, 66, 193, 0.15)",
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: theme.colors.gradients.shimmer[0],
     borderWidth: 1,
-    borderColor: "rgba(111, 66, 193, 0.3)",
+    borderColor: theme.colors.primary[200],
   },
   semanticSearchText: {
-    color: auroraTheme.colors.accent[400],
-    fontSize: 13,
+    color: theme.colors.primary[500],
+    fontSize: 12,
     fontWeight: "600",
   },
   photoIdentifyButton: {
@@ -970,7 +1311,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   photoIdentifyText: {
-    color: "#FFF",
+    color: theme.colors.text.inverse,
     fontSize: 15,
     fontWeight: "600",
   },
@@ -978,11 +1319,14 @@ const styles = StyleSheet.create({
   searchResultsContainer: {
     marginTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
+    borderTopColor: theme.colors.border.light,
     paddingTop: 5,
   },
   resultsList: {
     maxHeight: 200,
+  },
+  resultsListContent: {
+    paddingBottom: 4,
   },
   resultItem: {
     flexDirection: "row",
@@ -990,13 +1334,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 5,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.05)",
+    borderBottomColor: theme.colors.border.light,
   },
   resultIcon: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: theme.colors.gradients.shimmer[0],
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
@@ -1005,57 +1349,61 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   resultName: {
-    color: auroraTheme.colors.text.primary,
-    fontSize: 14,
-    fontWeight: "500",
+    color: theme.colors.text.primary,
+    fontSize: 13,
+    fontWeight: "600",
   },
   resultCode: {
-    color: auroraTheme.colors.text.secondary,
-    fontSize: 12,
+    color: theme.colors.text.secondary,
+    fontSize: 11,
+    fontWeight: "500",
   },
   noResultsText: {
-    color: auroraTheme.colors.text.tertiary,
-    fontSize: 13,
+    color: theme.colors.text.tertiary,
+    fontSize: 12,
     textAlign: "center",
     padding: 10,
   },
   sectionTitle: {
-    fontSize: auroraTheme.typography.fontSize.lg,
-    fontWeight: auroraTheme.typography.fontWeight.semibold,
-    color: auroraTheme.colors.text.primary,
-    marginBottom: auroraTheme.spacing.md,
+    fontSize: 16,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
+    marginBottom: 14,
+    letterSpacing: -0.2,
   },
   recentItemsContainer: {
-    paddingBottom: auroraTheme.spacing.md,
-    gap: auroraTheme.spacing.md,
+    paddingBottom: 14,
+    gap: 14,
   },
   recentItemCard: {
-    width: 120,
+    width: 110,
     alignItems: "center",
     justifyContent: "center",
   },
   recentItemIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: auroraTheme.colors.background.secondary,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "rgba(15, 23, 42, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.sm,
+    marginBottom: 10,
   },
   recentItemCode: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    fontWeight: auroraTheme.typography.fontWeight.semibold,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 13,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
     marginBottom: 4,
+    letterSpacing: -0.2,
   },
   recentItemName: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 11,
+    color: theme.colors.text.secondary,
     textAlign: "center",
+    fontWeight: "500",
   },
   statsCard: {
-    marginTop: auroraTheme.spacing.lg,
+    marginTop: 18,
   },
   statsRow: {
     flexDirection: "row",
@@ -1067,19 +1415,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    fontSize: auroraTheme.typography.fontSize["3xl"],
-    fontWeight: auroraTheme.typography.fontWeight.bold,
-    color: auroraTheme.colors.primary[400],
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#0EA5E9",
     marginBottom: 4,
+    letterSpacing: -0.5,
   },
   statLabel: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 12,
+    color: theme.colors.text.secondary,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
   statDivider: {
     width: 1,
-    height: 40,
-    backgroundColor: auroraTheme.colors.border.light,
+    height: 36,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   floatingButtonContainer: {
     position: "absolute",
@@ -1088,27 +1440,31 @@ const styles = StyleSheet.create({
   },
   quickActionsContainer: {
     position: "absolute",
-    bottom: 120,
+    bottom: 110,
     alignSelf: "center",
     flexDirection: "row",
-    gap: auroraTheme.spacing.md,
+    gap: 14,
   },
   quickActionButton: {
     alignItems: "center",
-    gap: auroraTheme.spacing.xs,
+    gap: 4,
   },
   quickActionGradient: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
-    ...auroraTheme.shadows.md,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   quickActionLabel: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.secondary,
-    fontWeight: auroraTheme.typography.fontWeight.medium,
+    fontSize: 11,
+    color: theme.colors.text.secondary,
+    fontWeight: "600",
   },
   quickActionsToggle: {
     position: "absolute",
@@ -1116,12 +1472,16 @@ const styles = StyleSheet.create({
     right: 24,
   },
   quickActionsToggleGradient: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    ...auroraTheme.shadows.md,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   // Camera styles
   cameraFullScreen: {
@@ -1138,15 +1498,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   scanFrame: {
-    width: SCREEN_WIDTH * 0.7,
-    height: SCREEN_WIDTH * 0.7,
     position: "relative",
   },
   corner: {
     position: "absolute",
     width: 40,
     height: 40,
-    borderColor: auroraTheme.colors.primary[400],
+    borderColor: "#0EA5E9",
     borderWidth: 3,
   },
   cornerTopLeft: {
@@ -1178,35 +1536,35 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   scanInstructions: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.primary,
-    marginTop: auroraTheme.spacing.xl,
+    fontSize: 16,
+    color: theme.colors.text.primary,
+    marginTop: 32,
     textAlign: "center",
-    paddingHorizontal: auroraTheme.spacing.lg,
+    paddingHorizontal: 20,
   },
   cancelButton: {
     position: "absolute",
     bottom: 60,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: 30,
     overflow: "hidden",
   },
   cancelButtonGradient: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.sm,
-    paddingHorizontal: auroraTheme.spacing.lg,
-    paddingVertical: auroraTheme.spacing.md,
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   cancelButtonText: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    fontWeight: auroraTheme.typography.fontWeight.semibold,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 16,
+    fontWeight: "600",
+    color: theme.colors.text.primary,
   },
   // Finish Rack Button Styles
   finishRackButton: {
-    marginTop: auroraTheme.spacing.md,
-    marginHorizontal: auroraTheme.spacing.lg,
-    borderRadius: auroraTheme.borderRadius.lg,
+    marginTop: 14,
+    marginHorizontal: 20,
+    borderRadius: 12,
     overflow: "hidden",
   },
   finishRackButtonDisabled: {
@@ -1216,13 +1574,70 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: auroraTheme.spacing.sm,
-    paddingVertical: auroraTheme.spacing.md,
-    paddingHorizontal: auroraTheme.spacing.lg,
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
   },
   finishRackText: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    fontWeight: auroraTheme.typography.fontWeight.bold,
+    fontSize: 15,
+    fontWeight: "700",
     color: "#FFF",
+  },
+  resultCodeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 2,
+  },
+  batchBadge: {
+    backgroundColor: "rgba(14, 165, 233, 0.1)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(14, 165, 233, 0.2)",
+  },
+  batchBadgeText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#0EA5E9",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  mrpBadge: {
+    backgroundColor: "rgba(245, 158, 11, 0.15)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(245, 158, 11, 0.3)",
+  },
+  mrpBadgeText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#F59E0B",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  altBarcodesRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    marginTop: 4,
+  },
+  otherBarcodeBadge: {
+    backgroundColor: "rgba(16, 185, 129, 0.1)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(16, 185, 129, 0.2)",
+  },
+  otherBarcodeText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#10B981",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
 });

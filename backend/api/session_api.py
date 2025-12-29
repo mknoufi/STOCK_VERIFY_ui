@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -15,8 +15,8 @@ from backend.services.activity_log import ActivityLogService
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-_db: AsyncIOMotorDatabase = None
-_activity_log_service: ActivityLogService = None
+_db: Optional[AsyncIOMotorDatabase[Any]] = None
+_activity_log_service: Optional[ActivityLogService] = None
 
 
 def init_session_api(
@@ -107,17 +107,35 @@ async def get_sessions(
         sessions_cursor.batch_size(min(page_size, 100))
 
     sessions = await sessions_cursor.to_list(page_size)
+    session_items = []
+    for session in sessions:
+        normalized = dict(session)
+        normalized.pop("_id", None)
+        session_items.append(Session(**normalized))
+
+    total_pages = (total + page_size - 1) // page_size if total else 0
+    has_next = (skip + len(session_items)) < total
+
+    has_previous = page > 1
+
+    legacy_pagination = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": total_pages,
+        "has_next": has_next,
+        "has_prev": has_previous,
+    }
 
     return {
-        "items": [Session(**session) for session in sessions],
-        "pagination": {
-            "page": page,
-            "page_size": page_size,
-            "total": total,
-            "total_pages": (total + page_size - 1) // page_size,
-            "has_next": skip + page_size < total,
-            "has_prev": page > 1,
-        },
+        "items": session_items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "has_next": has_next,
+        "has_previous": has_previous,
+        "pagination": legacy_pagination,
     }
 
 

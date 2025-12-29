@@ -66,10 +66,11 @@ export const colors = {
 
 // Gradients
 export const gradients = {
-  primary: ["#4CAF50", "#2E7D32"] as const,
-  secondary: ["#03DAC6", "#018786"] as const,
-  dark: ["#2a2a2a", "#1a1a1a"] as const,
-  surface: ["#3a3a3a", "#2a2a2a"] as const,
+  primary: ["#0EA5E9", "#0284C7"] as const,
+  secondary: ["#10B981", "#059669"] as const,
+  accent: ["#6366F1", "#4F46E5"] as const,
+  dark: ["#0F172A", "#020617"] as const,
+  surface: ["#1E293B", "#0F172A"] as const,
 };
 
 // Glassmorphism styles (helper for non-BlurView components)

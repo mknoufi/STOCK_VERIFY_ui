@@ -15,6 +15,196 @@ from backend.sql_server_connector import SQLServerConnector
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# Helpers for building item dicts - reduces cyclomatic complexity
+# ---------------------------------------------------------------------------
+
+
+def _normalize_date(value: Any) -> Optional[str]:
+    """Convert date/datetime to ISO string, or None."""
+    if value in (None, ""):
+        return None
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, date):
+        return datetime.combine(value, datetime.min.time()).isoformat()
+    try:
+        return str(value)
+    except Exception:
+        return None
+
+
+def _numeric_or_none(value: Any) -> Optional[float]:
+    """Convert value to float, or None if not possible."""
+    try:
+        return float(value) if value is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _safe_optional_str(value: Any) -> Optional[str]:
+    """Convert value to str, or None if empty/None."""
+    if value in (None, ""):
+        return None
+    return str(value)
+
+
+# Field definitions for building SQL item dictionaries
+# Format: (sql_key, target_key, converter) where converter is one of:
+#   "raw" - use value as-is
+#   "str" - use _safe_optional_str
+#   "num" - use _numeric_or_none
+#   "date" - use _normalize_date
+_NEW_ITEM_FIELDS: list[tuple[str, str, str]] = [
+    # Core descriptive fields
+    ("category", "category", "raw"),
+    ("subcategory", "subcategory", "raw"),
+    ("warehouse", "warehouse", "raw"),
+    ("uom_code", "uom_code", "raw"),
+    ("uom_name", "uom_name", "raw"),
+    ("hsn_code", "hsn_code", "str"),
+    ("gst_category", "gst_category", "str"),
+    ("gst_percent", "gst_percent", "num"),
+    ("sgst_percent", "sgst_percent", "num"),
+    ("cgst_percent", "cgst_percent", "num"),
+    ("igst_percent", "igst_percent", "num"),
+    # Location / placement
+    ("barcode", "barcode", "raw"),
+    ("location", "location", "raw"),
+    ("floor", "floor", "raw"),
+    ("rack", "rack", "raw"),
+    # Pricing / sales
+    ("mrp", "mrp", "num"),
+    ("sales_price", "sales_price", "num"),
+    ("sale_price", "sale_price", "num"),
+    ("standard_rate", "standard_rate", "num"),
+    ("last_purchase_rate", "last_purchase_rate", "num"),
+    ("last_purchase_price", "last_purchase_price", "num"),
+    # Brand
+    ("brand_id", "brand_id", "raw"),
+    ("brand_name", "brand_name", "raw"),
+    ("brand_code", "brand_code", "raw"),
+    # Supplier
+    ("supplier_id", "supplier_id", "str"),
+    ("supplier_code", "supplier_code", "str"),
+    ("supplier_name", "supplier_name", "str"),
+    ("supplier_phone", "supplier_phone", "str"),
+    ("supplier_city", "supplier_city", "str"),
+    ("supplier_state", "supplier_state", "str"),
+    ("supplier_gst", "supplier_gst", "str"),
+    ("last_purchase_supplier", "last_purchase_supplier", "str"),
+    # Purchase info
+    ("purchase_price", "purchase_price", "num"),
+    ("last_purchase_qty", "last_purchase_qty", "num"),
+    ("purchase_qty", "purchase_qty", "num"),
+    ("purchase_invoice_no", "purchase_invoice_no", "str"),
+    ("purchase_reference", "purchase_reference", "str"),
+    ("last_purchase_date", "last_purchase_date", "raw"),
+    ("last_purchase_cost", "last_purchase_cost", "num"),
+    ("purchase_voucher_type", "purchase_voucher_type", "str"),
+    ("purchase_type", "purchase_type", "str"),
+    # Batch
+    ("batch_id", "batch_id", "str"),
+    ("batch_no", "batch_no", "str"),
+    ("mfg_date", "manufacturing_date", "date"),
+    ("expiry_date", "expiry_date", "date"),
+]
+
+
+def _apply_field_conversion(value: Any, converter: str) -> Any:
+    """Apply the appropriate converter to a value."""
+    if converter == "raw":
+        return value
+    if converter == "str":
+        return _safe_optional_str(value)
+    if converter == "num":
+        return _numeric_or_none(value)
+    if converter == "date":
+        return _normalize_date(value)
+    return value
+
+
+def _build_new_item_dict(
+    sql_item: dict[str, Any], sql_qty: float, now: datetime
+) -> dict[str, Any]:
+    """Build a new ERP item document from SQL data."""
+    item = {
+        "item_code": sql_item.get("item_code", ""),
+        "item_name": sql_item.get("item_name", ""),
+        "stock_qty": sql_qty,
+        "sql_server_qty": sql_qty,
+        # Enrichment fields (empty initially)
+        "serial_number": None,
+        "condition": None,
+        # Tracking fields
+        "data_complete": False,
+        "completion_percentage": 0,
+        "missing_fields": ["serial_number"],
+        "enrichment_history": [],
+        # Sync metadata
+        "last_synced": now,
+        "qty_changed_at": None,
+        "created_at": now,
+        "updated_at": now,
+        "synced_from_sql": True,
+    }
+    # Apply defaults for category / warehouse
+    item["category"] = sql_item.get("category", "General")
+    item["warehouse"] = sql_item.get("warehouse", "Main")
+
+    # Add optional fields via data-driven loop
+    for sql_key, target_key, converter in _NEW_ITEM_FIELDS:
+        if target_key in ("category", "warehouse"):
+            continue  # Already handled with defaults
+        value = sql_item.get(sql_key)
+        item[target_key] = _apply_field_conversion(value, converter)
+
+    return item
+
+
+def _build_metadata_candidates(sql_item: dict[str, Any]) -> dict[str, Any]:
+    """Build metadata candidates dict for backfill updates."""
+    candidates: dict[str, Any] = {}
+    for sql_key, target_key, converter in _NEW_ITEM_FIELDS:
+        value = sql_item.get(sql_key)
+        candidates[target_key] = _apply_field_conversion(value, converter)
+    return candidates
+
+
+def _compute_metadata_updates(
+    candidates: dict[str, Any], mongo_item: dict[str, Any]
+) -> dict[str, Any]:
+    """
+    Determine which metadata fields should be updated.
+
+    - Numeric fields: update only if existing is None
+    - Location field: always sync if changed
+    - Other fields: update if existing is None or empty string
+    """
+    updates: dict[str, Any] = {}
+    for field, new_value in candidates.items():
+        if new_value is None:
+            continue
+        existing_value = mongo_item.get(field)
+
+        # For numeric fields we treat only None as missing
+        if isinstance(new_value, (int, float)):
+            if existing_value is None:
+                updates[field] = new_value
+            continue
+
+        # Location should always be synced from SQL if it changes
+        if field == "location" and new_value != existing_value:
+            updates[field] = new_value
+            continue
+
+        # For strings / other types update when missing or empty
+        if existing_value in (None, ""):
+            updates[field] = new_value
+
+    return updates
+
+
 class SQLSyncService:
     """
     Service to sync SQL Server quantity changes to MongoDB
@@ -77,29 +267,6 @@ class SQLSyncService:
             logger.info("Starting SQL Server quantity sync...")
             sql_items = self.sql_connector.get_all_items()
 
-            def _normalize_date(value: Any) -> Optional[str]:
-                if value in (None, ""):
-                    return None
-                if isinstance(value, datetime):
-                    return value.isoformat()
-                if isinstance(value, date):
-                    return datetime.combine(value, datetime.min.time()).isoformat()
-                try:
-                    return str(value)
-                except Exception:
-                    return None
-
-            def _numeric_or_none(value: Any) -> Optional[float]:
-                try:
-                    return float(value) if value is not None else None
-                except (TypeError, ValueError):
-                    return None
-
-            def _safe_optional_str(value: Any) -> Optional[str]:
-                if value in (None, ""):
-                    return None
-                return str(value)
-
             # Batch process items
             batch_size = 100
             for i in range(0, len(sql_items), batch_size):
@@ -107,328 +274,7 @@ class SQLSyncService:
 
                 for sql_item in batch:
                     try:
-                        item_code = sql_item.get("item_code", "")
-                        sql_qty = float(sql_item.get("stock_qty", 0.0))
-
-                        # Get current MongoDB record
-                        mongo_item = await self.mongo_db.erp_items.find_one(
-                            {"item_code": item_code}
-                        )
-
-                        if not mongo_item:
-                            # New item - create with basic data
-                            new_item = {
-                                "item_code": item_code,
-                                "item_name": sql_item.get("item_name", ""),
-                                "category": sql_item.get("category", "General"),
-                                "subcategory": sql_item.get("subcategory", ""),
-                                "warehouse": sql_item.get("warehouse", "Main"),
-                                "uom_code": sql_item.get("uom_code", ""),
-                                "uom_name": sql_item.get("uom_name", ""),
-                                "hsn_code": _safe_optional_str(
-                                    sql_item.get("hsn_code")
-                                ),
-                                "gst_category": _safe_optional_str(
-                                    sql_item.get("gst_category")
-                                ),
-                                "gst_percent": _numeric_or_none(
-                                    sql_item.get("gst_percent")
-                                ),
-                                "sgst_percent": _numeric_or_none(
-                                    sql_item.get("sgst_percent")
-                                ),
-                                "cgst_percent": _numeric_or_none(
-                                    sql_item.get("cgst_percent")
-                                ),
-                                "igst_percent": _numeric_or_none(
-                                    sql_item.get("igst_percent")
-                                ),
-                                # Stock quantity from SQL Server
-                                "stock_qty": sql_qty,
-                                "sql_server_qty": sql_qty,
-                                # Enrichment fields (empty initially)
-                                "serial_number": None,
-                                "mrp": _numeric_or_none(sql_item.get("mrp")),
-                                "barcode": sql_item.get("barcode", ""),
-                                "location": sql_item.get("location"),
-                                "condition": None,
-                                "floor": sql_item.get("floor"),
-                                "rack": sql_item.get("rack"),
-                                # Sales / pricing metadata (optional from SQL)
-                                "sales_price": _numeric_or_none(
-                                    sql_item.get("sales_price")
-                                ),
-                                "sale_price": _numeric_or_none(
-                                    sql_item.get("sale_price")
-                                ),
-                                "standard_rate": _numeric_or_none(
-                                    sql_item.get("standard_rate")
-                                ),
-                                "last_purchase_rate": _numeric_or_none(
-                                    sql_item.get("last_purchase_rate")
-                                ),
-                                "last_purchase_price": _numeric_or_none(
-                                    sql_item.get("last_purchase_price")
-                                ),
-                                # Brand metadata (optional from SQL)
-                                "brand_id": sql_item.get("brand_id"),
-                                "brand_name": sql_item.get("brand_name"),
-                                "brand_code": sql_item.get("brand_code"),
-                                # Supplier metadata (optional from SQL)
-                                "supplier_id": _safe_optional_str(
-                                    sql_item.get("supplier_id")
-                                ),
-                                "supplier_code": _safe_optional_str(
-                                    sql_item.get("supplier_code")
-                                ),
-                                "supplier_name": _safe_optional_str(
-                                    sql_item.get("supplier_name")
-                                ),
-                                "supplier_phone": _safe_optional_str(
-                                    sql_item.get("supplier_phone")
-                                ),
-                                "supplier_city": _safe_optional_str(
-                                    sql_item.get("supplier_city")
-                                ),
-                                "supplier_state": _safe_optional_str(
-                                    sql_item.get("supplier_state")
-                                ),
-                                "supplier_gst": _safe_optional_str(
-                                    sql_item.get("supplier_gst")
-                                ),
-                                "last_purchase_supplier": _safe_optional_str(
-                                    sql_item.get("last_purchase_supplier")
-                                ),
-                                # Purchase info (optional from SQL)
-                                "purchase_price": _numeric_or_none(
-                                    sql_item.get("purchase_price")
-                                ),
-                                "last_purchase_qty": _numeric_or_none(
-                                    sql_item.get("last_purchase_qty")
-                                ),
-                                "purchase_qty": _numeric_or_none(
-                                    sql_item.get("purchase_qty")
-                                ),
-                                "purchase_invoice_no": _safe_optional_str(
-                                    sql_item.get("purchase_invoice_no")
-                                ),
-                                "purchase_reference": _safe_optional_str(
-                                    sql_item.get("purchase_reference")
-                                ),
-                                "last_purchase_date": sql_item.get(
-                                    "last_purchase_date"
-                                ),
-                                "last_purchase_cost": _numeric_or_none(
-                                    sql_item.get("last_purchase_cost")
-                                ),
-                                "purchase_voucher_type": _safe_optional_str(
-                                    sql_item.get("purchase_voucher_type")
-                                ),
-                                "purchase_type": _safe_optional_str(
-                                    sql_item.get("purchase_type")
-                                ),
-                                # Batch information
-                                "batch_id": _safe_optional_str(
-                                    sql_item.get("batch_id")
-                                ),
-                                "batch_no": _safe_optional_str(
-                                    sql_item.get("batch_no")
-                                ),
-                                "manufacturing_date": _normalize_date(
-                                    sql_item.get("mfg_date")
-                                ),
-                                "expiry_date": _normalize_date(
-                                    sql_item.get("expiry_date")
-                                ),
-                                # Tracking fields
-                                "data_complete": False,
-                                "completion_percentage": 0,
-                                "missing_fields": ["serial_number"],
-                                "enrichment_history": [],
-                                # Sync metadata
-                                "last_synced": datetime.utcnow(),
-                                "qty_changed_at": None,
-                                "created_at": datetime.utcnow(),
-                                "updated_at": datetime.utcnow(),
-                                "synced_from_sql": True,
-                            }
-
-                            await self.mongo_db.erp_items.insert_one(new_item)
-                            stats["items_created"] += 1
-                            logger.debug(f"Created new item: {item_code}")
-
-                        else:
-                            # Existing item - update ONLY quantity if changed
-                            mongo_qty = float(mongo_item.get("stock_qty", 0.0))
-
-                            # Prepare backfill for optional metadata that was introduced later
-                            metadata_candidates = {
-                                # Core descriptive fields
-                                "category": sql_item.get("category"),
-                                "subcategory": sql_item.get("subcategory"),
-                                "warehouse": sql_item.get("warehouse"),
-                                "uom_code": sql_item.get("uom_code"),
-                                "uom_name": sql_item.get("uom_name"),
-                                "location": sql_item.get("location"),
-                                "floor": sql_item.get("floor"),
-                                "rack": sql_item.get("rack"),
-                                "hsn_code": _safe_optional_str(
-                                    sql_item.get("hsn_code")
-                                ),
-                                "gst_category": _safe_optional_str(
-                                    sql_item.get("gst_category")
-                                ),
-                                "gst_percent": _numeric_or_none(
-                                    sql_item.get("gst_percent")
-                                ),
-                                "sgst_percent": _numeric_or_none(
-                                    sql_item.get("sgst_percent")
-                                ),
-                                "cgst_percent": _numeric_or_none(
-                                    sql_item.get("cgst_percent")
-                                ),
-                                "igst_percent": _numeric_or_none(
-                                    sql_item.get("igst_percent")
-                                ),
-                                # Pricing metadata
-                                "mrp": _numeric_or_none(sql_item.get("mrp")),
-                                "sales_price": _numeric_or_none(
-                                    sql_item.get("sales_price")
-                                ),
-                                "sale_price": _numeric_or_none(
-                                    sql_item.get("sale_price")
-                                ),
-                                "standard_rate": _numeric_or_none(
-                                    sql_item.get("standard_rate")
-                                ),
-                                "last_purchase_rate": _numeric_or_none(
-                                    sql_item.get("last_purchase_rate")
-                                ),
-                                "last_purchase_price": _numeric_or_none(
-                                    sql_item.get("last_purchase_price")
-                                ),
-                                # Brand metadata
-                                "brand_id": sql_item.get("brand_id"),
-                                "brand_name": sql_item.get("brand_name"),
-                                "brand_code": sql_item.get("brand_code"),
-                                # Supplier metadata
-                                "supplier_id": _safe_optional_str(
-                                    sql_item.get("supplier_id")
-                                ),
-                                "supplier_code": _safe_optional_str(
-                                    sql_item.get("supplier_code")
-                                ),
-                                "supplier_name": _safe_optional_str(
-                                    sql_item.get("supplier_name")
-                                ),
-                                "supplier_phone": _safe_optional_str(
-                                    sql_item.get("supplier_phone")
-                                ),
-                                "supplier_city": _safe_optional_str(
-                                    sql_item.get("supplier_city")
-                                ),
-                                "supplier_state": _safe_optional_str(
-                                    sql_item.get("supplier_state")
-                                ),
-                                "supplier_gst": _safe_optional_str(
-                                    sql_item.get("supplier_gst")
-                                ),
-                                "last_purchase_supplier": _safe_optional_str(
-                                    sql_item.get("last_purchase_supplier")
-                                ),
-                                # Purchase metadata
-                                "purchase_price": _numeric_or_none(
-                                    sql_item.get("purchase_price")
-                                ),
-                                "last_purchase_qty": _numeric_or_none(
-                                    sql_item.get("last_purchase_qty")
-                                ),
-                                "purchase_qty": _numeric_or_none(
-                                    sql_item.get("purchase_qty")
-                                ),
-                                "purchase_invoice_no": _safe_optional_str(
-                                    sql_item.get("purchase_invoice_no")
-                                ),
-                                "purchase_reference": _safe_optional_str(
-                                    sql_item.get("purchase_reference")
-                                ),
-                                "last_purchase_date": sql_item.get(
-                                    "last_purchase_date"
-                                ),
-                                "last_purchase_cost": _numeric_or_none(
-                                    sql_item.get("last_purchase_cost")
-                                ),
-                                "purchase_voucher_type": _safe_optional_str(
-                                    sql_item.get("purchase_voucher_type")
-                                ),
-                                "purchase_type": _safe_optional_str(
-                                    sql_item.get("purchase_type")
-                                ),
-                                # Batch metadata
-                                "batch_id": _safe_optional_str(
-                                    sql_item.get("batch_id")
-                                ),
-                                "batch_no": _safe_optional_str(
-                                    sql_item.get("batch_no")
-                                ),
-                                "manufacturing_date": _normalize_date(
-                                    sql_item.get("mfg_date")
-                                ),
-                                "expiry_date": _normalize_date(
-                                    sql_item.get("expiry_date")
-                                ),
-                            }
-
-                            metadata_updates: dict[str, Any] = {}
-
-                            for field, new_value in metadata_candidates.items():
-                                if new_value is None:
-                                    continue
-                                existing_value = mongo_item.get(field)
-
-                                # For numeric fields we treat only None as missing
-                                if isinstance(new_value, (int, float)):
-                                    if existing_value is None:
-                                        metadata_updates[field] = new_value
-                                    continue
-
-                                # For strings / other types update when missing or empty
-                                if existing_value in (None, ""):
-                                    metadata_updates[field] = new_value
-
-                            update_fields: dict[str, Any] = {
-                                "last_synced": datetime.utcnow(),
-                                "updated_at": datetime.utcnow(),
-                            }
-
-                            if sql_qty != mongo_qty:
-                                update_fields.update(
-                                    {
-                                        "stock_qty": sql_qty,
-                                        "sql_server_qty": sql_qty,
-                                        "qty_changed_at": datetime.utcnow(),
-                                        "qty_change_delta": sql_qty - mongo_qty,
-                                    }
-                                )
-                                stats["qty_changes_detected"] += 1
-                                stats["qty_updated"] += 1
-
-                                logger.info(
-                                    f"Qty updated for {item_code}: "
-                                    f"{mongo_qty} → {sql_qty} "
-                                    f"(Δ {sql_qty - mongo_qty})"
-                                )
-
-                            if metadata_updates:
-                                update_fields.update(metadata_updates)
-
-                            await self.mongo_db.erp_items.update_one(
-                                {"item_code": item_code},
-                                {"$set": update_fields},
-                            )
-
-                        stats["items_checked"] += 1
-
+                        await self._sync_single_item(sql_item, stats)
                     except Exception as e:
                         logger.error(
                             f"Error syncing item {sql_item.get('item_code')}: {str(e)}"
@@ -436,11 +282,7 @@ class SQLSyncService:
                         stats["errors"] += 1
 
             stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
-            self._last_sync = datetime.utcnow()
-            self._sync_stats["successful_syncs"] += 1
-            self._sync_stats["items_synced"] = stats["items_checked"]
-            self._sync_stats["qty_changes_detected"] = stats["qty_changes_detected"]
-            self._sync_stats["last_sync"] = self._last_sync.isoformat()
+            self._finalize_sync_stats(stats)
 
             logger.info(
                 f"SQL qty sync completed: {stats['items_checked']} items checked, "
@@ -449,20 +291,7 @@ class SQLSyncService:
                 f"in {stats['duration']:.2f}s"
             )
 
-            # Update sync metadata
-            await self.mongo_db.sync_metadata.update_one(
-                {"_id": "sql_qty_sync"},
-                {
-                    "$set": {
-                        "last_sync": self._last_sync,
-                        "stats": stats,
-                        "updated_at": datetime.utcnow(),
-                    },
-                    "$inc": {"total_syncs": 1},
-                },
-                upsert=True,
-            )
-
+            await self._update_sync_metadata(stats)
             return stats
 
         except Exception as e:
@@ -470,6 +299,124 @@ class SQLSyncService:
             self._sync_stats["failed_syncs"] += 1
             stats["errors"] = 1
             raise
+
+    async def _sync_single_item(
+        self, sql_item: dict[str, Any], stats: dict[str, Any]
+    ) -> None:
+        """Process a single item from SQL Server for sync."""
+        item_code = sql_item.get("item_code", "")
+        sql_qty = float(sql_item.get("stock_qty", 0.0))
+        now = datetime.utcnow()
+
+        # Get current MongoDB record
+        mongo_item = await self.mongo_db.erp_items.find_one({"item_code": item_code})
+
+        if not mongo_item:
+            # New item - create with basic data
+            new_item = _build_new_item_dict(sql_item, sql_qty, now)
+            await self.mongo_db.erp_items.insert_one(new_item)
+            stats["items_created"] += 1
+            logger.debug(f"Created new item: {item_code}")
+        else:
+            # Existing item - update ONLY quantity if changed
+            await self._update_existing_item(
+                item_code, sql_item, sql_qty, mongo_item, stats
+            )
+
+        stats["items_checked"] += 1
+
+    async def _update_existing_item(
+        self,
+        item_code: str,
+        sql_item: dict[str, Any],
+        sql_qty: float,
+        mongo_item: dict[str, Any],
+        stats: dict[str, Any],
+    ) -> None:
+        """Update an existing MongoDB item with SQL data."""
+        mongo_qty = float(mongo_item.get("stock_qty", 0.0))
+        now = datetime.utcnow()
+
+        # Prepare backfill for optional metadata
+        metadata_candidates = _build_metadata_candidates(sql_item)
+        metadata_updates = _compute_metadata_updates(metadata_candidates, mongo_item)
+
+        update_fields: dict[str, Any] = {
+            "last_synced": now,
+            "updated_at": now,
+        }
+
+        if sql_qty != mongo_qty:
+            update_fields.update(
+                {
+                    "stock_qty": sql_qty,
+                    "sql_server_qty": sql_qty,
+                    "qty_changed_at": now,
+                    "qty_change_delta": sql_qty - mongo_qty,
+                }
+            )
+            stats["qty_changes_detected"] += 1
+            stats["qty_updated"] += 1
+
+            logger.info(
+                f"Qty updated for {item_code}: "
+                f"{mongo_qty} → {sql_qty} "
+                f"(Δ {sql_qty - mongo_qty})"
+            )
+
+        if metadata_updates:
+            update_fields.update(metadata_updates)
+
+        await self.mongo_db.erp_items.update_one(
+            {"item_code": item_code},
+            {"$set": update_fields},
+        )
+
+    def _finalize_sync_stats(self, stats: dict[str, Any]) -> None:
+        """Update backwards-compatible stats and internal tracking."""
+        # Backwards-compatible stats keys for older callers/tests
+        if "items_updated" not in stats:
+            stats["items_updated"] = stats.get("qty_updated", 0)
+
+        if "items_unchanged" not in stats:
+            checked = stats.get("items_checked", 0)
+            updated = stats.get("qty_updated", 0)
+            created = stats.get("items_created", 0)
+            stats["items_unchanged"] = max(0, checked - updated - created)
+
+        self._last_sync = datetime.utcnow()
+        self._sync_stats["successful_syncs"] += 1
+        self._sync_stats["items_synced"] = stats["items_checked"]
+        self._sync_stats["qty_changes_detected"] = stats["qty_changes_detected"]
+        self._sync_stats["last_sync"] = self._last_sync.isoformat()
+
+    async def _update_sync_metadata(self, stats: dict[str, Any]) -> None:
+        """Update sync metadata collection (best-effort)."""
+        sync_metadata_collection = getattr(self.mongo_db, "sync_metadata", None)
+        if sync_metadata_collection is not None:
+            try:
+                await sync_metadata_collection.update_one(
+                    {"_id": "sql_qty_sync"},
+                    {
+                        "$set": {
+                            "last_sync": self._last_sync,
+                            "stats": stats,
+                            "updated_at": datetime.utcnow(),
+                        },
+                        "$inc": {"total_syncs": 1},
+                    },
+                    upsert=True,
+                )
+            except Exception:
+                logger.warning(
+                    "Failed to update sync_metadata collection during qty sync",
+                    exc_info=True,
+                )
+        else:
+            logger.debug(
+                "MongoDB sync_metadata collection not configured; "
+                "skipping metadata update",
+            )
 
     async def check_item_qty_realtime(self, item_code: str) -> dict[str, Any]:
         """

@@ -19,7 +19,7 @@ if [ ! -f "${BACKUP_FILE}" ]; then
 fi
 
 # Configuration
-MONGO_HOST="${MONGO_HOST:-mongodb}"
+MONGO_HOST="${MONGO_HOST:-localhost}"
 MONGO_PORT="${MONGO_PORT:-27017}"
 MONGO_USERNAME="${MONGO_USERNAME:-admin}"
 MONGO_PASSWORD="${MONGO_PASSWORD}"

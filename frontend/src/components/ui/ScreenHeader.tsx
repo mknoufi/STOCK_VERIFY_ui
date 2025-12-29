@@ -12,7 +12,7 @@
  * - Animated transitions
  */
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import {
   Platform,
   ViewStyle,
   Alert,
+  LayoutChangeEvent,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
@@ -34,7 +35,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  interpolate,
 } from "react-native-reanimated";
 
 import { useAuthStore } from "../../store/authStore";
@@ -146,6 +146,9 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   const { theme, isDark } = useThemeContext();
   const { user, logout } = useAuthStore();
 
+  const [leftSectionWidth, setLeftSectionWidth] = useState(0);
+  const [rightSectionWidth, setRightSectionWidth] = useState(0);
+
   // Compute colors from theme
   const colors = {
     background: transparent
@@ -205,6 +208,16 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
     }
     rightAction?.onPress();
   }, [rightAction]);
+
+  const handleLeftLayout = useCallback((event: LayoutChangeEvent) => {
+    const nextWidth = Math.ceil(event.nativeEvent.layout.width);
+    setLeftSectionWidth((prev) => (prev === nextWidth ? prev : nextWidth));
+  }, []);
+
+  const handleRightLayout = useCallback((event: LayoutChangeEvent) => {
+    const nextWidth = Math.ceil(event.nativeEvent.layout.width);
+    setRightSectionWidth((prev) => (prev === nextWidth ? prev : nextWidth));
+  }, []);
 
   // Render user info section
   const renderUserInfo = () => {
@@ -266,7 +279,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   const renderContent = () => (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
       {/* Left Section */}
-      <View style={styles.leftSection}>
+      <View style={styles.leftSection} onLayout={handleLeftLayout}>
         {showBackButton && (
           <Animated.View entering={FadeInLeft.delay(50)}>
             <AnimatedButton
@@ -282,13 +295,27 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
         {!title && renderUserInfo()}
       </View>
 
-      {/* Center Section */}
-      {title && <View style={styles.centerSection}>{renderTitle()}</View>}
+      {/* Center Section (overlay-centered, avoids overlap with left/right content) */}
+      {title && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.centerOverlay,
+            {
+              paddingLeft: leftSectionWidth + 12,
+              paddingRight: rightSectionWidth + 12,
+            },
+          ]}
+        >
+          {renderTitle()}
+        </View>
+      )}
 
       {/* Right Section */}
       <Animated.View
         entering={FadeInRight.delay(100)}
         style={styles.rightSection}
+        onLayout={handleRightLayout}
       >
         {customRightContent}
         {rightAction && (
@@ -344,6 +371,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   container: {
+    position: "relative",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -354,19 +382,24 @@ const styles = StyleSheet.create({
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    flexShrink: 0,
     gap: 12,
   },
-  centerSection: {
-    flex: 2,
+  centerOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    top: 0,
     alignItems: "center",
     justifyContent: "center",
+    minWidth: 0,
   },
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
-    flex: 1,
+    flexShrink: 0,
     gap: 8,
   },
   userSection: {
@@ -398,11 +431,13 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     alignItems: "center",
+    maxWidth: "100%",
   },
   titleText: {
     fontSize: 17,
     fontWeight: "700",
     letterSpacing: -0.3,
+    maxWidth: "100%",
   },
   subtitleText: {
     fontSize: 12,

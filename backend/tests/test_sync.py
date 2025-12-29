@@ -78,3 +78,65 @@ class TestSyncEndpoints:
         if response.status_code == 200:
             data = response.json()
             assert "running" in data or "enabled" in data
+
+    def test_legacy_batch_sync_operations(
+        self,
+        client,
+        supervisor_token,
+        fake_environment,
+    ) -> None:
+        """Legacy offline queue payloads should still sync successfully."""
+
+        if not supervisor_token:
+            pytest.skip("Supervisor token not available")
+
+        offline_session_id = "offline_test_session"
+        payload = {
+            "operations": [
+                {
+                    "id": "op_session",
+                    "type": "session",
+                    "timestamp": "2024-01-01T00:00:00Z",
+                    "data": {
+                        "session_id": offline_session_id,
+                        "warehouse": "Main Warehouse",
+                        "status": "OPEN",
+                        "type": "general",
+                    },
+                },
+                {
+                    "id": "op_count_line",
+                    "type": "count_line",
+                    "timestamp": "2024-01-01T00:00:01Z",
+                    "data": {
+                        "session_id": offline_session_id,
+                        "item_code": "ITEM-001",
+                        "counted_qty": 5,
+                    },
+                },
+            ]
+        }
+
+        response = client.post(
+            "/api/sync/batch",
+            json=payload,
+            headers={"Authorization": f"Bearer {supervisor_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data.get("processed_count") == 2
+        assert data.get("success_count") == 2
+        assert len(data.get("results", [])) == 2
+        assert {result["id"] for result in data["results"]} == {
+            "op_session",
+            "op_count_line",
+        }
+
+        # Ensure session and count line persisted with mapped server session id
+        assert len(fake_environment.sessions._documents) == 1
+        assert len(fake_environment.count_lines._documents) == 1
+
+        stored_session = fake_environment.sessions._documents[0]
+        stored_line = fake_environment.count_lines._documents[0]
+        assert stored_line["session_id"] == stored_session["id"]

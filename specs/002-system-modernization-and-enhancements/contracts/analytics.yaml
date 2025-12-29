@@ -1,0 +1,484 @@
+openapi: 3.0.3
+info:
+  title: Stock Verify - Variance Analytics API
+  version: 1.0.0
+  description: |
+    Dashboard and analytics endpoints for variance analysis.
+    Provides insights into count accuracy and inventory discrepancies.
+
+servers:
+  - url: /api/analytics
+    description: Analytics API endpoints
+
+paths:
+  /variance/summary:
+    get:
+      operationId: getVarianceSummary
+      summary: Get variance summary
+      description: Aggregated variance metrics for dashboard
+      tags:
+        - Variance Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: session_id
+          in: query
+          schema:
+            type: string
+          description: Filter by specific session
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by item category
+      responses:
+        '200':
+          description: Variance summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VarianceSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /variance/items:
+    get:
+      operationId: getVarianceItems
+      summary: Get items with variance
+      description: List of items with count discrepancies
+      tags:
+        - Variance Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: session_id
+          in: query
+          schema:
+            type: string
+        - name: min_variance
+          in: query
+          schema:
+            type: integer
+          description: Minimum absolute variance to include
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [variance_amount, variance_percent, item_value]
+            default: variance_amount
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated variance items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VarianceItemsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /variance/trends:
+    get:
+      operationId: getVarianceTrends
+      summary: Get variance trends
+      description: Historical variance data for trend analysis
+      tags:
+        - Variance Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 1y]
+        - name: granularity
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: day
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Variance trend data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VarianceTrends'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /accuracy/summary:
+    get:
+      operationId: getAccuracySummary
+      summary: Get count accuracy summary
+      description: Staff accuracy metrics and rankings
+      tags:
+        - Accuracy Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Accuracy summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccuracySummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /sessions/{sessionId}/report:
+    get:
+      operationId: getSessionReport
+      summary: Get session variance report
+      description: Detailed variance report for a completed session
+      tags:
+        - Reports
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session variance report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Session not found
+
+  /sessions/{sessionId}/export:
+    get:
+      operationId: exportSessionReport
+      summary: Export session report
+      description: Export variance report in specified format
+      tags:
+        - Reports
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [csv, pdf, xlsx]
+      responses:
+        '200':
+          description: Exported report file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Session not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Insufficient permissions (supervisor/admin required)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    VarianceSummary:
+      type: object
+      properties:
+        total_items_counted:
+          type: integer
+        items_with_variance:
+          type: integer
+        items_matching:
+          type: integer
+        accuracy_rate:
+          type: number
+          format: float
+          description: Percentage of items matching ERP (0-100)
+        total_variance_value:
+          type: number
+          format: float
+          description: Sum of all variance amounts (currency)
+        positive_variance:
+          type: object
+          properties:
+            count:
+              type: integer
+            value:
+              type: number
+          description: Over-stock items
+        negative_variance:
+          type: object
+          properties:
+            count:
+              type: integer
+            value:
+              type: number
+          description: Under-stock items
+        period:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+
+    VarianceItemsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VarianceItem'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    VarianceItem:
+      type: object
+      properties:
+        item_code:
+          type: string
+        item_name:
+          type: string
+        category:
+          type: string
+        erp_quantity:
+          type: integer
+        physical_count:
+          type: integer
+        variance:
+          type: integer
+          description: physical_count - erp_quantity
+        variance_percent:
+          type: number
+          format: float
+        unit_value:
+          type: number
+          format: float
+        variance_value:
+          type: number
+          format: float
+          description: variance * unit_value
+        session_id:
+          type: string
+        counted_by:
+          type: string
+        counted_at:
+          type: string
+          format: date-time
+
+    VarianceTrends:
+      type: object
+      properties:
+        period:
+          type: string
+        granularity:
+          type: string
+        data_points:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              accuracy_rate:
+                type: number
+              variance_value:
+                type: number
+              items_counted:
+                type: integer
+              items_with_variance:
+                type: integer
+        summary:
+          type: object
+          properties:
+            avg_accuracy:
+              type: number
+            trend_direction:
+              type: string
+              enum: [improving, declining, stable]
+            trend_percent:
+              type: number
+
+    AccuracySummary:
+      type: object
+      properties:
+        overall_accuracy:
+          type: number
+          format: float
+        total_sessions:
+          type: integer
+        total_items_counted:
+          type: integer
+        staff_rankings:
+          type: array
+          items:
+            type: object
+            properties:
+              user_id:
+                type: string
+              username:
+                type: string
+              items_counted:
+                type: integer
+              accuracy_rate:
+                type: number
+              avg_count_time:
+                type: number
+                description: Average seconds per item
+
+    SessionReport:
+      type: object
+      properties:
+        session_id:
+          type: string
+        session_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+        completed_by:
+          type: string
+        summary:
+          $ref: '#/components/schemas/VarianceSummary'
+        variance_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VarianceItem'
+        staff_breakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              user_id:
+                type: string
+              username:
+                type: string
+              items_counted:
+                type: integer
+              accuracy_rate:
+                type: number
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+        - error_code
+      properties:
+        detail:
+          type: string
+        error_code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

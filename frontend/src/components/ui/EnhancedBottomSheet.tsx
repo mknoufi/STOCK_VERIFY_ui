@@ -15,18 +15,14 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   Platform,
   TouchableOpacity,
   Pressable,
+  useWindowDimensions,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -37,8 +33,6 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
-
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 type SnapPoint = number | `${number}%`;
 
@@ -54,14 +48,6 @@ interface EnhancedBottomSheetProps {
   backdropOpacity?: number;
 }
 
-const parseSnapPoint = (point: SnapPoint): number => {
-  if (typeof point === "number") {
-    return point;
-  }
-  const percentage = parseFloat(point) / 100;
-  return SCREEN_HEIGHT * percentage;
-};
-
 export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
   children,
   isOpen,
@@ -73,18 +59,31 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
   enableBackdrop = true,
   backdropOpacity = 0.5,
 }) => {
-  const parsedSnapPoints = useMemo(
-    () => snapPoints.map(parseSnapPoint).sort((a, b) => a - b),
-    [snapPoints],
+  const { height: screenHeight } = useWindowDimensions();
+
+  const parseSnapPoint = useCallback(
+    (point: SnapPoint): number => {
+      if (typeof point === "number") {
+        return point;
+      }
+      const percentage = parseFloat(point) / 100;
+      return screenHeight * percentage;
+    },
+    [screenHeight],
   );
 
-  const translateY = useSharedValue(SCREEN_HEIGHT);
+  const parsedSnapPoints = useMemo(
+    () => snapPoints.map(parseSnapPoint).sort((a, b) => a - b),
+    [snapPoints, parseSnapPoint],
+  );
+
+  const translateY = useSharedValue(screenHeight);
   const contextY = useSharedValue(0);
   const activeIndex = useSharedValue(initialSnapIndex);
 
   const maxTranslateY =
-    SCREEN_HEIGHT - (parsedSnapPoints[parsedSnapPoints.length - 1] ?? 0);
-  const minTranslateY = SCREEN_HEIGHT - (parsedSnapPoints[0] ?? 0);
+    screenHeight - (parsedSnapPoints[parsedSnapPoints.length - 1] ?? 0);
+  const minTranslateY = screenHeight - (parsedSnapPoints[0] ?? 0);
 
   const triggerHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
@@ -94,7 +93,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      const targetY = SCREEN_HEIGHT - (parsedSnapPoints[initialSnapIndex] ?? 0);
+      const targetY = screenHeight - (parsedSnapPoints[initialSnapIndex] ?? 0);
       translateY.value = withSpring(targetY, {
         damping: 20,
         stiffness: 150,
@@ -102,18 +101,25 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
       });
       activeIndex.value = initialSnapIndex;
     } else {
-      translateY.value = withTiming(SCREEN_HEIGHT, { duration: 300 });
+      translateY.value = withTiming(screenHeight, { duration: 300 });
     }
-  }, [isOpen, initialSnapIndex, parsedSnapPoints]);
+  }, [
+    isOpen,
+    initialSnapIndex,
+    parsedSnapPoints,
+    translateY,
+    activeIndex,
+    screenHeight,
+  ]);
 
   const findNearestSnapPoint = (currentY: number): number => {
     let nearestIndex = 0;
     let minDistance = Math.abs(
-      SCREEN_HEIGHT - (parsedSnapPoints[0] ?? 0) - currentY,
+      screenHeight - (parsedSnapPoints[0] ?? 0) - currentY,
     );
 
     parsedSnapPoints.forEach((point, index) => {
-      const targetY = SCREEN_HEIGHT - point;
+      const targetY = screenHeight - point;
       const distance = Math.abs(targetY - currentY);
       if (distance < minDistance) {
         minDistance = distance;
@@ -130,7 +136,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
     })
     .onUpdate((event) => {
       const newY = contextY.value + event.translationY;
-      translateY.value = Math.max(maxTranslateY, Math.min(SCREEN_HEIGHT, newY));
+      translateY.value = Math.max(maxTranslateY, Math.min(screenHeight, newY));
     })
     .onEnd((event) => {
       const currentY = translateY.value;
@@ -138,7 +144,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
 
       // Dismiss if swiped down fast or below minimum point
       if (velocity > 500 || currentY > minTranslateY + 50) {
-        translateY.value = withSpring(SCREEN_HEIGHT, {
+        translateY.value = withSpring(screenHeight, {
           velocity,
           damping: 20,
           stiffness: 150,
@@ -149,7 +155,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
 
       // Find nearest snap point
       const nearestIndex = findNearestSnapPoint(currentY);
-      const targetY = SCREEN_HEIGHT - (parsedSnapPoints[nearestIndex] ?? 0);
+      const targetY = screenHeight - (parsedSnapPoints[nearestIndex] ?? 0);
 
       translateY.value = withSpring(targetY, {
         velocity,
@@ -170,7 +176,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
       translateY.value,
-      [SCREEN_HEIGHT, minTranslateY],
+      [screenHeight, minTranslateY],
       [0, backdropOpacity],
       Extrapolation.CLAMP,
     ),
@@ -198,7 +204,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
 
       {/* Sheet */}
       <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.sheet, sheetStyle]}>
+        <Animated.View style={[styles.sheet, { height: screenHeight }, sheetStyle]}>
           <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
             {/* Handle */}
             {showHandle && (
@@ -239,7 +245,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    height: SCREEN_HEIGHT,
     backgroundColor: auroraTheme.colors.background.glass,
     borderTopLeftRadius: auroraTheme.borderRadius["2xl"],
     borderTopRightRadius: auroraTheme.borderRadius["2xl"],

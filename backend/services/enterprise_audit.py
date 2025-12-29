@@ -17,6 +17,61 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 
+def _build_audit_search_query(
+    event_types: Optional[list] = None,
+    actor_username: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    resource_id: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    severity: Optional[Any] = None,
+    outcome: Optional[str] = None,
+    correlation_id: Optional[str] = None,
+) -> dict[str, Any]:
+    """Build MongoDB query for audit log search."""
+    query: dict[str, Any] = {}
+
+    # Simple field mappings
+    field_values = {
+        "actor_username": actor_username,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "outcome": outcome,
+        "correlation_id": correlation_id,
+    }
+    for field, value in field_values.items():
+        if value:
+            query[field] = value
+
+    # Special handling for enums
+    if event_types:
+        query["event_type"] = {"$in": [et.value for et in event_types]}
+    if severity:
+        query["severity"] = severity.value
+
+    # Date range
+    _add_date_range_filter(query, "timestamp", start_date, end_date)
+
+    return query
+
+
+def _add_date_range_filter(
+    query: dict[str, Any],
+    field: str,
+    start_date: Optional[datetime],
+    end_date: Optional[datetime],
+) -> None:
+    """Add date range filter to query if dates provided."""
+    if not start_date and not end_date:
+        return
+    date_filter: dict[str, datetime] = {}
+    if start_date:
+        date_filter["$gte"] = start_date
+    if end_date:
+        date_filter["$lte"] = end_date
+    query[field] = date_filter
+
+
 class AuditEventType(str, Enum):
     """Audit event categories"""
 
@@ -90,8 +145,8 @@ class AuditEntry(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
     # Change tracking (for updates)
-    old_value: dict[str, Optional[Any]] = None
-    new_value: dict[str, Optional[Any]] = None
+    old_value: Optional[dict[str, Optional[Any]]] = None
+    new_value: Optional[dict[str, Optional[Any]]] = None
 
     # Integrity
     previous_hash: Optional[str] = None
@@ -213,7 +268,7 @@ class EnterpriseAuditService:
             if self.enable_hash_chain:
                 entry["previous_hash"] = self._last_hash
                 entry["entry_hash"] = self._compute_hash(entry, self._last_hash)
-                self._last_hash = entry["entry_hash"]
+                self._last_hash = str(entry["entry_hash"])
 
             result = await self.collection.insert_one(entry)
 
@@ -246,29 +301,17 @@ class EnterpriseAuditService:
         skip: int = 0,
     ) -> dict[str, Any]:
         """Search audit logs with filters"""
-        query: dict[str, Any] = {}
-
-        if event_types:
-            query["event_type"] = {"$in": [et.value for et in event_types]}
-        if actor_username:
-            query["actor_username"] = actor_username
-        if resource_type:
-            query["resource_type"] = resource_type
-        if resource_id:
-            query["resource_id"] = resource_id
-        if severity:
-            query["severity"] = severity.value
-        if outcome:
-            query["outcome"] = outcome
-        if correlation_id:
-            query["correlation_id"] = correlation_id
-
-        if start_date or end_date:
-            query["timestamp"] = {}
-            if start_date:
-                query["timestamp"]["$gte"] = start_date
-            if end_date:
-                query["timestamp"]["$lte"] = end_date
+        query = _build_audit_search_query(
+            event_types,
+            actor_username,
+            resource_type,
+            resource_id,
+            start_date,
+            end_date,
+            severity,
+            outcome,
+            correlation_id,
+        )
 
         total = await self.collection.count_documents(query)
         cursor = (
@@ -292,7 +335,7 @@ class EnterpriseAuditService:
         if not self.enable_hash_chain:
             return {"status": "disabled", "message": "Hash chain not enabled"}
 
-        query = {}
+        query: dict[str, Any] = {}
         if start_date or end_date:
             query["timestamp"] = {}
             if start_date:

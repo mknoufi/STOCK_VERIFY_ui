@@ -1,15 +1,17 @@
 /**
  * ItemSearch Component
  * Search autocomplete for finding items by name or barcode
+ * Enhanced with pagination and infinite scroll
  */
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SearchResult } from "../../services/enhancedSearchService";
@@ -33,6 +35,12 @@ interface ItemSearchProps {
   onSearchResultSelect: (item: SearchResult) => void;
   onActivityReset?: () => void;
   onBulkEntry?: () => void;
+  // Pagination props
+  totalResults?: number;
+  currentPage?: number;
+  hasNextPage?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 export const ItemSearch: React.FC<ItemSearchProps> = ({
@@ -52,8 +60,75 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
   onSearchResultSelect,
   onActivityReset,
   onBulkEntry,
+  // Pagination props with defaults
+  totalResults = 0,
+  currentPage: _currentPage = 1,
+  hasNextPage = false,
+  isLoadingMore = false,
+  onLoadMore,
 }) => {
-  // Removed unused handlers
+  // Render individual search result item
+  const renderSearchResultItem = useCallback(({ item, index }: { item: SearchResult; index: number }) => (
+    <TouchableOpacity
+      key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
+      style={styles.searchResultItem}
+      onPress={() => onSearchResultSelect(item)}
+    >
+      <View style={styles.searchResultContent}>
+        <View style={styles.resultHeader}>
+          <Text style={styles.searchResultName}>{item.item_name}</Text>
+          {item.relevance_score !== undefined && item.relevance_score >= 500 && (
+            <View style={styles.exactMatchBadge}>
+              <Text style={styles.exactMatchText}>Exact</Text>
+            </View>
+          )}
+        </View>
+        <Text style={styles.searchResultCode}>
+          Code: {item.item_code}
+        </Text>
+        {item.barcode && (
+          <Text style={styles.searchResultBarcode}>
+            Barcode: {item.barcode}
+          </Text>
+        )}
+        <Text style={styles.searchResultStock}>
+          Stock: {item.stock_qty || 0}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+    </TouchableOpacity>
+  ), [onSearchResultSelect]);
+
+  // Footer component for infinite scroll
+  const renderFooter = useCallback(() => {
+    if (!hasNextPage) return null;
+    
+    if (isLoadingMore) {
+      return (
+        <View style={styles.loadingMoreContainer}>
+          <ActivityIndicator size="small" color="#3B82F6" />
+          <Text style={styles.loadingMoreText}>Loading more...</Text>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={styles.loadMoreButton}
+        onPress={onLoadMore}
+      >
+        <Text style={styles.loadMoreText}>Load More Results</Text>
+        <Ionicons name="chevron-down" size={16} color="#3B82F6" />
+      </TouchableOpacity>
+    );
+  }, [hasNextPage, isLoadingMore, onLoadMore]);
+
+  // Handle end reached for infinite scroll
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isLoadingMore && onLoadMore) {
+      onLoadMore();
+    }
+  }, [hasNextPage, isLoadingMore, onLoadMore]);
 
   return (
     <View style={styles.manualEntryContainer}>
@@ -161,41 +236,33 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
         </View>
       </View>
 
-      {/* Search Results */}
+      {/* Search Results with Infinite Scroll */}
       {showSearchResults && searchResults.length > 0 && (
         <View style={styles.searchResultsContainer}>
-          <Text style={styles.searchResultsTitle}>
-            Search Results ({searchResults.length})
-          </Text>
-          <ScrollView
-            style={styles.searchResultsScrollView}
+          <View style={styles.searchResultsHeader}>
+            <Text style={styles.searchResultsTitle}>
+              Search Results
+            </Text>
+            <Text style={styles.searchResultsCount}>
+              {searchResults.length}{totalResults > searchResults.length ? ` of ${totalResults}` : ''}
+            </Text>
+          </View>
+          <FlatList
+            data={searchResults}
+            renderItem={renderSearchResultItem}
+            keyExtractor={(item, index) => 
+              `search-${index}-${item.item_code || 'no-code'}-${item.barcode || 'no-barcode'}`
+            }
+            style={styles.searchResultsFlatList}
             nestedScrollEnabled={true}
             showsVerticalScrollIndicator={true}
-          >
-            {searchResults.map((item, index) => (
-              <TouchableOpacity
-                key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
-                style={styles.searchResultItem}
-                onPress={() => onSearchResultSelect(item)}
-              >
-                <View style={styles.searchResultContent}>
-                  <Text style={styles.searchResultName}>{item.item_name}</Text>
-                  <Text style={styles.searchResultCode}>
-                    Code: {item.item_code}
-                  </Text>
-                  {item.barcode && (
-                    <Text style={styles.searchResultBarcode}>
-                      Barcode: {item.barcode}
-                    </Text>
-                  )}
-                  <Text style={styles.searchResultStock}>
-                    Stock: {item.stock_qty || 0}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={renderFooter}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+          />
         </View>
       )}
 
@@ -321,16 +388,73 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
-    maxHeight: 300,
+    maxHeight: 350,
+  },
+  searchResultsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
   searchResultsTitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 12,
+  },
+  searchResultsCount: {
+    fontSize: 14,
+    color: "#94A3B8",
+  },
+  searchResultsFlatList: {
+    maxHeight: 280,
   },
   searchResultsScrollView: {
     maxHeight: 250,
+  },
+  resultHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  exactMatchBadge: {
+    backgroundColor: "rgba(34, 197, 94, 0.2)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(34, 197, 94, 0.4)",
+  },
+  exactMatchText: {
+    color: "#22C55E",
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  loadingMoreContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+  },
+  loadingMoreText: {
+    color: "#94A3B8",
+    fontSize: 14,
+  },
+  loadMoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 12,
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  loadMoreText: {
+    color: "#3B82F6",
+    fontSize: 14,
+    fontWeight: "600",
   },
   searchResultItem: {
     flexDirection: "row",

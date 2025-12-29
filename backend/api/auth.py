@@ -87,6 +87,15 @@ async def check_rate_limit(ip_address: str) -> Result[bool, Exception]:
     return Ok(True)
 
 
+async def reset_rate_limit(ip_address: str) -> None:
+    """Clear rate-limit counters for an IP after successful auth."""
+    cache_service = get_cache_service()
+    try:
+        await cache_service.delete("login_attempts", ip_address)
+    except Exception as exc:
+        logger.debug(f"Failed to reset rate limit for {ip_address}: {exc}")
+
+
 async def find_user_by_username(username: str) -> Result[dict[str, Any], Exception]:
     """Find a user by username with error handling."""
     db = get_db()
@@ -114,6 +123,7 @@ async def generate_auth_tokens(
             {"sub": user["username"], "role": user.get("role", "staff")},
             secret_key=auth_deps.secret_key,
             algorithm=auth_deps.algorithm,
+            expires_delta=access_token_expires,
         )
 
         # Generate refresh token using service
@@ -237,6 +247,7 @@ async def register(user: UserRegister):
             data={"sub": user.username, "role": user.role},
             secret_key=auth_deps.secret_key,
             algorithm=auth_deps.algorithm,
+            expires_delta=timedelta(minutes=15),
         )
         refresh_token = refresh_token_service.create_refresh_token(
             {"sub": user.username, "role": user.role}
@@ -283,7 +294,7 @@ async def register(user: UserRegister):
         )
 
 
-async def _check_login_rate_limit(client_ip: str) -> Result[Any, Exception]:
+async def _check_login_rate_limit(client_ip: str) -> Optional[Result[Any, Exception]]:
     logger.debug(f"Checking rate limit for IP: {client_ip}")
     rate_limit_result = await check_rate_limit(client_ip)
     if rate_limit_result.is_err:
@@ -417,6 +428,59 @@ async def login(
         return Fail(e)
 
 
+async def _find_user_by_fast_lookup(
+    db: Any, pin: str, lookup_hash: str
+) -> Optional[dict[str, Any]]:
+    """Find user via O(1) fast PIN lookup hash."""
+    found_user = await db.users.find_one({"pin_lookup_hash": lookup_hash})
+    if not found_user:
+        return None
+    # Verify secure hash to protect against SHA-256 collision
+    if not verify_password(pin, found_user.get("pin_hash", "")):
+        logger.warning(
+            f"Hash collision or data corruption for user {found_user.get('username')}"
+        )
+        return None
+    return found_user
+
+
+async def _find_user_by_legacy_scan(
+    db: Any, pin: str, lookup_hash: str
+) -> Optional[dict[str, Any]]:
+    """Find user via O(N) legacy PIN scan with opportunistic migration."""
+    users_with_pin = await db.users.find({"pin_hash": {"$exists": True}}).to_list(
+        length=1000
+    )
+    for user in users_with_pin:
+        if verify_password(pin, user.get("pin_hash", "")):
+            # Opportunistic migration for next time
+            try:
+                await db.users.update_one(
+                    {"_id": user["_id"]}, {"$set": {"pin_lookup_hash": lookup_hash}}
+                )
+                logger.info(f"Migrated user {user['username']} to fast PIN lookup")
+            except Exception as e:
+                logger.warning(f"Failed to migrate user to fast PIN lookup: {e}")
+            return user
+    return None
+
+
+async def _find_user_by_pin(db: Any, pin: str) -> Optional[dict[str, Any]]:
+    """Find user by PIN using fast lookup with legacy fallback."""
+    from backend.utils.crypto_utils import get_pin_lookup_hash
+
+    lookup_hash = get_pin_lookup_hash(pin)
+
+    # Strategy 1: O(1) Fast Lookup
+    found_user = await _find_user_by_fast_lookup(db, pin, lookup_hash)
+    if found_user:
+        return found_user
+
+    # Strategy 2: O(N) Legacy Fallback
+    logger.debug("Fast lookup failed, falling back to legacy scan...")
+    return await _find_user_by_legacy_scan(db, pin, lookup_hash)
+
+
 @router.post("/auth/login-pin", response_model=ApiResponse[TokenResponse])
 @result_to_response(success_status=200)
 async def login_with_pin(
@@ -431,10 +495,9 @@ async def login_with_pin(
     db = get_db()
     cache_service = get_cache_service()
     pin = credentials.pin
+    client_ip = request.client.host if request.client else ""
 
     logger.info("=== PIN LOGIN ATTEMPT START ===")
-
-    client_ip = request.client.host if request.client else ""
 
     # Validate PIN format (4-digit numeric)
     if not pin or len(pin) != 4 or not pin.isdigit():
@@ -447,20 +510,9 @@ async def login_with_pin(
         if rate_limit_fail:
             return rate_limit_fail
 
-        # Find user by PIN - we iterate through users with PIN and verify
+        # Find user by PIN
         logger.info("Searching for user by PIN...")
-
-        # We need to verify PIN against all users with PIN set
-        # Since we hash PINs, we iterate and verify
-        users_with_pin = await db.users.find({"pin_hash": {"$exists": True}}).to_list(
-            length=100
-        )
-
-        found_user = None
-        for user in users_with_pin:
-            if verify_password(pin, user.get("pin_hash", "")):
-                found_user = user
-                break
+        found_user = await _find_user_by_pin(db, pin)
 
         if not found_user:
             logger.warning(f"No user found with matching PIN from IP: {client_ip}")
@@ -571,4 +623,239 @@ async def get_me(
         "full_name": current_user["full_name"],
         "role": current_user["role"],
         "permissions": current_user.get("permissions", []),
+    }
+
+
+@router.get("/auth/heartbeat")
+async def heartbeat(
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Session heartbeat endpoint.
+    Returns current session status and user information.
+    """
+    from datetime import datetime, timezone
+
+    return {
+        "success": True,
+        "data": {
+            "status": "alive",
+            "username": current_user["username"],
+            "user_id": str(current_user["_id"]),
+            "session_valid": True,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    }
+
+
+@router.post("/auth/change-pin")
+async def change_pin(
+    request: Request,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Change user PIN.
+    Validates current PIN or current password before allowing change.
+    """
+    body = await request.json()
+    current_pin = body.get("current_pin")
+    current_password = body.get("current_password")
+    new_pin = body.get("new_pin")
+
+    if not new_pin:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "MISSING_FIELDS",
+                "message": "new_pin is required",
+            },
+        )
+
+    # Validate new PIN format (must be 4 digits)
+    if not new_pin.isdigit() or len(new_pin) != 4:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "INVALID_PIN_FORMAT",
+                "message": "PIN must be exactly 4 digits",
+            },
+        )
+
+    # Check for weak PINs (sequential, repeated, common)
+    weak_pins = [
+        "1234",
+        "0000",
+        "1111",
+        "2222",
+        "3333",
+        "4444",
+        "5555",
+        "6666",
+        "7777",
+        "8888",
+        "9999",
+        "4321",
+    ]
+    if new_pin in weak_pins:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "WEAK_PIN",
+                "message": "PIN is too weak. Avoid sequential or repeated digits.",
+            },
+        )
+
+    # Verify identity
+    db = get_db()
+    user = await db.users.find_one({"username": current_user["username"]})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # If verifying via current_password
+    if current_password:
+        if "hashed_password" not in user:
+            # Legacy or weird state
+            raise HTTPException(status_code=400, detail="Cannot verify password")
+        if not verify_password(current_password, user["hashed_password"]):
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "WRONG_Current_PASSWORD",
+                    "message": "Current password is incorrect",
+                },
+            )
+
+    # If verifying via current_pin
+    elif current_pin:
+        if "pin_hash" not in user:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "NO_PIN_SET",
+                    "message": "No PIN is currently set. Use password to set a new PIN.",
+                },
+            )
+        if not verify_password(current_pin, user["pin_hash"]):
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "WRONG_CURRENT_PIN",
+                    "message": "Current PIN is incorrect",
+                },
+            )
+    else:
+        # Neither provided
+        # If user has no PIN, they MUST provide password to set it
+        # If user has a PIN, they must provide one of them
+        if "pin_hash" in user:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "AUTH_REQUIRED",
+                    "message": "Please provide current_pin or current_password",
+                },
+            )
+        else:
+            # Even if no PIN is set, we prefer they verify password for sensitive action
+            # But if that's the only way... let's enforce password if they have one.
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error_code": "AUTH_REQUIRED",
+                    "message": "Please provide current_password to set a PIN",
+                },
+            )
+
+    # Update PIN
+    from backend.utils.crypto_utils import get_pin_lookup_hash
+
+    new_pin_hash = get_password_hash(new_pin)
+    pin_lookup_hash = get_pin_lookup_hash(new_pin)
+
+    await db.users.update_one(
+        {"username": current_user["username"]},
+        {
+            "$set": {
+                "pin_hash": new_pin_hash,
+                "pin_lookup_hash": pin_lookup_hash,
+                "updated_at": datetime.now(),
+            }
+        },
+    )
+
+    logger.info(f"PIN changed for user: {current_user['username']}")
+
+    return {
+        "success": True,
+        "message": "PIN updated successfully",
+    }
+
+
+@router.post("/auth/change-password")
+async def change_password(
+    request: Request,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Change user password.
+    Validates current password before allowing change.
+    """
+    body = await request.json()
+    current_password = body.get("current_password")
+    new_password = body.get("new_password")
+
+    if not current_password or not new_password:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "MISSING_FIELDS",
+                "message": "Both current_password and new_password are required",
+            },
+        )
+
+    # Validate new password strength
+    if len(new_password) < 8:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "WEAK_PASSWORD",
+                "message": "Password must be at least 8 characters",
+            },
+        )
+
+    # Verify current password
+    db = get_db()
+    user = await db.users.find_one({"username": current_user["username"]})
+
+    if not user or "hashed_password" not in user:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "NO_PASSWORD_SET",
+                "message": "No password is currently set for this user",
+            },
+        )
+
+    if not verify_password(current_password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "WRONG_CURRENT_PASSWORD",
+                "message": "Current password is incorrect",
+            },
+        )
+
+    # Update password
+    new_password_hash = get_password_hash(new_password)
+    await db.users.update_one(
+        {"username": current_user["username"]},
+        {"$set": {"hashed_password": new_password_hash, "updated_at": datetime.now()}},
+    )
+
+    logger.info(f"Password changed for user: {current_user['username']}")
+
+    return {
+        "success": True,
+        "message": "Password changed successfully",
     }

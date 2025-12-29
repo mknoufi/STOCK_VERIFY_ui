@@ -28,7 +28,7 @@ export const SettingItem: React.FC<SettingItemProps> = ({
   options = [],
   min,
   max,
-  step,
+  step: _step,
   disabled = false,
   icon,
 }) => {

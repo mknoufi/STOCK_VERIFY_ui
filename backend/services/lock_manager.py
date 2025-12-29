@@ -310,7 +310,7 @@ class LockManager:
 
 
 # Global instance (initialized with redis_service)
-_lock_manager: LockManager = None
+_lock_manager: Optional[LockManager] = None
 
 
 def get_lock_manager(redis_service):

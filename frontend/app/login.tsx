@@ -19,9 +19,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Dimensions,
   ScrollView,
-  TextInput,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -36,28 +35,42 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withRepeat,
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { useRouter } from "expo-router";
 import { useAuthStore } from "../src/store/authStore";
-import { AuroraBackground, GlassCard } from "../src/components/ui";
+import { GlassCard } from "../src/components/ui";
 import {
   modernColors,
   modernTypography,
   modernSpacing,
   modernBorderRadius,
-  modernLayout,
 } from "../src/styles/modernDesignSystem";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
 import { PremiumInput } from "../src/components/premium/PremiumInput";
 import { PremiumButton } from "../src/components/premium/PremiumButton";
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
-const APP_VERSION = "2.3.0";
+const APP_VERSION = "2.5.0";
 const PIN_LENGTH = 4;
+
+// Responsive sizing helpers
+const getResponsiveSizes = (width: number, _height: number) => {
+  const isSmallPhone = width < 375;
+  const isTablet = width >= 768;
+  const scale = isSmallPhone ? 0.85 : isTablet ? 1.15 : 1;
+
+  return {
+    iconSize: Math.round(56 * scale),
+    iconContainerSize: Math.round(96 * scale),
+    keypadButtonSize: Math.round(isSmallPhone ? 60 : isTablet ? 80 : 72),
+    keypadGap: Math.round(isSmallPhone ? 10 : isTablet ? 20 : 14),
+    pinDotSize: Math.round(isSmallPhone ? 14 : isTablet ? 20 : 16),
+    maxContentWidth: isTablet ? 480 : 420,
+    horizontalPadding: isSmallPhone ? 20 : isTablet ? 40 : 24,
+    titleSize: Math.round(34 * scale),
+    subtitleSize: Math.round(16 * scale),
+  };
+};
 
 type LoginMode = "pin" | "credentials";
 
@@ -68,7 +81,8 @@ const STORAGE_KEYS = {
 };
 
 export default function LoginScreen() {
-  const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const responsive = getResponsiveSizes(width, height);
   const { login, loginWithPin } = useAuthStore();
 
   // Login mode state (PIN is primary/default)
@@ -112,14 +126,10 @@ export default function LoginScreen() {
     // Logo entrance animation
     logoScale.value = withSpring(1, { damping: 12, stiffness: 100 });
     cardTranslateY.value = withSpring(0, { damping: 15, stiffness: 80 });
-  }, []);
+  }, [cardTranslateY, logoScale]);
 
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
-  }));
-
-  const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: cardTranslateY.value }],
   }));
 
   const pinIndicatorStyle = useAnimatedStyle(() => ({
@@ -154,6 +164,7 @@ export default function LoginScreen() {
         handlePinLogin(newPin);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [pin, loading],
   );
 
@@ -213,14 +224,15 @@ export default function LoginScreen() {
     );
   };
 
-  const toggleRememberMe = () => {
+  // Toggle functions for UI (used in credentials mode JSX below)
+  const _toggleRememberMe = () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setRememberMe(!rememberMe);
   };
 
-  const toggleShowPassword = () => {
+  const _toggleShowPassword = () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -258,14 +270,13 @@ export default function LoginScreen() {
     }
   };
 
+
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={[
-          modernColors.background.default,
-          modernColors.background.paper,
-        ]}
+        colors={["#020617", "#0F172A"]}
         style={styles.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -281,21 +292,28 @@ export default function LoginScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { minHeight: height - 60 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.contentContainer}>
+          <View style={[styles.contentContainer, {
+            maxWidth: responsive.maxContentWidth,
+            paddingHorizontal: responsive.horizontalPadding
+          }]}>
             {/* Logo & Brand Section */}
             <Animated.View
               entering={FadeInDown.delay(200).springify()}
               style={[styles.header, logoStyle]}
             >
-              <View style={styles.iconContainer}>
+              <View style={[styles.iconContainer, {
+                width: responsive.iconContainerSize,
+                height: responsive.iconContainerSize,
+                borderRadius: responsive.iconContainerSize * 0.29,
+              }]}>
                 <Ionicons
                   name="cube"
-                  size={56}
-                  color={modernColors.primary[400]}
+                  size={responsive.iconSize}
+                  color="#0EA5E9"
                 />
                 <View style={styles.iconGlow} />
               </View>
@@ -345,6 +363,7 @@ export default function LoginScreen() {
                             key={index}
                             style={[
                               styles.pinDot,
+                              { width: responsive.pinDotSize, height: responsive.pinDotSize, borderRadius: responsive.pinDotSize / 2 },
                               pin.length > index && styles.pinDotFilled,
                             ]}
                           />
@@ -352,14 +371,18 @@ export default function LoginScreen() {
                       </Animated.View>
 
                       {/* PIN Keypad */}
-                      <View style={styles.keypadContainer}>
+                      <View style={[styles.keypadContainer, { gap: responsive.keypadGap }]}>
                         {/* Row 1: 1, 2, 3 */}
-                        <View style={styles.keypadRow}>
-                          {["1", "2", "3"].map((digit) => (
+                        <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
+                          {[1, 2, 3].map((digit) => (
                             <TouchableOpacity
                               key={digit}
-                              style={styles.keypadButton}
-                              onPress={() => handlePinDigit(digit)}
+                              style={[styles.keypadButton, {
+                                width: responsive.keypadButtonSize,
+                                height: responsive.keypadButtonSize,
+                                borderRadius: responsive.keypadButtonSize / 2,
+                              }]}
+                              onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
                             >
@@ -368,53 +391,69 @@ export default function LoginScreen() {
                           ))}
                         </View>
                         {/* Row 2: 4, 5, 6 */}
-                        <View style={styles.keypadRow}>
-                          {["4", "5", "6"].map((digit) => (
+                        <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
+                          {[4, 5, 6].map((digit) => (
                             <TouchableOpacity
                               key={digit}
-                              style={styles.keypadButton}
-                              onPress={() => handlePinDigit(digit)}
+                              style={[styles.keypadButton, {
+                                width: responsive.keypadButtonSize,
+                                height: responsive.keypadButtonSize,
+                                borderRadius: responsive.keypadButtonSize / 2,
+                              }]}
+                              onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
                             >
-                              <Text style={styles.keypadText}>{digit}</Text>
+                              <Text style={styles.keypadText}>{String(digit)}</Text>
                             </TouchableOpacity>
                           ))}
                         </View>
                         {/* Row 3: 7, 8, 9 */}
-                        <View style={styles.keypadRow}>
-                          {["7", "8", "9"].map((digit) => (
+                        <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
+                          {[7, 8, 9].map((digit) => (
                             <TouchableOpacity
                               key={digit}
-                              style={styles.keypadButton}
-                              onPress={() => handlePinDigit(digit)}
+                              style={[styles.keypadButton, {
+                                width: responsive.keypadButtonSize,
+                                height: responsive.keypadButtonSize,
+                                borderRadius: responsive.keypadButtonSize / 2,
+                              }]}
+                              onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
                             >
-                              <Text style={styles.keypadText}>{digit}</Text>
+                              <Text style={styles.keypadText}>{String(digit)}</Text>
                             </TouchableOpacity>
                           ))}
                         </View>
                         {/* Row 4: Empty, 0, Backspace */}
-                        <View style={styles.keypadRow}>
-                          <View style={styles.keypadButtonEmpty} />
+                        <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
+                          <View style={{ width: responsive.keypadButtonSize, height: responsive.keypadButtonSize }} />
                           <TouchableOpacity
-                            style={styles.keypadButton}
-                            onPress={() => handlePinDigit("0")}
+                            style={[styles.keypadButton, {
+                              width: responsive.keypadButtonSize,
+                              height: responsive.keypadButtonSize,
+                              borderRadius: responsive.keypadButtonSize / 2,
+                            }]}
+                            onPress={() => handlePinDigit(String(0))}
                             disabled={loading}
                             activeOpacity={0.7}
                           >
-                            <Text style={styles.keypadText}>0</Text>
+                            <Text style={styles.keypadText}>{String(0)}</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
-                            style={styles.keypadButton}
+                            style={[styles.keypadButton, {
+                              width: responsive.keypadButtonSize,
+                              height: responsive.keypadButtonSize,
+                              borderRadius: responsive.keypadButtonSize / 2,
+                            }]}
                             onPress={handlePinBackspace}
                             disabled={loading || pin.length === 0}
                             activeOpacity={0.7}
                           >
                             <Ionicons
                               name="backspace-outline"
-                              size={24}
+                              size={Math.round(responsive.keypadButtonSize * 0.33)}
                               color={
                                 pin.length === 0
                                   ? modernColors.text.tertiary
@@ -593,14 +632,12 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
-    minHeight: SCREEN_HEIGHT - 60,
   },
   contentContainer: {
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: modernSpacing.lg,
     paddingVertical: modernSpacing.xl,
-    maxWidth: 420,
     alignSelf: "center",
     width: "100%",
   },
@@ -679,24 +716,24 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 7,
     borderWidth: 1.5,
-    borderColor: modernColors.border.medium,
+    borderColor: "rgba(255, 255, 255, 0.1)",
     backgroundColor: "rgba(15, 23, 42, 0.6)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: modernSpacing.sm,
   },
   checkboxChecked: {
-    backgroundColor: modernColors.primary[500],
-    borderColor: modernColors.primary[400],
+    backgroundColor: "#0EA5E9",
+    borderColor: "#38BDF8",
   },
   rememberMeText: {
     ...modernTypography.body.small,
-    color: modernColors.text.secondary,
+    color: "#94A3B8",
     fontWeight: "500",
   },
   forgotPasswordText: {
     ...modernTypography.body.small,
-    color: modernColors.primary[400],
+    color: "#0EA5E9",
     fontWeight: "600",
   },
   securityNotice: {
@@ -708,7 +745,7 @@ const styles = StyleSheet.create({
   },
   securityText: {
     ...modernTypography.label.small,
-    color: modernColors.text.tertiary,
+    color: "#64748B",
   },
   // PIN Keypad Styles
   pinContainer: {
@@ -726,12 +763,12 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: modernColors.border.medium,
+    borderColor: "rgba(255, 255, 255, 0.1)",
     backgroundColor: "transparent",
   },
   pinDotFilled: {
-    backgroundColor: modernColors.primary[500],
-    borderColor: modernColors.primary[400],
+    backgroundColor: "#0EA5E9",
+    borderColor: "#38BDF8",
   },
   keypadContainer: {
     gap: modernSpacing.md,
@@ -745,11 +782,11 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "rgba(30, 41, 59, 0.6)",
+    backgroundColor: "rgba(30, 41, 59, 0.4)",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: modernColors.border.light,
+    borderColor: "rgba(255, 255, 255, 0.05)",
   },
   keypadButtonEmpty: {
     width: 72,
@@ -757,12 +794,12 @@ const styles = StyleSheet.create({
   },
   keypadText: {
     ...modernTypography.h2,
-    color: modernColors.text.primary,
+    color: "#F8FAFC",
     fontWeight: "600",
   },
   loadingText: {
     ...modernTypography.body.small,
-    color: modernColors.text.secondary,
+    color: "#94A3B8",
     marginTop: modernSpacing.lg,
     textAlign: "center",
   },
@@ -776,7 +813,7 @@ const styles = StyleSheet.create({
   },
   modeSwitchText: {
     ...modernTypography.body.small,
-    color: modernColors.primary[400],
+    color: "#0EA5E9",
     fontWeight: "500",
   },
   footer: {
@@ -788,16 +825,16 @@ const styles = StyleSheet.create({
   },
   versionText: {
     ...modernTypography.label.small,
-    color: modernColors.text.tertiary,
+    color: "#64748B",
   },
   footerDivider: {
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: modernColors.border.light,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   copyrightText: {
     ...modernTypography.label.small,
-    color: modernColors.text.tertiary,
+    color: "#64748B",
   },
 });

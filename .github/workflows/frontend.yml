@@ -14,13 +14,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20.11.1
+          node-version: 18.18.2
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci
+        env:
+          SKIP_POSTINSTALL: "true"
+        run: npm install --ignore-scripts --legacy-peer-deps
 
       - name: Lint
         working-directory: frontend

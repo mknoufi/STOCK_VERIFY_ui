@@ -21,10 +21,12 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { getSessions } from "../../src/services/api/api";
-import { AuroraBackground } from "../../src/components/ui/AuroraBackground";
-import { GlassCard } from "../../src/components/ui/GlassCard";
-import { AnimatedPressable } from "../../src/components/ui/AnimatedPressable";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import {
+  GlassCard,
+  AnimatedPressable,
+  ScreenContainer,
+} from "../../src/components/ui";
+import { theme } from "../../src/styles/modernDesignSystem";
 import { useToast } from "../../src/components/feedback/ToastProvider";
 
 export default function SessionsList() {
@@ -90,13 +92,13 @@ export default function SessionsList() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "OPEN":
-        return auroraTheme.colors.warning[500];
+        return theme.colors.warning.main;
       case "CLOSED":
-        return auroraTheme.colors.success[500];
+        return theme.colors.success.main;
       case "RECONCILE":
-        return auroraTheme.colors.secondary[500];
+        return theme.colors.secondary[500];
       default:
-        return auroraTheme.colors.text.tertiary;
+        return theme.colors.text.secondary;
     }
   };
 
@@ -108,13 +110,13 @@ export default function SessionsList() {
       <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
         <AnimatedPressable
           onPress={() => router.push(`/supervisor/session/${item.id}` as any)}
-          style={{ marginBottom: auroraTheme.spacing.md }}
+          style={{ marginBottom: theme.spacing.md }}
         >
           <GlassCard
             variant="medium"
-            padding={auroraTheme.spacing.md}
-            borderRadius={auroraTheme.borderRadius.lg}
-            elevation="sm"
+            padding={theme.spacing.md}
+            borderRadius={theme.borderRadius.lg}
+            intensity={20}
           >
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
@@ -122,7 +124,7 @@ export default function SessionsList() {
                   <Ionicons
                     name="business-outline"
                     size={20}
-                    color={auroraTheme.colors.primary[500]}
+                    color={theme.colors.primary[500]}
                   />
                   <Text style={styles.warehouseName}>{item.warehouse}</Text>
                 </View>
@@ -130,7 +132,7 @@ export default function SessionsList() {
                   <Ionicons
                     name="person-outline"
                     size={14}
-                    color={auroraTheme.colors.text.secondary}
+                    color={theme.colors.text.secondary}
                   />
                   <Text style={styles.staffName}>
                     {item.staff_name || "Unknown Staff"}
@@ -157,7 +159,7 @@ export default function SessionsList() {
                 <Ionicons
                   name="cube-outline"
                   size={16}
-                  color={auroraTheme.colors.text.secondary}
+                  color={theme.colors.text.secondary}
                 />
                 <Text style={styles.statText}>{item.total_items} Items</Text>
               </View>
@@ -168,16 +170,15 @@ export default function SessionsList() {
                   size={16}
                   color={
                     hasVariance
-                      ? auroraTheme.colors.error[500]
-                      : auroraTheme.colors.text.secondary
+                      ? theme.colors.error.main
+                      : theme.colors.text.secondary
                   }
                 />
                 <Text
                   style={[
                     styles.statText,
                     hasVariance && {
-                      color: auroraTheme.colors.error[500],
-                      fontWeight: "600",
+                      color: theme.colors.error.main,
                     },
                   ]}
                 >
@@ -202,12 +203,14 @@ export default function SessionsList() {
       <GlassCard
         variant="medium"
         style={styles.emptyCard}
-        padding={auroraTheme.spacing.xl}
+        padding={theme.spacing.xl}
+        intensity={15}
       >
         <Ionicons
           name="cube-outline"
           size={64}
-          color={auroraTheme.colors.text.tertiary}
+          color={theme.colors.text.secondary}
+          style={{ opacity: 0.5 }}
         />
         <Text style={styles.emptyText}>No sessions found</Text>
       </GlassCard>
@@ -218,13 +221,13 @@ export default function SessionsList() {
     if (!loadingMore) return <View style={{ height: 20 }} />;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator color={auroraTheme.colors.primary[500]} />
+        <ActivityIndicator color={theme.colors.primary[500]} />
       </View>
     );
   };
 
   return (
-    <AuroraBackground variant="secondary" intensity="low">
+    <ScreenContainer>
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
@@ -240,7 +243,7 @@ export default function SessionsList() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -257,7 +260,7 @@ export default function SessionsList() {
             <Ionicons
               name="refresh"
               size={24}
-              color={auroraTheme.colors.primary[500]}
+              color={theme.colors.primary[500]}
             />
           </AnimatedPressable>
         </Animated.View>
@@ -266,7 +269,7 @@ export default function SessionsList() {
           <View style={styles.centerContainer}>
             <ActivityIndicator
               size="large"
-              color={auroraTheme.colors.primary[500]}
+              color={theme.colors.primary[500]}
             />
           </View>
         ) : (
@@ -282,7 +285,7 @@ export default function SessionsList() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={handleRefresh}
-                  tintColor={auroraTheme.colors.primary[500]}
+                  tintColor={theme.colors.primary[500]}
                 />
               }
               ListEmptyComponent={renderEmpty}
@@ -292,7 +295,7 @@ export default function SessionsList() {
           </View>
         )}
       </View>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -305,35 +308,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: auroraTheme.spacing.md,
-    marginBottom: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
-    fontWeight: "700",
+    fontSize: 32,
+    color: theme.colors.text.primary,
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   refreshButton: {
-    padding: auroraTheme.spacing.sm,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.sm,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: theme.borderRadius.full,
   },
   centerContainer: {
     flex: 1,
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     flex: 1,
-    paddingHorizontal: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   listContent: {
     paddingBottom: 40,
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   cardHeaderLeft: {
     flex: 1,
@@ -363,9 +364,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   warehouseName: {
-    fontSize: auroraTheme.typography.fontSize.lg,
-    fontWeight: auroraTheme.typography.fontWeight.bold,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 20,
+    color: theme.colors.text.primary,
   },
   staffContainer: {
     flexDirection: "row",
@@ -373,26 +373,25 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   staffName: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: auroraTheme.borderRadius.badge,
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
   },
   statusText: {
     fontSize: 10,
-    fontWeight: "bold",
   },
   cardBody: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.lg,
-    paddingTop: auroraTheme.spacing.sm,
+    gap: theme.spacing.lg,
+    paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: auroraTheme.colors.border.light,
+    borderTopColor: "rgba(255, 255, 255, 0.1)",
   },
   statItem: {
     flexDirection: "row",
@@ -400,30 +399,30 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statText: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   dateText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.secondary,
+    opacity: 0.7,
   },
   emptyContainer: {
-    padding: auroraTheme.spacing.xl,
+    padding: theme.spacing.xl,
     alignItems: "center",
   },
   emptyCard: {
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   emptyText: {
-    fontSize: auroraTheme.typography.fontSize.xl,
-    color: auroraTheme.colors.text.secondary,
-    fontWeight: "bold",
+    fontSize: 24,
+    color: theme.colors.text.secondary,
   },
   footerLoader: {
-    paddingVertical: auroraTheme.spacing.md,
+    paddingVertical: theme.spacing.md,
     alignItems: "center",
   },
 });

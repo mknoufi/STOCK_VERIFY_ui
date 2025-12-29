@@ -6,12 +6,10 @@
  */
 
 import React from "react";
-import { View, StyleSheet, ViewStyle, Dimensions } from "react-native";
+import { View, StyleSheet, ViewStyle, Text, TextStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext } from "../../theme/ThemeContext";
 import { PatternBackground } from "./PatternBackground";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface ThemedScreenProps {
   children: React.ReactNode;
@@ -171,7 +169,6 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
  *
  * A text component that adapts to current theme
  */
-import { Text, TextStyle } from "react-native";
 
 interface ThemedTextProps {
   children: React.ReactNode;

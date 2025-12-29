@@ -78,7 +78,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   prefix = "",
   suffix = "",
 }) => {
-  const { gradient, color } = variantColors[variant];
+  const { gradient } = variantColors[variant];
   const numericValue =
     typeof value === "number" ? value : parseFloat(value) || 0;
 

@@ -13,7 +13,7 @@ import {
   TextStyle,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { modernColors, modernBorderRadius, modernShadows } from "@/styles/modernDesignSystem";
 
 interface PerformanceDataPoint {
   timestamp: string;
@@ -50,19 +50,19 @@ const METRIC_CONFIG: Record<
   response_time: {
     label: "Response Time",
     unit: "ms",
-    color: auroraTheme.colors.primary[500],
+    color: modernColors.primary[500],
     icon: "timer-outline",
   },
   requests: {
     label: "Requests",
     unit: "",
-    color: auroraTheme.colors.success[500],
+    color: modernColors.success.main,
     icon: "chart-line",
   },
   errors: {
     label: "Errors",
     unit: "",
-    color: auroraTheme.colors.error[500],
+    color: modernColors.error.main,
     icon: "alert-circle-outline",
   },
 };
@@ -145,7 +145,7 @@ export function PerformanceChart({
           <MaterialCommunityIcons
             name="chart-areaspline"
             size={20}
-            color={auroraTheme.colors.primary[500]}
+            color={modernColors.primary[500]}
           />
           <Text style={styles.title}>{title}</Text>
         </View>
@@ -164,7 +164,7 @@ export function PerformanceChart({
         <MaterialCommunityIcons
           name="chart-areaspline"
           size={20}
-          color={auroraTheme.colors.primary[500]}
+          color={modernColors.primary[500]}
         />
         <Text style={styles.title}>{title}</Text>
       </View>
@@ -193,7 +193,7 @@ export function PerformanceChart({
           color={
             stats.totalErrors > 0
               ? METRIC_CONFIG.errors.color
-              : auroraTheme.colors.success[500]
+              : modernColors.success.main
           }
         />
       </View>
@@ -211,8 +211,8 @@ export function PerformanceChart({
               size={16}
               color={
                 activeTab === tab
-                  ? auroraTheme.colors.primary[500]
-                  : auroraTheme.colors.text.secondary
+                  ? modernColors.primary[500]
+                  : modernColors.text.secondary
               }
             />
             <Text
@@ -241,7 +241,7 @@ export function PerformanceChart({
           <MaterialCommunityIcons
             name="chart-line-variant"
             size={48}
-            color={auroraTheme.colors.text.secondary}
+            color={modernColors.text.secondary}
           />
           <Text style={styles.emptyText}>No data available</Text>
           <Text style={styles.emptySubtext}>
@@ -255,14 +255,10 @@ export function PerformanceChart({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: auroraTheme.colors.background.secondary,
-    borderRadius: 16,
+    backgroundColor: modernColors.background.elevated,
+    borderRadius: modernBorderRadius.card,
     padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    ...modernShadows.sm,
   } as ViewStyle,
   header: {
     flexDirection: "row",
@@ -273,7 +269,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
     flex: 1,
   } as TextStyle,
   statsRow: {
@@ -284,30 +280,30 @@ const styles = StyleSheet.create({
   } as ViewStyle,
   statCard: {
     flex: 1,
-    backgroundColor: auroraTheme.colors.background.tertiary,
-    borderRadius: 12,
+    backgroundColor: modernColors.background.paper, // Changed from tertiary for contrast
+    borderRadius: modernBorderRadius.md, // Changed from 12 to token
     padding: 12,
     alignItems: "center",
   } as ViewStyle,
   statValue: {
     fontSize: 18,
     fontWeight: "700",
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
     marginTop: 4,
   } as TextStyle,
   statUnit: {
     fontSize: 12,
     fontWeight: "400",
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
   } as TextStyle,
   statLabel: {
     fontSize: 11,
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
     marginTop: 2,
   } as TextStyle,
   tabs: {
     flexDirection: "row",
-    backgroundColor: auroraTheme.colors.background.tertiary,
+    backgroundColor: modernColors.background.paper, // Changed from tertiary
     borderRadius: 8,
     padding: 4,
     marginBottom: 16,
@@ -323,14 +319,14 @@ const styles = StyleSheet.create({
     gap: 4,
   } as ViewStyle,
   activeTab: {
-    backgroundColor: auroraTheme.colors.background.secondary,
+    backgroundColor: modernColors.background.elevated, // Changed to match container
   } as ViewStyle,
   tabText: {
     fontSize: 12,
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
   } as TextStyle,
   activeTabText: {
-    color: auroraTheme.colors.primary[500],
+    color: modernColors.primary[500],
     fontWeight: "600",
   } as TextStyle,
   chartContainer: {
@@ -355,7 +351,7 @@ const styles = StyleSheet.create({
   } as ViewStyle,
   chartLabel: {
     fontSize: 11,
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
     textAlign: "center",
     marginTop: 8,
   } as TextStyle,
@@ -366,12 +362,12 @@ const styles = StyleSheet.create({
   } as ViewStyle,
   emptyText: {
     fontSize: 14,
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
     marginTop: 12,
   } as TextStyle,
   emptySubtext: {
     fontSize: 12,
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
     marginTop: 4,
     textAlign: "center",
   } as TextStyle,
@@ -382,7 +378,7 @@ const styles = StyleSheet.create({
   } as ViewStyle,
   loadingText: {
     fontSize: 14,
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
   } as TextStyle,
 });
 

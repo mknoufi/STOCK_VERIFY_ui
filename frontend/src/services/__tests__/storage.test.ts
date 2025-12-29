@@ -26,22 +26,14 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   multiRemove: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockSetItem = AsyncStorage.setItem as jest.MockedFunction<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockGetItem = AsyncStorage.getItem as jest.MockedFunction<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockRemoveItem = AsyncStorage.removeItem as jest.MockedFunction<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockClear = AsyncStorage.clear as jest.MockedFunction<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockGetAllKeys = AsyncStorage.getAllKeys as jest.MockedFunction<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockMultiGet = AsyncStorage.multiGet as jest.MockedFunction<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockMultiSet = AsyncStorage.multiSet as jest.MockedFunction<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockMultiRemove = AsyncStorage.multiRemove as jest.MockedFunction<any>;
+const mockSetItem = AsyncStorage.setItem as jest.Mock<any>;
+const mockGetItem = AsyncStorage.getItem as jest.Mock<any>;
+const mockRemoveItem = AsyncStorage.removeItem as jest.Mock<any>;
+const mockClear = AsyncStorage.clear as jest.Mock<any>;
+const mockGetAllKeys = AsyncStorage.getAllKeys as jest.Mock<any>;
+const mockMultiGet = AsyncStorage.multiGet as jest.Mock<any>;
+const mockMultiSet = AsyncStorage.multiSet as jest.Mock<any>;
+const _mockMultiRemove = AsyncStorage.multiRemove as jest.Mock<any>;
 
 describe("AsyncStorageService - Basic Operations", () => {
   beforeEach(() => {

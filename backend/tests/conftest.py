@@ -1,7 +1,5 @@
 """Comprehensive pytest configuration for backend testing suite."""
 
-# ruff: noqa: E402
-
 import asyncio
 import os
 import shutil
@@ -12,16 +10,11 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from motor.motor_asyncio import AsyncIOMotorClient
 
-# Ensure backend package root is importable when running tests from project root
-BACKEND_DIR = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = BACKEND_DIR.parent
-
-for path in (str(BACKEND_DIR), str(PROJECT_ROOT)):
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-# Test environment setup
+# Test environment setup - MUST BE BEFORE BACKEND IMPORTS
 os.environ.update(
     {
         "TESTING": "true",
@@ -37,17 +30,22 @@ os.environ.update(
     }
 )
 
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from motor.motor_asyncio import AsyncIOMotorClient
-
 from backend.services.cache_service import CacheService
-
-# Import test utilities and mocks
 from backend.tests.utils.in_memory_db import (
     InMemoryDatabase,
     setup_server_with_in_memory_db,
 )
+
+# Ensure backend package root is importable when running tests from project root
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BACKEND_DIR.parent
+
+for path in (str(BACKEND_DIR), str(PROJECT_ROOT)):
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+
+# Import test utilities and mocks
 
 # Provide Path symbol for legacy tests that expect it in globals
 globals().setdefault("Path", Path)

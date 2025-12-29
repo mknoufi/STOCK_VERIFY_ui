@@ -35,14 +35,23 @@ class SecureStorage {
   }
 
   /**
-   * Safe get item
+   * Safe get item with timeout
    */
   async getItem(key: string): Promise<string | null> {
     try {
       if (Platform.OS === 'web') {
         return localStorage.getItem(key);
       }
-      return await SecureStore.getItemAsync(key, OPTIONS);
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 2000)
+      );
+
+      const getPromise = SecureStore.getItemAsync(key, OPTIONS);
+      const result = await Promise.race([getPromise, timeoutPromise]);
+
+      return result;
     } catch (error) {
       console.error('SecureStorage getItem error:', error);
       return null;

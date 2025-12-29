@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
   interpolateColor,
 } from "react-native-reanimated";
-import { colorPalette, spacing } from "@/theme/designTokens";
+import { colorPalette } from "@/theme/designTokens";
 
 export type SwitchSize = "sm" | "md" | "lg";
 
@@ -52,7 +52,7 @@ export const Switch: React.FC<SwitchProps> = ({
       damping: 15,
       stiffness: 150,
     });
-  }, [value]);
+  }, [value, progress]);
 
   const trackStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(

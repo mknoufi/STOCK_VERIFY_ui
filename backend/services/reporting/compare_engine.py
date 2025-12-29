@@ -136,7 +136,9 @@ class CompareEngine:
                     "trend": (
                         "up"
                         if absolute_diff > 0
-                        else "down" if absolute_diff < 0 else "stable"
+                        else "down"
+                        if absolute_diff < 0
+                        else "stable"
                     ),
                 }
             else:
@@ -225,7 +227,7 @@ class CompareEngine:
         """
         Calculate differences between two rows
         """
-        diff = {}
+        diff: dict[str, dict[str, Any]] = {}
 
         all_keys = set(row_a.keys()) | set(row_b.keys())
 

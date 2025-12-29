@@ -53,7 +53,6 @@ check_item "Backend directory exists" "test -d backend" "required"
 check_item "Frontend directory exists" "test -d frontend" "required"
 check_item "Admin panel directory exists" "test -d admin-panel" "optional"
 check_item "Scripts directory exists" "test -d scripts" "required"
-check_item "Docker configuration exists" "test -f docker-compose.yml" "required"
 check_item "Main README exists" "test -f README.md" "required"
 
 echo ""

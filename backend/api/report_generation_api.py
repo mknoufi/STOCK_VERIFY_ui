@@ -54,8 +54,8 @@ REPORT_TYPES = {
 
 # Request/Response Models
 class ReportFilter(BaseModel):
-    date_from: date = None
-    date_to: date = None
+    date_from: Optional[date] = None
+    date_to: Optional[date] = None
     warehouse: Optional[str] = None
     user_id: Optional[str] = None
     status: Optional[str] = None
@@ -65,7 +65,7 @@ class ReportFilter(BaseModel):
 
 class ReportRequest(BaseModel):
     report_type: str
-    filters: ReportFilter = None
+    filters: Optional[ReportFilter] = None
     format: str = Field(default="json", pattern="^(json|csv|xlsx)$")
     include_summary: bool = True
 
@@ -84,9 +84,11 @@ class ReportResponse(BaseModel):
 
 
 # Helper Functions
-def build_date_filter(date_from: date, date_to: date) -> dict:
+def build_date_filter(
+    date_from: Optional[date], date_to: Optional[date]
+) -> Optional[dict[str, Any]]:
     """Build MongoDB date range filter."""
-    date_filter = {}
+    date_filter: dict[str, Any] = {}
 
     if date_from:
         date_filter["$gte"] = datetime.combine(date_from, datetime.min.time())
@@ -108,9 +110,32 @@ def sanitize_for_csv(value: Any) -> str:
     return str(value)
 
 
+def _format_xlsx_cell_value(value: Any) -> Any:
+    """Format a value for Excel cell."""
+    if isinstance(value, (dict, list)):
+        return json.dumps(value)
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return value
+
+
+def _write_xlsx_headers(ws: Any, headers: list[str]) -> None:
+    """Write header row to Excel worksheet."""
+    for col, header in enumerate(headers, 1):
+        ws.cell(row=1, column=col, value=header)
+
+
+def _write_xlsx_data(ws: Any, data: list[dict], headers: list[str]) -> None:
+    """Write data rows to Excel worksheet."""
+    for row_idx, row in enumerate(data, 2):
+        for col_idx, header in enumerate(headers, 1):
+            value = row.get(header)
+            ws.cell(row=row_idx, column=col_idx, value=_format_xlsx_cell_value(value))
+
+
 async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
     """Generate stock summary report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.warehouse:
         query["warehouse"] = filters.warehouse
@@ -156,7 +181,7 @@ async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
 
 async def generate_variance_report(db, filters: ReportFilter) -> list[dict]:
     """Generate variance report data."""
-    query = {"variance": {"$ne": 0}}
+    query: dict[str, Any] = {"variance": {"$ne": 0}}
 
     if filters.warehouse:
         query["warehouse"] = filters.warehouse
@@ -218,7 +243,7 @@ async def generate_variance_report(db, filters: ReportFilter) -> list[dict]:
 
 async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]:
     """Generate user activity report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.user_id:
         query["user_id"] = filters.user_id
@@ -276,7 +301,7 @@ async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]
 
 async def generate_session_history_report(db, filters: ReportFilter) -> list[dict]:
     """Generate session history report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.status:
         query["status"] = filters.status
@@ -349,7 +374,7 @@ async def generate_session_history_report(db, filters: ReportFilter) -> list[dic
 
 async def generate_audit_trail_report(db, filters: ReportFilter) -> list[dict]:
     """Generate audit trail report data."""
-    query = {}
+    query: dict[str, Any] = {}
 
     if filters.user_id:
         query["user_id"] = filters.user_id
@@ -532,7 +557,6 @@ async def export_report_xlsx(
     db = get_db()
     filters = request.filters or ReportFilter()
 
-    # Generate report data
     generator = REPORT_GENERATORS[request.report_type]
     try:
         data = await generator(db, filters)
@@ -549,29 +573,14 @@ async def export_report_xlsx(
             detail="No data found for the specified filters",
         )
 
-    # Create Excel workbook
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = REPORT_TYPES[request.report_type]["name"][
-        :31
-    ]  # Excel limits sheet name to 31 chars
+    ws.title = REPORT_TYPES[request.report_type]["name"][:31]
 
-    # Write headers
     headers = list(data[0].keys())
-    for col, header in enumerate(headers, 1):
-        ws.cell(row=1, column=col, value=header)
+    _write_xlsx_headers(ws, headers)
+    _write_xlsx_data(ws, data, headers)
 
-    # Write data
-    for row_idx, row in enumerate(data, 2):
-        for col_idx, header in enumerate(headers, 1):
-            value = row.get(header)
-            if isinstance(value, (dict, list)):
-                value = json.dumps(value)
-            elif isinstance(value, datetime):
-                value = value.isoformat()
-            ws.cell(row=row_idx, column=col_idx, value=value)
-
-    # Save to buffer
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)

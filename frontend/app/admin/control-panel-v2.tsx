@@ -35,8 +35,6 @@ import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import {
   modernColors,
   modernTypography,
-  modernSpacing,
-  modernBorderRadius,
 } from "@/styles/modernDesignSystem";
 import {
   getServicesStatus,
@@ -47,6 +45,13 @@ import {
 } from "@/services/api/api";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Services that should not show toggle button (read-only status)
+
+const NON_TOGGLEABLE_SERVICES: readonly string[] = [
+  /* database */ 'database',
+  /* sql_server */ 'sql_server',
+];
 
 // Health Score Component
 const HealthScore = ({ score }: { score: number }) => {
@@ -90,6 +95,7 @@ const ServiceItem = ({
   loading: boolean;
 }) => {
   const isRunning = status?.running;
+  const showToggleButton = !NON_TOGGLEABLE_SERVICES.includes(name);
 
   return (
     <View style={styles.serviceItem}>
@@ -114,7 +120,7 @@ const ServiceItem = ({
         </View>
       </View>
 
-      {name !== "database" && name !== "sql_server" && (
+      {showToggleButton && (
         <AnimatedPressable
           onPress={onToggle}
           style={[
@@ -354,13 +360,13 @@ export default function AdminControlPanelV2() {
                   name="database"
                   status={services.mongodb}
                   loading={false}
-                  onToggle={() => {}}
+                  onToggle={() => { }}
                 />
                 <ServiceItem
                   name="sql_server"
                   status={services.sql_server}
                   loading={false}
-                  onToggle={() => {}}
+                  onToggle={() => { }}
                 />
               </View>
             </GlassCard>

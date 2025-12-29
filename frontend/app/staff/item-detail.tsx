@@ -7,50 +7,40 @@ import {
   Alert,
   Switch,
   Platform,
-  LayoutAnimation,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
-import { useAuthStore } from "@/store/authStore";
 import { useScanSessionStore } from "@/store/scanSessionStore";
 import {
-  modernColors,
-  modernSpacing,
-  modernTypography,
-  modernBorderRadius,
+  theme,
 } from "@/styles/modernDesignSystem";
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
+import { useThemeContext } from "@/theme/ThemeContext";
+import { ScreenContainer, GlassCard } from "@/components/ui";
 import { PremiumButton } from "@/components/premium/PremiumButton";
 import { PremiumInput } from "@/components/premium/PremiumInput";
-import { PremiumCard } from "@/components/premium/PremiumCard";
 import { PhotoCaptureModal } from "@/components/modals/PhotoCaptureModal";
 
 import {
   getItemByBarcode,
   refreshItemStock,
   createCountLine,
-  addQuantityToCountLine,
-  checkItemCounted,
-  getVarianceReasons,
 } from "@/services/api/api";
+import { RecentItemsService } from "@/services/enhancedFeatures";
 import { handleErrorWithRecovery } from "@/services/errorRecovery";
-import { CreateCountLinePayload, VarianceReason } from "@/types/scan";
-import { AnalyticsService } from "@/services/enhancedFeatures";
-import { scanDeduplicationService } from "@/services/scanDeduplicationService";
-import { RecentRacksService } from "@/services/recentRacksService";
+import { CreateCountLinePayload } from "@/types/scan";
+import { scanDeduplicationService } from "@/domains/inventory/services/scanDeduplicationService";
 import {
-  getDefaultMrpForItem,
-  getNormalizedMrpVariants,
   normalizeSerialValue,
 } from "@/utils/scanUtils";
-import { useItemState, usePhotoState } from "@/hooks/scan";
+import { useItemState } from "@/domains/inventory/hooks/scan";
+import { useNetworkStore } from "@/store/networkStore";
+import { localDb } from "@/db/localDb";
+import { OfflineIndicator } from "@/components/common/OfflineIndicator";
 
 const CONDITION_OPTIONS = [
   "Good",
@@ -61,11 +51,15 @@ const CONDITION_OPTIONS = [
   "Damaged",
 ];
 
+const BLIND_SESSION_TYPE = "BLIND" as const;
+
 export default function ItemDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ barcode: string; sessionId: string }>();
   const { barcode, sessionId } = params;
   const { sessionType } = useScanSessionStore();
+  const { theme: appTheme } = useThemeContext();
+  const { colors } = appTheme;
 
   // Local State
   const [loading, setLoading] = useState(false);
@@ -83,29 +77,31 @@ export default function ItemDetailScreen() {
     null,
   );
   const refreshErrorCountRef = useRef<number>(0);
+  const itemCodeRef = useRef<string | null>(null); // Track item_code for stable callback
   const MAX_REFRESH_ERRORS = 3; // Stop auto-refresh after 3 consecutive errors
   const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds (reduced frequency)
 
   // Enhanced Features
   const [serialNumbers, setSerialNumbers] = useState<string[]>([]);
-  const [isSerialEnabled, setIsSerialEnabled] = useState(false);
 
   const [isDamageEnabled, setIsDamageEnabled] = useState(false);
   const [damageQty, setDamageQty] = useState("");
-  const [damageType, setDamageType] = useState<
+  const [_damageType, _setDamageType] = useState<
     "returned" | "returnable" | "nonreturnable"
   >("returnable");
   const [damageRemark, setDamageRemark] = useState("");
   const [condition, setCondition] = useState("Good");
 
   const [mfgDate, setMfgDate] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
   const [remark, setRemark] = useState("");
+  const [nonReturnableDamageQty, setNonReturnableDamageQty] = useState("");
 
   // Photos
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [itemPhoto, setItemPhoto] = useState<any>(null);
 
-  const { resetItemState } = useItemState();
+  const { resetItemState: _resetItemState } = useItemState();
 
   // Load Item Details
   useEffect(() => {
@@ -117,18 +113,45 @@ export default function ItemDetailScreen() {
       }
       setLoading(true);
       try {
-        console.log("Fetching item from API:", barcode);
-        const itemData = await getItemByBarcode(barcode as string);
+        const { isOnline } = useNetworkStore.getState();
+        let itemData;
+
+        if (isOnline) {
+          console.log("Fetching item from API:", barcode);
+          itemData = await getItemByBarcode(barcode as string);
+        } else {
+          console.log("Offline: Fetching item from cache:", barcode);
+          // getItemByBarcode has offline cache support built in
+          itemData = await getItemByBarcode(barcode as string);
+        }
+
         if (itemData) {
-          console.log("Item data received:", itemData);
+          console.log("=== ITEM DATA RECEIVED ===");
+          console.log("Full itemData:", JSON.stringify(itemData, null, 2));
+          console.log("item_name:", itemData.item_name);
+          console.log("barcode:", itemData.barcode);
+          console.log("sales_price:", itemData.sales_price);
+          console.log("mrp:", itemData.mrp);
+          console.log("current_stock:", itemData.current_stock);
+          console.log("stock_qty:", itemData.stock_qty);
           setItem(itemData);
+
+          // Add to recent scans
+          try {
+            const itemCode = (itemData?.item_code || itemData?.barcode || barcode) as string;
+            await RecentItemsService.addRecent(itemCode, itemData);
+          } catch (e) {
+            console.warn("Failed to add to recent items", e);
+          }
+
           setMrp(
-            itemData.mrp || itemData.standard_rate
-              ? String(itemData.mrp || itemData.standard_rate)
+            itemData.mrp
+              ? String(itemData.mrp)
               : "",
           );
           setCategory(itemData.category || "");
           setSubCategory(itemData.subcategory || "");
+          // Location is handled by session store, we can still show it in logs but user requested and approved removal of manual entry and redundant badges
         } else {
           console.error("Item not found in API response");
           Alert.alert("Error", "Item not found");
@@ -147,12 +170,20 @@ export default function ItemDetailScreen() {
     } else {
       console.log("Effect triggered but no barcode yet");
     }
-  }, [barcode, router]);
+  }, [barcode, router, setLoading, setItem, setMrp, setCategory, setSubCategory, sessionId]);
+
+  // Keep itemCodeRef in sync with item.item_code
+  useEffect(() => {
+    itemCodeRef.current = item?.item_code ?? null;
+  }, [item?.item_code]);
 
   const handleRefreshStock = useCallback(
     async (silent: boolean = false) => {
+      // Use ref for stable item_code reference
+      const currentItemCode = itemCodeRef.current;
+
       // Guard against undefined item_code to prevent crashes
-      if (!item || !item.item_code) {
+      if (!currentItemCode) {
         if (!silent) {
           console.warn("handleRefreshStock called without valid item_code");
         }
@@ -167,7 +198,7 @@ export default function ItemDetailScreen() {
 
       setRefreshingStock(true);
       try {
-        const result = await refreshItemStock(item.item_code);
+        const result = await refreshItemStock(currentItemCode);
         if (result.success && result.item) {
           setItem(result.item);
           refreshErrorCountRef.current = 0; // Reset error count on success
@@ -201,14 +232,18 @@ export default function ItemDetailScreen() {
         setRefreshingStock(false);
       }
     },
-    [item],
+    [], // Stable function - uses refs internally
   );
 
   // Auto-refresh stock every 30 seconds
+  // Note: We intentionally exclude handleRefreshStock from deps to prevent infinite loop
+  // The interval is re-created only when item_code or sessionType changes
   useEffect(() => {
     if (item?.item_code && sessionType !== "BLIND") {
-      // Initial silent refresh
-      handleRefreshStock(true);
+      // Initial silent refresh (delayed to avoid race with initial load)
+      const initialRefreshTimeout = setTimeout(() => {
+        handleRefreshStock(true);
+      }, 1000);
 
       // Set up interval for auto-refresh
       refreshIntervalRef.current = setInterval(() => {
@@ -216,6 +251,7 @@ export default function ItemDetailScreen() {
       }, AUTO_REFRESH_INTERVAL);
 
       return () => {
+        clearTimeout(initialRefreshTimeout);
         if (refreshIntervalRef.current) {
           clearInterval(refreshIntervalRef.current);
           refreshIntervalRef.current = null;
@@ -223,11 +259,13 @@ export default function ItemDetailScreen() {
       };
     }
     return undefined;
-  }, [item?.item_code, sessionType, handleRefreshStock]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.item_code, sessionType]); // Exclude handleRefreshStock to prevent infinite loop
 
   // Adjust serial number inputs when quantity changes
   useEffect(() => {
-    if (isSerialEnabled) {
+    const validSerials = serialNumbers.filter(sn => sn && sn.trim().length > 0);
+    if (validSerials.length > 0) {
       const qty = parseInt(quantity) || 0;
       setSerialNumbers((prev) => {
         if (prev.length === qty) return prev;
@@ -237,7 +275,7 @@ export default function ItemDetailScreen() {
         return prev.slice(0, qty);
       });
     }
-  }, [quantity, isSerialEnabled]);
+  }, [quantity, serialNumbers]);
 
   const clampQuantity = (val: number) => {
     if (Number.isNaN(val)) return 0;
@@ -283,12 +321,27 @@ export default function ItemDetailScreen() {
       return false;
     }
 
-    if (isSerialEnabled) {
-      const validSerials = serialNumbers.filter((s) => s.trim().length > 0);
+    // Flexible date validation - just check if they LOOK like dates if provided, but allow Year only
+    const yearRegex = /^\d{4}$/;
+    const yearMonthRegex = /^\d{4}-\d{2}$/;
+    const fullDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (mfgDate && !yearRegex.test(mfgDate) && !yearMonthRegex.test(mfgDate) && !fullDateRegex.test(mfgDate)) {
+      Alert.alert("Format Issue", "Mfg Date should be YYYY, YYYY-MM, or YYYY-MM-DD");
+      return false;
+    }
+
+    if (expiryDate && !yearRegex.test(expiryDate) && !yearMonthRegex.test(expiryDate) && !fullDateRegex.test(expiryDate)) {
+      Alert.alert("Format Issue", "Expiry Date should be YYYY, YYYY-MM, or YYYY-MM-DD");
+      return false;
+    }
+
+    const validSerials = serialNumbers.filter((s) => s.trim().length > 0);
+    if (validSerials.length > 0) {
       if (validSerials.length !== Number(quantity)) {
         Alert.alert(
-          "Missing Serials",
-          `Please enter all ${quantity} serial numbers.`,
+          "Serial Mismatch",
+          `You have entered ${validSerials.length} serials but quantity is ${quantity}. They must match if serials are provided.`,
         );
         return false;
       }
@@ -356,6 +409,7 @@ export default function ItemDetailScreen() {
       const payload: CreateCountLinePayload = {
         session_id: sessionId as string,
         item_code: item.item_code,
+        batch_id: item.batch_id,
         counted_qty: Number(quantity),
         damaged_qty: isDamageEnabled ? Number(damageQty) : 0,
         item_condition: condition,
@@ -365,10 +419,15 @@ export default function ItemDetailScreen() {
         category_correction: categoryEditable ? category : undefined,
         subcategory_correction: categoryEditable ? subCategory : undefined,
         manufacturing_date: mfgDate || undefined,
+        expiry_date: expiryDate || undefined,
+        floor_no: useScanSessionStore.getState().currentFloor || undefined,
+        rack_no: useScanSessionStore.getState().currentRack || undefined,
+        non_returnable_damaged_qty: isDamageEnabled ? Number(nonReturnableDamageQty) : 0,
       };
 
-      if (isSerialEnabled) {
-        payload.serial_numbers = serialNumbers.map((sn, idx) => ({
+      const validSerials = serialNumbers.filter(sn => sn && sn.trim().length > 0);
+      if (validSerials.length > 0) {
+        payload.serial_numbers = validSerials.map((sn, idx) => ({
           serial_number: normalizeSerialValue(sn),
           label: `Serial #${idx + 1}`,
           value: normalizeSerialValue(sn),
@@ -376,16 +435,27 @@ export default function ItemDetailScreen() {
         }));
       }
 
-      await handleErrorWithRecovery(() => createCountLine(payload), {
-        context: "Save Count",
-        recovery: { maxRetries: 3 },
-        showAlert: true,
-      });
+      const { isOnline } = useNetworkStore.getState();
+
+      if (isOnline) {
+        await handleErrorWithRecovery(() => createCountLine(payload), {
+          context: "Save Count",
+          recovery: { maxRetries: 3 },
+          showAlert: true,
+        });
+      } else {
+        console.log("Offline: Saving to local DB queue...");
+        await localDb.savePendingVerification(payload);
+      }
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("Success", "Item counted successfully", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        isOnline ? "Success" : "Offline Success",
+        isOnline
+          ? "Item counted successfully"
+          : "Item saved locally. It will sync when you are back online.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
 
       // Cleanup
       scanDeduplicationService.recordScan(item.item_code);
@@ -398,8 +468,8 @@ export default function ItemDetailScreen() {
 
   if (!item && loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading Item Details...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading Item Details...</Text>
       </View>
     );
   }
@@ -407,55 +477,117 @@ export default function ItemDetailScreen() {
   if (!item) return null;
 
   return (
-    <AuroraBackground variant="secondary" intensity="medium" animated={true}>
-      <StatusBar style="light" />
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color={modernColors.text.primary}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Item Details</Text>
-      </View>
-
+    <ScreenContainer
+      header={{
+        title: "Item Details",
+        showBackButton: true,
+        showUsername: false,
+        showLogoutButton: true,
+      }}
+      backgroundType="aurora"
+      auroraVariant="primary"
+      auroraIntensity="medium"
+      contentMode="static"
+      noPadding
+      statusBarStyle="light"
+      overlay={<OfflineIndicator />}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.content}>
+          {/* Session Context Badge */}
+          <GlassCard variant="light" style={styles.sessionBadge}>
+            <View style={styles.sessionInfo}>
+              <View style={styles.locationGroup}>
+                <Ionicons name="location" size={18} color={colors.accent} />
+                <Text style={[styles.sessionText, { color: colors.text }]}>
+                  Floor: <Text style={styles.bold}>{useScanSessionStore.getState().currentFloor || "N/A"}</Text>
+                </Text>
+                <View style={styles.separator} />
+                <Text style={[styles.sessionText, { color: colors.text }]}>
+                  Rack: <Text style={styles.bold}>{useScanSessionStore.getState().currentRack || "N/A"}</Text>
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.finishRackBadge, { backgroundColor: colors.warning + '20' }]}
+                onPress={() => {
+                  Alert.alert(
+                    "Finish Rack?",
+                    "This will clear the current rack from your session. You can set a new one in the Scan screen.",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Finish Rack",
+                        onPress: () => {
+                          useScanSessionStore.getState().setRack("");
+                          router.back();
+                        },
+                        style: "destructive"
+                      }
+                    ]
+                  );
+                }}
+              >
+                <Text style={[styles.finishRackText, { color: colors.warning }]}>Finish Rack</Text>
+              </TouchableOpacity>
+            </View>
+          </GlassCard>
+
           {/* Base Info Section */}
-          <PremiumCard variant="glass" style={styles.infoCard}>
+          <GlassCard variant="medium" style={styles.infoCard}>
             <View style={styles.itemHeader}>
-              <Text style={styles.itemName}>{item.item_name}</Text>
+              <Text style={[styles.itemName, { color: colors.text }]}>{item.item_name}</Text>
               {item.barcode && (
-                <View style={styles.barcodeBadge}>
-                  <Ionicons name="barcode-outline" size={16} color={modernColors.text.secondary} />
-                  <Text style={styles.itemBarcode}>{item.barcode}</Text>
+                <View style={[styles.barcodeBadge, { backgroundColor: colors.surface }]}>
+                  <Ionicons name="barcode-outline" size={16} color={colors.textSecondary} />
+                  <Text style={[styles.itemBarcode, { color: colors.textSecondary }]}>{item.barcode}</Text>
                 </View>
               )}
               {(item.category || item.subcategory) && (
-                <Text style={styles.categoryText}>
+                <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
                   {item.category}
                   {item.subcategory && ` / ${item.subcategory}`}
                 </Text>
               )}
             </View>
 
+            {/* Additional Identifiers */}
+            {/* Additional Identifiers - Removed Batch ID and Unit badges as per user request */}
+            {(item.manual_barcode || item.unit2_barcode || item.unit_m_barcode) && (
+              <View style={[styles.identifiersContainer, { backgroundColor: colors.surface }]}>
+                {item.manual_barcode && (
+                  <View style={[styles.identifierBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                    <Text style={[styles.identifierLabel, { color: colors.muted }]}>Manual:</Text>
+                    <Text style={[styles.identifierValue, { color: colors.textSecondary }]}>{item.manual_barcode}</Text>
+                  </View>
+                )}
+                {item.unit2_barcode && (
+                  <View style={[styles.identifierBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                    <Text style={styles.identifierLabel}>Unit 2:</Text>
+                    <Text style={styles.identifierValue}>{item.unit2_barcode}</Text>
+                  </View>
+                )}
+                {item.unit_m_barcode && (
+                  <View style={[styles.identifierBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                    <Text style={styles.identifierLabel}>Unit M:</Text>
+                    <Text style={styles.identifierValue}>{item.unit_m_barcode}</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
             {/* Stock Qty Row with inline Refresh Button */}
-            {sessionType !== "BLIND" && (
+            {sessionType !== BLIND_SESSION_TYPE ? (
               <View style={styles.stockRow}>
-                <View style={styles.stockItem}>
+                <View style={[styles.stockItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <Text style={styles.stockLabel}>Stock Qty</Text>
                   <View style={styles.stockValueRow}>
-                    <Text style={styles.stockValue}>
+                    <Text style={[styles.stockValue, { color: colors.text }]}>
                       {item.current_stock || item.stock_qty || 0}
                     </Text>
-                    <Text style={styles.stockUom}>
+                    <Text style={[styles.stockUom, { color: colors.textSecondary }]}>
                       {item.uom_name || "N/A"}
                     </Text>
                     <TouchableOpacity
@@ -469,51 +601,53 @@ export default function ItemDetailScreen() {
                       {refreshingStock ? (
                         <ActivityIndicator
                           size="small"
-                          color={modernColors.secondary[500]}
+                          color={colors.accent}
                         />
                       ) : (
                         <Ionicons
                           name="refresh"
                           size={16}
-                          color={modernColors.secondary[500]}
+                          color={colors.accent}
                         />
                       )}
                     </TouchableOpacity>
                   </View>
                 </View>
               </View>
-            )}
+            ) : null}
 
             {/* Sale Price & MRP Row */}
             <View style={styles.priceRow}>
-              <View style={styles.priceItem}>
-                <Text style={styles.priceLabel}>Sale Price</Text>
-                <Text style={styles.priceValue}>
-                  ₹{item.sales_price || item.standard_rate || "0.00"}
+              <View style={[styles.priceItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>Sale Price</Text>
+                <Text style={[styles.priceValue, { color: colors.text }]}>
+                  ₹{item.sales_price || "0.00"}
                 </Text>
               </View>
-              <View style={styles.priceItem}>
-                <Text style={styles.priceLabel}>MRP</Text>
-                <Text style={styles.priceValue}>₹{item.mrp || "0.00"}</Text>
+              <View style={[styles.priceItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>MRP</Text>
+                <Text style={[styles.priceValue, { color: colors.text }]}>₹{item.mrp || "0.00"}</Text>
               </View>
             </View>
 
-            {sessionType === "BLIND" && (
-              <View style={styles.blindModeIndicator}>
+            {sessionType === BLIND_SESSION_TYPE ? (
+              <View style={[styles.blindModeIndicator, { backgroundColor: colors.warning + '20', borderColor: colors.warning }]}>
                 <Ionicons
                   name="eye-off"
                   size={16}
-                  color={modernColors.warning.main}
+                  color={colors.warning}
                 />
-                <Text style={styles.blindModeText}>BLIND MODE</Text>
+                <Text style={[styles.blindModeText, { color: colors.warning }]}>BLIND MODE</Text>
               </View>
-            )}
+            ) : null}
 
             <View style={styles.toggleRow}>
-              <Text style={styles.sectionTitle}>Edit Details</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Edit Details</Text>
               <Switch
                 value={categoryEditable}
                 onValueChange={setCategoryEditable}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                thumbColor={Platform.OS === "android" ? colors.surface : undefined}
               />
             </View>
 
@@ -533,8 +667,13 @@ export default function ItemDetailScreen() {
             )}
 
             <View style={styles.toggleRow}>
-              <Text style={styles.label}>MRP: {mrp}</Text>
-              <Switch value={mrpEditable} onValueChange={setMrpEditable} />
+              <Text style={[styles.label, { color: colors.text }]}>MRP: {mrp}</Text>
+              <Switch
+                value={mrpEditable}
+                onValueChange={setMrpEditable}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                thumbColor={Platform.OS === "android" ? colors.surface : undefined}
+              />
             </View>
             {mrpEditable && (
               <PremiumInput
@@ -544,21 +683,22 @@ export default function ItemDetailScreen() {
                 keyboardType="numeric"
               />
             )}
-          </PremiumCard>
 
-          {/* Count Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Count Entry</Text>
+            {/* Floor/Rack inputs removed as they are now session-bound and automated */}
+          </GlassCard>
+
+          {/* Count Entry Section - Prominent and easy to use */}
+          <GlassCard variant="strong" style={styles.countSection}>
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 16 }]}>Count Entry</Text>
             <View style={styles.countRow}>
               <TouchableOpacity
-                style={styles.countButton}
+                style={[styles.countButton, { backgroundColor: colors.surfaceElevated }]}
                 onPress={() => decrementQty(1)}
                 onLongPress={() => decrementQty(5)}
                 delayLongPress={250}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                accessibilityLabel="Decrease quantity"
               >
-                <Text style={styles.countButtonText}>−</Text>
+                <Text style={[styles.countButtonText, { color: colors.text }]}>−</Text>
               </TouchableOpacity>
 
               <View style={styles.countInputWrapper}>
@@ -566,7 +706,6 @@ export default function ItemDetailScreen() {
                   label="Physical Quantity"
                   value={quantity}
                   onChangeText={(t) => {
-                    // allow only digits
                     const cleaned = t.replace(/[^0-9]/g, "");
                     setQuantity(cleaned);
                   }}
@@ -577,34 +716,45 @@ export default function ItemDetailScreen() {
               </View>
 
               <TouchableOpacity
-                style={styles.countButton}
+                style={[styles.countButton, { backgroundColor: colors.surfaceElevated }]}
                 onPress={() => incrementQty(1)}
                 onLongPress={() => incrementQty(5)}
                 delayLongPress={250}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                accessibilityLabel="Increase quantity"
               >
-                <Text style={styles.countButtonText}>＋</Text>
+                <Text style={[styles.countButtonText, { color: colors.text }]}>＋</Text>
               </TouchableOpacity>
             </View>
-            {sessionType !== "BLIND" && (
-              <Text style={styles.varianceText}>
+            {sessionType !== BLIND_SESSION_TYPE && (
+              <Text style={[styles.varianceText, { color: colors.textSecondary }]}>
                 Variance: {Number(quantity || 0) - Number(item?.current_stock || item?.stock_qty || 0)}
               </Text>
             )}
-          </View>
+          </GlassCard>
 
-          {/* Serial Numbers */}
-          <View style={styles.section}>
-            <View style={styles.rowBetween}>
-              <Text style={styles.sectionHeader}>Serial Numbers (Unique)</Text>
-              <Switch
-                value={isSerialEnabled}
-                onValueChange={setIsSerialEnabled}
-              />
+          {/* Quantities & Details Section - Moved Serial, Mfg, Condition here for better visibility */}
+          <GlassCard variant="light" style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Verification Details</Text>
             </View>
-            {isSerialEnabled &&
-              serialNumbers.map((sn, index) => (
+
+            {/* Serial Numbers - Always visible for quick entry */}
+            <View style={styles.detailItemRow}>
+              <View style={styles.labelContainer}>
+                <Ionicons name="keypad-outline" size={20} color={colors.accent} style={styles.detailIcon} />
+                <Text style={[styles.label, { color: colors.text }]}>Serial Numbers</Text>
+              </View>
+            </View>
+            <View style={styles.expandedContent}>
+              {serialNumbers.length === 0 && (
+                <PremiumButton
+                  title="Add Serial Number"
+                  onPress={addSerialField}
+                  variant="outline"
+                  size="small"
+                />
+              )}
+              {serialNumbers.map((sn, index) => (
                 <PremiumInput
                   key={index}
                   label={`Serial #${index + 1}`}
@@ -613,47 +763,70 @@ export default function ItemDetailScreen() {
                   placeholder="Scan or enter SN"
                 />
               ))}
-            {isSerialEnabled && (
-              <PremiumButton
-                title="Add Field"
-                onPress={addSerialField}
-                variant="outline"
-                size="small"
-              />
-            )}
-          </View>
+              {serialNumbers.length > 0 && (
+                <PremiumButton
+                  title="Add Another"
+                  onPress={addSerialField}
+                  variant="ghost"
+                  size="small"
+                />
+              )}
+            </View>
 
-          {/* Manufacturing Date */}
-          <View style={styles.section}>
-            <PremiumInput
-              label="Manufacturing Date (YYYY-MM-DD)"
-              value={mfgDate}
-              onChangeText={setMfgDate}
-              placeholder="Optional"
-            />
-          </View>
+            {/* Manufacturing & Expiry - Always visible or easier to access */}
+            <View style={styles.detailItemRow}>
+              <View style={styles.labelContainer}>
+                <Ionicons name="calendar-outline" size={20} color={colors.accent} style={styles.detailIcon} />
+                <Text style={[styles.label, { color: colors.text }]}>Dates (Mfg/Exp)</Text>
+              </View>
+            </View>
+            <View style={styles.expandedContent}>
+              <View style={styles.row}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <PremiumInput
+                    label="Mfg Date"
+                    value={mfgDate}
+                    onChangeText={setMfgDate}
+                    placeholder="YYYY or YYYY-MM"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <PremiumInput
+                    label="Exp Date"
+                    value={expiryDate}
+                    onChangeText={setExpiryDate}
+                    placeholder="YYYY or YYYY-MM"
+                  />
+                </View>
+              </View>
+              <Text style={[styles.helpText, { color: colors.textSecondary }]}>
+                Supports Year only or Year-Month
+              </Text>
+            </View>
 
-          {/* Condition & Damage */}
-          <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Condition & Remarks</Text>
-            {/* Simplified condition selector - could be improved but keeping functional for now */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              {CONDITION_OPTIONS.map(c => (
-                <TouchableOpacity
-                  key={c}
-                  onPress={() => setCondition(c)}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 20,
-                    backgroundColor: condition === c ? modernColors.primary[500] : "rgba(255,255,255,0.1)",
-                    marginRight: 8,
-                  }}
-                >
-                  <Text style={{ color: "white", fontWeight: "600" }}>{c}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            {/* Condition */}
+            <View style={styles.conditionContainer}>
+              <Text style={[styles.subLabel, { color: colors.textSecondary }]}>Item Condition</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.conditionScroll}>
+                {CONDITION_OPTIONS.map(c => (
+                  <TouchableOpacity
+                    key={c}
+                    onPress={() => setCondition(c)}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 16,
+                      backgroundColor: condition === c ? colors.accent : colors.surfaceElevated,
+                      marginRight: 8,
+                      borderWidth: 1,
+                      borderColor: condition === c ? colors.accent : colors.border,
+                    }}
+                  >
+                    <Text style={{ color: condition === c ? "#FFFFFF" : colors.textSecondary, fontWeight: "600", fontSize: 13 }}>{c}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
 
             <PremiumInput
               label="Remarks"
@@ -661,25 +834,42 @@ export default function ItemDetailScreen() {
               onChangeText={setRemark}
               placeholder="Any observation..."
             />
+          </GlassCard>
 
+          {/* Damage Reporting Section */}
+          <View style={styles.section}>
             <View style={styles.rowBetween}>
-              <Text style={styles.label}>Report Damage?</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Report Damage?</Text>
               <Switch
                 value={isDamageEnabled}
                 onValueChange={setIsDamageEnabled}
+                trackColor={{ false: colors.border, true: colors.danger }}
+                thumbColor={Platform.OS === "android" ? "#fff" : undefined}
               />
             </View>
 
             {isDamageEnabled && (
-              <View style={styles.damageBox}>
+              <View style={[styles.damageBox, { backgroundColor: colors.danger + '10', borderColor: colors.danger + '30' }]}>
+                <View style={[styles.row, { gap: 12 }]}>
+                  <View style={{ flex: 1 }}>
+                    <PremiumInput
+                      label="Returnable"
+                      value={damageQty}
+                      onChangeText={setDamageQty}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <PremiumInput
+                      label="Non-Returnable"
+                      value={nonReturnableDamageQty}
+                      onChangeText={setNonReturnableDamageQty}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
                 <PremiumInput
-                  label="Damaged Quantity"
-                  value={damageQty}
-                  onChangeText={setDamageQty}
-                  keyboardType="numeric"
-                />
-                <PremiumInput
-                  label="Remark / Type"
+                  label="Damage Type / Remark"
                   value={damageRemark}
                   onChangeText={setDamageRemark}
                   placeholder="Describe damage"
@@ -713,7 +903,7 @@ export default function ItemDetailScreen() {
         onClose={() => setShowPhotoModal(false)}
         onCapture={setItemPhoto}
       />
-    </AuroraBackground>
+    </ScreenContainer >
   );
 }
 
@@ -725,224 +915,445 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: modernColors.background.default,
+    backgroundColor: theme.colors.background.default,
   },
   loadingText: {
-    ...modernTypography.h3,
-    color: modernColors.text.primary,
+    fontSize: 18,
+    fontWeight: "600",
+    color: theme.colors.text.primary,
+    letterSpacing: 0.5,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingTop: Platform.OS === "ios" ? 60 : 20,
-    paddingHorizontal: modernSpacing.lg,
-    paddingBottom: modernSpacing.md,
-    backgroundColor: modernColors.background.paper,
-    borderBottomWidth: 1,
-    borderBottomColor: modernColors.border.light,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: "transparent",
   },
   backButton: {
-    padding: modernSpacing.sm,
-    marginRight: modernSpacing.md,
+    padding: 8,
+    marginRight: 16,
   },
   headerTitle: {
-    ...modernTypography.h3,
-    color: modernColors.text.primary,
+    fontSize: 22,
+    fontWeight: "800",
+    color: theme.colors.text.primary,
+    letterSpacing: -0.5,
   },
   content: {
-    padding: modernSpacing.lg,
-    paddingBottom: 100,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 140,
   },
+  // Premium Info Card
   infoCard: {
-    marginBottom: modernSpacing.xl,
-    padding: modernSpacing.md,
+    marginBottom: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    borderRadius: 18,
   },
   itemHeader: {
-    marginBottom: modernSpacing.md,
+    marginBottom: 16,
   },
   itemName: {
-    ...modernTypography.h4,
-    color: modernColors.text.primary,
-    marginBottom: modernSpacing.xs,
+    fontSize: 20,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
+    marginBottom: 8,
+    letterSpacing: -0.3,
+    lineHeight: 26,
   },
   itemBarcode: {
-    ...modernTypography.body.medium,
-    color: modernColors.text.primary,
+    fontSize: 13,
+    color: theme.colors.text.primary,
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    letterSpacing: 1,
   },
   barcodeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginBottom: modernSpacing.sm,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   categoryText: {
-    ...modernTypography.body.small,
-    color: modernColors.text.secondary,
-    marginBottom: modernSpacing.sm,
+    fontSize: 13,
+    color: theme.colors.text.secondary,
+    marginTop: 4,
+    fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
+  // Identifiers Section
+  identifiersContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+  identifierBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  identifierLabel: {
+    color: theme.colors.text.tertiary,
+    marginRight: 5,
+    fontSize: 10,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  identifierValue: {
+    color: theme.colors.text.secondary,
+    fontWeight: "600",
+    fontSize: 10,
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+  },
+  // Stock Display - Premium Style
   stockRow: {
-    marginBottom: modernSpacing.md,
+    marginBottom: 14,
   },
   stockItem: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: modernBorderRadius.md,
-    padding: modernSpacing.md,
+    backgroundColor: "rgba(14, 165, 233, 0.08)",
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    borderWidth: 1,
+    borderColor: "rgba(14, 165, 233, 0.2)",
   },
   stockLabel: {
-    ...modernTypography.label.medium,
-    color: modernColors.text.secondary,
-    marginBottom: modernSpacing.xs,
+    fontSize: 11,
+    color: theme.colors.text.secondary,
+    marginBottom: 4,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
   stockValueRow: {
     flexDirection: "row",
     alignItems: "center",
   },
   stockValue: {
-    ...modernTypography.h2,
-    color: modernColors.secondary[500],
-    marginRight: modernSpacing.sm,
+    fontSize: 36,
+    fontWeight: "700",
+    color: "#0EA5E9",
+    marginRight: 6,
+    letterSpacing: -0.5,
   },
   stockUom: {
-    ...modernTypography.body.medium,
-    color: modernColors.secondary[500],
-    marginRight: modernSpacing.sm,
+    fontSize: 16,
+    color: "#0EA5E9",
+    marginRight: 10,
+    fontWeight: "600",
+    opacity: 0.8,
   },
   miniRefreshButton: {
-    padding: modernSpacing.xs,
+    padding: 10,
     marginLeft: "auto",
+    backgroundColor: "rgba(14, 165, 233, 0.15)",
+    borderRadius: 12,
   },
   refreshButtonDisabled: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
+  // Price Cards - Premium Style
   priceRow: {
     flexDirection: "row",
-    gap: modernSpacing.md,
-    marginBottom: modernSpacing.md,
+    gap: 10,
+    marginBottom: 14,
   },
   priceItem: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: modernBorderRadius.md,
-    padding: modernSpacing.md,
+    backgroundColor: "rgba(15, 23, 42, 0.5)",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
   },
   priceLabel: {
-    ...modernTypography.label.medium,
-    color: modernColors.text.secondary,
-    marginBottom: modernSpacing.xs,
+    fontSize: 11,
+    color: theme.colors.text.secondary,
+    marginBottom: 4,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
   priceValue: {
-    ...modernTypography.h5,
-    color: modernColors.text.primary,
+    fontSize: 18,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
+    letterSpacing: -0.3,
   },
+  // Blind Mode Indicator
   blindModeIndicator: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(245, 158, 11, 0.1)",
-    borderRadius: modernBorderRadius.sm,
-    padding: modernSpacing.sm,
-    marginBottom: modernSpacing.md,
-    gap: modernSpacing.xs,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 14,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(245, 158, 11, 0.25)",
   },
   blindModeText: {
-    ...modernTypography.label.medium,
-    color: modernColors.warning.main,
-    fontWeight: "600",
+    fontSize: 12,
+    color: "#F59E0B",
+    fontWeight: "700",
+    letterSpacing: 1.5,
   },
   itemCode: {
-    ...modernTypography.body.small,
-    color: modernColors.text.secondary,
+    fontSize: 12,
+    color: theme.colors.text.secondary,
+    fontWeight: "500",
   },
+  // Detail Rows - Premium
   detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: modernSpacing.md,
+    marginBottom: 20,
   },
   detailItem: {
     alignItems: "center",
   },
   detailLabel: {
-    ...modernTypography.label.medium,
-    color: modernColors.text.secondary,
+    fontSize: 12,
+    color: theme.colors.text.secondary,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4,
   },
   detailValue: {
-    ...modernTypography.h4,
-    color: modernColors.secondary[500],
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#0EA5E9",
+    letterSpacing: -0.5,
   },
+  // Sections - Enhanced
   section: {
-    marginBottom: modernSpacing.xl,
+    marginBottom: 20,
   },
   sectionHeader: {
-    ...modernTypography.h5,
-    color: modernColors.text.primary,
-    marginBottom: modernSpacing.md,
+    fontSize: 14,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
+    marginBottom: 14,
+    letterSpacing: -0.2,
   },
   toggleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: modernSpacing.md,
+    marginVertical: 14,
+    paddingVertical: 2,
   },
   label: {
-    ...modernTypography.body.medium,
-    color: modernColors.text.primary,
+    fontSize: 14,
+    color: theme.colors.text.primary,
+    fontWeight: "600",
   },
+  // Damage Box - Enhanced
   damageBox: {
-    marginTop: modernSpacing.md,
-    padding: modernSpacing.md,
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
-    borderRadius: modernBorderRadius.md,
+    marginTop: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(239, 68, 68, 0.06)",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.2)",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   rowBetween: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: modernSpacing.sm,
+    marginBottom: 10,
   },
   mainInput: {
-    fontSize: 28,
+    fontSize: 32,
     textAlign: "center",
+    fontWeight: "700",
   },
   submitButton: {
-    marginTop: modernSpacing.xl,
+    marginTop: 28,
+    borderRadius: 16,
+    overflow: "hidden",
   },
   sectionTitle: {
-    ...modernTypography.h5,
-    color: modernColors.text.primary,
+    fontSize: 16,
+    fontWeight: "800",
+    color: theme.colors.text.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
-  // Count controls layout
+  // Count Controls - Premium Style
   countRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: modernSpacing.md,
+    gap: 12,
   },
   countButton: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: modernBorderRadius.lg,
-    paddingVertical: modernSpacing.lg,
-    paddingHorizontal: modernSpacing.xl,
+    backgroundColor: "rgba(14, 165, 233, 0.1)",
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
     alignItems: "center",
     justifyContent: "center",
     minWidth: 64,
+    borderWidth: 1,
+    borderColor: "rgba(14, 165, 233, 0.2)",
   },
   countButtonText: {
-    ...modernTypography.h2,
-    color: modernColors.text.primary,
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#0EA5E9",
   },
   countInputWrapper: {
     flex: 1,
+    minWidth: 120,
   },
   varianceText: {
-    marginTop: modernSpacing.sm,
-    ...modernTypography.body.medium,
-    color: modernColors.text.secondary,
+    marginTop: 8,
+    fontSize: 13,
+    color: theme.colors.text.secondary,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  countSection: {
+    marginBottom: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    borderRadius: 18,
+  },
+  sectionCard: {
+    marginBottom: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+  },
+  detailItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  detailToggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  detailIcon: {
+    width: 28,
+    textAlign: 'center',
+  },
+  expandedContent: {
+    paddingBottom: 10,
+  },
+  conditionContainer: {
+    marginTop: 18,
+    marginBottom: 10,
+  },
+  subLabel: {
+    fontSize: 13,
+    marginBottom: 14,
+    fontWeight: '600',
+    color: theme.colors.text.secondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  conditionScroll: {
+    marginBottom: 10,
+  },
+  // Session Badge - Premium
+  sessionBadge: {
+    marginBottom: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: "rgba(14, 165, 233, 0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(14, 165, 233, 0.12)",
+  },
+  sessionInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  locationGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  sessionText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: theme.colors.text.secondary,
+  },
+  bold: {
+    fontWeight: '800',
+    color: theme.colors.text.primary,
+  },
+  separator: {
+    width: 1,
+    height: 16,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    marginHorizontal: 4,
+  },
+  finishRackBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: "rgba(34, 197, 94, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(34, 197, 94, 0.25)",
+  },
+  finishRackText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: "#22C55E",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  helpText: {
+    fontSize: 11,
+    marginTop: 6,
+    fontStyle: 'italic',
+    color: theme.colors.text.tertiary,
+    lineHeight: 16,
   },
 });

@@ -6,7 +6,7 @@ Sanitizes input to prevent XSS and injection attacks
 import html
 import logging
 import re
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import status
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -64,7 +64,7 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
 
     async def _sanitize_query_params(
         self, request: Request, request_id: str
-    ) -> JSONResponse:
+    ) -> Optional[JSONResponse]:
         if self.sanitize_query and request.query_params:
             for key, value in request.query_params.items():
                 if self._is_dangerous(str(value)):
@@ -86,7 +86,7 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
 
     async def _sanitize_json_body(
         self, request: Request, request_id: str
-    ) -> JSONResponse:
+    ) -> Optional[JSONResponse]:
         if self.sanitize_json and request.method in ["POST", "PUT", "PATCH"]:
             try:
                 body = await request.json()
@@ -109,7 +109,9 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
                 pass
         return None
 
-    def _sanitize_headers(self, request: Request, request_id: str) -> JSONResponse:
+    def _sanitize_headers(
+        self, request: Request, request_id: str
+    ) -> Optional[JSONResponse]:
         if self.sanitize_headers:
             for header_name, header_value in request.headers.items():
                 if self._is_dangerous(str(header_value)):
@@ -158,7 +160,7 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
             return False
 
         value_lower = value.lower()
-        for pattern, description in self.DANGEROUS_PATTERNS:
+        for pattern, _description in self.DANGEROUS_PATTERNS:
             if re.search(pattern, value_lower, re.IGNORECASE | re.DOTALL):
                 return True
 

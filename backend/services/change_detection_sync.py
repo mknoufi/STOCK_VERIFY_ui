@@ -110,47 +110,7 @@ class ChangeDetectionSyncService:
                     {"error": str(e), "last_sync_time": last_sync_time},
                 )
             )
-        # If ModifiedDate column exists, use it for change detection
-        # Otherwise, we'll fetch all and compare with MongoDB
-        if last_sync_time:
-            # SQL Server 2008 R2 compatible - use ModifiedDate if exists
-            return """
-                SELECT DISTINCT
-                    P.ProductID as item_id,
-                    P.ProductCode as item_code,
-                    COALESCE(PB.RefItemName, P.ProductName) as item_name,
-                    CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
-                    PB.Stock as stock_qty,
-                    COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
-                FROM dbo.Products P
-                INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                WHERE P.IsActive = 1
-                  AND PB.AutoBarcode IS NOT NULL
-                  AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
-                  AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
-                  AND (COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) > ? OR PB.ModifiedDate > ?)
-                ORDER BY P.ProductCode
-            """
-        else:
-            # First sync - get all active products with 6-digit AutoBarcode
-            return """
-                SELECT DISTINCT
-                    P.ProductID as item_id,
-                    P.ProductCode as item_code,
-                    COALESCE(PB.RefItemName, P.ProductName) as item_name,
-                    CAST(PB.AutoBarcode AS VARCHAR(50)) as barcode,
-                    COALESCE(PB.MRP, PB.StdSalesPrice, P.LastSalesRate, 0.0) as mrp,
-                    PB.Stock as stock_qty,
-                    COALESCE(P.ModifiedDate, P.CreatedDate, GETDATE()) as last_modified
-                FROM dbo.Products P
-                INNER JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                WHERE P.IsActive = 1
-                  AND PB.AutoBarcode IS NOT NULL
-                  AND LEN(CAST(PB.AutoBarcode AS VARCHAR(50))) = 6
-                  AND ISNUMERIC(CAST(PB.AutoBarcode AS VARCHAR(50))) = 1
-                ORDER BY P.ProductCode
-            """
+            # unreachable fallback query removed (after return)
 
     def _build_update_operations(
         self, changes: list[ProductData]

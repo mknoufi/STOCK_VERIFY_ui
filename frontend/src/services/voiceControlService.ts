@@ -5,16 +5,7 @@
  */
 
 import { Platform } from "react-native";
-
-// Dynamic import for expo-speech to handle optional dependency
-let Speech: any = null;
-
-// Try to load expo-speech if available
-try {
-  Speech = require("expo-speech");
-} catch (error) {
-  console.warn("expo-speech not available, voice features will be disabled");
-}
+import * as Speech from "expo-speech";
 
 export type VoiceCommand =
   | "scan"
@@ -59,15 +50,10 @@ class VoiceControlService {
   async initialize(options?: VoiceControlOptions): Promise<void> {
     this.options = { ...this.options, ...options };
 
-    if (!Speech) {
-      console.warn("Voice control not available - expo-speech not installed");
-      return;
-    }
-
     // Check if speech is available
     try {
-      const available = await Speech.isSpeakingAsync();
-      console.log("Voice control initialized. Speech available:", !available);
+      const isSpeaking = await Speech.isSpeakingAsync();
+      console.log("Voice control initialized. Speech system active:", !isSpeaking);
     } catch (error) {
       console.warn("Voice control initialization check failed:", error);
     }
@@ -77,7 +63,7 @@ class VoiceControlService {
     text: string,
     options?: { rate?: number; pitch?: number },
   ): Promise<void> {
-    if (!this.options.feedbackEnabled || !Speech) return;
+    if (!this.options.feedbackEnabled) return;
 
     try {
       await Speech.speak(text, {
@@ -91,8 +77,6 @@ class VoiceControlService {
   }
 
   async stop(): Promise<void> {
-    if (!Speech) return;
-
     try {
       await Speech.stop();
       this.isListening = false;

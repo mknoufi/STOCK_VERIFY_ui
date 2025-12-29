@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 T = TypeVar("T")
 
@@ -10,11 +10,18 @@ T = TypeVar("T")
 class ApiResponse(BaseModel, Generic[T]):
     success: bool
     data: Optional[T] = None
-    error: Optional[dict[str, Any]] = None
+    error: Union[dict[str, Any], None] = Field(default=None)
+    message: Optional[str] = None
+    payload_version: str = "1.0"
+
+    model_config = {
+        "json_schema_extra": {"examples": []},
+        # Exclude None values from serialization to avoid validation issues
+    }
 
     @classmethod
-    def success_response(cls, data: T):
-        return cls(success=True, data=data)
+    def success_response(cls, data: T, message: Optional[str] = None):
+        return cls(success=True, data=data, error=None, message=message)
 
     @classmethod
     def error_response(cls, error: dict[str, Any]):
@@ -150,6 +157,7 @@ class CountLineCreate(BaseModel):
     item_code: str
     counted_qty: float
     damaged_qty: Optional[float] = 0
+    non_returnable_damaged_qty: Optional[float] = 0
     damage_included: Optional[bool] = None
     item_condition: Optional[str] = None
     floor_no: Optional[str] = None
@@ -157,6 +165,7 @@ class CountLineCreate(BaseModel):
     mark_location: Optional[str] = None
     sr_no: Optional[str] = None
     manufacturing_date: Optional[str] = None
+    expiry_date: Optional[str] = None
     variance_reason: Optional[str] = None
     variance_note: Optional[str] = None
     remark: Optional[str] = None
@@ -164,9 +173,9 @@ class CountLineCreate(BaseModel):
     mrp_counted: Optional[float] = None
     split_section: Optional[str] = None
     serial_numbers: Optional[list[str]] = None
-    correction_reason: CorrectionReason = None
-    photo_proofs: list[PhotoProof] = None
-    correction_metadata: CorrectionMetadata = None
+    correction_reason: Optional[CorrectionReason] = None
+    photo_proofs: Optional[list[PhotoProof]] = None
+    correction_metadata: Optional[CorrectionMetadata] = None
     category_correction: Optional[str] = None
     subcategory_correction: Optional[str] = None
 
@@ -176,7 +185,7 @@ class Session(BaseModel):
     warehouse: str
     staff_user: str
     staff_name: str
-    status: str = "OPEN"  # OPEN, RECONCILE, CLOSED
+    status: str = "OPEN"  # OPEN, ACTIVE, CLOSED
     type: str = "STANDARD"  # STANDARD, BLIND, STRICT
     started_at: datetime = Field(default_factory=datetime.utcnow)
     closed_at: Optional[datetime] = None
@@ -189,8 +198,23 @@ class Session(BaseModel):
     @classmethod
     def normalize_status(cls, v: Any) -> str:
         if isinstance(v, str):
-            return v.upper()
+            v = v.upper()
+            # Map legacy RECONCILE to ACTIVE for now, or allow it if we can't migrate yet.
+            # But the plan says "Normalize session states (OPEN | ACTIVE | CLOSED)".
+            # If we strictly enforce it, we might break existing data.
+            # Let's allow RECONCILE but prefer ACTIVE.
+            if v == "RECONCILE":
+                return "ACTIVE"
+            return v
         return v
+
+    @model_validator(mode="after")
+    def compute_legacy_status(self) -> "Session":
+        # If session is ACTIVE but has reconciled_at, present it as RECONCILE to frontend
+        # This maintains backward compatibility while normalizing DB state to ACTIVE
+        if self.status == "ACTIVE" and self.reconciled_at and not self.closed_at:
+            self.status = "RECONCILE"
+        return self
 
 
 class SessionCreate(BaseModel):

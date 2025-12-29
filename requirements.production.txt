@@ -31,7 +31,6 @@ python-json-logger==2.0.7
 sentry-sdk[fastapi]==2.18.0
 
 # Performance
-aioredis==2.0.1
 aiocache==0.12.2  # TODO: Update to 0.12.3
 ujson==5.10.0
 orjson==3.10.0
@@ -53,3 +52,4 @@ wheel>=0.40.0
 psutil==6.1.0
 pandas==2.2.3
 xlsxwriter==3.2.0
+reportlab>=4.2.5

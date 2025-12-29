@@ -16,7 +16,7 @@ export {
 } from "./api";
 
 // Auth services
-export { useAuthStore } from "./authStore";
+export { useAuthStore } from "../store/authStore";
 
 // Toast service
 export {
@@ -31,6 +31,11 @@ export { NotesAPI } from "./notesApi";
 
 // Haptics
 export { haptics } from "./haptics";
+export {
+  hapticService,
+  HapticService,
+  scanHaptics,
+} from "./hapticService";
 
 // Version Service
 export { checkVersion, getBackendVersion, versionApi } from "./versionService";

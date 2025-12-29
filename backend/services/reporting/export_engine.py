@@ -7,9 +7,84 @@ import csv
 import io
 import logging
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from openpyxl.worksheet.worksheet import Worksheet
 
 logger = logging.getLogger(__name__)
+
+
+def _xlsx_write_metadata(ws: "Worksheet", snapshot: dict[str, Any]) -> int:
+    """Write metadata section to worksheet, return next row number."""
+    from openpyxl.styles import Font
+
+    ws["A1"] = "Snapshot Report"
+    ws["A1"].font = Font(bold=True, size=14)
+    ws["A2"] = "Name:"
+    ws["B2"] = snapshot.get("name", "Untitled")
+    ws["A3"] = "Created:"
+    ws["B3"] = datetime.fromtimestamp(snapshot["created_at"]).isoformat()
+    ws["A4"] = "Created By:"
+    ws["B4"] = snapshot.get("created_by", "Unknown")
+    return 6
+
+
+def _xlsx_write_summary(
+    ws: "Worksheet", summary: dict[str, Any], start_row: int
+) -> int:
+    """Write summary section to worksheet, return next row number."""
+    from openpyxl.styles import Font
+
+    ws[f"A{start_row}"] = "Summary"
+    ws[f"A{start_row}"].font = Font(bold=True)
+    row_num = start_row + 1
+    for key, value in summary.items():
+        ws[f"A{row_num}"] = key
+        ws[f"B{row_num}"] = value
+        row_num += 1
+    return row_num + 1
+
+
+def _xlsx_write_data(
+    ws: "Worksheet", row_data: list[dict[str, Any]], start_row: int
+) -> int:
+    """Write data rows to worksheet, return next row number."""
+    from openpyxl.styles import Font, PatternFill
+
+    if not row_data:
+        return start_row
+
+    headers = list(row_data[0].keys())
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=start_row, column=col_num, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(
+            start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
+        )
+
+    row_num = start_row + 1
+    for row in row_data:
+        for col_num, header in enumerate(headers, 1):
+            ws.cell(row=row_num, column=col_num, value=row.get(header, ""))
+        row_num += 1
+    return row_num
+
+
+def _xlsx_auto_column_widths(ws: "Worksheet") -> None:
+    """Auto-adjust column widths based on content."""
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                cell_len = len(str(cell.value)) if cell.value else 0
+                if cell_len > max_length:
+                    max_length = cell_len
+            except (AttributeError, TypeError, ValueError) as e:
+                logger.debug(f"Could not calculate cell width: {e}")
+                continue
+        ws.column_dimensions[column_letter].width = min(max_length + 2, 50)
 
 
 class ExportEngine:
@@ -81,7 +156,6 @@ class ExportEngine:
         """
         try:
             from openpyxl import Workbook
-            from openpyxl.styles import Font, PatternFill
         except ImportError:
             raise ImportError("openpyxl is required for XLSX export")
 
@@ -89,73 +163,15 @@ class ExportEngine:
         ws = wb.active
         ws.title = "Report"
 
-        row_num = 1
+        # Write sections using helpers
+        row_num = _xlsx_write_metadata(ws, snapshot)
 
-        # Metadata
-        ws[f"A{row_num}"] = "Snapshot Report"
-        ws[f"A{row_num}"].font = Font(bold=True, size=14)
-        row_num += 1
-
-        ws[f"A{row_num}"] = "Name:"
-        ws[f"B{row_num}"] = snapshot.get("name", "Untitled")
-        row_num += 1
-
-        ws[f"A{row_num}"] = "Created:"
-        ws[f"B{row_num}"] = datetime.fromtimestamp(snapshot["created_at"]).isoformat()
-        row_num += 1
-
-        ws[f"A{row_num}"] = "Created By:"
-        ws[f"B{row_num}"] = snapshot.get("created_by", "Unknown")
-        row_num += 2
-
-        # Summary
         if include_summary and snapshot.get("summary"):
-            ws[f"A{row_num}"] = "Summary"
-            ws[f"A{row_num}"].font = Font(bold=True)
-            row_num += 1
+            row_num = _xlsx_write_summary(ws, snapshot["summary"], row_num)
 
-            for key, value in snapshot["summary"].items():
-                ws[f"A{row_num}"] = key
-                ws[f"B{row_num}"] = value
-                row_num += 1
-
-            row_num += 1
-
-        # Data
         row_data = snapshot.get("row_data", [])
-
-        if row_data:
-            # Headers
-            headers = list(row_data[0].keys())
-            for col_num, header in enumerate(headers, 1):
-                cell = ws.cell(row=row_num, column=col_num, value=header)
-                cell.font = Font(bold=True)
-                cell.fill = PatternFill(
-                    start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
-                )
-
-            row_num += 1
-
-            # Rows
-            for row in row_data:
-                for col_num, header in enumerate(headers, 1):
-                    ws.cell(row=row_num, column=col_num, value=row.get(header, ""))
-                row_num += 1
-
-        # Auto-adjust column widths
-        for column in ws.columns:
-            max_length = 0
-            column_letter = column[0].column_letter
-            for cell in column:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-                except (AttributeError, TypeError, ValueError) as e:
-                    # Skip cells with problematic values
-                    logger.debug(f"Could not calculate cell width: {e}")
-                    continue
-            adjusted_width = min(max_length + 2, 50)
-            ws.column_dimensions[column_letter].width = adjusted_width
+        _xlsx_write_data(ws, row_data, row_num)
+        _xlsx_auto_column_widths(ws)
 
         # Save to bytes
         output = io.BytesIO()

@@ -10,7 +10,7 @@
  */
 
 import React from "react";
-import { View, StyleSheet, ViewStyle, StyleProp } from "react-native";
+import { View, StyleSheet, ViewStyle, StyleProp, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { auroraTheme } from "../../theme/auroraTheme";
@@ -48,6 +48,9 @@ export const GlassCard = ({
   const glassStyle = variant ? auroraTheme.glass[variant] : {};
   const shadowStyle =
     elevation !== "none" ? auroraTheme.shadows[elevation] : {};
+  const useBlur = Platform.OS !== "web";
+  const fallbackBackground =
+    (glassStyle as ViewStyle).backgroundColor || "rgba(30, 41, 59, 0.4)";
 
   if (withGradientBorder) {
     return (
@@ -69,18 +72,32 @@ export const GlassCard = ({
             },
           ]}
         >
-          <BlurView
-            intensity={intensity}
-            tint={tint}
-            style={[
-              styles.blur,
-              {
-                borderRadius: borderRadius - (glassStyle.borderWidth || 1),
-              },
-            ]}
-          >
-            <View style={[styles.content, { padding }]}>{children}</View>
-          </BlurView>
+          {useBlur ? (
+            <BlurView
+              intensity={intensity}
+              tint={tint}
+              style={[
+                styles.blur,
+                {
+                  borderRadius: borderRadius - (glassStyle.borderWidth || 1),
+                },
+              ]}
+            >
+              <View style={[styles.content, { padding }]}>{children}</View>
+            </BlurView>
+          ) : (
+            <View
+              style={[
+                styles.webFallbackSurface,
+                {
+                  borderRadius: borderRadius - (glassStyle.borderWidth || 1),
+                  backgroundColor: fallbackBackground,
+                },
+              ]}
+            >
+              <View style={[styles.content, { padding }]}>{children}</View>
+            </View>
+          )}
         </LinearGradient>
       </View>
     );
@@ -99,9 +116,22 @@ export const GlassCard = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
     >
-      <BlurView intensity={intensity} tint={tint} style={styles.blur}>
-        <View style={[styles.content, { padding }]}>{children}</View>
-      </BlurView>
+      {useBlur ? (
+        <BlurView intensity={intensity} tint={tint} style={styles.blur}>
+          <View style={[styles.content, { padding }]}>{children}</View>
+        </BlurView>
+      ) : (
+        <View
+          style={[
+            styles.webFallbackSurface,
+            {
+              backgroundColor: fallbackBackground,
+            },
+          ]}
+        >
+          <View style={[styles.content, { padding }]}>{children}</View>
+        </View>
+      )}
     </View>
   );
 };
@@ -117,8 +147,11 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   blur: {
-    width: "100%",
-    height: "100%",
+    // Let blur view size itself based on content
+  },
+  webFallbackSurface: {
+    // Web safe fallback when native blur isn't available
+    backgroundColor: "rgba(30, 41, 59, 0.4)",
   },
   content: {
     // Padding applied dynamically

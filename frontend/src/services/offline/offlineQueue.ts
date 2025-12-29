@@ -93,6 +93,18 @@ export async function flushOfflineQueue(
 
     while (queue.length > 0) {
       const item = queue[0]!;
+
+      // Safety check: Drop auth requests that might have been queued
+      // This prevents infinite loops if a login request got stuck in the queue
+      if (item.url && item.url.includes("/auth/")) {
+        if (__DEV__) {
+          console.warn("OfflineQueue: Dropping queued auth request", item.url);
+        }
+        queue = queue.slice(1);
+        await saveQueue(queue);
+        continue;
+      }
+
       try {
         await client.request({
           method: item.method,
@@ -109,8 +121,16 @@ export async function flushOfflineQueue(
         if (!error.response) {
           break;
         }
-        // Conflict or validation error: record and drop this item, continue
-        if (status && (status === 409 || status === 422 || status === 400)) {
+        // Conflict, validation error, or AUTH error: record and drop this item, continue
+        // We treat 401/403 as fatal for queued items to avoid infinite retry loops
+        if (
+          status &&
+          (status === 409 ||
+            status === 422 ||
+            status === 400 ||
+            status === 401 ||
+            status === 403)
+        ) {
           await addConflict(item, error.response?.data);
           processed += 1; // we consider it handled (moved to conflicts)
         } else {
@@ -141,7 +161,7 @@ export function startOfflineQueue(client: AxiosInstance): void {
 
   // Subscribe to network changes to auto-flush
   if (!unsubscribeNetwork) {
-    unsubscribeNetwork = useNetworkStore.subscribe((state: any, prev: any) => {
+    unsubscribeNetwork = useNetworkStore.subscribe((state: any, _prev: any) => {
       const online = state.isOnline && (state.isInternetReachable ?? true);
       onlineManager.setOnline(online);
       if (online && !flushing) {
@@ -196,6 +216,12 @@ export function attachOfflineQueueInterceptors(client: AxiosInstance): void {
 
       // Only handle mutating requests
       if (!isMutatingMethod(method)) {
+        return Promise.reject(error);
+      }
+
+      // Exclude auth endpoints from offline queue
+      // It is dangerous to queue login/auth requests as they can cause loops or security issues
+      if (cfg.url && cfg.url.includes("/auth/")) {
         return Promise.reject(error);
       }
 

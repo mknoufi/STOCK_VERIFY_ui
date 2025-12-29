@@ -25,15 +25,15 @@ import * as Sharing from "expo-sharing";
 import {
   ItemVerificationAPI,
   VarianceItem,
-} from "../../src/services/api/itemVerificationApi";
-import { ItemFilters, FilterValues } from "../../src/components/ItemFilters";
+} from "../../src/domains/inventory/services/itemVerificationApi";
+import { ItemFilters, FilterValues } from "../../src/domains/inventory/components/ItemFilters";
 import { exportVariancesToCSV, downloadCSV } from "../../src/utils/csvExport";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
 
 const getLocalFileUri = (filename: string) => {
   const baseDir =
@@ -159,9 +159,7 @@ export default function VariancesScreen() {
   const renderVarianceItem = ({ item }: { item: VarianceItem }) => {
     // Determine status color based on variance
     const isPositive = item.variance > 0;
-    const statusColor = isPositive
-      ? auroraTheme.colors.success[500]
-      : auroraTheme.colors.error[500];
+    const statusColor = isPositive ? theme.colors.success.main : theme.colors.error.main;
 
     const varianceSign = isPositive ? "+" : "";
 
@@ -177,12 +175,12 @@ export default function VariancesScreen() {
             },
           });
         }}
-        style={{ marginBottom: auroraTheme.spacing.md }}
+        style={{ marginBottom: theme.spacing.md }}
       >
         <GlassCard
-          variant="light"
-          padding={auroraTheme.spacing.md}
-          borderRadius={auroraTheme.borderRadius.lg}
+          intensity={15}
+          padding={theme.spacing.md}
+          borderRadius={theme.borderRadius.lg}
           style={{
             borderColor: `${statusColor}40`, // Low opacity border matching status
             borderWidth: 1,
@@ -201,7 +199,7 @@ export default function VariancesScreen() {
             >
               <Text style={[styles.varianceBadgeText, { color: statusColor }]}>
                 {varianceSign}
-                {item.variance.toFixed(2)}
+                {(item.variance ?? 0).toFixed(2)}
               </Text>
             </View>
           </View>
@@ -211,7 +209,7 @@ export default function VariancesScreen() {
               <View style={styles.qtyItem}>
                 <Text style={styles.qtyLabel}>System Qty</Text>
                 <Text style={styles.qtyValue}>
-                  {item.system_qty.toFixed(2)}
+                  {(item.system_qty ?? 0).toFixed(2)}
                 </Text>
               </View>
               <View style={styles.divider} />
@@ -220,10 +218,10 @@ export default function VariancesScreen() {
                 <Text
                   style={[
                     styles.qtyValue,
-                    { color: auroraTheme.colors.text.primary },
+                    { color: theme.colors.text.primary },
                   ]}
                 >
-                  {item.verified_qty.toFixed(2)}
+                  {(item.verified_qty ?? 0).toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -233,7 +231,7 @@ export default function VariancesScreen() {
                 <Ionicons
                   name="location-outline"
                   size={14}
-                  color={auroraTheme.colors.text.tertiary}
+                  color={theme.colors.text.tertiary}
                 />
                 <Text style={styles.locationText}>
                   {[item.floor, item.rack].filter(Boolean).join(" / ")}
@@ -252,7 +250,7 @@ export default function VariancesScreen() {
               <Ionicons
                 name="person-outline"
                 size={12}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
               <Text style={styles.verificationInfoText}>
                 Verified by {item.verified_by}
@@ -267,7 +265,7 @@ export default function VariancesScreen() {
   };
 
   return (
-    <AuroraBackground variant="secondary" intensity="medium" animated>
+    <ScreenContainer>
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
@@ -283,7 +281,7 @@ export default function VariancesScreen() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -303,14 +301,14 @@ export default function VariancesScreen() {
             disabled={variances.length === 0}
           >
             <GlassCard
-              variant="medium"
+              intensity={20}
               padding={8}
-              borderRadius={auroraTheme.borderRadius.full}
+              borderRadius={theme.borderRadius.full}
             >
               <Ionicons
                 name="download-outline"
                 size={20}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </GlassCard>
           </AnimatedPressable>
@@ -319,9 +317,9 @@ export default function VariancesScreen() {
         {/* Filters */}
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <GlassCard
-            variant="light"
-            padding={auroraTheme.spacing.sm}
-            style={{ marginBottom: auroraTheme.spacing.md }}
+            intensity={10}
+            padding={theme.spacing.sm}
+            style={{ marginBottom: theme.spacing.md }}
           >
             <ItemFilters
               onFilterChange={setFilters}
@@ -336,7 +334,7 @@ export default function VariancesScreen() {
             <Ionicons
               name="checkmark-done-circle-outline"
               size={64}
-              color={auroraTheme.colors.success[500]}
+              color={theme.colors.success.main}
             />
             <Text style={styles.emptyText}>No variances found</Text>
             <Text style={styles.emptySubtext}>
@@ -358,8 +356,8 @@ export default function VariancesScreen() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={handleRefresh}
-                  tintColor={auroraTheme.colors.primary[500]}
-                  colors={[auroraTheme.colors.primary[500]]}
+                  tintColor={theme.colors.primary[500]}
+                  colors={[theme.colors.primary[500]]}
                 />
               }
               onEndReached={handleLoadMore}
@@ -369,7 +367,7 @@ export default function VariancesScreen() {
                   <View style={{ paddingVertical: 20 }}>
                     <ActivityIndicator
                       size="small"
-                      color={auroraTheme.colors.primary[500]}
+                      color={theme.colors.primary[500]}
                     />
                   </View>
                 ) : (
@@ -380,7 +378,7 @@ export default function VariancesScreen() {
           </View>
         )}
       </View>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -388,7 +386,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 60,
-    paddingHorizontal: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   centered: {
     flex: 1,
@@ -400,67 +398,64 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
+    fontSize: 32,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   exportButton: {
     //
   },
   listContent: {
-    paddingBottom: auroraTheme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
   },
   varianceHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   varianceHeaderLeft: {
     flex: 1,
   },
   itemName: {
-    fontFamily: auroraTheme.typography.fontFamily.body,
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   itemCode: {
-    fontFamily: auroraTheme.typography.fontFamily.body,
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 14,
+    color: theme.colors.text.tertiary,
   },
   varianceBadge: {
-    borderRadius: auroraTheme.borderRadius.full,
-    paddingHorizontal: auroraTheme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.sm,
     paddingVertical: 4,
     minWidth: 60,
     alignItems: "center",
     justifyContent: "center",
   },
   varianceBadgeText: {
-    fontSize: auroraTheme.typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: "bold",
   },
   varianceDetails: {
@@ -469,11 +464,11 @@ const styles = StyleSheet.create({
   qtyRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
-    marginBottom: auroraTheme.spacing.sm,
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     backgroundColor: "rgba(255,255,255,0.03)",
-    padding: auroraTheme.spacing.sm,
-    borderRadius: auroraTheme.borderRadius.sm,
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
   },
   qtyItem: {
     flex: 1,
@@ -481,64 +476,64 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: "80%",
-    backgroundColor: auroraTheme.colors.border.light,
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   qtyLabel: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.tertiary,
     marginBottom: 2,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   qtyValue: {
-    fontSize: auroraTheme.typography.fontSize.lg,
+    fontSize: 20,
     fontWeight: "600",
-    color: auroraTheme.colors.text.secondary, // Subtle for System, Primary/Highlight for Verified
+    color: theme.colors.text.secondary, // Subtle for System, Primary/Highlight for Verified
   },
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.xs,
+    gap: theme.spacing.xs,
     marginBottom: 4,
   },
   locationText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 12,
+    color: theme.colors.text.secondary,
   },
   categoryText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.tertiary,
     fontStyle: "italic",
-    marginBottom: auroraTheme.spacing.xs,
+    marginBottom: theme.spacing.xs,
     marginTop: 2,
   },
   verificationInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.xs,
-    marginTop: auroraTheme.spacing.xs,
-    paddingTop: auroraTheme.spacing.xs,
+    gap: theme.spacing.xs,
+    marginTop: theme.spacing.xs,
+    paddingTop: theme.spacing.xs,
     borderTopWidth: 1,
-    borderTopColor: auroraTheme.colors.border.light,
+    borderTopColor: "rgba(255,255,255,0.05)",
   },
   verificationInfoText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.tertiary,
   },
   loadingText: {
-    marginTop: auroraTheme.spacing.md,
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.secondary,
+    marginTop: theme.spacing.md,
+    fontSize: 16,
+    color: theme.colors.text.secondary,
   },
   emptyText: {
-    fontSize: auroraTheme.typography.fontSize.lg,
+    fontSize: 20,
     fontWeight: "500",
-    color: auroraTheme.colors.text.secondary,
-    marginTop: auroraTheme.spacing.md,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing.md,
   },
   emptySubtext: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.tertiary,
-    marginTop: auroraTheme.spacing.xs,
+    fontSize: 16,
+    color: theme.colors.text.tertiary,
+    marginTop: theme.spacing.xs,
   },
 });

@@ -3,14 +3,13 @@
 import json
 import logging
 import os
-import socket
 import sys
 import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar, cast
 
 import jwt
 import uvicorn
@@ -38,6 +37,21 @@ from backend.api.dynamic_reports_api import dynamic_reports_router  # noqa: E402
 from backend.api.enhanced_item_api import (  # noqa: E402
     enhanced_item_router as items_router,
 )
+from backend.api.schemas import (  # noqa: E402
+    ApiResponse,
+    CorrectionMetadata,
+    CorrectionReason,
+    CountLineCreate,
+    PhotoProof,
+    Session,
+    SessionCreate,
+    TokenResponse,
+    UnknownItem,
+    UnknownItemCreate,
+    UserInfo,
+    UserLogin,
+    UserRegister,
+)
 from backend.api.enhanced_item_api import init_enhanced_api  # noqa: E402
 from backend.api.erp_api import init_erp_api  # noqa: E402
 from backend.api.erp_api import router as erp_router  # noqa: E402
@@ -47,6 +61,7 @@ from backend.api.item_verification_api import (  # noqa: E402
     init_verification_api,
     verification_router,
 )
+from backend.api.locations_api import router as locations_router  # noqa: E402
 from backend.api.logs_api import router as logs_router  # noqa: E402
 from backend.api.mapping_api import router as mapping_router  # noqa: E402
 from backend.api.metrics_api import metrics_router, set_monitoring_service  # noqa: E402
@@ -56,6 +71,7 @@ from backend.api.permissions_api import permissions_router  # noqa: E402
 from backend.api.rack_api import router as rack_router  # noqa: E402
 from backend.api.report_generation_api import report_generation_router  # noqa: E402
 from backend.api.reporting_api import router as reporting_router  # noqa: E402
+from backend.api.search_api import router as search_router  # noqa: E402
 from backend.api.security_api import security_router  # noqa: E402
 from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
 from backend.api.session_management_api import (  # noqa: E402
@@ -72,7 +88,10 @@ from backend.api.sync_management_api import (  # noqa: E402
     sync_management_router,
 )
 from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
+from backend.api.user_settings_api import router as user_settings_router  # noqa: E402
+from backend.api.preferences_api import router as preferences_router  # noqa: E402
 from backend.api.variance_api import router as variance_router  # noqa: E402
+from backend.api.websocket_api import router as websocket_router  # noqa: E402
 from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
 from backend.config import settings  # noqa: E402
 from backend.db.indexes import create_indexes  # noqa: E402
@@ -124,7 +143,9 @@ from backend.utils.api_utils import (  # noqa: E402
 )
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
+from backend.utils.port_detector import PortDetector  # noqa: E402
 from backend.utils.result import Fail, Ok, Result  # noqa: E402
+from backend.utils.tracing import init_tracing, instrument_fastapi_app  # noqa: E402
 
 # Initialize a fallback logger early so optional import blocks can log safely
 logger = logging.getLogger("stock-verify")
@@ -166,23 +187,18 @@ logger = setup_logging(
     app_name=settings.APP_NAME,
 )
 
+# Initialize tracing (optional, env-gated). This only configures the
+# tracer provider and exporter; FastAPI is instrumented later once the
+# app instance is created.
+try:
+    init_tracing()
+except Exception:
+    # Never break startup due to tracing
+    pass
+
 T = TypeVar("T")
 E = TypeVar("E", bound=Exception)
 R = TypeVar("R")
-
-
-class ApiResponse(BaseModel, Generic[T]):
-    success: bool
-    data: Optional[T] = None
-    error: dict[str, Optional[Any]] = None
-
-    @classmethod
-    def success_response(cls, data: T):
-        return cls(success=True, data=data)
-
-    @classmethod
-    def error_response(cls, error: dict[str, Any]):
-        return cls(success=False, error=error)
 
 
 RUNNING_UNDER_PYTEST = "pytest" in sys.modules
@@ -218,7 +234,7 @@ mongo_url = settings.MONGO_URL
 mongo_url = mongo_url.rstrip("/")
 # Do not append pool options to URL; keep them in client options only
 
-mongo_client_options = {
+mongo_client_options: dict[str, Any] = {
     "maxPoolSize": 100,
     "minPoolSize": 10,
     "maxIdleTimeMS": 45000,
@@ -279,7 +295,7 @@ except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # SECURITY: settings from backend.config already enforce strong secrets
-SECRET_KEY: str = settings.JWT_SECRET or "unsafe-secret-key"
+SECRET_KEY: str = cast(str, settings.JWT_SECRET)
 ALGORITHM = settings.JWT_ALGORITHM
 security = HTTPBearer(auto_error=False)
 
@@ -532,42 +548,46 @@ async def lifespan(app: FastAPI):  # noqa: C901
     # Initialize auto-sync manager (monitors SQL Server and auto-syncs when available)
     global auto_sync_manager
     try:
+        sql_configured = bool(getattr(sql_connector, "config", None))
         auto_sync_manager = AutoSyncManager(
             sql_connector=sql_connector,
             mongo_db=db,
             sync_interval=getattr(settings, "ERP_SYNC_INTERVAL", 3600),
             check_interval=30,  # Check connection every 30 seconds
-            enabled=True,
+            enabled=sql_configured,
         )
 
-        # Set callbacks for admin notifications
-        async def on_connection_restored():
-            logger.info(
-                "📢 SQL Server connection restored - sync will start automatically"
+        if sql_configured:
+            # Set callbacks for admin notifications
+            async def on_connection_restored():
+                logger.info(
+                    "📢 SQL Server connection restored - sync will start automatically"
+                )
+                # Could send notification to admin panel here
+
+            async def on_connection_lost():
+                logger.warning("📢 SQL Server connection lost - sync paused")
+                # Could send notification to admin panel here
+
+            async def on_sync_complete():
+                logger.info("📢 Sync completed successfully")
+                # Could send notification to admin panel here
+
+            auto_sync_manager.set_callbacks(
+                on_connection_restored=on_connection_restored,
+                on_connection_lost=on_connection_lost,
+                on_sync_complete=on_sync_complete,
             )
-            # Could send notification to admin panel here
 
-        async def on_connection_lost():
-            logger.warning("📢 SQL Server connection lost - sync paused")
-            # Could send notification to admin panel here
-
-        async def on_sync_complete():
-            logger.info("📢 Sync completed successfully")
-            # Could send notification to admin panel here
-
-        auto_sync_manager.set_callbacks(
-            on_connection_restored=on_connection_restored,
-            on_connection_lost=on_connection_lost,
-            on_sync_complete=on_sync_complete,
-        )
-
-        await auto_sync_manager.start()
-        logger.info("✅ Auto-sync manager started")
+            await auto_sync_manager.start()
+            logger.info("✅ Auto-sync manager started")
+        else:
+            logger.info("Auto-sync manager disabled: SQL Server not configured")
 
         # Register with API router
         set_auto_sync_manager(auto_sync_manager)
-    except Exception as e:
-        logger.warning(f"Auto-sync manager initialization failed: {str(e)}")
+    except Exception:
+        logger.warning("Auto-sync manager initialization failed", exc_info=True)
         auto_sync_manager = None
 
     # Start ERP sync service (full sync) - legacy, kept for backward compatibility
@@ -584,8 +604,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
     try:
         database_health_service.start()
         logger.info("OK: Database health monitoring started")
-    except Exception as e:
-        logger.error(f"Failed to start database health monitoring: {str(e)}")
+    except Exception:
+        logger.exception("Failed to start database health monitoring")
 
     # Initialize cache
     try:
@@ -594,15 +614,15 @@ async def lifespan(app: FastAPI):  # noqa: C901
         logger.info(
             f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}"
         )
-    except Exception as e:
-        logger.warning(f"Cache service error: {str(e)}")
+    except Exception:
+        logger.warning("Cache service error", exc_info=True)
 
     # Initialize auth dependencies for routers (avoid circular imports)
     try:
         init_auth_dependencies(db, SECRET_KEY, ALGORITHM)
         logger.info("OK: Auth dependencies initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize auth dependencies: {str(e)}")
+    except Exception:
+        logger.exception("Failed to initialize auth dependencies")
 
     # Initialize new feature services
     global scheduled_export_service, sync_conflicts_service
@@ -611,8 +631,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
         scheduled_export_service = ScheduledExportService(db)
         scheduled_export_service.start()
         logger.info("✓ Scheduled export service started")
-    except Exception as e:
-        logger.error(f"Failed to start scheduled export service: {str(e)}")
+    except Exception:
+        logger.exception("Failed to start scheduled export service")
 
     # Initialize enrichment service
     if EnrichmentService is not None and init_enrichment_api is not None:
@@ -620,8 +640,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
             enrichment_svc = EnrichmentService(db)
             init_enrichment_api(enrichment_svc)
             logger.info("✓ Enrichment service initialized")
-        except Exception as e:
-            logger.error(f"Failed to initialize enrichment service: {str(e)}")
+        except Exception:
+            logger.exception("Failed to initialize enrichment service")
 
     # Initialize enterprise services
     if ENTERPRISE_AVAILABLE:
@@ -630,36 +650,36 @@ async def lifespan(app: FastAPI):  # noqa: C901
             app.state.enterprise_audit = EnterpriseAuditService(db)
             await app.state.enterprise_audit.initialize()
             logger.info("✓ Enterprise audit service initialized")
-        except Exception as e:
+        except Exception:
             app.state.enterprise_audit = None
-            logger.warning(f"Enterprise audit service not available: {str(e)}")
+            logger.warning("Enterprise audit service not available", exc_info=True)
 
         try:
             # Enterprise Security Service
             app.state.enterprise_security = EnterpriseSecurityService(db)
             await app.state.enterprise_security.initialize()
             logger.info("✓ Enterprise security service initialized")
-        except Exception as e:
+        except Exception:
             app.state.enterprise_security = None
-            logger.warning(f"Enterprise security service not available: {str(e)}")
+            logger.warning("Enterprise security service not available", exc_info=True)
 
         try:
             # Feature Flags Service
             app.state.feature_flags = FeatureFlagService(db)
             await app.state.feature_flags.initialize()
             logger.info("✓ Feature flags service initialized")
-        except Exception as e:
+        except Exception:
             app.state.feature_flags = None
-            logger.warning(f"Feature flags service not available: {str(e)}")
+            logger.warning("Feature flags service not available", exc_info=True)
 
         try:
             # Data Governance Service
             app.state.data_governance = DataGovernanceService(db)
             await app.state.data_governance.initialize()
             logger.info("✓ Data governance service initialized")
-        except Exception as e:
+        except Exception:
             app.state.data_governance = None
-            logger.warning(f"Data governance service not available: {str(e)}")
+            logger.warning("Data governance service not available", exc_info=True)
     else:
         # Set None for enterprise services if not available
         app.state.enterprise_audit = None
@@ -671,15 +691,15 @@ async def lifespan(app: FastAPI):  # noqa: C901
         # Sync conflicts service
         sync_conflicts_service = SyncConflictsService(db)
         logger.info("✓ Sync conflicts service initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize sync conflicts service: {str(e)}")
+    except Exception:
+        logger.exception("Failed to initialize sync conflicts service")
 
     try:
         # Set monitoring service for metrics API
         set_monitoring_service(monitoring_service)
         logger.info("✓ Monitoring service connected to metrics API")
-    except Exception as e:
-        logger.error(f"Failed to set monitoring service: {str(e)}")
+    except Exception:
+        logger.exception("Failed to set monitoring service")
 
     try:
         # Initialize ERP API
@@ -697,7 +717,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     try:
         # Initialize verification API
-        init_verification_api(db)
+        init_verification_api(db, cache_service)
         logger.info("✓ Item verification API initialized")
     except Exception as e:
         logger.error(f"Failed to initialize verification API: {str(e)}")
@@ -776,6 +796,17 @@ async def lifespan(app: FastAPI):  # noqa: C901
         logger.warning(
             f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}"
         )
+
+    # Initialize search service
+    try:
+        from backend.services.search_service import init_search_service
+        from backend.db.runtime import get_db
+
+        database = get_db()
+        init_search_service(database)
+        logger.info("✓ Search service initialized successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize search service: {e}")
 
     logger.info("OK: Application startup complete")
 
@@ -890,6 +921,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Attach OpenTelemetry tracing to the FastAPI app if enabled
+try:
+    instrument_fastapi_app(app)
+except Exception:
+    # Tracing should never prevent the app from starting
+    pass
+
 # SECURITY FIX: Configure CORS with specific origins instead of wildcard
 # Configure CORS from settings with environment-aware defaults
 _env = getattr(settings, "ENVIRONMENT", "development").lower()
@@ -972,6 +1010,7 @@ app.include_router(auth_router, prefix="/api")
 app.include_router(
     items_router
 )  # Enhanced items API (has its own prefix /api/v2/erp/items)
+app.include_router(search_router)  # Search API (has prefix /api/items)
 app.include_router(metrics_router, prefix="/api")  # Metrics and monitoring
 app.include_router(sync_router, prefix="/api")  # Sync status
 app.include_router(sync_management_router, prefix="/api")  # Sync management
@@ -988,15 +1027,21 @@ app.include_router(
     dynamic_reports_router
 )  # Dynamic reports (has prefix /api/dynamic-reports)
 app.include_router(logs_router, prefix="/api")  # Error and Activity logs
+app.include_router(locations_router)  # Locations (Zones/Warehouses)
 
 
 # Phase 1-3: New Upgrade Routers
 app.include_router(sync_batch_router)  # Batch sync API (has prefix /api/sync)
 app.include_router(rack_router)  # Rack management (has prefix /api/racks)
 app.include_router(session_mgmt_router)  # Session management (has prefix /api/sessions)
+app.include_router(user_settings_router)  # User settings (has prefix /api/user)
+app.include_router(
+    preferences_router, prefix="/api"
+)  # User preferences (has prefix /api/users/me/preferences)
 app.include_router(reporting_router)  # Reporting API (has prefix /api/reports)
 app.include_router(admin_dashboard_router, prefix="/api")  # Admin Dashboard API
 app.include_router(report_generation_router, prefix="/api")  # Report Generation API
+app.include_router(websocket_router)  # WebSocket updates (endpoint at /ws/updates)
 logger.info("✓ Phase 1-3 upgrade routers registered")
 logger.info("✓ Admin Dashboard, Report Generation, and Dynamic Reports APIs registered")
 
@@ -1022,10 +1067,6 @@ try:
     app.include_router(notes_router, prefix="/api")  # Notes feature
     app.include_router(sync_conflicts_router, prefix="/api")  # Sync conflicts feature
 
-    # Register the new batch sync router
-    from backend.api.sync import router as batch_sync_router
-
-    app.include_router(batch_sync_router, prefix="/api/sync", tags=["sync"])
 except Exception as _e:
     logger.warning(f"Feature API router not available: {_e}")
 
@@ -1050,135 +1091,11 @@ except Exception as e:
 app.include_router(auth.router, prefix="/api", tags=["Authentication"])
 app.include_router(supervisor_pin.router, prefix="/api", tags=["Supervisor"])
 
-# Include API v2 router (upgraded endpoints)
-try:
-    from backend.api.v2 import v2_router
-
-    app.include_router(v2_router)
-    logger.info("✓ API v2 router registered")
-except Exception as e:
-    logger.warning(f"API v2 router not available: {e}")
-
 # Include routes defined on api_router
 app.include_router(api_router, prefix="/api")
 
 
 # Pydantic Models
-
-
-class UserInfo(BaseModel):
-    id: str
-    username: str
-    full_name: str
-    role: str
-    email: Optional[str] = None
-    is_active: bool = True
-    permissions: list[str] = Field(default_factory=list)
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    expires_in: int
-    user: UserInfo
-
-
-class UserRegister(BaseModel):
-    username: str
-    password: str
-    full_name: str
-    role: str
-
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
-class CorrectionReason(BaseModel):
-    code: str
-    description: str
-
-
-class PhotoProof(BaseModel):
-    id: Optional[str] = None
-    url: Optional[str] = None  # This will hold the base64 string from frontend
-    photo_base64: Optional[str] = None  # Keep for backward compatibility if needed
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-    description: Optional[str] = None
-
-
-class CorrectionMetadata(BaseModel):
-    correction_type: str
-    original_value: Optional[float] = None
-    corrected_value: Optional[float] = None
-    approved_by: Optional[str] = None
-
-
-class CountLineCreate(BaseModel):
-    session_id: str
-    item_code: str
-    counted_qty: float
-    damaged_qty: Optional[float] = 0
-    damage_included: Optional[bool] = None
-    item_condition: Optional[str] = None
-    floor_no: Optional[str] = None
-    rack_no: Optional[str] = None
-    mark_location: Optional[str] = None
-    sr_no: Optional[str] = None
-    manufacturing_date: Optional[str] = None
-    variance_reason: Optional[str] = None
-    variance_note: Optional[str] = None
-    remark: Optional[str] = None
-    photo_base64: Optional[str] = None
-    mrp_counted: Optional[float] = None
-    split_section: Optional[str] = None
-    serial_numbers: Optional[list[str]] = None
-    correction_reason: Optional[CorrectionReason] = None
-    photo_proofs: Optional[list[PhotoProof]] = None
-    correction_metadata: Optional[CorrectionMetadata] = None
-    category_correction: Optional[str] = None
-    subcategory_correction: Optional[str] = None
-
-
-class Session(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    warehouse: str
-    staff_user: str
-    staff_name: str
-    status: str = "OPEN"  # OPEN, RECONCILE, CLOSED
-    type: str = "STANDARD"  # STANDARD, BLIND, STRICT
-    started_at: datetime = Field(default_factory=datetime.utcnow)
-    closed_at: Optional[datetime] = None
-    total_items: int = 0
-    total_variance: float = 0
-
-
-class SessionCreate(BaseModel):
-    warehouse: str
-    type: Optional[str] = "STANDARD"
-
-
-class UnknownItem(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    session_id: str
-    barcode: Optional[str] = None
-    description: str
-    counted_qty: float
-    photo_base64: Optional[str] = None
-    remark: Optional[str] = None
-    reported_by: str
-    reported_at: datetime = Field(default_factory=datetime.utcnow)
-
-
-class UnknownItemCreate(BaseModel):
-    session_id: str
-    barcode: Optional[str] = None
-    description: str
-    counted_qty: float
-    photo_base64: Optional[str] = None
-    remark: Optional[str] = None
 
 
 # Note: verify_password and get_password_hash are imported from backend.utils.auth_utils (line 72)
@@ -2495,51 +2412,6 @@ app.include_router(
 
 
 # Run the server if executed directly
-def find_available_port(start_port: int, max_attempts: int = 10) -> int:
-    """Find the first available port starting from start_port."""
-    for port in range(start_port, start_port + max_attempts):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                # Try binding to 0.0.0.0 to ensure availability on all interfaces
-                s.bind(("0.0.0.0", port))
-                return port
-            except OSError:
-                continue
-    return start_port
-
-
-def get_local_ip():
-    """Get the local IP address of the machine."""
-    try:
-        # 1. Try connecting to a public DNS server (Google)
-        # This usually forces the OS to pick the primary outgoing interface (LAN)
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.settimeout(0)
-        try:
-            s.connect(("8.8.8.8", 80))
-            ip = s.getsockname()[0]
-        except Exception:
-            ip = "127.0.0.1"
-        finally:
-            s.close()
-
-        # 2. Sanity check: If we got localhost or something weird, try 192.168 specifically
-        if ip.startswith("127.") or ip == "0.0.0.0":
-            # Fallback: iterate interfaces (simple approach often restricted, so we rely on socket)
-            # Re-try with a local router guess
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            try:
-                s.connect(("192.168.1.1", 80))
-                ip = s.getsockname()[0]
-            except Exception:
-                pass
-            finally:
-                s.close()
-
-        print(f"DEBUG: Detected Local IP: {ip}")
-        return ip
-    except Exception:
-        return "127.0.0.1"
 
 
 def save_backend_info(port: int, local_ip: str) -> None:
@@ -2574,12 +2446,37 @@ def save_backend_info(port: int, local_ip: str) -> None:
         logger.warning(f"Failed to save backend port info: {e}")
 
 
+@app.on_event("startup")
+async def _write_backend_port_file_on_startup() -> None:
+    """Write backend_port.json on startup.
+
+    This keeps Expo's update-ip script in sync even when the backend is started via
+    `uvicorn backend.server:app ...` (where the __main__ block does not run).
+    """
+    try:
+        port = int(os.getenv("PORT") or getattr(settings, "PORT", 8001))
+    except Exception as e:
+        port = 8001
+
+    try:
+        local_ip = PortDetector.get_local_ip()
+        save_backend_info(port, local_ip)
+    except Exception as e:
+        logger.error(f"Error in startup handler: {e}")
+
+
+# Run the server if executed directly
+
+
 # Run the server if executed directly
 if __name__ == "__main__":
     # Get configured port as starting point
     start_port = int(getattr(settings, "PORT", os.getenv("PORT", 8001)))
-    port = find_available_port(start_port)
-    local_ip = get_local_ip()
+    # Use PortDetector to find port and IP
+    port = PortDetector.find_available_port(
+        start_port, range(start_port, start_port + 10)
+    )
+    local_ip = PortDetector.get_local_ip()
 
     # Save port to file for other services to discover
     save_backend_info(port, local_ip)

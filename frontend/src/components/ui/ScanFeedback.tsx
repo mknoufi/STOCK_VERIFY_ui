@@ -9,8 +9,8 @@
  * - Sound feedback support
  */
 
-import React, { useEffect } from "react";
-import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
+import React, { useCallback, useEffect } from "react";
+import { View, Text, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -22,11 +22,8 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
-  runOnJS,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export type ScanFeedbackType =
   | "success"
@@ -92,6 +89,7 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
   duration = 2000,
   showIcon = true,
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
   const iconScale = useSharedValue(0);
@@ -101,11 +99,11 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 
   const config = feedbackConfig[type];
 
-  const triggerHaptic = () => {
+  const triggerHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
-      config.haptic();
+      feedbackConfig[type].haptic();
     }
-  };
+  }, [type]);
 
   useEffect(() => {
     if (visible) {
@@ -169,7 +167,19 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
       iconScale.value = 0;
       return; // All paths must return
     }
-  }, [visible, duration, onDismiss]);
+  }, [
+    visible,
+    duration,
+    onDismiss,
+    type,
+    triggerHaptic,
+    opacity,
+    scale,
+    iconScale,
+    iconRotation,
+    ringScale,
+    ringOpacity,
+  ]);
 
   const containerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -192,7 +202,7 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 
   return (
     <View style={styles.overlay} pointerEvents="none">
-      <Animated.View style={[styles.container, containerStyle]}>
+      <Animated.View style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}>
         <LinearGradient
           colors={config.gradient as readonly [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}
@@ -225,7 +235,7 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 };
 
 // Helper function for repeat animation (simplified)
-const withRepeat = (animation: any, times: number, reverse: boolean) => {
+const withRepeat = (animation: any, _times: number, _reverse: boolean) => {
   // This is a simplified version - in production, use reanimated's withRepeat
   return animation;
 };
@@ -239,7 +249,6 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   container: {
-    width: SCREEN_WIDTH * 0.7,
     maxWidth: 280,
     borderRadius: auroraTheme.borderRadius["2xl"],
     overflow: "hidden",

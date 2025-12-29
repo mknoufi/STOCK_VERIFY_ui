@@ -2,7 +2,9 @@
  * ThemePicker Component
  *
  * Visual theme selection grid with live preview
- * Shows all available themes with color swatches
+  * Shows all available themes with color swatches
+    *
+ * // cSpell:ignore springify
  */
 
 import React, { useCallback } from "react";
@@ -11,7 +13,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,11 +22,9 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { useThemeContext, ThemeKey, ThemeMode } from "../../theme/ThemeContext";
-import { GlassCard } from "./GlassCard";
 
 interface ThemePickerProps {
   showModeToggle?: boolean;
@@ -36,7 +35,7 @@ interface ThemePickerProps {
 export const ThemePicker: React.FC<ThemePickerProps> = ({
   showModeToggle = true,
   compact = false,
-  columns = 3,
+  columns: _columns = 3,
 }) => {
   const {
     theme,
@@ -45,7 +44,6 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
     setThemeKey,
     setThemeMode,
     availableThemes,
-    isDark,
   } = useThemeContext();
 
   const handleThemeSelect = useCallback(

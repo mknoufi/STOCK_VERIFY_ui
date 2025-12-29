@@ -1,4 +1,5 @@
 """
+# cSpell:ignore redef behaviour lavanya emart dotenv
 Application Configuration Management
 Type-safe configuration with validation using Pydantic
 """
@@ -8,7 +9,9 @@ import os
 from typing import Optional
 
 try:
-    from pydantic_settings import BaseSettings as PydanticBaseSettings
+    from pydantic_settings import (
+        BaseSettings as PydanticBaseSettings,  # type: ignore[no-redef]
+    )
     from pydantic_settings import SettingsConfigDict
 
     HAS_PYDANTIC_V2 = True
@@ -16,7 +19,7 @@ except ImportError:
     HAS_PYDANTIC_V2 = False
     try:
         from pydantic import (
-            BaseSettings as PydanticBaseSettings,  # type: ignore[no-redef]
+            BaseSettings as PydanticBaseSettingsFallback,
         )
     except (
         ImportError
@@ -25,6 +28,7 @@ except ImportError:
             "Please install pydantic or pydantic-settings before running the backend"
         ) from exc
     SettingsConfigDict = dict  # type: ignore[assignment,misc]
+    PydanticBaseSettings = PydanticBaseSettingsFallback  # type: ignore[assignment,misc]
 
 from pathlib import Path
 
@@ -46,7 +50,7 @@ class Settings(PydanticBaseSettings):
             case_sensitive=True,
             extra="ignore",
         )
-    else:  # pragma: no cover - legacy pydantic v1 behaviour
+    else:  # pragma: no cover - legacy pydantic v1 behavior
 
         class Config:
             env_file = str(ROOT_DIR / ".env")
@@ -85,13 +89,33 @@ class Settings(PydanticBaseSettings):
         return v_str
 
     # MongoDB (with dynamic port detection)
-    MONGO_URL: str = "mongodb://localhost:27017"
+    # Note: we support multiple common env var names for developer convenience:
+    # - MONGO_URL (preferred)
+    # - MONGODB_URI / MONGODB_URL (common in many deploy setups)
+    MONGO_URL: str = Field(default="mongodb://localhost:27017")
     DB_NAME: str = "stock_verification"
 
-    @validator("MONGO_URL")
+    @validator("MONGO_URL", pre=True, always=True)
     def validate_and_detect_mongo_url(cls, v):
-        """Auto-detect MongoDB port if not specified and validate"""
-        # Auto-detect port
+        """Resolve MongoDB URL from env aliases and auto-detect local port when needed."""
+
+        # 1) Accept common environment aliases.
+        # Prefer explicit MONGO_URL, then MONGODB_URI, then MONGODB_URL.
+        env_mongo_url = os.getenv("MONGO_URL")
+        env_mongodb_uri = os.getenv("MONGODB_URI")
+        env_mongodb_url = os.getenv("MONGODB_URL")
+
+        if env_mongo_url:
+            v = env_mongo_url
+        elif env_mongodb_uri:
+            v = env_mongodb_uri
+        elif env_mongodb_url:
+            v = env_mongodb_url
+
+        # 2) If still default, try auto-detection.
+        if not v:
+            v = "mongodb://localhost:27017"
+
         if v == "mongodb://localhost:27017":
             try:
                 from backend.utils.port_detector import PortDetector
@@ -101,10 +125,10 @@ class Settings(PydanticBaseSettings):
             except Exception as e:
                 logger.warning(f"MongoDB port detection failed, using default: {e}")
 
-        # Validate
+        # 3) Validate
         if not v:
             raise ValueError("MONGO_URL is required")
-        return v
+        return str(v).strip()
 
     @validator("DB_NAME")
     def validate_db_name(cls, v):
@@ -295,7 +319,8 @@ except Exception as e:
     import warnings
 
     warnings.warn(
-        f"Configuration Error: {e}. Using environment variables with defaults."
+        f"Configuration Error: {e}. Using environment variables with defaults.",
+        stacklevel=2,
     )
     # Create a simple settings object from environment variables
     from dotenv import load_dotenv
@@ -304,7 +329,21 @@ except Exception as e:
 
     class FallbackSettings:
         def __init__(self):
-            self.MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+            # Keep behavior consistent with Settings: support env aliases + auto-detect
+            mongo_url = (
+                os.getenv("MONGO_URL")
+                or os.getenv("MONGODB_URI")
+                or os.getenv("MONGODB_URL")
+                or "mongodb://localhost:27017"
+            )
+            if mongo_url == "mongodb://localhost:27017":
+                try:
+                    from backend.utils.port_detector import PortDetector
+
+                    mongo_url = PortDetector.get_mongo_url()
+                except Exception:
+                    pass
+            self.MONGO_URL = mongo_url
             self.DB_NAME = os.getenv("DB_NAME", "stock_count")
             self.SQL_SERVER_HOST = os.getenv("SQL_SERVER_HOST")
             self.SQL_SERVER_PORT = int(os.getenv("SQL_SERVER_PORT", 1433))

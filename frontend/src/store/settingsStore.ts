@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { mmkvStorage } from "../services/mmkvStorage";
 import { ThemeService, Theme } from "../services/themeService";
+import { authApi, UserSettings } from "../services/api/authApi";
 
 export interface Settings {
   // Theme
@@ -30,6 +31,9 @@ export interface Settings {
 
   // Display
   fontSize: "small" | "medium" | "large";
+  fontSizeValue: number; // Numeric font size (12-22)
+  primaryColor: string; // Hex color or color id
+  primaryColorId: string; // Color palette id (aurora, ocean, etc.)
   showItemImages: boolean;
   showItemPrices: boolean;
   showItemStock: boolean;
@@ -42,6 +46,7 @@ export interface Settings {
   requireAuth: boolean;
   sessionTimeout: number;
   biometricAuth: boolean;
+  operationalMode: "live_audit" | "routine" | "training";
 
   // Performance
   imageCache: boolean;
@@ -66,6 +71,9 @@ const DEFAULT_SETTINGS: Settings = {
   scannerAutoSubmit: true,
   scannerTimeout: 30,
   fontSize: "medium",
+  fontSizeValue: 16,
+  primaryColor: "#6366F1",
+  primaryColorId: "aurora",
   showItemImages: true,
   showItemPrices: true,
   showItemStock: true,
@@ -74,6 +82,7 @@ const DEFAULT_SETTINGS: Settings = {
   requireAuth: true,
   sessionTimeout: 30,
   biometricAuth: false,
+  operationalMode: "routine",
   imageCache: true,
   lazyLoading: true,
   debounceDelay: 300,
@@ -81,13 +90,17 @@ const DEFAULT_SETTINGS: Settings = {
 
 interface SettingsState {
   settings: Settings;
+  isSyncing: boolean;
   setSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
   resetSettings: () => Promise<void>;
   loadSettings: () => Promise<void>;
+  syncFromBackend: () => Promise<void>;
+  syncToBackend: () => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   settings: DEFAULT_SETTINGS,
+  isSyncing: false,
 
   setSetting: (key, value) => {
     const newSettings = { ...get().settings, [key]: value };
@@ -122,6 +135,71 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       }
     } catch (error) {
       console.error("Failed to load settings:", error);
+    }
+  },
+
+  syncFromBackend: async () => {
+    if (get().isSyncing) return;
+    set({ isSyncing: true });
+
+    try {
+      const backendSettings = await authApi.getUserSettings();
+      const currentSettings = get().settings;
+
+      // Map backend fields to frontend settings
+      const updatedSettings: Partial<Settings> = {
+        ...currentSettings,
+        theme: backendSettings.theme as Settings["theme"],
+        fontSizeValue: backendSettings.font_size,
+        primaryColor: backendSettings.primary_color,
+        scannerVibration: backendSettings.haptic_enabled,
+        scannerSound: backendSettings.sound_enabled,
+        autoSyncEnabled: backendSettings.auto_sync_enabled,
+      };
+
+      const mergedSettings = { ...currentSettings, ...updatedSettings };
+      set({ settings: mergedSettings });
+
+      // Persist locally
+      mmkvStorage.setItem("app_settings", JSON.stringify(mergedSettings));
+
+      // Apply theme if changed
+      if (backendSettings.theme !== currentSettings.theme) {
+        ThemeService.setTheme(mergedSettings.theme as Theme);
+      }
+
+      console.log("[SettingsStore] Synced settings from backend");
+    } catch (error) {
+      // Silently fail - use local settings if backend unavailable
+      console.warn("[SettingsStore] Failed to sync from backend:", error);
+    } finally {
+      set({ isSyncing: false });
+    }
+  },
+
+  syncToBackend: async () => {
+    if (get().isSyncing) return;
+    set({ isSyncing: true });
+
+    try {
+      const currentSettings = get().settings;
+
+      // Map frontend settings to backend schema
+      const backendPayload: Partial<UserSettings> = {
+        theme: currentSettings.theme,
+        font_size: currentSettings.fontSizeValue,
+        primary_color: currentSettings.primaryColor,
+        haptic_enabled: currentSettings.scannerVibration,
+        sound_enabled: currentSettings.scannerSound,
+        auto_sync_enabled: currentSettings.autoSyncEnabled,
+      };
+
+      await authApi.updateUserSettings(backendPayload);
+      console.log("[SettingsStore] Synced settings to backend");
+    } catch (error) {
+      console.warn("[SettingsStore] Failed to sync to backend:", error);
+    } finally {
+      set({ isSyncing: false });
     }
   },
 }));

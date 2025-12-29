@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect } from "react";
-import { View, StyleSheet, ViewStyle, Dimensions } from "react-native";
+import { View, StyleSheet, ViewStyle, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -23,8 +23,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 import { ParticleField } from "./ParticleField";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export type AuroraVariant =
   | "primary"
@@ -52,7 +50,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   style,
   children,
 }) => {
-  const colors = auroraTheme.colors.aurora[variant];
+  const { width, height } = useWindowDimensions();
+  const colors = variant === "primary"
+    ? ["#0EA5E9", "#10B981", "#020617"]
+    : auroraTheme.colors.aurora[variant];
 
   // Animation values for gradient blobs
   const blob1X = useSharedValue(0);
@@ -139,7 +140,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
         true,
       );
     }
-  }, [animated]);
+  }, [animated, blob1X, blob1Y, blob2X, blob2Y, blob3X, blob3Y]);
 
   const blob1Style = useAnimatedStyle(() => ({
     transform: [{ translateX: blob1X.value }, { translateY: blob1Y.value }],
@@ -154,9 +155,9 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   }));
 
   const opacityByIntensity = {
-    low: 0.3,
-    medium: 0.5,
-    high: 0.7,
+    low: 0.15,
+    medium: 0.25,
+    high: 0.4,
   };
 
   const opacity = opacityByIntensity[intensity];
@@ -165,16 +166,23 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
     <View style={[styles.container, style]}>
       {/* Base gradient background */}
       <LinearGradient
-        colors={[
-          auroraTheme.colors.background.primary,
-          auroraTheme.colors.background.secondary,
-        ]}
+        colors={["#020617", "#0F172A"]}
         style={StyleSheet.absoluteFill}
       />
 
       {/* Animated gradient blobs */}
       <Animated.View
-        style={[styles.blob, styles.blob1, blob1Style, { opacity }]}
+        style={[
+          styles.blob,
+          {
+            width: width * 1.2,
+            height: width * 1.2,
+            top: -width * 0.3,
+            left: -width * 0.2,
+          },
+          blob1Style,
+          { opacity }
+        ]}
       >
         <LinearGradient
           colors={[colors[0], colors[1]] as readonly [string, string]}
@@ -185,7 +193,17 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
       </Animated.View>
 
       <Animated.View
-        style={[styles.blob, styles.blob2, blob2Style, { opacity }]}
+        style={[
+          styles.blob,
+          {
+            width: width * 1,
+            height: width * 1,
+            bottom: -width * 0.2,
+            right: -width * 0.3,
+          },
+          blob2Style,
+          { opacity }
+        ]}
       >
         <LinearGradient
           colors={[colors[1], colors[2]] as readonly [string, string]}
@@ -196,7 +214,17 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
       </Animated.View>
 
       <Animated.View
-        style={[styles.blob, styles.blob3, blob3Style, { opacity }]}
+        style={[
+          styles.blob,
+          {
+            width: width * 0.8,
+            height: width * 0.8,
+            top: height * 0.4,
+            left: width * 0.1,
+          },
+          blob3Style,
+          { opacity }
+        ]}
       >
         <LinearGradient
           colors={[colors[2], colors[0]] as readonly [string, string]}
@@ -230,24 +258,6 @@ const styles = StyleSheet.create({
   blob: {
     position: "absolute",
     borderRadius: 9999,
-  },
-  blob1: {
-    width: SCREEN_WIDTH * 1.2,
-    height: SCREEN_WIDTH * 1.2,
-    top: -SCREEN_WIDTH * 0.3,
-    left: -SCREEN_WIDTH * 0.2,
-  },
-  blob2: {
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_WIDTH * 1,
-    bottom: -SCREEN_WIDTH * 0.2,
-    right: -SCREEN_WIDTH * 0.3,
-  },
-  blob3: {
-    width: SCREEN_WIDTH * 0.8,
-    height: SCREEN_WIDTH * 0.8,
-    top: SCREEN_HEIGHT * 0.4,
-    left: SCREEN_WIDTH * 0.1,
   },
   blobGradient: {
     width: "100%",

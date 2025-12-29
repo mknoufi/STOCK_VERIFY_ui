@@ -10,7 +10,7 @@
  * - Haptic feedback
  */
 
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   TouchableOpacity,
   View,
@@ -19,7 +19,6 @@ import {
   ViewStyle,
   TextStyle,
   Platform,
-  Dimensions,
   LayoutChangeEvent,
   GestureResponderEvent,
   ActivityIndicator,
@@ -32,7 +31,6 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   Easing,
-  runOnJS,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
@@ -171,7 +169,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
     // Calculate max ripple size
     const maxDistance = Math.sqrt(
       Math.pow(Math.max(locationX, buttonLayout.width - locationX), 2) +
-        Math.pow(Math.max(locationY, buttonLayout.height - locationY), 2),
+      Math.pow(Math.max(locationY, buttonLayout.height - locationY), 2),
     );
     const maxScale = (maxDistance * 2) / 10; // 10 is base ripple size
 
@@ -278,9 +276,9 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
     fullWidth ? styles.fullWidth : {},
     variant === "outline"
       ? {
-          borderWidth: 2,
-          borderColor: auroraTheme.colors.primary[400],
-        }
+        borderWidth: 2,
+        borderColor: auroraTheme.colors.primary[400],
+      }
       : {},
     style ?? {},
   ];

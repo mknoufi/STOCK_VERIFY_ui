@@ -1,6 +1,6 @@
 export * from "./useTheme";
 export * from "./useAutoLogout";
-export * from "./usePermissions";
+export * from "./usePermission";
 export * from "./useSafeState";
 export * from "./useSystemTheme";
 export * from "./useFormValidation";
@@ -8,3 +8,6 @@ export * from "./useDebouncedCallback";
 export * from "./useAIBarcode";
 export * from "./useVoiceControl";
 export * from "./useCameraEnhancement";
+export * from "./useResponsive";
+export * from "../domains/inventory/hooks/useOptimizedSearch";
+export * from "../domains/inventory/hooks/useSearchItemsQuery";

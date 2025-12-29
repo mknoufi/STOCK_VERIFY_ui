@@ -3,27 +3,22 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  Platform,
-  RefreshControl,
   TextInput,
 } from "react-native";
 import {
-  LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
   AnimatedPressable,
+  ScreenContainer,
 } from "@/components/ui";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import { getServiceLogs } from "../../src/services/api";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 
 export default function LogsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { hasRole } = usePermissions();
+  const { hasRole } = usePermission();
   const service = (params.service as string) || "backend";
 
   const [loading, setLoading] = useState(true);
@@ -89,12 +84,12 @@ export default function LogsScreen() {
   });
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title={`${service.toUpperCase()} Logs`}
-        subtitle="Real-time Log Viewer"
-        showBackButton
-        customRightContent={
+    <ScreenContainer
+      header={{
+        title: `${service.toUpperCase()} Logs`,
+        subtitle: "Real-time Log Viewer",
+        showBackButton: true,
+        customRightContent: (
           <AnimatedPressable style={styles.refreshButton} onPress={loadLogs}>
             <Ionicons
               name="refresh"
@@ -102,9 +97,13 @@ export default function LogsScreen() {
               color={auroraTheme.colors.text.primary}
             />
           </AnimatedPressable>
-        }
-      />
-
+        ),
+      }}
+      loading={loading && logs.length === 0}
+      loadingText="Loading logs..."
+      refreshing={refreshing}
+      onRefresh={loadLogs}
+    >
       {/* Filters */}
       <View style={styles.filtersContainer}>
         <View style={styles.searchContainer}>
@@ -123,44 +122,33 @@ export default function LogsScreen() {
           />
         </View>
         <View style={styles.levelFilters}>
-          {["ALL", "ERROR", "WARN", "INFO", "DEBUG"].map((level) => (
-            <AnimatedPressable
-              key={level}
-              style={[
-                styles.levelFilter,
-                filterLevel === level && styles.levelFilterActive,
-              ]}
-              onPress={() => setFilterLevel(level)}
-            >
-              <Text
+          {["ALL", "ERROR", "WARN", "INFO", "DEBUG"].map((level) => {
+            const isActive = filterLevel === level;
+            return (
+              <AnimatedPressable
+                key={level}
                 style={[
-                  styles.levelFilterText,
-                  filterLevel === level && styles.levelFilterTextActive,
+                  styles.levelFilter,
+                  isActive && styles.levelFilterActive,
                 ]}
+                onPress={() => setFilterLevel(level)}
               >
-                {level}
-              </Text>
-            </AnimatedPressable>
-          ))}
+                <Text
+                  style={[
+                    styles.levelFilterText,
+                    isActive && styles.levelFilterTextActive,
+                  ]}
+                >
+                  {level}
+                </Text>
+              </AnimatedPressable>
+            );
+          })}
         </View>
       </View>
 
-      <ScrollView
-        style={styles.content}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={loadLogs}
-            tintColor={auroraTheme.colors.primary[500]}
-          />
-        }
-      >
-        {loading && logs.length === 0 ? (
-          <View style={styles.centered}>
-            <LoadingSpinner size={48} color={auroraTheme.colors.primary[500]} />
-            <Text style={styles.loadingText}>Loading logs...</Text>
-          </View>
-        ) : filteredLogs.length === 0 ? (
+      <View style={styles.content}>
+        {filteredLogs.length === 0 && !loading ? (
           <View style={styles.centered}>
             <Ionicons
               name="document-text-outline"
@@ -198,8 +186,8 @@ export default function LogsScreen() {
             </View>
           ))
         )}
-      </ScrollView>
-    </AuroraBackground>
+      </View>
+    </ScreenContainer>
   );
 }
 

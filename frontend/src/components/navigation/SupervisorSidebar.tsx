@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
-  Dimensions,
+  useWindowDimensions,
   ViewStyle,
 } from "react-native";
 import { useRouter, useSegments } from "expo-router";
@@ -124,7 +124,7 @@ interface SupervisorSidebarProps {
 
 export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
   collapsed = false,
-  onToggleCollapse,
+  onToggleCollapse: _onToggleCollapse,
   style,
   testID,
 }) => {
@@ -132,7 +132,7 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
   const router = useRouter();
   const segments = useSegments();
   const { user, logout } = useAuthStore();
-  const { width } = Dimensions.get("window");
+  const { width } = useWindowDimensions();
   const isMobile = width < breakpoints.tablet;
 
   // On mobile, show as drawer (controlled by parent)

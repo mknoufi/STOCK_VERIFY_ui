@@ -9,9 +9,21 @@ import logging
 from collections.abc import Callable
 from typing import Any, Optional
 
+from redis.asyncio.client import PubSub
+
 from backend.services.redis_service import RedisService
 
 logger = logging.getLogger(__name__)
+
+
+def _decode_message_data(data: Any) -> Any:
+    """Decode message data from bytes and parse JSON if applicable."""
+    if isinstance(data, bytes):
+        data = data.decode("utf-8")
+    try:
+        return json.loads(data)
+    except (json.JSONDecodeError, TypeError):
+        return data
 
 
 class PubSubService:
@@ -22,9 +34,9 @@ class PubSubService:
 
     def __init__(self, redis_service: RedisService):
         self.redis = redis_service
-        self.pubsub = None
+        self.pubsub: Optional[PubSub] = None
         self.subscribers: dict[str, list] = {}
-        self._listen_task: asyncio.Task = None
+        self._listen_task: Optional[asyncio.Task[None]] = None
         self._is_listening = False
 
     async def start(self) -> None:
@@ -67,37 +79,45 @@ class PubSubService:
         try:
             while self._is_listening:
                 try:
-                    message = await self.pubsub.get_message(
-                        ignore_subscribe_messages=True, timeout=1.0
-                    )
-
-                    if message and message["type"] == "message":
-                        channel = message["channel"]
-                        data = message["data"]
-
-                        # Decode if bytes
-                        if isinstance(data, bytes):
-                            data = data.decode("utf-8")
-
-                        # Try to parse JSON
-                        try:
-                            data = json.loads(data)
-                        except (json.JSONDecodeError, TypeError):
-                            pass
-
-                        # Call handlers
-                        await self._handle_message(channel, data)
-
+                    if self.pubsub is None:
+                        break
+                    await self._process_next_message()
                 except asyncio.CancelledError:
                     break
                 except Exception as e:
                     logger.error(f"Error in pub/sub listener: {str(e)}")
                     await asyncio.sleep(1)
-
         except Exception as e:
             logger.error(f"Pub/Sub listener crashed: {str(e)}")
         finally:
             self._is_listening = False
+
+    async def _process_next_message(self) -> None:
+        """Get and process the next message from pub/sub."""
+        if self.pubsub is None:
+            return
+
+        # Don't try to get messages if we're not subscribed to anything
+        # This avoids the "pubsub connection not set" error in redis-py
+        if not self.subscribers:
+            await asyncio.sleep(1.0)
+            return
+
+        try:
+            message = await self.pubsub.get_message(
+                ignore_subscribe_messages=True, timeout=1.0
+            )
+        except Exception as e:
+            # If we're not actually subscribed yet, just wait
+            if "not set" in str(e).lower():
+                await asyncio.sleep(1.0)
+                return
+            raise
+
+        if message and message["type"] == "message":
+            channel = message["channel"]
+            data = _decode_message_data(message["data"])
+            await self._handle_message(channel, data)
 
     async def _handle_message(self, channel: str, data: Any) -> None:
         """Handle incoming message"""
@@ -248,7 +268,7 @@ class PubSubService:
 
 
 # Global instance
-_pubsub_service: PubSubService = None
+_pubsub_service: Optional[PubSubService] = None
 
 
 def get_pubsub_service(redis_service):

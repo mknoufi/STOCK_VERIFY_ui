@@ -1,6 +1,5 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "expo/tsconfig.base",
   "display": "Expo",
   "compilerOptions": {
     "allowJs": true,
@@ -24,6 +23,14 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
+    "types": [
+      "jest"
+    ],
+    "plugins": [
+      {
+        "name": "./typescript-plugin-filter-text-errors.js"
+      }
+    ],
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -35,8 +42,7 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "react-native-text-override.d.ts"
   ],
   "exclude": [
     "node_modules",
@@ -47,5 +53,6 @@
     "ios",
     "e2e",
     "playwright.config.ts"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

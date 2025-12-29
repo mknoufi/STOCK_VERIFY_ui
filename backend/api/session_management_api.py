@@ -8,9 +8,13 @@ import time
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 
+from backend.api.response_models import PaginatedResponse
+from backend.api.schemas import Session, SessionCreate
 from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.db.runtime import get_db
 from backend.services.lock_manager import get_lock_manager
 from backend.services.redis_service import get_redis
 
@@ -25,7 +29,7 @@ router = APIRouter(prefix="/api/sessions", tags=["Session Management"])
 class SessionDetail(BaseModel):
     """Detailed session information"""
 
-    session_id: str
+    id: str
     user_id: str
     rack_id: Optional[str] = None
     floor: Optional[str] = None
@@ -40,7 +44,7 @@ class SessionDetail(BaseModel):
 class SessionStats(BaseModel):
     """Session statistics"""
 
-    session_id: str
+    id: str
     total_items: int
     verified_items: int
     damage_items: int
@@ -53,7 +57,7 @@ class HeartbeatResponse(BaseModel):
     """Heartbeat response"""
 
     success: bool
-    session_id: str
+    id: str
     rack_lock_renewed: bool
     user_presence_updated: bool
     lock_ttl_remaining: int
@@ -63,10 +67,113 @@ class HeartbeatResponse(BaseModel):
 # Endpoints
 
 
+@router.get("/", response_model=PaginatedResponse[Session])
+async def get_sessions(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    user_id: Optional[str] = Query(None, description="Filter by user"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> PaginatedResponse[Session]:
+    """
+    Get all sessions with pagination
+    """
+    # Build query
+    query = {}
+    if status:
+        query["status"] = status
+
+    if user_id:
+        # Only supervisors can view other users' sessions
+        if current_user["role"] != "supervisor" and user_id != current_user["username"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+        query["staff_user"] = user_id
+    elif current_user["role"] != "supervisor":
+        # Regular users only see their own sessions
+        query["staff_user"] = current_user["username"]
+
+    # Get total count
+    total = await db.sessions.count_documents(query)
+
+    # Get paginated sessions
+    skip = (page - 1) * page_size
+    sessions_cursor = (
+        db.sessions.find(query).sort("started_at", -1).skip(skip).limit(page_size)
+    )
+    sessions = await sessions_cursor.to_list(length=page_size)
+
+    # DEBUG LOGGING
+    logger.info(f"SESSION QUERY: {query}")
+    logger.info(f"SESSIONS FOUND: {len(sessions)} (Total: {total})")
+    # END DEBUG LOGGING
+
+    # Convert to response models
+    result = []
+    for session in sessions:
+        # Ensure all required fields are present
+        # Handle _id if present (pydantic might ignore it if not in model, or we should remove it)
+        if "_id" in session:
+            del session["_id"]
+        result.append(Session(**session))
+
+    return PaginatedResponse.create(
+        items=result,
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@router.post("/", response_model=Session)
+async def create_session(
+    session_data: SessionCreate,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> Session:
+    """Create a new session"""
+    import uuid
+    from datetime import datetime
+
+    # Input validation
+    warehouse = session_data.warehouse.strip()
+    if not warehouse:
+        raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
+
+    # Create Session object
+    session = Session(
+        id=str(uuid.uuid4()),
+        warehouse=warehouse,
+        staff_user=current_user["username"],
+        staff_name=current_user.get("full_name", current_user["username"]),
+        type=session_data.type or "STANDARD",
+        status="OPEN",
+        started_at=datetime.utcnow(),
+    )
+
+    # Insert into db.sessions
+    await db.sessions.insert_one(session.model_dump())
+
+    # Also create entry in verification_sessions for compatibility with new features
+    verification_session = {
+        "session_id": session.id,
+        "user_id": current_user["username"],
+        "status": "ACTIVE",
+        "started_at": time.time(),
+        "last_heartbeat": time.time(),
+        "rack_id": None,
+        "floor": None,
+    }
+    await db.verification_sessions.insert_one(verification_session)
+
+    return session
+
+
 @router.get("/active", response_model=list[SessionDetail])
 async def get_active_sessions(
     user_id: Optional[str] = Query(None, description="Filter by user"),
     rack_id: Optional[str] = Query(None, description="Filter by rack"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> list[SessionDetail]:
     """
@@ -76,10 +183,8 @@ async def get_active_sessions(
     - user_id: Filter by specific user
     - rack_id: Filter by specific rack
     """
-    from backend.server import db
-
     # Build query
-    query = {"status": {"$in": ["active", "paused"]}}
+    query: dict[str, Any] = {"status": {"$in": ["ACTIVE", "OPEN"]}}
 
     if user_id:
         # Only supervisors can view other users' sessions
@@ -108,7 +213,7 @@ async def get_active_sessions(
 
         result.append(
             SessionDetail(
-                session_id=session["session_id"],
+                id=session["session_id"],
                 user_id=session["user_id"],
                 rack_id=session.get("rack_id"),
                 floor=session.get("floor"),
@@ -127,11 +232,10 @@ async def get_active_sessions(
 @router.get("/{session_id}", response_model=SessionDetail)
 async def get_session_detail(
     session_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> SessionDetail:
     """Get detailed session information"""
-    from backend.server import db
-
     session = await db.verification_sessions.find_one({"session_id": session_id})
 
     if not session:
@@ -154,7 +258,7 @@ async def get_session_detail(
     )
 
     return SessionDetail(
-        session_id=session["session_id"],
+        id=session["session_id"],
         user_id=session["user_id"],
         rack_id=session.get("rack_id"),
         floor=session.get("floor"),
@@ -170,11 +274,10 @@ async def get_session_detail(
 @router.get("/{session_id}/stats", response_model=SessionStats)
 async def get_session_stats(
     session_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> SessionStats:
     """Get session statistics"""
-    from backend.server import db
-
     session = await db.verification_sessions.find_one({"session_id": session_id})
 
     if not session:
@@ -188,7 +291,7 @@ async def get_session_stats(
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get item statistics
-    pipeline = [
+    pipeline: list[dict[str, Any]] = [
         {"$match": {"session_id": session_id}},
         {
             "$group": {
@@ -219,7 +322,7 @@ async def get_session_stats(
     items_per_minute = (verified_items / duration * 60) if duration > 0 else 0
 
     return SessionStats(
-        session_id=session_id,
+        id=session_id,
         total_items=total_items,
         verified_items=verified_items,
         damage_items=damage_items,
@@ -232,6 +335,7 @@ async def get_session_stats(
 @router.post("/{session_id}/heartbeat", response_model=HeartbeatResponse)
 async def session_heartbeat(
     session_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
     current_user: dict[str, Any] = Depends(get_current_user),
     redis_service=Depends(get_redis),
 ) -> HeartbeatResponse:
@@ -245,8 +349,6 @@ async def session_heartbeat(
     2. Renew rack lock if session has rack
     3. Update session last_heartbeat in MongoDB
     """
-    from backend.server import db
-
     user_id = current_user["username"]
     lock_manager = get_lock_manager(redis_service)
 
@@ -286,7 +388,7 @@ async def session_heartbeat(
 
     return HeartbeatResponse(
         success=True,
-        session_id=session_id,
+        id=session_id,
         rack_lock_renewed=rack_lock_renewed,
         user_presence_updated=True,
         lock_ttl_remaining=max(0, lock_ttl_remaining),
@@ -297,14 +399,13 @@ async def session_heartbeat(
 @router.post("/{session_id}/complete")
 async def complete_session(
     session_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
     current_user: dict[str, Any] = Depends(get_current_user),
     redis_service=Depends(get_redis),
 ) -> dict[str, Any]:
     """
     Complete session and release rack
     """
-    from backend.server import db
-
     user_id = current_user["username"]
     lock_manager = get_lock_manager(redis_service)
 
@@ -338,7 +439,7 @@ async def complete_session(
         {"session_id": session_id},
         {
             "$set": {
-                "status": "completed",
+                "status": "CLOSED",
                 "completed_at": time.time(),
             }
         },
@@ -351,8 +452,8 @@ async def complete_session(
 
     return {
         "success": True,
-        "session_id": session_id,
-        "status": "completed",
+        "id": session_id,
+        "status": "CLOSED",
         "message": "Session completed successfully",
     }
 
@@ -360,15 +461,14 @@ async def complete_session(
 @router.get("/user/history")
 async def get_user_session_history(
     limit: int = Query(10, ge=1, le=100),
+    db: AsyncIOMotorDatabase = Depends(get_db),
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> list[SessionDetail]:
     """Get user's session history (completed sessions)"""
-    from backend.server import db
-
     user_id = current_user["username"]
 
     sessions_cursor = (
-        db.verification_sessions.find({"user_id": user_id, "status": "completed"})
+        db.verification_sessions.find({"user_id": user_id, "status": "CLOSED"})
         .sort("completed_at", -1)
         .limit(limit)
     )
@@ -387,7 +487,7 @@ async def get_user_session_history(
 
         result.append(
             SessionDetail(
-                session_id=session["session_id"],
+                id=session["session_id"],
                 user_id=session["user_id"],
                 rack_id=session.get("rack_id"),
                 floor=session.get("floor"),

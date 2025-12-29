@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 from typing import Any, Optional
 
@@ -7,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from backend.auth.dependencies import get_current_user
+from backend.db.runtime import get_db
 
 router = APIRouter(prefix="/api/mapping", tags=["Database Mapping"])
 logger = logging.getLogger(__name__)
@@ -57,7 +59,7 @@ def get_connection(conn_string):
     except Exception as e:
         logger.error(f"Database connection failed: {str(e)}")
         # Check if it's a driver issue
-        drivers = [x for x in pyodbc.drivers()]
+        drivers = list(pyodbc.drivers())
         raise HTTPException(
             status_code=400,
             detail=f"Connection failed: {str(e)}. Available drivers: {drivers}",
@@ -65,6 +67,29 @@ def get_connection(conn_string):
 
 
 # --- Endpoints ---
+
+
+def _safe_identifier(name: str) -> str:
+    """Validate and return a safe SQL identifier.
+
+    Allows letters, numbers, underscores, and spaces (common in SQL Server).
+    Rejects brackets to prevent injection when wrapped in [].
+    Raises HTTPException(400) if invalid.
+    """
+    # Allow alphanumeric, underscore, and space. Must not be empty.
+    # Must not contain brackets [] which are used for quoting.
+    if not name or "]" in name or "[" in name:
+        raise HTTPException(status_code=400, detail=f"Invalid identifier: {name}")
+
+    # Check for other potentially dangerous characters if needed, but [] is the main concern for injection in [{name}]
+    # Let's stick to a regex that allows spaces but is still restrictive enough
+    if not re.fullmatch(r"[A-Za-z0-9_ ]+", name):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid identifier (only alphanumeric, space, underscore allowed): {name}",
+        )
+
+    return name
 
 
 @router.get("/tables")
@@ -144,8 +169,8 @@ async def get_columns(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/test")
-async def test_mapping(
+@router.post("/preview")
+async def preview_mapping(
     host: str,
     database: str,
     config: MappingConfig,
@@ -159,34 +184,42 @@ async def test_mapping(
         conn = get_connection(conn_str)
         cursor = conn.cursor()
 
-        # Construct dynamic query
+        # Construct dynamic query (validate identifiers to avoid injection)
         table_name = config.tables.get("items")
         if not table_name:
             raise HTTPException(status_code=400, detail="No 'items' table mapped")
 
         schema = config.query_options.get("schema_name", "dbo")
+        schema = _safe_identifier(schema)
+        table_name = _safe_identifier(table_name)
 
         select_fields = []
         for app_field, mapping in config.columns.items():
-            select_fields.append(f"TOP 5 [{mapping.erp_column}] as {app_field}")
+            erp_col = _safe_identifier(mapping.erp_column)
+            select_fields.append(f"[{erp_col}] as {app_field}")
 
         # Basic check to ensure at least one column
         if not select_fields:
             raise HTTPException(status_code=400, detail="No columns mapped")
 
         # Use TOP 5 to limit data
-        query = f"SELECT {', '.join(select_fields).replace('TOP 5', '', 1)} FROM [{schema}].[{table_name}]"
+        query = (
+            f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"
+        )
 
-        # Re-add TOP 5 at the start (a bit hacky string manipulation for simplicity)
-        query = f"SELECT TOP 5 {query[7:]}"
-
-        logger.info(f"Testing mapping query: {query}")
+        # Log a sanitized summary (omit full query text to reduce risk)
+        logger.info(
+            "Testing mapping query for table '%s' in schema '%s' with %d columns",
+            table_name,
+            schema,
+            len(select_fields),
+        )
 
         cursor.execute(query)
         columns = [column[0] for column in cursor.description]
         results = []
         for row in cursor.fetchall():
-            results.append(dict(zip(columns, row, strict=False)))
+            results.append(dict(zip(columns, row)))
 
         conn.close()
         return {"success": True, "sample_data": results}
@@ -199,15 +232,18 @@ async def test_mapping(
 
 @router.post("/save")
 async def save_mapping(
-    data: dict[str, Any], current_user: dict = Depends(get_current_user)
+    data: dict[str, Any],
+    current_user: dict = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """
     Saves both connection parameters and mapping configuration.
     Expects data = { "connection": {...}, "mapping": {...} }
     """
-    from backend.server import db
-
     try:
+        if current_user.get("role") not in {"admin", "supervisor"}:
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+
         connection = data.get("connection", {})
         mapping = data.get("mapping", {})
 
@@ -242,8 +278,11 @@ async def save_mapping(
 
 
 @router.get("/current")
-async def get_current_mapping(current_user: dict = Depends(get_current_user)):
-    from backend.server import db
+async def get_current_mapping(
+    current_user: dict = Depends(get_current_user), db=Depends(get_db)
+):
+    if current_user.get("role") not in {"admin", "supervisor"}:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
 
     try:
         doc = await db.config.find_one({"_id": "erp_mapping"})

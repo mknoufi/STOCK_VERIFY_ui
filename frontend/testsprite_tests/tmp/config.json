@@ -1,7 +1,0 @@
-{
-  "status": "commited",
-  "type": "backend",
-  "scope": "codebase",
-  "localEndpoint": "http://localhost:8082",
-  "backendAuthType": "public"
-}

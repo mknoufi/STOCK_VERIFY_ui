@@ -116,7 +116,7 @@ ROLE_PERMISSIONS: dict[str, set[Permission]] = {
     },
     "admin": {
         # Admins get all permissions
-        *[p for p in Permission],
+        *Permission,
     },
 }
 
@@ -154,14 +154,14 @@ def has_permission(user: dict, permission: Permission) -> bool:
 def has_any_permission(user: dict, permissions: list[Permission]) -> bool:
     """Check if user has any of the specified permissions"""
     user_permissions = set(get_user_permissions(user))
-    required_permissions = set(p.value for p in permissions)
+    required_permissions = {p.value for p in permissions}
     return bool(user_permissions & required_permissions)
 
 
 def has_all_permissions(user: dict, permissions: list[Permission]) -> bool:
     """Check if user has all of the specified permissions"""
     user_permissions = set(get_user_permissions(user))
-    required_permissions = set(p.value for p in permissions)
+    required_permissions = {p.value for p in permissions}
     return required_permissions.issubset(user_permissions)
 
 

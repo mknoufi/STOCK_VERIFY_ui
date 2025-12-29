@@ -132,7 +132,7 @@ async def get_available_racks(
     from backend.server import db
 
     # Build query
-    query = {"status": {"$in": ["available", "paused"]}}
+    query: dict[str, Any] = {"status": {"$in": ["available", "paused"]}}
     if floor:
         query["floor"] = floor
 

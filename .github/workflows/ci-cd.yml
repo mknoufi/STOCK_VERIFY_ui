@@ -2,7 +2,7 @@ name: STOCK_VERIFY_2.1 CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, final]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -75,6 +75,11 @@ jobs:
 
           echo "All retry attempts failed"
           exit 1
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unixodbc-dev
 
       - name: Install backend dependencies
         working-directory: ./backend
@@ -149,6 +154,11 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unixodbc-dev
 
       - name: Install dependencies
         working-directory: ./backend
@@ -339,6 +349,11 @@ jobs:
         run: |
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ needs.build-images.outputs.version }}
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ needs.build-images.outputs.version }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unixodbc-dev
 
       - name: Install dependencies
         working-directory: ./backend

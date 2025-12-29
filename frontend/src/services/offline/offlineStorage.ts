@@ -1,6 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { storage } from "../storage/asyncStorageService";
 import { levenshteinDistance } from "../../utils/algorithms";
+import { createLogger } from "../logging";
+
+const log = createLogger('OfflineStorage');
 
 const STORAGE_KEYS = {
   ITEMS_CACHE: "items_cache",
@@ -11,13 +14,49 @@ const STORAGE_KEYS = {
   USER_DATA: "user_data",
 };
 
+/**
+ * Data source metadata for cached items
+ */
+export type DataSource = 'api' | 'cache' | 'offline';
+
+/**
+ * Extended result with source metadata
+ */
+export interface CacheResult<T> {
+  data: T;
+  _source: DataSource;
+  _cachedAt: string | null;
+  _stale: boolean;
+}
+
+/**
+ * Check if cached data is stale (older than threshold)
+ * Default: 1 hour
+ */
+export function isCacheStale(cachedAt: string | null, maxAgeMs: number = 60 * 60 * 1000): boolean {
+  if (!cachedAt) return true;
+  const cacheTime = new Date(cachedAt).getTime();
+  return Date.now() - cacheTime > maxAgeMs;
+}
+
 export interface CachedItem {
   item_code: string;
   barcode?: string;
   item_name: string;
   description?: string;
   uom?: string;
+  uom_name?: string;
+  mrp?: number;
+  sales_price?: number;
+  sale_price?: number;
+  category?: string;
+  subcategory?: string;
   current_stock?: number;
+  warehouse?: string;
+  manual_barcode?: string;
+  unit2_barcode?: string;
+  unit_m_barcode?: string;
+  batch_id?: string;
   cached_at: string;
 }
 
@@ -30,12 +69,23 @@ export interface OfflineQueueItem {
 }
 
 export interface CachedSession {
-  session_id: string;
+  id: string;
   warehouse: string;
+  staff_user: string;
+  staff_name: string;
   status: string;
-  created_by: string;
-  created_at: string;
+  type: string;
+  started_at: string;
+  closed_at?: string;
+  reconciled_at?: string;
+  total_items?: number;
+  total_variance?: number;
+  notes?: string;
   cached_at: string;
+  // Legacy fields fallback
+  session_id?: string;
+  created_by?: string;
+  created_at?: string;
 }
 
 export interface CachedCountLine {
@@ -53,11 +103,77 @@ export interface CachedCountLine {
   rack?: string;
   rack_id?: string;
   verified?: boolean;
+  // Allow any additional audit fields
+  [key: string]: unknown;
+}
+
+/**
+ * Validation result for cache operations
+ */
+export interface CacheValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
+/**
+ * Validate that an item has the minimum required fields for caching.
+ * Prevents corrupt cache entries.
+ */
+export function assertValidCachedItem(item: Partial<CachedItem>): CacheValidationResult {
+  const errors: string[] = [];
+
+  if (!item.item_code || typeof item.item_code !== 'string') {
+    errors.push('item_code is required and must be a string');
+  }
+  if (!item.item_name || typeof item.item_name !== 'string') {
+    errors.push('item_name is required and must be a string');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Validate that a count line has the minimum required fields for caching.
+ */
+export function assertValidCachedCountLine(line: Partial<CachedCountLine>): CacheValidationResult {
+  const errors: string[] = [];
+
+  if (!line._id || typeof line._id !== 'string') {
+    errors.push('_id is required and must be a string');
+  }
+  if (!line.session_id || typeof line.session_id !== 'string') {
+    errors.push('session_id is required and must be a string');
+  }
+  if (!line.item_code || typeof line.item_code !== 'string') {
+    errors.push('item_code is required and must be a string');
+  }
+  if (typeof line.counted_qty !== 'number') {
+    errors.push('counted_qty is required and must be a number');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
 }
 
 // Item Cache Operations
 export const cacheItem = async (item: Omit<CachedItem, "cached_at">) => {
   try {
+    // Validate before caching
+    const validation = assertValidCachedItem(item);
+    if (!validation.valid) {
+      log.warn('Attempted to cache invalid item', {
+        errors: validation.errors,
+        itemCode: item.item_code
+      });
+      // Don't throw - just log and skip to avoid breaking main flow
+      return null;
+    }
+
     const cachedItem: CachedItem = {
       ...item,
       cached_at: new Date().toISOString(),
@@ -72,7 +188,7 @@ export const cacheItem = async (item: Omit<CachedItem, "cached_at">) => {
     await storage.set(STORAGE_KEYS.ITEMS_CACHE, updatedCache);
     return cachedItem;
   } catch (error) {
-    __DEV__ && console.error("Error caching item:", error);
+    log.error("Error caching item", { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 };
@@ -199,6 +315,12 @@ export const removeManyFromOfflineQueue = async (ids: string[]) => {
   try {
     const queue = await getOfflineQueue();
     const updatedQueue = queue.filter((item) => !ids.includes(item.id));
+
+    // T079: Log deletion for verification
+    if (queue.length !== updatedQueue.length) {
+      console.log(`[OfflineStorage] Removed ${queue.length - updatedQueue.length} confirmed items from offline queue.`);
+    }
+
     await storage.set(STORAGE_KEYS.OFFLINE_QUEUE, updatedQueue);
   } catch (error) {
     __DEV__ && console.error("Error removing many from offline queue:", error);
@@ -227,22 +349,42 @@ export const clearOfflineQueue = async () => {
 
 // Session Cache Operations
 export const cacheSession = async (
-  session: Omit<CachedSession, "cached_at">,
+  session: Omit<CachedSession, "cached_at"> | any, // Use any to allow backend objects to be passed in
 ) => {
   try {
-    const cachedSession: CachedSession = {
-      ...session,
+    // Normalization logic
+    const normalizedSession: CachedSession = {
+      id: session.id || session.session_id || `temp_${Date.now()}`,
+      warehouse: session.warehouse,
+      status: session.status,
+      type: session.type || "STANDARD",
+      staff_user: session.staff_user || session.created_by || "unknown",
+      staff_name: session.staff_name || "Staff",
+      started_at: session.started_at || session.created_at || new Date().toISOString(),
+      closed_at: session.closed_at,
+      reconciled_at: session.reconciled_at,
+      total_items: session.total_items,
+      total_variance: session.total_variance,
+      notes: session.notes,
       cached_at: new Date().toISOString(),
     };
+
+    if (!normalizedSession.id || normalizedSession.id === "undefined") {
+        console.warn("Attempted to cache session with invalid ID:", session);
+        return normalizedSession;
+    }
 
     const existingCache = await getSessionsCache();
     const updatedCache = {
       ...existingCache,
-      [session.session_id]: cachedSession,
+      [normalizedSession.id]: normalizedSession,
     };
 
+    // Remove any undefined keys if present
+    delete (updatedCache as any)["undefined"];
+
     await storage.set(STORAGE_KEYS.SESSIONS_CACHE, updatedCache);
-    return cachedSession;
+    return normalizedSession;
   } catch (error) {
     __DEV__ && console.error("Error caching session:", error);
     throw error;
@@ -259,6 +401,16 @@ export const getSessionsCache = async (): Promise<
         defaultValue: {},
       },
     );
+
+    // Self-healing: remove undefined keys
+    if (cache && (cache as any)["undefined"]) {
+        __DEV__ && console.log("🧹 Cleaning up invalid 'undefined' session cache entry");
+        const cleanCache = { ...cache };
+        delete (cleanCache as any)["undefined"];
+        await storage.set(STORAGE_KEYS.SESSIONS_CACHE, cleanCache);
+        return cleanCache;
+    }
+
     return cache ?? {};
   } catch (error) {
     __DEV__ && console.error("Error getting sessions cache:", error);
@@ -283,17 +435,29 @@ export const cacheCountLine = async (
   countLine: Omit<CachedCountLine, "cached_at">,
 ) => {
   try {
+    // Validate before caching
+    const validation = assertValidCachedCountLine(countLine);
+    if (!validation.valid) {
+      log.warn('Attempted to cache invalid count line', {
+        errors: validation.errors,
+        lineId: countLine._id
+      });
+      // Don't throw - just log and skip to avoid breaking main flow
+      return null;
+    }
+
+    const sessionId = String(countLine.session_id);
     const cachedCountLine: CachedCountLine = {
-      ...countLine,
+      ...(countLine as any),
       cached_at: new Date().toISOString(),
     };
 
     const existingCache = await getCountLinesCache();
-    const sessionLines = existingCache[countLine.session_id] || [];
+    const sessionLines: CachedCountLine[] = existingCache[sessionId] || [];
 
     // Update or add the count line
     const existingIndex = sessionLines.findIndex(
-      (line) => line._id === countLine._id,
+      (line: CachedCountLine) => line._id === countLine._id,
     );
     if (existingIndex >= 0) {
       sessionLines[existingIndex] = cachedCountLine;
@@ -301,15 +465,15 @@ export const cacheCountLine = async (
       sessionLines.push(cachedCountLine);
     }
 
-    const updatedCache = {
+    const updatedCache: Record<string, CachedCountLine[]> = {
       ...existingCache,
-      [countLine.session_id]: sessionLines,
+      [sessionId]: sessionLines,
     };
 
     await storage.set(STORAGE_KEYS.COUNT_LINES_CACHE, updatedCache);
     return cachedCountLine;
   } catch (error) {
-    __DEV__ && console.error("Error caching count line:", error);
+    log.error("Error caching count line", { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 };

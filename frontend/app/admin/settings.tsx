@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   getSystemSettings,
   updateSystemSettings,
@@ -21,7 +21,7 @@ import {
 
 export default function MasterSettingsScreen() {
   const router = useRouter();
-  const { hasRole } = usePermissions();
+  const { hasRole } = usePermission();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<any>(null);

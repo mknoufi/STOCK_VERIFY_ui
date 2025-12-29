@@ -3,29 +3,89 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Function to get local IP
+get_local_ip() {
+    ipconfig getifaddr en0 || ipconfig getifaddr en1 || echo "localhost"
+}
+
+LOCAL_IP=$(get_local_ip)
+PORT=8001
+
 echo "🚀 Starting Stock Verify Application..."
+echo "📍 Detected Local IP: $LOCAL_IP"
+echo "🛑 Stopping any running instances first..."
+"$SCRIPT_DIR/scripts/stop_all.sh" 2>/dev/null || true
+rm -f "$SCRIPT_DIR/backend_port.json" # Clean up old port file
+sleep 2
+
 echo ""
 
 # Start Backend in new Terminal window
 osascript <<APPLESCRIPT
 tell application "Terminal"
     activate
-    set backendWindow to do script "cd '$SCRIPT_DIR/backend' && source ../.venv/bin/activate && export PYTHONPATH=.. && echo '🚀 Starting Backend Server...' && python -m backend.server"
+    set backendWindow to do script "cd '$SCRIPT_DIR' && ./scripts/start_backend.sh"
     set custom title of backendWindow to "Backend Server"
 end tell
 APPLESCRIPT
 
-echo "Waiting for backend to initialize..."
-sleep 5
+echo "⏳ Waiting for Backend to initialize and write likely port..."
 
-# Start Frontend in new Terminal window
-osascript <<APPLESCRIPT
-tell application "Terminal"
-    activate
-    set frontendWindow to do script "cd '$SCRIPT_DIR/frontend' && echo '🚀 Starting Frontend Server...' && echo '🔄 Updating configuration...' && npm run update-ip && echo '📱 Starting Expo...' && npm start"
-    set custom title of frontendWindow to "Frontend Server"
-end tell
+# Loop to check for backend_port.json and then health
+MAX_RETRIES=60
+COUNT=0
+BACKEND_READY=false
+DETECTED_PORT=""
+
+while [ $COUNT -lt $MAX_RETRIES ]; do
+    # 1. Check for backend_port.json
+    if [ -f "$SCRIPT_DIR/backend_port.json" ]; then
+        # Try to read port using python (available on mac) to avoid jq dependency
+        DETECTED_PORT=$(python3 -c "import json; print(json.load(open('$SCRIPT_DIR/backend_port.json'))['port'])" 2>/dev/null)
+
+        if [ ! -z "$DETECTED_PORT" ]; then
+            # 2. Check health using detected port
+            if curl -s "http://$LOCAL_IP:$DETECTED_PORT/api/health" > /dev/null; then
+                BACKEND_READY=true
+                PORT=$DETECTED_PORT
+                echo "✅ Connection confirmed: http://$LOCAL_IP:$PORT/api/health"
+                break
+            fi
+            # Check localhost fallback
+            if curl -s "http://localhost:$DETECTED_PORT/api/health" > /dev/null; then
+                BACKEND_READY=true
+                PORT=$DETECTED_PORT
+                echo "✅ Connection confirmed: http://localhost:$PORT/api/health"
+                break
+            fi
+        fi
+    fi
+
+    echo "   ... waiting for backend ($COUNT/$MAX_RETRIES)"
+    sleep 1
+    ((COUNT++))
+done
+
+if [ "$BACKEND_READY" = true ]; then
+    echo "✅ Backend is UP and reachable on port $PORT!"
+
+    echo "🚀 Starting Frontend..."
+
+    # Start Frontend in new Terminal window
+    osascript <<APPLESCRIPT
+    tell application "Terminal"
+        activate
+        set frontendWindow to do script "cd '$SCRIPT_DIR' && ./scripts/start_frontend.sh"
+        set custom title of frontendWindow to "Frontend Server"
+    end tell
 APPLESCRIPT
 
-echo "✅ Both servers started in separate Terminal windows!"
+    echo "✅ Both servers started!"
+    echo "📱 Frontend will automatically connect to Backend at http://$LOCAL_IP:$PORT"
+else
+    echo "❌ Backend failed to start or is not reachable after 60 seconds."
+    echo "   Please check the 'Backend Server' terminal window for errors."
+    exit 1
+fi
+
 echo "💡 To stop servers, run: ./stop.sh"

@@ -4,7 +4,7 @@
  * Phase 0: Advanced Analytics Dashboard
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,8 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native";
-import { MetricCard } from "./MetricCard";
+import { KPICard, ActiveUsersPanel, ErrorLogsPanel } from "../admin";
+import { ErrorBoundary } from "../feedback/ErrorBoundary";
 import { VarianceChart } from "./VarianceChart";
 import { colorPalette, spacing, typography } from "@/theme/designTokens";
 import {
@@ -30,30 +31,38 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   onRefresh,
 }) => {
   const [data, setData] = useState<AnalyticsDashboardData | null>(null);
+  const [activeUsers, setActiveUsers] = useState<any[]>([]);
+  const [errorLogs, setErrorLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const dashboardData = await analyticsService.getDashboardData(timeRange);
-      const trends = await analyticsService.getVarianceTrends(7);
+      const [dashboardData, trends, users, logs] = await Promise.all([
+        analyticsService.getDashboardData(timeRange),
+        analyticsService.getVarianceTrends(7),
+        analyticsService.getActiveUsers(),
+        analyticsService.getErrorLogs(),
+      ]);
 
       setData({
         ...dashboardData,
         varianceTrends: trends,
       });
+      setActiveUsers(users);
+      setErrorLogs(logs);
     } catch (error) {
       console.error("Failed to load analytics data:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [timeRange]);
 
   useEffect(() => {
     loadData();
-  }, [timeRange]);
+  }, [loadData]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -85,9 +94,40 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.metricsContainer}
         >
-          {data?.overview.map((metric, index) => (
-            <MetricCard key={index} metric={metric} />
-          ))}
+          {data?.overview.map((metric, index) => {
+            // Derive intent based on label (simplified logic)
+            const isNegativeGood = metric.label.includes("Variance") || metric.label.includes("Error");
+            let intent: "good" | "bad" | "neutral" = "neutral";
+
+            if (metric.change) {
+              if (metric.change > 0) intent = isNegativeGood ? "bad" : "good";
+              else if (metric.change < 0) intent = isNegativeGood ? "good" : "bad";
+            }
+
+            return (
+              <KPICard
+                key={index}
+                title={metric.label}
+                value={metric.value}
+                icon={
+                  metric.label.includes("Error")
+                    ? "alert-circle-outline"
+                    : metric.label.includes("Variance")
+                      ? "swap-vertical"
+                      : "chart-line"
+                }
+                trend={metric.change}
+                trendIntent={intent}
+                formatOptions={
+                  metric.format === 'percentage'
+                    ? { style: 'percent', maximumFractionDigits: 1 }
+                    : { style: 'decimal' }
+                }
+                // Mock onPress for now
+                onPress={() => console.log('Drill-down', metric.label)}
+              />
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -97,6 +137,36 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <VarianceChart data={data.varianceTrends} />
         </View>
       )}
+
+      {/* Operational Panels */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Operational Monitoring</Text>
+        <View style={styles.panelsContainer}>
+          <View style={styles.panelWrapper}>
+            <ErrorBoundary>
+              <ActiveUsersPanel
+                users={activeUsers.slice(0, 5)}
+                scrollEnabled={false}
+              />
+            </ErrorBoundary>
+          </View>
+          <View style={styles.panelWrapper}>
+            <ErrorBoundary>
+              <ErrorLogsPanel
+                logs={errorLogs.slice(0, 5)}
+                onAcknowledge={async (id) => {
+                  await analyticsService.acknowledgeError(id);
+                  // Optimistic update or refresh could go here
+                }}
+                onResolve={async (id) => {
+                  await analyticsService.resolveError(id);
+                }}
+                scrollEnabled={false}
+              />
+            </ErrorBoundary>
+          </View>
+        </View>
+      </View>
 
       {/* Session Analytics */}
       {data?.sessionAnalytics && (
@@ -164,6 +234,13 @@ const styles = StyleSheet.create({
   metricsContainer: {
     gap: spacing.sm,
     paddingRight: spacing.base,
+    paddingBottom: spacing.sm, // Add padding for shadow visibility
+  },
+  panelsContainer: {
+    gap: spacing.md,
+  },
+  panelWrapper: {
+    marginBottom: spacing.sm,
   },
   statsGrid: {
     flexDirection: "row",

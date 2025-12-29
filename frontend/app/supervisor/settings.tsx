@@ -3,7 +3,7 @@
  * Refactored to use Aurora Design System
  */
 
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -21,11 +21,15 @@ import * as Haptics from "expo-haptics";
 
 import { useSettingsStore } from "../../src/store/settingsStore";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
+import {
+  ChangePinModal,
+  ChangePasswordModal,
+} from "../../src/components/settings";
 
 // Reusable Setting Row Component
 const SettingRow = ({
@@ -71,7 +75,7 @@ const SettingRow = ({
             <Ionicons
               name={icon}
               size={18}
-              color={auroraTheme.colors.text.primary}
+              color={theme.colors.text.primary}
             />
           </View>
         )}
@@ -89,11 +93,11 @@ const SettingRow = ({
             }}
             disabled={disabled}
             trackColor={{
-              false: auroraTheme.colors.neutral[600],
-              true: auroraTheme.colors.primary[500],
+              false: "rgba(255,255,255,0.1)",
+              true: theme.colors.primary[500],
             }}
-            thumbColor={auroraTheme.colors.text.primary}
-            ios_backgroundColor={auroraTheme.colors.neutral[700]}
+            thumbColor={theme.colors.text.primary}
+            ios_backgroundColor="rgba(255,255,255,0.05)"
           />
         )}
 
@@ -106,7 +110,7 @@ const SettingRow = ({
             <Ionicons
               name="chevron-forward"
               size={16}
-              color={auroraTheme.colors.text.tertiary}
+              color={theme.colors.text.tertiary}
             />
           </View>
         )}
@@ -122,6 +126,8 @@ const SettingRow = ({
 export default function SettingsScreen() {
   const router = useRouter();
   const { settings, setSetting, resetSettings } = useSettingsStore();
+  const [showChangePinModal, setShowChangePinModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   const handleReset = () => {
     if (Platform.OS !== "web")
@@ -144,7 +150,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <AuroraBackground variant="secondary" intensity="medium" animated>
+    <ScreenContainer>
       <StatusBar style="light" />
       <ScrollView
         style={styles.container}
@@ -164,7 +170,7 @@ export default function SettingsScreen() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -179,7 +185,7 @@ export default function SettingsScreen() {
         {/* Theme Settings */}
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <Text style={styles.sectionTitle}>Appearance</Text>
-          <GlassCard variant="medium" padding={0} style={styles.card}>
+          <GlassCard intensity={15} padding={0} style={styles.card}>
             <AnimatedPressable
               style={styles.settingRow}
               onPress={() => router.push("/supervisor/appearance")}
@@ -189,7 +195,7 @@ export default function SettingsScreen() {
                   <Ionicons
                     name="color-palette-outline"
                     size={18}
-                    color={auroraTheme.colors.text.primary}
+                    color={theme.colors.text.primary}
                   />
                 </View>
                 <Text style={styles.settingLabel}>Customize Appearance</Text>
@@ -197,7 +203,7 @@ export default function SettingsScreen() {
               <Ionicons
                 name="chevron-forward"
                 size={16}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
             </AnimatedPressable>
             <View style={styles.divider} />
@@ -227,7 +233,7 @@ export default function SettingsScreen() {
         {/* Sync Settings */}
         <Animated.View entering={FadeInDown.delay(300).springify()}>
           <Text style={styles.sectionTitle}>Data & Sync</Text>
-          <GlassCard variant="medium" padding={0} style={styles.card}>
+          <GlassCard intensity={15} padding={0} style={styles.card}>
             <SettingRow
               label="Auto Sync"
               value={settings.autoSyncEnabled}
@@ -258,7 +264,7 @@ export default function SettingsScreen() {
         {/* Scanner Settings */}
         <Animated.View entering={FadeInDown.delay(400).springify()}>
           <Text style={styles.sectionTitle}>Scanner</Text>
-          <GlassCard variant="medium" padding={0} style={styles.card}>
+          <GlassCard intensity={15} padding={0} style={styles.card}>
             <SettingRow
               label="Vibration Feedback"
               value={settings.scannerVibration}
@@ -285,10 +291,66 @@ export default function SettingsScreen() {
           </GlassCard>
         </Animated.View>
 
+        {/* Security Settings */}
+        <Animated.View entering={FadeInDown.delay(450).springify()}>
+          <Text style={styles.sectionTitle}>Security</Text>
+          <GlassCard intensity={15} padding={0} style={styles.card}>
+            <AnimatedPressable
+              style={styles.settingRow}
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.selectionAsync();
+                setShowChangePinModal(true);
+              }}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons
+                    name="keypad-outline"
+                    size={18}
+                    color={theme.colors.text.primary}
+                  />
+                </View>
+                <Text style={styles.settingLabel}>Change PIN</Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.text.tertiary}
+              />
+            </AnimatedPressable>
+
+            <View style={styles.divider} />
+
+            <AnimatedPressable
+              style={styles.settingRow}
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.selectionAsync();
+                setShowChangePasswordModal(true);
+              }}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={18}
+                    color={theme.colors.text.primary}
+                  />
+                </View>
+                <Text style={styles.settingLabel}>Change Password</Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.text.tertiary}
+              />
+            </AnimatedPressable>
+          </GlassCard>
+        </Animated.View>
+
         {/* Navigation Actions */}
-        <Animated.View entering={FadeInDown.delay(500).springify()}>
+        <Animated.View entering={FadeInDown.delay(550).springify()}>
           <Text style={styles.sectionTitle}>Management</Text>
-          <GlassCard variant="medium" padding={0} style={styles.card}>
+          <GlassCard intensity={15} padding={0} style={styles.card}>
             <AnimatedPressable
               style={styles.settingRow}
               onPress={() => router.push("/supervisor/db-mapping")}
@@ -298,7 +360,7 @@ export default function SettingsScreen() {
                   <Ionicons
                     name="options-outline"
                     size={18}
-                    color={auroraTheme.colors.text.primary}
+                    color={theme.colors.text.primary}
                   />
                 </View>
                 <Text style={styles.settingLabel}>Database Mapping</Text>
@@ -306,7 +368,7 @@ export default function SettingsScreen() {
               <Ionicons
                 name="chevron-forward"
                 size={16}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
             </AnimatedPressable>
 
@@ -321,7 +383,7 @@ export default function SettingsScreen() {
                   <Ionicons
                     name="help-circle-outline"
                     size={18}
-                    color={auroraTheme.colors.text.primary}
+                    color={theme.colors.text.primary}
                   />
                 </View>
                 <Text style={styles.settingLabel}>Help & Support</Text>
@@ -329,7 +391,7 @@ export default function SettingsScreen() {
               <Ionicons
                 name="chevron-forward"
                 size={16}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
             </AnimatedPressable>
           </GlassCard>
@@ -344,7 +406,7 @@ export default function SettingsScreen() {
             <Ionicons
               name="refresh"
               size={18}
-              color={auroraTheme.colors.error[500]}
+              color={theme.colors.error.main}
             />
             <Text style={styles.resetText}>Reset to Defaults</Text>
           </AnimatedPressable>
@@ -352,7 +414,30 @@ export default function SettingsScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </AuroraBackground>
+
+      {/* Modals */}
+      <ChangePinModal
+        visible={showChangePinModal}
+        onClose={() => setShowChangePinModal(false)}
+        onSuccess={() => {
+          setShowChangePinModal(false);
+          if (Platform.OS !== "web")
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Alert.alert("Success", "Your PIN has been changed successfully");
+        }}
+      />
+
+      <ChangePasswordModal
+        visible={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={() => {
+          setShowChangePasswordModal(false);
+          if (Platform.OS !== "web")
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Alert.alert("Success", "Your password has been changed successfully");
+        }}
+      />
+    </ScreenContainer>
   );
 }
 
@@ -361,44 +446,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: auroraTheme.spacing.lg,
+    padding: theme.spacing.lg,
     paddingTop: 60,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.xl,
+    marginBottom: theme.spacing.xl,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
+    fontSize: 32,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   sectionTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.secondary,
-    marginBottom: auroraTheme.spacing.sm,
-    marginLeft: auroraTheme.spacing.xs,
-    marginTop: auroraTheme.spacing.md,
+    fontSize: 16,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.sm,
+    marginLeft: theme.spacing.xs,
+    marginTop: theme.spacing.md,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
@@ -409,7 +492,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: auroraTheme.spacing.md,
+    padding: theme.spacing.md,
     minHeight: 56,
   },
   disabledRow: {
@@ -418,20 +501,19 @@ const styles = StyleSheet.create({
   settingLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   iconContainer: {
     width: 32,
     height: 32,
-    borderRadius: auroraTheme.borderRadius.full,
-    backgroundColor: auroraTheme.colors.background.tertiary,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: "rgba(255,255,255,0.08)",
     alignItems: "center",
     justifyContent: "center",
   },
   settingLabel: {
-    fontFamily: auroraTheme.typography.fontFamily.body,
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 16,
+    color: theme.colors.text.primary,
   },
   settingRight: {
     flexDirection: "row",
@@ -440,38 +522,38 @@ const styles = StyleSheet.create({
   selectContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.xs,
+    gap: theme.spacing.xs,
   },
   selectValue: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 16,
+    color: theme.colors.text.secondary,
   },
   valueText: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 16,
+    color: theme.colors.text.secondary,
   },
   divider: {
     height: 1,
-    backgroundColor: auroraTheme.colors.border.light,
+    backgroundColor: "rgba(255,255,255,0.1)",
     marginLeft: 56, // Align with text start
   },
   resetContainer: {
-    marginTop: auroraTheme.spacing.xl,
+    marginTop: theme.spacing.xl,
     alignItems: "center",
   },
   resetButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.sm,
-    paddingVertical: auroraTheme.spacing.sm,
-    paddingHorizontal: auroraTheme.spacing.lg,
-    borderRadius: auroraTheme.borderRadius.full,
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.full,
     backgroundColor: "rgba(239, 68, 68, 0.1)", // Error color with low opacity
     borderWidth: 1,
     borderColor: "rgba(239, 68, 68, 0.3)",
   },
   resetText: {
-    color: auroraTheme.colors.error[500],
+    color: theme.colors.error.main,
     fontWeight: "600",
   },
 });

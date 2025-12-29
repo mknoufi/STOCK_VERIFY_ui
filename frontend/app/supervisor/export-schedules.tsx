@@ -1,10 +1,10 @@
 /**
  * Export Schedules Screen
  * Allows creating, editing, and managing automated export schedules.
- * Refactored to use Aurora Design System
+ * Refactored to use Deep Ocean Design System
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   getExportSchedules,
   createExportSchedule,
@@ -31,11 +31,11 @@ import {
   triggerExportSchedule,
 } from "../../src/services/api/api";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
 
 interface ExportSchedule {
   _id: string;
@@ -52,7 +52,7 @@ interface ExportSchedule {
 
 export default function ExportSchedulesScreen() {
   const router = useRouter();
-  const { hasPermission } = usePermissions();
+  const { hasPermission } = usePermission();
   const [loading, setLoading] = useState(true);
   const [schedules, setSchedules] = useState<ExportSchedule[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -66,6 +66,18 @@ export default function ExportSchedulesScreen() {
     format: "excel",
   });
 
+  const loadSchedules = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getExportSchedules();
+      setSchedules(response.data?.schedules || []);
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to load export schedules");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!hasPermission("export.schedule")) {
       Alert.alert(
@@ -76,20 +88,7 @@ export default function ExportSchedulesScreen() {
       return;
     }
     loadSchedules();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadSchedules = async () => {
-    try {
-      setLoading(true);
-      const response = await getExportSchedules();
-      setSchedules(response.data?.schedules || []);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to load export schedules");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [hasPermission, router, loadSchedules]);
 
   const handleCreateSchedule = async () => {
     try {
@@ -205,9 +204,9 @@ export default function ExportSchedulesScreen() {
       entering={FadeInDown.delay(index * 100).springify()}
     >
       <GlassCard
-        variant="light"
-        padding={auroraTheme.spacing.md}
-        borderRadius={auroraTheme.borderRadius.lg}
+        intensity={15}
+        padding={theme.spacing.md}
+        borderRadius={theme.borderRadius.lg}
         style={styles.card}
       >
         <View style={styles.cardHeader}>
@@ -215,13 +214,13 @@ export default function ExportSchedulesScreen() {
             <View
               style={[
                 styles.iconContainer,
-                { backgroundColor: auroraTheme.colors.primary[500] + "20" },
+                { backgroundColor: theme.colors.primary[500] + "20" },
               ]}
             >
               <Ionicons
                 name="calendar-outline"
                 size={24}
-                color={auroraTheme.colors.primary[500]}
+                color={theme.colors.primary[500]}
               />
             </View>
             <View>
@@ -231,13 +230,13 @@ export default function ExportSchedulesScreen() {
                   styles.badge,
                   schedule.enabled
                     ? {
-                        backgroundColor: auroraTheme.colors.success[500] + "20",
-                        borderColor: auroraTheme.colors.success[500],
+                        backgroundColor: theme.colors.success.main + "20",
+                        borderColor: theme.colors.success.main,
                       }
                     : {
                         backgroundColor:
-                          auroraTheme.colors.text.tertiary + "20",
-                        borderColor: auroraTheme.colors.text.tertiary,
+                          theme.colors.text.tertiary + "20",
+                        borderColor: theme.colors.text.tertiary,
                       },
                 ]}
               >
@@ -246,8 +245,8 @@ export default function ExportSchedulesScreen() {
                     styles.badgeText,
                     {
                       color: schedule.enabled
-                        ? auroraTheme.colors.success[500]
-                        : auroraTheme.colors.text.secondary,
+                        ? theme.colors.success.main
+                        : theme.colors.text.secondary,
                     },
                   ]}
                 >
@@ -267,13 +266,13 @@ export default function ExportSchedulesScreen() {
             <Ionicons
               name="time-outline"
               size={16}
-              color={auroraTheme.colors.text.tertiary}
+              color={theme.colors.text.tertiary}
             />
             <Text style={styles.cardDetailText}>
               Frequency:{" "}
               <Text
                 style={{
-                  color: auroraTheme.colors.text.primary,
+                  color: theme.colors.text.primary,
                   fontWeight: "600",
                 }}
               >
@@ -285,13 +284,13 @@ export default function ExportSchedulesScreen() {
             <Ionicons
               name="document-text-outline"
               size={16}
-              color={auroraTheme.colors.text.tertiary}
+              color={theme.colors.text.tertiary}
             />
             <Text style={styles.cardDetailText}>
               Format:{" "}
               <Text
                 style={{
-                  color: auroraTheme.colors.text.primary,
+                  color: theme.colors.text.primary,
                   fontWeight: "600",
                 }}
               >
@@ -304,11 +303,11 @@ export default function ExportSchedulesScreen() {
               <Ionicons
                 name="play-skip-forward-outline"
                 size={16}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
               <Text style={styles.cardDetailText}>
                 Next Run:{" "}
-                <Text style={{ color: auroraTheme.colors.text.primary }}>
+                <Text style={{ color: theme.colors.text.primary }}>
                   {new Date(schedule.next_run).toLocaleString()}
                 </Text>
               </Text>
@@ -320,7 +319,7 @@ export default function ExportSchedulesScreen() {
           <AnimatedPressable
             style={[
               styles.actionButton,
-              { backgroundColor: auroraTheme.colors.primary[500] },
+              { backgroundColor: theme.colors.primary[500] },
             ]}
             onPress={() => handleTriggerSchedule(schedule._id)}
           >
@@ -331,7 +330,7 @@ export default function ExportSchedulesScreen() {
           <AnimatedPressable
             style={[
               styles.actionButton,
-              { backgroundColor: auroraTheme.colors.warning[500] },
+              { backgroundColor: theme.colors.warning.main },
             ]}
             onPress={() => openEditModal(schedule)}
           >
@@ -342,7 +341,7 @@ export default function ExportSchedulesScreen() {
           <AnimatedPressable
             style={[
               styles.actionButton,
-              { backgroundColor: auroraTheme.colors.error[500] },
+              { backgroundColor: theme.colors.error.main },
             ]}
             onPress={() => handleDeleteSchedule(schedule._id)}
           >
@@ -355,7 +354,7 @@ export default function ExportSchedulesScreen() {
   );
 
   return (
-    <AuroraBackground variant="secondary" intensity="low">
+    <ScreenContainer>
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
@@ -371,7 +370,7 @@ export default function ExportSchedulesScreen() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -382,7 +381,7 @@ export default function ExportSchedulesScreen() {
           <AnimatedPressable
             style={[
               styles.createButton,
-              { backgroundColor: auroraTheme.colors.success[500] },
+              { backgroundColor: theme.colors.success.main },
             ]}
             onPress={openCreateModal}
           >
@@ -395,7 +394,7 @@ export default function ExportSchedulesScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator
               size="large"
-              color={auroraTheme.colors.primary[500]}
+              color={theme.colors.primary[500]}
             />
             <Text style={styles.loadingText}>Loading schedules...</Text>
           </View>
@@ -410,7 +409,7 @@ export default function ExportSchedulesScreen() {
                 <Ionicons
                   name="calendar-outline"
                   size={64}
-                  color={auroraTheme.colors.text.tertiary}
+                  color={theme.colors.text.tertiary}
                 />
                 <Text style={styles.emptyStateText}>
                   No export schedules found
@@ -433,15 +432,13 @@ export default function ExportSchedulesScreen() {
           transparent={true}
           onRequestClose={() => setModalVisible(false)}
         >
-          <AuroraBackground
-            variant="primary"
-            intensity="high"
-            style={styles.modalOverlay}
+          <ScreenContainer
+            containerStyle={styles.modalOverlay}
           >
             <GlassCard
-              variant="modal"
-              borderRadius={auroraTheme.borderRadius.xl}
-              padding={auroraTheme.spacing.xl}
+              intensity={20}
+              borderRadius={theme.borderRadius.xl}
+              padding={theme.spacing.xl}
               style={styles.modalContent}
             >
               <View style={styles.modalHeader}>
@@ -452,7 +449,7 @@ export default function ExportSchedulesScreen() {
                   <Ionicons
                     name="close"
                     size={24}
-                    color={auroraTheme.colors.text.primary}
+                    color={theme.colors.text.primary}
                   />
                 </AnimatedPressable>
               </View>
@@ -461,7 +458,7 @@ export default function ExportSchedulesScreen() {
               <TextInput
                 style={styles.modalInput}
                 placeholder="Schedule Name"
-                placeholderTextColor={auroraTheme.colors.text.tertiary}
+                placeholderTextColor={theme.colors.text.tertiary}
                 value={formData.name}
                 onChangeText={(text) =>
                   setFormData({ ...formData, name: text })
@@ -472,7 +469,7 @@ export default function ExportSchedulesScreen() {
               <TextInput
                 style={[styles.modalInput, styles.modalTextArea]}
                 placeholder="Description (optional)"
-                placeholderTextColor={auroraTheme.colors.text.tertiary}
+                placeholderTextColor={theme.colors.text.tertiary}
                 value={formData.description}
                 onChangeText={(text) =>
                   setFormData({ ...formData, description: text })
@@ -488,8 +485,8 @@ export default function ExportSchedulesScreen() {
                     style={[
                       styles.optionButton,
                       formData.frequency === freq && {
-                        backgroundColor: auroraTheme.colors.primary[500],
-                        borderColor: auroraTheme.colors.primary[500],
+                        backgroundColor: theme.colors.primary[500],
+                        borderColor: theme.colors.primary[500],
                       },
                     ]}
                     onPress={() =>
@@ -519,8 +516,8 @@ export default function ExportSchedulesScreen() {
                     style={[
                       styles.optionButton,
                       formData.format === fmt && {
-                        backgroundColor: auroraTheme.colors.primary[500],
-                        borderColor: auroraTheme.colors.primary[500],
+                        backgroundColor: theme.colors.primary[500],
+                        borderColor: theme.colors.primary[500],
                       },
                     ]}
                     onPress={() => setFormData({ ...formData, format: fmt })}
@@ -545,9 +542,9 @@ export default function ExportSchedulesScreen() {
                   style={[
                     styles.modalButton,
                     {
-                      backgroundColor: auroraTheme.colors.background.glass,
+                      backgroundColor: "rgba(255,255,255,0.05)",
                       borderWidth: 1,
-                      borderColor: auroraTheme.colors.border.light,
+                      borderColor: "rgba(255,255,255,0.1)",
                     },
                   ]}
                   onPress={() => setModalVisible(false)}
@@ -555,7 +552,7 @@ export default function ExportSchedulesScreen() {
                   <Text
                     style={[
                       styles.modalButtonText,
-                      { color: auroraTheme.colors.text.primary },
+                      { color: theme.colors.text.primary },
                     ]}
                   >
                     Cancel
@@ -565,7 +562,7 @@ export default function ExportSchedulesScreen() {
                 <AnimatedPressable
                   style={[
                     styles.modalButton,
-                    { backgroundColor: auroraTheme.colors.primary[500] },
+                    { backgroundColor: theme.colors.primary[500] },
                   ]}
                   onPress={
                     editingSchedule
@@ -579,10 +576,10 @@ export default function ExportSchedulesScreen() {
                 </AnimatedPressable>
               </View>
             </GlassCard>
-          </AuroraBackground>
+          </ScreenContainer>
         </Modal>
       </View>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -595,30 +592,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: auroraTheme.spacing.md,
-    marginBottom: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
+    fontSize: 32,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   createButton: {
     flexDirection: "row",
@@ -626,76 +622,76 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: theme.borderRadius.full,
   },
   createButtonText: {
     color: "#fff",
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
     fontWeight: "600",
   },
   contentContainer: {
-    padding: auroraTheme.spacing.md,
+    padding: theme.spacing.md,
     paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   loadingText: {
-    color: auroraTheme.colors.text.secondary,
-    fontSize: auroraTheme.typography.fontSize.md,
+    color: theme.colors.text.secondary,
+    fontSize: 16,
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   emptyStateText: {
-    fontSize: auroraTheme.typography.fontSize.xl,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 18,
+    color: theme.colors.text.secondary,
     fontWeight: "bold",
   },
   emptyStateSubtext: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 14,
+    color: theme.colors.text.tertiary,
   },
   scrollView: {
     flex: 1,
   },
   card: {
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
   cardHeaderLeft: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
     flex: 1,
   },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: auroraTheme.borderRadius.md,
+    borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
   },
   cardTitle: {
-    fontSize: auroraTheme.typography.fontSize.lg,
+    fontSize: 20,
     fontWeight: "bold",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: auroraTheme.borderRadius.badge,
+    borderRadius: theme.borderRadius.badge,
     alignSelf: "flex-start",
     borderWidth: 1,
   },
@@ -704,13 +700,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   cardDescription: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
-    marginBottom: auroraTheme.spacing.md,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.md,
     lineHeight: 20,
   },
   cardDetails: {
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
     gap: 6,
   },
   detailRow: {
@@ -719,17 +715,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardDetailText: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   cardActions: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.sm,
+    gap: theme.spacing.sm,
   },
   actionButton: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: auroraTheme.borderRadius.lg,
+    borderRadius: theme.borderRadius.lg,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
@@ -737,7 +733,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: "#fff",
-    fontSize: auroraTheme.typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: "600",
   },
   modalOverlay: {
@@ -756,28 +752,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.lg,
+    marginBottom: theme.spacing.lg,
   },
   modalTitle: {
-    fontSize: auroraTheme.typography.fontSize.xl,
+    fontSize: 18,
     fontWeight: "bold",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
   },
   inputLabel: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
     marginBottom: 6,
     fontWeight: "600",
   },
   modalInput: {
     backgroundColor: "rgba(255,255,255,0.05)",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     padding: 12,
-    borderRadius: auroraTheme.borderRadius.md,
-    fontSize: auroraTheme.typography.fontSize.md,
-    marginBottom: auroraTheme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    fontSize: 16,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   modalTextArea: {
     minHeight: 80,
@@ -786,20 +782,20 @@ const styles = StyleSheet.create({
   optionGroup: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   optionButton: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: auroraTheme.borderRadius.md,
+    borderRadius: theme.borderRadius.md,
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   optionButtonText: {
-    color: auroraTheme.colors.text.secondary,
-    fontSize: auroraTheme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    fontSize: 14,
     fontWeight: "500",
   },
   modalActions: {
@@ -810,12 +806,12 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: theme.borderRadius.full,
     alignItems: "center",
   },
   modalButtonText: {
     color: "#fff",
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
     fontWeight: "600",
   },
 });

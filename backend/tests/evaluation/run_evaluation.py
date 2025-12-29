@@ -270,16 +270,11 @@ class EvaluationRunner:
         print("\n" + "=" * 60)
 
 
-def main():
-    """Main entry point for CLI."""
+def _create_argument_parser() -> argparse.ArgumentParser:
+    """Create and configure the argument parser."""
     parser = argparse.ArgumentParser(description="Stock Verify Evaluation Runner")
 
-    parser.add_argument(
-        "--all",
-        "-a",
-        action="store_true",
-        help="Run all evaluations",
-    )
+    parser.add_argument("--all", "-a", action="store_true", help="Run all evaluations")
     parser.add_argument(
         "--performance",
         "-p",
@@ -293,16 +288,10 @@ def main():
         help="Run business logic evaluation",
     )
     parser.add_argument(
-        "--data-quality",
-        "-d",
-        action="store_true",
-        help="Run data quality evaluation",
+        "--data-quality", "-d", action="store_true", help="Run data quality evaluation"
     )
     parser.add_argument(
-        "--workflow",
-        "-w",
-        action="store_true",
-        help="Run workflow evaluation",
+        "--workflow", "-w", action="store_true", help="Run workflow evaluation"
     )
     parser.add_argument(
         "--standalone",
@@ -310,12 +299,7 @@ def main():
         action="store_true",
         help="Run standalone evaluation (no pytest)",
     )
-    parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="Verbose output",
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument(
         "--output",
         "-o",
@@ -324,82 +308,52 @@ def main():
         help="Output directory for reports",
     )
     parser.add_argument(
-        "--format",
-        "-f",
-        choices=["json", "md"],
-        default="json",
-        help="Report format",
+        "--format", "-f", choices=["json", "md"], default="json", help="Report format"
     )
+    return parser
 
+
+def _run_specific_evaluations(
+    runner: EvaluationRunner, args: argparse.Namespace
+) -> dict[str, Any]:
+    """Run evaluations based on command-line flags."""
+    results = {
+        "timestamp": datetime.now().isoformat(),
+        "evaluations": {},
+        "summary": {"total_passed": 0, "total_failed": 0, "total_skipped": 0},
+    }
+
+    eval_configs = [
+        (args.performance, ["performance"], "API Performance", "performance"),
+        (args.business_logic, ["business_logic"], "Business Logic", "business_logic"),
+        (args.data_quality, ["data_quality"], "Data Quality", "data_quality"),
+        (args.workflow, ["workflow"], "Workflow", "workflow"),
+    ]
+
+    for enabled, markers, name, key in eval_configs:
+        if enabled:
+            r = runner.run_pytest_evaluation(markers, name, args.verbose)
+            results["evaluations"][key] = r
+            results["summary"]["total_passed"] += r["passed"]
+            results["summary"]["total_failed"] += r["failed"]
+
+    results["summary"]["overall_success"] = results["summary"]["total_failed"] == 0
+    return results
+
+
+def main():
+    """Main entry point for CLI."""
+    parser = _create_argument_parser()
     args = parser.parse_args()
-
     runner = EvaluationRunner(output_dir=Path(args.output))
 
     if args.all:
         results = runner.run_all_evaluations(verbose=args.verbose)
     elif args.standalone:
-        # Run standalone evaluations
-        async def run_standalone():
-            results = {
-                "timestamp": datetime.now().isoformat(),
-                "evaluations": {},
-                "summary": {},
-            }
-
-            if args.business_logic or args.all:
-                results["evaluations"]["business_logic"] = (
-                    await runner.run_standalone_evaluation("business_logic")
-                )
-
-            if args.data_quality or args.all:
-                results["evaluations"]["data_quality"] = (
-                    await runner.run_standalone_evaluation("data_quality")
-                )
-
-            return results
-
-        results = asyncio.run(run_standalone())
+        results = asyncio.run(_run_standalone_evaluations(runner, args))
     else:
-        # Run specific evaluations
-        results = {
-            "timestamp": datetime.now().isoformat(),
-            "evaluations": {},
-            "summary": {"total_passed": 0, "total_failed": 0, "total_skipped": 0},
-        }
+        results = _run_specific_evaluations(runner, args)
 
-        if args.performance:
-            r = runner.run_pytest_evaluation(
-                ["performance"], "API Performance", args.verbose
-            )
-            results["evaluations"]["performance"] = r
-            results["summary"]["total_passed"] += r["passed"]
-            results["summary"]["total_failed"] += r["failed"]
-
-        if args.business_logic:
-            r = runner.run_pytest_evaluation(
-                ["business_logic"], "Business Logic", args.verbose
-            )
-            results["evaluations"]["business_logic"] = r
-            results["summary"]["total_passed"] += r["passed"]
-            results["summary"]["total_failed"] += r["failed"]
-
-        if args.data_quality:
-            r = runner.run_pytest_evaluation(
-                ["data_quality"], "Data Quality", args.verbose
-            )
-            results["evaluations"]["data_quality"] = r
-            results["summary"]["total_passed"] += r["passed"]
-            results["summary"]["total_failed"] += r["failed"]
-
-        if args.workflow:
-            r = runner.run_pytest_evaluation(["workflow"], "Workflow", args.verbose)
-            results["evaluations"]["workflow"] = r
-            results["summary"]["total_passed"] += r["passed"]
-            results["summary"]["total_failed"] += r["failed"]
-
-        results["summary"]["overall_success"] = results["summary"]["total_failed"] == 0
-
-    # Generate report
     if results.get("evaluations"):
         runner.generate_report(results, format=args.format)
         runner.print_final_summary(results)
@@ -407,9 +361,31 @@ def main():
         print("No evaluations selected. Use --help for options.")
         sys.exit(1)
 
-    # Exit with error code if any evaluations failed
     if not results.get("summary", {}).get("overall_success", True):
         sys.exit(1)
+
+
+async def _run_standalone_evaluations(
+    runner: EvaluationRunner, args: argparse.Namespace
+) -> dict[str, Any]:
+    """Run standalone evaluations asynchronously."""
+    results = {
+        "timestamp": datetime.now().isoformat(),
+        "evaluations": {},
+        "summary": {},
+    }
+
+    if args.business_logic or args.all:
+        results["evaluations"][
+            "business_logic"
+        ] = await runner.run_standalone_evaluation("business_logic")
+
+    if args.data_quality or args.all:
+        results["evaluations"]["data_quality"] = await runner.run_standalone_evaluation(
+            "data_quality"
+        )
+
+    return results
 
 
 if __name__ == "__main__":

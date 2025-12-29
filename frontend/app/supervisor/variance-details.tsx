@@ -14,14 +14,14 @@ import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-import { ItemVerificationAPI } from "../../src/services/api/itemVerificationApi";
+import { ItemVerificationAPI } from "../../src/domains/inventory/services/itemVerificationApi";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   StatsCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
 import { useToast } from "../../src/components/feedback/ToastProvider";
 
 export default function VarianceDetailsScreen() {
@@ -145,45 +145,45 @@ export default function VarianceDetailsScreen() {
 
   if (loading) {
     return (
-      <AuroraBackground variant="secondary" intensity="medium" animated>
+      <ScreenContainer>
         <View style={styles.centered}>
           <ActivityIndicator
             size="large"
-            color={auroraTheme.colors.primary[500]}
+            color={theme.colors.primary[500]}
           />
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   if (!itemDetails) {
     return (
-      <AuroraBackground variant="secondary" intensity="medium" animated>
+      <ScreenContainer>
         <View style={styles.centered}>
-          <GlassCard variant="medium" padding={auroraTheme.spacing.xl}>
-            <View style={{ alignItems: "center", gap: auroraTheme.spacing.md }}>
+          <GlassCard intensity={15} padding={theme.spacing.xl}>
+            <View style={{ alignItems: "center", gap: theme.spacing.md }}>
               <Ionicons
                 name="alert-circle-outline"
                 size={48}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
-              <Text style={{ color: auroraTheme.colors.text.secondary }}>
+              <Text style={{ color: theme.colors.text.secondary }}>
                 Item not found
               </Text>
               <AnimatedPressable onPress={() => router.back()}>
-                <Text style={{ color: auroraTheme.colors.primary[500] }}>
+                <Text style={{ color: theme.colors.primary[500] }}>
                   Go Back
                 </Text>
               </AnimatedPressable>
             </View>
           </GlassCard>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground variant="secondary" intensity="medium" animated>
+    <ScreenContainer>
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
@@ -199,7 +199,7 @@ export default function VarianceDetailsScreen() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <Text style={styles.headerTitle}>Variance Details</Text>
@@ -210,9 +210,9 @@ export default function VarianceDetailsScreen() {
           {/* Item Profile */}
           <Animated.View entering={FadeInDown.delay(200).springify()}>
             <GlassCard
-              variant="light"
-              padding={auroraTheme.spacing.lg}
-              borderRadius={auroraTheme.borderRadius.lg}
+              intensity={15}
+              padding={theme.spacing.lg}
+              borderRadius={theme.borderRadius.lg}
               style={styles.card}
             >
               <View style={styles.itemHeader}>
@@ -220,7 +220,7 @@ export default function VarianceDetailsScreen() {
                   <Ionicons
                     name="cube-outline"
                     size={32}
-                    color={auroraTheme.colors.primary[400]}
+                    color={theme.colors.primary[500]}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -262,9 +262,9 @@ export default function VarianceDetailsScreen() {
           {/* Details */}
           <Animated.View entering={FadeInDown.delay(400).springify()}>
             <GlassCard
-              variant="medium"
-              padding={auroraTheme.spacing.lg}
-              borderRadius={auroraTheme.borderRadius.lg}
+              intensity={15}
+              padding={theme.spacing.lg}
+              borderRadius={theme.borderRadius.lg}
               style={styles.card}
             >
               <View style={styles.detailRow}>
@@ -274,7 +274,7 @@ export default function VarianceDetailsScreen() {
                     <Ionicons
                       name="person-circle-outline"
                       size={18}
-                      color={auroraTheme.colors.text.secondary}
+                      color={theme.colors.text.secondary}
                     />
                     <Text style={styles.detailValue}>
                       {itemDetails.verified_by || "Unknown"}
@@ -288,7 +288,7 @@ export default function VarianceDetailsScreen() {
                     <Ionicons
                       name="time-outline"
                       size={18}
-                      color={auroraTheme.colors.text.secondary}
+                      color={theme.colors.text.secondary}
                     />
                     <Text style={styles.detailValue}>
                       {itemDetails.verified_at
@@ -303,7 +303,7 @@ export default function VarianceDetailsScreen() {
                 <View
                   style={[
                     styles.detailRow,
-                    { marginTop: auroraTheme.spacing.md },
+                    { marginTop: theme.spacing.md },
                   ]}
                 >
                   <View style={styles.detailItem}>
@@ -312,7 +312,7 @@ export default function VarianceDetailsScreen() {
                       <Ionicons
                         name="location-outline"
                         size={18}
-                        color={auroraTheme.colors.text.secondary}
+                        color={theme.colors.text.secondary}
                       />
                       <Text style={styles.detailValue}>
                         {itemDetails.floor}
@@ -332,8 +332,8 @@ export default function VarianceDetailsScreen() {
           style={styles.footer}
         >
           <GlassCard
-            variant="dark"
-            padding={auroraTheme.spacing.md}
+            intensity={15}
+            padding={theme.spacing.md}
             style={styles.footerInner}
           >
             <View style={styles.actionsContainer}>
@@ -360,7 +360,7 @@ export default function VarianceDetailsScreen() {
           </GlassCard>
         </Animated.View>
       </View>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -378,77 +378,74 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: auroraTheme.spacing.md,
-    marginBottom: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   headerTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize.xl,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 24,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   content: {
-    padding: auroraTheme.spacing.md,
+    padding: theme.spacing.md,
     paddingBottom: 100, // Space for footer
   },
   card: {
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   itemHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   itemIcon: {
     width: 56,
     height: 56,
-    borderRadius: auroraTheme.borderRadius.md,
-    backgroundColor: auroraTheme.colors.primary[500] + "20",
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: "rgba(14, 165, 233, 0.2)",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: auroraTheme.colors.primary[500] + "40",
+    borderColor: "rgba(14, 165, 233, 0.4)",
   },
   itemName: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize.lg,
+    fontSize: 20,
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   itemCode: {
-    fontFamily: auroraTheme.typography.fontFamily.mono,
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   statsRow: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.sm,
-    marginBottom: auroraTheme.spacing.md,
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   detailItem: {
     flex: 1,
   },
   detailLabel: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 12,
+    color: theme.colors.text.tertiary,
     textTransform: "uppercase",
     letterSpacing: 1,
     marginBottom: 6,
@@ -459,8 +456,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   detailValue: {
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 16,
+    color: theme.colors.text.primary,
     fontWeight: "500",
   },
   footer: {
@@ -468,38 +465,38 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: auroraTheme.spacing.md,
+    padding: theme.spacing.md,
   },
   footerInner: {
-    borderTopLeftRadius: auroraTheme.borderRadius.xl,
-    borderTopRightRadius: auroraTheme.borderRadius.xl,
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderTopRightRadius: theme.borderRadius.xl,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
   actionsContainer: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   actionButton: {
     flex: 1,
     height: 50,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: theme.borderRadius.full,
     alignItems: "center",
     justifyContent: "center",
   },
   secondaryButton: {
-    backgroundColor: auroraTheme.colors.background.glass,
+    backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   secondaryButtonText: {
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     fontWeight: "600",
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
   },
   primaryButton: {
-    backgroundColor: auroraTheme.colors.error[500],
-    shadowColor: auroraTheme.colors.error[500],
+    backgroundColor: theme.colors.error.main,
+    shadowColor: theme.colors.error.main,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -507,6 +504,6 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
   },
 });

@@ -4,7 +4,6 @@
  * Phase 0: Enhanced Mobile Camera Features
  */
 
-import { Camera } from "expo-camera";
 import * as Brightness from "expo-brightness";
 
 export interface CameraSettings {

@@ -10,7 +10,7 @@ interface CameraViewProps {
 }
 
 export const CameraView = forwardRef<ExpoCameraView, CameraViewProps>(
-  ({ style, facing = "back", ratio = "16:9", children }, ref) => {
+  ({ style, facing = "back", ratio: _ratio = "16:9", children }, ref) => {
     return (
       <ExpoCameraView
         ref={ref}

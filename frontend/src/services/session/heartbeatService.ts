@@ -12,7 +12,7 @@ import api from "../httpClient";
 
 interface HeartbeatResponse {
   success: boolean;
-  session_id: string;
+  id: string;
   rack_lock_renewed: boolean;
   user_presence_updated: boolean;
   lock_ttl_remaining: number;

@@ -1,32 +1,69 @@
 /**
- * KPI Card Component - Displays a single KPI metric with icon, value, and optional trend
- * Used in Admin Dashboard for displaying key performance indicators
+ * KPI Card Component - Enterprise Grade
+ * Displays a single KPI metric with strict semantics, accessibility, and drill-down capability.
  */
 
 import React from "react";
-import { View, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
+  TouchableOpacity,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { auroraTheme } from "@/theme/auroraTheme";
+import {
+  modernColors,
+  modernShadows,
+  modernBorderRadius,
+} from "@/styles/modernDesignSystem";
 
 export type KPIStatus = "normal" | "warning" | "critical" | "success";
+export type TrendIntent = "good" | "bad" | "neutral";
 
 interface KPICardProps {
+  /** Title of the KPI (e.g., "Total Revenue") */
   title: string;
+  /** Value to display. If number, formatted via formatOptions. If string, displayed as-is. */
   value: string | number;
+  /** Icon to display from MaterialCommunityIcons */
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  /** Optional subtitle for context */
   subtitle?: string;
+  /** Trend percentage value (e.g., 5.4 for +5.4%) */
   trend?: number;
+  /** Label for the trend (e.g., "vs last month") */
   trendLabel?: string;
+  /** Semantic meaning of the trend. Decouples math sign from color. */
+  trendIntent?: TrendIntent;
+  /** Visual status of the KPI. Maps to border/icon colors. */
   status?: KPIStatus;
-  formatAsCurrency?: boolean;
+  /** Intl.NumberFormat options for numeric values. Replaces hardcoded currency logic. */
+  formatOptions?: Intl.NumberFormatOptions;
+  /** Locale for formatting. Defaults to system or 'en-US'. */
+  locale?: string;
+  /** Controls loading state with shimmer/skeleton */
   loading?: boolean;
+  /** Callback for drill-down action */
+  onPress?: () => void;
+  /** Accessibility label for screen readers */
+  accessibilityLabel?: string;
+  /** Test ID for automated testing */
+  testID?: string;
 }
 
 const STATUS_COLORS: Record<KPIStatus, string> = {
-  normal: auroraTheme.colors.primary[500],
-  warning: auroraTheme.colors.warning[500],
-  critical: auroraTheme.colors.error[500],
-  success: auroraTheme.colors.success[500],
+  normal: modernColors.primary[500],
+  warning: modernColors.warning.main,
+  critical: modernColors.error.main,
+  success: modernColors.success.main,
+};
+
+const INTENT_COLORS: Record<TrendIntent, string> = {
+  good: modernColors.success.main,
+  bad: modernColors.error.main,
+  neutral: modernColors.text.secondary,
 };
 
 export function KPICard({
@@ -36,23 +73,25 @@ export function KPICard({
   subtitle,
   trend,
   trendLabel,
+  trendIntent = "neutral",
   status = "normal",
-  formatAsCurrency = false,
+  formatOptions,
+  locale = "en-US",
   loading = false,
+  onPress,
+  accessibilityLabel,
+  testID,
 }: KPICardProps) {
   const statusColor = STATUS_COLORS[status];
 
   const formatValue = (val: string | number): string => {
     if (typeof val === "number") {
-      if (formatAsCurrency) {
-        return new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        }).format(val);
+      try {
+        return new Intl.NumberFormat(locale, formatOptions).format(val);
+      } catch (e) {
+        console.warn("KPICard: Formatting failed", e);
+        return val.toString();
       }
-      return new Intl.NumberFormat("en-US").format(val);
     }
     return val;
   };
@@ -62,89 +101,111 @@ export function KPICard({
     return trend > 0 ? "trending-up" : "trending-down";
   };
 
-  const getTrendColor = (): string => {
-    if (trend === undefined || trend === 0)
-      return auroraTheme.colors.text.secondary;
-    return trend > 0
-      ? auroraTheme.colors.success[500]
-      : auroraTheme.colors.error[500];
-  };
+  const trendColor = INTENT_COLORS[trendIntent];
 
   if (loading) {
     return (
-      <View style={styles.card}>
-        <View style={styles.skeletonIcon} />
-        <View style={styles.skeletonValue} />
-        <View style={styles.skeletonTitle} />
+      <View style={styles.card} testID={`${testID}-loading`}>
+        <View style={styles.skeletonRow}>
+          <View style={styles.skeletonIcon} />
+          <View style={{ flex: 1 }}>
+            <View style={styles.skeletonTitle} />
+            <View style={styles.skeletonValue} />
+          </View>
+        </View>
       </View>
     );
   }
 
+  const Container = onPress ? TouchableOpacity : View;
+
   return (
-    <View style={styles.card}>
+    <Container
+      style={styles.card}
+      onPress={onPress}
+      accessibilityRole={onPress ? "button" : "summary"}
+      accessibilityLabel={accessibilityLabel || `${title}: ${formatValue(value)}`}
+      testID={testID}
+      activeOpacity={0.7}
+    >
       <View
-        style={[styles.iconContainer, { backgroundColor: statusColor + "20" }]}
+        style={[styles.iconContainer, { backgroundColor: statusColor + "15" }]}
       >
         <MaterialCommunityIcons name={icon} size={24} color={statusColor} />
       </View>
 
-      <Text style={styles.value}>{formatValue(value)}</Text>
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.contentContainer}>
+        <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
+          {formatValue(value)}
+        </Text>
+        <Text style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
 
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
 
-      {trend !== undefined && (
-        <View style={styles.trendContainer}>
-          <MaterialCommunityIcons
-            name={getTrendIcon()}
-            size={16}
-            color={getTrendColor()}
-          />
-          <Text style={[styles.trendText, { color: getTrendColor() }]}>
-            {Math.abs(trend).toFixed(1)}%
-          </Text>
-          {trendLabel && <Text style={styles.trendLabel}>{trendLabel}</Text>}
-        </View>
-      )}
-    </View>
+        {trend !== undefined && (
+          <View style={styles.trendContainer}>
+            <MaterialCommunityIcons
+              name={getTrendIcon()}
+              size={16}
+              color={trendColor}
+            />
+            <Text style={[styles.trendText, { color: trendColor }]}>
+              {Math.abs(trend).toFixed(1)}%
+            </Text>
+            {trendLabel && (
+              <Text style={styles.trendLabel} numberOfLines={1}>
+                {trendLabel}
+              </Text>
+            )}
+          </View>
+        )}
+      </View>
+    </Container>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: auroraTheme.colors.background.secondary,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: modernColors.background.elevated,
+    borderRadius: modernBorderRadius.card,
+    padding: 16,
     minWidth: 160,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    flex: 1,
+    ...modernShadows.sm,
+    // Ensure content doesn't overflow
+    overflow: "hidden",
   } as ViewStyle,
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 12,
+    borderRadius: modernBorderRadius.md,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
   } as ViewStyle,
+  contentContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+  } as ViewStyle,
   value: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
     marginBottom: 4,
+    includeFontPadding: false,
   } as TextStyle,
   title: {
     fontSize: 14,
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
     fontWeight: "500",
+    marginBottom: 2,
   } as TextStyle,
   subtitle: {
     fontSize: 12,
-    color: auroraTheme.colors.text.tertiary,
-    marginTop: 4,
+    color: modernColors.text.tertiary,
+    marginTop: 2,
   } as TextStyle,
   trendContainer: {
     flexDirection: "row",
@@ -152,7 +213,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: auroraTheme.colors.border.light,
+    borderTopColor: modernColors.border.light,
   } as ViewStyle,
   trendText: {
     fontSize: 14,
@@ -161,29 +222,40 @@ const styles = StyleSheet.create({
   } as TextStyle,
   trendLabel: {
     fontSize: 12,
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
     marginLeft: 8,
+    flex: 1,
   } as TextStyle,
+  // Skeleton Styles
+  skeletonRow: {
+    flexDirection: "column",
+    gap: 12,
+  } as ViewStyle,
   skeletonIcon: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: auroraTheme.colors.border.light,
-    marginBottom: 12,
+    borderRadius: modernBorderRadius.md,
+    backgroundColor: modernColors.background.paper,
+    opacity: 0.5,
   } as ViewStyle,
   skeletonValue: {
-    width: 80,
-    height: 28,
-    borderRadius: 4,
-    backgroundColor: auroraTheme.colors.border.light,
+    width: "60%",
+    height: 24,
+    borderRadius: modernBorderRadius.sm,
+    backgroundColor: modernColors.background.paper,
+    opacity: 0.5,
     marginBottom: 8,
   } as ViewStyle,
   skeletonTitle: {
-    width: 100,
+    width: "40%",
     height: 14,
-    borderRadius: 4,
-    backgroundColor: auroraTheme.colors.border.light,
+    borderRadius: modernBorderRadius.sm,
+    backgroundColor: modernColors.background.paper,
+    opacity: 0.5,
+    marginBottom: 12,
   } as ViewStyle,
 });
 
 export default KPICard;
+
+

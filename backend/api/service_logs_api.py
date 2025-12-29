@@ -45,6 +45,59 @@ def require_admin(current_user: dict = Depends(get_current_user)):
     )
 
 
+def _detect_log_level(line: str) -> str:
+    """Detect log level from a log line."""
+    line_lower = line.lower()
+    if "error" in line_lower:
+        return "ERROR"
+    if "warn" in line_lower:
+        return "WARN"
+    if "debug" in line_lower:
+        return "DEBUG"
+    return "INFO"
+
+
+def _parse_log_file(
+    log_file: Path,
+    lines: int,
+    level: Optional[str] = None,
+) -> list[dict]:
+    """Parse a log file and return structured log entries."""
+    logs = []
+    if not log_file.exists():
+        return logs
+
+    with open(log_file, encoding="utf-8", errors="ignore") as f:
+        all_lines = f.readlines()
+        recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
+
+    for line in recent_lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        log_level = _detect_log_level(line)
+        if level and log_level != level:
+            continue
+
+        logs.append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "level": log_level,
+                "message": line,
+            }
+        )
+    return logs
+
+
+def _find_log_file(*candidates: Path) -> Optional[Path]:
+    """Find the first existing log file from candidates."""
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
+
+
 @service_logs_router.get("/backend")
 async def get_backend_logs(
     lines: int = Query(100, ge=1, le=1000),
@@ -53,48 +106,15 @@ async def get_backend_logs(
 ):
     """Get backend server logs"""
     try:
-        # Try to read from log file if exists
-        log_file = Path(__file__).parent.parent.parent / "logs" / "backend.log"
-        if not log_file.exists():
-            # Try alternative locations
-            log_file = Path(__file__).parent.parent.parent / "backend.log"
+        base_dir = Path(__file__).parent.parent.parent
+        log_file = _find_log_file(
+            base_dir / "logs" / "backend.log",
+            base_dir / "backend.log",
+        )
 
-        logs = []
-        if log_file.exists():
-            with open(log_file, encoding="utf-8", errors="ignore") as f:
-                all_lines = f.readlines()
-                # Get last N lines
-                recent_lines = (
-                    all_lines[-lines:] if len(all_lines) > lines else all_lines
-                )
-
-                for line in recent_lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-
-                    # Parse log level
-                    log_level = "INFO"
-                    if "ERROR" in line or "error" in line.lower():
-                        log_level = "ERROR"
-                    elif "WARN" in line or "warning" in line.lower():
-                        log_level = "WARN"
-                    elif "DEBUG" in line or "debug" in line.lower():
-                        log_level = "DEBUG"
-
-                    # Filter by level if specified
-                    if level and log_level != level:
-                        continue
-
-                    logs.append(
-                        {
-                            "timestamp": datetime.now().isoformat(),
-                            "level": log_level,
-                            "message": line,
-                        }
-                    )
+        if log_file:
+            logs = _parse_log_file(log_file, lines, level)
         else:
-            # Return recent log entries from memory if available
             logs = [
                 {
                     "timestamp": datetime.now().isoformat(),
@@ -105,11 +125,7 @@ async def get_backend_logs(
 
         return {
             "success": True,
-            "data": {
-                "logs": logs,
-                "count": len(logs),
-                "service": "backend",
-            },
+            "data": {"logs": logs, "count": len(logs), "service": "backend"},
         }
     except Exception as e:
         logger.error(f"Error getting backend logs: {e}")
@@ -160,8 +176,6 @@ async def get_mongodb_logs(
 ):
     """Get MongoDB logs"""
     try:
-        # MongoDB logs location varies by OS
-        log_paths = []
         if platform.system() == "Windows":
             log_paths = [
                 Path("C:/Program Files/MongoDB/Server/*/log/mongod.log"),
@@ -174,39 +188,10 @@ async def get_mongodb_logs(
                 Path.home() / ".mongodb" / "log" / "mongod.log",
             ]
 
-        logs = []
-        for log_path in log_paths:
-            if log_path.exists():
-                with open(log_path, encoding="utf-8", errors="ignore") as f:
-                    all_lines = f.readlines()
-                    recent_lines = (
-                        all_lines[-lines:] if len(all_lines) > lines else all_lines
-                    )
-
-                    for line in recent_lines:
-                        line = line.strip()
-                        if not line:
-                            continue
-
-                        log_level = "INFO"
-                        if "ERROR" in line or "error" in line.lower():
-                            log_level = "ERROR"
-                        elif "WARN" in line or "warning" in line.lower():
-                            log_level = "WARN"
-
-                        if level and log_level != level:
-                            continue
-
-                        logs.append(
-                            {
-                                "timestamp": datetime.now().isoformat(),
-                                "level": log_level,
-                                "message": line,
-                            }
-                        )
-                break
-
-        if not logs:
+        log_file = _find_log_file(*log_paths)
+        if log_file:
+            logs = _parse_log_file(log_file, lines, level)
+        else:
             logs = [
                 {
                     "timestamp": datetime.now().isoformat(),
@@ -239,50 +224,17 @@ async def get_system_logs(
 ):
     """Get system/application logs"""
     try:
-        # Get application logs
-        log_file = Path(__file__).parent.parent.parent / "logs" / "app.log"
-        if not log_file.exists():
-            log_file = Path(__file__).parent.parent.parent / "app.log"
+        base_dir = Path(__file__).parent.parent.parent
+        log_file = _find_log_file(
+            base_dir / "logs" / "app.log",
+            base_dir / "app.log",
+        )
 
-        logs = []
-        if log_file.exists():
-            with open(log_file, encoding="utf-8", errors="ignore") as f:
-                all_lines = f.readlines()
-                recent_lines = (
-                    all_lines[-lines:] if len(all_lines) > lines else all_lines
-                )
-
-                for line in recent_lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-
-                    log_level = "INFO"
-                    if "ERROR" in line or "error" in line.lower():
-                        log_level = "ERROR"
-                    elif "WARN" in line or "warning" in line.lower():
-                        log_level = "WARN"
-                    elif "DEBUG" in line or "debug" in line.lower():
-                        log_level = "DEBUG"
-
-                    if level and log_level != level:
-                        continue
-
-                    logs.append(
-                        {
-                            "timestamp": datetime.now().isoformat(),
-                            "level": log_level,
-                            "message": line,
-                        }
-                    )
+        logs = _parse_log_file(log_file, lines, level) if log_file else []
 
         return {
             "success": True,
-            "data": {
-                "logs": logs,
-                "count": len(logs),
-                "service": "system",
-            },
+            "data": {"logs": logs, "count": len(logs), "service": "system"},
         }
     except Exception as e:
         logger.error(f"Error getting system logs: {e}")

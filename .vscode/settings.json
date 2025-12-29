@@ -1,138 +1,31 @@
 {
-    // File exclusions
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        ".yoyo": true,
-        "**/__pycache__": true,
-        "**/*.pyc": true,
-        "**/node_modules": false,
-        "**/.pytest_cache": true,
-        "**/.mypy_cache": true,
-        "**/.ruff_cache": true
+    "chat.promptFilesRecommendations": {
+        "speckit.constitution": true,
+        "speckit.specify": true,
+        "speckit.plan": true,
+        "speckit.tasks": true,
+        "speckit.implement": true
     },
-    // Python settings
-    "python.defaultInterpreterPath": "/usr/bin/python3",
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": false,
-    "python.linting.mypyEnabled": true,
-    "python.linting.mypyArgs": [
-        "--ignore-missing-imports",
-        "--python-version=3.10"
+    "chat.tools.terminal.autoApprove": {
+        ".specify/scripts/bash/": true,
+        ".specify/scripts/powershell/": true
+    },
+    "cmake.sourceDirectory": "/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped/node_modules/react-native/ReactCommon/jsiexecutor",
+    "[markdown]": {},
+    "cSpell.words": [
+        "bson",
+        "hdel",
+        "hget",
+        "hgetall",
+        "hset",
+        "sadd",
+        "smembers",
+        "srem",
+        "unverify",
+        "upserted",
+        "worklets",
+        "zadd",
+        "zrange"
     ],
-    "python.formatting.provider": "none",
-    "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.autoImportCompletions": true,
-    "python.testing.pytestEnabled": true,
-    "python.testing.pytestArgs": [
-        "backend/tests"
-    ],
-    // Editor formatting
-    "[python]": {
-        "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit",
-            "source.fixAll": "explicit"
-        }
-    },
-    "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
-        }
-    },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
-        }
-    },
-    "[javascript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features",
-        "editor.formatOnSave": true
-    },
-    "[json]": {
-        "editor.defaultFormatter": "vscode.json-language-features",
-        "editor.formatOnSave": true
-    },
-    "[jsonc]": {
-        "editor.defaultFormatter": "vscode.json-language-features",
-        "editor.formatOnSave": true
-    },
-    // TypeScript settings
-    "typescript.tsdk": "backfron/node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true,
-    "typescript.updateImportsOnFileMove.enabled": "always",
-    // ESLint settings
-    "eslint.workingDirectories": [
-        "backfron"
-    ],
-    "eslint.validate": [
-        "javascript",
-        "typescript",
-        "typescriptreact"
-    ],
-    // File associations
-    "files.associations": {
-        "*.tsx": "typescriptreact",
-        "*.ts": "typescript",
-        "*.py": "python"
-    },
-    // Search exclusions
-    "search.exclude": {
-        "**/node_modules": true,
-        "**/bower_components": true,
-        "**/*.code-search": true,
-        "**/__pycache__": true,
-        "**/.pytest_cache": true,
-        "**/.mypy_cache": true,
-        "**/.ruff_cache": true,
-        "**/dist": true,
-        "**/build": true,
-        "**/.expo": true,
-        "**/.next": true
-    },
-    // Terminal settings
-    "terminal.integrated.env.osx": {
-        "PYTHONPATH": "${workspaceFolder}"
-    },
-    "terminal.integrated.cwd": "${workspaceFolder}",
-    // Git settings
-    "git.ignoreLimitWarning": true,
-    // Editor settings
-    "editor.formatOnSave": true,
-    "editor.formatOnPaste": false,
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true,
-    "editor.detectIndentation": true,
-    "editor.rulers": [
-        100,
-        120
-    ],
-    "editor.wordWrap": "off",
-    "editor.bracketPairColorization.enabled": true,
-    "editor.guides.bracketPairs": true,
-    // Explorer settings
-    "explorer.fileNesting.enabled": true,
-    "explorer.fileNesting.patterns": {
-        "*.ts": "${capture}.js",
-        "*.tsx": "${capture}.js",
-        "*.py": "${capture}.pyc",
-        "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml",
-        "tsconfig.json": "tsconfig.*.json",
-        ".env": ".env.*"
-    },
-    "gitlens.views.contributors.showStatistics": true,
-    "gitlens.ai.experimental.composer.enabled": true,
-    "extensions.closeExtensionDetailsOnViewChange": true,
-    "githubPullRequests.ignoredPullRequestBranches": [
-        "main"
-    ]
+    "thunder-client.autoRunCurl": true
 }

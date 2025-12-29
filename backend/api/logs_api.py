@@ -35,8 +35,8 @@ class ErrorLogModel(BaseModel):
     resolution_note: Optional[str] = None
     stack_trace: Optional[str] = None
     stack_trace_preview: Optional[str] = None
-    request_data: dict[str, Optional[Any]] = None
-    context: dict[str, Optional[Any]] = None
+    request_data: Optional[dict[str, Optional[Any]]] = None
+    context: Optional[dict[str, Optional[Any]]] = None
 
 
 class ActivityLogModel(BaseModel):
@@ -46,8 +46,8 @@ class ActivityLogModel(BaseModel):
     action: str
     entity_type: Optional[str] = None
     entity_id: Optional[str] = None
-    details: dict[str, Optional[Any]] = None
-    metadata: dict[str, Optional[Any]] = None
+    details: Optional[dict[str, Optional[Any]]] = None
+    metadata: Optional[dict[str, Optional[Any]]] = None
     status: str = "success"
 
 
@@ -58,7 +58,7 @@ def build_date_query(
     start_date: Optional[str], end_date: Optional[str]
 ) -> dict[str, Any]:
     """Build MongoDB date query from ISO strings."""
-    date_query = {}
+    date_query: dict[str, Any] = {}
     if start_date:
         try:
             date_query["$gte"] = datetime.fromisoformat(
@@ -89,7 +89,7 @@ async def get_error_logs(
     end_date: Optional[str] = None,
     current_user: dict = Depends(require_permissions([Permission.ERROR_LOG_READ])),
 ):
-    query = {}
+    query: dict[str, Any] = {}
     if severity:
         query["severity"] = severity
     if error_type:
@@ -142,7 +142,7 @@ async def get_error_stats(
     end_date: Optional[str] = None,
     current_user: dict = Depends(require_permissions([Permission.ERROR_LOG_READ])),
 ):
-    query = {}
+    query: dict[str, Any] = {}
     date_query = build_date_query(start_date, end_date)
     if date_query:
         query["timestamp"] = date_query
@@ -227,7 +227,7 @@ async def get_activity_logs(
     end_date: Optional[str] = None,
     current_user: dict = Depends(require_permissions([Permission.ACTIVITY_LOG_READ])),
 ):
-    query = {}
+    query: dict[str, Any] = {}
     if user:
         query["user"] = {"$regex": user, "$options": "i"}
     if action:
@@ -269,15 +269,18 @@ async def get_activity_stats(
     end_date: Optional[str] = None,
     current_user: dict = Depends(require_permissions([Permission.ACTIVITY_LOG_READ])),
 ):
-    query = {}
+    query: dict[str, Any] = {}
     date_query = build_date_query(start_date, end_date)
     if date_query:
         query["timestamp"] = date_query
 
     total = await auth_deps.db.activity_logs.count_documents(query)
 
-    pipeline = [{"$match": query}, {"$group": {"_id": "$status", "count": {"$sum": 1}}}]
-    status_counts = {}
+    pipeline: list[dict[str, Any]] = [
+        {"$match": query},
+        {"$group": {"_id": "$status", "count": {"$sum": 1}}},
+    ]
+    status_counts: dict[str, int] = {}
     async for doc in auth_deps.db.activity_logs.aggregate(pipeline):
         status_counts[doc["_id"]] = doc["count"]
 

@@ -3,7 +3,7 @@
  * Review and resolve data synchronization conflicts
  * Refactored to use Aurora Design System
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   getSyncConflicts,
   resolveSyncConflict,
@@ -53,7 +53,7 @@ interface SyncConflict {
 
 export default function SyncConflictsScreen() {
   const router = useRouter();
-  const { hasPermission } = usePermissions();
+  const { hasPermission } = usePermission();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
@@ -68,6 +68,34 @@ export default function SyncConflictsScreen() {
   );
   const [resolutionNote, setResolutionNote] = useState("");
 
+  const loadStats = useCallback(async () => {
+    try {
+      const response = await getSyncConflictStats();
+      setStats(response.data);
+    } catch (error: any) {
+      console.error("Failed to load conflict stats:", error);
+    }
+  }, []);
+
+  const loadConflicts = useCallback(async () => {
+    try {
+      const status = filterStatus === "all" ? undefined : filterStatus;
+      const response = await getSyncConflicts(status);
+      setConflicts(response.data?.conflicts || []);
+    } catch (error: any) {
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert("Error", error.message || "Failed to load sync conflicts");
+    }
+  }, [filterStatus]);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([loadConflicts(), loadStats()]);
+    setLoading(false);
+    setRefreshing(false);
+  }, [loadConflicts, loadStats]);
+
   useEffect(() => {
     // Security: Check permission before allowing conflict resolution
     if (!hasPermission("sync.resolve_conflict")) {
@@ -79,36 +107,7 @@ export default function SyncConflictsScreen() {
       return;
     }
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterStatus]);
-
-  const loadData = async () => {
-    setLoading(true);
-    await Promise.all([loadConflicts(), loadStats()]);
-    setLoading(false);
-    setRefreshing(false);
-  };
-
-  const loadConflicts = async () => {
-    try {
-      const status = filterStatus === "all" ? undefined : filterStatus;
-      const response = await getSyncConflicts(status);
-      setConflicts(response.data?.conflicts || []);
-    } catch (error: any) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Error", error.message || "Failed to load sync conflicts");
-    }
-  };
-
-  const loadStats = async () => {
-    try {
-      const response = await getSyncConflictStats();
-      setStats(response.data);
-    } catch (error: any) {
-      console.error("Failed to load conflict stats:", error);
-    }
-  };
+  }, [hasPermission, router, loadData]);
 
   const handleRefresh = () => {
     if (Platform.OS !== "web")

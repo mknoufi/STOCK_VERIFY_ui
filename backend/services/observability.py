@@ -16,12 +16,12 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 # Context variables for request tracing
-request_id_ctx: Optional[ContextVar[str]] = ContextVar("request_id", default=None)
-correlation_id_ctx: Optional[ContextVar[str]] = ContextVar(
+request_id_ctx: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
+correlation_id_ctx: ContextVar[Optional[str]] = ContextVar(
     "correlation_id", default=None
 )
-span_id_ctx: Optional[ContextVar[str]] = ContextVar("span_id", default=None)
-trace_id_ctx: Optional[ContextVar[str]] = ContextVar("trace_id", default=None)
+span_id_ctx: ContextVar[Optional[str]] = ContextVar("span_id", default=None)
+trace_id_ctx: ContextVar[Optional[str]] = ContextVar("trace_id", default=None)
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class StructuredLogEntry(BaseModel):
 
     # Additional data
     extra: dict[str, Any] = Field(default_factory=dict)
-    error: dict[str, Optional[Any]] = None
+    error: Optional[dict[str, Optional[Any]]] = None
 
 
 class StructuredLogger:
@@ -327,7 +327,7 @@ class MetricsCollector:
             if len(self._histograms[key]) > 1000:
                 self._histograms[key] = self._histograms[key][-1000:]
 
-    def _make_key(self, name: str, labels: dict[str, Optional[str]]) -> str:
+    def _make_key(self, name: str, labels: Optional[dict[str, Optional[str]]]) -> str:
         """Create metric key from name and labels"""
         if not labels:
             return name
@@ -354,19 +354,19 @@ class MetricsCollector:
 
     def to_prometheus(self) -> str:
         """Export metrics in Prometheus format"""
-        lines = []
+        lines: list[str] = []
 
-        for name, value in self._counters.items():
-            lines.append(f"{self._to_prometheus_name(name)} {value}")
+        for counter_name, counter_value in self._counters.items():
+            lines.append(f"{self._to_prometheus_name(counter_name)} {counter_value}")
 
-        for name, value in self._gauges.items():
-            lines.append(f"{self._to_prometheus_name(name)} {value}")
+        for gauge_name, gauge_value in self._gauges.items():
+            lines.append(f"{self._to_prometheus_name(gauge_name)} {gauge_value}")
 
-        for name, values in self._histograms.items():
-            if values:
-                prom_name = self._to_prometheus_name(name)
-                lines.append(f"{prom_name}_count {len(values)}")
-                lines.append(f"{prom_name}_sum {sum(values)}")
+        for hist_name, hist_values in self._histograms.items():
+            if hist_values:
+                prom_name = self._to_prometheus_name(hist_name)
+                lines.append(f"{prom_name}_count {len(hist_values)}")
+                lines.append(f"{prom_name}_sum {sum(hist_values)}")
 
         return "\n".join(lines)
 

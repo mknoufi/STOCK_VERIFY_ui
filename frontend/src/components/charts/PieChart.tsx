@@ -48,7 +48,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   const total = data.reduce((sum, item) => sum + item.value, 0);
   let currentAngle = -90; // Start from top
 
-  const paths = data.map((item, index) => {
+  const paths = data.map((item, _index) => {
     const percentage = item.value / total;
     const angle = percentage * 360;
     const startAngle = currentAngle;

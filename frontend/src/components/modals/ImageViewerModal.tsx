@@ -4,14 +4,16 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
-  Text,
   SafeAreaView,
   StatusBar,
+  FlatList,
+  Dimensions,
 } from "react-native";
-import Gallery from "react-native-awesome-gallery";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface ImageViewerModalProps {
   visible: boolean;
@@ -26,6 +28,8 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
   initialIndex,
   onClose,
 }) => {
+  const safeInitialIndex = Math.min(Math.max(initialIndex, 0), Math.max(images.length - 1, 0));
+
   return (
     <Modal
       visible={visible}
@@ -36,16 +40,22 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
           <StatusBar hidden={true} />
-          <Gallery
+          <FlatList
             data={images}
-            initialIndex={initialIndex}
-            onSwipeToClose={onClose}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={safeInitialIndex}
+            keyExtractor={(item, index) => `${item}-${index}`}
+            getItemLayout={(_, index) => ({
+              length: SCREEN_WIDTH,
+              offset: SCREEN_WIDTH * index,
+              index,
+            })}
             renderItem={({ item }) => (
-              <Image
-                source={{ uri: item }}
-                style={StyleSheet.absoluteFillObject}
-                contentFit="contain"
-              />
+              <View style={styles.page}>
+                <Image source={{ uri: item }} style={styles.image} contentFit="contain" />
+              </View>
             )}
           />
           <SafeAreaView style={styles.header}>
@@ -63,6 +73,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "black",
+  },
+  page: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
   },
   header: {
     position: "absolute",

@@ -19,10 +19,11 @@ class ApiResponse(BaseModel, Generic[T]):
 
     success: bool = Field(..., description="Whether the request was successful")
     data: Optional[T] = Field(None, description="Response data")
-    error: dict[str, Optional[Any]] = Field(
+    error: Optional[dict[str, Optional[Any]]] = Field(
         None, description="Error details if success is false"
     )
     message: Optional[str] = Field(None, description="Human-readable message")
+    payload_version: str = Field("1.0", description="API Payload Version")
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Response timestamp"
     )

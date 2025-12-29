@@ -196,7 +196,7 @@ class CircuitBreakerRegistry:
                 self._breakers[name] = CircuitBreaker(name, config)
             return self._breakers[name]
 
-    def get(self, name: str) -> CircuitBreaker:
+    def get(self, name: str) -> Optional[CircuitBreaker]:
         """Get circuit breaker by name"""
         return self._breakers.get(name)
 
@@ -253,8 +253,8 @@ class CircuitOpenError(Exception):
 circuit_breaker_registry = CircuitBreakerRegistry()
 
 
-def get_circuit_breaker(
-    name: str, config: CircuitBreakerConfig = None
+async def get_circuit_breaker(
+    name: str, config: Optional[CircuitBreakerConfig] = None
 ) -> CircuitBreaker:
     """
     Get or create a circuit breaker from the global registry
@@ -266,6 +266,6 @@ def get_circuit_breaker(
     Returns:
         CircuitBreaker instance
     """
-    return circuit_breaker_registry.get_or_create(
+    return await circuit_breaker_registry.get_or_create(
         name, config or CircuitBreakerConfig()
     )

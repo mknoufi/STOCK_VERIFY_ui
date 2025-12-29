@@ -4,6 +4,8 @@
  */
 
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import { isOnline } from "../api/api";
+import { useNetworkStore } from "../../store/networkStore";
 
 // Mock dependencies
 jest.mock("../../store/networkStore", () => ({
@@ -35,9 +37,6 @@ jest.mock("../offline/offlineStorage", () => ({
   cacheCountLine: jest.fn(),
   getCountLinesBySessionFromCache: jest.fn(() => Promise.resolve([])),
 }));
-
-import { isOnline } from "../api/api";
-import { useNetworkStore } from "../../store/networkStore";
 
 describe("API Service - Network Detection", () => {
   beforeEach(() => {

@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { View, StyleSheet, ViewStyle, Dimensions } from "react-native";
+import { View, StyleSheet, ViewStyle, useWindowDimensions } from "react-native";
 import { breakpoints, layout } from "../../styles/globalStyles";
 
 interface ContainerProps {
@@ -22,7 +22,7 @@ export const Container: React.FC<ContainerProps> = ({
   style,
   testID,
 }) => {
-  const { width } = Dimensions.get("window");
+  const { width } = useWindowDimensions();
 
   // Determine max width
   let maxWidthValue: number;

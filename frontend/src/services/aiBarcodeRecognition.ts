@@ -46,12 +46,12 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
       if (Platform.OS === "web") {
         try {
           // Dynamic import with type assertion to handle optional dependency
-          const tf = await import("@tensorflow/tfjs" as any);
+          const _tf = await import("@tensorflow/tfjs" as any);
           const mobilenet = await import("@tensorflow-models/mobilenet" as any);
 
           // Initialize MobileNet for image processing
           this.model = await mobilenet.load();
-        } catch (importError) {
+        } catch (_importError) {
           console.warn(
             "TensorFlow.js not available, AI features will be limited",
           );
@@ -135,8 +135,8 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
   }
 
   private async recognizeWithCamera(
-    imageUri: string,
-    confidenceThreshold: number,
+    _imageUri: string,
+    _confidenceThreshold: number,
   ): Promise<BarcodeResult | null> {
     // This would integrate with the existing camera barcode scanner
     // For now, return null to indicate camera recognition should be handled by existing system
@@ -217,7 +217,7 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
         const ctx = canvas.getContext("2d");
         const img = new Image();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
           img.onload = () => {
             canvas.width = img.width;
             canvas.height = img.height;

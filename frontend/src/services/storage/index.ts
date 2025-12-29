@@ -1,2 +1,2 @@
 export * from "./asyncStorageService";
-export * from "./mmkvStorage";
+export { mmkvStorage } from "../mmkvStorage";

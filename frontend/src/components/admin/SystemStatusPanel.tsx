@@ -6,7 +6,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { modernColors, modernShadows, modernBorderRadius } from "@/styles/modernDesignSystem";
 
 interface SystemStatus {
   api_health: string;
@@ -31,10 +31,10 @@ const STATUS_CONFIG: Record<
   StatusType,
   { color: string; icon: keyof typeof MaterialCommunityIcons.glyphMap }
 > = {
-  healthy: { color: auroraTheme.colors.success[500], icon: "check-circle" },
-  degraded: { color: auroraTheme.colors.warning[500], icon: "alert-circle" },
-  down: { color: auroraTheme.colors.error[500], icon: "close-circle" },
-  unknown: { color: auroraTheme.colors.text.secondary, icon: "help-circle" },
+  healthy: { color: modernColors.success.main, icon: "check-circle" },
+  degraded: { color: modernColors.warning.main, icon: "alert-circle" },
+  down: { color: modernColors.error.main, icon: "close-circle" },
+  unknown: { color: modernColors.text.secondary, icon: "help-circle" },
 };
 
 function getStatusType(status: string): StatusType {
@@ -106,7 +106,7 @@ export function SystemStatusPanel({
           <MaterialCommunityIcons
             name="server"
             size={20}
-            color={auroraTheme.colors.primary[500]}
+            color={modernColors.primary[500]}
           />
           <Text style={styles.title}>System Status</Text>
         </View>
@@ -124,7 +124,7 @@ export function SystemStatusPanel({
           <MaterialCommunityIcons
             name="server"
             size={20}
-            color={auroraTheme.colors.primary[500]}
+            color={modernColors.primary[500]}
           />
           <Text style={styles.title}>System Status</Text>
         </View>
@@ -132,7 +132,7 @@ export function SystemStatusPanel({
           <MaterialCommunityIcons
             name="alert-circle"
             size={24}
-            color={auroraTheme.colors.error[500]}
+            color={modernColors.error.main}
           />
           <Text style={styles.errorText}>Unable to load system status</Text>
         </View>
@@ -151,7 +151,7 @@ export function SystemStatusPanel({
         <MaterialCommunityIcons
           name="server"
           size={20}
-          color={auroraTheme.colors.primary[500]}
+          color={modernColors.primary[500]}
         />
         <Text style={styles.title}>System Status</Text>
         <View style={styles.uptimeBadge}>
@@ -209,7 +209,7 @@ export function SystemStatusPanel({
           <MaterialCommunityIcons
             name="alert"
             size={16}
-            color={auroraTheme.colors.warning[500]}
+            color={modernColors.warning.main}
           />
           <Text style={styles.warningText}>
             Performance degradation detected
@@ -222,14 +222,10 @@ export function SystemStatusPanel({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: auroraTheme.colors.background.secondary,
-    borderRadius: 16,
+    backgroundColor: modernColors.background.elevated,
+    borderRadius: modernBorderRadius.card,
     padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    ...modernShadows.sm,
   } as ViewStyle,
   header: {
     flexDirection: "row",
@@ -239,19 +235,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
     marginLeft: 8,
     flex: 1,
   } as TextStyle,
   uptimeBadge: {
-    backgroundColor: auroraTheme.colors.success[500] + "20",
+    backgroundColor: modernColors.success.main + "20",
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: modernBorderRadius.full,
   } as ViewStyle,
   uptimeText: {
     fontSize: 12,
-    color: auroraTheme.colors.success[500],
+    color: modernColors.success.main,
     fontWeight: "500",
   } as TextStyle,
   section: {
@@ -260,7 +256,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: "600",
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 12,
@@ -272,7 +268,7 @@ const styles = StyleSheet.create({
   } as ViewStyle,
   statusLabel: {
     fontSize: 14,
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
     marginLeft: 10,
     flex: 1,
   } as TextStyle,
@@ -288,24 +284,24 @@ const styles = StyleSheet.create({
   } as ViewStyle,
   metricLabel: {
     fontSize: 14,
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
   } as TextStyle,
   metricValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: modernColors.text.primary,
   } as TextStyle,
   metricUnit: {
     fontSize: 12,
     fontWeight: "400",
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
   } as TextStyle,
   metricWarning: {
-    color: auroraTheme.colors.warning[500],
+    color: modernColors.warning.main,
   } as TextStyle,
   divider: {
     height: 1,
-    backgroundColor: auroraTheme.colors.border.light,
+    backgroundColor: modernColors.border.light,
     marginVertical: 12,
   } as ViewStyle,
   loadingContainer: {
@@ -313,27 +309,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   } as ViewStyle,
   loadingText: {
-    color: auroraTheme.colors.text.secondary,
+    color: modernColors.text.secondary,
   } as TextStyle,
   errorContainer: {
     padding: 20,
     alignItems: "center",
   } as ViewStyle,
   errorText: {
-    color: auroraTheme.colors.error[500],
+    color: modernColors.error.main,
     marginTop: 8,
   } as TextStyle,
   warningBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: auroraTheme.colors.warning[500] + "20",
+    backgroundColor: modernColors.warning.main + "20",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: modernBorderRadius.md,
     marginTop: 16,
   } as ViewStyle,
   warningText: {
     fontSize: 13,
-    color: auroraTheme.colors.warning[500],
+    color: modernColors.warning.main,
     marginLeft: 8,
     fontWeight: "500",
   } as TextStyle,

@@ -43,6 +43,7 @@ class SQLServerConnectionBuilder:
         """
         server = f"{host},{port}" if port else host
 
+        print(f"DEBUG: SQLServerConnectionBuilder using driver: {SQLServerConnectionBuilder.DEFAULT_DRIVER}")
         # Base connection string components with performance optimizations
         base_params = [
             f"DRIVER={{{SQLServerConnectionBuilder.DEFAULT_DRIVER}}}",

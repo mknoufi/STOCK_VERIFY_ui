@@ -3,16 +3,9 @@ import {
   View,
   StyleSheet,
   ViewStyle,
-  Platform,
   ActivityIndicator,
 } from "react-native";
 import { colorPalette } from "@/theme/designTokens";
-
-// Conditionally import Spinner to avoid web crashes
-let Spinner: any;
-if (Platform.OS !== "web") {
-  Spinner = require("react-native-spinkit").default;
-}
 
 export type SpinnerType =
   | "CircleFlip"
@@ -32,7 +25,7 @@ export type SpinnerType =
 interface LoadingSpinnerProps {
   isVisible?: boolean;
   size?: number;
-  type?: SpinnerType;
+  type?: SpinnerType; // Kept for compatibility but ignored
   color?: string;
   style?: ViewStyle;
 }
@@ -40,25 +33,15 @@ interface LoadingSpinnerProps {
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   isVisible = true,
   size = 37,
-  type = "ThreeBounce",
+  type: _type = "ThreeBounce",
   color = colorPalette.primary[500],
   style,
 }) => {
   if (!isVisible) return null;
 
-  if (Platform.OS === "web") {
-    return (
-      <View style={[styles.container, style]}>
-        <ActivityIndicator size="large" color={color} />
-      </View>
-    );
-  }
-
   return (
     <View style={[styles.container, style]}>
-      {Spinner && (
-        <Spinner isVisible={isVisible} size={size} type={type} color={color} />
-      )}
+      <ActivityIndicator size={size > 20 ? "large" : "small"} color={color} />
     </View>
   );
 };

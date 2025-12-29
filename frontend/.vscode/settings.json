@@ -1,0 +1,10 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "javascript.validate.enable": false,
+  "typescript.validate.enable": true,
+  "react-native.experiments.tsconfigInferredSource": false,
+  "typescript.tsserver.pluginPaths": [],
+  "typescript.tsserver.useSyntaxServer": "always"
+}

@@ -8,7 +8,7 @@
  */
 
 import React, { useMemo } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
+import { View, StyleSheet, useWindowDimensions } from "react-native";
 import Svg, {
   Circle,
   Line,
@@ -16,14 +16,10 @@ import Svg, {
   Defs,
   Pattern as SvgPattern,
   Rect,
-  Polygon,
-  G,
   LinearGradient,
   Stop,
 } from "react-native-svg";
 import { useThemeContext, PatternType } from "../../theme/ThemeContext";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface PatternBackgroundProps {
   pattern?: PatternType;
@@ -47,8 +43,9 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
   color,
   secondaryColor,
   size = "medium",
-  animated = false,
+  animated: _animated = false,
 }) => {
+  const { width, height } = useWindowDimensions();
   const themeContext = useThemeContext();
   const pattern = patternProp ?? themeContext.pattern;
   const primaryColor = color ?? themeContext.theme.colors.accent;
@@ -67,6 +64,8 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
             size={dotSize}
             color={primaryColor}
             opacity={opacity}
+            width={width}
+            height={height}
           />
         );
       case "grid":
@@ -75,6 +74,8 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
             spacing={spacing}
             color={primaryColor}
             opacity={opacity}
+            width={width}
+            height={height}
           />
         );
       case "waves":
@@ -83,6 +84,8 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
             color={primaryColor}
             secondaryColor={secondary}
             opacity={opacity}
+            width={width}
+            height={height}
           />
         );
       case "aurora":
@@ -91,6 +94,8 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
             color={primaryColor}
             secondaryColor={secondary}
             opacity={opacity}
+            width={width}
+            height={height}
           />
         );
       case "mesh":
@@ -99,6 +104,8 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
             spacing={spacing}
             color={primaryColor}
             opacity={opacity}
+            width={width}
+            height={height}
           />
         );
       case "circuit":
@@ -107,6 +114,8 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
             spacing={spacing}
             color={primaryColor}
             opacity={opacity}
+            width={width}
+            height={height}
           />
         );
       case "hexagon":
@@ -115,12 +124,14 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
             spacing={spacing}
             color={primaryColor}
             opacity={opacity}
+            width={width}
+            height={height}
           />
         );
       default:
         return null;
     }
-  }, [pattern, spacing, dotSize, primaryColor, secondary, opacity]);
+  }, [pattern, spacing, dotSize, primaryColor, secondary, opacity, width, height]);
 
   if (!patternContent) return null;
 
@@ -137,14 +148,13 @@ const DotsPattern: React.FC<{
   size: number;
   color: string;
   opacity: number;
-}> = ({ spacing, size, color, opacity }) => {
-  const cols = Math.ceil(SCREEN_WIDTH / spacing) + 1;
-  const rows = Math.ceil(SCREEN_HEIGHT / spacing) + 1;
-
+  width: number;
+  height: number;
+}> = ({ spacing, size, color, opacity, width, height }) => {
   return (
     <Svg
-      width={SCREEN_WIDTH}
-      height={SCREEN_HEIGHT}
+      width={width}
+      height={height}
       style={StyleSheet.absoluteFill}
     >
       <Defs>
@@ -173,11 +183,13 @@ const GridPattern: React.FC<{
   spacing: number;
   color: string;
   opacity: number;
-}> = ({ spacing, color, opacity }) => {
+  width: number;
+  height: number;
+}> = ({ spacing, color, opacity, width, height }) => {
   return (
     <Svg
-      width={SCREEN_WIDTH}
-      height={SCREEN_HEIGHT}
+      width={width}
+      height={height}
       style={StyleSheet.absoluteFill}
     >
       <Defs>
@@ -217,14 +229,16 @@ const WavesPattern: React.FC<{
   color: string;
   secondaryColor: string;
   opacity: number;
-}> = ({ color, secondaryColor, opacity }) => {
+  width: number;
+  height: number;
+}> = ({ color, secondaryColor, opacity, width, height }) => {
   const waveHeight = 60;
-  const waveCount = Math.ceil(SCREEN_HEIGHT / waveHeight) + 2;
+  const waveCount = Math.ceil(height / waveHeight) + 2;
 
   return (
     <Svg
-      width={SCREEN_WIDTH}
-      height={SCREEN_HEIGHT}
+      width={width}
+      height={height}
       style={StyleSheet.absoluteFill}
     >
       <Defs>
@@ -243,7 +257,7 @@ const WavesPattern: React.FC<{
         return (
           <Path
             key={i}
-            d={`M0,${y} Q${SCREEN_WIDTH / 4},${y - 20} ${SCREEN_WIDTH / 2},${y} T${SCREEN_WIDTH},${y}`}
+            d={`M0,${y} Q${width / 4},${y - 20} ${width / 2},${y} T${width},${y}`}
             stroke="url(#waveGradient)"
             strokeWidth="2"
             fill="none"
@@ -259,11 +273,13 @@ const AuroraPattern: React.FC<{
   color: string;
   secondaryColor: string;
   opacity: number;
-}> = ({ color, secondaryColor, opacity }) => {
+  width: number;
+  height: number;
+}> = ({ color, secondaryColor, opacity, width, height }) => {
   return (
     <Svg
-      width={SCREEN_WIDTH}
-      height={SCREEN_HEIGHT}
+      width={width}
+      height={height}
       style={StyleSheet.absoluteFill}
     >
       <Defs>
@@ -281,20 +297,20 @@ const AuroraPattern: React.FC<{
         </LinearGradient>
       </Defs>
       <Circle
-        cx={SCREEN_WIDTH * 0.2}
-        cy={SCREEN_HEIGHT * 0.3}
+        cx={width * 0.2}
+        cy={height * 0.3}
         r={200}
         fill="url(#aurora1)"
       />
       <Circle
-        cx={SCREEN_WIDTH * 0.8}
-        cy={SCREEN_HEIGHT * 0.5}
+        cx={width * 0.8}
+        cy={height * 0.5}
         r={250}
         fill="url(#aurora2)"
       />
       <Circle
-        cx={SCREEN_WIDTH * 0.5}
-        cy={SCREEN_HEIGHT * 0.8}
+        cx={width * 0.5}
+        cy={height * 0.8}
         r={180}
         fill="url(#aurora1)"
       />
@@ -307,11 +323,13 @@ const MeshPattern: React.FC<{
   spacing: number;
   color: string;
   opacity: number;
-}> = ({ spacing, color, opacity }) => {
+  width: number;
+  height: number;
+}> = ({ spacing, color, opacity, width, height }) => {
   return (
     <Svg
-      width={SCREEN_WIDTH}
-      height={SCREEN_HEIGHT}
+      width={width}
+      height={height}
       style={StyleSheet.absoluteFill}
     >
       <Defs>
@@ -370,13 +388,15 @@ const CircuitPattern: React.FC<{
   spacing: number;
   color: string;
   opacity: number;
-}> = ({ spacing, color, opacity }) => {
+  width: number;
+  height: number;
+}> = ({ spacing, color, opacity, width, height }) => {
   const circuitSpacing = spacing * 2;
 
   return (
     <Svg
-      width={SCREEN_WIDTH}
-      height={SCREEN_HEIGHT}
+      width={width}
+      height={height}
       style={StyleSheet.absoluteFill}
     >
       <Defs>
@@ -463,7 +483,9 @@ const HexagonPattern: React.FC<{
   spacing: number;
   color: string;
   opacity: number;
-}> = ({ spacing, color, opacity }) => {
+  width: number;
+  height: number;
+}> = ({ spacing, color, opacity, width, height }) => {
   const hexSize = spacing * 0.8;
   const hexWidth = hexSize * 2;
   const hexHeight = hexSize * Math.sqrt(3);
@@ -482,8 +504,8 @@ const HexagonPattern: React.FC<{
 
   return (
     <Svg
-      width={SCREEN_WIDTH}
-      height={SCREEN_HEIGHT}
+      width={width}
+      height={height}
       style={StyleSheet.absoluteFill}
     >
       <Defs>

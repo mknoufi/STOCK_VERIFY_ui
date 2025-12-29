@@ -14,6 +14,17 @@ from backend.sql_server_connector import SQLServerConnector
 logger = logging.getLogger(__name__)
 
 
+def _build_collection_recommendation(
+    collection: str, count: int, priority: str, msg_template: str
+) -> dict[str, Any]:
+    """Build a recommendation dict for database insights."""
+    return {
+        "type": "performance" if priority == "medium" else "data",
+        "priority": priority,
+        "message": msg_template.format(collection=collection, count=count),
+    }
+
+
 class DatabaseManager:
     """
     Centralized database management with:
@@ -195,7 +206,9 @@ class DatabaseManager:
             status = (
                 "healthy"
                 if difference < 100
-                else "degraded" if difference < 500 else "critical"
+                else "degraded"
+                if difference < 500
+                else "critical"
             )
 
             return {
@@ -393,75 +406,76 @@ class DatabaseManager:
         }
 
         try:
-            # Analyze query patterns
-            stats = insights["statistics"]
-
-            # MongoDB collection analysis
-            collections = await self.mongo_db.list_collection_names()
-            for collection in collections:
-                try:
-                    count = await self.mongo_db[collection].count_documents({})
-                    sample = await self.mongo_db[collection].find().limit(1).to_list(1)
-
-                    stats[f"{collection}_count"] = count
-                    stats[f"{collection}_has_data"] = len(sample) > 0
-
-                    # Check for potential issues
-                    if count > 50000:
-                        insights["recommendations"].append(
-                            {
-                                "type": "performance",
-                                "priority": "medium",
-                                "message": f"Collection {collection} has {count:,} documents. Consider archiving old data.",
-                            }
-                        )
-
-                    if count == 0 and collection in ["erp_items", "sessions"]:
-                        insights["recommendations"].append(
-                            {
-                                "type": "data",
-                                "priority": "high",
-                                "message": f"Collection {collection} is empty. Check sync services.",
-                            }
-                        )
-
-                except Exception:
-                    continue
-
-            # SQL Server analysis
-            if self.sql_connector.test_connection():
-                try:
-                    cursor = self.sql_connector.connection.cursor()
-
-                    # Check for items without barcodes
-                    cursor.execute(
-                        """
-                        SELECT COUNT(*) FROM dbo.Products P
-                        LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
-                        WHERE P.IsActive = 1 AND (PB.AutoBarcode IS NULL OR PB.AutoBarcode = '')
-                    """
-                    )
-                    items_without_barcodes = cursor.fetchone()[0]
-
-                    if items_without_barcodes > 0:
-                        insights["recommendations"].append(
-                            {
-                                "type": "data_quality",
-                                "priority": "medium",
-                                "message": f"{items_without_barcodes:,} products have no AutoBarcode. Consider data cleanup in ERP.",
-                            }
-                        )
-
-                    cursor.close()
-
-                except Exception as e:
-                    logger.warning(f"SQL Server analysis failed: {str(e)}")
-
+            await self._analyze_mongo_collections(insights)
+            self._analyze_sql_server(insights)
         except Exception as e:
             logger.error(f"Database insights failed: {str(e)}")
             insights["error"] = str(e)
 
         return insights
+
+    async def _analyze_mongo_collections(self, insights: dict[str, Any]) -> None:
+        """Analyze MongoDB collections and add recommendations."""
+        stats = insights["statistics"]
+        collections = await self.mongo_db.list_collection_names()
+
+        for collection in collections:
+            try:
+                count = await self.mongo_db[collection].count_documents({})
+                sample = await self.mongo_db[collection].find().limit(1).to_list(1)
+
+                stats[f"{collection}_count"] = count
+                stats[f"{collection}_has_data"] = len(sample) > 0
+
+                if count > 50000:
+                    insights["recommendations"].append(
+                        _build_collection_recommendation(
+                            collection,
+                            count,
+                            "medium",
+                            "Collection {collection} has {count:,} documents. Consider archiving old data.",
+                        )
+                    )
+
+                if count == 0 and collection in ["erp_items", "sessions"]:
+                    insights["recommendations"].append(
+                        _build_collection_recommendation(
+                            collection,
+                            count,
+                            "high",
+                            "Collection {collection} is empty. Check sync services.",
+                        )
+                    )
+            except Exception:
+                continue
+
+    def _analyze_sql_server(self, insights: dict[str, Any]) -> None:
+        """Analyze SQL Server and add recommendations."""
+        if not self.sql_connector.test_connection():
+            return
+
+        try:
+            cursor = self.sql_connector.connection.cursor()
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM dbo.Products P
+                LEFT JOIN dbo.ProductBatches PB ON P.ProductID = PB.ProductID
+                WHERE P.IsActive = 1 AND (PB.AutoBarcode IS NULL OR PB.AutoBarcode = '')
+            """
+            )
+            items_without_barcodes = cursor.fetchone()[0]
+            cursor.close()
+
+            if items_without_barcodes > 0:
+                insights["recommendations"].append(
+                    {
+                        "type": "data_quality",
+                        "priority": "medium",
+                        "message": f"{items_without_barcodes:,} products have no AutoBarcode. Consider data cleanup in ERP.",
+                    }
+                )
+        except Exception as e:
+            logger.warning(f"SQL Server analysis failed: {str(e)}")
 
     async def verify_data_flow(self) -> dict[str, Any]:
         """Verify complete data flow from SQL Server to Frontend"""

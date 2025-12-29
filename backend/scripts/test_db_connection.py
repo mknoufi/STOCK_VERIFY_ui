@@ -20,8 +20,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 try:
     from backend.config import settings
 except ImportError:
-    import os
-
     from dotenv import load_dotenv
 
     load_dotenv()

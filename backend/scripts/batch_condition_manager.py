@@ -41,6 +41,146 @@ class BatchAction(str, Enum):
     WRITE_OFF = "write_off"
 
 
+# --------------------------------------------------------------------------- #
+# Condition-to-action mapping (reduces cyclomatic complexity)
+# --------------------------------------------------------------------------- #
+_CONDITION_ACTIONS = {
+    ItemCondition.DAMAGED: {
+        "flag": "DAMAGED",
+        "action": BatchAction.RETURN_TO_SUPPLIER,
+        "priority": "HIGH",
+        "recommendations": [
+            "Check if within return period",
+            "Document with photos",
+            "Contact supplier for replacement",
+        ],
+    },
+    ItemCondition.EXPIRED: {
+        "flag": "EXPIRED",
+        "action": BatchAction.DISPOSE,
+        "priority": "URGENT",
+        "recommendations": ["Remove from sales floor", "Dispose immediately"],
+    },
+    ItemCondition.AGING: {
+        "flag": "AGING",
+        "action": BatchAction.DISCOUNT_SALE,
+        "priority": "MEDIUM",
+        "recommendations": ["Apply 15-25% discount", "Promote in clearance section"],
+    },
+    ItemCondition.SLOW_MOVING: {
+        "flag": "SLOW_MOVING",
+        "action": BatchAction.DISCOUNT_SALE,
+        "priority": "LOW",
+        "recommendations": ["Create bundle offers", "Place in high-traffic area"],
+    },
+    ItemCondition.NON_MOVING: {
+        "flag": "SLOW_MOVING",
+        "action": BatchAction.DISCOUNT_SALE,
+        "priority": "LOW",
+        "recommendations": ["Create bundle offers", "Place in high-traffic area"],
+    },
+    ItemCondition.PACKAGING_DAMAGED: {
+        "flag": "PACKAGING_ISSUE",
+        "action": BatchAction.REPACKAGE,
+        "priority": "MEDIUM",
+        "recommendations": [
+            "Repackage if product is intact",
+            "Sell at 10-15% discount",
+        ],
+    },
+    ItemCondition.WATER_DAMAGED: {
+        "flag": "UNSELLABLE",
+        "action": BatchAction.WRITE_OFF,
+        "priority": "HIGH",
+        "recommendations": [
+            "Cannot be sold",
+            "Write off from inventory",
+            "Dispose safely",
+        ],
+    },
+    ItemCondition.PEST_DAMAGED: {
+        "flag": "UNSELLABLE",
+        "action": BatchAction.WRITE_OFF,
+        "priority": "HIGH",
+        "recommendations": [
+            "Cannot be sold",
+            "Write off from inventory",
+            "Dispose safely",
+        ],
+    },
+}
+
+
+def _check_expiry(batch, flags, recommendations):
+    """Check expiry date and return appropriate priority/action if applicable."""
+    expiry_date = batch.get("expiry_date")
+    if not expiry_date:
+        return None
+    try:
+        expiry = datetime.fromisoformat(expiry_date)
+        days_to_expiry = (expiry - datetime.now()).days
+
+        if days_to_expiry < 0:
+            flags.append("EXPIRED")
+            recommendations.extend(
+                [
+                    "DO NOT SELL - Expired product",
+                    "Remove from shelves immediately",
+                    "Dispose as per regulations",
+                ]
+            )
+            return {"action": BatchAction.DISPOSE, "priority": "URGENT"}
+        elif days_to_expiry <= 7:
+            flags.append("EXPIRING_SOON")
+            recommendations.extend(
+                [
+                    f"Expires in {days_to_expiry} days - Clear urgently",
+                    "Apply 50-70% discount",
+                ]
+            )
+            return {"action": BatchAction.CLEARANCE, "priority": "HIGH"}
+        elif days_to_expiry <= 30:
+            flags.append("SHORT_EXPIRY")
+            recommendations.extend(
+                [
+                    f"Expires in {days_to_expiry} days",
+                    "Apply 20-30% discount",
+                ]
+            )
+            return {"action": BatchAction.DISCOUNT_SALE, "priority": "MEDIUM"}
+    except (ValueError, TypeError):
+        pass
+    return None
+
+
+def _check_mfg_age(batch, flags):
+    """Check manufacturing date age and add flags."""
+    mfg_date = batch.get("mfg_date")
+    if not mfg_date:
+        return
+    try:
+        mfg = datetime.fromisoformat(mfg_date)
+        age_months = (datetime.now() - mfg).days / 30
+        if age_months > 24:
+            flags.append("VERY_OLD")
+        elif age_months > 12:
+            flags.append("OLD_STOCK")
+    except (ValueError, TypeError):
+        pass
+
+
+def _apply_condition_rules(batch, flags, recommendations):
+    """Apply condition-based rules from the mapping table."""
+    condition = batch.get("condition", ItemCondition.GOOD)
+    config = _CONDITION_ACTIONS.get(condition)
+    if config:
+        flags.append(config["flag"])
+        batch["recommended_action"] = config["action"]
+        recommendations.extend(config["recommendations"])
+        return config["priority"]
+    return None
+
+
 class BatchManager:
     """Manage multiple batches of same item"""
 
@@ -99,95 +239,19 @@ class BatchManager:
         recommendations = []
         priority = "NORMAL"
 
-        # Check expiry
-        if batch.get("expiry_date"):
-            try:
-                expiry = datetime.fromisoformat(batch["expiry_date"])
-                days_to_expiry = (expiry - datetime.now()).days
+        # Check expiry (may override priority/action)
+        expiry_result = _check_expiry(batch, flags, recommendations)
+        if expiry_result:
+            batch["recommended_action"] = expiry_result["action"]
+            priority = expiry_result["priority"]
 
-                if days_to_expiry < 0:
-                    flags.append("EXPIRED")
-                    batch["recommended_action"] = BatchAction.DISPOSE
-                    priority = "URGENT"
-                    recommendations.append("DO NOT SELL - Expired product")
-                    recommendations.append("Remove from shelves immediately")
-                    recommendations.append("Dispose as per regulations")
-                elif days_to_expiry <= 7:
-                    flags.append("EXPIRING_SOON")
-                    batch["recommended_action"] = BatchAction.CLEARANCE
-                    priority = "HIGH"
-                    recommendations.append(
-                        f"Expires in {days_to_expiry} days - Clear urgently"
-                    )
-                    recommendations.append("Apply 50-70% discount")
-                elif days_to_expiry <= 30:
-                    flags.append("SHORT_EXPIRY")
-                    batch["recommended_action"] = BatchAction.DISCOUNT_SALE
-                    priority = "MEDIUM"
-                    recommendations.append(f"Expires in {days_to_expiry} days")
-                    recommendations.append("Apply 20-30% discount")
-            except (ValueError, TypeError):
-                pass
-
-        # Check condition
-        condition = batch.get("condition", ItemCondition.GOOD)
-
-        if condition == ItemCondition.DAMAGED:
-            flags.append("DAMAGED")
-            batch["recommended_action"] = BatchAction.RETURN_TO_SUPPLIER
-            priority = "HIGH"
-            recommendations.append("Check if within return period")
-            recommendations.append("Document with photos")
-            recommendations.append("Contact supplier for replacement")
-
-        elif condition == ItemCondition.EXPIRED:
-            flags.append("EXPIRED")
-            batch["recommended_action"] = BatchAction.DISPOSE
-            priority = "URGENT"
-            recommendations.append("Remove from sales floor")
-            recommendations.append("Dispose immediately")
-
-        elif condition == ItemCondition.AGING:
-            flags.append("AGING")
-            batch["recommended_action"] = BatchAction.DISCOUNT_SALE
-            priority = "MEDIUM"
-            recommendations.append("Apply 15-25% discount")
-            recommendations.append("Promote in clearance section")
-
-        elif condition in [ItemCondition.SLOW_MOVING, ItemCondition.NON_MOVING]:
-            flags.append("SLOW_MOVING")
-            batch["recommended_action"] = BatchAction.DISCOUNT_SALE
-            priority = "LOW"
-            recommendations.append("Create bundle offers")
-            recommendations.append("Place in high-traffic area")
-
-        elif condition == ItemCondition.PACKAGING_DAMAGED:
-            flags.append("PACKAGING_ISSUE")
-            batch["recommended_action"] = BatchAction.REPACKAGE
-            priority = "MEDIUM"
-            recommendations.append("Repackage if product is intact")
-            recommendations.append("Sell at 10-15% discount")
-
-        elif condition in [ItemCondition.WATER_DAMAGED, ItemCondition.PEST_DAMAGED]:
-            flags.append("UNSELLABLE")
-            batch["recommended_action"] = BatchAction.WRITE_OFF
-            priority = "HIGH"
-            recommendations.append("Cannot be sold")
-            recommendations.append("Write off from inventory")
-            recommendations.append("Dispose safely")
+        # Apply condition-based rules (may override priority/action)
+        condition_priority = _apply_condition_rules(batch, flags, recommendations)
+        if condition_priority:
+            priority = condition_priority
 
         # Check manufacturing date age
-        if batch.get("mfg_date"):
-            try:
-                mfg = datetime.fromisoformat(batch["mfg_date"])
-                age_months = (datetime.now() - mfg).days / 30
-
-                if age_months > 24:
-                    flags.append("VERY_OLD")
-                elif age_months > 12:
-                    flags.append("OLD_STOCK")
-            except (ValueError, TypeError):
-                pass
+        _check_mfg_age(batch, flags)
 
         batch["condition_flags"] = flags
         batch["recommendations"] = recommendations

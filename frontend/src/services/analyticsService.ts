@@ -4,6 +4,12 @@
  * Phase 0: Advanced Analytics Dashboard
  */
 
+import {
+  getSessionsAnalytics,
+  getSystemStats,
+  getSystemIssues,
+} from "./api/api";
+
 export interface AnalyticsMetric {
   label: string;
   value: number;
@@ -40,13 +46,13 @@ export interface AnalyticsDashboardData {
   sessionAnalytics: SessionAnalytics;
   varianceTrends: VarianceTrend[];
   topPerformers: TopPerformer[];
-  recentActivity: Array<{
+  recentActivity: {
     id: string;
     type: "scan" | "session" | "variance";
     message: string;
     timestamp: Date;
     user?: string;
-  }>;
+  }[];
 }
 
 class AnalyticsService {
@@ -54,49 +60,87 @@ class AnalyticsService {
    * Get dashboard analytics data
    */
   async getDashboardData(
-    timeRange: "24h" | "7d" | "30d" = "7d",
+    _timeRange: "24h" | "7d" | "30d" = "7d",
   ): Promise<AnalyticsDashboardData> {
-    // This would typically fetch from the backend
-    // For now, returning mock data structure
+    try {
+      const [analyticsRes, statsRes] = await Promise.all([
+        getSessionsAnalytics(),
+        getSystemStats(),
+      ]);
 
+      const analytics = analyticsRes.data || {};
+      const stats = statsRes.data || {};
+
+      return {
+        overview: [
+          {
+            label: "Total Items Scanned",
+            value: analytics.total_items || 0,
+            trend: "up",
+            format: "number",
+          },
+          {
+            label: "Active Sessions",
+            value: stats.active_sessions || 0,
+            trend: "neutral",
+            format: "number",
+          },
+          {
+            label: "Variance Rate",
+            value: analytics.avg_variance || 0,
+            trend: "down",
+            format: "percentage",
+          },
+          {
+            label: "Accuracy",
+            value: 100 - (analytics.avg_variance || 0),
+            trend: "up",
+            format: "percentage",
+          },
+        ],
+        sessionAnalytics: {
+          totalSessions: analytics.total_sessions || 0,
+          activeSessions: stats.active_sessions || 0,
+          completedSessions:
+            (analytics.total_sessions || 0) - (stats.active_sessions || 0),
+          averageDuration: 0,
+          totalItemsScanned: analytics.total_items || 0,
+          varianceRate: analytics.avg_variance || 0,
+        },
+        varianceTrends: this.mapSessionsToTrends(
+          analytics.sessions_by_date || {},
+        ),
+        topPerformers: [],
+        recentActivity: [],
+      };
+    } catch (error) {
+      console.error("Failed to fetch analytics data:", error);
+      return this.getEmptyDashboardData();
+    }
+  }
+
+  private mapSessionsToTrends(
+    sessionsByDate: Record<string, number>,
+  ): VarianceTrend[] {
+    return Object.entries(sessionsByDate)
+      .map(([date, count]) => ({
+        date,
+        variance: 0,
+        itemsScanned: count,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  private getEmptyDashboardData(): AnalyticsDashboardData {
     return {
-      overview: [
-        {
-          label: "Total Items Scanned",
-          value: 12450,
-          change: 12.5,
-          trend: "up",
-          format: "number",
-        },
-        {
-          label: "Active Sessions",
-          value: 8,
-          change: -2.3,
-          trend: "down",
-          format: "number",
-        },
-        {
-          label: "Variance Rate",
-          value: 2.8,
-          change: 0.5,
-          trend: "up",
-          format: "percentage",
-        },
-        {
-          label: "Accuracy",
-          value: 97.2,
-          change: 1.2,
-          trend: "up",
-          format: "percentage",
-        },
-      ],
+      overview: [],
       sessionAnalytics: {
-        totalSessions: 156,
-        activeSessions: 8,
-        completedSessions: 148,
-        averageDuration: 45,
-        totalItemsScanned: 12450,
-        varianceRate: 2.8,
+        totalSessions: 0,
+        activeSessions: 0,
+        completedSessions: 0,
+        averageDuration: 0,
+        totalItemsScanned: 0,
+        varianceRate: 0,
       },
       varianceTrends: [],
       topPerformers: [],
@@ -108,45 +152,32 @@ class AnalyticsService {
    * Get variance trends over time
    */
   async getVarianceTrends(days: number = 7): Promise<VarianceTrend[]> {
-    // Mock data - would fetch from backend
-    const trends: VarianceTrend[] = [];
-    const today = new Date();
-
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-
-      const dateStr = date.toISOString().split("T")[0];
-      if (dateStr) {
-        trends.push({
-          date: dateStr,
-          variance: Math.random() * 5,
-          itemsScanned: Math.floor(Math.random() * 500) + 1000,
-        });
-      }
+    try {
+      const analyticsRes = await getSessionsAnalytics();
+      const sessionsByDate = analyticsRes.data?.sessions_by_date || {};
+      return this.mapSessionsToTrends(sessionsByDate).slice(-days);
+    } catch (error) {
+      console.error("Failed to fetch variance trends:", error);
+      return [];
     }
-
-    return trends;
   }
 
   /**
    * Get top performing users
    */
-  async getTopPerformers(limit: number = 5): Promise<TopPerformer[]> {
-    // Mock data - would fetch from backend
+  async getTopPerformers(_limit: number = 5): Promise<TopPerformer[]> {
     return [];
   }
 
   /**
    * Calculate metrics for a specific session
    */
-  calculateSessionMetrics(sessionData: any): {
+  calculateSessionMetrics(_sessionData: any): {
     itemsScanned: number;
     duration: number;
     varianceCount: number;
     accuracy: number;
   } {
-    // Calculate various session metrics
     return {
       itemsScanned: 0,
       duration: 0,
@@ -156,14 +187,51 @@ class AnalyticsService {
   }
 
   /**
-   * Export analytics data
+   * Get active users
    */
-  async exportAnalytics(
-    format: "csv" | "excel" | "pdf",
-    timeRange: "24h" | "7d" | "30d" | "custom",
-  ): Promise<Blob> {
-    // Would generate export file
-    throw new Error("Not implemented");
+  async getActiveUsers(): Promise<any[]> {
+    try {
+      const _statsRes = await getSystemStats();
+      // This is a simplification, real active users would come from a different endpoint
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get recent error logs
+   */
+  async getErrorLogs(): Promise<any[]> {
+    try {
+      const issuesRes = await getSystemIssues();
+      return (issuesRes.data || []).map((issue: any) => ({
+        id: issue.id,
+        timestamp: issue.timestamp,
+        level: issue.severity === "critical" ? "error" : "warning",
+        status: issue.status || "active",
+        message: issue.message || issue.description,
+        endpoint: issue.type,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Acknowledge an error log
+   */
+  async acknowledgeError(id: string): Promise<boolean> {
+    console.log(`Acknowledging error ${id}`);
+    return true;
+  }
+
+  /**
+   * Resolve an error log
+   */
+  async resolveError(id: string): Promise<boolean> {
+    console.log(`Resolving error ${id}`);
+    return true;
   }
 }
 

@@ -44,6 +44,8 @@ interface QuantityInputFormProps {
   onMarkLocationChange: (text: string) => void;
   manufacturingDate: string;
   onManufacturingDateChange: (date: string) => void;
+  expiryDate: string;
+  onExpiryDateChange: (date: string) => void;
   remark: string;
   onRemarkChange: (text: string) => void;
   serialCaptureEnabled: boolean;
@@ -64,13 +66,15 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
     onItemConditionChange,
     onVariantSelect,
     currentItemCondition = "good",
-    workflowState,
-    updateWorkflowState,
+    workflowState: _workflowState,
+    updateWorkflowState: _updateWorkflowState,
 
     markLocation,
     onMarkLocationChange,
     manufacturingDate,
     onManufacturingDateChange,
+    expiryDate,
+    onExpiryDateChange,
     remark,
     onRemarkChange,
     serialCaptureEnabled,
@@ -80,17 +84,19 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
     const [showDamage, setShowDamage] = useState(false);
     const [showSerial, setShowSerial] = useState(serialCaptureEnabled);
     const [showMfgDate, setShowMfgDate] = useState(!!manufacturingDate);
+    const [showExpiryDate, setShowExpiryDate] = useState(!!expiryDate);
     const [showAdditionalDetail, setShowAdditionalDetail] = useState(
       !!remark || !!markLocation,
     );
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showExpiryDatePicker, setShowExpiryDatePicker] = useState(false);
 
     // Sync local state with props if needed (optional, but good for initial load)
     // useEffect(() => { setShowSerial(serialCaptureEnabled); }, [serialCaptureEnabled]);
 
     const handleDamageChange = (
       text: string,
-      field: "returnableDamageQty" | "nonReturnableDamageQty",
+      _field: "returnableDamageQty" | "nonReturnableDamageQty",
     ) => {
       onActivityReset?.();
       if (text && currentItemCondition === "good" && onItemConditionChange) {
@@ -329,6 +335,52 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
           />
         )}
 
+        {/* Expiry Date Toggle */}
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Expiry Date</Text>
+          <Switch
+            value={showExpiryDate}
+            onValueChange={(val) => toggleSwitch(setShowExpiryDate, val)}
+            trackColor={{ false: "#334155", true: "#3B82F6" }}
+            thumbColor={showExpiryDate ? "#fff" : "#94A3B8"}
+          />
+        </View>
+
+        {showExpiryDate && (
+          <View style={styles.inputGroup}>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowExpiryDatePicker(true)}
+            >
+              <Text
+                style={[
+                  styles.dateButtonText,
+                  !expiryDate && styles.placeholderText,
+                ]}
+              >
+                {expiryDate || "Select Expiry Date"}
+              </Text>
+              <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Expiry Date Picker Modal */}
+        {showExpiryDatePicker && (
+          <DateTimePicker
+            mode="date"
+            value={expiryDate ? new Date(expiryDate) : new Date()}
+            onChange={(event, selectedDate) => {
+              setShowExpiryDatePicker(false);
+              if (selectedDate) {
+                onExpiryDateChange(
+                  selectedDate.toISOString().split("T")[0] ?? "",
+                );
+              }
+            }}
+          />
+        )}
+
         {/* Additional Detail Toggle */}
         <View style={styles.toggleRow}>
           <Text style={styles.toggleLabel}>Additional Detail</Text>
@@ -383,10 +435,11 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
       prevProps.currentItemCondition === nextProps.currentItemCondition &&
       prevProps.mrpVariants.length === nextProps.mrpVariants.length &&
       prevProps.workflowState.serialCaptureEnabled ===
-        nextProps.workflowState.serialCaptureEnabled &&
+      nextProps.workflowState.serialCaptureEnabled &&
       JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
       prevProps.markLocation === nextProps.markLocation &&
       prevProps.manufacturingDate === nextProps.manufacturingDate &&
+      prevProps.expiryDate === nextProps.expiryDate &&
       prevProps.remark === nextProps.remark
     );
   },

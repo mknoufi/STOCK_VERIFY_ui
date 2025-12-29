@@ -1,0 +1,70 @@
+openapi: 3.0.0
+info:
+  title: Stock Verify API - Enhanced
+  version: 2.0.0
+  description: Enhanced API contracts for comprehensive improvements.
+
+paths:
+  /api/users/me/preferences:
+    put:
+      summary: Update user UI preferences
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                theme:
+                  type: string
+                  enum: [light, dark, system]
+                fontSize:
+                  type: string
+                  enum: [small, medium, large]
+      responses:
+        '200':
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+
+  /api/auth/pin/change:
+    post:
+      summary: Change login PIN
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_pin, new_pin]
+              properties:
+                current_pin:
+                  type: string
+                  pattern: '^\d{6}$'
+                new_pin:
+                  type: string
+                  pattern: '^\d{6}$'
+      responses:
+        '200':
+          description: PIN changed successfully
+
+components:
+  schemas:
+    UserPreferences:
+      type: object
+      properties:
+        theme:
+          type: string
+        fontSize:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

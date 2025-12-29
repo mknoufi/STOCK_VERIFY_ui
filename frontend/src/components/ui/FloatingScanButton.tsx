@@ -72,7 +72,7 @@ export const FloatingScanButton: React.FC<FloatingScanButtonProps> = ({
       -1,
       true,
     );
-  }, []);
+  }, [pulseScale, glowOpacity]);
 
   const buttonStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

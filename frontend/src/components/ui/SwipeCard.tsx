@@ -15,21 +15,15 @@ import {
   Text,
   StyleSheet,
   ViewStyle,
-  Dimensions,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import {
-  GestureDetector,
-  Gesture,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withTiming,
   runOnJS,
   interpolate,
   Extrapolation,
@@ -37,7 +31,6 @@ import Animated, {
 import { auroraTheme } from "@/theme/auroraTheme";
 import { GlassCard } from "./GlassCard";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = 80;
 
 interface SwipeAction {
@@ -61,7 +54,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
   leftActions = [],
   rightActions = [],
   style,
-  onSwipeComplete,
+  onSwipeComplete: _onSwipeComplete,
 }) => {
   const translateX = useSharedValue(0);
   const contextX = useSharedValue(0);
@@ -87,7 +80,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
 
       translateX.value = Math.max(minSwipe, Math.min(maxSwipe, newValue));
     })
-    .onEnd((event) => {
+    .onEnd((_event) => {
       // Determine if we should snap to action position
       if (translateX.value > SWIPE_THRESHOLD / 2 && leftActions.length > 0) {
         translateX.value = withSpring(SWIPE_THRESHOLD);

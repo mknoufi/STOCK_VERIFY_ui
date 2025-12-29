@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -21,22 +21,47 @@ import {
   modernCommonStyles,
 } from "../../styles/modernDesignSystem";
 import { useScanSessionStore } from "../../store/scanSessionStore";
+import { getSession } from "../../services/api/api";
 
-const FLOOR_OPTIONS = [
+const ALL_FLOOR_OPTIONS = [
   "Ground Floor",
-  "Mezzanine",
-  "1st Floor",
-  "2nd Floor",
-  "3rd Floor",
-  "Basement",
+  "First Floor",
+  "Second Floor",
+  "Top Godown",
+  "Main Godown",
+  "Damage Area",
 ];
 
 export const SectionFocusConfig: React.FC = () => {
-  const { setFloor, setRack, startSection } = useScanSessionStore();
+  const { setFloor, setRack, startSection, activeSessionId } = useScanSessionStore();
   const [selectedFloor, setSelectedFloor] = useState("");
   const [rackInput, setRackInput] = useState("");
   const [showFloorModal, setShowFloorModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [floorOptions, setFloorOptions] = useState<string[]>(ALL_FLOOR_OPTIONS);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      if (activeSessionId) {
+        try {
+          const session = await getSession(activeSessionId);
+          const warehouse = session.warehouse?.toLowerCase() || "";
+
+          if (warehouse.includes("showroom")) {
+             setFloorOptions(["Ground Floor", "First Floor", "Second Floor"]);
+          } else if (warehouse.includes("godown")) {
+             setFloorOptions(["Top Godown", "Main Godown", "Damage Area"]);
+          } else {
+             setFloorOptions(ALL_FLOOR_OPTIONS);
+          }
+        } catch (e) {
+           console.error("Failed to load session details", e);
+           setFloorOptions(ALL_FLOOR_OPTIONS);
+        }
+      }
+    };
+    loadOptions();
+  }, [activeSessionId]);
 
   const handleStartSection = () => {
     if (!selectedFloor || !rackInput.trim()) {
@@ -85,7 +110,7 @@ export const SectionFocusConfig: React.FC = () => {
               <PremiumInput
                 label="Floor"
                 value={selectedFloor}
-                onChangeText={() => {}}
+                onChangeText={() => { }}
                 placeholder="Select Floor"
                 editable={false}
                 leftIcon="layers-outline"
@@ -140,7 +165,7 @@ export const SectionFocusConfig: React.FC = () => {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalList}>
-              {FLOOR_OPTIONS.map((floor) => (
+              {floorOptions.map((floor) => (
                 <TouchableOpacity
                   key={floor}
                   style={[

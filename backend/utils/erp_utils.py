@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Optional
 
 from fastapi import HTTPException
@@ -9,6 +9,103 @@ from backend.api.schemas import ERPItem
 from backend.error_messages import get_error_message
 
 logger = logging.getLogger(__name__)
+
+
+# --------------------------------------------------------------------------- #
+# Module-level helpers for _map_erp_item_to_schema (reduce cyclomatic complexity)
+# --------------------------------------------------------------------------- #
+def _safe_float(val: Any, default: Optional[float] = None) -> Optional[float]:
+    """Safely convert a value to float."""
+    if val is None:
+        return default
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
+def _safe_str(val: Any, default: str = "") -> str:
+    """Safely convert a value to string."""
+    if val is None:
+        return default
+    return str(val)
+
+
+def _safe_optional_str(val: Any) -> Optional[str]:
+    """Safely convert a value to optional string (None if empty)."""
+    if val is None or val == "":
+        return None
+    return str(val)
+
+
+def _safe_date_str(val: Any) -> Optional[str]:
+    """Convert date/datetime to ISO string."""
+    if val is None:
+        return None
+    if isinstance(val, datetime):
+        return val.isoformat()
+    if isinstance(val, date):
+        return datetime.combine(val, datetime.min.time()).isoformat()
+    try:
+        return str(val)
+    except Exception:
+        return None
+
+
+def _add_optional_fields(
+    mapped: dict, item: dict, field_defs: list[tuple[str, str, str]]
+) -> None:
+    """Add optional fields to mapped dict if present in item.
+
+    field_defs: list of (item_key, mapped_key, type) where type is 'str' or 'float'
+    """
+    for item_key, mapped_key, field_type in field_defs:
+        val = item.get(item_key)
+        if val is not None:
+            if field_type == "float":
+                mapped[mapped_key] = _safe_float(val)
+            else:
+                mapped[mapped_key] = _safe_str(val)
+
+
+# --------------------------------------------------------------------------- #
+# Field definition tuples for _map_erp_item_to_schema
+# --------------------------------------------------------------------------- #
+_SALES_PRICING_FIELDS = (
+    ("sales_price", "sales_price", "float"),
+    ("sale_price", "sale_price", "float"),
+    ("standard_rate", "standard_rate", "float"),
+    ("last_purchase_rate", "last_purchase_rate", "float"),
+    ("last_purchase_price", "last_purchase_price", "float"),
+)
+
+_BRAND_FIELDS = (
+    ("brand_id", "brand_id", "str"),
+    ("brand_name", "brand_name", "str"),
+    ("brand_code", "brand_code", "str"),
+)
+
+_SUPPLIER_FIELDS = (
+    ("supplier_id", "supplier_id", "str"),
+    ("supplier_code", "supplier_code", "str"),
+    ("supplier_name", "supplier_name", "str"),
+    ("last_purchase_supplier", "last_purchase_supplier", "str"),
+    ("supplier_phone", "supplier_phone", "str"),
+    ("supplier_city", "supplier_city", "str"),
+    ("supplier_state", "supplier_state", "str"),
+    ("supplier_gst", "supplier_gst", "str"),
+)
+
+_PURCHASE_FIELDS = (
+    ("purchase_price", "purchase_price", "float"),
+    ("last_purchase_qty", "last_purchase_qty", "float"),
+    ("purchase_qty", "purchase_qty", "float"),
+    ("purchase_invoice_no", "purchase_invoice_no", "str"),
+    ("purchase_reference", "purchase_reference", "str"),
+    ("last_purchase_cost", "last_purchase_cost", "float"),
+    ("purchase_voucher_type", "purchase_voucher_type", "str"),
+    ("purchase_type", "purchase_type", "str"),
+)
 
 
 async def _ensure_sql_connection(sql_connector: Any, db: Any) -> bool:
@@ -69,38 +166,6 @@ def _map_erp_item_to_schema(
     item: dict[str, Any], original_barcode: str = None
 ) -> dict[str, Any]:
     """Map raw ERP item data to internal schema format."""
-    from datetime import date, datetime
-
-    def _safe_float(val: Any, default: Optional[float] = None) -> Optional[float]:
-        if val is None:
-            return default
-        try:
-            return float(val)
-        except (ValueError, TypeError):
-            return default
-
-    def _safe_str(val: Any, default: str = "") -> str:
-        if val is None:
-            return default
-        return str(val)
-
-    def _safe_optional_str(val: Any) -> Optional[str]:
-        if val is None or val == "":
-            return None
-        return str(val)
-
-    def _safe_date_str(val: Any) -> Optional[str]:
-        if val is None:
-            return None
-        if isinstance(val, datetime):
-            return val.isoformat()
-        if isinstance(val, date):
-            return datetime.combine(val, datetime.min.time()).isoformat()
-        try:
-            return str(val)
-        except Exception:
-            return None
-
     mapped = {
         "item_code": _safe_str(item.get("item_code"), ""),
         "item_name": _safe_str(item.get("item_name"), ""),
@@ -128,63 +193,18 @@ def _map_erp_item_to_schema(
         "expiry_date": _safe_date_str(item.get("expiry_date")),
     }
 
-    # Sales / pricing metadata (optional)
-    if item.get("sales_price") is not None:
-        mapped["sales_price"] = _safe_float(item.get("sales_price"))
-    if item.get("sale_price") is not None:
-        mapped["sale_price"] = _safe_float(item.get("sale_price"))
-    if item.get("standard_rate") is not None:
-        mapped["standard_rate"] = _safe_float(item.get("standard_rate"))
-    if item.get("last_purchase_rate") is not None:
-        mapped["last_purchase_rate"] = _safe_float(item.get("last_purchase_rate"))
-    if item.get("last_purchase_price") is not None:
-        mapped["last_purchase_price"] = _safe_float(item.get("last_purchase_price"))
+    # Apply optional field groups using module-level tuple definitions
+    for field_group in (
+        _SALES_PRICING_FIELDS,
+        _BRAND_FIELDS,
+        _SUPPLIER_FIELDS,
+        _PURCHASE_FIELDS,
+    ):
+        _add_optional_fields(mapped, item, field_group)
 
-    # Brand metadata (optional)
-    if item.get("brand_id") is not None:
-        mapped["brand_id"] = _safe_str(item.get("brand_id"))
-    if item.get("brand_name") is not None:
-        mapped["brand_name"] = _safe_str(item.get("brand_name"))
-    if item.get("brand_code") is not None:
-        mapped["brand_code"] = _safe_str(item.get("brand_code"))
-
-    # Supplier metadata (optional)
-    if item.get("supplier_id") is not None:
-        mapped["supplier_id"] = _safe_str(item.get("supplier_id"))
-    if item.get("supplier_code") is not None:
-        mapped["supplier_code"] = _safe_str(item.get("supplier_code"))
-    if item.get("supplier_name") is not None:
-        mapped["supplier_name"] = _safe_str(item.get("supplier_name"))
-    if item.get("last_purchase_supplier") is not None:
-        mapped["last_purchase_supplier"] = _safe_str(item.get("last_purchase_supplier"))
-    if item.get("supplier_phone") is not None:
-        mapped["supplier_phone"] = _safe_str(item.get("supplier_phone"))
-    if item.get("supplier_city") is not None:
-        mapped["supplier_city"] = _safe_str(item.get("supplier_city"))
-    if item.get("supplier_state") is not None:
-        mapped["supplier_state"] = _safe_str(item.get("supplier_state"))
-    if item.get("supplier_gst") is not None:
-        mapped["supplier_gst"] = _safe_str(item.get("supplier_gst"))
-
-    # Purchase info (optional)
-    if item.get("purchase_price") is not None:
-        mapped["purchase_price"] = _safe_float(item.get("purchase_price"))
-    if item.get("last_purchase_qty") is not None:
-        mapped["last_purchase_qty"] = _safe_float(item.get("last_purchase_qty"))
-    if item.get("purchase_qty") is not None:
-        mapped["purchase_qty"] = _safe_float(item.get("purchase_qty"))
-    if item.get("purchase_invoice_no") is not None:
-        mapped["purchase_invoice_no"] = _safe_str(item.get("purchase_invoice_no"))
-    if item.get("purchase_reference") is not None:
-        mapped["purchase_reference"] = _safe_str(item.get("purchase_reference"))
+    # Special case: keep datetime object
     if item.get("last_purchase_date") is not None:
-        mapped["last_purchase_date"] = item.get("last_purchase_date")  # Keep datetime
-    if item.get("last_purchase_cost") is not None:
-        mapped["last_purchase_cost"] = _safe_float(item.get("last_purchase_cost"))
-    if item.get("purchase_voucher_type") is not None:
-        mapped["purchase_voucher_type"] = _safe_str(item.get("purchase_voucher_type"))
-    if item.get("purchase_type") is not None:
-        mapped["purchase_type"] = _safe_str(item.get("purchase_type"))
+        mapped["last_purchase_date"] = item.get("last_purchase_date")
 
     return mapped
 

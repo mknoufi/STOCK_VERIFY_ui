@@ -286,4 +286,4 @@ class MonitoringService:
             lines.append("")
 
             return "\n".join(lines)
-            self._health_status["start_time"] = datetime.utcnow()
+            # unreachable code removed

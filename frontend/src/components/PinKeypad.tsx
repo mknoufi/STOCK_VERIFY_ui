@@ -59,7 +59,7 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
   onPinChange,
   onSubmit,
   maxLength = 4,
-  showPin = false,
+  showPin: _showPin = false,
   title,
   subtitle,
   errorMessage,

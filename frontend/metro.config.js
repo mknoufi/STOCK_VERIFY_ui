@@ -18,4 +18,7 @@ config.resolver = {
   resolverMainFields: ["browser", "main", "module"],
 };
 
+// Add WASM support for expo-sqlite
+config.resolver.assetExts.push("wasm");
+
 module.exports = config;

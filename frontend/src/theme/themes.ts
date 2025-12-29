@@ -26,6 +26,7 @@ export type AppTheme = {
     borderLight: string;
     overlay: string;
     glass: string;
+    shimmer: readonly [string, string, string];
   };
   gradients: {
     primary: readonly [string, string, string];
@@ -83,6 +84,7 @@ export const themes: Record<string, AppTheme> = {
       borderLight: "#E1E7ED",
       overlay: "rgba(27, 31, 36, 0.5)",
       glass: "rgba(255, 255, 255, 0.85)",
+      shimmer: ["#E1E4E8", "#F6F8FA", "#E1E4E8"],
     },
     gradients: {
       primary: ["#0969DA", "#0550AE", "#033D8B"],
@@ -125,6 +127,7 @@ export const themes: Record<string, AppTheme> = {
       borderLight: "#3D444D",
       overlay: "rgba(1, 4, 9, 0.8)",
       glass: "rgba(22, 27, 34, 0.85)",
+      shimmer: ["#21262D", "#30363D", "#21262D"],
     },
     gradients: {
       primary: ["#58A6FF", "#388BFD", "#1F6FEB"],
@@ -144,45 +147,46 @@ export const themes: Record<string, AppTheme> = {
     },
   },
 
-  // Aurora Premium - Vibrant Blue-Purple with Glassmorphism
+  // Aurora Premium - Deep Ocean & Emerald (Professional & Modern)
   premium: {
     colors: {
-      background: "#030712",
+      background: "#020617",
       surface: "#0F172A",
       surfaceElevated: "#1E293B",
       text: "#F8FAFC",
-      textSecondary: "#CBD5E1",
+      textSecondary: "#94A3B8",
       muted: "#64748B",
-      accent: "#6366F1",
-      accentLight: "#818CF8",
-      accentDark: "#4F46E5",
-      success: "#22C55E",
-      successLight: "#4ADE80",
+      accent: "#0EA5E9",
+      accentLight: "#38BDF8",
+      accentDark: "#0284C7",
+      success: "#10B981",
+      successLight: "#34D399",
       danger: "#EF4444",
       dangerLight: "#F87171",
       warning: "#F59E0B",
       warningLight: "#FBBF24",
-      info: "#06B6D4",
+      info: "#0EA5E9",
       border: "#1E293B",
       borderLight: "#334155",
-      overlay: "rgba(3, 7, 18, 0.9)",
+      overlay: "rgba(2, 6, 23, 0.9)",
       glass: "rgba(15, 23, 42, 0.75)",
+      shimmer: ["#1E293B", "#334155", "#1E293B"],
     },
     gradients: {
-      primary: ["#6366F1", "#8B5CF6", "#A855F7"],
-      accent: ["#818CF8", "#6366F1"],
+      primary: ["#0EA5E9", "#0284C7", "#0369A1"],
+      accent: ["#38BDF8", "#0EA5E9"],
       surface: ["#1E293B", "#0F172A"],
-      success: ["#4ADE80", "#22C55E"],
+      success: ["#34D399", "#10B981"],
       danger: ["#F87171", "#EF4444"],
     },
-    spacing: { xs: 6, sm: 10, md: 14, lg: 18, xl: 26, xxl: 36 },
-    radius: { xs: 6, sm: 8, md: 12, lg: 16, xl: 20, full: 9999 },
+    spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 },
+    radius: { xs: 6, sm: 10, md: 14, lg: 18, xl: 24, full: 9999 },
     typography: { baseSize: 15, scale: 1.2 },
     shadows: {
       sm: "0 2px 4px rgba(0,0,0,0.2)",
       md: "0 6px 12px rgba(0,0,0,0.3)",
       lg: "0 12px 32px rgba(0,0,0,0.4)",
-      glow: "0 0 30px rgba(99,102,241,0.4)",
+      glow: "0 0 30px rgba(14,165,233,0.3)",
     },
   },
 
@@ -209,6 +213,7 @@ export const themes: Record<string, AppTheme> = {
       borderLight: "#1D6B67",
       overlay: "rgba(4, 47, 46, 0.9)",
       glass: "rgba(13, 61, 59, 0.8)",
+      shimmer: ["#134E4A", "#1D6B67", "#134E4A"],
     },
     gradients: {
       primary: ["#14B8A6", "#0D9488", "#0F766E"],
@@ -251,6 +256,7 @@ export const themes: Record<string, AppTheme> = {
       borderLight: "#57534E",
       overlay: "rgba(28, 25, 23, 0.9)",
       glass: "rgba(41, 37, 36, 0.85)",
+      shimmer: ["#3B3835", "#57534E", "#3B3835"],
     },
     gradients: {
       primary: ["#F97316", "#EA580C", "#C2410C"],
@@ -293,6 +299,7 @@ export const themes: Record<string, AppTheme> = {
       borderLight: "#525252",
       overlay: "rgba(0, 0, 0, 0.95)",
       glass: "rgba(10, 10, 10, 0.9)",
+      shimmer: ["#171717", "#262626", "#171717"],
     },
     gradients: {
       primary: ["#00D4FF", "#00B8E0", "#0099CC"],

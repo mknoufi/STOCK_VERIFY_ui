@@ -60,7 +60,7 @@ export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
       -1,
       true,
     );
-  }, []);
+  }, [pulseOpacity, pulseScale]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],

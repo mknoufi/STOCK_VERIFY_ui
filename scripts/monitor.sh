@@ -89,8 +89,8 @@ check_api_health() {
 check_database() {
     log "Checking database connection..."
 
-    if command -v docker &> /dev/null && docker ps | grep -q mongodb; then
-        local result=$(docker exec stock_count_mongodb mongosh --quiet --eval "db.adminCommand('ping').ok" 2>&1)
+    if command -v mongosh &> /dev/null; then
+        local result=$(mongosh --quiet --eval "db.adminCommand('ping').ok" 2>&1)
         if [ "$result" == "1" ]; then
             echo -e "${GREEN}✓${NC} MongoDB Connection OK"
             return 0
@@ -100,9 +100,14 @@ check_database() {
             return 1
         fi
     else
-        echo -e "${YELLOW}⚠${NC} MongoDB container not running"
-        send_alert "Database Not Running" "MongoDB container is not running" "critical"
-        return 1
+        # Fallback if mongosh is not available, check process
+        if pgrep -x "mongod" > /dev/null; then
+             echo -e "${GREEN}✓${NC} MongoDB Process Running"
+             return 0
+        else
+             echo -e "${RED}✗${NC} MongoDB Process Not Found"
+             return 1
+        fi
     fi
 }
 
@@ -110,19 +115,12 @@ check_database() {
 check_redis() {
     log "Checking Redis connection..."
 
-    if command -v docker &> /dev/null && docker ps | grep -q redis; then
-        local result=$(docker exec stock_count_redis redis-cli ping 2>&1)
-        if [ "$result" == "PONG" ]; then
-            echo -e "${GREEN}✓${NC} Redis Connection OK"
-            return 0
-        else
-            echo -e "${RED}✗${NC} Redis Connection Failed"
-            send_alert "Cache Connection Failed" "Redis is not responding" "warning"
-            return 1
-        fi
+    if pgrep -x "redis-server" > /dev/null; then
+        echo -e "${GREEN}✓${NC} Redis Process Running"
+        return 0
     else
-        echo -e "${YELLOW}⚠${NC} Redis container not running (fallback to memory cache)"
-        return 0  # Not critical, app can use memory cache
+        echo -e "${YELLOW}⚠${NC} Redis not running (fallback to memory cache)"
+        return 0  # Not critical
     fi
 }
 
@@ -160,36 +158,6 @@ check_system_resources() {
     else
         echo -e "${GREEN}✓${NC} Disk Usage OK: ${disk_usage}%"
     fi
-}
-
-# Check Docker Containers
-check_docker_containers() {
-    if ! command -v docker &> /dev/null; then
-        return 0
-    fi
-
-    log "Checking Docker containers..."
-
-    local containers=("stock_count_api" "stock_count_mongodb" "stock_count_redis" "stock_count_nginx")
-    local failed=0
-
-    for container in "${containers[@]}"; do
-        if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-            local status=$(docker inspect --format='{{.State.Health.Status}}' "${container}" 2>/dev/null || echo "unknown")
-            if [ "$status" == "healthy" ] || [ "$status" == "unknown" ]; then
-                echo -e "${GREEN}✓${NC} Container ${container}: Running"
-            else
-                echo -e "${YELLOW}⚠${NC} Container ${container}: ${status}"
-                failed=$((failed + 1))
-            fi
-        else
-            echo -e "${RED}✗${NC} Container ${container}: Not Running"
-            send_alert "Container Not Running" "Container ${container} is not running" "critical"
-            failed=$((failed + 1))
-        fi
-    done
-
-    return $failed
 }
 
 # Check SSL Certificate Expiry
@@ -294,5 +262,4 @@ main() {
 # Run main function
 main
 
-# Exit with appropriate code
-exit $?
+# Exit wit

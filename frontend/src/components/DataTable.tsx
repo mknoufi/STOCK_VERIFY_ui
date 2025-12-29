@@ -40,7 +40,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   columns,
   data,
   sortable = true,
-  filterable = false,
+  filterable: _filterable = false,
   paginated = false,
   pageSize = 20,
   onRowPress,

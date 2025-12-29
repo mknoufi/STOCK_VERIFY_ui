@@ -23,7 +23,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ViewStyle,
-  StatusBar as RNStatusBar,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -34,6 +33,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { SkeletonScreen } from "./SkeletonList";
 import { useThemeContext } from "../../theme/ThemeContext";
 import { auroraTheme } from "../../theme/auroraTheme";
+import { useScreenStyles, screenLayoutConstants } from "../../styles/screenStyles";
 
 // ============================================================================
 // Types
@@ -55,6 +55,8 @@ export interface ScreenContainerProps {
   // Background configuration
   backgroundType?: BackgroundType;
   auroraVariant?: AuroraVariant;
+  /** @deprecated Use auroraVariant instead */
+  meshVariant?: AuroraVariant;
   auroraIntensity?: "low" | "medium" | "high";
   withParticles?: boolean;
 
@@ -96,7 +98,8 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   header,
   customHeader,
   backgroundType = "aurora",
-  auroraVariant = "primary",
+  auroraVariant: auroraVariantProp = "primary",
+  meshVariant,
   auroraIntensity = "medium",
   withParticles = false,
   contentMode = "scroll",
@@ -115,7 +118,11 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   overlay,
 }) => {
   const insets = useSafeAreaInsets();
-  const { theme, pattern, isDark } = useThemeContext();
+  const { theme, pattern } = useThemeContext();
+  const _screenStyles = useScreenStyles();
+
+  // Support meshVariant as deprecated alias for auroraVariant
+  const auroraVariant = meshVariant || auroraVariantProp;
 
   // Calculate safe area padding
   const safeAreaStyle: ViewStyle = {
@@ -230,7 +237,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 
     const contentContainerStyle: ViewStyle = {
       ...safeAreaStyle,
-      paddingHorizontal: noPadding ? 0 : auroraTheme.spacing.lg,
+      paddingHorizontal: noPadding ? 0 : screenLayoutConstants.screenPadding,
       flexGrow: 1,
       ...(contentStyle as object),
     };
@@ -288,13 +295,13 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
       {customHeader
         ? customHeader
         : header !== false && (
-            <ScreenHeader
-              showBackButton={false}
-              showLogoutButton={true}
-              showUsername={true}
-              {...(header as ScreenHeaderProps)}
-            />
-          )}
+          <ScreenHeader
+            showBackButton={false}
+            showLogoutButton={true}
+            showUsername={true}
+            {...(header as ScreenHeaderProps)}
+          />
+        )}
 
       {/* Content */}
       {renderContent()}

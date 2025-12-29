@@ -1,0 +1,9 @@
+node_modules
+.expo
+dist
+coverage
+*.lock
+build
+android
+ios
+.storybook-static

@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
-  Dimensions,
+  useWindowDimensions,
   ViewStyle,
 } from "react-native";
 import { useRouter, useSegments } from "expo-router";
@@ -82,6 +82,12 @@ const ADMIN_GROUPS: SidebarGroup[] = [
   {
     title: "Monitoring",
     items: [
+      {
+        key: "live-view",
+        label: "Live View",
+        icon: "pulse",
+        route: "/admin/live-view",
+      },
       {
         key: "activity-logs",
         label: "Activity Logs",
@@ -176,7 +182,7 @@ interface AdminSidebarProps {
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   collapsed = false,
-  onToggleCollapse,
+  onToggleCollapse: _onToggleCollapse,
   style,
   testID,
 }) => {
@@ -184,7 +190,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const router = useRouter();
   const segments = useSegments();
   const { user, logout } = useAuthStore();
-  const { width } = Dimensions.get("window");
+  const { width } = useWindowDimensions();
   const isMobile = width < breakpoints.tablet;
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(

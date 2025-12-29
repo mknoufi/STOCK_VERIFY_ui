@@ -1,0 +1,324 @@
+openapi: 3.0.3
+info:
+  title: Stock Verify - Offline Sync API
+  version: 1.0.0
+  description: |
+    API endpoints for offline data synchronization.
+    Handles queue-based sync when device regains connectivity.
+
+servers:
+  - url: /api/sync
+    description: Sync API endpoints
+
+paths:
+  /queue:
+    post:
+      operationId: syncQueue
+      summary: Sync offline queue
+      description: |
+        Upload queued offline actions to server.
+        Actions are processed in order with conflict detection.
+      tags:
+        - Sync
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncRequest'
+      responses:
+        '200':
+          description: Sync completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+        '207':
+          description: Partial success - some items failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Conflict detected - requires resolution
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+
+  /status:
+    get:
+      operationId: getSyncStatus
+      summary: Get sync status
+      description: Check last sync time and pending items count
+      tags:
+        - Sync
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sync status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /conflicts:
+    get:
+      operationId: getConflicts
+      summary: Get pending conflicts
+      description: Retrieve conflicts requiring user resolution
+      tags:
+        - Sync
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of conflicts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conflicts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conflict'
+                  total:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /conflicts/{conflictId}/resolve:
+    post:
+      operationId: resolveConflict
+      summary: Resolve a sync conflict
+      description: Apply user's resolution choice for a conflict
+      tags:
+        - Sync
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conflictId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConflictResolution'
+      responses:
+        '200':
+          description: Conflict resolved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Conflict not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    SyncRequest:
+      type: object
+      required:
+        - device_id
+        - items
+      properties:
+        device_id:
+          type: string
+          description: Unique device identifier
+        last_sync_timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of last successful sync
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncQueueItem'
+          description: Queue of offline actions to sync
+
+    SyncQueueItem:
+      type: object
+      required:
+        - queue_id
+        - action_type
+        - entity_type
+        - entity_id
+        - payload
+        - created_at
+      properties:
+        queue_id:
+          type: string
+          format: uuid
+          description: Unique queue item ID (for deduplication)
+        action_type:
+          type: string
+          enum: [create, update, delete]
+        entity_type:
+          type: string
+          enum: [count_line, session, note]
+        entity_id:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+          description: Action-specific data
+        created_at:
+          type: string
+          format: date-time
+        retry_count:
+          type: integer
+          default: 0
+
+    SyncResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        processed:
+          type: integer
+          description: Number of items successfully processed
+        failed:
+          type: integer
+          description: Number of items that failed
+        conflicts:
+          type: integer
+          description: Number of items with conflicts
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncResult'
+        server_timestamp:
+          type: string
+          format: date-time
+          description: Server time for next sync reference
+
+    SyncResult:
+      type: object
+      properties:
+        queue_id:
+          type: string
+        status:
+          type: string
+          enum: [success, failed, conflict, skipped]
+        error:
+          type: string
+          description: Error message if failed
+        server_entity_id:
+          type: string
+          description: Server-assigned ID (for creates)
+
+    SyncStatus:
+      type: object
+      properties:
+        last_sync_at:
+          type: string
+          format: date-time
+        pending_items:
+          type: integer
+        pending_conflicts:
+          type: integer
+        sync_in_progress:
+          type: boolean
+        device_id:
+          type: string
+
+    Conflict:
+      type: object
+      properties:
+        conflict_id:
+          type: string
+        entity_type:
+          type: string
+        entity_id:
+          type: string
+        local_value:
+          type: object
+          additionalProperties: true
+        server_value:
+          type: object
+          additionalProperties: true
+        conflict_type:
+          type: string
+          enum: [update_conflict, delete_conflict, lock_conflict]
+        created_at:
+          type: string
+          format: date-time
+        local_timestamp:
+          type: string
+          format: date-time
+        server_timestamp:
+          type: string
+          format: date-time
+
+    ConflictResolution:
+      type: object
+      required:
+        - resolution
+      properties:
+        resolution:
+          type: string
+          enum: [keep_local, keep_server, merge]
+          description: |
+            - keep_local: Overwrite server with local value
+            - keep_server: Discard local changes
+            - merge: Custom merge (requires merged_value)
+        merged_value:
+          type: object
+          additionalProperties: true
+          description: Required when resolution is 'merge'
+
+    ConflictResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conflict'
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+        - error_code
+      properties:
+        detail:
+          type: string
+        error_code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

@@ -1,7 +1,7 @@
 /**
  * Export Results Screen
  * Displays a list of export jobs and allows downloading completed exports.
- * Refactored to use Aurora Design System
+ * Refactored to use Deep Ocean Design System
  */
 
 import React, { useState, useEffect } from "react";
@@ -20,17 +20,17 @@ import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   getExportResults,
   downloadExportResult,
 } from "../../src/services/api/api";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
 
 interface ExportResult {
   _id: string;
@@ -48,7 +48,7 @@ interface ExportResult {
 
 export default function ExportResultsScreen() {
   const router = useRouter();
-  const { hasPermission } = usePermissions();
+  const { hasPermission } = usePermission();
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState<ExportResult[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -120,13 +120,13 @@ export default function ExportResultsScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return auroraTheme.colors.success[500];
+        return theme.colors.success.main;
       case "failed":
-        return auroraTheme.colors.error[500];
+        return theme.colors.error.main;
       case "pending":
-        return auroraTheme.colors.warning[500];
+        return theme.colors.warning.main;
       default:
-        return auroraTheme.colors.text.secondary;
+        return theme.colors.text.secondary;
     }
   };
 
@@ -158,9 +158,9 @@ export default function ExportResultsScreen() {
         entering={FadeInDown.delay(index * 100).springify()}
       >
         <GlassCard
-          variant="light"
-          padding={auroraTheme.spacing.md}
-          borderRadius={auroraTheme.borderRadius.lg}
+          intensity={15}
+          padding={theme.spacing.md}
+          borderRadius={theme.borderRadius.lg}
           style={styles.card}
         >
           <View style={styles.cardHeader}>
@@ -204,7 +204,7 @@ export default function ExportResultsScreen() {
               <Ionicons
                 name="document-text-outline"
                 size={16}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
               />
               <Text style={styles.detailText}>
                 Format: {result.format.toUpperCase()}
@@ -215,7 +215,7 @@ export default function ExportResultsScreen() {
                 <Ionicons
                   name="list-outline"
                   size={16}
-                  color={auroraTheme.colors.text.tertiary}
+                  color={theme.colors.text.tertiary}
                 />
                 <Text style={styles.detailText}>
                   Records: {result.record_count.toLocaleString()}
@@ -227,7 +227,7 @@ export default function ExportResultsScreen() {
                 <Ionicons
                   name="save-outline"
                   size={16}
-                  color={auroraTheme.colors.text.tertiary}
+                  color={theme.colors.text.tertiary}
                 />
                 <Text style={styles.detailText}>
                   Size: {formatFileSize(result.file_size)}
@@ -241,7 +241,7 @@ export default function ExportResultsScreen() {
               <Ionicons
                 name="warning-outline"
                 size={20}
-                color={auroraTheme.colors.error[500]}
+                color={theme.colors.error.main}
               />
               <Text style={styles.errorText}>{result.error_message}</Text>
             </View>
@@ -251,7 +251,7 @@ export default function ExportResultsScreen() {
             <AnimatedPressable
               style={[
                 styles.downloadButton,
-                { backgroundColor: auroraTheme.colors.success[500] },
+                { backgroundColor: theme.colors.success.main },
               ]}
               onPress={() =>
                 handleDownload(
@@ -277,7 +277,7 @@ export default function ExportResultsScreen() {
   };
 
   return (
-    <AuroraBackground variant="secondary" intensity="low">
+    <ScreenContainer>
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
@@ -293,7 +293,7 @@ export default function ExportResultsScreen() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -307,7 +307,7 @@ export default function ExportResultsScreen() {
             <Ionicons
               name="refresh"
               size={24}
-              color={auroraTheme.colors.primary[500]}
+              color={theme.colors.primary[500]}
             />
           </AnimatedPressable>
         </Animated.View>
@@ -326,7 +326,7 @@ export default function ExportResultsScreen() {
                 style={[
                   styles.filterButton,
                   filterStatus === status && {
-                    backgroundColor: auroraTheme.colors.primary[500],
+                    backgroundColor: theme.colors.primary[500],
                   },
                 ]}
                 onPress={() => {
@@ -354,7 +354,7 @@ export default function ExportResultsScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator
               size="large"
-              color={auroraTheme.colors.primary[500]}
+              color={theme.colors.primary[500]}
             />
             <Text style={styles.loadingText}>Loading results...</Text>
           </View>
@@ -369,7 +369,7 @@ export default function ExportResultsScreen() {
                 <Ionicons
                   name="document-text-outline"
                   size={64}
-                  color={auroraTheme.colors.text.tertiary}
+                  color={theme.colors.text.tertiary}
                 />
                 <Text style={styles.emptyStateText}>
                   No export results found
@@ -384,7 +384,7 @@ export default function ExportResultsScreen() {
           </ScrollView>
         )}
       </View>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -397,123 +397,122 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: auroraTheme.spacing.md,
-    marginBottom: auroraTheme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
+    fontSize: 32,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   refreshButton: {
-    padding: auroraTheme.spacing.sm,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.sm,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
   },
   filterBar: {
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   filterContent: {
-    paddingHorizontal: auroraTheme.spacing.md,
-    gap: auroraTheme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
   filterButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: theme.borderRadius.full,
     backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   filterButtonText: {
-    color: auroraTheme.colors.text.secondary,
-    fontSize: auroraTheme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    fontSize: 14,
     fontWeight: "500",
   },
   scrollView: {
     flex: 1,
   },
   contentContainer: {
-    padding: auroraTheme.spacing.md,
+    padding: theme.spacing.md,
     paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   loadingText: {
-    color: auroraTheme.colors.text.secondary,
-    fontSize: auroraTheme.typography.fontSize.md,
+    color: theme.colors.text.secondary,
+    fontSize: 16,
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   emptyStateText: {
-    fontSize: auroraTheme.typography.fontSize.xl,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 18,
+    color: theme.colors.text.secondary,
     fontWeight: "bold",
   },
   emptyStateSubtext: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 14,
+    color: theme.colors.text.tertiary,
   },
   card: {
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   cardHeaderLeft: {
     flexDirection: "row",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
     flex: 1,
   },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: auroraTheme.borderRadius.md,
+    borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
   },
   cardTitle: {
-    fontSize: auroraTheme.typography.fontSize.lg,
+    fontSize: 20,
     fontWeight: "bold",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   cardSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.tertiary,
+    fontSize: 11,
+    color: theme.colors.text.tertiary,
   },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: auroraTheme.borderRadius.badge,
+    borderRadius: theme.borderRadius.badge,
     borderWidth: 1,
   },
   statusText: {
@@ -521,7 +520,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   cardDetails: {
-    marginBottom: auroraTheme.spacing.md,
+    marginBottom: theme.spacing.md,
     gap: 8,
   },
   detailRow: {
@@ -530,21 +529,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   detailText: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: auroraTheme.colors.error[500] + "15",
-    padding: auroraTheme.spacing.sm,
-    borderRadius: auroraTheme.borderRadius.md,
-    marginBottom: auroraTheme.spacing.md,
+    backgroundColor: theme.colors.error.main + "15",
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
     gap: 8,
   },
   errorText: {
-    color: auroraTheme.colors.error[500],
-    fontSize: auroraTheme.typography.fontSize.sm,
+    color: theme.colors.error.main,
+    fontSize: 14,
     flex: 1,
   },
   downloadButton: {
@@ -552,12 +551,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
-    borderRadius: auroraTheme.borderRadius.full,
+    borderRadius: theme.borderRadius.full,
     gap: 8,
   },
   downloadButtonText: {
     color: "#fff",
-    fontSize: auroraTheme.typography.fontSize.md,
+    fontSize: 16,
     fontWeight: "600",
   },
 });

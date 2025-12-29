@@ -18,7 +18,7 @@ import {
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { usePermissions } from "../../src/hooks/usePermissions";
+import { usePermission } from "../../src/hooks/usePermission";
 import {
   getMetricsStats,
   getMetricsHealth,
@@ -33,7 +33,7 @@ const cardWidth = isWeb && isTablet ? "30%" : isWeb ? "48%" : "48%";
 
 export default function MetricsScreen() {
   const router = useRouter();
-  const { hasRole } = usePermissions();
+  const { hasRole } = usePermission();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<any>(null);
@@ -129,7 +129,7 @@ export default function MetricsScreen() {
       )}
       <Text style={styles.metricTitle}>{title}</Text>
       <Text style={[styles.metricValue, { color }]}>{value}</Text>
-      {subtitle && <Text style={styles.metricSubtitle}>{subtitle}</Text>}
+      {subtitle ? <Text style={styles.metricSubtitle}>{subtitle}</Text> : null}
     </View>
   );
 

@@ -1,6 +1,6 @@
 /**
  * Export Reports Screen
- * Refactored to use Aurora Design System
+ * Refactored to use Deep Ocean Design System
  */
 
 import React from "react";
@@ -24,11 +24,11 @@ import { ExportService } from "../../src/services/exportService";
 import { useAutoLogout } from "../../src/hooks/useAutoLogout";
 import { LogoutButton } from "../../src/components/LogoutButton";
 import {
-  AuroraBackground,
+  ScreenContainer,
   GlassCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { auroraTheme } from "../../src/theme/auroraTheme";
+import { theme } from "../../src/styles/modernDesignSystem";
 
 export default function ExportReports() {
   const router = useRouter();
@@ -227,13 +227,12 @@ export default function ExportReports() {
           onPress={onPress}
           disabled={loading}
           onPressIn={handleInteraction}
-          style={{ marginBottom: auroraTheme.spacing.md }}
+          style={{ marginBottom: theme.spacing.md }}
         >
           <GlassCard
-            variant="medium"
-            intensity={20}
-            padding={auroraTheme.spacing.md}
-            borderRadius={auroraTheme.borderRadius.lg}
+            intensity={15}
+            padding={theme.spacing.md}
+            borderRadius={theme.borderRadius.lg}
             style={isDisabled ? { opacity: 0.5 } : undefined}
           >
             <View style={styles.cardContent}>
@@ -256,7 +255,7 @@ export default function ExportReports() {
               <Ionicons
                 name="download-outline"
                 size={20}
-                color={auroraTheme.colors.text.tertiary}
+                color={theme.colors.text.tertiary}
                 style={styles.actionIcon}
               />
             </View>
@@ -267,7 +266,7 @@ export default function ExportReports() {
   };
 
   return (
-    <AuroraBackground variant="secondary" intensity="medium" animated>
+    <ScreenContainer>
       <StatusBar style="light" />
       <ScrollView
         style={styles.container}
@@ -287,7 +286,7 @@ export default function ExportReports() {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color={auroraTheme.colors.text.primary}
+                color={theme.colors.text.primary}
               />
             </AnimatedPressable>
             <View>
@@ -308,7 +307,7 @@ export default function ExportReports() {
             title="All Sessions"
             description="Complete list of all stock count sessions with basic details"
             icon="documents-outline"
-            color={auroraTheme.colors.success[500]}
+            color={theme.colors.success.main}
             onPress={exportAllSessions}
             type="sessions"
             delay={200}
@@ -318,7 +317,7 @@ export default function ExportReports() {
             title="Session Details"
             description="Detailed count lines for all sessions including item-level data"
             icon="list-outline"
-            color={auroraTheme.colors.primary[500]}
+            color={theme.colors.primary[500]}
             onPress={exportSessionDetails}
             type="details"
             delay={300}
@@ -328,7 +327,7 @@ export default function ExportReports() {
             title="Variance Report"
             description="Only sessions with stock variance for analysis"
             icon="analytics-outline"
-            color={auroraTheme.colors.error[500]}
+            color={theme.colors.error.main}
             onPress={exportVarianceReport}
             type="variance"
             delay={400}
@@ -338,7 +337,7 @@ export default function ExportReports() {
             title="Summary Report"
             description="Aggregated statistics and summary across all sessions"
             icon="stats-chart-outline"
-            color={auroraTheme.colors.warning[500]}
+            color={theme.colors.warning.main}
             onPress={exportSummaryReport}
             type="summary"
             delay={500}
@@ -351,7 +350,7 @@ export default function ExportReports() {
             <Ionicons
               name="information-circle-outline"
               size={24}
-              color={auroraTheme.colors.text.tertiary}
+              color={theme.colors.text.tertiary}
             />
             <View style={styles.infoContent}>
               <Text style={styles.infoTitle}>Export Information</Text>
@@ -370,7 +369,7 @@ export default function ExportReports() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 
@@ -379,58 +378,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: auroraTheme.spacing.lg,
+    padding: theme.spacing.lg,
     paddingTop: 60,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: auroraTheme.spacing.xl,
+    marginBottom: theme.spacing.xl,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   backButton: {
-    padding: auroraTheme.spacing.xs,
-    backgroundColor: auroraTheme.colors.background.glass,
-    borderRadius: auroraTheme.borderRadius.full,
+    padding: theme.spacing.xs,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   pageTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize["2xl"],
-    color: auroraTheme.colors.text.primary,
+    fontSize: 32,
+    color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
   grid: {
-    marginBottom: auroraTheme.spacing.xl,
+    marginBottom: theme.spacing.xl,
   },
   sectionTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.secondary,
-    marginBottom: auroraTheme.spacing.md,
-    marginLeft: auroraTheme.spacing.xs,
+    fontSize: 16,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.md,
+    marginLeft: theme.spacing.xs,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   cardContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.md,
+    gap: theme.spacing.md,
   },
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: auroraTheme.borderRadius.md,
+    borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -439,14 +436,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   cardTitle: {
-    fontFamily: auroraTheme.typography.fontFamily.heading,
-    fontSize: auroraTheme.typography.fontSize.md,
-    color: auroraTheme.colors.text.primary,
+    fontSize: 16,
+    color: theme.colors.text.primary,
     fontWeight: "600",
   },
   cardDescription: {
-    fontSize: auroraTheme.typography.fontSize.sm,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 14,
+    color: theme.colors.text.secondary,
     lineHeight: 18,
   },
   actionIcon: {
@@ -455,22 +451,22 @@ const styles = StyleSheet.create({
   infoContainer: {
     flexDirection: "row",
     backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderRadius: auroraTheme.borderRadius.lg,
-    padding: auroraTheme.spacing.lg,
-    gap: auroraTheme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    gap: theme.spacing.md,
   },
   infoContent: {
     flex: 1,
-    gap: auroraTheme.spacing.xs,
+    gap: theme.spacing.xs,
   },
   infoTitle: {
     fontWeight: "600",
-    color: auroraTheme.colors.text.primary,
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   infoText: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    color: auroraTheme.colors.text.secondary,
+    fontSize: 12,
+    color: theme.colors.text.secondary,
     lineHeight: 18,
   },
 });

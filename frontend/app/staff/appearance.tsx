@@ -21,7 +21,11 @@ export default function StaffAppearanceScreen() {
       }}
       contentMode="scroll"
     >
-      <AppearanceSettings showTitle={false} scrollable={false} compact={false} />
+      <AppearanceSettings
+        showTitle={false}
+        scrollable={false}
+        compact={false}
+      />
     </ScreenContainer>
   );
 }

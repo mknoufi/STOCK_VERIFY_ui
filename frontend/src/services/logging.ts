@@ -5,7 +5,7 @@
  * Replaces scattered __DEV__ && console.log patterns.
  */
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+type LogLevel = "debug" | "info" | "warn" | "error";
 
 interface LogEntry {
   level: LogLevel;
@@ -18,26 +18,29 @@ interface LogEntry {
 type LogSink = (entry: LogEntry) => void;
 
 // Check if we're in development mode
-const isDev = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV === 'development';
+const isDev =
+  typeof __DEV__ !== "undefined"
+    ? __DEV__
+    : process.env.NODE_ENV === "development";
 
 // Console sink for development
 const consoleSink: LogSink = (entry) => {
   const prefix = `[${entry.timestamp.slice(11, 23)}]`;
-  const moduleTag = entry.module ? `[${entry.module}]` : '';
+  const moduleTag = entry.module ? `[${entry.module}]` : "";
   const fullMessage = `${prefix}${moduleTag} ${entry.message}`;
 
   switch (entry.level) {
-    case 'debug':
-      console.log(`🔍 ${fullMessage}`, entry.context ?? '');
+    case "debug":
+      console.log(`🔍 ${fullMessage}`, entry.context ?? "");
       break;
-    case 'info':
-      console.info(`ℹ️ ${fullMessage}`, entry.context ?? '');
+    case "info":
+      console.info(`ℹ️ ${fullMessage}`, entry.context ?? "");
       break;
-    case 'warn':
-      console.warn(`⚠️ ${fullMessage}`, entry.context ?? '');
+    case "warn":
+      console.warn(`⚠️ ${fullMessage}`, entry.context ?? "");
       break;
-    case 'error':
-      console.error(`❌ ${fullMessage}`, entry.context ?? '');
+    case "error":
+      console.error(`❌ ${fullMessage}`, entry.context ?? "");
       break;
   }
 };
@@ -45,10 +48,10 @@ const consoleSink: LogSink = (entry) => {
 // Production sink - can be extended to send to remote logging service
 const productionSink: LogSink = (entry) => {
   // In production, only log warnings and errors
-  if (entry.level === 'error' || entry.level === 'warn') {
+  if (entry.level === "error" || entry.level === "warn") {
     // Could integrate with Sentry, LogRocket, etc.
     // For now, just use console but could be extended
-    console[entry.level](entry.message, entry.context ?? '');
+    console[entry.level](entry.message, entry.context ?? "");
   }
 };
 
@@ -58,7 +61,12 @@ const activeSinks: LogSink[] = isDev ? [consoleSink] : [productionSink];
 /**
  * Internal log function
  */
-function log(level: LogLevel, message: string, context?: Record<string, unknown>, module?: string): void {
+function log(
+  level: LogLevel,
+  message: string,
+  context?: Record<string, unknown>,
+  module?: string,
+): void {
   const entry: LogEntry = {
     level,
     message,
@@ -88,10 +96,14 @@ function log(level: LogLevel, message: string, context?: Record<string, unknown>
  * ```
  */
 export const logger = {
-  debug: (message: string, context?: Record<string, unknown>) => log('debug', message, context),
-  info: (message: string, context?: Record<string, unknown>) => log('info', message, context),
-  warn: (message: string, context?: Record<string, unknown>) => log('warn', message, context),
-  error: (message: string, context?: Record<string, unknown>) => log('error', message, context),
+  debug: (message: string, context?: Record<string, unknown>) =>
+    log("debug", message, context),
+  info: (message: string, context?: Record<string, unknown>) =>
+    log("info", message, context),
+  warn: (message: string, context?: Record<string, unknown>) =>
+    log("warn", message, context),
+  error: (message: string, context?: Record<string, unknown>) =>
+    log("error", message, context),
 };
 
 /**
@@ -106,10 +118,14 @@ export const logger = {
  */
 export function createLogger(module: string) {
   return {
-    debug: (message: string, context?: Record<string, unknown>) => log('debug', message, context, module),
-    info: (message: string, context?: Record<string, unknown>) => log('info', message, context, module),
-    warn: (message: string, context?: Record<string, unknown>) => log('warn', message, context, module),
-    error: (message: string, context?: Record<string, unknown>) => log('error', message, context, module),
+    debug: (message: string, context?: Record<string, unknown>) =>
+      log("debug", message, context, module),
+    info: (message: string, context?: Record<string, unknown>) =>
+      log("info", message, context, module),
+    warn: (message: string, context?: Record<string, unknown>) =>
+      log("warn", message, context, module),
+    error: (message: string, context?: Record<string, unknown>) =>
+      log("error", message, context, module),
   };
 }
 

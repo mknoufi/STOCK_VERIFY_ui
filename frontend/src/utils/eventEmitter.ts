@@ -28,7 +28,7 @@ export class EventEmitter {
     if (callbacks) {
       this.events.set(
         event,
-        callbacks.filter((cb) => cb !== callback)
+        callbacks.filter((cb) => cb !== callback),
       );
     }
   }

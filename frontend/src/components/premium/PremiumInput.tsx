@@ -87,19 +87,30 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   const theme = themeContext?.theme;
 
   // Color helpers for semantic usage
-  const colors = useMemo(() => ({
-    error: theme ? theme.colors.danger : modernColors.error.main,
-    errorLight: theme ? theme.colors.dangerLight : modernColors.error.light,
-    primary: theme ? theme.colors.accent : modernColors.primary[500],
-    textPrimary: theme ? theme.colors.text : modernColors.text.primary,
-    textSecondary: theme ? theme.colors.textSecondary : modernColors.text.secondary,
-    textTertiary: theme ? theme.colors.muted : modernColors.text.tertiary,
-    textDisabled: theme ? theme.colors.muted : modernColors.text.disabled,
-    borderLight: theme ? theme.colors.border : modernColors.border.light,
-    backgroundDefault: theme ? theme.colors.background : modernColors.background.default,
-    backgroundPaper: theme ? theme.colors.surface : modernColors.background.paper,
-    backgroundDisabled: theme ? theme.colors.border : modernColors.neutral[700],
-  }), [theme]);
+  const colors = useMemo(
+    () => ({
+      error: theme ? theme.colors.danger : modernColors.error.main,
+      errorLight: theme ? theme.colors.dangerLight : modernColors.error.light,
+      primary: theme ? theme.colors.accent : modernColors.primary[500],
+      textPrimary: theme ? theme.colors.text : modernColors.text.primary,
+      textSecondary: theme
+        ? theme.colors.textSecondary
+        : modernColors.text.secondary,
+      textTertiary: theme ? theme.colors.muted : modernColors.text.tertiary,
+      textDisabled: theme ? theme.colors.muted : modernColors.text.disabled,
+      borderLight: theme ? theme.colors.border : modernColors.border.light,
+      backgroundDefault: theme
+        ? theme.colors.background
+        : modernColors.background.default,
+      backgroundPaper: theme
+        ? theme.colors.surface
+        : modernColors.background.paper,
+      backgroundDisabled: theme
+        ? theme.colors.border
+        : modernColors.neutral[700],
+    }),
+    [theme],
+  );
 
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -328,7 +339,9 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
 
       {/* Helper Text / Error */}
       {(helperText || error) && (
-        <Text style={[dynamicStyles.helperText, error && dynamicStyles.errorText]}>
+        <Text
+          style={[dynamicStyles.helperText, error && dynamicStyles.errorText]}
+        >
           {error || helperText}
         </Text>
       )}

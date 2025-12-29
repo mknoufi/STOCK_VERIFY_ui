@@ -97,8 +97,33 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
       useNativeDriver: true,
     }).start();
 
-    setExpanded(!expanded);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(!expanded);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const renderQuickActions = (suggestion: SuggestionItem) => {
+    if (suggestion.type !== "quantity") return null;
+
+    return (
+      <View style={styles.quickActions}>
+        {[1, 5, 10].map((qty) => (
+          <TouchableOpacity
+            key={qty}
+            style={styles.quickActionButton}
+            onPress={() => {
+              const suggestionWithQty = {
+                ...suggestion,
+                data: { ...suggestion.data, quantity: qty },
+              };
+              onSuggestionPress(suggestionWithQty);
+            }}
+          >
+            <Text style={styles.quickActionText}>{qty}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   // Display suggestions with animation
@@ -219,129 +244,114 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled
           >
-            {displayedSuggestions.map((suggestion, index) => (
-              <Animated.View
-                key={suggestion.id}
-                style={[
-                  styles.suggestionItem,
-                  {
-                    opacity:
-                      displayedSuggestions.length > index ? fadeAnimation : 0,
-                    transform: [
-                      {
-                        translateY:
-                          displayedSuggestions.length > index
-                            ? fadeAnimation.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [20, 0],
-                            })
-                            : 0,
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <TouchableOpacity
-                  style={styles.suggestionButton}
-                  onPress={() => {
-                    // Add haptic feedback
-                    try {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    } catch {
-                      // Haptics not available
-                    }
-
-                    // Track interaction
-                    smartSuggestionsService.trackSuggestionInteraction(
-                      suggestion.id,
-                      "clicked",
-                    );
-
-                    onSuggestionPress(suggestion);
-                  }}
-                  activeOpacity={0.7}
+            {displayedSuggestions.map(
+              (suggestion: SuggestionItem, index: number) => (
+                <Animated.View
+                  key={suggestion.id}
+                  style={[
+                    styles.suggestionItem,
+                    {
+                      opacity:
+                        displayedSuggestions.length > index ? fadeAnimation : 0,
+                      transform: [
+                        {
+                          translateY:
+                            displayedSuggestions.length > index
+                              ? fadeAnimation.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [20, 0],
+                                })
+                              : 0,
+                        },
+                      ],
+                    },
+                  ]}
                 >
-                  <View style={styles.suggestionContent}>
-                    <View style={styles.suggestionIcon}>
-                      <Ionicons
-                        name={suggestion.icon as any}
-                        size={18}
-                        color={getIconColor(suggestion.type)}
-                      />
-                      <View
-                        style={[
-                          styles.confidenceDot,
-                          {
-                            backgroundColor: getConfidenceColor(
-                              suggestion.confidence,
-                            ),
-                          },
-                        ]}
-                      />
-                    </View>
+                  <TouchableOpacity
+                    style={styles.suggestionButton}
+                    onPress={() => {
+                      // Add haptic feedback
+                      try {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      } catch {
+                        // Haptics not available
+                      }
 
-                    <View style={styles.suggestionText}>
-                      <Text style={styles.suggestionTitle}>
-                        {suggestion.title}
-                      </Text>
-                      {suggestion.subtitle && (
-                        <Text style={styles.suggestionSubtitle}>
-                          {suggestion.subtitle}
+                      // Track interaction
+                      smartSuggestionsService.trackSuggestionInteraction(
+                        suggestion.id,
+                        "clicked",
+                      );
+
+                      onSuggestionPress(suggestion);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.suggestionContent}>
+                      <View style={styles.suggestionIcon}>
+                        <Ionicons
+                          name={suggestion.icon as any}
+                          size={18}
+                          color={getIconColor(suggestion.type)}
+                        />
+                        <View
+                          style={[
+                            styles.confidenceDot,
+                            {
+                              backgroundColor: getConfidenceColor(
+                                suggestion.confidence,
+                              ),
+                            },
+                          ]}
+                        />
+                      </View>
+
+                      <View style={styles.suggestionText}>
+                        <Text style={styles.suggestionTitle}>
+                          {suggestion.title}
                         </Text>
-                      )}
-                    </View>
+                        {suggestion.subtitle && (
+                          <Text style={styles.suggestionSubtitle}>
+                            {suggestion.subtitle}
+                          </Text>
+                        )}
+                      </View>
 
-                    <View style={styles.suggestionAction}>
-                      <View
-                        style={[
-                          styles.confidenceBar,
-                          {
-                            width: `${suggestion.confidence * 100}%`,
-                            backgroundColor: getConfidenceColor(
-                              suggestion.confidence,
-                            ),
-                          },
-                        ]}
+                      <View style={styles.suggestionAction}>
+                        <View
+                          style={[
+                            styles.confidenceBar,
+                            {
+                              width: `${suggestion.confidence * 100}%`,
+                              backgroundColor: getConfidenceColor(
+                                suggestion.confidence,
+                              ),
+                            },
+                          ]}
+                        />
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Quick Actions */}
+                  {renderQuickActions(suggestion) as any}
+
+                  {suggestion.type === "location" && suggestion.data.rack && (
+                    <View style={styles.locationChip}>
+                      <Ionicons
+                        name="location"
+                        size={12}
+                        color={modernColors.success.main}
                       />
+                      <Text style={styles.locationText}>
+                        {String(suggestion.data.floor || "")} -{" "}
+                        {String(suggestion.data.rack || "")}
+                      </Text>
                     </View>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Quick Actions */}
-                {suggestion.type === "quantity" && (
-                  <View style={styles.quickActions}>
-                    {[1, 5, 10].map((qty) => (
-                      <TouchableOpacity
-                        key={qty}
-                        style={styles.quickActionButton}
-                        onPress={() => {
-                          const suggestionWithQty = {
-                            ...suggestion,
-                            data: { ...suggestion.data, quantity: qty },
-                          };
-                          onSuggestionPress(suggestionWithQty);
-                        }}
-                      >
-                        <Text style={styles.quickActionText}>{qty}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-
-                {suggestion.type === "location" && suggestion.data.rack && (
-                  <View style={styles.locationChip}>
-                    <Ionicons
-                      name="location"
-                      size={12}
-                      color={modernColors.success.main}
-                    />
-                    <Text style={styles.locationText}>
-                      {suggestion.data.floor} - {suggestion.data.rack}
-                    </Text>
-                  </View>
-                )}
-              </Animated.View>
-            ))}
+                  )}
+                </Animated.View>
+              ),
+            )}
 
             {/* Show More Button */}
             {suggestions.length > 3 && (

@@ -45,6 +45,13 @@ node_modules/
 
 # Testing
 /coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Playwright reports
+playwright-report/
+frontend/playwright-report/
 
 # Next.js
 /.next/
@@ -80,6 +87,11 @@ __pycache__/
 venv/
 .venv/
 .venv311/
+.pycache/
+.tmp/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 
 # Development tools
 chainlit.md
@@ -111,6 +123,7 @@ diagnostic.data/
 
 # Build caches
 .cache/
+.tmp/
 
 # Mobile development
 android-sdk/
@@ -120,6 +133,7 @@ android-sdk/
 *.env
 *.env.*
 !*.env.example
+!*.env.*.example
 .env.local
 .env.production
 .env.staging
@@ -191,6 +205,8 @@ backend/venv_test/
 
 # Lint reports
 **/lint-output.json
+bandit_report.json
+bandit-report.json
 
 
 

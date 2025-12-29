@@ -4,9 +4,9 @@ Tests for Item endpoints
 
 import pytest
 from fastapi.testclient import TestClient
+from server import app
 
 from backend.tests.utils.in_memory_db import setup_server_with_in_memory_db
-from server import app
 
 
 @pytest.fixture
@@ -48,9 +48,7 @@ def client(fake_environment):
 def auth_token(client):
     """Get auth token for authenticated requests"""
     # Login with default user
-    response = client.post(
-        "/api/auth/login", json={"username": "staff1", "password": "staff123"}
-    )
+    response = client.post("/api/auth/login", json={"username": "staff1", "password": "staff123"})
 
     if response.status_code == 200:
         payload = response.json()
@@ -70,9 +68,7 @@ class TestGetItems:
         if not auth_token:
             pytest.skip("Authentication token not available")
 
-        response = client.get(
-            "/api/erp/items", headers={"Authorization": f"Bearer {auth_token}"}
-        )
+        response = client.get("/api/erp/items", headers={"Authorization": f"Bearer {auth_token}"})
 
         assert response.status_code == 200
         data = response.json()

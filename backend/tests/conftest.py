@@ -21,6 +21,7 @@ os.environ.update(
         "MONGO_URL": "mongodb://localhost:27017/stock_count_test",
         "DB_NAME": "stock_count_test",
         "JWT_SECRET": "test-jwt-secret-key-for-testing-only",
+        "JWT_REFRESH_SECRET": "test-jwt-refresh-secret-key-for-testing-only",
         "JWT_ALGORITHM": "HS256",
         "REDIS_URL": "redis://localhost:6379/15",  # Use database 15 for testing
         # 'SQL_SERVER_HOST': 'localhost',  # Disabled to prevent connection pool hang
@@ -31,10 +32,7 @@ os.environ.update(
 )
 
 from backend.services.cache_service import CacheService
-from backend.tests.utils.in_memory_db import (
-    InMemoryDatabase,
-    setup_server_with_in_memory_db,
-)
+from backend.tests.utils.in_memory_db import InMemoryDatabase, setup_server_with_in_memory_db
 
 # Ensure backend package root is importable when running tests from project root
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -62,10 +60,8 @@ def event_loop():
 @pytest.fixture
 def test_db(monkeypatch) -> InMemoryDatabase:
     """Provide an in-memory database for testing."""
-    print("DEBUG: test_db fixture starting")
     # This sets up the server with the in-memory DB and seeds initial data
     db = setup_server_with_in_memory_db(monkeypatch)
-    print("DEBUG: test_db fixture done")
     return db
 
 
@@ -74,9 +70,7 @@ async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None
     """Provide an async client for API testing."""
     from backend.server import app
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
 

@@ -34,9 +34,22 @@ const FG_COLORS: Record<InlineAlertType, string> = {
 
 export function InlineAlert({ type = "info", message, testID }: Props) {
   return (
-    <View style={[styles.container, { backgroundColor: BG_COLORS[type], borderColor: FG_COLORS[type] }]} testID={testID}>
-      <Ionicons name={ICONS[type]} size={18} color={FG_COLORS[type]} style={styles.icon} />
-      <Text style={[styles.text, { color: auroraTheme.colors.text.primary }]}>{message}</Text>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: BG_COLORS[type], borderColor: FG_COLORS[type] },
+      ]}
+      testID={testID}
+    >
+      <Ionicons
+        name={ICONS[type]}
+        size={18}
+        color={FG_COLORS[type]}
+        style={styles.icon}
+      />
+      <Text style={[styles.text, { color: auroraTheme.colors.text.primary }]}>
+        {message}
+      </Text>
     </View>
   );
 }

@@ -44,15 +44,11 @@ class MigrationManager:
         ]
         duplicates = await self.db.users.aggregate(pipeline).to_list(None)
         if duplicates:
-            logger.warning(
-                f"Found {len(duplicates)} duplicate usernames, cleaning up..."
-            )
+            logger.warning(f"Found {len(duplicates)} duplicate usernames, cleaning up...")
             for dup in duplicates:
                 await self._cleanup_duplicate_users(dup["_id"])
 
-        await self._create_index_safe(
-            self.db.users, "username", unique=True, name="users.username"
-        )
+        await self._create_index_safe(self.db.users, "username", unique=True, name="users.username")
         await self._create_index_safe(self.db.users, "role", name="users.role")
         logger.info("✓ Users indexes created")
 
@@ -64,14 +60,14 @@ class MigrationManager:
             to_remove = [u for u in users if u["_id"] != to_keep["_id"]]
             for user in to_remove:
                 await self.db.users.delete_one({"_id": user["_id"]})
-            logger.info(
-                f"Removed {len(to_remove)} duplicate user(s) for username: {username}"
-            )
+            logger.info(f"Removed {len(to_remove)} duplicate user(s) for username: {username}")
 
     async def _ensure_refresh_tokens_indexes(self) -> None:
         """Create indexes for refresh_tokens collection."""
         try:
-            await self.db.refresh_tokens.create_index("token", unique=True)
+            # Refresh tokens are stored as a one-way hash to reduce blast radius if DB is leaked.
+            # Use a sparse unique index so older records without token_hash don't block migrations.
+            await self.db.refresh_tokens.create_index("token_hash", unique=True, sparse=True)
             await self.db.refresh_tokens.create_index("username")
             await self.db.refresh_tokens.create_index("expires_at")
             await self.db.refresh_tokens.create_index([("username", 1), ("revoked", 1)])
@@ -82,9 +78,7 @@ class MigrationManager:
 
     async def _ensure_sessions_indexes(self) -> None:
         """Create indexes for sessions collection."""
-        await self._create_index_safe(
-            self.db.sessions, "id", unique=True, name="sessions.id"
-        )
+        await self._create_index_safe(self.db.sessions, "id", unique=True, name="sessions.id")
         simple_indexes = ["warehouse", "staff_user", "status"]
         for field in simple_indexes:
             await self.db.sessions.create_index(field)
@@ -103,9 +97,7 @@ class MigrationManager:
 
     async def _ensure_count_lines_indexes(self) -> None:
         """Create indexes for count_lines collection."""
-        await self._create_index_safe(
-            self.db.count_lines, "id", unique=True, name="count_lines.id"
-        )
+        await self._create_index_safe(self.db.count_lines, "id", unique=True, name="count_lines.id")
         simple_indexes = ["session_id", "item_code", "counted_by", "status", "verified"]
         for field in simple_indexes:
             await self.db.count_lines.create_index(field)
@@ -166,9 +158,7 @@ class MigrationManager:
     async def _ensure_text_index(self) -> None:
         """Create text index on item_name if not exists."""
         try:
-            existing_indexes = await self.db.erp_items.list_indexes().to_list(
-                length=100
-            )
+            existing_indexes = await self.db.erp_items.list_indexes().to_list(length=100)
             has_text_index = any(
                 idx.get("key", {}).get("_fts") is not None for idx in existing_indexes
             )
@@ -188,9 +178,7 @@ class MigrationManager:
             await self.db.item_variances.create_index("verified_by")
             await self.db.item_variances.create_index([("verified_at", -1)])
             await self.db.item_variances.create_index([("category", 1), ("floor", 1)])
-            await self.db.item_variances.create_index(
-                [("warehouse", 1), ("verified_at", -1)]
-            )
+            await self.db.item_variances.create_index([("warehouse", 1), ("verified_at", -1)])
             logger.info("✓ Item variances indexes created")
         except Exception as e:
             logger.warning(f"Error creating item variances indexes: {str(e)}")
@@ -206,9 +194,7 @@ class MigrationManager:
         try:
             await self.db.activity_logs.create_index([("created_at", -1)])
             await self.db.activity_logs.create_index("user_id")
-            await self.db.activity_logs.create_index(
-                [("user_id", 1), ("created_at", -1)]
-            )
+            await self.db.activity_logs.create_index([("user_id", 1), ("created_at", -1)])
             await self.db.activity_logs.create_index("action")
             logger.info("✓ Activity logs indexes created")
         except Exception as e:

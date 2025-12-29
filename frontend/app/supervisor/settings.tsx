@@ -72,11 +72,7 @@ const SettingRow = ({
       <View style={styles.settingLeft}>
         {icon && (
           <View style={styles.iconContainer}>
-            <Ionicons
-              name={icon}
-              size={18}
-              color={theme.colors.text.primary}
-            />
+            <Ionicons name={icon} size={18} color={theme.colors.text.primary} />
           </View>
         )}
         <Text style={styles.settingLabel}>{label}</Text>

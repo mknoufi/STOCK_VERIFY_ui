@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from backend.auth import get_current_user
+from backend.db.runtime import get_db
 from backend.services.dynamic_fields_service import DynamicFieldsService
 
 logger = logging.getLogger(__name__)
@@ -24,9 +25,7 @@ def get_dynamic_fields_service() -> DynamicFieldsService:
     """Get global dynamic fields service instance"""
     global _dynamic_fields_service
     if _dynamic_fields_service is None:
-        from server import db
-
-        _dynamic_fields_service = DynamicFieldsService(db)
+        _dynamic_fields_service = DynamicFieldsService(get_db())
     return _dynamic_fields_service
 
 
@@ -35,15 +34,9 @@ class FieldDefinitionCreate(BaseModel):
     field_name: str = Field(..., description="Internal field name")
     field_type: str = Field(..., description="Field type")
     display_label: str = Field(..., description="Display label")
-    db_mapping: Optional[str] = Field(
-        default=None, description="Database field mapping"
-    )
-    options: Optional[list[str]] = Field(
-        default=None, description="Options for select types"
-    )
-    validation_rules: dict[str, Optional[Any]] = Field(
-        default=None, description="Validation rules"
-    )
+    db_mapping: Optional[str] = Field(default=None, description="Database field mapping")
+    options: Optional[list[str]] = Field(default=None, description="Options for select types")
+    validation_rules: dict[str, Optional[Any]] = Field(default=None, description="Validation rules")
     default_value: Optional[Any] = Field(default=None, description="Default value")
     required: bool = Field(False, description="Is field required")
     visible: bool = Field(True, description="Is field visible")

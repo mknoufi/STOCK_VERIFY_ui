@@ -18,10 +18,8 @@ from pydantic import BaseModel, Field
 
 from backend.api.response_models import ApiResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.services.search_service import (
-    SearchResult,
-    get_search_service,
-)
+from backend.db.runtime import get_db
+from backend.services.search_service import SearchResult, get_search_service
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +51,7 @@ class SearchItemResponse(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "id": "507f1f77bcf86cd799439011",
+                "id": "000000000000000000000000",
                 "item_name": "Apple iPhone 15 Pro",
                 "item_code": "IPHONE15PRO",
                 "barcode": "5100001234",
@@ -91,6 +89,13 @@ class SuggestionsResponse(BaseModel):
 
     suggestions: list[str]
     query: str
+
+
+class SearchFiltersResponse(BaseModel):
+    """Search filters response (distinct metadata)"""
+
+    categories: list[str]
+    warehouses: list[str]
 
 
 # Helper function to convert SearchResult to response model
@@ -225,9 +230,7 @@ async def search_optimized_post(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> ApiResponse[OptimizedSearchResponse]:
     """POST version of optimized search (for compatibility)"""
-    return await search_optimized(
-        q=q, limit=limit, offset=offset, current_user=current_user
-    )
+    return await search_optimized(q=q, limit=limit, offset=offset, current_user=current_user)
 
 
 @router.get(
@@ -264,3 +267,40 @@ async def get_suggestions(
     except Exception as e:
         logger.error(f"Suggestions failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to get suggestions")
+
+
+@router.get(
+    "/search/filters",
+    response_model=ApiResponse[SearchFiltersResponse],
+    summary="Get search filter values",
+    description="Returns distinct categories and warehouses for client-side filters.",
+)
+async def get_search_filters(
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> ApiResponse[SearchFiltersResponse]:
+    """Return distinct values for search filters."""
+    try:
+        db = get_db()
+        categories = await db.erp_items.distinct("category")
+        warehouses = await db.erp_items.distinct("warehouse")
+
+        categories_clean = sorted(
+            {c.strip() for c in categories if isinstance(c, str) and c.strip()}
+        )
+        warehouses_clean = sorted(
+            {w.strip() for w in warehouses if isinstance(w, str) and w.strip()}
+        )
+
+        return ApiResponse.success_response(
+            data=SearchFiltersResponse(
+                categories=categories_clean,
+                warehouses=warehouses_clean,
+            ),
+            message="Search filters loaded",
+        )
+    except RuntimeError as e:
+        logger.error(f"Database not initialized: {e}")
+        raise HTTPException(status_code=503, detail="Search filters unavailable")
+    except Exception as e:
+        logger.error(f"Failed to load search filters: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load search filters")

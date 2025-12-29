@@ -4,12 +4,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Animated, {
   useAnimatedStyle,
   withRepeat,
@@ -19,7 +14,10 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { getSyncStatus, forceSync } from "../../services/syncService";
 import { useNetworkStore } from "../../services/networkService";
-import { modernColors, modernBorderRadius } from "../../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernBorderRadius,
+} from "../../styles/modernDesignSystem";
 
 interface SyncStatus {
   isOnline: boolean;
@@ -109,7 +107,12 @@ export const SyncStatusPill = () => {
       disabled={isOffline || isSyncing || (!hasPending && !isOffline)}
       activeOpacity={0.7}
     >
-      <View style={[styles.pill, { backgroundColor: pillBg, borderColor: pillColor }]}>
+      <View
+        style={[
+          styles.pill,
+          { backgroundColor: pillBg, borderColor: pillColor },
+        ]}
+      >
         <Animated.View style={isSyncing ? animatedIconStyle : undefined}>
           <Ionicons name={iconName} size={14} color={pillColor} />
         </Animated.View>

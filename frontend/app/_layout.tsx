@@ -17,7 +17,6 @@ import { ErrorBoundary } from "../src/components/ErrorBoundary";
 import { ThemeService } from "../src/services/themeService";
 import { useSettingsStore } from "../src/store/settingsStore";
 import { useTheme } from "../src/hooks/useTheme";
-import { useSystemTheme } from "../src/hooks/useSystemTheme";
 import { ToastProvider } from "../src/components/feedback/ToastProvider";
 import { initializeBackendURL } from "../src/utils/backendUrl";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -51,6 +50,29 @@ if (__DEV__) {
   console.log("🌐 [DEV] _layout.tsx module loaded, Platform:", Platform.OS);
 }
 
+function RootStack() {
+  const theme = useTheme();
+
+  return (
+    <>
+      <StatusBar style={theme.isDark ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" />
+        <Stack.Screen name="register" />
+        <Stack.Screen name="help" />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    </>
+  );
+}
+
 // Provide a single place to bootstrap auth, settings, network listeners, and routing.
 export default function RootLayout() {
   if (__DEV__) {
@@ -58,10 +80,8 @@ export default function RootLayout() {
   }
   const { user, isLoading, loadStoredAuth } = useAuthStore();
   const { loadSettings } = useSettingsStore();
-  const theme = useTheme();
-  useSystemTheme();
   const segments = useSegments();
-  const router = useRouter();
+  const _router = useRouter();
   const [isInitialized, setIsInitialized] = React.useState(false);
   const [initError, setInitError] = React.useState<string | null>(null);
   const cleanupRef = React.useRef<(() => void)[]>([]);
@@ -88,19 +108,26 @@ export default function RootLayout() {
 
     // Initialize app with error handling
     const initialize = async (): Promise<void> => {
-      console.log("🔵 [STEP 5] Initialize function called");
-      console.log("🔵 [STEP 5] Starting async initialization...");
+      __DEV__ && console.log("🔵 [STEP 5] Initialize function called");
+      __DEV__ && console.log("🔵 [STEP 5] Starting async initialization...");
 
       // Emergency fallback: force initialization after 3 seconds
       const emergencyTimeout = setTimeout(() => {
-        console.error("🚨 [EMERGENCY] FORCING INITIALIZATION AFTER 3s!");
-        console.error("🚨 Current isLoading:", useAuthStore.getState().isLoading);
-        console.error("🚨 Current isInitialized:", isInitialized);
+        if (__DEV__) {
+          console.error("🚨 [EMERGENCY] FORCING INITIALIZATION AFTER 3s!");
+          console.error(
+            "🚨 Current isLoading:",
+            useAuthStore.getState().isLoading,
+          );
+          console.error("🚨 Current isInitialized:", isInitialized);
+        }
         useAuthStore.getState().setLoading(false);
         useAuthStore.setState({ isInitialized: true });
         setIsInitialized(true);
         setInitError("Initialization timed out - some features may not work");
-        SplashScreen.hideAsync().catch((e) => console.error("SplashScreen hide failed:", e));
+        SplashScreen.hideAsync().catch((e) => {
+          __DEV__ && console.error("SplashScreen hide failed:", e);
+        });
       }, 3000);
 
       try {
@@ -176,7 +203,10 @@ export default function RootLayout() {
         try {
           const syncPromise = registerBackgroundSync();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Background sync timeout")), 1000)
+            setTimeout(
+              () => reject(new Error("Background sync timeout")),
+              1000,
+            ),
           );
           await Promise.race([syncPromise, timeoutPromise]);
         } catch (syncError) {
@@ -189,7 +219,10 @@ export default function RootLayout() {
         try {
           const themePromise = ThemeService.initialize();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Theme initialization timeout")), 1000)
+            setTimeout(
+              () => reject(new Error("Theme initialization timeout")),
+              1000,
+            ),
           );
           await Promise.race([themePromise, timeoutPromise]);
         } catch (themeError) {
@@ -229,7 +262,7 @@ export default function RootLayout() {
         useAuthStore.setState({ isInitialized: true }); // Ensure store is initialized
         setIsInitialized(true);
         setInitError(null);
-        console.log("✅ [INIT] Initialization completed successfully");
+        __DEV__ && console.log("✅ [INIT] Initialization completed successfully");
         await SplashScreen.hideAsync();
       } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
@@ -253,7 +286,7 @@ export default function RootLayout() {
         }
         setInitError(errorMessage);
         // Always set initialized to true to prevent infinite loading
-        console.log("⚠️ [INIT] Initialization had errors but continuing...");
+        console.warn("⚠️ [INIT] Initialization had errors but continuing...");
         clearTimeout(maxTimeout);
         clearTimeout(emergencyTimeout);
         useAuthStore.getState().setLoading(false);
@@ -294,7 +327,9 @@ export default function RootLayout() {
 
     // Navigation/redirect logic now handled by AuthGuard to avoid duplication
     if (__DEV__) {
-      console.log("🚀 [NAV] Initialization complete; navigation handled in AuthGuard");
+      console.log(
+        "🚀 [NAV] Initialization complete; navigation handled in AuthGuard",
+      );
     }
   }, [isInitialized, isLoading, segments, user]);
 
@@ -431,20 +466,7 @@ export default function RootLayout() {
           <UnistylesThemeProvider>
             <ToastProvider>
               <AuthGuard>
-                <StatusBar style={theme.isDark ? "light" : "dark"} />
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: "#121212" },
-                  }}
-                >
-                  <Stack.Screen name="index" options={{ headerShown: false }} />
-                  <Stack.Screen name="login" options={{ headerShown: false }} />
-                  <Stack.Screen name="welcome" />
-                  <Stack.Screen name="register" />
-                  <Stack.Screen name="help" />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
+                <RootStack />
               </AuthGuard>
             </ToastProvider>
           </UnistylesThemeProvider>

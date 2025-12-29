@@ -275,9 +275,13 @@ export default function WatchtowerScreen() {
                 style={styles.section}
               >
                 <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Predictive Risk Analysis</Text>
+                  <Text style={styles.sectionTitle}>
+                    Predictive Risk Analysis
+                  </Text>
                   <View style={styles.riskBadge}>
-                    <Text style={styles.riskBadgeText}>{stats.predicted_risk_count} High Risk</Text>
+                    <Text style={styles.riskBadgeText}>
+                      {stats.predicted_risk_count} High Risk
+                    </Text>
                   </View>
                 </View>
 
@@ -294,25 +298,42 @@ export default function WatchtowerScreen() {
                       key={`${item.item_code}-${idx}`}
                       style={[
                         styles.riskItem,
-                        idx < (stats.high_risk_items?.length || 0) - 1 && styles.riskItemSeparator
+                        idx < (stats.high_risk_items?.length || 0) - 1 &&
+                          styles.riskItemSeparator,
                       ]}
                     >
                       <View style={styles.riskItemLeft}>
-                        <View style={[
-                          styles.riskIndicator,
-                          { backgroundColor: item.risk_score > 0.7 ? auroraTheme.colors.error[500] : auroraTheme.colors.warning[500] }
-                        ]} />
+                        <View
+                          style={[
+                            styles.riskIndicator,
+                            {
+                              backgroundColor:
+                                item.risk_score > 0.7
+                                  ? auroraTheme.colors.error[500]
+                                  : auroraTheme.colors.warning[500],
+                            },
+                          ]}
+                        />
                         <View>
                           <Text style={styles.itemName}>{item.item_name}</Text>
-                          <Text style={styles.itemCode}>{item.item_code} • {item.category}</Text>
+                          <Text style={styles.itemCode}>
+                            {item.item_code} • {item.category}
+                          </Text>
                           <Text style={styles.riskReason}>{item.reason}</Text>
                         </View>
                       </View>
                       <View style={styles.riskItemRight}>
-                        <Text style={[
-                          styles.riskScore,
-                          { color: item.risk_score > 0.7 ? auroraTheme.colors.error[400] : auroraTheme.colors.warning[400] }
-                        ]}>
+                        <Text
+                          style={[
+                            styles.riskScore,
+                            {
+                              color:
+                                item.risk_score > 0.7
+                                  ? auroraTheme.colors.error[400]
+                                  : auroraTheme.colors.warning[400],
+                            },
+                          ]}
+                        >
                           {Math.round(item.risk_score * 100)}%
                         </Text>
                         <Text style={styles.riskLabel}>RISK</Text>

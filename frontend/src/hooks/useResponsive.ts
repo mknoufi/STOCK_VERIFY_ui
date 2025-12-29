@@ -9,7 +9,12 @@
  */
 
 import { useMemo } from "react";
-import { Dimensions, Platform, PixelRatio, useWindowDimensions } from "react-native";
+import {
+  Dimensions,
+  Platform,
+  PixelRatio,
+  useWindowDimensions,
+} from "react-native";
 
 // Base design dimensions (iPhone 14 Pro)
 const BASE_WIDTH = 393;
@@ -78,8 +83,10 @@ export function useResponsive(): ResponsiveConfig {
     // Device type detection
     const isSmallPhone = width < BREAKPOINTS.phone;
     const isPhone = width >= BREAKPOINTS.phone && width < BREAKPOINTS.tablet;
-    const isLargePhone = width >= BREAKPOINTS.largePhone && width < BREAKPOINTS.tablet;
-    const isTablet = width >= BREAKPOINTS.tablet && width < BREAKPOINTS.largeTablet;
+    const isLargePhone =
+      width >= BREAKPOINTS.largePhone && width < BREAKPOINTS.tablet;
+    const isTablet =
+      width >= BREAKPOINTS.tablet && width < BREAKPOINTS.largeTablet;
     const isLargeTablet = width >= BREAKPOINTS.largeTablet;
 
     // Scale factors relative to base design
@@ -118,12 +125,12 @@ export function useResponsive(): ResponsiveConfig {
     // Responsive font size (respects system font scaling)
     const fontSize = (base: number): number => {
       let size = base * clampedScale;
-      
+
       // Tablet adjustments
       if (isTablet || isLargeTablet) {
         size = base * 1.1; // Slightly larger on tablets
       }
-      
+
       // Small phone adjustments
       if (isSmallPhone) {
         size = base * 0.9; // Slightly smaller on small phones
@@ -131,12 +138,16 @@ export function useResponsive(): ResponsiveConfig {
 
       // Clamp to reasonable range
       size = Math.min(Math.max(size, base * 0.8), base * 1.3);
-      
+
       return Math.round(size);
     };
 
     // Responsive columns for grid layouts
-    const columns = (phone: number, tablet: number, desktop: number = tablet): number => {
+    const columns = (
+      phone: number,
+      tablet: number,
+      desktop: number = tablet,
+    ): number => {
       if (isWeb && width >= BREAKPOINTS.desktop) return desktop;
       if (isTablet || isLargeTablet) return tablet;
       return phone;

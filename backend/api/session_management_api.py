@@ -98,9 +98,7 @@ async def get_sessions(
 
     # Get paginated sessions
     skip = (page - 1) * page_size
-    sessions_cursor = (
-        db.sessions.find(query).sort("started_at", -1).skip(skip).limit(page_size)
-    )
+    sessions_cursor = db.sessions.find(query).sort("started_at", -1).skip(skip).limit(page_size)
     sessions = await sessions_cursor.to_list(length=page_size)
 
     # DEBUG LOGGING
@@ -242,16 +240,11 @@ async def get_session_detail(
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if (
-        current_user["role"] != "supervisor"
-        and session["user_id"] != current_user["username"]
-    ):
+    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get counts
-    item_count = await db.verification_records.count_documents(
-        {"session_id": session_id}
-    )
+    item_count = await db.verification_records.count_documents({"session_id": session_id})
 
     verified_count = await db.verification_records.count_documents(
         {"session_id": session_id, "status": "finalized"}
@@ -284,10 +277,7 @@ async def get_session_stats(
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if (
-        current_user["role"] != "supervisor"
-        and session["user_id"] != current_user["username"]
-    ):
+    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get item statistics
@@ -297,9 +287,7 @@ async def get_session_stats(
             "$group": {
                 "_id": None,
                 "total": {"$sum": 1},
-                "verified": {
-                    "$sum": {"$cond": [{"$eq": ["$status", "finalized"]}, 1, 0]}
-                },
+                "verified": {"$sum": {"$cond": [{"$eq": ["$status", "finalized"]}, 1, 0]}},
                 "damage": {"$sum": "$damage_qty"},
             }
         },
@@ -382,8 +370,7 @@ async def session_heartbeat(
     )
 
     logger.debug(
-        f"Heartbeat: session={session_id}, user={user_id}, "
-        f"rack_renewed={rack_lock_renewed}"
+        f"Heartbeat: session={session_id}, user={user_id}, rack_renewed={rack_lock_renewed}"
     )
 
     return HeartbeatResponse(
@@ -394,6 +381,36 @@ async def session_heartbeat(
         lock_ttl_remaining=max(0, lock_ttl_remaining),
         message="Heartbeat received",
     )
+
+
+@router.put("/{session_id}/status")
+async def update_session_status(
+    session_id: str,
+    status: str = Query(..., description="New status"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Update session status (e.g. to RECONCILE)
+    """
+    user_id = current_user["username"]
+
+    # Get session
+    session = await db.verification_sessions.find_one({"session_id": session_id})
+
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    # Verify ownership or supervisor
+    if current_user["role"] != "supervisor" and session["user_id"] != user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
+
+    # Update status
+    await db.verification_sessions.update_one(
+        {"session_id": session_id}, {"$set": {"status": status}}
+    )
+
+    return {"success": True, "id": session_id, "status": status}
 
 
 @router.post("/{session_id}/complete")

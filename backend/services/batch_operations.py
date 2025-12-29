@@ -61,9 +61,7 @@ class BatchOperationsService:
         total_inserted = 0
         errors = []
         total = len(documents)
-        batches = [
-            documents[i : i + self.batch_size] for i in range(0, total, self.batch_size)
-        ]
+        batches = [documents[i : i + self.batch_size] for i in range(0, total, self.batch_size)]
 
         # Process batches with controlled concurrency
         semaphore = asyncio.Semaphore(self.max_concurrent_batches)
@@ -71,9 +69,7 @@ class BatchOperationsService:
         async def process_batch(batch: list[dict[str, Any]], batch_num: int) -> None:
             async with semaphore:
                 try:
-                    result = await self.db[collection].insert_many(
-                        batch, ordered=ordered
-                    )
+                    result = await self.db[collection].insert_many(batch, ordered=ordered)
                     nonlocal total_inserted
                     total_inserted += len(result.inserted_ids)
                     logger.debug(f"Inserted batch {batch_num}: {len(batch)} documents")
@@ -99,9 +95,7 @@ class BatchOperationsService:
             await asyncio.gather(*tasks, return_exceptions=True)
         except Exception as e:
             if ordered:
-                logger.error(
-                    f"Batch insert stopped due to error: {str(e)}", exc_info=True
-                )
+                logger.error(f"Batch insert stopped due to error: {str(e)}", exc_info=True)
 
         return {
             "inserted_count": total_inserted,
@@ -139,8 +133,7 @@ class BatchOperationsService:
 
             async def default_update(batch):
                 operations = [
-                    UpdateOne(item.get("filter", {}), item.get("update", {}))
-                    for item in batch
+                    UpdateOne(item.get("filter", {}), item.get("update", {})) for item in batch
                 ]
                 if not operations:
                     return 0
@@ -149,9 +142,7 @@ class BatchOperationsService:
 
             update_operation = default_update
 
-        batches = [
-            updates[i : i + self.batch_size] for i in range(0, total, self.batch_size)
-        ]
+        batches = [updates[i : i + self.batch_size] for i in range(0, total, self.batch_size)]
         semaphore = asyncio.Semaphore(self.max_concurrent_batches)
 
         async def process_batch(batch: list[dict[str, Any]], batch_num: int) -> None:
@@ -162,9 +153,7 @@ class BatchOperationsService:
 
                     nonlocal total_updated
                     total_updated += batch_updated
-                    logger.debug(
-                        f"Updated batch {batch_num}: {batch_updated} documents"
-                    )
+                    logger.debug(f"Updated batch {batch_num}: {batch_updated} documents")
 
                     if progress_callback:
                         progress_callback(total_updated, total)
@@ -240,9 +229,7 @@ class BatchOperationsService:
         total_imported = 0
         errors = []
         total = len(items)
-        batches = [
-            items[i : i + self.batch_size] for i in range(0, total, self.batch_size)
-        ]
+        batches = [items[i : i + self.batch_size] for i in range(0, total, self.batch_size)]
         semaphore = asyncio.Semaphore(self.max_concurrent_batches)
 
         async def process_batch(batch: list[dict[str, Any]], batch_num: int) -> None:
@@ -275,13 +262,9 @@ class BatchOperationsService:
                                 )
                             )
 
-                    result = await self.db.erp_items.bulk_write(
-                        operations, ordered=False
-                    )
+                    result = await self.db.erp_items.bulk_write(operations, ordered=False)
                     batch_imported = (
-                        result.upserted_count
-                        + result.modified_count
-                        + result.inserted_count
+                        result.upserted_count + result.modified_count + result.inserted_count
                     )
 
                     nonlocal total_imported

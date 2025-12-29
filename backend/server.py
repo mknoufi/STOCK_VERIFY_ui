@@ -9,7 +9,7 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, cast
 
 import jwt
 import uvicorn
@@ -18,7 +18,6 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
-from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
@@ -34,24 +33,7 @@ from backend.api.admin_dashboard_api import admin_dashboard_router  # noqa: E402
 from backend.api.auth import router as auth_router  # noqa: E402
 from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
 from backend.api.dynamic_reports_api import dynamic_reports_router  # noqa: E402
-from backend.api.enhanced_item_api import (  # noqa: E402
-    enhanced_item_router as items_router,
-)
-from backend.api.schemas import (  # noqa: E402
-    ApiResponse,
-    CorrectionMetadata,
-    CorrectionReason,
-    CountLineCreate,
-    PhotoProof,
-    Session,
-    SessionCreate,
-    TokenResponse,
-    UnknownItem,
-    UnknownItemCreate,
-    UserInfo,
-    UserLogin,
-    UserRegister,
-)
+from backend.api.enhanced_item_api import enhanced_item_router as items_router  # noqa: E402
 from backend.api.enhanced_item_api import init_enhanced_api  # noqa: E402
 from backend.api.erp_api import init_erp_api  # noqa: E402
 from backend.api.erp_api import router as erp_router  # noqa: E402
@@ -68,15 +50,21 @@ from backend.api.metrics_api import metrics_router, set_monitoring_service  # no
 
 # New feature API routers
 from backend.api.permissions_api import permissions_router  # noqa: E402
+from backend.api.preferences_api import router as preferences_router  # noqa: E402
 from backend.api.rack_api import router as rack_router  # noqa: E402
 from backend.api.report_generation_api import report_generation_router  # noqa: E402
 from backend.api.reporting_api import router as reporting_router  # noqa: E402
+from backend.api.schemas import (  # noqa: E402
+    ApiResponse,
+    CountLineCreate,
+    Session,
+    SessionCreate,
+    TokenResponse,
+)
 from backend.api.search_api import router as search_router  # noqa: E402
 from backend.api.security_api import security_router  # noqa: E402
 from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
-from backend.api.session_management_api import (  # noqa: E402
-    router as session_mgmt_router,
-)
+from backend.api.session_management_api import router as session_mgmt_router  # noqa: E402
 
 # Phase 1-3: New Upgrade APIs
 from backend.api.sync_batch_api import router as sync_batch_router  # noqa: E402
@@ -89,7 +77,6 @@ from backend.api.sync_management_api import (  # noqa: E402
 )
 from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
 from backend.api.user_settings_api import router as user_settings_router  # noqa: E402
-from backend.api.preferences_api import router as preferences_router  # noqa: E402
 from backend.api.variance_api import router as variance_router  # noqa: E402
 from backend.api.websocket_api import router as websocket_router  # noqa: E402
 from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
@@ -109,7 +96,6 @@ from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
 from backend.services.error_log import ErrorLogService  # noqa: E402
 from backend.services.errors import (  # noqa: E402
     AuthenticationError,
-    AuthorizationError,
     DatabaseError,
     NotFoundError,
     RateLimitExceededError,
@@ -118,29 +104,19 @@ from backend.services.errors import (  # noqa: E402
 from backend.services.lock_manager import get_lock_manager  # noqa: E402
 from backend.services.monitoring_service import MonitoringService  # noqa: E402
 from backend.services.pubsub_service import get_pubsub_service  # noqa: E402
-from backend.services.rate_limiter import (  # noqa: E402
-    ConcurrentRequestHandler,
-    RateLimiter,
-)
+from backend.services.rate_limiter import ConcurrentRequestHandler, RateLimiter  # noqa: E402
 
 # Phase 1-3: New Services
 from backend.services.redis_service import close_redis, init_redis  # noqa: E402
 from backend.services.refresh_token import RefreshTokenService  # noqa: E402
-from backend.services.runtime import (  # noqa: E402
-    set_cache_service,
-    set_refresh_token_service,
-)
-from backend.services.scheduled_export_service import (  # noqa: E402
-    ScheduledExportService,
-)
+from backend.services.runtime import set_cache_service, set_refresh_token_service  # noqa: E402
+from backend.services.scheduled_export_service import ScheduledExportService  # noqa: E402
 from backend.services.sync_conflicts_service import SyncConflictsService  # noqa: E402
 from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
-from backend.utils.api_utils import (  # noqa: E402
-    result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402
-)
+from backend.utils.api_utils import result_to_response  # noqa: E402
+from backend.utils.api_utils import sanitize_for_logging  # noqa: E402
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.port_detector import PortDetector  # noqa: E402
@@ -287,9 +263,7 @@ try:
         bcrypt.checkpw(b"test", test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(
-            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
-        )
+        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
@@ -310,9 +284,7 @@ if (
 ):
     try:
         # Try to use enhanced connection pool first
-        from backend.services.enhanced_connection_pool import (
-            EnhancedSQLServerConnectionPool,
-        )
+        from backend.services.enhanced_connection_pool import EnhancedSQLServerConnectionPool
 
         connection_pool = EnhancedSQLServerConnectionPool(
             host=settings.SQL_SERVER_HOST,
@@ -324,9 +296,7 @@ if (
             max_overflow=getattr(settings, "MAX_OVERFLOW", 5),
             retry_attempts=getattr(settings, "CONNECTION_RETRY_ATTEMPTS", 3),
             retry_delay=getattr(settings, "CONNECTION_RETRY_DELAY", 1.0),
-            health_check_interval=getattr(
-                settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60
-            ),
+            health_check_interval=getattr(settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60),
         )
         logging.info("✓ Enhanced connection pool initialized")
     except ImportError as e:
@@ -467,32 +437,22 @@ async def lifespan(app: FastAPI):  # noqa: C901
                 f"Attempting to connect to SQL Server at {sql_host}:{sql_port}/{sql_database}..."
             )
             try:
-                sql_connector.connect(
-                    sql_host, sql_port, sql_database, sql_user, sql_password
-                )
+                sql_connector.connect(sql_host, sql_port, sql_database, sql_user, sql_password)
                 logger.info("OK: SQL Server connection established")
             except (ConnectionError, TimeoutError, OSError) as e:
-                logger.warning(
-                    f"SQL Server connection failed (network/system error): {str(e)}"
-                )
-                logger.warning(
-                    "ERP sync will be disabled until SQL Server is configured"
-                )
+                logger.warning(f"SQL Server connection failed (network/system error): {str(e)}")
+                logger.warning("ERP sync will be disabled until SQL Server is configured")
             except Exception as e:
                 # Catch-all for other SQL Server connection errors (authentication, database not found, etc.)
                 logger.warning(f"SQL Server connection failed: {str(e)}")
-                logger.warning(
-                    "ERP sync will be disabled until SQL Server is configured"
-                )
+                logger.warning("ERP sync will be disabled until SQL Server is configured")
         else:
             logger.warning(
                 "SQL Server credentials not configured. Set SQL_SERVER_HOST and SQL_SERVER_DATABASE in .env"
             )
     except (ValueError, AttributeError) as e:
         # Configuration errors - invalid settings
-        logger.warning(
-            f"Error initializing SQL Server connection (configuration error): {str(e)}"
-        )
+        logger.warning(f"Error initializing SQL Server connection (configuration error): {str(e)}")
     except Exception as e:
         # Other unexpected errors during initialization
         logger.warning(f"Unexpected error initializing SQL Server connection: {str(e)}")
@@ -500,9 +460,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     # CRITICAL: Verify MongoDB is available (required)
     try:
         await db.command("ping")
-        logger.info(
-            "✅ MongoDB connection verified - MongoDB is required and available"
-        )
+        logger.info("✅ MongoDB connection verified - MongoDB is required and available")
     except Exception as e:
         # MongoDB connection failed - check if we're in development mode
         error_type = type(e).__name__
@@ -541,9 +499,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         )
     except Exception as e:
         # Catch-all for migration errors (index creation failures, etc.)
-        logger.warning(
-            f"Migration error (may be due to MongoDB unavailability): {str(e)}"
-        )
+        logger.warning(f"Migration error (may be due to MongoDB unavailability): {str(e)}")
 
     # Initialize auto-sync manager (monitors SQL Server and auto-syncs when available)
     global auto_sync_manager
@@ -560,9 +516,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         if sql_configured:
             # Set callbacks for admin notifications
             async def on_connection_restored():
-                logger.info(
-                    "📢 SQL Server connection restored - sync will start automatically"
-                )
+                logger.info("📢 SQL Server connection restored - sync will start automatically")
                 # Could send notification to admin panel here
 
             async def on_connection_lost():
@@ -611,9 +565,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     try:
         await cache_service.initialize()
         cache_stats = await cache_service.get_stats()
-        logger.info(
-            f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}"
-        )
+        logger.info(f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}")
     except Exception:
         logger.warning("Cache service error", exc_info=True)
 
@@ -752,9 +704,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     # Verify Cache
     try:
         cache_stats = await cache_service.get_stats()
-        logger.info(
-            f"✓ Startup Check: Cache initialized ({cache_stats.get('backend', 'unknown')})"
-        )
+        logger.info(f"✓ Startup Check: Cache initialized ({cache_stats.get('backend', 'unknown')})")
     except Exception as e:
         logger.warning(f"⚠️ Startup Check: Cache service warning: {str(e)}")
 
@@ -793,14 +743,12 @@ async def lifespan(app: FastAPI):  # noqa: C901
         logger.info("✅ Startup Checklist: All critical services OK")
     else:
         failed = [svc for svc in critical_services if not startup_checklist[svc]]
-        logger.warning(
-            f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}"
-        )
+        logger.warning(f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}")
 
     # Initialize search service
     try:
-        from backend.services.search_service import init_search_service
         from backend.db.runtime import get_db
+        from backend.services.search_service import init_search_service
 
         database = get_db()
         init_search_service(database)
@@ -888,9 +836,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
             timeout=shutdown_timeout,
         )
     except TimeoutError:
-        logger.warning(
-            f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown..."
-        )
+        logger.warning(f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown...")
     except Exception as e:
         logger.error(f"Error during shutdown: {str(e)}")
 
@@ -946,13 +892,9 @@ elif _env == "development":
     ]
     # Add additional dev origins from environment if configured
     if getattr(settings, "CORS_DEV_ORIGINS", None):
-        dev_origins = [
-            o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()
-        ]
+        dev_origins = [o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()]
         _allowed_origins.extend(dev_origins)
-        logger.info(
-            f"Added {len(dev_origins)} additional CORS origins from CORS_DEV_ORIGINS"
-        )
+        logger.info(f"Added {len(dev_origins)} additional CORS origins from CORS_DEV_ORIGINS")
 else:
     _allowed_origins = []
     if not getattr(settings, "CORS_ALLOW_ORIGINS", None):
@@ -1007,25 +949,19 @@ app.include_router(mapping_router)  # Database mapping endpoints via mapping_api
 app.include_router(exports_router, prefix="/api")  # Export functionality
 
 app.include_router(auth_router, prefix="/api")
-app.include_router(
-    items_router
-)  # Enhanced items API (has its own prefix /api/v2/erp/items)
+app.include_router(items_router)  # Enhanced items API (has its own prefix /api/v2/erp/items)
 app.include_router(search_router)  # Search API (has prefix /api/items)
 app.include_router(metrics_router, prefix="/api")  # Metrics and monitoring
 app.include_router(sync_router, prefix="/api")  # Sync status
 app.include_router(sync_management_router, prefix="/api")  # Sync management
-app.include_router(
-    self_diagnosis_router, prefix="/api/diagnosis"
-)  # Self-diagnosis tools
+app.include_router(self_diagnosis_router, prefix="/api/diagnosis")  # Self-diagnosis tools
 app.include_router(security_router)  # Security dashboard (has its own prefix)
 app.include_router(verification_router)
 app.include_router(erp_router, prefix="/api")  # ERP endpoints
 app.include_router(variance_router, prefix="/api")  # Variance reasons and trendspoints
 app.include_router(admin_control_router)  # Admin control endpoints
 app.include_router(dynamic_fields_router)  # Dynamic fields management
-app.include_router(
-    dynamic_reports_router
-)  # Dynamic reports (has prefix /api/dynamic-reports)
+app.include_router(dynamic_reports_router)  # Dynamic reports (has prefix /api/dynamic-reports)
 app.include_router(logs_router, prefix="/api")  # Error and Activity logs
 app.include_router(locations_router)  # Locations (Zones/Warehouses)
 
@@ -1109,7 +1045,7 @@ def create_access_token(data: dict[str, Any]) -> str:
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> dict[str, Any]:
-    logger.debug(f"get_current_user called. SECRET_KEY={SECRET_KEY[:5]}...")
+    logger.debug("get_current_user called")
     try:
         if credentials is None:
             logger.debug("get_current_user: No credentials")
@@ -1124,9 +1060,7 @@ async def get_current_user(
             )
 
         token = credentials.credentials
-        logger.debug(f"get_current_user token: {token}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.debug(f"get_current_user payload: {payload}")
 
         # No type validation needed - we only issue access tokens through this endpoint
         # (Refresh tokens are UUIDs, not JWTs, so they won't decode successfully)
@@ -1431,7 +1365,11 @@ async def generate_auth_tokens(
 
         # Store refresh token via service
         await refresh_token_service.store_refresh_token(
-            refresh_token, user["username"], refresh_token_expires
+            refresh_token,
+            user["username"],
+            refresh_token_expires,
+            ip_address=ip_address,
+            user_agent=request.headers.get("user-agent"),
         )
 
         return Ok(
@@ -1465,9 +1403,7 @@ async def log_failed_login_attempt(
         logger.error(f"Failed to log login attempt: {str(e)}")
 
 
-async def log_successful_login(
-    user: dict[str, Any], ip_address: str, request: Request
-) -> None:
+async def log_successful_login(user: dict[str, Any], ip_address: str, request: Request) -> None:
     """Log a successful login."""
     try:
         await db.login_attempts.insert_one(
@@ -1508,57 +1444,16 @@ async def refresh_token(request: Request) -> Result[dict[str, Any], Exception]:
     """
     try:
         body = await request.json()
-        refresh_token = body.get("refresh_token")
+        refresh_token_value = body.get("refresh_token")
 
-        if not refresh_token:
+        if not refresh_token_value:
             return Fail(ValidationError("Refresh token is required"))
 
-        # Find refresh token in database
-        token_doc = await db.refresh_tokens.find_one(
-            {"token": refresh_token, "is_revoked": False}
-        )
-
-        if not token_doc:
+        refreshed = await refresh_token_service.refresh_access_token(refresh_token_value)
+        if not refreshed:
             return Fail(AuthenticationError("Invalid or expired refresh token"))
 
-        # Check if token is expired
-        if token_doc["expires_at"] < datetime.utcnow():
-            return Fail(AuthenticationError("Refresh token has expired"))
-
-        # Get user
-        user = await db.users.find_one({"_id": token_doc["user_id"]})
-        if not user:
-            return Fail(AuthenticationError("User not found"))
-
-        if not user.get("is_active", True):
-            return Fail(AuthorizationError("Account is deactivated"))
-
-        # Generate new access token
-        access_token = create_access_token({"sub": user["username"]})
-
-        # Update last_used_at for refresh token
-        await db.refresh_tokens.update_one(
-            {"token": refresh_token}, {"$set": {"last_used_at": datetime.utcnow()}}
-        )
-
-        # Return new tokens
-        return Ok(
-            {
-                "access_token": access_token,
-                "token_type": "bearer",
-                "expires_in": 900,  # 15 minutes
-                "refresh_token": refresh_token,  # Same refresh token
-                "user": {
-                    "id": str(user["_id"]),
-                    "username": user["username"],
-                    "full_name": user.get("full_name", ""),
-                    "role": user.get("role", "staff"),
-                    "email": user.get("email"),
-                    "is_active": user.get("is_active", True),
-                    "permissions": user.get("permissions", []),
-                },
-            }
-        )
+        return Ok(refreshed)
     except Exception as e:
         logger.error(f"Token refresh error: {str(e)}")
         return Fail(e)
@@ -1575,14 +1470,12 @@ async def logout(
     """
     try:
         body = await request.json()
-        refresh_token = body.get("refresh_token")
+        refresh_token_value = body.get("refresh_token")
 
-        if refresh_token:
-            # Revoke the refresh token
-            await db.refresh_tokens.update_one(
-                {"token": refresh_token, "user_id": current_user["_id"]},
-                {"$set": {"is_revoked": True, "revoked_at": datetime.utcnow()}},
-            )
+        if refresh_token_value:
+            payload = await refresh_token_service.verify_refresh_token(refresh_token_value)
+            if payload and payload.get("sub") == current_user.get("username"):
+                await refresh_token_service.revoke_token(refresh_token_value)
 
         return {"message": "Logged out successfully"}
     except Exception as e:
@@ -1603,17 +1496,13 @@ async def create_session(
     if not warehouse:
         raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
     if len(warehouse) < 2:
-        raise HTTPException(
-            status_code=400, detail="Warehouse name must be at least 2 characters"
-        )
+        raise HTTPException(status_code=400, detail="Warehouse name must be at least 2 characters")
     if len(warehouse) > 100:
         raise HTTPException(
             status_code=400, detail="Warehouse name must be less than 100 characters"
         )
     # Sanitize warehouse name (remove potentially dangerous characters)
-    warehouse = (
-        warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
-    )
+    warehouse = warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
 
     session = Session(
         warehouse=warehouse,
@@ -1650,9 +1539,7 @@ async def get_sessions(
 
     if current_user["role"] == "supervisor":
         total = await db.sessions.count_documents({})
-        sessions_cursor = (
-            db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
-        )
+        sessions_cursor = db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
     else:
         filter_query = {"staff_user": current_user["username"]}
         total = await db.sessions.count_documents(filter_query)
@@ -1888,9 +1775,7 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
 
         # Transform results
         sessions_by_date = {item["_id"]: item["count"] for item in by_date}
-        variance_by_warehouse = {
-            item["_id"]: item["total_variance"] for item in by_warehouse
-        }
+        variance_by_warehouse = {item["_id"]: item["total_variance"] for item in by_warehouse}
         items_by_staff = {item["_id"]: item["total_items"] for item in by_staff}
 
         return {
@@ -1939,9 +1824,7 @@ async def get_session_by_id(
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(
-    erp_item: dict, line_data: CountLineCreate, variance: float
-) -> list[str]:
+def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
     """Detect high-risk correction patterns"""
     risk_flags = []
 
@@ -1967,17 +1850,11 @@ def detect_risk_flags(
         risk_flags.append("HIGH_VALUE_VARIANCE")
 
     # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (
-        not line_data.serial_numbers or len(line_data.serial_numbers) == 0
-    ):
+    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
         risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
 
     # Rule 5: Correction without reason when variance exists
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         risk_flags.append("MISSING_CORRECTION_REASON")
 
     # Rule 6: MRP change without reason
@@ -2006,9 +1883,7 @@ def detect_risk_flags(
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(
-    erp_mrp: float, counted_mrp: float, counted_qty: float
-) -> float:
+def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
@@ -2036,11 +1911,7 @@ async def create_count_line(
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
     # Validate mandatory correction reason for variance
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         raise HTTPException(
             status_code=400,
             detail="Correction reason is mandatory when variance exists",
@@ -2095,19 +1966,13 @@ async def create_count_line(
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
         "correction_reason": (
-            line_data.correction_reason.model_dump()
-            if line_data.correction_reason
-            else None
+            line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs]
-            if line_data.photo_proofs
-            else None
+            [p.model_dump() for p in line_data.photo_proofs] if line_data.photo_proofs else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump()
-            if line_data.correction_metadata
-            else None
+            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
         ),
         "approval_status": approval_status,
         "approval_by": None,
@@ -2435,9 +2300,7 @@ def save_backend_info(port: int, local_ip: str) -> None:
         if frontend_public.exists():
             with open(frontend_public / "backend_port.json", "w") as f:
                 json.dump(port_data, f)
-            logger.info(
-                f"Saved backend port info to {frontend_public / 'backend_port.json'}"
-            )
+            logger.info(f"Saved backend port info to {frontend_public / 'backend_port.json'}")
 
         logger.info(
             f"Saved backend info (IP: {local_ip}, Port: {port}) to {root_dir / 'backend_port.json'}"
@@ -2455,7 +2318,7 @@ async def _write_backend_port_file_on_startup() -> None:
     """
     try:
         port = int(os.getenv("PORT") or getattr(settings, "PORT", 8001))
-    except Exception as e:
+    except Exception:
         port = 8001
 
     try:
@@ -2473,9 +2336,7 @@ if __name__ == "__main__":
     # Get configured port as starting point
     start_port = int(getattr(settings, "PORT", os.getenv("PORT", 8001)))
     # Use PortDetector to find port and IP
-    port = PortDetector.find_available_port(
-        start_port, range(start_port, start_port + 10)
-    )
+    port = PortDetector.find_available_port(start_port, range(start_port, start_port + 10))
     local_ip = PortDetector.get_local_ip()
 
     # Save port to file for other services to discover

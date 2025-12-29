@@ -26,9 +26,7 @@ import Animated, {
   withTiming,
   useSharedValue,
 } from "react-native-reanimated";
-import {
-  modernColors,
-} from "../../styles/modernDesignSystem";
+import { modernColors } from "../../styles/modernDesignSystem";
 
 interface PinKeypadProps {
   pin: string;
@@ -128,7 +126,10 @@ export function PinKeypad({
 
     if (isEmpty) {
       return (
-        <View key={`empty-${rowIndex}-${colIndex}`} style={[styles.keyEmpty, { width: KEY_SIZE, height: KEY_SIZE }]} />
+        <View
+          key={`empty-${rowIndex}-${colIndex}`}
+          style={[styles.keyEmpty, { width: KEY_SIZE, height: KEY_SIZE }]}
+        />
       );
     }
 
@@ -143,7 +144,7 @@ export function PinKeypad({
             width: KEY_SIZE,
             height: KEY_SIZE,
             borderRadius: KEY_SIZE / 2,
-          }
+          },
         ]}
         onPress={() => handleKeyPress(key)}
         disabled={disabled}
@@ -245,8 +246,7 @@ const styles = StyleSheet.create({
   keyDisabled: {
     opacity: 0.4,
   },
-  keyEmpty: {
-  },
+  keyEmpty: {},
   keyText: {
     fontSize: 28,
     fontWeight: "600",

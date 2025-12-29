@@ -7,7 +7,7 @@ import sys
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, cast
 
 import jwt
 from bson import ObjectId
@@ -15,7 +15,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
-from pydantic import BaseModel, Field, field_validator, model_validator
 from starlette.requests import Request
 
 # Add project root to path for direct execution (debugging)
@@ -24,6 +23,14 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+
+from backend.api.schemas import (  # noqa: E402
+    ApiResponse,
+    CountLineCreate,
+    Session,
+    SessionCreate,
+    TokenResponse,
+)
 
 # New feature API routers
 # Phase 1-3: New Upgrade APIs
@@ -35,24 +42,8 @@ from backend.error_messages import get_error_message  # noqa: E402
 # Production services
 # from backend.services.connection_pool import SQLServerConnectionPool  # Legacy pool removed
 from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
-from backend.api.schemas import (  # noqa: E402
-    ApiResponse,
-    CorrectionMetadata,
-    CorrectionReason,
-    CountLineCreate,
-    PhotoProof,
-    Session,
-    SessionCreate,
-    TokenResponse,
-    UnknownItem,
-    UnknownItemCreate,
-    UserInfo,
-    UserLogin,
-    UserRegister,
-)
 from backend.services.errors import (  # noqa: E402
     AuthenticationError,
-    AuthorizationError,
     DatabaseError,
     NotFoundError,
     RateLimitExceededError,
@@ -82,10 +73,8 @@ enterprise_security_service: Any = None
 
 # Phase 1-3: New Services
 # Utils
-from backend.utils.api_utils import (  # noqa: E402
-    result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402
-)
+from backend.utils.api_utils import result_to_response  # noqa: E402
+from backend.utils.api_utils import sanitize_for_logging  # noqa: E402
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.result import Fail, Ok, Result  # noqa: E402
@@ -227,9 +216,7 @@ try:
         bcrypt.checkpw(b"test", test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(
-            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
-        )
+        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
@@ -264,7 +251,7 @@ def create_access_token(data: dict[str, Any]) -> str:
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> dict[str, Any]:
-    logger.debug(f"get_current_user called. SECRET_KEY={SECRET_KEY[:5]}...")
+    logger.debug("get_current_user called")
     try:
         if credentials is None:
             logger.debug("get_current_user: No credentials")
@@ -279,9 +266,7 @@ async def get_current_user(
             )
 
         token = credentials.credentials
-        logger.debug(f"get_current_user token: {token}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.debug(f"get_current_user payload: {payload}")
 
         # No type validation needed - we only issue access tokens through this endpoint
         # (Refresh tokens are UUIDs, not JWTs, so they won't decode successfully)
@@ -586,7 +571,11 @@ async def generate_auth_tokens(
 
         # Store refresh token via service
         await refresh_token_service.store_refresh_token(
-            refresh_token, user["username"], refresh_token_expires
+            refresh_token,
+            user["username"],
+            refresh_token_expires,
+            ip_address=ip_address,
+            user_agent=request.headers.get("user-agent"),
         )
 
         return Ok(
@@ -620,9 +609,7 @@ async def log_failed_login_attempt(
         logger.error(f"Failed to log login attempt: {str(e)}")
 
 
-async def log_successful_login(
-    user: dict[str, Any], ip_address: str, request: Request
-) -> None:
+async def log_successful_login(user: dict[str, Any], ip_address: str, request: Request) -> None:
     """Log a successful login."""
     try:
         await db.login_attempts.insert_one(
@@ -663,57 +650,16 @@ async def refresh_token(request: Request) -> Result[dict[str, Any], Exception]:
     """
     try:
         body = await request.json()
-        refresh_token = body.get("refresh_token")
+        refresh_token_value = body.get("refresh_token")
 
-        if not refresh_token:
+        if not refresh_token_value:
             return Fail(ValidationError("Refresh token is required"))
 
-        # Find refresh token in database
-        token_doc = await db.refresh_tokens.find_one(
-            {"token": refresh_token, "is_revoked": False}
-        )
-
-        if not token_doc:
+        refreshed = await refresh_token_service.refresh_access_token(refresh_token_value)
+        if not refreshed:
             return Fail(AuthenticationError("Invalid or expired refresh token"))
 
-        # Check if token is expired
-        if token_doc["expires_at"] < datetime.utcnow():
-            return Fail(AuthenticationError("Refresh token has expired"))
-
-        # Get user
-        user = await db.users.find_one({"_id": token_doc["user_id"]})
-        if not user:
-            return Fail(AuthenticationError("User not found"))
-
-        if not user.get("is_active", True):
-            return Fail(AuthorizationError("Account is deactivated"))
-
-        # Generate new access token
-        access_token = create_access_token({"sub": user["username"]})
-
-        # Update last_used_at for refresh token
-        await db.refresh_tokens.update_one(
-            {"token": refresh_token}, {"$set": {"last_used_at": datetime.utcnow()}}
-        )
-
-        # Return new tokens
-        return Ok(
-            {
-                "access_token": access_token,
-                "token_type": "bearer",
-                "expires_in": 900,  # 15 minutes
-                "refresh_token": refresh_token,  # Same refresh token
-                "user": {
-                    "id": str(user["_id"]),
-                    "username": user["username"],
-                    "full_name": user.get("full_name", ""),
-                    "role": user.get("role", "staff"),
-                    "email": user.get("email"),
-                    "is_active": user.get("is_active", True),
-                    "permissions": user.get("permissions", []),
-                },
-            }
-        )
+        return Ok(refreshed)
     except Exception as e:
         logger.error(f"Token refresh error: {str(e)}")
         return Fail(e)
@@ -730,14 +676,12 @@ async def logout(
     """
     try:
         body = await request.json()
-        refresh_token = body.get("refresh_token")
+        refresh_token_value = body.get("refresh_token")
 
-        if refresh_token:
-            # Revoke the refresh token
-            await db.refresh_tokens.update_one(
-                {"token": refresh_token, "user_id": current_user["_id"]},
-                {"$set": {"is_revoked": True, "revoked_at": datetime.utcnow()}},
-            )
+        if refresh_token_value:
+            payload = await refresh_token_service.verify_refresh_token(refresh_token_value)
+            if payload and payload.get("sub") == current_user.get("username"):
+                await refresh_token_service.revoke_token(refresh_token_value)
 
         return {"message": "Logged out successfully"}
     except Exception as e:
@@ -758,17 +702,13 @@ async def create_session(
     if not warehouse:
         raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
     if len(warehouse) < 2:
-        raise HTTPException(
-            status_code=400, detail="Warehouse name must be at least 2 characters"
-        )
+        raise HTTPException(status_code=400, detail="Warehouse name must be at least 2 characters")
     if len(warehouse) > 100:
         raise HTTPException(
             status_code=400, detail="Warehouse name must be less than 100 characters"
         )
     # Sanitize warehouse name (remove potentially dangerous characters)
-    warehouse = (
-        warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
-    )
+    warehouse = warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
 
     session = Session(
         warehouse=warehouse,
@@ -805,9 +745,7 @@ async def get_sessions(
 
     if current_user["role"] == "supervisor":
         total = await db.sessions.count_documents({})
-        sessions_cursor = (
-            db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
-        )
+        sessions_cursor = db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
     else:
         filter_query = {"staff_user": current_user["username"]}
         total = await db.sessions.count_documents(filter_query)
@@ -1043,9 +981,7 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
 
         # Transform results
         sessions_by_date = {item["_id"]: item["count"] for item in by_date}
-        variance_by_warehouse = {
-            item["_id"]: item["total_variance"] for item in by_warehouse
-        }
+        variance_by_warehouse = {item["_id"]: item["total_variance"] for item in by_warehouse}
         items_by_staff = {item["_id"]: item["total_items"] for item in by_staff}
 
         return {
@@ -1094,9 +1030,7 @@ async def get_session_by_id(
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(
-    erp_item: dict, line_data: CountLineCreate, variance: float
-) -> list[str]:
+def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
     """Detect high-risk correction patterns"""
     risk_flags = []
 
@@ -1122,17 +1056,11 @@ def detect_risk_flags(
         risk_flags.append("HIGH_VALUE_VARIANCE")
 
     # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (
-        not line_data.serial_numbers or len(line_data.serial_numbers) == 0
-    ):
+    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
         risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
 
     # Rule 5: Correction without reason when variance exists
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         risk_flags.append("MISSING_CORRECTION_REASON")
 
     # Rule 6: MRP change without reason
@@ -1161,9 +1089,7 @@ def detect_risk_flags(
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(
-    erp_mrp: float, counted_mrp: float, counted_qty: float
-) -> float:
+def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
@@ -1191,11 +1117,7 @@ async def create_count_line(
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
     # Validate mandatory correction reason for variance
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         raise HTTPException(
             status_code=400,
             detail="Correction reason is mandatory when variance exists",
@@ -1250,19 +1172,13 @@ async def create_count_line(
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
         "correction_reason": (
-            line_data.correction_reason.model_dump()
-            if line_data.correction_reason
-            else None
+            line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs]
-            if line_data.photo_proofs
-            else None
+            [p.model_dump() for p in line_data.photo_proofs] if line_data.photo_proofs else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump()
-            if line_data.correction_metadata
-            else None
+            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
         ),
         "approval_status": approval_status,
         "approval_by": None,

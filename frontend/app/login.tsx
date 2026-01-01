@@ -473,7 +473,7 @@ export default function LoginScreen() {
       width: 350,
       height: 350,
       borderRadius: 175,
-      backgroundColor: theme.colors.accent?.[600] || theme.colors.secondary[600],
+      backgroundColor: theme.colors.accent || theme.colors.primary[600],
       opacity: 0.1,
     },
   });

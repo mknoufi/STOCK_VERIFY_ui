@@ -12,7 +12,7 @@
  * - Haptic feedback
  */
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -117,6 +117,15 @@ export default function ScanScreen() {
   // Real-time updates via WebSocket
   const { lastMessage } = useWebSocket(sessionId);
 
+  const loadRecentItems = useCallback(async () => {
+    try {
+      const recent = await RecentItemsService.getRecent();
+      setRecentItems(recent.slice(0, 5)); // Get first 5 items
+    } catch (error) {
+      console.error("Failed to load recent items:", error);
+    }
+  }, []);
+
   useEffect(() => {
     if (lastMessage && lastMessage.type === "ITEM_VERIFIED") {
       __DEV__ && console.log("[ScanScreen] Real-time update received:", lastMessage);
@@ -127,7 +136,7 @@ export default function ScanScreen() {
       // Optionally refresh recent items or search results if they contain this item
       loadRecentItems();
     }
-  }, [lastMessage]);
+  }, [lastMessage, loadRecentItems]);
   const [scanFeedbackMessage, setScanFeedbackMessage] = useState("");
 
   // Animation
@@ -135,7 +144,7 @@ export default function ScanScreen() {
 
   useEffect(() => {
     loadRecentItems();
-  }, []);
+  }, [loadRecentItems]);
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
@@ -236,15 +245,6 @@ export default function ScanScreen() {
       setShowResults(false);
     }
   }, [debouncedSearchQuery, handleSearch]);
-
-  const loadRecentItems = async () => {
-    try {
-      const recent = await RecentItemsService.getRecent();
-      setRecentItems(recent.slice(0, 5)); // Get first 5 items
-    } catch (error) {
-      console.error("Failed to load recent items:", error);
-    }
-  };
 
   const quickActionsStyle = useAnimatedStyle(() => ({
     transform: [{ scale: quickActionsScale.value }],
@@ -366,7 +366,7 @@ export default function ScanScreen() {
     await handleLookup(confident.code);
   };
 
-  const handleLookup = async (barcode: string) => {
+  const handleLookup = useCallback(async (barcode: string) => {
     // Validate barcode with detailed error message
     const validation = validateBarcode(barcode);
     if (!validation.valid) {
@@ -443,9 +443,9 @@ export default function ScanScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadRecentItems, router, sessionId]);
 
-  const handleManualSearch = () => {
+  const handleManualSearch = useCallback(() => {
     if (searchQuery.trim()) {
       // Only trigger direct lookup if it looks like a barcode (starts with 51, 52, 53)
       // Otherwise, just let the search results stay (don't auto-select)
@@ -460,25 +460,30 @@ export default function ScanScreen() {
         Keyboard.dismiss();
       }
     }
-  };
+  }, [handleLookup, searchQuery]);
 
-  const handleSearchResultPress = async (item: any) => {
+  const handleSearchResultPress = useCallback(
+    async (item: any) => {
+      const code = item.barcode || item.item_code;
+      __DEV__ && console.log("Using code for lookup:", code);
 
-    const code = item.barcode || item.item_code;
-    __DEV__ && console.log("Using code for lookup:", code);
+      if (!code) return;
+      // Keep results visible until lookup finishes to avoid layout jump at the bottom
+      await handleLookup(code);
+      requestAnimationFrame(() => setShowResults(false));
+    },
+    [handleLookup],
+  );
 
-    if (!code) return;
-    // Keep results visible until lookup finishes to avoid layout jump at the bottom
-    await handleLookup(code);
-    requestAnimationFrame(() => setShowResults(false));
-  };
-
-  const handleRecentItemPress = (item: any) => {
-    const code = item.barcode || item.item_code;
-    if (code) {
-      handleLookup(code);
-    }
-  };
+  const handleRecentItemPress = useCallback(
+    (item: any) => {
+      const code = item.barcode || item.item_code;
+      if (code) {
+        void handleLookup(code);
+      }
+    },
+    [handleLookup],
+  );
 
   const _handleLogout = () => {
     hapticService.impact("medium");
@@ -515,6 +520,37 @@ export default function ScanScreen() {
     }
     setShowCloseSessionModal(true);
   };
+
+  const headerProps = useMemo(
+    () => ({
+      title: "Scan Items",
+      subtitle:
+        sessionType !== "STANDARD"
+          ? `Session: ${sessionId || "None"} • ${sessionType}`
+          : `Session: ${sessionId || "None"}`,
+      showBackButton: true,
+      showUsername: false,
+      showLogoutButton: true,
+      customRightContent: <SyncStatusPill />,
+    }),
+    [sessionId, sessionType],
+  );
+
+  const overlayContent = useMemo(
+    () => (
+      <>
+        <OfflineIndicator />
+        <ScanFeedback
+          visible={showScanFeedback}
+          type={scanFeedbackType}
+          title={scanFeedbackMessage}
+          onDismiss={() => setShowScanFeedback(false)}
+          duration={2000}
+        />
+      </>
+    ),
+    [scanFeedbackMessage, scanFeedbackType, showScanFeedback],
+  );
 
   if (isScanning) {
     return (
@@ -623,35 +659,14 @@ export default function ScanScreen() {
 
   return (
     <ScreenContainer
-      header={{
-        title: "Scan Items",
-        subtitle:
-          sessionType !== "STANDARD"
-            ? `Session: ${sessionId || "None"} • ${sessionType}`
-            : `Session: ${sessionId || "None"}`,
-        showBackButton: true,
-        showUsername: false,
-        showLogoutButton: true,
-        customRightContent: <SyncStatusPill />,
-      }}
+      header={headerProps}
       backgroundType="aurora"
       auroraVariant="primary"
       auroraIntensity="medium"
       contentMode="static"
       noPadding
       statusBarStyle="light"
-      overlay={
-        <>
-          <OfflineIndicator />
-          <ScanFeedback
-            visible={showScanFeedback}
-            type={scanFeedbackType}
-            title={scanFeedbackMessage}
-            onDismiss={() => setShowScanFeedback(false)}
-            duration={2000}
-          />
-        </>
-      }
+      overlay={overlayContent}
     >
       <ScrollView
         style={styles.scrollView}

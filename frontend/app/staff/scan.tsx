@@ -800,7 +800,7 @@ export default function ScanScreen() {
                                 </Text>
                               </View>
                             )}
-                            {item.batch_id && (
+                            {Boolean(item.batch_id) && (
                               <View
                                 style={[
                                   styles.batchBadge,
@@ -821,11 +821,13 @@ export default function ScanScreen() {
                               </View>
                             )}
                           </View>
-                          {(item.manual_barcode ||
-                            item.unit2_barcode ||
-                            item.unit_m_barcode) && (
+                          {Boolean(
+                            item.manual_barcode ||
+                              item.unit2_barcode ||
+                              item.unit_m_barcode,
+                          ) && (
                               <View style={styles.altBarcodesRow}>
-                                {item.manual_barcode && (
+                                {Boolean(item.manual_barcode) && (
                                   <View
                                     style={[
                                       styles.otherBarcodeBadge,
@@ -845,7 +847,7 @@ export default function ScanScreen() {
                                     </Text>
                                   </View>
                                 )}
-                                {item.unit2_barcode && (
+                                {Boolean(item.unit2_barcode) && (
                                   <View
                                     style={[
                                       styles.otherBarcodeBadge,
@@ -865,7 +867,7 @@ export default function ScanScreen() {
                                     </Text>
                                   </View>
                                 )}
-                                {item.unit_m_barcode && (
+                                {Boolean(item.unit_m_barcode) && (
                                   <View
                                     style={[
                                       styles.otherBarcodeBadge,
@@ -995,7 +997,7 @@ export default function ScanScreen() {
                       >
                         {item.item_code}
                       </Text>
-                      {item.batch_id && (
+                      {Boolean(item.batch_id) && (
                         <View
                           style={[
                             styles.batchBadge,

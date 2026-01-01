@@ -18,7 +18,6 @@ import {
   Text,
   Alert,
   StyleSheet,
-  ScrollView,
   FlatList,
   Platform,
   TouchableOpacity,
@@ -67,6 +66,7 @@ import { toastService } from "@/services/utils/toastService";
 import { localDb } from "@/db/localDb";
 import { OfflineIndicator } from "@/components/common/OfflineIndicator";
 import { validateBarcode } from "@/utils/validation";
+import { shouldAutoLookupBarcode, shouldDirectLookup } from "@/utils/scanHeuristics";
 
 type ScanSearchResultItem = any;
 
@@ -80,6 +80,8 @@ type ResultRowColors = {
   warning: string;
   success: string;
 };
+
+type ScreenBlockKey = "search" | "recent" | "stats" | "finish" | "spacer";
 
 const SearchResultRow = React.memo(
   ({
@@ -300,6 +302,12 @@ export default function ScanScreen() {
       searchAbortControllerRef.current = null;
       setSearchResults([]);
       setShowResults(false);
+      setIsSearching(false);
+      return;
+    }
+
+    // If this looks like a full barcode, prefer direct lookup instead of search.
+    if (shouldAutoLookupBarcode(query)) {
       setIsSearching(false);
       return;
     }
@@ -636,22 +644,13 @@ export default function ScanScreen() {
     }
   }, [loadRecentItems, router, sessionId]);
 
-  const shouldDirectLookup = useCallback((query: string) => {
-    // Numeric-only inputs are treated as barcodes.
-    if (/^\d+$/.test(query)) return true;
-
-    // Known barcode prefixes used in this deployment.
-    if (query.startsWith("51") || query.startsWith("52") || query.startsWith("53")) {
-      return true;
+  useEffect(() => {
+    const query = debouncedSearchQuery.trim();
+    if (!query || loading) return;
+    if (shouldAutoLookupBarcode(query)) {
+      void handleLookup(query);
     }
-
-    // Heuristic for item codes (no spaces, short, contains at least one digit).
-    if (/^[A-Za-z0-9_-]+$/.test(query) && /\d/.test(query) && query.length <= 12) {
-      return true;
-    }
-
-    return false;
-  }, []);
+  }, [debouncedSearchQuery, handleLookup, loading]);
 
   const handleManualSearch = useCallback(() => {
     const query = searchQuery.trim();
@@ -667,7 +666,7 @@ export default function ScanScreen() {
       setShowResults(true);
     }
     Keyboard.dismiss();
-  }, [handleLookup, searchQuery, shouldDirectLookup]);
+  }, [handleLookup, searchQuery]);
 
   const handleSearchResultPress = useCallback(
     async (item: any) => {
@@ -780,17 +779,382 @@ export default function ScanScreen() {
     [handleSearchResultPress],
   );
 
-  const renderSearchResult = useCallback(
-    ({ item }: { item: ScanSearchResultItem }) => (
-      <SearchResultRow item={item} colors={resultRowColors} onPress={handleResultPress} />
-    ),
-    [handleResultPress, resultRowColors],
+  const blocks = useMemo<ScreenBlockKey[]>(() => {
+    const items: ScreenBlockKey[] = ["search"];
+    if (recentItems.length > 0) items.push("recent");
+    items.push("stats", "finish", "spacer");
+    return items;
+  }, [recentItems.length]);
+
+  const renderBlock = useCallback(
+    ({ item }: { item: ScreenBlockKey }) => {
+      switch (item) {
+        case "search":
+          return (
+            <Animated.View entering={FadeInDown.delay(100).springify()}>
+              <GlassCard
+                variant="medium"
+                intensity={20}
+                elevation="md"
+                style={styles.searchCard}
+              >
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  Quick Search
+                </Text>
+                <View
+                  style={[
+                    styles.searchInputContainer,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="search"
+                    size={20}
+                    color={colors.textSecondary}
+                    style={styles.searchIcon}
+                  />
+                  <TextInput
+                    style={[styles.searchInput, { color: colors.text }]}
+                    placeholder="Enter barcode or item name..."
+                    placeholderTextColor={colors.muted}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleManualSearch}
+                    returnKeyType="search"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    spellCheck={false}
+                  />
+                  <View style={styles.searchActions}>
+                    {searchQuery.length > 0 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSearchQuery("");
+                          setSearchResults([]);
+                          setShowResults(false);
+                          setSearchMethod("standard");
+                        }}
+                        style={styles.clearButton}
+                      >
+                        <Ionicons
+                          name="close-circle"
+                          size={20}
+                          color={colors.muted}
+                        />
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      onPress={handleManualSearch}
+                      style={styles.aiButton}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name="arrow-forward-circle-outline"
+                        size={20}
+                        color={colors.accent}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setIsScanning(true)}
+                      style={styles.aiButton}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name="camera-outline"
+                        size={20}
+                        color={colors.accent}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Live Search Results */}
+                {showResults && (
+                  <View
+                    style={[
+                      styles.searchResultsContainer,
+                      { borderTopColor: colors.border },
+                    ]}
+                  >
+                    {isSearching ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.accent}
+                        style={{ padding: 10 }}
+                      />
+                    ) : searchResults.length > 0 ? (
+                      <View style={styles.resultsList}>
+                        {searchResults.map((resultItem: any, index: number) => {
+                          const key =
+                            resultItem?.barcode ||
+                            resultItem?.item_code ||
+                            resultItem?.id ||
+                            String(index);
+                          return (
+                            <SearchResultRow
+                              key={String(key)}
+                              item={resultItem}
+                              colors={resultRowColors}
+                              onPress={handleResultPress}
+                            />
+                          );
+                        })}
+                      </View>
+                    ) : (
+                      debouncedSearchQuery.length >= 2 && (
+                        <View style={styles.semanticSearchContainer}>
+                          <Text
+                            style={[
+                              styles.noResultsText,
+                              { color: colors.textSecondary },
+                            ]}
+                          >
+                            No direct matches found
+                          </Text>
+                          <TouchableOpacity
+                            style={[
+                              styles.semanticSearchButton,
+                              {
+                                borderColor: colors.accent + "30",
+                                backgroundColor: colors.accent + "05",
+                              },
+                            ]}
+                            onPress={handleSemanticSearch}
+                            disabled={isAISearching}
+                            activeOpacity={0.8}
+                          >
+                            {isAISearching ? (
+                              <ActivityIndicator
+                                size="small"
+                                color={colors.accent}
+                              />
+                            ) : (
+                              <>
+                                <Ionicons
+                                  name="sparkles-outline"
+                                  size={16}
+                                  color={colors.accent}
+                                />
+                                <Text
+                                  style={[
+                                    styles.semanticSearchText,
+                                    { color: colors.accent },
+                                  ]}
+                                >
+                                  Search by meaning (AI)
+                                </Text>
+                              </>
+                            )}
+                          </TouchableOpacity>
+                        </View>
+                      )
+                    )}
+                  </View>
+                )}
+              </GlassCard>
+            </Animated.View>
+          );
+        case "recent":
+          return (
+            <Animated.View entering={FadeInUp.delay(200).springify()}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Recent Items
+              </Text>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recentItemsContainer}
+                data={recentItems}
+                keyExtractor={(rowItem: any, index: number) =>
+                  rowItem.item_code || rowItem.barcode || String(index)
+                }
+                renderItem={({ item: rowItem }: { item: any }) => (
+                  <TouchableOpacity
+                    onPress={() => handleRecentItemPress(rowItem)}
+                    activeOpacity={0.7}
+                  >
+                    <GlassCard
+                      variant="light"
+                      intensity={15}
+                      elevation="sm"
+                      padding={16}
+                      style={styles.recentItemCard}
+                    >
+                      <View
+                        style={[
+                          styles.recentItemIcon,
+                          { backgroundColor: colors.accent + "15" },
+                        ]}
+                      >
+                        <Ionicons
+                          name="cube-outline"
+                          size={24}
+                          color={colors.accent}
+                        />
+                      </View>
+                      <View style={styles.resultCodeRow}>
+                        <Text
+                          style={[
+                            styles.recentItemCode,
+                            { color: colors.textSecondary },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {rowItem.item_code}
+                        </Text>
+                        {Boolean(rowItem.batch_id) && (
+                          <View
+                            style={[
+                              styles.batchBadge,
+                              {
+                                backgroundColor: colors.accent + "10",
+                                borderColor: colors.accent + "20",
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.batchBadgeText,
+                                { color: colors.accent },
+                              ]}
+                            >
+                              B
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        style={[styles.recentItemName, { color: colors.text }]}
+                        numberOfLines={2}
+                      >
+                        {rowItem.item_name || "Unknown Item"}
+                      </Text>
+                    </GlassCard>
+                  </TouchableOpacity>
+                )}
+              />
+            </Animated.View>
+          );
+        case "stats":
+          return (
+            <Animated.View entering={FadeInUp.delay(300).springify()}>
+              <GlassCard
+                variant="medium"
+                intensity={20}
+                elevation="md"
+                style={styles.statsCard}
+              >
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  Today&apos;s Progress
+                </Text>
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statValue, { color: colors.text }]}>
+                      0
+                    </Text>
+                    <Text
+                      style={[styles.statLabel, { color: colors.textSecondary }]}
+                    >
+                      Scanned
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.statDivider,
+                      { backgroundColor: colors.border },
+                    ]}
+                  />
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statValue, { color: colors.text }]}>
+                      0
+                    </Text>
+                    <Text
+                      style={[styles.statLabel, { color: colors.textSecondary }]}
+                    >
+                      Verified
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.statDivider,
+                      { backgroundColor: colors.border },
+                    ]}
+                  />
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statValue, { color: colors.text }]}>
+                      0
+                    </Text>
+                    <Text
+                      style={[styles.statLabel, { color: colors.textSecondary }]}
+                    >
+                      Pending
+                    </Text>
+                  </View>
+                </View>
+              </GlassCard>
+            </Animated.View>
+          );
+        case "finish":
+          return (
+            <Animated.View entering={FadeInUp.delay(400).springify()}>
+              <TouchableOpacity
+                style={[
+                  styles.finishRackButton,
+                  isFinishing && styles.finishRackButtonDisabled,
+                ]}
+                onPress={handleFinishRack}
+                disabled={isFinishing}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={appTheme.gradients.success}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.finishRackGradient}
+                >
+                  {isFinishing ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <>
+                      <Ionicons name="checkmark-circle" size={24} color="#FFF" />
+                      <Text style={styles.finishRackText}>Finish Rack</Text>
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        case "spacer":
+        default:
+          return <View style={{ height: 140 }} />;
+      }
+    },
+    [
+      appTheme.gradients.success,
+      colors,
+      debouncedSearchQuery.length,
+      handleFinishRack,
+      handleManualSearch,
+      handleRecentItemPress,
+      handleResultPress,
+      handleSearchResultPress,
+      handleSemanticSearch,
+      isAISearching,
+      isFinishing,
+      isSearching,
+      recentItems,
+      resultRowColors,
+      searchQuery.length,
+      searchResults,
+      setIsScanning,
+      showResults,
+    ],
   );
 
-  const keyExtractor = useCallback((item: ScanSearchResultItem, index: number) => {
-    const key = item?.barcode || item?.item_code || item?.id;
-    return key ? String(key) : String(index);
-  }, []);
+  const keyExtractor = useCallback((item: ScreenBlockKey) => item, []);
 
   if (isScanning) {
     return (
@@ -908,324 +1272,16 @@ export default function ScanScreen() {
       statusBarStyle="light"
       overlay={overlayContent}
     >
-      <ScrollView
+      <FlatList
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-      >
-        {/* Search Card */}
-        <Animated.View entering={FadeInDown.delay(100).springify()}>
-          <GlassCard
-            variant="medium"
-            intensity={20}
-            elevation="md"
-            style={styles.searchCard}
-          >
-            <Text style={[styles.cardTitle, { color: colors.text }]}>
-              Quick Search
-            </Text>
-            <View
-              style={[
-                styles.searchInputContainer,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-            >
-              <Ionicons
-                name="search"
-                size={20}
-                color={colors.textSecondary}
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Enter barcode or item name..."
-                placeholderTextColor={colors.muted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                onSubmitEditing={handleManualSearch}
-                returnKeyType="search"
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-              />
-              <View style={styles.searchActions}>
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchQuery("");
-                      setSearchResults([]);
-                      setShowResults(false);
-                      setSearchMethod("standard");
-                    }}
-                    style={styles.clearButton}
-                  >
-                    <Ionicons
-                      name="close-circle"
-                      size={20}
-                      color={colors.muted}
-                    />
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  onPress={() => setIsScanning(true)}
-                  style={styles.aiButton}
-                >
-                  <Ionicons
-                    name="camera-outline"
-                    size={20}
-                    color={colors.accent}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Live Search Results */}
-            {showResults && (
-              <View
-                style={[
-                  styles.searchResultsContainer,
-                  { borderTopColor: colors.border },
-                ]}
-              >
-                {isSearching ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={colors.accent}
-                    style={{ padding: 10 }}
-                  />
-                ) : searchResults.length > 0 ? (
-                  <FlatList
-                    style={styles.resultsList}
-                    contentContainerStyle={styles.resultsListContent as any}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                    data={searchResults}
-                    renderItem={renderSearchResult}
-                    keyExtractor={keyExtractor}
-                    initialNumToRender={10}
-                    windowSize={5}
-                    removeClippedSubviews={Platform.OS === "android"}
-                    maxToRenderPerBatch={10}
-                    updateCellsBatchingPeriod={16}
-                  />
-                ) : (
-                  debouncedSearchQuery.length >= 2 && (
-                    <View style={styles.semanticSearchContainer}>
-                      <Text
-                        style={[
-                          styles.noResultsText,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        No direct matches found
-                      </Text>
-                      <TouchableOpacity
-                        style={[
-                          styles.semanticSearchButton,
-                          {
-                            borderColor: colors.accent + "30",
-                            backgroundColor: colors.accent + "05",
-                          },
-                        ]}
-                        onPress={handleSemanticSearch}
-                        disabled={isAISearching}
-                      >
-                        {isAISearching ? (
-                          <ActivityIndicator
-                            size="small"
-                            color={colors.accent}
-                          />
-                        ) : (
-                          <>
-                            <Ionicons
-                              name="sparkles-outline"
-                              size={16}
-                              color={colors.accent}
-                            />
-                            <Text
-                              style={[
-                                styles.semanticSearchText,
-                                { color: colors.accent },
-                              ]}
-                            >
-                              Search by meaning (AI)
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  )
-                )}
-              </View>
-            )}
-          </GlassCard>
-        </Animated.View>
-
-        {/* Recent Items */}
-        {recentItems.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(200).springify()}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Recent Items
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.recentItemsContainer}
-            >
-              {recentItems.map((item, index) => (
-                <TouchableOpacity
-                  key={item.item_code || item.barcode || String(index)}
-                  onPress={() => handleRecentItemPress(item)}
-                  activeOpacity={0.7}
-                >
-                  <GlassCard
-                    variant="light"
-                    intensity={15}
-                    elevation="sm"
-                    padding={16}
-                    style={styles.recentItemCard}
-                  >
-                    <View
-                      style={[
-                        styles.recentItemIcon,
-                        { backgroundColor: colors.accent + "15" },
-                      ]}
-                    >
-                      <Ionicons
-                        name="cube-outline"
-                        size={24}
-                        color={colors.accent}
-                      />
-                    </View>
-                    <View style={styles.resultCodeRow}>
-                      <Text
-                        style={[
-                          styles.recentItemCode,
-                          { color: colors.textSecondary },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {item.item_code}
-                      </Text>
-                      {Boolean(item.batch_id) && (
-                        <View
-                          style={[
-                            styles.batchBadge,
-                            {
-                              backgroundColor: colors.accent + "10",
-                              borderColor: colors.accent + "20",
-                            },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.batchBadgeText,
-                              { color: colors.accent },
-                            ]}
-                          >
-                            B
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text
-                      style={[styles.recentItemName, { color: colors.text }]}
-                      numberOfLines={2}
-                    >
-                      {item.item_name || "Unknown Item"}
-                    </Text>
-                  </GlassCard>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Animated.View>
-        )}
-
-        {/* Stats Card */}
-        <Animated.View entering={FadeInUp.delay(300).springify()}>
-          <GlassCard
-            variant="medium"
-            intensity={20}
-            elevation="md"
-            style={styles.statsCard}
-          >
-            <Text style={[styles.cardTitle, { color: colors.text }]}>
-              Today&apos;s Progress
-            </Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>
-                  0
-                </Text>
-                <Text
-                  style={[styles.statLabel, { color: colors.textSecondary }]}
-                >
-                  Scanned
-                </Text>
-              </View>
-              <View
-                style={[styles.statDivider, { backgroundColor: colors.border }]}
-              />
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>
-                  0
-                </Text>
-                <Text
-                  style={[styles.statLabel, { color: colors.textSecondary }]}
-                >
-                  Verified
-                </Text>
-              </View>
-              <View
-                style={[styles.statDivider, { backgroundColor: colors.border }]}
-              />
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>
-                  0
-                </Text>
-                <Text
-                  style={[styles.statLabel, { color: colors.textSecondary }]}
-                >
-                  Pending
-                </Text>
-              </View>
-            </View>
-          </GlassCard>
-        </Animated.View>
-
-        {/* Finish Rack Button */}
-        <Animated.View entering={FadeInUp.delay(400).springify()}>
-          <TouchableOpacity
-            style={[
-              styles.finishRackButton,
-              isFinishing && styles.finishRackButtonDisabled,
-            ]}
-            onPress={handleFinishRack}
-            disabled={isFinishing}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={appTheme.gradients.success}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.finishRackGradient}
-            >
-              {isFinishing ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-                  <Text style={styles.finishRackText}>Finish Rack</Text>
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Spacing for floating button */}
-        <View style={{ height: 120 }} />
-      </ScrollView>
+        showsVerticalScrollIndicator={false}
+        data={blocks}
+        renderItem={renderBlock}
+        keyExtractor={keyExtractor}
+        removeClippedSubviews={Platform.OS === "android"}
+      />
 
       {/* Floating Scan Button */}
       <View style={styles.floatingButtonContainer}>

@@ -237,7 +237,17 @@ export default function RootLayout() {
         try {
           const themePromise = ThemeService.initialize();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
+          let themeTimeout: ReturnType<typeof setTimeout> | undefined;
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            themeTimeout = setTimeout(
+              () => reject(new Error("Theme initialization timeout")),
+              1000,
+            );
+          });
+          await Promise.race([themePromise, timeoutPromise]);
+          if (themeTimeout) {
+            clearTimeout(themeTimeout);
+          }
               () => reject(new Error("Theme initialization timeout")),
               1000,
             ),

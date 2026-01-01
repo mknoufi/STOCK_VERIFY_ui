@@ -3,7 +3,7 @@
  * Manages workflow state (steps, serial inputs, etc.)
  */
 import { useState, useCallback } from "react";
-import { WorkflowState, SerialInput } from "@/types/scan";
+import type { WorkflowState, SerialInput } from "@/types/scan";
 
 const initialState: WorkflowState = {
   step: "scan",

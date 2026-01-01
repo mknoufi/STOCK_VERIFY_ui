@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  StyleSheet,
-  ViewStyle,
-  ActivityIndicator,
-} from "react-native";
+import { View, StyleSheet, ViewStyle, ActivityIndicator } from "react-native";
 import { colorPalette } from "@/theme/designTokens";
 
 export type SpinnerType =

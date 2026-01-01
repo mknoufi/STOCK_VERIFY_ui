@@ -7,9 +7,9 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAuthStore } from "../src/store/authStore";
 import { AuroraBackground } from "../src/components/ui/AuroraBackground";
 import { GlassCard } from "../src/components/ui/GlassCard";
-import { useThemeContext } from "../src/theme/ThemeContext";
+import { useThemeContext } from "../src/context/ThemeContext";
 import type { AppTheme } from "../src/theme/themes";
-import { getRouteForRole, UserRole } from "../src/utils/roleNavigation";
+import { getRouteForRole, type UserRole } from "../src/utils/roleNavigation";
 
 export default function Index() {
   const router = useRouter();
@@ -47,8 +47,13 @@ export default function Index() {
             </View>
 
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.colors.accentLight} />
-              <Text style={styles.loadingText}>Initializing Secure Environment...</Text>
+              <ActivityIndicator
+                size="large"
+                color={theme.colors.accentLight}
+              />
+              <Text style={styles.loadingText}>
+                Initializing Secure Environment...
+              </Text>
             </View>
           </GlassCard>
         </Animated.View>
@@ -80,7 +85,7 @@ const createStyles = (theme: AppTheme) =>
     card: {
       width: "100%",
       alignItems: "center",
-      paddingVertical: theme.spacing.xxl,
+      paddingVertical: theme.spacing.xl,
     },
     logoContainer: {
       alignItems: "center",
@@ -108,7 +113,7 @@ const createStyles = (theme: AppTheme) =>
     title: {
       fontSize: 28,
       fontWeight: "600",
-      color: theme.colors.text,
+      color: theme.colors.text.primary,
       textAlign: "center",
       marginBottom: theme.spacing.xs,
       letterSpacing: -0.25,
@@ -116,7 +121,7 @@ const createStyles = (theme: AppTheme) =>
     subtitle: {
       fontSize: 16,
       fontWeight: "400",
-      color: theme.colors.textSecondary,
+      color: theme.colors.text.secondary,
       textAlign: "center",
       letterSpacing: 0.5,
     },
@@ -127,7 +132,7 @@ const createStyles = (theme: AppTheme) =>
     loadingText: {
       fontSize: 14,
       fontWeight: "400",
-      color: theme.colors.muted,
+      color: theme.colors.text.muted,
     },
     versionText: {
       position: "absolute",

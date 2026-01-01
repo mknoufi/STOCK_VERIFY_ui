@@ -49,7 +49,8 @@ export const authService = {
         }
 
         // Update axios defaults
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+        apiClient.defaults.headers.common["Authorization"] =
+          `Bearer ${access_token}`;
 
         return access_token;
       }
@@ -82,5 +83,5 @@ export const authService = {
     await useAuthStore.getState().logout();
     await secureStorage.removeItem(TOKEN_STORAGE_KEY);
     await secureStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-  }
+  },
 };

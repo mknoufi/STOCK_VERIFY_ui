@@ -11,9 +11,15 @@
 
 import React from "react";
 import { Text, TextProps, useWindowDimensions, Platform } from "react-native";
-import { useThemeContext } from "../../theme/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
-export type TextVariant = "display" | "heading" | "subheading" | "body" | "label" | "caption";
+export type TextVariant =
+  | "display"
+  | "heading"
+  | "subheading"
+  | "body"
+  | "label"
+  | "caption";
 
 export interface ResponsiveTextProps extends TextProps {
   variant?: TextVariant;
@@ -44,7 +50,7 @@ export const ResponsiveText: React.FC<ResponsiveTextProps> = ({
   ...props
 }) => {
   const { width } = useWindowDimensions();
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
   const isTablet = width > 768;
 
   // Responsive font size scaling

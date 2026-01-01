@@ -8,7 +8,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { useThemeContext } from "../../theme/ThemeContext";
+import { useTheme } from "../../hooks/useTheme";
 import { useSettingsStore } from "../../store/settingsStore";
 import { ThemePicker } from "./ThemePicker";
 import { PatternPicker } from "./PatternPicker";
@@ -27,7 +27,7 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
   scrollable = true,
   compact = false,
 }) => {
-  const { theme } = useThemeContext();
+  const { colors } = useTheme();
   const { settings, setSetting } = useSettingsStore();
 
   const handleFontSizeChange = (value: number) => {
@@ -44,11 +44,11 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
       {showTitle && (
         <Animated.View entering={FadeInDown.delay(0).springify()}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.colors.text }]}>
+            <Text style={[styles.title, { color: colors.text }]}>
               Appearance
             </Text>
             <Text
-              style={[styles.subtitle, { color: theme.colors.textSecondary }]}
+              style={[styles.subtitle, { color: colors.textSecondary }]}
             >
               Customize the look and feel of your app
             </Text>
@@ -104,31 +104,31 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
       {/* Preview Card */}
       <Animated.View entering={FadeInDown.delay(450).springify()}>
         <GlassCard variant="strong" padding={20} style={styles.section}>
-          <Text style={[styles.previewTitle, { color: theme.colors.text }]}>
+          <Text style={[styles.previewTitle, { color: colors.text }]}>
             Preview
           </Text>
           <View
             style={[
               styles.previewBox,
-              { backgroundColor: theme.colors.background },
+              { backgroundColor: colors.background },
             ]}
           >
             <View
               style={[
                 styles.previewHeader,
-                { backgroundColor: theme.colors.surface },
+                { backgroundColor: colors.surface },
               ]}
             >
               <View
                 style={[
                   styles.previewDot,
-                  { backgroundColor: theme.colors.accent },
+                  { backgroundColor: colors.accent },
                 ]}
               />
               <View
                 style={[
                   styles.previewLine,
-                  { backgroundColor: theme.colors.text, width: "40%" },
+                  { backgroundColor: colors.text, width: "40%" },
                 ]}
               />
             </View>
@@ -136,20 +136,20 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
               <View
                 style={[
                   styles.previewCard,
-                  { backgroundColor: theme.colors.surface },
+                  { backgroundColor: colors.surface },
                 ]}
               >
                 <View
                   style={[
                     styles.previewLine,
-                    { backgroundColor: theme.colors.text, width: "60%" },
+                    { backgroundColor: colors.text, width: "60%" },
                   ]}
                 />
                 <View
                   style={[
                     styles.previewLine,
                     {
-                      backgroundColor: theme.colors.textSecondary,
+                      backgroundColor: colors.textSecondary,
                       width: "80%",
                     },
                   ]}
@@ -158,20 +158,20 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
               <View
                 style={[
                   styles.previewCard,
-                  { backgroundColor: theme.colors.surface },
+                  { backgroundColor: colors.surface },
                 ]}
               >
                 <View
                   style={[
                     styles.previewLine,
-                    { backgroundColor: theme.colors.text, width: "50%" },
+                    { backgroundColor: colors.text, width: "50%" },
                   ]}
                 />
                 <View
                   style={[
                     styles.previewLine,
                     {
-                      backgroundColor: theme.colors.textSecondary,
+                      backgroundColor: colors.textSecondary,
                       width: "70%",
                     },
                   ]}
@@ -181,7 +181,7 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
             <View
               style={[
                 styles.previewButton,
-                { backgroundColor: theme.colors.accent },
+                { backgroundColor: colors.accent },
               ]}
             >
               <View

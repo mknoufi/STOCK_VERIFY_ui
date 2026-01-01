@@ -11,7 +11,7 @@ import {
   Modal,
   StyleSheet,
 } from "react-native";
-import { VarianceReason } from "@/types/scan";
+import type { VarianceReason } from "@/types/scan";
 
 interface VarianceReasonModalProps {
   visible: boolean;

@@ -12,13 +12,13 @@
  * - Haptic feedback
  */
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
   Alert,
   StyleSheet,
-  ScrollView,
+  FlatList,
   Platform,
   TouchableOpacity,
   TextInput,
@@ -51,9 +51,10 @@ import {
 } from "@/components/ui";
 import type { ScanFeedbackType } from "@/components/ui";
 import { theme } from "@/styles/modernDesignSystem";
-import { useThemeContext } from "@/theme/ThemeContext";
+import { useThemeContext } from "@/context/ThemeContext";
 import {
   getItemByBarcode,
+  getCountLines,
   searchItems,
   updateSessionStatus,
 } from "@/services/api/api";
@@ -66,9 +67,146 @@ import { toastService } from "@/services/utils/toastService";
 import { localDb } from "@/db/localDb";
 import { OfflineIndicator } from "@/components/common/OfflineIndicator";
 import { validateBarcode } from "@/utils/validation";
+import { shouldAutoLookupBarcode, shouldDirectLookup } from "@/utils/scanHeuristics";
+
+type ScanSearchResultItem = any;
+
+type ResultRowColors = {
+  border: string;
+  surfaceElevated: string;
+  text: string;
+  textSecondary: string;
+  muted: string;
+  accent: string;
+  warning: string;
+  success: string;
+};
+
+type ScreenBlockKey = "search" | "recent" | "stats" | "finish" | "spacer";
+
+const SearchResultRow = React.memo(
+  ({
+    item,
+    colors,
+    onPress,
+  }: {
+    item: ScanSearchResultItem;
+    colors: ResultRowColors;
+    onPress: (item: ScanSearchResultItem) => void;
+  }) => {
+    return (
+      <TouchableOpacity
+        style={[styles.resultItem, { borderBottomColor: colors.border }]}
+        onPress={() => onPress(item)}
+        activeOpacity={0.7}
+      >
+        <View
+          style={[
+            styles.resultIcon,
+            { backgroundColor: colors.surfaceElevated },
+          ]}
+        >
+          <Ionicons name="cube-outline" size={18} color={colors.textSecondary} />
+        </View>
+        <View style={styles.resultInfo}>
+          <Text style={[styles.resultName, { color: colors.text }]} numberOfLines={1}>
+            {item.item_name || item.name}
+          </Text>
+          <View style={styles.resultCodeRow}>
+            <Text style={[styles.resultCode, { color: colors.textSecondary }]}>
+              {item.barcode || item.item_code || "—"}
+            </Text>
+            {item.mrp != null && item.mrp > 0 && (
+              <View
+                style={[
+                  styles.mrpBadge,
+                  {
+                    backgroundColor: colors.warning + "15",
+                    borderColor: colors.warning + "30",
+                  },
+                ]}
+              >
+                <Text style={[styles.mrpBadgeText, { color: colors.warning }]}>
+                  ₹{item.mrp}
+                </Text>
+              </View>
+            )}
+            {Boolean(item.batch_id) && (
+              <View
+                style={[
+                  styles.batchBadge,
+                  {
+                    backgroundColor: colors.accent + "10",
+                    borderColor: colors.accent + "20",
+                  },
+                ]}
+              >
+                <Text style={[styles.batchBadgeText, { color: colors.accent }]}>
+                  Batch: {item.batch_id}
+                </Text>
+              </View>
+            )}
+          </View>
+          {Boolean(item.manual_barcode || item.unit2_barcode || item.unit_m_barcode) && (
+            <View style={styles.altBarcodesRow}>
+              {Boolean(item.manual_barcode) && (
+                <View
+                  style={[
+                    styles.otherBarcodeBadge,
+                    {
+                      backgroundColor: colors.success + "10",
+                      borderColor: colors.success + "20",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>
+                    Manual: {item.manual_barcode}
+                  </Text>
+                </View>
+              )}
+              {Boolean(item.unit2_barcode) && (
+                <View
+                  style={[
+                    styles.otherBarcodeBadge,
+                    {
+                      backgroundColor: colors.success + "10",
+                      borderColor: colors.success + "20",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>
+                    Unit2: {item.unit2_barcode}
+                  </Text>
+                </View>
+              )}
+              {Boolean(item.unit_m_barcode) && (
+                <View
+                  style={[
+                    styles.otherBarcodeBadge,
+                    {
+                      backgroundColor: colors.success + "10",
+                      borderColor: colors.success + "20",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>
+                    UnitM: {item.unit_m_barcode}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+        <Ionicons name="chevron-forward" size={16} color={colors.muted} />
+      </TouchableOpacity>
+    );
+  },
+);
+
+SearchResultRow.displayName = "SearchResultRow";
 
 export default function ScanScreen() {
-  const { theme: appTheme, isDark } = useThemeContext();
+  const { themeLegacy: appTheme, isDark } = useThemeContext();
   const { colors } = appTheme;
   const { width } = useWindowDimensions();
   const { sessionId: rawSessionId } = useLocalSearchParams();
@@ -80,9 +218,17 @@ export default function ScanScreen() {
   const { sessionType } = useScanSessionStore();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const isMountedRef = useRef(true);
+  const searchRequestIdRef = useRef(0);
+  const semanticRequestIdRef = useRef(0);
+  const searchAbortControllerRef = useRef<AbortController | null>(null);
+  const semanticAbortControllerRef = useRef<AbortController | null>(null);
 
   // Multi-read validation for accurate scanning
-  const scanBufferRef = useRef<{ code: string; count: number; timestamp: number }[]>([]);
+  const scanBufferRef = useRef<
+    { code: string; count: number; timestamp: number }[]
+  >([]);
   const SCAN_CONFIDENCE_THRESHOLD = 2; // Require 2 consistent reads
   const SCAN_BUFFER_TIMEOUT = 1500; // Clear buffer after 1.5s of no scans
   const SCAN_BUFFER_MAX_SIZE = 5; // Keep last 5 reads
@@ -95,7 +241,9 @@ export default function ScanScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isAISearching, setIsAISearching] = useState(false);
-  const [_searchMethod, setSearchMethod] = useState<"standard" | "semantic">("standard");
+  const [_searchMethod, setSearchMethod] = useState<"standard" | "semantic">(
+    "standard",
+  );
   const [scanned, setScanned] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showCloseSessionModal, setShowCloseSessionModal] = useState(false);
@@ -112,17 +260,65 @@ export default function ScanScreen() {
   // Real-time updates via WebSocket
   const { lastMessage } = useWebSocket(sessionId);
 
+  const loadRecentItems = useCallback(async () => {
+    try {
+      const recent = await RecentItemsService.getRecent();
+      if (!isMountedRef.current) return;
+      setRecentItems(recent.slice(0, 5)); // Get first 5 items
+    } catch (error) {
+      console.error("Failed to load recent items:", error);
+    }
+  }, []);
+
+  const [progress, setProgress] = useState({
+    scanned: 0,
+    verified: 0,
+    pending: 0,
+  });
+  const [progressLoading, setProgressLoading] = useState(false);
+
+  const loadProgress = useCallback(async () => {
+    if (!sessionId) {
+      setProgress({ scanned: 0, verified: 0, pending: 0 });
+      return;
+    }
+
+    setProgressLoading(true);
+    try {
+      const lines = await getCountLines(sessionId as string);
+      const safeLines = Array.isArray(lines) ? lines : [];
+      const verified = safeLines.filter((l: any) => l?.status === "approved").length;
+      const scanned = safeLines.length;
+      const pending = Math.max(0, scanned - verified);
+      setProgress({ scanned, verified, pending });
+    } catch {
+      // Non-fatal: keep last progress snapshot
+    } finally {
+      setProgressLoading(false);
+    }
+  }, [sessionId]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      searchAbortControllerRef.current?.abort();
+      semanticAbortControllerRef.current?.abort();
+    };
+  }, []);
+
   useEffect(() => {
     if (lastMessage && lastMessage.type === "ITEM_VERIFIED") {
-      console.log("[ScanScreen] Real-time update received:", lastMessage);
+      __DEV__ && console.log("[ScanScreen] Real-time update received:", lastMessage);
       toastService.show(
         `Item ${lastMessage.item_code} verified by ${lastMessage.user}`,
-        "info"
+        "info",
       );
       // Optionally refresh recent items or search results if they contain this item
       loadRecentItems();
+      void loadProgress();
     }
-  }, [lastMessage]);
+  }, [lastMessage, loadRecentItems, loadProgress]);
   const [scanFeedbackMessage, setScanFeedbackMessage] = useState("");
 
   // Animation
@@ -130,51 +326,102 @@ export default function ScanScreen() {
 
   useEffect(() => {
     loadRecentItems();
-  }, []);
+    void loadProgress();
+    const interval = setInterval(() => void loadProgress(), 15000);
+    return () => clearInterval(interval);
+  }, [loadRecentItems, loadProgress]);
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
+      searchAbortControllerRef.current?.abort();
+      searchAbortControllerRef.current = null;
       setSearchResults([]);
       setShowResults(false);
+      setIsSearching(false);
       return;
     }
 
+    // If this looks like a full barcode, prefer direct lookup instead of search.
+    if (shouldAutoLookupBarcode(query)) {
+      setIsSearching(false);
+      return;
+    }
+
+    searchAbortControllerRef.current?.abort();
+    const controller = new AbortController();
+    searchAbortControllerRef.current = controller;
+
+    const requestId = ++searchRequestIdRef.current;
     setIsSearching(true);
     setSearchMethod("standard");
     try {
-      const results = await searchItems(query);
+      const results = await searchItems(query, { signal: controller.signal });
+      if (!isMountedRef.current || requestId !== searchRequestIdRef.current) {
+        return;
+      }
       setSearchResults(results);
       setShowResults(true);
-    } catch (_error) {
+    } catch (_error: any) {
+      if (_error?.name === "CanceledError" || _error?.code === "ERR_CANCELED") {
+        return;
+      }
       console.error("Search error:", _error);
     } finally {
+      if (!isMountedRef.current || requestId !== searchRequestIdRef.current) {
+        return;
+      }
       setIsSearching(false);
     }
   }, []);
 
-  const handleSemanticSearch = async () => {
+  const handleSemanticSearch = useCallback(async () => {
     if (!searchQuery || searchQuery.length < 2) return;
 
+    semanticAbortControllerRef.current?.abort();
+    const controller = new AbortController();
+    semanticAbortControllerRef.current = controller;
+
+    const requestId = ++semanticRequestIdRef.current;
     setIsAISearching(true);
     try {
-      const results = await searchItemsSemantic(searchQuery);
+      const results = await searchItemsSemantic(searchQuery, 20, {
+        signal: controller.signal,
+      });
+      if (!isMountedRef.current || requestId !== semanticRequestIdRef.current) {
+        return;
+      }
       if (results.length > 0) {
         setSearchResults(results);
         setSearchMethod("semantic");
         setShowResults(true);
         hapticService.scanSuccess();
       } else {
-        toastService.show("No semantic matches found for your query", { type: "info" });
+        toastService.show("No semantic matches found for your query", {
+          type: "info",
+        });
       }
-    } catch {
+    } catch (error: any) {
+      if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+        return;
+      }
       toastService.show("Failed to perform semantic search", { type: "error" });
     } finally {
+      if (!isMountedRef.current || requestId !== semanticRequestIdRef.current) {
+        return;
+      }
       setIsAISearching(false);
     }
-  };
+  }, [searchQuery]);
 
   const handleVisualSearch = async () => {
     if (!cameraRef.current) return;
+
+    if (!isCameraReady) {
+      toastService.show("Camera is initializing, please wait...", {
+        type: "info",
+      });
+      return;
+    }
 
     try {
       setIsAISearching(true);
@@ -185,8 +432,10 @@ export default function ScanScreen() {
       });
 
       if (photo && photo.uri) {
+        if (!isMountedRef.current) return;
         setLoading(true);
         const results = await identifyItem(photo.uri);
+        if (!isMountedRef.current) return;
 
         if (results.length > 0) {
           setSearchResults(results);
@@ -196,15 +445,22 @@ export default function ScanScreen() {
           setSearchQuery(""); // Clear text search when using visual
           hapticService.scanSuccess();
         } else {
-          toastService.show("Could not identify the item. Please try a different angle or manual search.", { type: "warning" });
+          toastService.show(
+            "Could not identify the item. Please try a different angle or manual search.",
+            { type: "warning" },
+          );
         }
       }
     } catch (error) {
       console.error("Visual search error:", error);
-      toastService.show("Failed to process image for identification", { type: "error" });
+      toastService.show("Failed to process image for identification", {
+        type: "error",
+      });
     } finally {
-      setIsAISearching(false);
-      setLoading(false);
+      if (isMountedRef.current) {
+        setIsAISearching(false);
+        setLoading(false);
+      }
     }
   };
 
@@ -217,15 +473,6 @@ export default function ScanScreen() {
       setShowResults(false);
     }
   }, [debouncedSearchQuery, handleSearch]);
-
-  const loadRecentItems = async () => {
-    try {
-      const recent = await RecentItemsService.getRecent();
-      setRecentItems(recent.slice(0, 5)); // Get first 5 items
-    } catch (error) {
-      console.error("Failed to load recent items:", error);
-    }
-  };
 
   const quickActionsStyle = useAnimatedStyle(() => ({
     transform: [{ scale: quickActionsScale.value }],
@@ -244,17 +491,47 @@ export default function ScanScreen() {
     }
   };
 
-  const handleScanPress = () => {
+  const handleScanPress = useCallback(async () => {
     hapticService.impact("heavy");
 
-    if (!permission?.granted) {
-      requestPermission();
+    if (Platform.OS === "web") {
+      toastService.show("Camera scanning isn’t supported on web. Use manual search.", {
+        type: "info",
+      });
       return;
     }
+
+    if (!permission) {
+      // Permissions are still loading
+      return;
+    }
+
+    if (!permission.granted) {
+      if (permission.canAskAgain) {
+        const result = await requestPermission();
+        if (!result.granted) {
+          Alert.alert(
+            "Permission Required",
+            "Camera permission is needed to scan items.",
+            [{ text: "OK" }],
+          );
+          return;
+        }
+      } else {
+        Alert.alert(
+          "Permission Required",
+          "Please enable camera permission in your device settings to scan items.",
+          [{ text: "OK" }],
+        );
+        return;
+      }
+    }
+
     setScanned(false); // Reset scanned state when opening camera
     scanBufferRef.current = []; // Clear scan buffer for fresh start
     setIsScanning(true);
-  };
+    setIsCameraReady(false); // Reset ready state
+  }, [permission, requestPermission]);
 
   const handleBarcodeScan = async ({ data }: { data: string }) => {
     if (scanned) return; // Prevent multiple scans
@@ -264,12 +541,12 @@ export default function ScanScreen() {
 
     // Clean old entries from buffer (older than timeout)
     scanBufferRef.current = scanBufferRef.current.filter(
-      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT
+      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT,
     );
 
     // Find existing entry for this barcode
     const existingIndex = scanBufferRef.current.findIndex(
-      (entry) => entry.code === trimmedData
+      (entry) => entry.code === trimmedData,
     );
 
     if (existingIndex >= 0 && scanBufferRef.current[existingIndex]) {
@@ -292,7 +569,7 @@ export default function ScanScreen() {
 
     // Find the barcode with highest confidence (most reads)
     const confident = scanBufferRef.current.find(
-      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD
+      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD,
     );
 
     // Only proceed if we have confident read
@@ -309,7 +586,9 @@ export default function ScanScreen() {
     hapticService.scanSuccess();
 
     // Deduplication check
-    const { isDuplicate } = scanDeduplicationService.checkDuplicate(confident.code);
+    const { isDuplicate } = scanDeduplicationService.checkDuplicate(
+      confident.code,
+    );
     if (isDuplicate) {
       hapticService.notification("warning");
       // Show visual feedback for duplicate
@@ -322,7 +601,7 @@ export default function ScanScreen() {
     await handleLookup(confident.code);
   };
 
-  const handleLookup = async (barcode: string) => {
+  const handleLookup = useCallback(async (barcode: string) => {
     // Validate barcode with detailed error message
     const validation = validateBarcode(barcode);
     if (!validation.valid) {
@@ -335,9 +614,11 @@ export default function ScanScreen() {
     }
 
     const sanitized = validation.value!;
-    setLoading(true);
-    setSearchQuery(""); // Clear search query on lookup
-    setShowResults(false); // Hide results
+    if (isMountedRef.current) {
+      setLoading(true);
+      setSearchQuery(""); // Clear search query on lookup
+      setShowResults(false); // Hide results
+    }
 
     try {
       let item: any;
@@ -347,13 +628,14 @@ export default function ScanScreen() {
       } catch (e) {
         // As a last resort, try sqlite local DB (if present).
         try {
-          console.log("Lookup failed, trying local DB fallback...");
+          __DEV__ && console.log("Lookup failed, trying local DB fallback...");
           item = await localDb.getItemByBarcode(sanitized);
         } catch {
           throw e;
         }
       }
 
+      if (!isMountedRef.current) return;
       if (item) {
         hapticService.scanSuccess();
 
@@ -363,10 +645,10 @@ export default function ScanScreen() {
         setShowScanFeedback(true);
 
         // Track recent
-        console.log("Adding to recent items service...");
+        __DEV__ && console.log("Adding to recent items service...");
         try {
           await RecentItemsService.addRecent(item.item_code, item);
-          console.log("Added to recent items.");
+          __DEV__ && console.log("Added to recent items.");
         } catch (e) {
           console.error("Failed to add recent item:", e);
         }
@@ -375,15 +657,13 @@ export default function ScanScreen() {
         // Navigate to detail - use barcode (what was scanned) not item_code
         // The barcode is what the user scanned and what the API can look up
         const navigationBarcode = item.barcode || sanitized;
-        console.log("=== NAVIGATION DEBUG ===");
-        console.log("item.barcode:", item.barcode);
-        console.log("sanitized input:", sanitized);
-        console.log("final navigationBarcode:", navigationBarcode);
-        console.log("Full item before navigation:", JSON.stringify(item, null, 2));
 
         router.push({
           pathname: "/staff/item-detail",
-          params: { barcode: navigationBarcode, sessionId: sessionId as string },
+          params: {
+            barcode: navigationBarcode,
+            sessionId: sessionId as string,
+          },
         } as any);
       } else {
         hapticService.scanError();
@@ -393,51 +673,65 @@ export default function ScanScreen() {
         setShowScanFeedback(true);
       }
     } catch (error: any) {
+      if (!isMountedRef.current) return;
       hapticService.scanError();
       // Prefer inline feedback instead of a modal to avoid interrupting scanning.
       setScanFeedbackType("error");
       setScanFeedbackMessage(error?.message || "Failed to lookup item");
       setShowScanFeedback(true);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleManualSearch = () => {
-    if (searchQuery.trim()) {
-      // Only trigger direct lookup if it looks like a barcode (starts with 51, 52, 53)
-      // Otherwise, just let the search results stay (don't auto-select)
-      if (searchQuery.startsWith("51") || searchQuery.startsWith("52") || searchQuery.startsWith("53")) {
-        handleLookup(searchQuery);
-      } else {
-        // Ensure results are shown (they should be from debounce)
-        Keyboard.dismiss();
+      if (isMountedRef.current) {
+        setLoading(false);
       }
     }
-  };
+  }, [loadRecentItems, router, sessionId]);
 
-  const handleSearchResultPress = async (item: any) => {
-    // Debug: Log the full item to understand what fields are available
-    console.log("=== handleSearchResultPress DEBUG ===");
-    console.log("Full item:", JSON.stringify(item, null, 2));
-    console.log("item.barcode:", item.barcode);
-    console.log("item.item_code:", item.item_code);
-
-    const code = item.barcode || item.item_code;
-    console.log("Using code for lookup:", code);
-
-    if (!code) return;
-    // Keep results visible until lookup finishes to avoid layout jump at the bottom
-    await handleLookup(code);
-    requestAnimationFrame(() => setShowResults(false));
-  };
-
-  const handleRecentItemPress = (item: any) => {
-    const code = item.barcode || item.item_code;
-    if (code) {
-      handleLookup(code);
+  useEffect(() => {
+    const query = debouncedSearchQuery.trim();
+    if (!query || loading) return;
+    if (shouldAutoLookupBarcode(query)) {
+      void handleLookup(query);
     }
-  };
+  }, [debouncedSearchQuery, handleLookup, loading]);
+
+  const handleManualSearch = useCallback(() => {
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    if (shouldDirectLookup(query)) {
+      void handleLookup(query);
+      return;
+    }
+
+    // For non-barcode inputs, treat as search text.
+    if (query.length >= 3) {
+      setShowResults(true);
+    }
+    Keyboard.dismiss();
+  }, [handleLookup, searchQuery]);
+
+  const handleSearchResultPress = useCallback(
+    async (item: any) => {
+      const code = item.barcode || item.item_code;
+      __DEV__ && console.log("Using code for lookup:", code);
+
+      if (!code) return;
+      // Keep results visible until lookup finishes to avoid layout jump at the bottom
+      await handleLookup(code);
+      requestAnimationFrame(() => setShowResults(false));
+    },
+    [handleLookup],
+  );
+
+  const handleRecentItemPress = useCallback(
+    (item: any) => {
+      const code = item.barcode || item.item_code;
+      if (code) {
+        void handleLookup(code);
+      }
+    },
+    [handleLookup],
+  );
 
   const _handleLogout = () => {
     hapticService.impact("medium");
@@ -457,21 +751,478 @@ export default function ScanScreen() {
       router.replace("/staff/home");
     } catch (error: any) {
       console.error("Failed to finish rack:", error);
-      toastService.show(error.message || "Failed to close session", { type: "error" });
+      toastService.show(error.message || "Failed to close session", {
+        type: "error",
+      });
     } finally {
       setIsFinishing(false);
       setShowCloseSessionModal(false);
     }
   };
 
-  const handleFinishRack = () => {
+  const handleFinishRack = useCallback(() => {
     hapticService.impact("medium");
     if (!sessionId) {
       toastService.show("No active session to close", { type: "error" });
       return;
     }
     setShowCloseSessionModal(true);
-  };
+  }, [sessionId]);
+
+  const closeQuickActions = useCallback(() => {
+    quickActionsScale.value = withTiming(0, { duration: 200 });
+    setTimeout(() => setShowQuickActions(false), 200);
+  }, [quickActionsScale]);
+
+  const openHistory = useCallback(
+    (status: "all" | "pending" | "approved") => {
+      if (!sessionId) {
+        toastService.show("No active session", { type: "error" });
+        return;
+      }
+      closeQuickActions();
+      router.push({
+        pathname: "/staff/history",
+        params: {
+          sessionId: sessionId as string,
+          status,
+        },
+      } as any);
+    },
+    [closeQuickActions, router, sessionId],
+  );
+
+  const headerProps = useMemo(
+    () => ({
+      title: "Scan Items",
+      subtitle:
+        sessionType !== "STANDARD"
+          ? `Session: ${sessionId || "None"} • ${sessionType}`
+          : `Session: ${sessionId || "None"}`,
+      showBackButton: true,
+      showUsername: false,
+      showLogoutButton: true,
+      customRightContent: <SyncStatusPill />,
+    }),
+    [sessionId, sessionType],
+  );
+
+  const overlayContent = useMemo(
+    () => (
+      <>
+        <OfflineIndicator />
+        <ScanFeedback
+          visible={showScanFeedback}
+          type={scanFeedbackType}
+          title={scanFeedbackMessage}
+          onDismiss={() => setShowScanFeedback(false)}
+          duration={2000}
+        />
+      </>
+    ),
+    [scanFeedbackMessage, scanFeedbackType, showScanFeedback],
+  );
+
+  const resultRowColors = useMemo<ResultRowColors>(
+    () => ({
+      border: colors.border,
+      surfaceElevated: colors.surfaceElevated,
+      text: colors.text,
+      textSecondary: colors.textSecondary,
+      muted: colors.muted,
+      accent: colors.accent,
+      warning: colors.warning,
+      success: colors.success,
+    }),
+    [colors],
+  );
+
+  const handleResultPress = useCallback(
+    (item: ScanSearchResultItem) => {
+      void handleSearchResultPress(item);
+    },
+    [handleSearchResultPress],
+  );
+
+  const blocks = useMemo<ScreenBlockKey[]>(() => {
+    const items: ScreenBlockKey[] = ["search"];
+    if (recentItems.length > 0) items.push("recent");
+    items.push("stats", "finish", "spacer");
+    return items;
+  }, [recentItems.length]);
+
+  const renderBlock = useCallback(
+    ({ item }: { item: ScreenBlockKey }) => {
+      switch (item) {
+        case "search":
+          return (
+            <Animated.View entering={FadeInDown.delay(100).springify()}>
+              <GlassCard
+                variant="medium"
+                intensity={20}
+                elevation="md"
+                style={styles.searchCard}
+              >
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  Quick Search
+                </Text>
+                <View
+                  style={[
+                    styles.searchInputContainer,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="search"
+                    size={20}
+                    color={colors.textSecondary}
+                    style={styles.searchIcon}
+                  />
+                  <TextInput
+                    style={[styles.searchInput, { color: colors.text }]}
+                    placeholder="Enter barcode or item name..."
+                    placeholderTextColor={colors.muted}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleManualSearch}
+                    returnKeyType="search"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    spellCheck={false}
+                  />
+                  <View style={styles.searchActions}>
+                    {searchQuery.length > 0 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSearchQuery("");
+                          setSearchResults([]);
+                          setShowResults(false);
+                          setSearchMethod("standard");
+                        }}
+                        style={styles.clearButton}
+                      >
+                        <Ionicons
+                          name="close-circle"
+                          size={20}
+                          color={colors.muted}
+                        />
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      onPress={handleManualSearch}
+                      style={styles.aiButton}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name="arrow-forward-circle-outline"
+                        size={20}
+                        color={colors.accent}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleScanPress}
+                      style={styles.aiButton}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name="camera-outline"
+                        size={20}
+                        color={colors.accent}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Live Search Results */}
+                {showResults && (
+                  <View
+                    style={[
+                      styles.searchResultsContainer,
+                      { borderTopColor: colors.border },
+                    ]}
+                  >
+                    {isSearching ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.accent}
+                        style={{ padding: 10 }}
+                      />
+                    ) : searchResults.length > 0 ? (
+                      <View style={styles.resultsList}>
+                        {searchResults.map((resultItem: any, index: number) => {
+                          const key =
+                            resultItem?.barcode ||
+                            resultItem?.item_code ||
+                            resultItem?.id ||
+                            String(index);
+                          return (
+                            <SearchResultRow
+                              key={String(key)}
+                              item={resultItem}
+                              colors={resultRowColors}
+                              onPress={handleResultPress}
+                            />
+                          );
+                        })}
+                      </View>
+                    ) : (
+                      debouncedSearchQuery.length >= 2 && (
+                        <View style={styles.semanticSearchContainer}>
+                          <Text
+                            style={[
+                              styles.noResultsText,
+                              { color: colors.textSecondary },
+                            ]}
+                          >
+                            No direct matches found
+                          </Text>
+                          <TouchableOpacity
+                            style={[
+                              styles.semanticSearchButton,
+                              {
+                                borderColor: colors.accent + "30",
+                                backgroundColor: colors.accent + "05",
+                              },
+                            ]}
+                            onPress={handleSemanticSearch}
+                            disabled={isAISearching}
+                            activeOpacity={0.8}
+                          >
+                            {isAISearching ? (
+                              <ActivityIndicator
+                                size="small"
+                                color={colors.accent}
+                              />
+                            ) : (
+                              <>
+                                <Ionicons
+                                  name="sparkles-outline"
+                                  size={16}
+                                  color={colors.accent}
+                                />
+                                <Text
+                                  style={[
+                                    styles.semanticSearchText,
+                                    { color: colors.accent },
+                                  ]}
+                                >
+                                  Search by meaning (AI)
+                                </Text>
+                              </>
+                            )}
+                          </TouchableOpacity>
+                        </View>
+                      )
+                    )}
+                  </View>
+                )}
+              </GlassCard>
+            </Animated.View>
+          );
+        case "recent":
+          return (
+            <Animated.View entering={FadeInUp.delay(200).springify()}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Recent Items
+              </Text>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recentItemsContainer}
+                data={recentItems}
+                keyExtractor={(rowItem: any, index: number) =>
+                  rowItem.item_code || rowItem.barcode || String(index)
+                }
+                renderItem={({ item: rowItem }: { item: any }) => (
+                  <TouchableOpacity
+                    onPress={() => handleRecentItemPress(rowItem)}
+                    activeOpacity={0.7}
+                  >
+                    <GlassCard
+                      variant="light"
+                      intensity={15}
+                      elevation="sm"
+                      padding={16}
+                      style={styles.recentItemCard}
+                    >
+                      <View
+                        style={[
+                          styles.recentItemIcon,
+                          { backgroundColor: colors.accent + "15" },
+                        ]}
+                      >
+                        <Ionicons
+                          name="cube-outline"
+                          size={24}
+                          color={colors.accent}
+                        />
+                      </View>
+                      <View style={styles.resultCodeRow}>
+                        <Text
+                          style={[
+                            styles.recentItemCode,
+                            { color: colors.textSecondary },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {rowItem.item_code}
+                        </Text>
+                        {Boolean(rowItem.batch_id) && (
+                          <View
+                            style={[
+                              styles.batchBadge,
+                              {
+                                backgroundColor: colors.accent + "10",
+                                borderColor: colors.accent + "20",
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.batchBadgeText,
+                                { color: colors.accent },
+                              ]}
+                            >
+                              B
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        style={[styles.recentItemName, { color: colors.text }]}
+                        numberOfLines={2}
+                      >
+                        {rowItem.item_name || "Unknown Item"}
+                      </Text>
+                    </GlassCard>
+                  </TouchableOpacity>
+                )}
+              />
+            </Animated.View>
+          );
+        case "stats":
+          return (
+            <Animated.View entering={FadeInUp.delay(300).springify()}>
+              <GlassCard
+                variant="medium"
+                intensity={20}
+                elevation="md"
+                style={styles.statsCard}
+              >
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  Today&apos;s Progress
+                </Text>
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statValue, { color: colors.text }]}>
+                      {progressLoading ? "…" : progress.scanned}
+                    </Text>
+                    <Text
+                      style={[styles.statLabel, { color: colors.textSecondary }]}
+                    >
+                      Scanned
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.statDivider,
+                      { backgroundColor: colors.border },
+                    ]}
+                  />
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statValue, { color: colors.text }]}>
+                      {progressLoading ? "…" : progress.verified}
+                    </Text>
+                    <Text
+                      style={[styles.statLabel, { color: colors.textSecondary }]}
+                    >
+                      Verified
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.statDivider,
+                      { backgroundColor: colors.border },
+                    ]}
+                  />
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statValue, { color: colors.text }]}>
+                      {progressLoading ? "…" : progress.pending}
+                    </Text>
+                    <Text
+                      style={[styles.statLabel, { color: colors.textSecondary }]}
+                    >
+                      Pending
+                    </Text>
+                  </View>
+                </View>
+              </GlassCard>
+            </Animated.View>
+          );
+        case "finish":
+          return (
+            <Animated.View entering={FadeInUp.delay(400).springify()}>
+              <TouchableOpacity
+                style={[
+                  styles.finishRackButton,
+                  isFinishing && styles.finishRackButtonDisabled,
+                ]}
+                onPress={handleFinishRack}
+                disabled={isFinishing}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={appTheme.gradients.success}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.finishRackGradient}
+                >
+                  {isFinishing ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <>
+                      <Ionicons name="checkmark-circle" size={24} color="#FFF" />
+                      <Text style={styles.finishRackText}>Finish Rack</Text>
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        case "spacer":
+        default:
+          return <View style={{ height: 140 }} />;
+      }
+    },
+    [
+      appTheme.gradients.success,
+      colors,
+      debouncedSearchQuery,
+      progress.pending,
+      progress.scanned,
+      progress.verified,
+      progressLoading,
+      handleFinishRack,
+      handleManualSearch,
+      handleRecentItemPress,
+      handleResultPress,
+      handleSemanticSearch,
+      isAISearching,
+      isFinishing,
+      isSearching,
+      recentItems,
+      resultRowColors,
+      searchQuery,
+      searchResults,
+      showResults,
+      handleScanPress,
+    ],
+  );
+
+  const keyExtractor = useCallback((item: ScreenBlockKey) => item, []);
 
   if (isScanning) {
     return (
@@ -479,6 +1230,10 @@ export default function ScanScreen() {
         <CameraView
           ref={cameraRef}
           style={styles.camera}
+          onCameraReady={() => {
+            __DEV__ && console.log("Camera is ready");
+            setIsCameraReady(true);
+          }}
           onBarcodeScanned={scanned ? undefined : handleBarcodeScan}
           barcodeScannerSettings={{
             barcodeTypes: [
@@ -499,11 +1254,40 @@ export default function ScanScreen() {
         >
           {/* AR-style overlay */}
           <View style={styles.cameraOverlay}>
-            <View style={[styles.scanFrame, { width: width * 0.7, height: width * 0.7 }]}>
-              <View style={[styles.corner, styles.cornerTopLeft, { borderColor: colors.accent }]} />
-              <View style={[styles.corner, styles.cornerTopRight, { borderColor: colors.accent }]} />
-              <View style={[styles.corner, styles.cornerBottomLeft, { borderColor: colors.accent }]} />
-              <View style={[styles.corner, styles.cornerBottomRight, { borderColor: colors.accent }]} />
+            <View
+              style={[
+                styles.scanFrame,
+                { width: width * 0.7, height: width * 0.7 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerTopLeft,
+                  { borderColor: colors.accent },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerTopRight,
+                  { borderColor: colors.accent },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerBottomLeft,
+                  { borderColor: colors.accent },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerBottomRight,
+                  { borderColor: colors.accent },
+                ]}
+              />
             </View>
 
             <Text style={[styles.scanInstructions, { color: "#FFFFFF" }]}>
@@ -547,309 +1331,25 @@ export default function ScanScreen() {
 
   return (
     <ScreenContainer
-      header={{
-        title: "Scan Items",
-        subtitle:
-          sessionType !== "STANDARD"
-            ? `Session: ${sessionId || "None"} • ${sessionType}`
-            : `Session: ${sessionId || "None"}`,
-        showBackButton: true,
-        showUsername: false,
-        showLogoutButton: true,
-        customRightContent: <SyncStatusPill />,
-      }}
+      header={headerProps}
       backgroundType="aurora"
       auroraVariant="primary"
       auroraIntensity="medium"
       contentMode="static"
       noPadding
       statusBarStyle="light"
-      overlay={
-        <>
-          <OfflineIndicator />
-          <ScanFeedback
-            visible={showScanFeedback}
-            type={scanFeedbackType}
-            title={scanFeedbackMessage}
-            onDismiss={() => setShowScanFeedback(false)}
-            duration={2000}
-          />
-        </>
-      }
+      overlay={overlayContent}
     >
-      <ScrollView
+      <FlatList
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-      >
-        {/* Search Card */}
-        <Animated.View entering={FadeInDown.delay(100).springify()}>
-          <GlassCard
-            variant="medium"
-            intensity={20}
-            elevation="md"
-            style={styles.searchCard}
-          >
-            <Text style={[styles.cardTitle, { color: colors.text }]}>Quick Search</Text>
-            <View style={[styles.searchInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Ionicons
-                name="search"
-                size={20}
-                color={colors.textSecondary}
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Enter barcode or item name..."
-                placeholderTextColor={colors.muted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                onSubmitEditing={handleManualSearch}
-                returnKeyType="search"
-              />
-              <View style={styles.searchActions}>
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchQuery("");
-                      setSearchResults([]);
-                      setShowResults(false);
-                      setSearchMethod("standard");
-                    }}
-                    style={styles.clearButton}
-                  >
-                    <Ionicons
-                      name="close-circle"
-                      size={20}
-                      color={colors.muted}
-                    />
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  onPress={() => setIsScanning(true)}
-                  style={styles.aiButton}
-                >
-                  <Ionicons
-                    name="camera-outline"
-                    size={20}
-                    color={colors.accent}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Live Search Results */}
-            {showResults && (
-              <View style={[styles.searchResultsContainer, { borderTopColor: colors.border }]}>
-                {isSearching ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={colors.accent}
-                    style={{ padding: 10 }}
-                  />
-                ) : searchResults.length > 0 ? (
-                  <ScrollView
-                    style={styles.resultsList}
-                    contentContainerStyle={styles.resultsListContent}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {searchResults.map((item, index) => (
-                      <TouchableOpacity
-                        key={`${item.barcode || item.item_code || item.id}-${index}`}
-                        style={[styles.resultItem, { borderBottomColor: colors.border }]}
-                        onPress={() => handleSearchResultPress(item)}
-                      >
-                        <View style={[styles.resultIcon, { backgroundColor: colors.surfaceElevated }]}>
-                          <Ionicons
-                            name="cube-outline"
-                            size={18}
-                            color={colors.textSecondary}
-                          />
-                        </View>
-                        <View style={styles.resultInfo}>
-                          <Text style={[styles.resultName, { color: colors.text }]} numberOfLines={1}>
-                            {item.item_name || item.name}
-                          </Text>
-                          <View style={styles.resultCodeRow}>
-                            <Text style={[styles.resultCode, { color: colors.textSecondary }]}>
-                              {item.barcode || item.item_code || "—"}
-                            </Text>
-                            {item.mrp != null && item.mrp > 0 && (
-                              <View style={[styles.mrpBadge, { backgroundColor: colors.warning + '15', borderColor: colors.warning + '30' }]}>
-                                <Text style={[styles.mrpBadgeText, { color: colors.warning }]}>₹{item.mrp}</Text>
-                              </View>
-                            )}
-                            {item.batch_id && (
-                              <View style={[styles.batchBadge, { backgroundColor: colors.accent + '10', borderColor: colors.accent + '20' }]}>
-                                <Text style={[styles.batchBadgeText, { color: colors.accent }]}>Batch: {item.batch_id}</Text>
-                              </View>
-                            )}
-                          </View>
-                          {(item.manual_barcode || item.unit2_barcode || item.unit_m_barcode) && (
-                            <View style={styles.altBarcodesRow}>
-                              {item.manual_barcode && (
-                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
-                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>Manual: {item.manual_barcode}</Text>
-                                </View>
-                              )}
-                              {item.unit2_barcode && (
-                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
-                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>Unit2: {item.unit2_barcode}</Text>
-                                </View>
-                              )}
-                              {item.unit_m_barcode && (
-                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
-                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>UnitM: {item.unit_m_barcode}</Text>
-                                </View>
-                              )}
-                            </View>
-                          )}
-                        </View>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={16}
-                          color={colors.muted}
-                        />
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                ) : (
-                  debouncedSearchQuery.length >= 2 && (
-                    <View style={styles.semanticSearchContainer}>
-                      <Text style={[styles.noResultsText, { color: colors.textSecondary }]}>No direct matches found</Text>
-                      <TouchableOpacity
-                        style={[styles.semanticSearchButton, { borderColor: colors.accent + '30', backgroundColor: colors.accent + '05' }]}
-                        onPress={handleSemanticSearch}
-                        disabled={isAISearching}
-                      >
-                        {isAISearching ? (
-                          <ActivityIndicator size="small" color={colors.accent} />
-                        ) : (
-                          <>
-                            <Ionicons name="sparkles-outline" size={16} color={colors.accent} />
-                            <Text style={[styles.semanticSearchText, { color: colors.accent }]}>Search by meaning (AI)</Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  )
-                )}
-              </View>
-            )}
-          </GlassCard>
-        </Animated.View>
-
-        {/* Recent Items */}
-        {recentItems.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(200).springify()}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Items</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.recentItemsContainer}
-            >
-              {recentItems.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleRecentItemPress(item)}
-                  activeOpacity={0.7}
-                >
-                  <GlassCard
-                    variant="light"
-                    intensity={15}
-                    elevation="sm"
-                    padding={16}
-                    style={styles.recentItemCard}
-                  >
-                    <View style={[styles.recentItemIcon, { backgroundColor: colors.accent + '15' }]}>
-                      <Ionicons
-                        name="cube-outline"
-                        size={24}
-                        color={colors.accent}
-                      />
-                    </View>
-                    <View style={styles.resultCodeRow}>
-                      <Text style={[styles.recentItemCode, { color: colors.textSecondary }]} numberOfLines={1}>
-                        {item.item_code}
-                      </Text>
-                      {item.batch_id && (
-                        <View style={[styles.batchBadge, { backgroundColor: colors.accent + '10', borderColor: colors.accent + '20' }]}>
-                          <Text style={[styles.batchBadgeText, { color: colors.accent }]}>B</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={[styles.recentItemName, { color: colors.text }]} numberOfLines={2}>
-                      {item.item_name || "Unknown Item"}
-                    </Text>
-                  </GlassCard>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Animated.View>
-        )}
-
-        {/* Stats Card */}
-        <Animated.View entering={FadeInUp.delay(300).springify()}>
-          <GlassCard
-            variant="medium"
-            intensity={20}
-            elevation="md"
-            style={styles.statsCard}
-          >
-            <Text style={[styles.cardTitle, { color: colors.text }]}>Today&apos;s Progress</Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Scanned</Text>
-              </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Verified</Text>
-              </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pending</Text>
-              </View>
-            </View>
-          </GlassCard>
-        </Animated.View>
-
-        {/* Finish Rack Button */}
-        <Animated.View entering={FadeInUp.delay(400).springify()}>
-          <TouchableOpacity
-            style={[
-              styles.finishRackButton,
-              isFinishing && styles.finishRackButtonDisabled,
-            ]}
-            onPress={handleFinishRack}
-            disabled={isFinishing}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={[...appTheme.gradients.success]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.finishRackGradient}
-            >
-              {isFinishing ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-                  <Text style={styles.finishRackText}>Finish Rack</Text>
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Spacing for floating button */}
-        <View style={{ height: 120 }} />
-      </ScrollView>
+        showsVerticalScrollIndicator={false}
+        data={blocks}
+        renderItem={renderBlock}
+        keyExtractor={keyExtractor}
+        removeClippedSubviews={Platform.OS === "android"}
+      />
 
       {/* Floating Scan Button */}
       <View style={styles.floatingButtonContainer}>
@@ -864,35 +1364,33 @@ export default function ScanScreen() {
           <TouchableOpacity
             style={styles.quickActionButton}
             activeOpacity={0.7}
+            onPress={() => openHistory("all")}
           >
             <LinearGradient
-              colors={[...appTheme.gradients.accent]}
+              colors={appTheme.gradients.accent}
               style={styles.quickActionGradient}
             >
-              <Ionicons
-                name="list"
-                size={24}
-                color="#FFF"
-              />
+              <Ionicons name="list" size={24} color="#FFF" />
             </LinearGradient>
-            <Text style={[styles.quickActionLabel, { color: colors.text }]}>History</Text>
+            <Text style={[styles.quickActionLabel, { color: colors.text }]}>
+              History
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.quickActionButton}
             activeOpacity={0.7}
+            onPress={() => openHistory("pending")}
           >
             <LinearGradient
-              colors={[...appTheme.gradients.success]}
+              colors={appTheme.gradients.success}
               style={styles.quickActionGradient}
             >
-              <Ionicons
-                name="checkmark-done"
-                size={24}
-                color="#FFF"
-              />
+              <Ionicons name="checkmark-done" size={24} color="#FFF" />
             </LinearGradient>
-            <Text style={[styles.quickActionLabel, { color: colors.text }]}>Verify</Text>
+            <Text style={[styles.quickActionLabel, { color: colors.text }]}>
+              Verify
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -904,7 +1402,7 @@ export default function ScanScreen() {
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={[...appTheme.gradients.accent]}
+          colors={appTheme.gradients.accent}
           style={styles.quickActionsToggleGradient}
         >
           <Ionicons
@@ -921,12 +1419,12 @@ export default function ScanScreen() {
         isVisible={showLogoutModal}
         onBackdropPress={() => setShowLogoutModal(false)}
         onBackButtonPress={() => setShowLogoutModal(false)}
-        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
+        style={{ margin: 0, justifyContent: "center", padding: 20 }}
         animationIn="fadeIn"
         animationOut="fadeOut"
         backdropOpacity={0.5}
-        useNativeDriver
-        hideModalContentWhileAnimating
+        useNativeDriver={Platform.OS !== "web"}
+        hideModalContentWhileAnimating={Platform.OS !== "web"}
         statusBarTranslucent
       >
         <View
@@ -980,7 +1478,8 @@ export default function ScanScreen() {
               lineHeight: 22,
             }}
           >
-            Are you sure you want to log out?{"\n"}Any unsaved progress will be lost.
+            Are you sure you want to log out?{"\n"}Any unsaved progress will be
+            lost.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
@@ -1038,12 +1537,12 @@ export default function ScanScreen() {
         isVisible={showCloseSessionModal}
         onBackdropPress={() => setShowCloseSessionModal(false)}
         onBackButtonPress={() => setShowCloseSessionModal(false)}
-        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
+        style={{ margin: 0, justifyContent: "center", padding: 20 }}
         animationIn="fadeIn"
         animationOut="fadeOut"
         backdropOpacity={0.5}
-        useNativeDriver
-        hideModalContentWhileAnimating
+        useNativeDriver={Platform.OS !== "web"}
+        hideModalContentWhileAnimating={Platform.OS !== "web"}
         statusBarTranslucent
       >
         <View
@@ -1097,7 +1596,8 @@ export default function ScanScreen() {
               lineHeight: 22,
             }}
           >
-            Are you sure you want to mark this rack as complete?{"\n"}You won't be able to add more items to this section.
+            Are you sure you want to mark this rack as complete?{"\n"}You won't
+            be able to add more items to this section.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
@@ -1150,7 +1650,7 @@ export default function ScanScreen() {
           </View>
         </View>
       </Modal>
-    </ScreenContainer >
+    </ScreenContainer>
   );
 }
 

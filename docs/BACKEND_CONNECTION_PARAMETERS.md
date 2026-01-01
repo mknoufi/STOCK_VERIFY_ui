@@ -176,7 +176,7 @@ if sql_host and sql_database:
     # Attempt connection
 else:
     # Skip SQL Server, use MongoDB only
-    
+
 # Step 3: Create enhanced connection pool
 connection_pool = EnhancedSQLServerConnectionPool(
     host=sql_host,
@@ -196,7 +196,7 @@ connection_pool = EnhancedSQLServerConnectionPool(
 except (ConnectionError, TimeoutError, OSError) as e:
     # Network/system errors
     logger.error(f"SQL Server connection failed (network/system error): {e}")
-    
+
 except Exception as e:
     # Other errors (authentication, database not found, etc.)
     logger.warning(f"SQL Server connection failed: {e}")
@@ -377,7 +377,7 @@ class SQLServerConnector:
 @retry(stop=stop_after_attempt(3), wait=wait_exponential())
 def connect(self, config: dict) -> bool:
     """Establish SQL Server connection with retry logic"""
-    
+
     try:
         # Build connection string
         conn_str = SQLServerConnectionBuilder.build_connection_string(
@@ -387,7 +387,7 @@ def connect(self, config: dict) -> bool:
             user=config.get('user'),
             password=config.get('password'),
         )
-        
+
         # Create connection
         self.connection = pyodbc.connect(conn_str)
         self.config = config
@@ -449,7 +449,7 @@ export SQL_SERVER_HOST="192.168.1.100"
 export SQL_SERVER_PORT="1433"
 export SQL_SERVER_DATABASE="ERP"
 export SQL_SERVER_USER="readonly_user"
-export SQL_SERVER_PASSWORD="MyPassword123"
+export SQL_SERVER_PASSWORD="CHANGE_ME" <!-- pragma: allowlist secret -->
 
 # Start backend
 cd backend && python3 -m backend.server
@@ -463,7 +463,7 @@ SQL_SERVER_HOST=192.168.1.100
 SQL_SERVER_PORT=1433
 SQL_SERVER_DATABASE=ERP
 SQL_SERVER_USER=readonly_user
-SQL_SERVER_PASSWORD=MyPassword123
+SQL_SERVER_PASSWORD=CHANGE_ME <!-- pragma: allowlist secret -->
 ```
 
 ### Using Setup Script
@@ -553,7 +553,7 @@ curl -X GET "http://localhost:8001/api/items/search?q=51" \
 
 ```sql
 -- Create read-only user (SQL Server)
-CREATE LOGIN readonly_user WITH PASSWORD = 'SecurePassword123'
+CREATE LOGIN readonly_user WITH PASSWORD = 'CHANGE_ME' <!-- pragma: allowlist secret -->
 USE YourDatabase
 CREATE USER readonly_user FOR LOGIN readonly_user
 ALTER ROLE db_datareader ADD MEMBER readonly_user

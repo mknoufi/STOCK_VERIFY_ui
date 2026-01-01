@@ -51,7 +51,7 @@ STOCK_VERIFY_2-db-maped/
 ├── 📄 Makefile
 │
 ├── 🚀 start.sh              # Main startup script (recommended)
-├── 🛑 stop.sh               # Stop all services
+├── 🛑 scripts/dev/stop.sh   # Stop all services
 └── 🔄 restart.sh            # Restart services
 ```
 
@@ -339,7 +339,7 @@ Data saved to MongoDB
 
 ### Stop Everything
 ```bash
-./stop.sh
+./scripts/dev/stop.sh
 ```
 
 ### Backend Only

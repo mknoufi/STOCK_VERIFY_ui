@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { ApiResponse } from '../types/api';
+import { useState, useCallback } from "react";
+import { ApiResponse } from "../types/api";
 
 /**
  * Options for useDomainAction hook.
@@ -25,10 +25,10 @@ interface UseDomainActionResult<T, R> {
 
 function isApiResponse<R>(value: unknown): value is ApiResponse<R> {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'success' in value &&
-    typeof (value as ApiResponse<R>).success === 'boolean'
+    "success" in value &&
+    typeof (value as ApiResponse<R>).success === "boolean"
   );
 }
 
@@ -60,7 +60,10 @@ export function useDomainAction<T, R>({
             setData(response.data);
             onSuccess?.(response.data);
           } else {
-            const errorMsg = response.error?.message || response.message || 'Unknown error occurred';
+            const errorMsg =
+              response.error?.message ||
+              response.message ||
+              "Unknown error occurred";
             throw new Error(errorMsg);
           }
         }
@@ -72,7 +75,7 @@ export function useDomainAction<T, R>({
         setIsLoading(false);
       }
     },
-    [action, onSuccess, onError, isRawAction]
+    [action, onSuccess, onError, isRawAction],
   );
 
   const reset = useCallback(() => {

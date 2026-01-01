@@ -16,6 +16,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { AppearanceSettings } from "../../src/components/ui/AppearanceSettings";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
@@ -72,11 +73,7 @@ const SettingRow = ({
       <View style={styles.settingLeft}>
         {icon && (
           <View style={styles.iconContainer}>
-            <Ionicons
-              name={icon}
-              size={18}
-              color={theme.colors.text.primary}
-            />
+            <Ionicons name={icon} size={18} color={theme.colors.text.primary} />
           </View>
         )}
         <Text style={styles.settingLabel}>{label}</Text>
@@ -182,52 +179,12 @@ export default function SettingsScreen() {
           </View>
         </Animated.View>
 
-        {/* Theme Settings */}
+        {/* Appearance Settings */}
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <Text style={styles.sectionTitle}>Appearance</Text>
-          <GlassCard intensity={15} padding={0} style={styles.card}>
-            <AnimatedPressable
-              style={styles.settingRow}
-              onPress={() => router.push("/supervisor/appearance")}
-            >
-              <View style={styles.settingLeft}>
-                <View style={styles.iconContainer}>
-                  <Ionicons
-                    name="color-palette-outline"
-                    size={18}
-                    color={theme.colors.text.primary}
-                  />
-                </View>
-                <Text style={styles.settingLabel}>Customize Appearance</Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color={theme.colors.text.tertiary}
-              />
-            </AnimatedPressable>
-            <View style={styles.divider} />
-            <SettingRow
-              label="Dark Mode"
-              value={settings.darkMode}
-              type="switch"
-              icon="moon-outline"
-              onValueChange={(value) => setSetting("darkMode", value)}
-            />
-            <View style={styles.divider} />
-            <SettingRow
-              label="Theme"
-              value={settings.theme}
-              type="select"
-              icon="contrast-outline"
-              options={[
-                { label: "Light", value: "light" },
-                { label: "Dark", value: "dark" },
-                { label: "Auto", value: "auto" },
-              ]}
-              onValueChange={(value) => setSetting("theme", value)}
-            />
-          </GlassCard>
+          <View style={styles.card}>
+            <AppearanceSettings showTitle={false} scrollable={false} compact={true} />
+          </View>
         </Animated.View>
 
         {/* Sync Settings */}

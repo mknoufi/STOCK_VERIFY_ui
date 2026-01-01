@@ -13,11 +13,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Controller, Control, FieldErrors } from "react-hook-form";
-import {
-  ScanFormData,
-  NormalizedMrpVariant,
-  WorkflowState,
-} from "@/types/scan";
+import type { ScanFormData, NormalizedMrpVariant, WorkflowState } from "@/types/scan";
 import { MRPVariantSelector } from "./MRPVariantSelector";
 import { formatMrpValue } from "@/utils/scanUtils";
 import { Ionicons } from "@expo/vector-icons";
@@ -435,7 +431,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
       prevProps.currentItemCondition === nextProps.currentItemCondition &&
       prevProps.mrpVariants.length === nextProps.mrpVariants.length &&
       prevProps.workflowState.serialCaptureEnabled ===
-      nextProps.workflowState.serialCaptureEnabled &&
+        nextProps.workflowState.serialCaptureEnabled &&
       JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
       prevProps.markLocation === nextProps.markLocation &&
       prevProps.manufacturingDate === nextProps.manufacturingDate &&

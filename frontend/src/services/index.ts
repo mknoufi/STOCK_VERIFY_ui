@@ -31,11 +31,7 @@ export { NotesAPI } from "./notesApi";
 
 // Haptics
 export { haptics } from "./haptics";
-export {
-  hapticService,
-  HapticService,
-  scanHaptics,
-} from "./hapticService";
+export { hapticService, HapticService, scanHaptics } from "./hapticService";
 
 // Version Service
 export { checkVersion, getBackendVersion, versionApi } from "./versionService";

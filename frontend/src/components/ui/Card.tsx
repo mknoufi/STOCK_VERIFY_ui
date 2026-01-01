@@ -1,56 +1,67 @@
-import React, { ReactNode } from 'react';
-import { View, ViewStyle, StyleProp, TouchableOpacity, GestureResponderEvent } from 'react-native';
+import React, { ReactNode } from "react";
+import {
+  View,
+  ViewStyle,
+  StyleProp,
+  TouchableOpacity,
+  GestureResponderEvent,
+} from "react-native";
+import { useThemeContext } from "../../context/ThemeContext";
 
 interface CardProps {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   onPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
-  variant?: 'elevated' | 'outlined' | 'filled';
-  padding?: 'none' | 'small' | 'medium' | 'large';
-  margin?: 'none' | 'small' | 'medium' | 'large';
+  variant?: "elevated" | "outlined" | "filled";
+  padding?: "none" | "small" | "medium" | "large";
+  margin?: "none" | "small" | "medium" | "large";
   testID?: string;
 }
-
-const paddingMap = {
-  none: 0,
-  small: 8,
-  medium: 16,
-  large: 24,
-} as const;
-
-const marginMap = {
-  none: 0,
-  small: 4,
-  medium: 8,
-  large: 16,
-} as const;
 
 export const Card: React.FC<CardProps> = ({
   children,
   style,
   onPress,
   disabled = false,
-  variant = 'elevated',
-  padding = 'medium',
-  margin = 'small',
+  variant = "elevated",
+  padding = "medium",
+  margin = "small",
   testID,
 }) => {
+  const { themeLegacy: theme } = useThemeContext();
+
+  const paddingMap = {
+    none: 0,
+    small: theme.spacing.sm,
+    medium: theme.spacing.md,
+    large: theme.spacing.lg,
+  };
+
+  const marginMap = {
+    none: 0,
+    small: theme.spacing.sm,
+    medium: theme.spacing.md,
+    large: theme.spacing.lg,
+  };
+
   const cardStyles: ViewStyle = {
     padding: paddingMap[padding],
     margin: marginMap[margin],
-    backgroundColor: 'white',
-    borderRadius: 8,
-    ...(variant === 'elevated' && {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+    zIndex: 1, // Default zIndex to avoid stacking context issues
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.surface, // Default background
+    ...(variant === "elevated" && {
+      ...theme.shadows.sm,
     }),
-    ...(variant === 'outlined' && {
+    ...(variant === "outlined" && {
       borderWidth: 1,
-      borderColor: '#e0e0e0',
+      borderColor: theme.colors.border,
+      backgroundColor: "transparent",
+    }),
+    ...(variant === "filled" && {
+      backgroundColor: theme.colors.surfaceElevated,
+      borderWidth: 0,
     }),
   };
 

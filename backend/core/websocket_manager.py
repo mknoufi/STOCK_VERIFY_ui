@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fastapi import WebSocket
 
@@ -12,8 +13,18 @@ class WebSocketManager:
         # session_connections: { session_id: [WebSocket, ...] }
         self.session_connections: dict[str, list[WebSocket]] = {}
 
-    async def connect(self, websocket: WebSocket, user_id: str, session_id: str = None):
-        await websocket.accept()
+    async def connect(
+        self,
+        websocket: WebSocket,
+        user_id: str,
+        session_id: str = None,
+        *,
+        subprotocol: Optional[str] = None,
+    ):
+        if subprotocol:
+            await websocket.accept(subprotocol=subprotocol)
+        else:
+            await websocket.accept()
 
         if user_id not in self.active_connections:
             self.active_connections[user_id] = []

@@ -38,11 +38,7 @@ def _setup_trusted_hosts(app: FastAPI) -> None:
 def _get_cors_origins() -> list[str]:
     """Determine allowed CORS origins based on environment."""
     if getattr(settings, "CORS_ALLOW_ORIGINS", None):
-        return [
-            o.strip()
-            for o in (settings.CORS_ALLOW_ORIGINS or "").split(",")
-            if o.strip()
-        ]
+        return [o.strip() for o in (settings.CORS_ALLOW_ORIGINS or "").split(",") if o.strip()]
 
     _env = getattr(settings, "ENVIRONMENT", "development").lower()
     if _env == "development":
@@ -55,16 +51,13 @@ def _get_cors_origins() -> list[str]:
         ]
         if getattr(settings, "CORS_DEV_ORIGINS", None):
             dev_origins = [
-                o.strip()
-                for o in (settings.CORS_DEV_ORIGINS or "").split(",")
-                if o.strip()
+                o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()
             ]
             origins.extend(dev_origins)
         return origins
 
     logger.warning(
-        "CORS_ALLOW_ORIGINS not configured for non-development environment; "
-        "requests may be blocked"
+        "CORS_ALLOW_ORIGINS not configured for non-development environment; requests may be blocked"
     )
     return []
 

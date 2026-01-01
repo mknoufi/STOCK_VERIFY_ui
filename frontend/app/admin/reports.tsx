@@ -3,15 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Alert,
   Platform,
 } from "react-native";
 import {
   LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
   AnimatedPressable,
+  ScreenContainer,
 } from "@/components/ui";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -110,96 +108,101 @@ export default function ReportsScreen() {
 
   if (loading) {
     return (
-      <AuroraBackground>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "Reports",
+          subtitle: "Generate & Download",
+          showBackButton: true,
+        }}
+      >
         <View style={styles.centered}>
           <LoadingSpinner size={48} color={auroraTheme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading reports...</Text>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="Reports"
-        subtitle="Generate & Download"
-        showBackButton
-      />
+    <ScreenContainer
+      gradient
+      scrollable
+      header={{
+        title: "Reports",
+        subtitle: "Generate & Download",
+        showBackButton: true,
+      }}
+      contentContainerStyle={styles.contentContainer}
+    >
+      <Text style={styles.description}>
+        Generate and download system reports. Reports are generated in the
+        background and can be downloaded when ready.
+      </Text>
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-      >
-        <Text style={styles.description}>
-          Generate and download system reports. Reports are generated in the
-          background and can be downloaded when ready.
-        </Text>
-
-        {reports.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="document-text-outline" size={64} color="#666" />
-            <Text style={styles.emptyText}>No reports available</Text>
-          </View>
-        ) : (
-          <View style={styles.reportsList}>
-            {reports.map((report) => (
-              <View key={report.id} style={styles.reportCard}>
-                <View style={styles.reportHeader}>
-                  <View
-                    style={[
-                      styles.reportIconContainer,
-                      {
-                        backgroundColor: `${getCategoryColor(report.category)}20`,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name={getCategoryIcon(report.category) as any}
-                      size={24}
-                      color={getCategoryColor(report.category)}
-                    />
-                  </View>
-                  <View style={styles.reportInfo}>
-                    <Text style={styles.reportName}>{report.name}</Text>
-                    <Text style={styles.reportDescription}>
-                      {report.description}
+      {reports.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Ionicons name="document-text-outline" size={64} color="#666" />
+          <Text style={styles.emptyText}>No reports available</Text>
+        </View>
+      ) : (
+        <View style={styles.reportsList}>
+          {reports.map((report) => (
+            <View key={report.id} style={styles.reportCard}>
+              <View style={styles.reportHeader}>
+                <View
+                  style={[
+                    styles.reportIconContainer,
+                    {
+                      backgroundColor: `${getCategoryColor(report.category)}20`,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={getCategoryIcon(report.category) as any}
+                    size={24}
+                    color={getCategoryColor(report.category)}
+                  />
+                </View>
+                <View style={styles.reportInfo}>
+                  <Text style={styles.reportName}>{report.name}</Text>
+                  <Text style={styles.reportDescription}>
+                    {report.description}
+                  </Text>
+                  <View style={styles.reportCategory}>
+                    <Text
+                      style={[
+                        styles.reportCategoryText,
+                        { color: getCategoryColor(report.category) },
+                      ]}
+                    >
+                      {report.category.toUpperCase()}
                     </Text>
-                    <View style={styles.reportCategory}>
-                      <Text
-                        style={[
-                          styles.reportCategoryText,
-                          { color: getCategoryColor(report.category) },
-                        ]}
-                      >
-                        {report.category.toUpperCase()}
-                      </Text>
-                    </View>
                   </View>
                 </View>
-                <AnimatedPressable
-                  style={[
-                    styles.generateButton,
-                    generating === report.id && styles.generateButtonDisabled,
-                  ]}
-                  onPress={() => handleGenerateReport(report.id)}
-                  disabled={generating === report.id}
-                >
-                  {generating === report.id ? (
-                    <LoadingSpinner size={20} color="#fff" />
-                  ) : (
-                    <>
-                      <Ionicons name="download" size={18} color="#fff" />
-                      <Text style={styles.generateButtonText}>Generate</Text>
-                    </>
-                  )}
-                </AnimatedPressable>
               </View>
-            ))}
-          </View>
-        )}
-      </ScrollView>
-    </AuroraBackground>
+              <AnimatedPressable
+                style={[
+                  styles.generateButton,
+                  generating === report.id && styles.generateButtonDisabled,
+                ]}
+                onPress={() => handleGenerateReport(report.id)}
+                disabled={generating === report.id}
+              >
+                {generating === report.id ? (
+                  <LoadingSpinner size={20} color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="download" size={18} color="#fff" />
+                    <Text style={styles.generateButtonText}>Generate</Text>
+                  </>
+                )}
+              </AnimatedPressable>
+            </View>
+          ))}
+        </View>
+      )}
+    </ScreenContainer>
   );
 }
 
@@ -213,9 +216,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: auroraTheme.colors.text.primary,
     fontSize: 16,
-  },
-  content: {
-    flex: 1,
   },
   contentContainer: {
     padding: auroraTheme.spacing.lg,

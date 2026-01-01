@@ -39,7 +39,7 @@ export SQL_SERVER_HOST="192.168.1.100"
 export SQL_SERVER_PORT="1433"
 export SQL_SERVER_DATABASE="YourDatabase"
 export SQL_SERVER_USER="readonly_user"
-export SQL_SERVER_PASSWORD="YourPassword"
+export SQL_SERVER_PASSWORD="CHANGE_ME" <!-- pragma: allowlist secret -->
 ```
 
 **Windows (PowerShell):**
@@ -363,4 +363,3 @@ If you encounter issues:
    ```bash
    cat backend/config.py | grep SQL_SERVER
    ```
-

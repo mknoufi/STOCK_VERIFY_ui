@@ -4,8 +4,12 @@
  */
 
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-import { isOnline } from "../api/api";
+import { AppError } from "../../utils/errors";
+import { createCountLine, createSession, isOnline } from "../api/api";
 import { useNetworkStore } from "../../store/networkStore";
+import api from "../httpClient";
+import { addToOfflineQueue } from "../offline/offlineStorage";
+import { createOfflineCountLine } from "../offline/offlineCountLine";
 
 // Mock dependencies
 jest.mock("../../store/networkStore", () => ({
@@ -19,6 +23,7 @@ jest.mock("../../store/networkStore", () => ({
 }));
 
 jest.mock("../httpClient", () => ({
+  __esModule: true,
   default: {
     get: jest.fn(),
     post: jest.fn(),
@@ -36,6 +41,13 @@ jest.mock("../offline/offlineStorage", () => ({
   getSessionFromCache: jest.fn(() => Promise.resolve(null)),
   cacheCountLine: jest.fn(),
   getCountLinesBySessionFromCache: jest.fn(() => Promise.resolve([])),
+}));
+
+jest.mock("../offline/offlineCountLine", () => ({
+  createOfflineCountLine: jest.fn(async (payload: any) => ({
+    _id: "offline_line_1",
+    ...payload,
+  })),
 }));
 
 describe("API Service - Network Detection", () => {
@@ -94,53 +106,46 @@ describe("API Service - Network Detection", () => {
   });
 });
 
-describe("API Service - Session Management", () => {
-  it("should create session with warehouse parameter", async () => {
-    // Test placeholder - implement when createSession is properly typed
-    expect(true).toBe(true);
+describe("API Service - Validation vs Offline Fallback", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useNetworkStore.getState as jest.Mock).mockReturnValue({
+      isOnline: true,
+      isInternetReachable: true,
+      connectionType: "wifi",
+    });
   });
 
-  it("should create session with type parameter", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
+  it("createSession throws on 400 instead of creating offline session", async () => {
+    (api.post as any).mockRejectedValue({
+      response: { status: 400, data: { detail: "Warehouse name cannot be empty" } },
+      message: "Request failed with status code 400",
+    });
+
+    await expect(createSession({ warehouse: "", type: "STANDARD" })).rejects.toBeInstanceOf(
+      AppError,
+    );
+    expect(addToOfflineQueue).not.toHaveBeenCalled();
   });
 
-  it("should handle session creation errors", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
-  });
-});
+  it("createCountLine throws on 400 instead of falling back to offline", async () => {
+    (api.post as any).mockRejectedValue({
+      response: {
+        status: 400,
+        data: { detail: "Correction reason is mandatory when variance exists" },
+      },
+      message: "Request failed with status code 400",
+    });
 
-describe("API Service - Item Operations", () => {
-  it("should search items by barcode", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
-  });
+    await expect(
+      createCountLine({
+        session_id: "sess1",
+        item_code: "ITEM1",
+        counted_qty: 1,
+      }),
+    ).rejects.toBeInstanceOf(AppError);
 
-  it("should search items by item code", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
-  });
-
-  it("should cache search results", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
-  });
-
-  it("should fall back to cache when offline", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
-  });
-});
-
-describe("API Service - Offline Queue", () => {
-  it("should add failed requests to offline queue", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
-  });
-
-  it("should retry requests when back online", async () => {
-    // Test placeholder
-    expect(true).toBe(true);
+    expect(createOfflineCountLine).not.toHaveBeenCalled();
+    expect(addToOfflineQueue).not.toHaveBeenCalled();
   });
 });

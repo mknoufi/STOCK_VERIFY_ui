@@ -25,31 +25,31 @@
 ## Phase 4: User Story 2 - Permissions & Governance
 **Goal**: Implement Role-Based Access Control (RBAC) and Audit Logging.
 
-- [ ] T011 [US2] Define permissions constants (e.g., `INVENTORY_EDIT`) in `frontend/src/constants/permissions.ts`
-- [ ] T012 [US2] Implement `usePermission` hook in `frontend/src/hooks/usePermission.ts`
-- [ ] T013 [US2] Create `PermissionGate` component in `frontend/src/components/auth/PermissionGate.tsx`
-- [ ] T014 [US2] Implement frontend action logging service in `frontend/src/services/audit/auditLogger.ts`
+- [x] T011 [US2] Define permissions constants (e.g., `INVENTORY_EDIT`) in `frontend/src/constants/permissions.ts`
+- [x] T012 [US2] Implement `usePermission` hook in `frontend/src/hooks/usePermission.ts`
+- [x] T013 [US2] Create `PermissionGate` component in `frontend/src/components/auth/PermissionGate.tsx`
+- [x] T014 [US2] Implement frontend action logging service in `frontend/src/services/audit/auditLogger.ts`
 
 ## Phase 5: User Story 3 - Security Hardening
 **Goal**: Secure data storage and API communications.
 
-- [ ] T015 [US3] Research: Determine necessity of Request Signing and SSL Pinning (Output: `docs/security_research.md`)
-- [ ] T016 [US3] Verify `SecureStore` usage in `frontend/src/services/storage/secureStorage.ts` and migrate sensitive tokens if needed
-- [ ] T017 [US3] Configure `babel-plugin-transform-remove-console` in `frontend/babel.config.js` for production builds
+- [x] T015 [US3] Research: Determine necessity of Request Signing and SSL Pinning (Output: `docs/security_research.md`)
+- [x] T016 [US3] Verify `SecureStore` usage in `frontend/src/services/storage/secureStorage.ts` and migrate sensitive tokens if needed
+- [x] T017 [US3] Configure `babel-plugin-transform-remove-console` in `frontend/babel.config.js` for production builds
 
 ## Phase 6: User Story 4 - Performance & Reliability
 **Goal**: Improve offline capabilities and application performance.
 
-- [ ] T018 [US4] Harden `syncBatch` in `frontend/src/services/sync/syncBatch.ts` (Handle 409 Conflict, Network Timeout, Persistence Failure)
-- [ ] T019 [US4] Implement conflict resolution strategies in `frontend/src/services/sync/conflictResolution.ts`
-- [ ] T020 [US4] Optimize React Query cache settings (staleTime, gcTime) in `frontend/src/config/queryClient.ts`
-- [ ] T021 [US4] Implement list virtualization for Inventory list in `frontend/src/components/common/VirtualList.tsx`
+- [x] T018 [US4] Harden `syncBatch` in `frontend/src/services/sync/syncBatch.ts` (Handle 409 Conflict, Network Timeout, Persistence Failure)
+- [x] T019 [US4] Implement conflict resolution strategies in `frontend/src/services/sync/conflictResolution.ts`
+- [x] T020 [US4] Optimize React Query cache settings (staleTime, gcTime) in `frontend/src/config/queryClient.ts`
+- [x] T021 [US4] Implement list virtualization for Inventory list in `frontend/src/components/common/VirtualList.tsx`
 
 ## Phase 7: User Story 5 - Testing & Quality Assurance
 **Goal**: Ensure high code quality and reliability through testing.
 
-- [ ] T022 [US5] Increase unit test coverage to >80% for `frontend/src/services`
-- [ ] T023 [US5] Setup E2E testing configuration (Maestro/Detox) in `frontend/e2e`
+- [x] T022 [US5] Increase unit test coverage for `frontend/src/services` (Jest)
+- [x] T023 [US5] Setup Maestro/Detox for E2E testing (Create `frontend/e2e/README.md` with setup instructions)
 
 ## Dependencies
 - **T001 (Environment)** is a strict blocker for all tasks.

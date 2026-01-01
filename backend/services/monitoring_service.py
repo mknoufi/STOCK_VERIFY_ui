@@ -114,20 +114,14 @@ class MonitoringService:
     def get_metrics(self) -> dict[str, Any]:
         """Get current metrics"""
         with self._lock:
-            uptime = (
-                datetime.utcnow() - self._health_status["start_time"]
-            ).total_seconds()
+            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
             avg_response_time = (
-                self._total_response_time / self._request_count
-                if self._request_count > 0
-                else 0.0
+                self._total_response_time / self._request_count if self._request_count > 0 else 0.0
             )
 
             # Calculate p50, p95, p99 response times
             if self._request_times:
-                sorted_times = sorted(
-                    [r["duration"] for r in self._request_times], reverse=True
-                )
+                sorted_times = sorted([r["duration"] for r in self._request_times], reverse=True)
                 p50_idx = int(len(sorted_times) * 0.5)
                 p95_idx = int(len(sorted_times) * 0.95)
                 p99_idx = int(len(sorted_times) * 0.99)
@@ -139,9 +133,7 @@ class MonitoringService:
                 p50 = p95 = p99 = 0
 
             error_rate = (
-                (self._error_count / self._request_count) * 100
-                if self._request_count > 0
-                else 0.0
+                (self._error_count / self._request_count) * 100 if self._request_count > 0 else 0.0
             )
 
             return {
@@ -168,15 +160,11 @@ class MonitoringService:
     def get_health(self) -> dict[str, Any]:
         """Get health status"""
         with self._lock:
-            uptime = (
-                datetime.utcnow() - self._health_status["start_time"]
-            ).total_seconds()
+            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
 
             # Determine health status
             error_rate = (
-                (self._error_count / self._request_count) * 100
-                if self._request_count > 0
-                else 0.0
+                (self._error_count / self._request_count) * 100 if self._request_count > 0 else 0.0
             )
 
             if error_rate > 10:
@@ -223,22 +211,16 @@ class MonitoringService:
             lines.append("")
 
             # Error count
-            lines.append(
-                "# HELP http_requests_errors_total Total number of HTTP errors"
-            )
+            lines.append("# HELP http_requests_errors_total Total number of HTTP errors")
             lines.append("# TYPE http_requests_errors_total counter")
             lines.append(f"http_requests_errors_total {self._error_count}")
             lines.append("")
 
             # Average response time
             avg_time = (
-                self._total_response_time / self._request_count
-                if self._request_count > 0
-                else 0.0
+                self._total_response_time / self._request_count if self._request_count > 0 else 0.0
             )
-            lines.append(
-                "# HELP http_request_duration_seconds Average HTTP request duration"
-            )
+            lines.append("# HELP http_request_duration_seconds Average HTTP request duration")
             lines.append("# TYPE http_request_duration_seconds gauge")
             lines.append(f"http_request_duration_seconds {avg_time:.6f}")
             lines.append("")
@@ -266,9 +248,7 @@ class MonitoringService:
             lines.append("")
 
             # Uptime
-            uptime = (
-                datetime.utcnow() - self._health_status["start_time"]
-            ).total_seconds()
+            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
             lines.append("# HELP app_uptime_seconds Application uptime in seconds")
             lines.append("# TYPE app_uptime_seconds counter")
             lines.append(f"app_uptime_seconds {uptime:.0f}")
@@ -276,9 +256,7 @@ class MonitoringService:
 
             # Error rate
             error_rate = (
-                (self._error_count / self._request_count)
-                if self._request_count > 0
-                else 0.0
+                (self._error_count / self._request_count) if self._request_count > 0 else 0.0
             )
             lines.append("# HELP http_error_rate Error rate (errors/requests)")
             lines.append("# TYPE http_error_rate gauge")

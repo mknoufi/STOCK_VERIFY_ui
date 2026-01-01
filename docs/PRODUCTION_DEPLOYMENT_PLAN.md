@@ -101,7 +101,7 @@ mongo admin
 // MongoDB shell commands
 db.createUser({
   user: "admin",
-  pwd: "CHANGE_TO_SECURE_PASSWORD",
+  pwd: "CHANGE_ME", // pragma: allowlist secret
   roles: [{ role: "root", db: "admin" }]
 });
 
@@ -165,7 +165,7 @@ DEBUG=false
 LOG_LEVEL=INFO
 
 # Database
-MONGO_URL=mongodb://app_user:SECURE_PASSWORD@db-server-ip:27017/stock_verify?authSource=admin
+MONGO_URL=mongodb://app_user:CHANGE_ME@db-server-ip:27017/stock_verify?authSource=admin <!-- pragma: allowlist secret -->
 DB_NAME=stock_verify
 
 # Security

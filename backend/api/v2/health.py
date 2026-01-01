@@ -74,11 +74,7 @@ async def health_check_v2() -> ApiResponse[HealthCheckResponse]:
     Returns detailed health status of all services
     """
     try:
-        from backend.server import (
-            cache_service,
-            connection_pool,
-            database_health_service,
-        )
+        from backend.server import cache_service, connection_pool, database_health_service
 
         services = {
             "mongodb": _check_mongodb(database_health_service),
@@ -125,9 +121,7 @@ async def detailed_health_check(
         health_data: dict[str, Any] = {
             "timestamp": datetime.utcnow().isoformat(),
             "services": {
-                "mongodb": _safe_service_check(
-                    database_health_service, "check_mongodb_health"
-                ),
+                "mongodb": _safe_service_check(database_health_service, "check_mongodb_health"),
                 "sql_server_pool": _safe_service_check(connection_pool, "get_stats"),
                 "cache": _safe_service_check(cache_service, "get_status"),
             },

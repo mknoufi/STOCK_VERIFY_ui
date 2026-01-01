@@ -14,8 +14,8 @@ config.transformer = {
 // Ensure node_modules with import.meta are transpiled for web
 config.resolver = {
   ...config.resolver,
-  // Add web-specific resolution
-  resolverMainFields: ["browser", "main", "module"],
+  // Add react-native first for native bundling, then web-specific resolution
+  resolverMainFields: ["react-native", "browser", "main", "module"],
 };
 
 // Add WASM support for expo-sqlite

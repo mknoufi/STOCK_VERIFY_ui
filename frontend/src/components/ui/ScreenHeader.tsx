@@ -38,7 +38,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useAuthStore } from "../../store/authStore";
-import { useThemeContext } from "../../theme/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
 // ============================================================================
 // Types
@@ -156,8 +156,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
       : isDark
         ? "rgba(15, 23, 42, 0.85)"
         : "rgba(255, 255, 255, 0.9)",
-    text: theme.colors.text,
-    textSecondary: theme.colors.textSecondary,
+    text: theme.colors.text.primary,
+    textSecondary: theme.colors.text.secondary,
     accent: theme.colors.accent,
     danger: theme.colors.danger,
     border: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
@@ -263,14 +263,14 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
         >
           {title}
         </Text>
-        {subtitle && (
+        {subtitle ? (
           <Text
             style={[styles.subtitleText, { color: colors.textSecondary }]}
             numberOfLines={1}
           >
             {subtitle}
           </Text>
-        )}
+        ) : null}
       </Animated.View>
     );
   };

@@ -11,7 +11,13 @@
  */
 
 import React, { useEffect } from "react";
-import { View, StyleSheet, ViewStyle, useWindowDimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  useWindowDimensions,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -21,7 +27,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 import { ParticleField } from "./ParticleField";
 
 export type AuroraVariant =
@@ -37,7 +43,7 @@ interface AuroraBackgroundProps {
   animated?: boolean;
   withParticles?: boolean;
   particleCount?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }
 
@@ -51,9 +57,15 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   children,
 }) => {
   const { width, height } = useWindowDimensions();
-  const colors = variant === "primary"
-    ? ["#0EA5E9", "#10B981", "#020617"]
-    : auroraTheme.colors.aurora[variant];
+  const { theme } = useThemeContext();
+
+  // Use theme colors for aurora variants with a safe fallback for mocks.
+  const fallbackColor = theme.colors.accent || "#6366F1";
+  const auroraPalette = theme.colors.aurora;
+  const colors =
+    auroraPalette?.[variant] ||
+    auroraPalette?.primary ||
+    ([fallbackColor, fallbackColor, fallbackColor] as const);
 
   // Animation values for gradient blobs
   const blob1X = useSharedValue(0);
@@ -164,9 +176,12 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Base gradient background */}
+      {/* Base gradient background - verify if theme has specific background gradient or use colors */}
       <LinearGradient
-        colors={["#020617", "#0F172A"]}
+        colors={[
+          theme.colors.background.default,
+          theme.colors.background.paper || theme.colors.background.default,
+        ]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -181,7 +196,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             left: -width * 0.2,
           },
           blob1Style,
-          { opacity }
+          { opacity },
         ]}
       >
         <LinearGradient
@@ -202,7 +217,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             right: -width * 0.3,
           },
           blob2Style,
-          { opacity }
+          { opacity },
         ]}
       >
         <LinearGradient
@@ -223,7 +238,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             left: width * 0.1,
           },
           blob3Style,
-          { opacity }
+          { opacity },
         ]}
       >
         <LinearGradient

@@ -7,6 +7,7 @@
  * - Glow effects
  * - Performance optimized
  * - Customizable density and colors
+ * - Theme-aware defaults
  */
 
 import React, { useEffect, useMemo } from "react";
@@ -20,7 +21,7 @@ import Animated, {
   withDelay,
   Easing,
 } from "react-native-reanimated";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 
 interface Particle {
   id: number;
@@ -138,12 +139,16 @@ const ParticleElement: React.FC<{
 
 export const ParticleField: React.FC<ParticleFieldProps> = ({
   count = 20,
-  color = auroraTheme.colors.primary[400],
+  color,
   minSize = 2,
   maxSize = 6,
   animated = true,
 }) => {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { theme } = useThemeContext();
+
+  // Use theme accentLight as default if no color provided
+  const particleColor = color || theme.colors.accentLight;
 
   const particles = useMemo<Particle[]>(() => {
     return Array.from({ length: count }).map((_, index) => ({
@@ -162,7 +167,7 @@ export const ParticleField: React.FC<ParticleFieldProps> = ({
         <ParticleElement
           key={particle.id}
           particle={particle}
-          color={color}
+          color={particleColor}
           animated={animated}
         />
       ))}

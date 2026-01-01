@@ -76,11 +76,20 @@ export { ThemedScreen, ThemedCard, ThemedText } from "./ThemedScreen";
 export { ScreenContainer } from "./ScreenContainer";
 export type {
   ScreenContainerProps,
-  BackgroundType,
-  ContentMode,
-  LoadingType,
 } from "./ScreenContainer";
 
 // Responsive Typography
 export { ResponsiveText } from "./ResponsiveText";
 export type { ResponsiveTextProps, TextVariant } from "./ResponsiveText";
+
+// Enhanced UI/UX Components (v3.0 - Best Practices Design Kit)
+export { MyPressable, PressablePresets } from "./MyPressable";
+export type { MyPressableProps } from "./MyPressable";
+export { EnhancedButton } from "./EnhancedButton";
+export type { EnhancedButtonProps, ButtonType, ButtonSize, IconPosition } from "./EnhancedButton";
+export { Separator, SeparatorPresets } from "./Separator";
+export type { SeparatorProps, SeparatorOrientation } from "./Separator";
+export { AnimatedListItem, ListAnimationPresets } from "./AnimatedListItem";
+export type { AnimatedListItemProps } from "./AnimatedListItem";
+export { EnhancedInput } from "./EnhancedInput";
+export type { EnhancedInputProps, InputSize, LabelPosition } from "./EnhancedInput";

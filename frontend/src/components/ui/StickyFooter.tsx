@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { PremiumButton } from "@/components/premium/PremiumButton";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { PremiumButton } from "@/components/premium/PremiumButton"; // Assuming this is already modern or will be
+import { useThemeContext } from "../../context/ThemeContext";
 
 interface Props {
   title: string;
@@ -11,10 +11,32 @@ interface Props {
   testID?: string;
 }
 
-export function StickyFooter({ title, disabled, loading, onPress, testID }: Props) {
+export function StickyFooter({
+  title,
+  disabled,
+  loading,
+  onPress,
+  testID,
+}: Props) {
+  const { theme } = useThemeContext();
+
   return (
-    <View style={styles.container} pointerEvents="box-none">
-      <View style={styles.inner}>
+    <View
+      style={[
+        styles.container,
+        {
+          padding: theme.spacing.lg,
+          backgroundColor: theme.colors.overlay || "rgba(0,0,0,0.25)"
+        }
+      ]}
+      pointerEvents="box-none"
+    >
+      <View
+        style={[
+          styles.inner,
+          { borderRadius: theme.borderRadius.lg }
+        ]}
+      >
         <PremiumButton
           title={title}
           onPress={onPress}
@@ -36,11 +58,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    padding: auroraTheme.spacing.lg,
-    backgroundColor: "rgba(0,0,0,0.25)",
   },
   inner: {
-    borderRadius: auroraTheme.borderRadius.lg,
     overflow: "hidden",
     backgroundColor: "transparent",
   },

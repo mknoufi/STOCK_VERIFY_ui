@@ -72,9 +72,15 @@ export function SectionLists({
   onStartNewSection,
   onResumeSection,
 }: SectionListsProps) {
-  const styles = React.useMemo(() => createStyles(theme, isDark), [theme, isDark]);
+  const styles = React.useMemo(
+    () => createStyles(theme, isDark),
+    [theme, isDark],
+  );
   const [showAllFinished, setShowAllFinished] = React.useState(false);
-  const topActiveSections = React.useMemo(() => activeSections.slice(0, 3), [activeSections]);
+  const topActiveSections = React.useMemo(
+    () => activeSections.slice(0, 3),
+    [activeSections],
+  );
   const overflowActiveSections = React.useMemo(
     () => activeSections.slice(3),
     [activeSections],
@@ -87,12 +93,17 @@ export function SectionLists({
         <View style={styles.sectionHeaderRow}>
           <View style={styles.sectionHeader}>
             <Ionicons name="layers" size={22} color={theme.colors.accent} />
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            <Text
+              style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
+            >
               Select Section
             </Text>
           </View>
           <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: theme.colors.accent }]}
+            style={[
+              styles.iconButton,
+              { backgroundColor: theme.colors.accent },
+            ]}
             onPress={onStartNewSection}
             activeOpacity={0.7}
             accessibilityRole="button"
@@ -117,7 +128,10 @@ export function SectionLists({
                 <ModernCard
                   variant="glass"
                   onPress={() =>
-                    onResumeSection(session.session_id || session.id || "", session.type)
+                    onResumeSection(
+                      session.session_id || session.id || "",
+                      session.type,
+                    )
                   }
                   style={styles.activeSessionCard}
                   contentStyle={styles.sessionCardContent}
@@ -131,17 +145,14 @@ export function SectionLists({
                     <Ionicons name="layers" size={24} color="#0EA5E9" />
                   </View>
                   <View style={styles.sessionInfo}>
-                    <Text
-                      style={styles.sessionName}
-                      numberOfLines={1}
-                    >
+                    <Text style={styles.sessionName} numberOfLines={1}>
                       {session.warehouse}
                     </Text>
-                    <Text
-                      style={styles.sessionMeta}
-                    >
+                    <Text style={styles.sessionMeta}>
                       {session.item_count || session.total_items || 0} items •{" "}
-                      {new Date(session.created_at || session.started_at || "").toLocaleDateString()}
+                      {new Date(
+                        session.created_at || session.started_at || "",
+                      ).toLocaleDateString()}
                     </Text>
                   </View>
                   <View style={styles.resumeButton}>
@@ -170,7 +181,10 @@ export function SectionLists({
                       <ModernCard
                         variant="glass"
                         onPress={() =>
-                          onResumeSection(session.session_id || session.id || "", session.type)
+                          onResumeSection(
+                            session.session_id || session.id || "",
+                            session.type,
+                          )
                         }
                         style={styles.overflowCard}
                         contentStyle={styles.sessionCardContent}
@@ -184,26 +198,23 @@ export function SectionLists({
                           <Ionicons name="layers" size={24} color="#0EA5E9" />
                         </View>
                         <View style={styles.sessionInfo}>
-                          <Text
-                            style={styles.sessionName}
-                            numberOfLines={1}
-                          >
+                          <Text style={styles.sessionName} numberOfLines={1}>
                             {session.warehouse}
                           </Text>
-                          <Text
-                            style={styles.sessionMeta}
-                          >
-                            {session.item_count || session.total_items || 0} items •
-                            {" "}
+                          <Text style={styles.sessionMeta}>
+                            {session.item_count || session.total_items || 0}{" "}
+                            items •{" "}
                             {new Date(
                               session.created_at || session.started_at || "",
                             ).toLocaleDateString()}
                           </Text>
                         </View>
-                        <View
-                          style={styles.resumeButton}
-                        >
-                          <Ionicons name="arrow-forward" size={18} color="#FFF" />
+                        <View style={styles.resumeButton}>
+                          <Ionicons
+                            name="arrow-forward"
+                            size={18}
+                            color="#FFF"
+                          />
                         </View>
                       </ModernCard>
                     </Animated.View>
@@ -220,9 +231,7 @@ export function SectionLists({
                 size={40}
                 color="#10B981"
               />
-              <Text style={styles.emptyTitle}>
-                All Caught Up!
-              </Text>
+              <Text style={styles.emptyTitle}>All Caught Up!</Text>
               <Text style={styles.emptyText}>
                 No active sections. Start a new one below.
               </Text>
@@ -235,11 +244,7 @@ export function SectionLists({
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
           <View style={styles.sectionHeader}>
-            <Ionicons
-              name="checkmark-done-circle"
-              size={22}
-              color="#10B981"
-            />
+            <Ionicons name="checkmark-done-circle" size={22} color="#10B981" />
             <Text style={[styles.sectionTitle, { color: "#F8FAFC" }]}>
               Previous Sessions
             </Text>
@@ -258,18 +263,12 @@ export function SectionLists({
             accessibilityRole="button"
             accessibilityLabel="Toggle previous sessions search"
           >
-            <Ionicons
-              name="search"
-              size={18}
-              color="#FFF"
-            />
+            <Ionicons name="search" size={18} color="#FFF" />
           </TouchableOpacity>
         </View>
 
         {showFinishedSearch && (
-          <View
-            style={styles.searchContainer}
-          >
+          <View style={styles.searchContainer}>
             <Ionicons name="search" size={18} color="#94A3B8" />
             <TextInput
               style={styles.searchInput}
@@ -281,7 +280,10 @@ export function SectionLists({
               accessibilityLabel="Search previous sessions"
             />
             {finishedSearchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => onSearchQueryChange("")} accessibilityRole="button">
+              <TouchableOpacity
+                onPress={() => onSearchQueryChange("")}
+                accessibilityRole="button"
+              >
                 <Ionicons name="close-circle" size={18} color="#94A3B8" />
               </TouchableOpacity>
             )}
@@ -290,7 +292,10 @@ export function SectionLists({
 
         {finishedSections.length > 0 ? (
           <View style={styles.listContainer}>
-            {(showAllFinished ? finishedSections : finishedSections.slice(0, 3)).map((session, index) => (
+            {(showAllFinished
+              ? finishedSections
+              : finishedSections.slice(0, 3)
+            ).map((session, index) => (
               <Animated.View
                 key={session.id || session.session_id}
                 entering={FadeInUp.delay(200 + index * 50)}
@@ -319,18 +324,17 @@ export function SectionLists({
                       />
                     </View>
                     <View style={styles.sessionInfo}>
-                      <Text
-                        style={styles.sessionName}
-                        numberOfLines={1}
-                      >
+                      <Text style={styles.sessionName} numberOfLines={1}>
                         {session.warehouse}
                       </Text>
-                      <Text
-                        style={styles.sessionMeta}
-                      >
-                        {session.item_count || session.total_items || 0} items • Last used{" "}
+                      <Text style={styles.sessionMeta}>
+                        {session.item_count || session.total_items || 0} items •
+                        Last used{" "}
                         {getRelativeTime(
-                          session.closed_at || session.updated_at || session.created_at || "",
+                          session.closed_at ||
+                            session.updated_at ||
+                            session.created_at ||
+                            "",
                         )}
                       </Text>
                     </View>
@@ -354,7 +358,9 @@ export function SectionLists({
         ) : (
           <View style={styles.emptyStateSmall}>
             <Text style={styles.emptyTextSmall}>
-              {finishedSearchQuery ? "No matching sessions found" : "No previous sessions yet"}
+              {finishedSearchQuery
+                ? "No matching sessions found"
+                : "No previous sessions yet"}
             </Text>
           </View>
         )}

@@ -28,7 +28,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 
 interface FloatingScanButtonProps {
   onPress: () => void;
@@ -44,10 +44,14 @@ const AnimatedGradient = Animated.createAnimatedComponent(LinearGradient);
 export const FloatingScanButton: React.FC<FloatingScanButtonProps> = ({
   onPress,
   style,
-  size = auroraTheme.componentSizes.button.xl,
+  size,
   disabled = false,
   testID = "floating-scan-button",
 }) => {
+  const { themeLegacy: theme } = useThemeContext();
+  const buttonSize =
+    size || theme.componentSizes?.button?.xl || 72;
+
   const scale = useSharedValue(1);
   const pulseScale = useSharedValue(1);
   const glowOpacity = useSharedValue(0.6);
@@ -103,11 +107,16 @@ export const FloatingScanButton: React.FC<FloatingScanButtonProps> = ({
     }
   };
 
+  const fallbackColor = theme.colors.accent || "#6366F1";
+  const gradientColors =
+    theme.gradients?.primary || [fallbackColor, fallbackColor];
+  const glowShadow = theme.shadows?.glow || {};
+
   return (
     <AnimatedTouchable
       style={[
         styles.container,
-        { width: size, height: size },
+        { width: buttonSize, height: buttonSize },
         style,
         buttonStyle,
       ]}
@@ -124,39 +133,40 @@ export const FloatingScanButton: React.FC<FloatingScanButtonProps> = ({
     >
       {/* Glow effect (pulse ring) */}
       <AnimatedGradient
-        colors={auroraTheme.colors.aurora.primary}
+        colors={gradientColors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[
           styles.glow,
           pulseStyle,
           {
-            width: size + 20,
-            height: size + 20,
-            borderRadius: (size + 20) / 2,
+            width: buttonSize + 20,
+            height: buttonSize + 20,
+            borderRadius: (buttonSize + 20) / 2,
           },
         ]}
       />
 
       {/* Main button */}
       <LinearGradient
-        colors={auroraTheme.colors.aurora.primary}
+        colors={gradientColors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[
           styles.button,
           {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
+            width: buttonSize,
+            height: buttonSize,
+            borderRadius: buttonSize / 2,
             opacity: disabled ? 0.5 : 1,
+            borderColor: theme.colors.borderLight || theme.colors.border,
           },
         ]}
       >
         <Ionicons
           name="scan"
-          size={size * 0.5}
-          color={auroraTheme.colors.text.primary}
+          size={buttonSize * 0.5}
+          color="#FFFFFF" // White for best visibility on gradient background
         />
       </LinearGradient>
 
@@ -165,11 +175,11 @@ export const FloatingScanButton: React.FC<FloatingScanButtonProps> = ({
         style={[
           styles.shadow,
           {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
+            width: buttonSize,
+            height: buttonSize,
+            borderRadius: buttonSize / 2,
           },
-          auroraTheme.shadows.glow,
+          glowShadow,
         ]}
       />
     </AnimatedTouchable>
@@ -190,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    // borderColor is set dynamically
   },
   shadow: {
     position: "absolute",

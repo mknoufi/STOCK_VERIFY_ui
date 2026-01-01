@@ -4,8 +4,11 @@ import type { Item } from "../types/scan";
 const RECENT_ITEMS_KEY = "stock_verify_recent_items";
 
 /** Recent item with scan timestamp */
-interface RecentItem extends Item {
+export interface RecentItem extends Item {
   scanned_at: string;
+  floor_no?: string;
+  rack_no?: string;
+  counted_qty?: number;
 }
 
 /** Generic analytics data payload */

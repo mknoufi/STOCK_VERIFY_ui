@@ -11,9 +11,8 @@ import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
 import {
   LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
   AnimatedPressable,
+  ScreenContainer,
 } from "../../src/components/ui";
 import {
   getAvailablePermissions,
@@ -137,7 +136,7 @@ export default function PermissionsScreen() {
             return (
               <View key={permission} style={styles.permissionRow}>
                 <Text style={styles.permissionText}>{permission}</Text>
-                {selectedUsername && (
+                {Boolean(selectedUsername) && (
                   <AnimatedPressable
                     style={[
                       styles.permissionButton,
@@ -164,23 +163,31 @@ export default function PermissionsScreen() {
 
   if (loading && !availablePermissions) {
     return (
-      <AuroraBackground>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "Permission Management",
+          subtitle: "User Access Control",
+          showBackButton: true,
+        }}
+      >
         <View style={styles.centered}>
           <LoadingSpinner size={36} color={auroraTheme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading permissions...</Text>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="Permission Management"
-        subtitle="User Access Control"
-        showBackButton
-      />
-
+    <ScreenContainer
+      gradient
+      header={{
+        title: "Permission Management",
+        subtitle: "User Access Control",
+        showBackButton: true,
+      }}
+    >
       <View style={styles.controlPanel}>
         <Text style={styles.sectionTitle}>User Permissions</Text>
         <View style={styles.inputRow}>
@@ -215,7 +222,7 @@ export default function PermissionsScreen() {
           <Text style={styles.statsText}>
             Total Permissions: {availablePermissions?.permissions?.length || 0}
           </Text>
-          {selectedUsername && (
+          {Boolean(selectedUsername) && (
             <Text style={styles.statsText}>
               User &quot;{selectedUsername}&quot;: {userPermissions.length}{" "}
               permissions
@@ -225,7 +232,7 @@ export default function PermissionsScreen() {
 
         {renderPermissionCategories()}
       </ScrollView>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 

@@ -1,6 +1,12 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Vibration } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Vibration,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface PinKeypadProps {
   pin: string;
@@ -12,7 +18,7 @@ interface PinKeypadProps {
   subtitle?: string;
   errorMessage?: string;
   disabled?: boolean;
-  theme?: 'light' | 'dark';
+  theme?: "light" | "dark";
 }
 
 interface KeypadButtonProps {
@@ -21,7 +27,7 @@ interface KeypadButtonProps {
   disabled?: boolean;
   isDelete?: boolean;
   isSubmit?: boolean;
-  theme?: 'light' | 'dark';
+  theme?: "light" | "dark";
 }
 
 const KeypadButton: React.FC<KeypadButtonProps> = ({
@@ -30,7 +36,7 @@ const KeypadButton: React.FC<KeypadButtonProps> = ({
   disabled = false,
   isDelete = false,
   isSubmit = false,
-  theme = 'light'
+  theme = "light",
 }) => {
   const handlePress = (): void => {
     if (!disabled) {
@@ -43,13 +49,27 @@ const KeypadButton: React.FC<KeypadButtonProps> = ({
     <TouchableOpacity
       onPress={handlePress}
       disabled={disabled}
-      style={[styles.button, theme === 'dark' && styles.darkButton]}
+      style={[styles.button, theme === "dark" && styles.darkButton]}
     >
-      <Text style={[styles.buttonText, theme === 'dark' && styles.darkButtonText]}>
+      <Text
+        style={[styles.buttonText, theme === "dark" && styles.darkButtonText]}
+      >
         {value}
       </Text>
-      {isDelete && <Ionicons name="backspace" size={24} color={theme === 'dark' ? 'white' : 'black'} />}
-      {isSubmit && <Ionicons name="checkmark" size={24} color={theme === 'dark' ? 'white' : 'black'} />}
+      {isDelete && (
+        <Ionicons
+          name="backspace"
+          size={24}
+          color={theme === "dark" ? "white" : "black"}
+        />
+      )}
+      {isSubmit && (
+        <Ionicons
+          name="checkmark"
+          size={24}
+          color={theme === "dark" ? "white" : "black"}
+        />
+      )}
     </TouchableOpacity>
   );
 };
@@ -64,10 +84,10 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
   subtitle,
   errorMessage,
   disabled = false,
-  theme = 'light'
+  theme = "light",
 }) => {
   const handleKeyPress = (value: string | number): void => {
-    if (typeof value === 'number' && pin.length < maxLength) {
+    if (typeof value === "number" && pin.length < maxLength) {
       onPinChange(pin + value.toString());
     }
   };
@@ -86,18 +106,43 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
 
   return (
     <View style={styles.container}>
-      {title && <Text style={[styles.title, theme === 'dark' && styles.darkTitle]}>{title}</Text>}
-      {subtitle && <Text style={[styles.subtitle, theme === 'dark' && styles.darkSubtitle]}>{subtitle}</Text>}
-      {errorMessage && <Text style={[styles.errorMessage, theme === 'dark' && styles.darkErrorMessage]}>{errorMessage}</Text>}
+      {title && (
+        <Text style={[styles.title, theme === "dark" && styles.darkTitle]}>
+          {title}
+        </Text>
+      )}
+      {subtitle && (
+        <Text
+          style={[styles.subtitle, theme === "dark" && styles.darkSubtitle]}
+        >
+          {subtitle}
+        </Text>
+      )}
+      {errorMessage && (
+        <Text
+          style={[
+            styles.errorMessage,
+            theme === "dark" && styles.darkErrorMessage,
+          ]}
+        >
+          {errorMessage}
+        </Text>
+      )}
       <View style={styles.keypad}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'delete', 0, 'submit'].map((item) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, "delete", 0, "submit"].map((item) => (
           <KeypadButton
             key={item.toString()}
             value={item}
-            onPress={item === 'delete' ? handleDelete : item === 'submit' ? handleSubmit : handleKeyPress}
+            onPress={
+              item === "delete"
+                ? handleDelete
+                : item === "submit"
+                  ? handleSubmit
+                  : handleKeyPress
+            }
             disabled={disabled}
-            isDelete={item === 'delete'}
-            isSubmit={item === 'submit'}
+            isDelete={item === "delete"}
+            isSubmit={item === "submit"}
             theme={theme}
           />
         ))}

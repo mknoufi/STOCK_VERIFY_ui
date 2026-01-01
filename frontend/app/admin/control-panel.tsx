@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { usePermission } from "../../src/hooks/usePermission";
+import { ScreenContainer } from "../../src/components/ui";
 import {
   getServicesStatus,
   getSystemIssues,
@@ -232,8 +233,8 @@ export default function ControlPanelScreen() {
       Alert.alert(
         "Error",
         error.response?.data?.detail ||
-        error?.message ||
-        `Failed to ${action} ${service}`,
+          error?.message ||
+          `Failed to ${action} ${service}`,
       );
     }
   };
@@ -302,19 +303,19 @@ export default function ControlPanelScreen() {
 
       {service.running && (
         <View style={styles.serviceDetails}>
-          {service.port && (
+          {service.port != null && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="server" size={16} color="#aaa" />
               <Text style={styles.serviceDetailText}>Port: {service.port}</Text>
             </View>
           )}
-          {service.pid && (
+          {service.pid != null && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="code-working" size={16} color="#aaa" />
               <Text style={styles.serviceDetailText}>PID: {service.pid}</Text>
             </View>
           )}
-          {service.uptime && (
+          {service.uptime != null && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="time" size={16} color="#aaa" />
               <Text style={styles.serviceDetailText}>
@@ -322,7 +323,7 @@ export default function ControlPanelScreen() {
               </Text>
             </View>
           )}
-          {service.url && (
+          {Boolean(service.url) && (
             <TouchableOpacity
               style={styles.serviceDetailRow}
               onPress={() => handleCopyUrl(service.url!)}
@@ -414,15 +415,18 @@ export default function ControlPanelScreen() {
 
   if (loading && !services && !refreshing) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading control panel...</Text>
-      </View>
+      <ScreenContainer gradient>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Loading control panel...</Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer gradient>
+      <View style={styles.container}>
       <View style={[styles.header, isWeb && styles.headerWeb]}>
         <TouchableOpacity
           style={styles.backButton}
@@ -692,20 +696,21 @@ export default function ControlPanelScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+      </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "transparent",
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "transparent",
   },
   loadingText: {
     marginTop: 10,
@@ -723,11 +728,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#333",
     ...(Platform.OS === "web"
       ? {
-        position: "sticky" as const,
-        top: 0,
-        zIndex: 100,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-      }
+          position: "sticky" as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        }
       : {}),
   } as any,
   headerWeb: {

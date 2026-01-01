@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { API_BASE_URL } from '../services/httpClient';
-import { useAuthStore } from '../store/authStore';
-import { storage } from '../services/storage/asyncStorageService';
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useAuthStore } from "../store/authStore";
+import { secureStorage } from "../services/storage/secureStorage";
+import { resolveBackendUrl, getBackendURL } from "../services/backendUrl";
 
 interface WebSocketMessage {
   type: string;
@@ -12,58 +12,87 @@ export const useWebSocket = (sessionId?: string) => {
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isConnectingRef = useRef(false);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const { isAuthenticated } = useAuthStore();
 
   const connect = useCallback(async () => {
     if (!isAuthenticated) return;
+    if (isConnectingRef.current) return;
 
-    // Get token from storage (assuming it's stored there)
-    const token = await storage.get<string>('auth_token');
-    if (!token) return;
+    isConnectingRef.current = true;
 
-    // Convert http:// to ws:// or https:// to wss://
-    const wsUrl = API_BASE_URL.replace(/^http/, 'ws') + '/ws/updates';
-    const urlWithParams = `${wsUrl}?token=${token}${sessionId ? `&session_id=${sessionId}` : ''}`;
-
-    console.log('[WebSocket] Connecting to:', wsUrl);
-
-    const socket = new WebSocket(urlWithParams);
-
-    socket.onopen = () => {
-      console.log('[WebSocket] Connected');
-      setIsConnected(true);
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
+    try {
+      // Close any existing socket before reconnecting
+      if (socketRef.current) {
+        try {
+          socketRef.current.close();
+        } catch {
+          // ignore
+        }
+        socketRef.current = null;
       }
-    };
 
-    socket.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        setLastMessage(message);
-      } catch (error) {
-        console.error('[WebSocket] Error parsing message:', error);
-      }
-    };
+      // Tokens are stored in SecureStore (with web fallback)
+      const token = await secureStorage.getItem("auth_token");
+      if (!token) return;
 
-    socket.onclose = (event) => {
-      console.log('[WebSocket] Disconnected:', event.reason);
-      setIsConnected(false);
+      // Prefer the resolved backend URL (handles LAN IP changes)
+      const baseUrl = await resolveBackendUrl().catch(() => getBackendURL());
+      const normalizedBase = baseUrl.replace(/\/$/, "");
 
-      // Reconnect logic
-      if (isAuthenticated) {
-        console.log('[WebSocket] Attempting to reconnect in 5s...');
-        reconnectTimeoutRef.current = setTimeout(connect, 5000);
-      }
-    };
+      // Convert http:// -> ws:// and https:// -> wss://
+      const wsBase = normalizedBase.replace(/^http/i, "ws");
+      const wsUrl = `${wsBase}/ws/updates`;
+      const urlWithParams = `${wsUrl}${sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : ""}`;
 
-    socket.onerror = (error) => {
-      console.error('[WebSocket] Error:', error);
-    };
+      console.log("[WebSocket] Connecting to:", wsUrl);
 
-    socketRef.current = socket;
+      // Prefer subprotocol auth (avoids leaking tokens in URLs/logs)
+      const socket = new WebSocket(urlWithParams, ["jwt", token]);
+
+      socket.onopen = () => {
+        console.log("[WebSocket] Connected");
+        setIsConnected(true);
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          setLastMessage(message);
+        } catch (error) {
+          console.error("[WebSocket] Error parsing message:", error);
+        }
+      };
+
+      socket.onclose = (event) => {
+        console.log("[WebSocket] Disconnected:", event.reason);
+        setIsConnected(false);
+
+        // Reconnect logic
+        if (isAuthenticated) {
+          console.log("[WebSocket] Attempting to reconnect in 5s...");
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+          }
+          reconnectTimeoutRef.current = setTimeout(connect, 5000);
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error("[WebSocket] Error:", error);
+      };
+
+      socketRef.current = socket;
+    } finally {
+      isConnectingRef.current = false;
+    }
   }, [isAuthenticated, sessionId]);
 
   useEffect(() => {

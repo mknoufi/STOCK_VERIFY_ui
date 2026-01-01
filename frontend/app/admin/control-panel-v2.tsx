@@ -32,10 +32,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 // @ts-ignore - StatsCard might have strict type checks that we are fixing
 import { StatsCard } from "@/components/ui";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
-import {
-  modernColors,
-  modernTypography,
-} from "@/styles/modernDesignSystem";
+import { modernColors, modernTypography } from "@/styles/modernDesignSystem";
 import {
   getServicesStatus,
   getSystemIssues,
@@ -49,8 +46,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Services that should not show toggle button (read-only status)
 
 const NON_TOGGLEABLE_SERVICES: readonly string[] = [
-  /* database */ 'database',
-  /* sql_server */ 'sql_server',
+  /* database */ "database",
+  /* sql_server */ "sql_server",
 ];
 
 // Health Score Component
@@ -360,13 +357,13 @@ export default function AdminControlPanelV2() {
                   name="database"
                   status={services.mongodb}
                   loading={false}
-                  onToggle={() => { }}
+                  onToggle={() => {}}
                 />
                 <ServiceItem
                   name="sql_server"
                   status={services.sql_server}
                   loading={false}
-                  onToggle={() => { }}
+                  onToggle={() => {}}
                 />
               </View>
             </GlassCard>

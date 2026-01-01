@@ -38,9 +38,7 @@ def test_sql_server_connector_readonly():
             found_writes.extend(matches)
 
     # Should only have SELECT/READ operations
-    assert len(found_writes) == 0, (
-        f"Found write operations in SQL Server connector: {found_writes}"
-    )
+    assert len(found_writes) == 0, f"Found write operations in SQL Server connector: {found_writes}"
 
 
 def test_sql_server_methods_readonly():

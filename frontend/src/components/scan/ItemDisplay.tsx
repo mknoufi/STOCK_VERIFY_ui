@@ -12,7 +12,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Item } from "@/types/scan";
+import type { Item } from "@/types/scan";
 import Animated, { FadeInUp, Layout } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { flags } from "@/constants/flags";

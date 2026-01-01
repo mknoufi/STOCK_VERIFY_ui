@@ -16,7 +16,7 @@ import {
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
-import { PhotoProofType, PhotoProofDraft } from "@/types/scan";
+import type { PhotoProofType, PhotoProofDraft } from "@/types/scan";
 import { PHOTO_PROOF_TYPES } from "@/constants/scanConstants";
 
 interface PhotoCaptureProps {

@@ -99,7 +99,7 @@ _NEW_ITEM_FIELDS: list[tuple[str, str, str]] = [
     ("purchase_qty", "purchase_qty", "num"),
     ("purchase_invoice_no", "purchase_invoice_no", "str"),
     ("purchase_reference", "purchase_reference", "str"),
-    ("last_purchase_date", "last_purchase_date", "raw"),
+    ("last_purchase_date", "last_purchase_date", "date"),
     ("last_purchase_cost", "last_purchase_cost", "num"),
     ("purchase_voucher_type", "purchase_voucher_type", "str"),
     ("purchase_type", "purchase_type", "str"),
@@ -124,9 +124,7 @@ def _apply_field_conversion(value: Any, converter: str) -> Any:
     return value
 
 
-def _build_new_item_dict(
-    sql_item: dict[str, Any], sql_qty: float, now: datetime
-) -> dict[str, Any]:
+def _build_new_item_dict(sql_item: dict[str, Any], sql_qty: float, now: datetime) -> dict[str, Any]:
     """Build a new ERP item document from SQL data."""
     item = {
         "item_code": sql_item.get("item_code", ""),
@@ -276,9 +274,7 @@ class SQLSyncService:
                     try:
                         await self._sync_single_item(sql_item, stats)
                     except Exception as e:
-                        logger.error(
-                            f"Error syncing item {sql_item.get('item_code')}: {str(e)}"
-                        )
+                        logger.error(f"Error syncing item {sql_item.get('item_code')}: {str(e)}")
                         stats["errors"] += 1
 
             stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
@@ -300,9 +296,7 @@ class SQLSyncService:
             stats["errors"] = 1
             raise
 
-    async def _sync_single_item(
-        self, sql_item: dict[str, Any], stats: dict[str, Any]
-    ) -> None:
+    async def _sync_single_item(self, sql_item: dict[str, Any], stats: dict[str, Any]) -> None:
         """Process a single item from SQL Server for sync."""
         item_code = sql_item.get("item_code", "")
         sql_qty = float(sql_item.get("stock_qty", 0.0))
@@ -319,9 +313,7 @@ class SQLSyncService:
             logger.debug(f"Created new item: {item_code}")
         else:
             # Existing item - update ONLY quantity if changed
-            await self._update_existing_item(
-                item_code, sql_item, sql_qty, mongo_item, stats
-            )
+            await self._update_existing_item(item_code, sql_item, sql_qty, mongo_item, stats)
 
         stats["items_checked"] += 1
 
@@ -359,9 +351,7 @@ class SQLSyncService:
             stats["qty_updated"] += 1
 
             logger.info(
-                f"Qty updated for {item_code}: "
-                f"{mongo_qty} → {sql_qty} "
-                f"(Δ {sql_qty - mongo_qty})"
+                f"Qty updated for {item_code}: {mongo_qty} → {sql_qty} (Δ {sql_qty - mongo_qty})"
             )
 
         if metadata_updates:
@@ -414,8 +404,7 @@ class SQLSyncService:
                 )
         else:
             logger.debug(
-                "MongoDB sync_metadata collection not configured; "
-                "skipping metadata update",
+                "MongoDB sync_metadata collection not configured; skipping metadata update",
             )
 
     async def check_item_qty_realtime(self, item_code: str) -> dict[str, Any]:
@@ -432,9 +421,7 @@ class SQLSyncService:
         if not self.sql_connector.test_connection():
             logger.warning("SQL Server not available for real-time check")
             # Return MongoDB data without update
-            mongo_item = await self.mongo_db.erp_items.find_one(
-                {"item_code": item_code}
-            )
+            mongo_item = await self.mongo_db.erp_items.find_one({"item_code": item_code})
             if mongo_item:
                 return {
                     "item_code": item_code,
@@ -455,14 +442,10 @@ class SQLSyncService:
             sql_qty = float(sql_item.get("stock_qty", 0.0))
 
             # Get current MongoDB record
-            mongo_item = await self.mongo_db.erp_items.find_one(
-                {"item_code": item_code}
-            )
+            mongo_item = await self.mongo_db.erp_items.find_one({"item_code": item_code})
 
             if not mongo_item:
-                logger.warning(
-                    f"Item {item_code} not in MongoDB, will be created on next sync"
-                )
+                logger.warning(f"Item {item_code} not in MongoDB, will be created on next sync")
                 return {
                     "item_code": item_code,
                     "sql_qty": sql_qty,
@@ -489,9 +472,7 @@ class SQLSyncService:
                     },
                 )
 
-                logger.info(
-                    f"Real-time qty update for {item_code}: {mongo_qty} → {sql_qty}"
-                )
+                logger.info(f"Real-time qty update for {item_code}: {mongo_qty} → {sql_qty}")
 
                 return {
                     "item_code": item_code,
@@ -567,11 +548,15 @@ class SQLSyncService:
         self._running = True
         self._task = asyncio.create_task(self._sync_loop())
 
-    def stop(self):
+    async def stop(self):
         """Stop background sync"""
         self._running = False
         if self._task:
             self._task.cancel()
+            try:
+                await self._task
+            except asyncio.CancelledError:
+                pass
         logger.info("SQL sync service stopped")
 
     async def sync_now(self) -> dict[str, Any]:

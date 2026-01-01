@@ -319,7 +319,7 @@ SENTRY_DSN=https://<key>@sentry.io/<project>
 **Action Items:**
 ```bash
 # Test backup
-mongodump --uri="mongodb://user:pass@localhost:27017/stock_verify" --out=/tmp/test_backup
+mongodump --uri="mongodb://user:pass@localhost:27017/stock_verify" --out=/tmp/test_backup <!-- pragma: allowlist secret -->
 
 # Test restore
 mongorestore --uri="mongodb://localhost:27017" --drop /tmp/test_backup

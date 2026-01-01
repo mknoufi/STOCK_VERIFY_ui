@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
-import { ScannerMode } from "@/types/scan";
+import type { ScannerMode } from "@/types/scan";
 import {
   SCANNER_CONFIG,
   ScanThrottleManager,
@@ -54,7 +54,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 }) => {
   // Scan throttle manager to prevent duplicate scans
   const throttleManagerRef = useRef<ScanThrottleManager>(
-    new ScanThrottleManager()
+    new ScanThrottleManager(),
   );
 
   // Track scan feedback state for visual overlay
@@ -97,7 +97,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       // Call parent handler
       onBarcodeScanned(data);
     },
-    [onBarcodeScanned]
+    [onBarcodeScanned],
   );
 
   if (isWeb) {

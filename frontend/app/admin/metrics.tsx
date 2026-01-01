@@ -3,17 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Alert,
   Platform,
   Dimensions,
-  RefreshControl,
 } from "react-native";
 import {
   LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
   AnimatedPressable,
+  ScreenContainer,
 } from "@/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import { Ionicons } from "@expo/vector-icons";
@@ -135,22 +132,58 @@ export default function MetricsScreen() {
 
   if (loading && !stats) {
     return (
-      <AuroraBackground>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "System Metrics",
+          subtitle: "Performance & Health",
+          showBackButton: true,
+          customRightContent: (
+            <View style={styles.headerActions}>
+              <AnimatedPressable
+                style={styles.refreshButton}
+                onPress={() => loadMetrics(true)}
+              >
+                <Ionicons
+                  name="refresh"
+                  size={24}
+                  color={auroraTheme.colors.primary[500]}
+                  style={refreshing ? styles.refreshingIcon : undefined}
+                />
+              </AnimatedPressable>
+              <AnimatedPressable
+                style={styles.controlPanelButton}
+                onPress={() => router.push("/admin/control-panel" as any)}
+              >
+                <Ionicons
+                  name="settings"
+                  size={24}
+                  color={auroraTheme.colors.primary[500]}
+                />
+              </AnimatedPressable>
+            </View>
+          ),
+        }}
+      >
         <View style={styles.centered}>
           <LoadingSpinner size={48} color={auroraTheme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading metrics...</Text>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="System Metrics"
-        subtitle="Performance & Health"
-        showBackButton
-        customRightContent={
+    <ScreenContainer
+      gradient
+      scrollable
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      header={{
+        title: "System Metrics",
+        subtitle: "Performance & Health",
+        showBackButton: true,
+        customRightContent: (
           <View style={styles.headerActions}>
             <AnimatedPressable
               style={styles.refreshButton}
@@ -174,31 +207,19 @@ export default function MetricsScreen() {
               />
             </AnimatedPressable>
           </View>
-        }
-      />
-
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={[
-          styles.contentContainer,
-          isWeb && styles.contentContainerWeb,
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={auroraTheme.colors.primary[500]}
-          />
-        }
-        showsVerticalScrollIndicator={isWeb}
-      >
-        {health && (
-          <View style={[styles.section, styles.healthSection]}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="heart" size={24} color="#4CAF50" />
-              <Text style={styles.sectionTitle}>System Health</Text>
-            </View>
-            <View style={styles.healthCard}>
+        ),
+      }}
+      contentContainerStyle={
+        isWeb ? styles.contentContainerWeb : styles.contentContainer
+      }
+    >
+      {health && (
+        <View style={[styles.section, styles.healthSection]}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="heart" size={24} color="#4CAF50" />
+            <Text style={styles.sectionTitle}>System Health</Text>
+          </View>
+          <View style={styles.healthCard}>
               <View style={styles.healthIndicator}>
                 <View
                   style={[
@@ -292,32 +313,32 @@ export default function MetricsScreen() {
               )}
             </View>
           </View>
-        )}
+      )}
 
-        {syncStatus && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="sync" size={24} color="#007AFF" />
-              <Text style={styles.sectionTitle}>Sync Status</Text>
-            </View>
-            <View style={styles.syncStatusCard}>
-              <View style={styles.syncStatusRow}>
-                <View style={styles.syncStatusLabelRow}>
-                  <Ionicons name="server" size={20} color="#aaa" />
-                  <Text style={styles.syncStatusLabel}>
-                    SQL Server Connection
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    {
-                      backgroundColor: syncStatus.sql_available
-                        ? "#4CAF50"
-                        : "#ff9800",
-                    },
-                  ]}
-                >
+      {syncStatus && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="sync" size={24} color="#007AFF" />
+            <Text style={styles.sectionTitle}>Sync Status</Text>
+          </View>
+          <View style={styles.syncStatusCard}>
+            <View style={styles.syncStatusRow}>
+              <View style={styles.syncStatusLabelRow}>
+                <Ionicons name="server" size={20} color="#aaa" />
+                <Text style={styles.syncStatusLabel}>
+                  SQL Server Connection
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.statusBadge,
+                  {
+                    backgroundColor: syncStatus.sql_available
+                      ? "#4CAF50"
+                      : "#ff9800",
+                  },
+                ]}
+              >
                   <Ionicons
                     name={syncStatus.sql_available ? "checkmark" : "close"}
                     size={14}
@@ -522,28 +543,27 @@ export default function MetricsScreen() {
           </>
         )}
 
-        <View style={styles.footer}>
-          <View style={styles.footerRow}>
-            <Ionicons
-              name="refresh-circle"
-              size={16}
-              color={auroraTheme.colors.text.muted}
-            />
-            <Text style={styles.footerText}>Auto-refresh every 30 seconds</Text>
-          </View>
-          <View style={styles.footerRow}>
-            <Ionicons
-              name="time"
-              size={16}
-              color={auroraTheme.colors.text.muted}
-            />
-            <Text style={styles.footerText}>
-              Last updated: {lastUpdate.toLocaleTimeString()}
-            </Text>
-          </View>
+      <View style={styles.footer}>
+        <View style={styles.footerRow}>
+          <Ionicons
+            name="refresh-circle"
+            size={16}
+            color={auroraTheme.colors.text.muted}
+          />
+          <Text style={styles.footerText}>Auto-refresh every 30 seconds</Text>
         </View>
-      </ScrollView>
-    </AuroraBackground>
+        <View style={styles.footerRow}>
+          <Ionicons
+            name="time"
+            size={16}
+            color={auroraTheme.colors.text.muted}
+          />
+          <Text style={styles.footerText}>
+            Last updated: {lastUpdate.toLocaleTimeString()}
+          </Text>
+        </View>
+      </View>
+    </ScreenContainer>
   );
 }
 
@@ -577,15 +597,13 @@ const styles = StyleSheet.create({
   refreshingIcon: {
     opacity: 0.5,
   },
-  content: {
-    flex: 1,
-  },
   contentContainer: {
     padding: auroraTheme.spacing.lg,
     paddingBottom: 32,
   },
   contentContainerWeb: {
-    padding: isWeb ? 32 : auroraTheme.spacing.lg,
+    padding: 32,
+    paddingBottom: 32,
     maxWidth: isWeb ? 1400 : "100%",
     alignSelf: "center",
     width: "100%",

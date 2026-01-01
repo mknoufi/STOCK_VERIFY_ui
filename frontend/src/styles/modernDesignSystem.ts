@@ -1,6 +1,6 @@
 /**
- * Modern Design System - Enhanced UI/UX Upgrade v3.5
- * Deep Ocean & Emerald Color Scheme
+ * Modern Design System - Enhanced UI/UX Upgrade v4.0
+ * Unified Design System (formerly Aurora + Modern)
  *
  * Features:
  * - Professional Sapphire Blue primary with Emerald accents
@@ -8,27 +8,67 @@
  * - Optimized spacing system for modern mobile layouts
  * - Subtle glassmorphism and depth effects
  * - High-contrast accessibility support
+ * - Consolidated Aurora Theme tokens
  */
 
-import { StyleSheet, Platform } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 // ==========================================
 // MODERN COLOR PALETTE - DEEP OCEAN
 // ==========================================
 
-export const modernColors = {
-  // Primary Brand Colors - Deep Sapphire
+export const auroraColors = {
   primary: {
-    50: "#F0F9FF",
-    100: "#E0F2FE",
-    200: "#BAE6FD",
-    300: "#7DD3FC",
-    400: "#38BDF8",
-    500: "#0EA5E9", // Main primary - Sky Blue
-    600: "#0284C7",
-    700: "#0369A1",
-    800: "#075985",
-    900: "#0C4A6E",
+    50: "#D2E4FA",
+    100: "#A5C9F5",
+    200: "#78AEF0",
+    300: "#4A93EB",
+    400: "#1D78E6",
+    500: "#1560BD",
+    600: "#11509D",
+    700: "#0E407D",
+    800: "#0A305E",
+    900: "#07203F",
+  },
+  secondary: {
+    50: "#DAE5F7",
+    100: "#B6CBEE",
+    200: "#91B1E6",
+    300: "#6C98DE",
+    400: "#477ED5",
+    500: "#2D68C4",
+    600: "#2555A3",
+    700: "#1E4482",
+    800: "#163362",
+    900: "#0F2241",
+  },
+  accent: {
+    50: "#F5F3FF",
+    100: "#EDE9FE",
+    200: "#DDD6FE",
+    300: "#C4B5FD",
+    400: "#A78BFA",
+    500: "#8B5CF6",
+    600: "#7C3AED",
+    700: "#6D28D9",
+    800: "#5B21B6",
+    900: "#4C1D95",
+  },
+};
+
+export const modernColors = {
+  // Primary Brand Colors - Premium Electric Blue
+  primary: {
+    50: "#EFF6FF",
+    100: "#DBEAFE",
+    200: "#BFDBFE",
+    300: "#93C5FD",
+    400: "#60A5FA",
+    500: "#3B82F6", // Main primary - Electric Blue
+    600: "#2563EB",
+    700: "#1D4ED8",
+    800: "#1E40AF",
+    900: "#1E3A8A",
   },
 
   // Secondary - Emerald Green (Success/Verification)
@@ -80,6 +120,16 @@ export const modernColors = {
     main: "#22C55E", // Brighter green
     dark: "#16A34A",
     contrast: "#FFFFFF",
+    50: "#ECFDF5",
+    100: "#D1FAE5",
+    200: "#A7F3D0",
+    300: "#6EE7B7",
+    400: "#34D399",
+    500: "#10B981",
+    600: "#059669",
+    700: "#047857",
+    800: "#065F46",
+    900: "#064E3B",
   },
 
   error: {
@@ -87,6 +137,16 @@ export const modernColors = {
     main: "#EF4444",
     dark: "#DC2626",
     contrast: "#FFFFFF",
+    50: "#FEF2F2",
+    100: "#FEE2E2",
+    200: "#FECACA",
+    300: "#FCA5A5",
+    400: "#F87171",
+    500: "#EF4444",
+    600: "#DC2626",
+    700: "#B91C1C",
+    800: "#991B1B",
+    900: "#7F1D1D",
   },
 
   warning: {
@@ -94,6 +154,16 @@ export const modernColors = {
     main: "#EAB308", // Brighter yellow
     dark: "#CA8A04",
     contrast: "#18181B",
+    50: "#FFFBEB",
+    100: "#FEF3C7",
+    200: "#FDE68A",
+    300: "#FCD34D",
+    400: "#FBBF24",
+    500: "#F59E0B",
+    600: "#D97706",
+    700: "#B45309",
+    800: "#92400E",
+    900: "#78350F",
   },
 
   info: {
@@ -110,6 +180,24 @@ export const modernColors = {
     elevated: "#1E293B", // Slate 800
     overlay: "rgba(2, 6, 23, 0.9)",
     glass: "rgba(15, 23, 42, 0.75)", // Glassmorphism
+    // Alias for legacy Aurora support
+    primary: "#0F172A",
+    secondary: "#1E293B",
+    tertiary: "#334155",
+    elevatedLegacy: "#475569",
+    blur: "rgba(30, 41, 59, 0.5)",
+  },
+
+  // Surface Colors for legacy Aurora support
+  surface: {
+    base: "#0F172A",
+    primary: "#0F172A",
+    secondary: "#1E293B",
+    tertiary: "#334155",
+    elevated: "#475569",
+    card: "#1E293B",
+    overlay: "rgba(15, 23, 42, 0.95)",
+    glass: "rgba(30, 41, 59, 0.7)",
   },
 
   // Text Colors - Higher Contrast
@@ -117,6 +205,7 @@ export const modernColors = {
     primary: "#F8FAFC", // Slate 50
     secondary: "#94A3B8", // Slate 400
     tertiary: "#64748B", // Slate 500
+    muted: "#94A3B8", // Alias
     disabled: "#475569", // Slate 600
     inverse: "#020617", // Slate 950
     link: "#38BDF8", // Sky 400
@@ -127,9 +216,12 @@ export const modernColors = {
   border: {
     light: "#1E293B", // Slate 800
     medium: "#334155", // Slate 700
+    strong: "#475569", // Slate 600
     dark: "#475569", // Slate 600
     focus: "#0EA5E9", // Sky 500
     error: "#EF4444", // Red 500
+    subtle: "#1E293B", // Alias
+    success: "#10B981", // Alias
   },
 
   // Semantic Colors Shorthand (for backward compatibility)
@@ -140,6 +232,16 @@ export const modernColors = {
     info: "#0EA5E9",
   },
 
+  // Status Colors for legacy Aurora support
+  status: {
+    active: "#10B981",
+    pending: "#F59E0B",
+    error: "#EF4444",
+    inactive: "#64748B",
+    verified: "#06B6D4",
+    warning: "#FBBF24",
+  },
+
   // Gradient Definitions - More Professional
   gradients: {
     primary: ["#0EA5E9", "#0284C7", "#0369A1"] as const, // Sky Blue spectrum
@@ -148,6 +250,19 @@ export const modernColors = {
     dark: ["#0F172A", "#020617", "#000000"] as const, // Deep background
     surface: ["#1E293B", "#0F172A", "#020617"] as const, // Surface layers
     aurora: ["#0EA5E9", "#10B981", "#6366F1"] as const, // Sky to Emerald to Indigo
+
+    // Aurora Legacy Gradients
+    auroraPrimary: ["#1560BD", "#2D68C4", "#8B5CF6"] as const,
+    auroraSecondary: ["#2D68C4", "#0EA5E9", "#06B6D4"] as const,
+    auroraSuccess: ["#10B981", "#14B8A6", "#06B6D4"] as const,
+    auroraWarm: ["#F59E0B", "#EC4899", "#8B5CF6"] as const,
+    auroraDark: ["#0F172A", "#1E293B", "#334155"] as const,
+
+    // Specific UI Gradients
+    button: ["#0EA5E9", "#0284C7"] as const,
+    card: ["rgba(30, 41, 59, 0.7)", "rgba(15, 23, 42, 0.8)"] as const,
+    input: ["rgba(15, 23, 42, 0.6)", "rgba(2, 6, 23, 0.7)"] as const,
+
     success: ["#10B981", "#059669"] as const,
     warning: ["#F59E0B", "#D97706"] as const,
     error: ["#EF4444", "#DC2626"] as const,
@@ -158,13 +273,27 @@ export const modernColors = {
       "rgba(14, 165, 233, 0.1)",
     ] as const,
   },
+
+  // Shimmer effect colors
+  shimmer: ["#1E293B", "#334155", "#1E293B"] as const,
 };
+
+export const modernGradients = modernColors.gradients;
 
 // ==========================================
 // ENHANCED TYPOGRAPHY
 // ==========================================
 
 export const modernTypography = {
+  // Typography System - Inter
+  fontFamily: {
+    display: "Inter_700Bold",
+    heading: "Inter_600SemiBold",
+    body: "Inter_400Regular",
+    label: "Inter_500Medium",
+    mono: Platform.OS === "ios" ? "Menlo" : "monospace",
+  },
+
   // Display Styles (Hero, Large Headings)
   display: {
     large: {
@@ -299,6 +428,50 @@ export const modernTypography = {
     letterSpacing: 1.5,
     textTransform: "uppercase" as const,
   },
+
+  // Font Sizes Legacy map
+  fontSize: {
+    xs: 12,
+    sm: 14,
+    base: 16,
+    md: 18,
+    lg: 20,
+    xl: 24,
+    "2xl": 30,
+    "3xl": 36,
+    "4xl": 48,
+    "5xl": 60,
+    "6xl": 72,
+    "7xl": 96,
+  },
+
+  // Font Weights Legacy map
+  fontWeight: {
+    light: "300" as const,
+    normal: "400" as const,
+    medium: "500" as const,
+    semibold: "600" as const,
+    bold: "700" as const,
+    extrabold: "800" as const,
+  },
+
+  // Line Heights Legacy map
+  lineHeight: {
+    tight: 1.2,
+    normal: 1.5,
+    relaxed: 1.75,
+    loose: 2,
+  },
+
+  // Letter Spacing Legacy
+  letterSpacing: {
+    tighter: -0.5,
+    tight: -0.25,
+    normal: 0,
+    wide: 0.25,
+    wider: 0.5,
+    widest: 1,
+  },
 };
 
 // ==========================================
@@ -332,13 +505,13 @@ export const modernSpacing = {
   "4xl": 80,
 
   // Component-specific spacing
-  screenPadding: 20,
-  cardPadding: 18,
-  inputPadding: 14,
-  buttonPadding: 14,
-  sectionGap: 32,
-  elementGap: 12,
-  groupGap: 8,
+  screenPadding: 24, // Increased from 20
+  cardPadding: 20, // Increased from 18
+  inputPadding: 16, // Increased from 14
+  buttonPadding: 16, // Increased from 14
+  sectionGap: 40, // More breathing room (was 32)
+  elementGap: 16, // More breathing room (was 12)
+  groupGap: 10, // Was 8
 };
 
 // ==========================================
@@ -433,6 +606,23 @@ export const modernShadows = {
     shadowRadius: 8,
     elevation: 4,
   },
+
+  // Aurora Glows
+  aurora: {
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+
+  glow: {
+    shadowColor: "#1560BD",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 10,
+  },
 };
 
 // ==========================================
@@ -468,12 +658,20 @@ export const modernAnimations = {
     pressed: 0.95,
     hover: 1.02,
     focus: 1.05,
+    active: 1.05,
   },
 
   opacity: {
     disabled: 0.5,
     hover: 0.9,
     pressed: 0.8,
+  },
+
+  // Aurora spring config
+  spring: {
+    damping: 15,
+    stiffness: 300,
+    mass: 1,
   },
 };
 
@@ -483,24 +681,38 @@ export const modernAnimations = {
 
 export const glassmorphism = {
   light: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.08)", // Lower opacity
+    borderColor: "rgba(255, 255, 255, 0.15)", // Subtle border
     borderWidth: 1,
-    backdropFilter: "blur(10px)",
+    backdropFilter: "blur(12px)",
   },
 
   medium: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderColor: "rgba(255, 255, 255, 0.25)",
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    borderColor: "rgba(255, 255, 255, 0.2)",
     borderWidth: 1,
-    backdropFilter: "blur(15px)",
+    backdropFilter: "blur(16px)",
+  },
+
+  strong: {
+    backgroundColor: "rgba(255, 255, 255, 0.18)",
+    borderColor: "rgba(255, 255, 255, 0.25)",
+    borderWidth: 1.5,
+    backdropFilter: "blur(24px)",
   },
 
   dark: {
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(2, 6, 23, 0.4)", // Darker tint for depth
+    borderColor: "rgba(255, 255, 255, 0.08)",
     borderWidth: 1,
     backdropFilter: "blur(20px)",
+  },
+
+  modal: {
+    backgroundColor: "rgba(11, 17, 33, 0.85)", // Matches new premium bg
+    borderColor: "rgba(255, 255, 255, 0.15)",
+    borderWidth: 1,
+    backdropFilter: "blur(30px)",
   },
 };
 
@@ -547,6 +759,38 @@ export const modernLayout = {
     popover: 1060,
     tooltip: 1070,
     toast: 1080,
+  },
+
+  // Component Sizes (Merged from Aurora)
+  componentSizes: {
+    button: {
+      small: 36,
+      medium: 44,
+      large: 56,
+      xl: 72, // For floating scan button
+    },
+
+    input: {
+      small: 40,
+      medium: 48,
+      large: 56,
+    },
+
+    icon: {
+      xs: 16,
+      sm: 20,
+      md: 24,
+      lg: 32,
+      xl: 40,
+      "2xl": 48,
+    },
+
+    avatar: {
+      sm: 32,
+      md: 40,
+      lg: 48,
+      xl: 64,
+    },
   },
 };
 
@@ -718,12 +962,18 @@ export const theme = {
   borderRadius: modernBorderRadius,
   shadows: modernShadows,
   animations: modernAnimations,
+  glass: glassmorphism,
   glassmorphism,
   layout: modernLayout,
+  componentSizes: modernLayout.componentSizes,
   accessibility,
   breakpoints,
   commonStyles: modernCommonStyles,
 };
 
-// Export all as default object
+// Aliases for theme consistency
+export const modernGlass = glassmorphism;
+export const modernComponentSizes = modernLayout.componentSizes;
+
 export default theme;
+

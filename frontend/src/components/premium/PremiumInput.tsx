@@ -28,7 +28,7 @@ import {
   modernBorderRadius,
   modernAnimations,
 } from "../../styles/modernDesignSystem";
-import { useThemeContextSafe } from "../../theme/ThemeContext";
+import { useThemeContextSafe } from "@/context/ThemeContext";
 
 type InputVariant = "default" | "outlined" | "filled" | "underlined";
 
@@ -56,6 +56,8 @@ interface PremiumInputProps {
   maxLength?: number;
   required?: boolean;
   onBlur?: () => void;
+  onSubmitEditing?: () => void;
+  returnKeyType?: "done" | "go" | "next" | "search" | "send";
 }
 
 export const PremiumInput: React.FC<PremiumInputProps> = ({
@@ -82,24 +84,41 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   maxLength,
   required = false,
   onBlur,
+  onSubmitEditing,
+  returnKeyType,
 }) => {
   const themeContext = useThemeContextSafe();
   const theme = themeContext?.theme;
 
   // Color helpers for semantic usage
-  const colors = useMemo(() => ({
-    error: theme ? theme.colors.danger : modernColors.error.main,
-    errorLight: theme ? theme.colors.dangerLight : modernColors.error.light,
-    primary: theme ? theme.colors.accent : modernColors.primary[500],
-    textPrimary: theme ? theme.colors.text : modernColors.text.primary,
-    textSecondary: theme ? theme.colors.textSecondary : modernColors.text.secondary,
-    textTertiary: theme ? theme.colors.muted : modernColors.text.tertiary,
-    textDisabled: theme ? theme.colors.muted : modernColors.text.disabled,
-    borderLight: theme ? theme.colors.border : modernColors.border.light,
-    backgroundDefault: theme ? theme.colors.background : modernColors.background.default,
-    backgroundPaper: theme ? theme.colors.surface : modernColors.background.paper,
-    backgroundDisabled: theme ? theme.colors.border : modernColors.neutral[700],
-  }), [theme]);
+  const colors = useMemo(
+    () => ({
+      error: theme ? theme.colors.danger : modernColors.error.main,
+      errorLight: theme ? theme.colors.error.light : modernColors.error.light,
+      primary: theme ? theme.colors.accent : modernColors.primary[500],
+      textPrimary: theme ? theme.colors.text.primary : modernColors.text.primary,
+      textSecondary: theme
+        ? theme.colors.text.secondary
+        : modernColors.text.secondary,
+      textTertiary: theme ? theme.colors.text.tertiary : modernColors.text.tertiary,
+      textDisabled: theme ? theme.colors.text.disabled : modernColors.text.disabled,
+      borderLight: theme ? theme.colors.border.light : modernColors.border.light,
+      backgroundDefault: theme
+        ? theme.colors.background.default
+        : modernColors.background.default,
+      backgroundPaper: theme
+        ? theme.colors.background.paper
+        : modernColors.background.paper,
+      backgroundDisabled: theme
+        ? theme.colors.background.paper
+        : modernColors.neutral[700],
+      backgroundInput: theme
+        ? theme.colors.background.default
+        : modernColors.background.default,
+      borderFocused: theme ? theme.colors.accent : modernColors.primary[500],
+    }),
+    [theme],
+  );
 
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -138,7 +157,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
     const borderColor = error
       ? colors.error
       : isFocused
-        ? colors.primary
+        ? colors.borderFocused
         : colors.borderLight;
     return { borderColor };
   });
@@ -151,7 +170,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
           backgroundColor: colors.backgroundPaper,
           borderWidth: 0,
           borderBottomWidth: 2,
-          borderRadius: theme ? theme.radius.sm : modernBorderRadius.sm,
+          borderRadius: theme ? theme.borderRadius.sm : modernBorderRadius.sm,
         };
       case "underlined":
         return {
@@ -163,9 +182,9 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
       case "outlined":
       default:
         return {
-          backgroundColor: colors.backgroundDefault,
+          backgroundColor: colors.backgroundInput,
           borderWidth: 1.5,
-          borderRadius: theme ? theme.radius.md : modernBorderRadius.md,
+          borderRadius: theme ? theme.borderRadius.md : modernBorderRadius.md,
         };
     }
   };
@@ -285,6 +304,8 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
           maxLength={maxLength}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          onSubmitEditing={onSubmitEditing}
+          returnKeyType={returnKeyType}
           testID={testID}
           style={[
             dynamicStyles.input,
@@ -328,7 +349,9 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
 
       {/* Helper Text / Error */}
       {(helperText || error) && (
-        <Text style={[dynamicStyles.helperText, error && dynamicStyles.errorText]}>
+        <Text
+          style={[dynamicStyles.helperText, error && dynamicStyles.errorText]}
+        >
           {error || helperText}
         </Text>
       )}

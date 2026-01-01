@@ -20,7 +20,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { useThemeContext, LayoutArrangement } from "../../theme/ThemeContext";
+import { useThemeContext, LayoutArrangement } from "../../context/ThemeContext";
 
 interface LayoutPickerProps {
   compact?: boolean;
@@ -29,7 +29,7 @@ interface LayoutPickerProps {
 export const LayoutPicker: React.FC<LayoutPickerProps> = ({
   compact = false,
 }) => {
-  const { theme, layout, setLayout, availableLayouts } = useThemeContext();
+  const { themeLegacy: theme, layout, setLayout, availableLayouts } = useThemeContext();
 
   const handleLayoutSelect = useCallback(
     (key: LayoutArrangement) => {

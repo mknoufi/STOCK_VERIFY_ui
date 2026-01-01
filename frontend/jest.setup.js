@@ -15,3 +15,22 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(async () => undefined),
 }));
 
+// Mock Expo vector icons to avoid async font-loading state updates in tests
+jest.mock("@expo/vector-icons", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+
+  const createIcon = (family) => {
+    const Icon = ({ name, ...props }) =>
+      React.createElement(Text, props, name ? `${family}:${name}` : family);
+    Icon.glyphMap = {};
+    return Icon;
+  };
+
+  return new Proxy(
+    {},
+    {
+      get: (_target, prop) => createIcon(String(prop)),
+    },
+  );
+});

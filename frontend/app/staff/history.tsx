@@ -31,6 +31,10 @@ export default function HistoryScreen() {
   const initialApproved =
     flags.enableDeepLinks &&
     (params.approved === "1" || params.approved === "true");
+  const initialStatus =
+    flags.enableDeepLinks && typeof params.status === "string"
+      ? params.status
+      : undefined;
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
@@ -51,8 +55,15 @@ export default function HistoryScreen() {
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
-  const [showApprovedOnly, setShowApprovedOnly] =
-    React.useState<boolean>(!!initialApproved);
+  const [statusFilter, setStatusFilter] = React.useState<
+    "all" | "pending" | "approved"
+  >(
+    initialStatus === "pending" || initialStatus === "approved" || initialStatus === "all"
+      ? (initialStatus as "all" | "pending" | "approved")
+      : initialApproved
+        ? "approved"
+        : "all",
+  );
 
   // Pin Entry Modal State
   const [pinModalVisible, setPinModalVisible] = React.useState(false);
@@ -63,11 +74,13 @@ export default function HistoryScreen() {
     try {
       const data = await getCountLines(sessionId as string);
       const safeData = Array.isArray(data) ? data : [];
-      setCountLines(
-        showApprovedOnly
+      const filtered =
+        statusFilter === "approved"
           ? safeData.filter((d: any) => d.status === "approved")
-          : safeData,
-      );
+          : statusFilter === "pending"
+            ? safeData.filter((d: any) => d.status !== "approved")
+            : safeData;
+      setCountLines(filtered);
       if (safeData.length && flags.enableHaptics) {
         haptics.success();
       }
@@ -77,7 +90,7 @@ export default function HistoryScreen() {
     } finally {
       setLoading(false);
     }
-  }, [sessionId, showApprovedOnly]);
+  }, [sessionId, statusFilter]);
 
   React.useEffect(() => {
     loadCountLines();
@@ -87,10 +100,33 @@ export default function HistoryScreen() {
   React.useEffect(() => {
     if (!flags.enableDeepLinks) return;
     const approvedParam = params.approved === "1" || params.approved === "true";
-    if (approvedParam !== showApprovedOnly) {
-      setShowApprovedOnly(approvedParam);
+    const statusParam = typeof params.status === "string" ? params.status : undefined;
+    const next =
+      statusParam === "pending" || statusParam === "approved" || statusParam === "all"
+        ? (statusParam as "all" | "pending" | "approved")
+        : approvedParam
+          ? "approved"
+          : "all";
+    if (next !== statusFilter) {
+      setStatusFilter(next);
     }
-  }, [params.approved, showApprovedOnly]);
+  }, [params.approved, params.status, statusFilter]);
+
+  const applyStatusFilter = (next: "all" | "pending" | "approved") => {
+    setStatusFilter(next);
+    setFiltersOpen(false);
+    if (flags.enableDeepLinks) {
+      router.replace({
+        pathname: "/staff/history",
+        params: {
+          sessionId,
+          status: next === "all" ? undefined : next,
+          approved: next === "approved" ? "1" : undefined,
+        },
+      });
+    }
+    loadCountLines();
+  };
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -171,7 +207,7 @@ export default function HistoryScreen() {
 
         <View style={styles.codeRow}>
           <Text style={styles.itemCode}>Code: {item.item_code || "N/A"}</Text>
-          {item.batch_id && (
+          {Boolean(item.batch_id) && (
             <View style={styles.batchBadge}>
               <Text style={styles.batchBadgeText}>Batch: {item.batch_id}</Text>
             </View>
@@ -281,7 +317,11 @@ export default function HistoryScreen() {
             contentContainerStyle={styles.list}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Ionicons name="file-tray-outline" size={64} color={theme.colors.text.tertiary} />
+                <Ionicons
+                  name="file-tray-outline"
+                  size={64}
+                  color={theme.colors.text.tertiary}
+                />
                 <Text style={styles.emptyText}>
                   {loading ? "Loading..." : "No counts yet"}
                 </Text>
@@ -298,29 +338,71 @@ export default function HistoryScreen() {
       >
         <Text style={styles.filterTitle}>Filters</Text>
         <TouchableOpacity
-          style={[styles.filterChip, showApprovedOnly && styles.filterChipActive]}
-          onPress={() => {
-            const next = !showApprovedOnly;
-            setShowApprovedOnly(next);
-            setFiltersOpen(false);
-            if (flags.enableDeepLinks) {
-              router.replace({
-                pathname: "/staff/history",
-                params: { sessionId, approved: next ? "1" : undefined },
-              });
-            }
-            loadCountLines();
-          }}
+          style={[
+            styles.filterChip,
+            statusFilter === "all" && styles.filterChipActive,
+          ]}
+          onPress={() => applyStatusFilter("all")}
         >
           <Ionicons
-            name="checkmark-done-outline"
+            name="list-outline"
             size={18}
-            color={showApprovedOnly ? "#020617" : theme.colors.text.tertiary}
+            color={
+              statusFilter === "all" ? "#020617" : theme.colors.text.tertiary
+            }
           />
           <Text
             style={[
               styles.filterChipText,
-              showApprovedOnly && styles.filterChipTextActive,
+              statusFilter === "all" && styles.filterChipTextActive,
+            ]}
+          >
+            All
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.filterChip,
+            statusFilter === "pending" && styles.filterChipActive,
+          ]}
+          onPress={() => applyStatusFilter("pending")}
+        >
+          <Ionicons
+            name="time-outline"
+            size={18}
+            color={
+              statusFilter === "pending" ? "#020617" : theme.colors.text.tertiary
+            }
+          />
+          <Text
+            style={[
+              styles.filterChipText,
+              statusFilter === "pending" && styles.filterChipTextActive,
+            ]}
+          >
+            Pending / Unapproved
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.filterChip,
+            statusFilter === "approved" && styles.filterChipActive,
+          ]}
+          onPress={() => applyStatusFilter("approved")}
+        >
+          <Ionicons
+            name="checkmark-done-outline"
+            size={18}
+            color={
+              statusFilter === "approved"
+                ? "#020617"
+                : theme.colors.text.tertiary
+            }
+          />
+          <Text
+            style={[
+              styles.filterChipText,
+              statusFilter === "approved" && styles.filterChipTextActive,
             ]}
           >
             Approved Only

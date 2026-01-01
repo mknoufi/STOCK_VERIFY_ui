@@ -36,7 +36,7 @@ description: "Task list for App Logic Documentation"
 
 **Purpose**: Ensure documentation is grounded in actual running behavior and aligned with project constitution.
 
-- [x] T005 Verify canonical backend entrypoint and ports by checking `backend/server.py`, `docker-compose.yml`, and `start_app.sh`; summarize in `docs/APP_LOGIC_OVERVIEW.md`
+- [x] T005 Verify canonical backend entrypoint and ports by checking `backend/server.py`, `docker-compose.yml`, and `scripts/dev/start_app.sh`; summarize in `docs/APP_LOGIC_OVERVIEW.md`
 - [x] T006 Verify API mounting/prefixing by checking `backend/main.py` and router includes; summarize versioning/prefix rules in `docs/APP_LOGIC_OVERVIEW.md`
 - [x] T007 [P] Confirm authentication mechanism and token lifecycle by checking `backend/api/auth.py` (and any auth deps under `backend/api/auth/`); document in `docs/APP_LOGIC_OVERVIEW.md`
 - [x] T008 [P] Confirm error shape conventions and any deviations by checking `docs/API_CONTRACTS.md` and representative routers; document "contract vs reality" guidance in `docs/APP_LOGIC_OVERVIEW.md`

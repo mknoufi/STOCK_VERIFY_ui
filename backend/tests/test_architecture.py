@@ -35,9 +35,7 @@ def test_mongodb_handles_all_writes():
             found_mongo_writes.extend(matches)
 
     # Should have MongoDB write operations
-    assert len(found_mongo_writes) > 0, (
-        "No MongoDB write operations found - architecture issue!"
-    )
+    assert len(found_mongo_writes) > 0, "No MongoDB write operations found - architecture issue!"
 
 
 def test_no_sql_server_writes_in_server():
@@ -86,9 +84,7 @@ def test_erp_sync_reads_from_sql_writes_to_mongo():
         r"self\.sql_connector\.query",
     ]
 
-    has_sql_reads = any(
-        re.search(pattern, content, re.IGNORECASE) for pattern in sql_read_patterns
-    )
+    has_sql_reads = any(re.search(pattern, content, re.IGNORECASE) for pattern in sql_read_patterns)
 
     # Should write to MongoDB
     mongo_write_patterns = [

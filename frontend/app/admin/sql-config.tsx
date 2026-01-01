@@ -7,19 +7,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Platform,
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
+import { ScreenContainer } from "../../src/components/ui";
 import {
   getSqlServerConfig,
   updateSqlServerConfig,
   testSqlServerConnection,
 } from "../../src/services/api";
-
-const isWeb = Platform.OS === "web";
 
 export default function SqlConfigScreen() {
   const router = useRouter();
@@ -107,35 +105,31 @@ export default function SqlConfigScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading configuration...</Text>
-      </View>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "SQL Server Configuration",
+          subtitle: "Connectivity & Credentials",
+          showBackButton: true,
+        }}
+      >
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Loading configuration...</Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, isWeb && styles.headerWeb]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color="#007AFF" />
-        </TouchableOpacity>
-        <View style={styles.titleContainer}>
-          <Ionicons
-            name="server"
-            size={28}
-            color="#fff"
-            style={styles.titleIcon}
-          />
-          <Text style={styles.title}>SQL Server Configuration</Text>
-        </View>
-        <View style={{ width: 40 }} />
-      </View>
-
+    <ScreenContainer
+      gradient
+      header={{
+        title: "SQL Server Configuration",
+        subtitle: "Connectivity & Credentials",
+        showBackButton: true,
+      }}
+    >
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
@@ -275,64 +269,21 @@ export default function SqlConfigScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "transparent",
   },
   loadingText: {
     marginTop: 10,
     color: "#fff",
     fontSize: 16,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    paddingTop: Platform.OS === "web" ? 20 : 16,
-    backgroundColor: "#1a1a1a",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    ...(Platform.OS === "web"
-      ? {
-          position: "sticky" as const,
-          top: 0,
-          zIndex: 100,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-        }
-      : {}),
-  } as any,
-  headerWeb: {
-    paddingHorizontal: isWeb ? 32 : 16,
-  },
-  backButton: {
-    marginRight: 16,
-    padding: 8,
-    borderRadius: 8,
-  },
-  titleContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  titleIcon: {
-    marginRight: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
   },
   content: {
     flex: 1,

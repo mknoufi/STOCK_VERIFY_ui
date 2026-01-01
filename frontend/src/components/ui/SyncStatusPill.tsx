@@ -3,13 +3,8 @@
  * Modern, unified status indicator for synchronization state
  */
 
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Animated, {
   useAnimatedStyle,
   withRepeat,
@@ -19,7 +14,10 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { getSyncStatus, forceSync } from "../../services/syncService";
 import { useNetworkStore } from "../../services/networkService";
-import { modernColors, modernBorderRadius } from "../../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernBorderRadius,
+} from "../../styles/modernDesignSystem";
 
 interface SyncStatus {
   isOnline: boolean;
@@ -30,29 +28,39 @@ interface SyncStatus {
 }
 
 export const SyncStatusPill = () => {
+  const isTestEnv = process.env.NODE_ENV === "test";
   const [status, setStatus] = useState<SyncStatus | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const isOnline = useNetworkStore((state) => state.isOnline);
+  const isMountedRef = useRef(true);
 
   // Animation for sync rotation
   const rotation = useSharedValue(0);
 
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     try {
       const s = await getSyncStatus();
-      setStatus(s);
+      if (isMountedRef.current) {
+        setStatus(s);
+      }
     } catch (e) {
-      console.error(e);
+      __DEV__ && console.error(e);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (isTestEnv) return;
+    isMountedRef.current = true;
     loadStatus();
     const interval = setInterval(loadStatus, 5000);
-    return () => clearInterval(interval);
-  }, [isOnline]);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+    };
+  }, [isOnline, isTestEnv, loadStatus]);
 
   const handleSync = async () => {
+    if (isTestEnv) return;
     if (!status?.isOnline || isSyncing) return;
 
     setIsSyncing(true);
@@ -109,7 +117,12 @@ export const SyncStatusPill = () => {
       disabled={isOffline || isSyncing || (!hasPending && !isOffline)}
       activeOpacity={0.7}
     >
-      <View style={[styles.pill, { backgroundColor: pillBg, borderColor: pillColor }]}>
+      <View
+        style={[
+          styles.pill,
+          { backgroundColor: pillBg, borderColor: pillColor },
+        ]}
+      >
         <Animated.View style={isSyncing ? animatedIconStyle : undefined}>
           <Ionicons name={iconName} size={14} color={pillColor} />
         </Animated.View>

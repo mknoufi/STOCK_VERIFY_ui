@@ -4,7 +4,7 @@
  */
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { NormalizedMrpVariant } from "@/types/scan";
+import type { NormalizedMrpVariant } from "@/types/scan";
 import { MRP_MATCH_TOLERANCE } from "@/constants/scanConstants";
 
 interface MRPVariantSelectorProps {

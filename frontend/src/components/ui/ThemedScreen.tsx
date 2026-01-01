@@ -8,7 +8,7 @@
 import React from "react";
 import { View, StyleSheet, ViewStyle, Text, TextStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useThemeContext } from "../../theme/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 import { PatternBackground } from "./PatternBackground";
 
 interface ThemedScreenProps {
@@ -28,7 +28,7 @@ export const ThemedScreen: React.FC<ThemedScreenProps> = ({
   useSafeArea = true,
   variant = "default",
 }) => {
-  const { theme, pattern, layout } = useThemeContext();
+  const { themeLegacy: theme, pattern, layout } = useThemeContext();
   const insets = useSafeAreaInsets();
 
   // Get spacing based on layout arrangement
@@ -110,7 +110,7 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
   variant = "default",
   padding = "medium",
 }) => {
-  const { theme, layout, isDark } = useThemeContext();
+  const { themeLegacy: theme, layout, isDark } = useThemeContext();
 
   // Get padding based on layout and padding prop
   const getPadding = () => {
@@ -123,7 +123,7 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
   // Get card styles based on variant
   const getCardStyle = (): ViewStyle => {
     const base: ViewStyle = {
-      borderRadius: theme.radius.lg,
+      borderRadius: theme.borderRadius.lg,
       padding: getPadding(),
       overflow: "hidden",
     };
@@ -187,7 +187,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   weight = "normal",
   size = "md",
 }) => {
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
 
   const getColor = () => {
     switch (color) {

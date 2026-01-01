@@ -24,9 +24,7 @@ class AnalyticsService:
             {"$match": {"timestamp": {"$gte": start_date}}},
             {
                 "$group": {
-                    "_id": {
-                        "$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}
-                    },
+                    "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}},
                     "count": {"$sum": 1},
                 }
             },
@@ -41,9 +39,7 @@ class AnalyticsService:
             {"$sort": {"count": -1}},
             {"$limit": 5},
         ]
-        top_users = await self.db.verification_logs.aggregate(user_pipeline).to_list(
-            length=5
-        )
+        top_users = await self.db.verification_logs.aggregate(user_pipeline).to_list(length=5)
 
         # Variance summary
         variance_pipeline = [
@@ -57,9 +53,9 @@ class AnalyticsService:
                 }
             },
         ]
-        variance_stats = await self.db.verification_logs.aggregate(
-            variance_pipeline
-        ).to_list(length=1)
+        variance_stats = await self.db.verification_logs.aggregate(variance_pipeline).to_list(
+            length=1
+        )
         variance_data = (
             variance_stats[0]
             if variance_stats
@@ -73,9 +69,7 @@ class AnalyticsService:
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$gt": 0}}},
             {"$count": "count"},
         ]
-        surplus_res = await self.db.verification_logs.aggregate(
-            surplus_pipeline
-        ).to_list(length=1)
+        surplus_res = await self.db.verification_logs.aggregate(surplus_pipeline).to_list(length=1)
         surplus_count = surplus_res[0]["count"] if surplus_res else 0
 
         # Shortage (variance < 0)
@@ -83,9 +77,9 @@ class AnalyticsService:
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$lt": 0}}},
             {"$count": "count"},
         ]
-        shortage_res = await self.db.verification_logs.aggregate(
-            shortage_pipeline
-        ).to_list(length=1)
+        shortage_res = await self.db.verification_logs.aggregate(shortage_pipeline).to_list(
+            length=1
+        )
         shortage_count = shortage_res[0]["count"] if shortage_res else 0
 
         # Accuracy Rate (Percentage of verifications with 0 variance)

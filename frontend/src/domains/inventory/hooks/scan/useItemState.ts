@@ -3,7 +3,7 @@
  * Manages item-related state (current item, MRP variants, etc.)
  */
 import { useState, useCallback } from "react";
-import { Item, NormalizedMrpVariant, VarianceReason } from "@/types/scan";
+import type { Item, NormalizedMrpVariant, VarianceReason } from "@/types/scan";
 import { getNormalizedMrpVariants } from "@/utils/scanUtils";
 
 interface ItemState {

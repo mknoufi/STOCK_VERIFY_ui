@@ -1,9 +1,9 @@
 import React from "react";
 import { Button } from "../Button";
 
-export type EnhancedButtonProps = React.ComponentProps<typeof Button>;
+export type FormEnhancedButtonProps = React.ComponentProps<typeof Button>;
 
-const EnhancedButton: React.FC<EnhancedButtonProps> = (props) => {
+const EnhancedButton: React.FC<FormEnhancedButtonProps> = (props) => {
   return <Button {...props} />;
 };
 

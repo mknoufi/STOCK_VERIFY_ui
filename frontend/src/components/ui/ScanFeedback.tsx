@@ -10,7 +10,13 @@
  */
 
 import React, { useCallback, useEffect } from "react";
-import { View, Text, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -22,6 +28,7 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
+  withRepeat,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
@@ -202,7 +209,9 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 
   return (
     <View style={styles.overlay} pointerEvents="none">
-      <Animated.View style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}>
+      <Animated.View
+        style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}
+      >
         <LinearGradient
           colors={config.gradient as readonly [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}
@@ -227,17 +236,11 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 
           {/* Text content */}
           <Text style={styles.title}>{title}</Text>
-          {message && <Text style={styles.message}>{message}</Text>}
+          {message ? <Text style={styles.message}>{message}</Text> : null}
         </LinearGradient>
       </Animated.View>
     </View>
   );
-};
-
-// Helper function for repeat animation (simplified)
-const withRepeat = (animation: any, _times: number, _reverse: boolean) => {
-  // This is a simplified version - in production, use reanimated's withRepeat
-  return animation;
 };
 
 const styles = StyleSheet.create({

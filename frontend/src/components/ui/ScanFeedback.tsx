@@ -28,6 +28,7 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
+  withRepeat,
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
@@ -240,12 +241,6 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
       </Animated.View>
     </View>
   );
-};
-
-// Helper function for repeat animation (simplified)
-const withRepeat = (animation: any, _times: number, _reverse: boolean) => {
-  // This is a simplified version - in production, use reanimated's withRepeat
-  return animation;
 };
 
 const styles = StyleSheet.create({

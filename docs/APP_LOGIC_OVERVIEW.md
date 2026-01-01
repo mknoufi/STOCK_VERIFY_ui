@@ -31,7 +31,7 @@ Scope: Backend behavior (FastAPI + MongoDB + SQL Server read-only), aligned with
 
 - **Runtime**: `uvicorn backend.server:app --host 0.0.0.0 --port 8001 --reload`
 - **Docker**: `docker-compose.yml` runs `uvicorn backend.server:app` on port **8001**
-- **Manual start**: `./start_app.sh` (macOS) spawns backend in Terminal tab
+- **Manual start**: `./scripts/dev/start_app.sh` (macOS) spawns backend in Terminal tab
 
 ### Startup Sequence
 

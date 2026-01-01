@@ -2,6 +2,7 @@
 # Start Backend and Frontend in separate terminals
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Function to get local IP
 get_local_ip() {
@@ -14,8 +15,8 @@ PORT=8001
 echo "🚀 Starting Stock Verify Application..."
 echo "📍 Detected Local IP: $LOCAL_IP"
 echo "🛑 Stopping any running instances first..."
-"$SCRIPT_DIR/scripts/stop_all.sh" 2>/dev/null || true
-rm -f "$SCRIPT_DIR/backend_port.json" # Clean up old port file
+"$ROOT_DIR/scripts/stop_all.sh" 2>/dev/null || true
+rm -f "$ROOT_DIR/backend_port.json" # Clean up old port file
 sleep 2
 
 echo ""
@@ -24,7 +25,7 @@ echo ""
 osascript <<APPLESCRIPT
 tell application "Terminal"
     activate
-    set backendWindow to do script "cd '$SCRIPT_DIR' && ./scripts/start_backend.sh"
+    set backendWindow to do script "cd '$ROOT_DIR' && ./scripts/start_backend.sh"
     set custom title of backendWindow to "Backend Server"
 end tell
 APPLESCRIPT
@@ -39,9 +40,9 @@ DETECTED_PORT=""
 
 while [ $COUNT -lt $MAX_RETRIES ]; do
     # 1. Check for backend_port.json
-    if [ -f "$SCRIPT_DIR/backend_port.json" ]; then
+    if [ -f "$ROOT_DIR/backend_port.json" ]; then
         # Try to read port using python (available on mac) to avoid jq dependency
-        DETECTED_PORT=$(python3 -c "import json; print(json.load(open('$SCRIPT_DIR/backend_port.json'))['port'])" 2>/dev/null)
+        DETECTED_PORT=$(python3 -c "import json; print(json.load(open('$ROOT_DIR/backend_port.json'))['port'])" 2>/dev/null)
 
         if [ ! -z "$DETECTED_PORT" ]; then
             # 2. Check health using detected port
@@ -75,7 +76,7 @@ if [ "$BACKEND_READY" = true ]; then
     osascript <<APPLESCRIPT
     tell application "Terminal"
         activate
-        set frontendWindow to do script "cd '$SCRIPT_DIR' && ./scripts/start_frontend.sh"
+        set frontendWindow to do script "cd '$ROOT_DIR' && ./scripts/start_frontend.sh"
         set custom title of frontendWindow to "Frontend Server"
     end tell
 APPLESCRIPT
@@ -88,4 +89,4 @@ else
     exit 1
 fi
 
-echo "💡 To stop servers, run: ./stop.sh"
+echo "💡 To stop servers, run: ./scripts/dev/stop.sh"

@@ -23,7 +23,7 @@ alias svbetest='cd ~/cursor\ new/STOCK_VERIFY_2-db-maped/backend && pytest tests
 
 # Full stack
 alias svstart='~/cursor\ new/STOCK_VERIFY_2-db-maped/start.sh'
-alias svstop='~/cursor\ new/STOCK_VERIFY_2-db-maped/stop.sh'
+alias svstop='~/cursor\ new/STOCK_VERIFY_2-db-maped/scripts/dev/stop.sh'
 
 # ═══════════════════════════════════════════════════════════════════
 # General npm aliases (from awesome-npm)

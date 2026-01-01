@@ -438,7 +438,7 @@ export const getCountLines = async (
           has_prev: false,
         },
       };
-    } catch (cacheError) {
+    } catch (_cacheError) {
       throw error;
     }
   }

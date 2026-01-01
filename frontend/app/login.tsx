@@ -92,7 +92,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Animation values
   const logoScale = useSharedValue(0.8);
@@ -143,6 +142,34 @@ export default function LoginScreen() {
     );
   }, [pinShake]);
 
+  // Handle PIN login
+  const handlePinLogin = useCallback(
+    async (pinValue: string) => {
+      setLoading(true);
+      try {
+        const result = await loginWithPin(pinValue);
+        if (!result.success) {
+          if (Platform.OS !== "web") {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          }
+          triggerShake();
+          setPin("");
+          Alert.alert("Invalid PIN", result.message || "Please try again");
+        }
+      } catch {
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+        triggerShake();
+        setPin("");
+        Alert.alert("Login Failed", "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loginWithPin, triggerShake],
+  );
+
   // Handle PIN digit press
   const handlePinDigit = useCallback(
     (digit: string) => {
@@ -160,7 +187,7 @@ export default function LoginScreen() {
         handlePinLogin(newPin);
       }
     },
-    [pin, loading],
+    [handlePinLogin, loading, pin],
   );
 
   // Handle PIN backspace
@@ -173,31 +200,6 @@ export default function LoginScreen() {
 
     setPin(pin.slice(0, -1));
   }, [pin, loading]);
-
-  // Handle PIN login
-  const handlePinLogin = async (pinValue: string) => {
-    setLoading(true);
-    try {
-      const result = await loginWithPin(pinValue);
-      if (!result.success) {
-        if (Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        }
-        triggerShake();
-        setPin("");
-        Alert.alert("Invalid PIN", result.message || "Please try again");
-      }
-    } catch {
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      }
-      triggerShake();
-      setPin("");
-      Alert.alert("Login Failed", "An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Switch login mode
   const switchLoginMode = useCallback(() => {

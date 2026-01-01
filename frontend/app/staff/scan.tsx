@@ -202,6 +202,8 @@ const SearchResultRow = React.memo(
   },
 );
 
+SearchResultRow.displayName = "SearchResultRow";
+
 export default function ScanScreen() {
   const { themeLegacy: appTheme, isDark } = useThemeContext();
   const { colors } = appTheme;
@@ -339,7 +341,7 @@ export default function ScanScreen() {
     }
   }, []);
 
-  const handleSemanticSearch = async () => {
+  const handleSemanticSearch = useCallback(async () => {
     if (!searchQuery || searchQuery.length < 2) return;
 
     semanticAbortControllerRef.current?.abort();
@@ -376,7 +378,7 @@ export default function ScanScreen() {
       }
       setIsAISearching(false);
     }
-  };
+  }, [searchQuery]);
 
   const handleVisualSearch = async () => {
     if (!cameraRef.current) return;
@@ -718,14 +720,14 @@ export default function ScanScreen() {
     }
   };
 
-  const handleFinishRack = () => {
+  const handleFinishRack = useCallback(() => {
     hapticService.impact("medium");
     if (!sessionId) {
       toastService.show("No active session to close", { type: "error" });
       return;
     }
     setShowCloseSessionModal(true);
-  };
+  }, [sessionId]);
 
   const headerProps = useMemo(
     () => ({
@@ -1135,19 +1137,18 @@ export default function ScanScreen() {
     [
       appTheme.gradients.success,
       colors,
-      debouncedSearchQuery.length,
+      debouncedSearchQuery,
       handleFinishRack,
       handleManualSearch,
       handleRecentItemPress,
       handleResultPress,
-      handleSearchResultPress,
       handleSemanticSearch,
       isAISearching,
       isFinishing,
       isSearching,
       recentItems,
       resultRowColors,
-      searchQuery.length,
+      searchQuery,
       searchResults,
       setIsScanning,
       showResults,

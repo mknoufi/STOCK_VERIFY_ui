@@ -2,7 +2,6 @@
  * API service layer: network-aware endpoints with offline fallbacks and caching.
  * Most functions prefer online calls and transparently fall back to cache.
  */
-import { useNetworkStore } from "../../store/networkStore";
 import { useAuthStore } from "../../store/authStore";
 import api from "../httpClient";
 import { retryWithBackoff } from "../../utils/retry";
@@ -21,15 +20,9 @@ import {
   isCacheStale,
   type DataSource,
 } from "../offline/offlineStorage";
+import { createOfflineCountLine } from "../offline/offlineCountLine";
 import {
-  createOfflineCountLine,
-  setDeviceContext,
-} from "../offline/offlineCountLine";
-import {
-  isOnline as checkIsOnline,
   getNetworkStatus,
-  isDefinitelyOffline,
-  type NetworkStatus,
 } from "../../utils/network";
 import { AppError } from "../../utils/errors";
 import { createLogger } from "../logging";

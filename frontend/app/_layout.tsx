@@ -9,6 +9,13 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { StatusBar } from "expo-status-bar";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 import { useAuthStore } from "../src/store/authStore";
 import { initializeNetworkListener } from "../src/services/networkService";
 import { initializeSyncService } from "../src/services/syncService";
@@ -41,16 +48,8 @@ if (Platform.OS !== "web") {
   // On web, splash screen may not be needed
   SplashScreen.preventAutoHideAsync().catch(() => {
     // Silent fail for web platform
-  });
-}
-
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
+	});
+	}
 
 // Debug logs only in development
 if (__DEV__) {

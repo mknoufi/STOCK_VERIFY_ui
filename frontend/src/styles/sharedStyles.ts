@@ -6,7 +6,6 @@
  */
 
 import { Platform, StyleSheet } from "react-native";
-import { theme } from "./modernDesignSystem";
 
 // ============================================
 // SPACING & SIZING CONSTANTS

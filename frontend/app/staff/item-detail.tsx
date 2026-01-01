@@ -439,6 +439,18 @@ export default function ItemDetailScreen() {
       }
     }
 
+    const expectedStock = Number(item.current_stock ?? item.stock_qty ?? 0);
+    const enteredQty = Number(quantity);
+    const hasVariance = enteredQty !== expectedStock;
+
+    if (hasVariance && !remark.trim()) {
+      Alert.alert(
+        "Reason Required",
+        "Correction reason is mandatory when counted quantity differs from system stock. Please add a remark before saving.",
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const payload: CreateCountLinePayload = {
@@ -448,6 +460,7 @@ export default function ItemDetailScreen() {
         counted_qty: Number(quantity),
         damaged_qty: isDamageEnabled ? Number(damageQty) : 0,
         item_condition: condition,
+        variance_reason: hasVariance ? remark.trim() : undefined,
         remark: remark || undefined,
         photo_base64: itemPhoto?.base64,
         mrp_counted: mrpEditable && mrp ? Number(mrp) : undefined,

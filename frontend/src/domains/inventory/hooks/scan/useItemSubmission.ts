@@ -38,6 +38,9 @@ export const useItemSubmission = ({
       finalQty = parseFloat(form.quantity);
     }
 
+    const expectedStock = Number(item.current_stock ?? item.stock_qty ?? 0);
+    const hasVariance = finalQty !== expectedStock;
+
     // Strict Mode Variance Check
     if (sessionType === "STRICT") {
       const currentStock = Number(item.stock_qty || 0);
@@ -63,6 +66,14 @@ export const useItemSubmission = ({
         });
         if (!confirmed) return;
       }
+    }
+
+    if (hasVariance && !form.remark.trim()) {
+      Alert.alert(
+        "Reason Required",
+        "Correction reason is mandatory when counted quantity differs from system stock. Please add a remark before saving.",
+      );
+      return;
     }
 
     // Check for existing count
@@ -137,6 +148,7 @@ export const useItemSubmission = ({
         item_condition: form.condition,
         condition_details:
           form.condition === "Other" ? form.conditionDetails : undefined,
+        variance_reason: hasVariance ? form.remark.trim() : undefined,
         remark: form.remark || undefined,
         photo_base64: form.itemPhoto?.base64,
         mrp_counted:

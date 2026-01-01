@@ -14,7 +14,6 @@ import {
   cacheSession,
   getSessionsCache,
   getSessionFromCache,
-  getItemFromCache,
   cacheCountLine,
   getCountLinesBySessionFromCache,
   isCacheStale,
@@ -117,8 +116,23 @@ export const createSession = async (
     });
     return response.data;
   } catch (error) {
+    const status = (error as any)?.response?.status;
+    const isClientError =
+      typeof status === "number" && status >= 400 && status < 500;
+    const shouldFallbackOffline =
+      !isClientError || status === 408 || status === 429;
+
+    if (!shouldFallbackOffline) {
+      throw AppError.fromApiError(error, {
+        operation: "createSession",
+        warehouse,
+        type: sessionType,
+      });
+    }
+
     log.warn("Error creating session, switching to offline mode", {
       error: error instanceof Error ? error.message : String(error),
+      status,
     });
 
     // Fallback to offline mode using same helper
@@ -1119,34 +1133,11 @@ export const identifyItem = async (imageUri: string): Promise<Item[]> => {
 export const createCountLine = async (
   countData: CreateCountLinePayload,
 ): Promise<any & { _source?: DataSource; _offline?: boolean }> => {
-  // Helper to resolve item name from cache
-  const resolveItemName = async (): Promise<string> => {
-    try {
-      const cachedItem = await getItemFromCache(countData.item_code);
-      if (cachedItem) return cachedItem.item_name;
-    } catch {
-      // Ignore cache lookup error
-    }
-    return "Unknown Item";
-  };
-
-  // Get user context once
-  const user = useAuthStore.getState().user;
-
   try {
     if (!isOnline()) {
       log.debug("Offline mode - creating offline count line");
-
-      const itemName = await resolveItemName();
-      const offlineCountLine = (await createOfflineCountLine(countData, {
-        username: user?.username,
-        itemName,
-      })) as any;
-
-      await cacheCountLine(offlineCountLine);
-      await addToOfflineQueue("count_line", offlineCountLine);
-
-      log.debug("Created offline count line", { id: offlineCountLine._id });
+      const offlineCountLine = (await createOfflineCountLine(countData)) as any;
+      log.debug("Created offline count line", { id: offlineCountLine?._id });
       return {
         ...offlineCountLine,
         _source: "local" as DataSource,
@@ -1167,19 +1158,27 @@ export const createCountLine = async (
       _source: "api" as DataSource,
     };
   } catch (error: any) {
+    const status = error?.response?.status;
+    const isClientError =
+      typeof status === "number" && status >= 400 && status < 500;
+    const shouldFallbackOffline =
+      !isClientError || status === 408 || status === 429;
+
+    if (!shouldFallbackOffline) {
+      throw AppError.fromApiError(error, {
+        operation: "createCountLine",
+        session_id: countData.session_id,
+        item_code: countData.item_code,
+      });
+    }
+
     log.error("Error creating count line, falling back to offline", {
       error: error instanceof Error ? error.message : String(error),
+      status,
     });
 
     // Fallback to offline mode using the same helper
-    const itemName = await resolveItemName();
-    const offlineCountLine = (await createOfflineCountLine(countData, {
-      username: user?.username,
-      itemName,
-    })) as any; // Cast to any to avoid double Promise confusion
-
-    await cacheCountLine(offlineCountLine);
-    await addToOfflineQueue("count_line", offlineCountLine);
+    const offlineCountLine = (await createOfflineCountLine(countData)) as any;
 
     log.debug("Created offline count line as fallback", {
       id: offlineCountLine._id,

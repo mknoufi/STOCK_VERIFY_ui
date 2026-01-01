@@ -34,6 +34,7 @@ import {
 } from "../../src/components/ui";
 import { SectionLists } from "./components/SectionLists";
 import { toastService } from "../../src/services/utils/toastService";
+import { getUserMessage } from "@/utils/errors";
 
 interface Zone {
   id: string;
@@ -265,6 +266,9 @@ export default function StaffHome() {
       });
 
       const sessionId = session?.id || session?.session_id || session?._id;
+      if (!sessionId) {
+        throw new Error("Session creation succeeded but returned no session id");
+      }
       queryClient.setQueryData(
         ["sessions", currentPage, SESSION_PAGE_SIZE],
         (oldData: any) => {
@@ -292,18 +296,20 @@ export default function StaffHome() {
       setRackName("");
 
       // Sync with store
-      setActiveSession(session.id, sessionType);
+      setActiveSession(sessionId, sessionType);
 
       await refetch();
       router.push({
         pathname: "/staff/scan",
-        params: { sessionId: session.id },
+        params: { sessionId },
       } as any);
     } catch (error) {
       if (__DEV__) console.error("Create section error:", error);
       if (Platform.OS !== "web")
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toastService.show("Failed to start new section", { type: "error" });
+      toastService.show(getUserMessage(error) || "Failed to start new section", {
+        type: "error",
+      });
     } finally {
       setIsCreatingSession(false);
     }

@@ -3,7 +3,7 @@ import {
   RecentItemsService,
   RecentItem,
 } from "@/services/enhancedFeatures";
-import { Item } from "@/types/scan";
+import type { Item } from "@/types/scan";
 
 export interface SuggestionItem {
   id: string;

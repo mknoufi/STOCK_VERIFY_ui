@@ -8,7 +8,7 @@ import {
   addQuantityToCountLine,
 } from "@/services/api";
 import { normalizeSerialValue } from "@/utils/scanUtils";
-import { Item, CreateCountLinePayload } from "@/types/scan";
+import type { Item, CreateCountLinePayload } from "@/types/scan";
 import { useItemForm } from "./useItemForm";
 
 interface UseItemSubmissionProps {

@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
-import { ScannerMode } from "@/types/scan";
+import type { ScannerMode } from "@/types/scan";
 import {
   SCANNER_CONFIG,
   ScanThrottleManager,

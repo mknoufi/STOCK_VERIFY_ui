@@ -13,11 +13,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Controller, Control, FieldErrors } from "react-hook-form";
-import {
-  ScanFormData,
-  NormalizedMrpVariant,
-  WorkflowState,
-} from "@/types/scan";
+import type { ScanFormData, NormalizedMrpVariant, WorkflowState } from "@/types/scan";
 import { MRPVariantSelector } from "./MRPVariantSelector";
 import { formatMrpValue } from "@/utils/scanUtils";
 import { Ionicons } from "@expo/vector-icons";

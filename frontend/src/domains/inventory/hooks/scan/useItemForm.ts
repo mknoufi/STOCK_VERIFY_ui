@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Alert, TextInput } from "react-native";
 import { useBatchManagement } from "./useBatchManagement";
-import { Item } from "@/types/scan";
+import type { Item } from "@/types/scan";
 
 export const useItemForm = () => {
   // Core fields

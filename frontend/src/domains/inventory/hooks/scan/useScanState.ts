@@ -3,7 +3,7 @@
  * Manages scanner state (barcode scanning, manual entry, etc.)
  */
 import { useState, useCallback } from "react";
-import { ScannerMode } from "@/types/scan";
+import type { ScannerMode } from "@/types/scan";
 
 interface ScannerState {
   showScanner: boolean;

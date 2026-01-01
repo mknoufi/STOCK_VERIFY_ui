@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert } from "react-native";
-import { CountLineBatch } from "@/types/scan";
+import type { CountLineBatch } from "@/types/scan";
 
 export const useBatchManagement = () => {
   const [isBatchMode, setIsBatchMode] = useState(false);

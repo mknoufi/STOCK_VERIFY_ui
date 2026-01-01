@@ -23,7 +23,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MyPressable, MyPressableProps } from './MyPressable';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/hooks/useTheme';
 import {
   ComponentSizes,
   BorderRadius,
@@ -112,14 +112,14 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   disabled,
   ...rest
 }) => {
-  const { themeLegacy } = useTheme();
+  const theme = useTheme();
 
   // Determine colors based on type
-  const primaryColor = color || themeLegacy.primary;
+  const primaryColor = color || theme.primary;
   const resolvedTextColor =
     textColor ||
     (type === 'solid' || type === 'gradient'
-      ? themeLegacy.buttonText || '#FFFFFF'
+      ? '#FFFFFF'
       : primaryColor);
 
   // Size configurations
@@ -253,8 +253,8 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   // Gradient variant
   if (type === 'gradient') {
     const defaultGradient: readonly [string, string] = [
-      themeLegacy.primary,
-      themeLegacy.accent || themeLegacy.primary,
+      theme.primary,
+      theme.colors.accent || theme.primary,
     ];
     const colors = gradientColors || defaultGradient;
 

@@ -31,7 +31,7 @@ import Animated, {
   withTiming,
   interpolate,
 } from 'react-native-reanimated';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/hooks/useTheme';
 import {
   ComponentSizes,
   BorderRadius,
@@ -132,7 +132,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
   secureTextEntry,
   ...rest
 }) => {
-  const { themeLegacy } = useTheme();
+  const theme = useTheme();
   const inputRef = useRef<TextInput>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -167,17 +167,17 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
 
   // Colors based on state
   const getBorderColor = () => {
-    if (error) return themeLegacy.error || '#DC2626';
-    if (success) return themeLegacy.success || '#16A34A';
-    if (isFocused) return themeLegacy.primary;
-    return themeLegacy.border || 'rgba(0, 0, 0, 0.1)';
+    if (error) return theme.error || '#DC2626';
+    if (success) return theme.success || '#16A34A';
+    if (isFocused) return theme.primary;
+    return theme.colors.border || 'rgba(0, 0, 0, 0.1)';
   };
 
   const getIconColor = () => {
-    if (error) return themeLegacy.error || '#DC2626';
-    if (success) return themeLegacy.success || '#16A34A';
-    if (isFocused) return themeLegacy.primary;
-    return themeLegacy.textSecondary || '#888';
+    if (error) return theme.error || '#DC2626';
+    if (success) return theme.success || '#16A34A';
+    if (isFocused) return theme.primary;
+    return theme.textSecondary || '#888';
   };
 
   // Handlers
@@ -245,8 +245,8 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
         <Text
           style={[
             styles.fixedLabel,
-            { color: themeLegacy.text },
-            error && { color: themeLegacy.error },
+            { color: theme.text },
+            error && { color: theme.error },
           ]}
         >
           {label}
@@ -263,7 +263,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
             borderColor: getBorderColor(),
             backgroundColor: disabled
               ? 'rgba(0, 0, 0, 0.05)'
-              : themeLegacy.surface || themeLegacy.background,
+              : theme.colors.surface || theme.background,
           },
         ]}
       >
@@ -274,11 +274,11 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
               styles.floatingLabel,
               {
                 color: isFocused
-                  ? themeLegacy.primary
-                  : themeLegacy.textSecondary,
-                backgroundColor: themeLegacy.surface || themeLegacy.background,
+                  ? theme.primary
+                  : theme.textSecondary,
+                backgroundColor: theme.colors.surface || theme.background,
               },
-              error && { color: themeLegacy.error },
+              error && { color: theme.error },
               labelAnimatedStyle,
             ]}
           >
@@ -303,13 +303,13 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
             styles.input,
             {
               fontSize: config.fontSize,
-              color: themeLegacy.text,
+              color: theme.text,
             },
             leftIcon && styles.inputWithLeftIcon,
             (rightIcon || isPassword) && styles.inputWithRightIcon,
             inputStyle,
           ]}
-          placeholderTextColor={themeLegacy.textSecondary || '#888'}
+          placeholderTextColor={theme.textSecondary || '#888'}
           editable={!disabled}
           value={value}
           onFocus={handleFocus}
@@ -340,18 +340,18 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
         {/* Helper/Error/Success text */}
         <View style={styles.helperContainer}>
           {error ? (
-            <Text style={[styles.helperText, { color: themeLegacy.error }]}>
+            <Text style={[styles.helperText, { color: theme.error }]}>
               {error}
             </Text>
           ) : success && successMessage ? (
-            <Text style={[styles.helperText, { color: themeLegacy.success }]}>
+            <Text style={[styles.helperText, { color: theme.success }]}>
               {successMessage}
             </Text>
           ) : helperText ? (
             <Text
               style={[
                 styles.helperText,
-                { color: themeLegacy.textSecondary },
+                { color: theme.textSecondary },
               ]}
             >
               {helperText}
@@ -364,8 +364,8 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
           <Text
             style={[
               styles.counter,
-              { color: themeLegacy.textSecondary },
-              charCount >= maxLength! && { color: themeLegacy.error },
+              { color: theme.textSecondary },
+              charCount >= maxLength! && { color: theme.error },
             ]}
           >
             {charCount}/{maxLength}

@@ -3,7 +3,7 @@ import { Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useScanSessionStore } from "@/store/scanSessionStore";
 import { getItemByBarcode, refreshItemStock } from "@/services/api";
-import { CountLineBatch, Item } from "@/types/scan";
+import type { CountLineBatch, Item } from "@/types/scan";
 import { useItemForm } from "./useItemForm";
 import { useItemSubmission } from "./useItemSubmission";
 

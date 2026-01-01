@@ -30,7 +30,7 @@ import {
 } from "@/services/api/api";
 import { RecentItemsService } from "@/services/enhancedFeatures";
 import { handleErrorWithRecovery } from "@/services/errorRecovery";
-import { CreateCountLinePayload } from "@/types/scan";
+import type { CreateCountLinePayload } from "@/types/scan";
 import { scanDeduplicationService } from "@/domains/inventory/services/scanDeduplicationService";
 import { normalizeSerialValue } from "@/utils/scanUtils";
 import { useItemState } from "@/domains/inventory/hooks/scan";

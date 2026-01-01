@@ -3,7 +3,7 @@
  * Manages photo proof capture state
  */
 import { useState, useCallback } from "react";
-import { PhotoProofType, PhotoProofDraft } from "@/types/scan";
+import type { PhotoProofType, PhotoProofDraft } from "@/types/scan";
 
 interface PhotoState {
   photoProofs: PhotoProofDraft[];

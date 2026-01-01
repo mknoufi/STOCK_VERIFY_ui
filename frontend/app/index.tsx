@@ -9,7 +9,7 @@ import { AuroraBackground } from "../src/components/ui/AuroraBackground";
 import { GlassCard } from "../src/components/ui/GlassCard";
 import { useThemeContext } from "../src/context/ThemeContext";
 import type { AppTheme } from "../src/theme/themes";
-import { getRouteForRole, UserRole } from "../src/utils/roleNavigation";
+import { getRouteForRole, type UserRole } from "../src/utils/roleNavigation";
 
 export default function Index() {
   const router = useRouter();

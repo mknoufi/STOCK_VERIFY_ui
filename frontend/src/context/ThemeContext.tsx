@@ -510,6 +510,9 @@ export const useThemeContext = (): ThemeContextType => {
     return context;
 };
 
+// Backward-compatible alias used across UI components
+export const useTheme = useThemeContext;
+
 // Optional hook that doesn't throw (for components that may be outside provider)
 export const useThemeContextSafe = (): ThemeContextType | null => {
     return useContext(ThemeContext) ?? null;

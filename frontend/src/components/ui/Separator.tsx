@@ -18,7 +18,7 @@ import {
   TextStyle,
   StyleProp,
 } from 'react-native';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/hooks/useTheme';
 import { Spacing, FontSizes, FontWeights } from '@/theme/uiConstants';
 
 export type SeparatorOrientation = 'horizontal' | 'vertical';
@@ -76,8 +76,8 @@ export const Separator: React.FC<SeparatorProps> = ({
   labelStyle,
   style,
 }) => {
-  const { themeLegacy } = useTheme();
-  const lineColor = color || themeLegacy.border || 'rgba(0, 0, 0, 0.1)';
+  const theme = useTheme();
+  const lineColor = color || theme.colors.border || 'rgba(0, 0, 0, 0.1)';
 
   const isHorizontal = orientation === 'horizontal';
 
@@ -120,15 +120,15 @@ export const Separator: React.FC<SeparatorProps> = ({
   return (
     <View style={[containerStyle, style]}>
       <View style={lineStyle} />
-      <Text
-        style={[
-          styles.label,
-          { color: themeLegacy.textSecondary || '#666' },
-          labelStyle,
-        ]}
-      >
-        {label}
-      </Text>
+        <Text
+          style={[
+            styles.label,
+            { color: theme.textSecondary || '#666' },
+            labelStyle,
+          ]}
+        >
+          {label}
+        </Text>
       <View style={lineStyle} />
     </View>
   );

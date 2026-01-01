@@ -13,7 +13,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SerialInput } from "@/types/scan";
+import type { SerialInput } from "@/types/scan";
 
 interface SerialNumberEntryProps {
   serialInputs: SerialInput[];

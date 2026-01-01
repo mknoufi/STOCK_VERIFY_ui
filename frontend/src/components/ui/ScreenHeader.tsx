@@ -263,14 +263,14 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
         >
           {title}
         </Text>
-        {subtitle && (
+        {subtitle ? (
           <Text
             style={[styles.subtitleText, { color: colors.textSecondary }]}
             numberOfLines={1}
           >
             {subtitle}
           </Text>
-        )}
+        ) : null}
       </Animated.View>
     );
   };

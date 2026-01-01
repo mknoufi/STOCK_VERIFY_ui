@@ -54,6 +54,7 @@ import { theme } from "@/styles/modernDesignSystem";
 import { useThemeContext } from "@/context/ThemeContext";
 import {
   getItemByBarcode,
+  getCountLines,
   searchItems,
   updateSessionStatus,
 } from "@/services/api/api";
@@ -269,6 +270,34 @@ export default function ScanScreen() {
     }
   }, []);
 
+  const [progress, setProgress] = useState({
+    scanned: 0,
+    verified: 0,
+    pending: 0,
+  });
+  const [progressLoading, setProgressLoading] = useState(false);
+
+  const loadProgress = useCallback(async () => {
+    if (!sessionId) {
+      setProgress({ scanned: 0, verified: 0, pending: 0 });
+      return;
+    }
+
+    setProgressLoading(true);
+    try {
+      const lines = await getCountLines(sessionId as string);
+      const safeLines = Array.isArray(lines) ? lines : [];
+      const verified = safeLines.filter((l: any) => l?.status === "approved").length;
+      const scanned = safeLines.length;
+      const pending = Math.max(0, scanned - verified);
+      setProgress({ scanned, verified, pending });
+    } catch {
+      // Non-fatal: keep last progress snapshot
+    } finally {
+      setProgressLoading(false);
+    }
+  }, [sessionId]);
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -287,8 +316,9 @@ export default function ScanScreen() {
       );
       // Optionally refresh recent items or search results if they contain this item
       loadRecentItems();
+      void loadProgress();
     }
-  }, [lastMessage, loadRecentItems]);
+  }, [lastMessage, loadRecentItems, loadProgress]);
   const [scanFeedbackMessage, setScanFeedbackMessage] = useState("");
 
   // Animation
@@ -296,7 +326,10 @@ export default function ScanScreen() {
 
   useEffect(() => {
     loadRecentItems();
-  }, [loadRecentItems]);
+    void loadProgress();
+    const interval = setInterval(() => void loadProgress(), 15000);
+    return () => clearInterval(interval);
+  }, [loadRecentItems, loadProgress]);
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
@@ -729,6 +762,29 @@ export default function ScanScreen() {
     setShowCloseSessionModal(true);
   }, [sessionId]);
 
+  const closeQuickActions = useCallback(() => {
+    quickActionsScale.value = withTiming(0, { duration: 200 });
+    setTimeout(() => setShowQuickActions(false), 200);
+  }, [quickActionsScale]);
+
+  const openHistory = useCallback(
+    (status: "all" | "pending" | "approved") => {
+      if (!sessionId) {
+        toastService.show("No active session", { type: "error" });
+        return;
+      }
+      closeQuickActions();
+      router.push({
+        pathname: "/staff/history",
+        params: {
+          sessionId: sessionId as string,
+          status,
+        },
+      } as any);
+    },
+    [closeQuickActions, router, sessionId],
+  );
+
   const headerProps = useMemo(
     () => ({
       title: "Scan Items",
@@ -1055,7 +1111,7 @@ export default function ScanScreen() {
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: colors.text }]}>
-                      0
+                      {progressLoading ? "…" : progress.scanned}
                     </Text>
                     <Text
                       style={[styles.statLabel, { color: colors.textSecondary }]}
@@ -1071,7 +1127,7 @@ export default function ScanScreen() {
                   />
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: colors.text }]}>
-                      0
+                      {progressLoading ? "…" : progress.verified}
                     </Text>
                     <Text
                       style={[styles.statLabel, { color: colors.textSecondary }]}
@@ -1087,7 +1143,7 @@ export default function ScanScreen() {
                   />
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: colors.text }]}>
-                      0
+                      {progressLoading ? "…" : progress.pending}
                     </Text>
                     <Text
                       style={[styles.statLabel, { color: colors.textSecondary }]}
@@ -1138,6 +1194,10 @@ export default function ScanScreen() {
       appTheme.gradients.success,
       colors,
       debouncedSearchQuery,
+      progress.pending,
+      progress.scanned,
+      progress.verified,
+      progressLoading,
       handleFinishRack,
       handleManualSearch,
       handleRecentItemPress,
@@ -1297,6 +1357,7 @@ export default function ScanScreen() {
           <TouchableOpacity
             style={styles.quickActionButton}
             activeOpacity={0.7}
+            onPress={() => openHistory("all")}
           >
             <LinearGradient
               colors={appTheme.gradients.accent}
@@ -1312,6 +1373,7 @@ export default function ScanScreen() {
           <TouchableOpacity
             style={styles.quickActionButton}
             activeOpacity={0.7}
+            onPress={() => openHistory("pending")}
           >
             <LinearGradient
               colors={appTheme.gradients.success}

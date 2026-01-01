@@ -162,7 +162,7 @@ const LogRow = React.memo(
             size={22}
             color={config.color}
           />
-          {log.count && log.count > 1 && (
+          {log.count != null && log.count > 1 && (
             <View style={styles.countBadge}>
               <Text style={styles.countText}>
                 {log.count > 99 ? "99+" : log.count}

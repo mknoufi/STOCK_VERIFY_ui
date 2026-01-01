@@ -484,8 +484,8 @@ export default function StaffHome() {
         backdropOpacity={0.5}
         swipeDirection="down"
         onSwipeComplete={() => setShowNewSectionForm(false)}
-        useNativeDriver
-        hideModalContentWhileAnimating
+        useNativeDriver={Platform.OS !== "web"}
+        hideModalContentWhileAnimating={Platform.OS !== "web"}
       >
         <View
           style={[
@@ -795,8 +795,8 @@ export default function StaffHome() {
         backdropOpacity={0.5}
         swipeDirection="down"
         onSwipeComplete={() => setShowFloorPicker(false)}
-        useNativeDriver
-        hideModalContentWhileAnimating
+        useNativeDriver={Platform.OS !== "web"}
+        hideModalContentWhileAnimating={Platform.OS !== "web"}
         statusBarTranslucent
       >
         <View

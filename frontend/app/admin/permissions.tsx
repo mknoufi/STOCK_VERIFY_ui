@@ -136,7 +136,7 @@ export default function PermissionsScreen() {
             return (
               <View key={permission} style={styles.permissionRow}>
                 <Text style={styles.permissionText}>{permission}</Text>
-                {selectedUsername && (
+                {Boolean(selectedUsername) && (
                   <AnimatedPressable
                     style={[
                       styles.permissionButton,
@@ -222,7 +222,7 @@ export default function PermissionsScreen() {
           <Text style={styles.statsText}>
             Total Permissions: {availablePermissions?.permissions?.length || 0}
           </Text>
-          {selectedUsername && (
+          {Boolean(selectedUsername) && (
             <Text style={styles.statsText}>
               User &quot;{selectedUsername}&quot;: {userPermissions.length}{" "}
               permissions

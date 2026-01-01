@@ -303,19 +303,19 @@ export default function ControlPanelScreen() {
 
       {service.running && (
         <View style={styles.serviceDetails}>
-          {service.port && (
+          {service.port != null && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="server" size={16} color="#aaa" />
               <Text style={styles.serviceDetailText}>Port: {service.port}</Text>
             </View>
           )}
-          {service.pid && (
+          {service.pid != null && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="code-working" size={16} color="#aaa" />
               <Text style={styles.serviceDetailText}>PID: {service.pid}</Text>
             </View>
           )}
-          {service.uptime && (
+          {service.uptime != null && (
             <View style={styles.serviceDetailRow}>
               <Ionicons name="time" size={16} color="#aaa" />
               <Text style={styles.serviceDetailText}>
@@ -323,7 +323,7 @@ export default function ControlPanelScreen() {
               </Text>
             </View>
           )}
-          {service.url && (
+          {Boolean(service.url) && (
             <TouchableOpacity
               style={styles.serviceDetailRow}
               onPress={() => handleCopyUrl(service.url!)}

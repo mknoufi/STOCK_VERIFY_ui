@@ -303,7 +303,7 @@ export default function AdminLiveView() {
             </TouchableOpacity>
           </View>
 
-          {error && (
+          {Boolean(error) && (
             <View style={styles.errorRow}>
               <Ionicons
                 name="alert-circle"

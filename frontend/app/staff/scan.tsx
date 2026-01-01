@@ -491,8 +491,15 @@ export default function ScanScreen() {
     }
   };
 
-  const handleScanPress = async () => {
+  const handleScanPress = useCallback(async () => {
     hapticService.impact("heavy");
+
+    if (Platform.OS === "web") {
+      toastService.show("Camera scanning isn’t supported on web. Use manual search.", {
+        type: "info",
+      });
+      return;
+    }
 
     if (!permission) {
       // Permissions are still loading
@@ -524,7 +531,7 @@ export default function ScanScreen() {
     scanBufferRef.current = []; // Clear scan buffer for fresh start
     setIsScanning(true);
     setIsCameraReady(false); // Reset ready state
-  };
+  }, [permission, requestPermission]);
 
   const handleBarcodeScan = async ({ data }: { data: string }) => {
     if (scanned) return; // Prevent multiple scans
@@ -916,7 +923,7 @@ export default function ScanScreen() {
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => setIsScanning(true)}
+                      onPress={handleScanPress}
                       style={styles.aiButton}
                       activeOpacity={0.8}
                     >
@@ -1210,8 +1217,8 @@ export default function ScanScreen() {
       resultRowColors,
       searchQuery,
       searchResults,
-      setIsScanning,
       showResults,
+      handleScanPress,
     ],
   );
 
@@ -1416,8 +1423,8 @@ export default function ScanScreen() {
         animationIn="fadeIn"
         animationOut="fadeOut"
         backdropOpacity={0.5}
-        useNativeDriver
-        hideModalContentWhileAnimating
+        useNativeDriver={Platform.OS !== "web"}
+        hideModalContentWhileAnimating={Platform.OS !== "web"}
         statusBarTranslucent
       >
         <View
@@ -1534,8 +1541,8 @@ export default function ScanScreen() {
         animationIn="fadeIn"
         animationOut="fadeOut"
         backdropOpacity={0.5}
-        useNativeDriver
-        hideModalContentWhileAnimating
+        useNativeDriver={Platform.OS !== "web"}
+        hideModalContentWhileAnimating={Platform.OS !== "web"}
         statusBarTranslucent
       >
         <View

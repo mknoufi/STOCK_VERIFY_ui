@@ -109,7 +109,7 @@ export default function MasterSettingsScreen() {
         placeholder={label}
         placeholderTextColor={auroraTheme.colors.text.muted}
       />
-      {description && (
+      {Boolean(description) && (
         <Text style={styles.inputDescription}>{description}</Text>
       )}
     </View>
@@ -119,7 +119,7 @@ export default function MasterSettingsScreen() {
     <View style={styles.switchContainer}>
       <View style={styles.switchTextContainer}>
         <Text style={styles.switchLabel}>{label}</Text>
-        {description && (
+        {Boolean(description) && (
           <Text style={styles.switchDescription}>{description}</Text>
         )}
       </View>

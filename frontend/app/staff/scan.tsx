@@ -81,6 +81,9 @@ export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const isMountedRef = useRef(true);
+  const searchRequestIdRef = useRef(0);
+  const semanticRequestIdRef = useRef(0);
 
   // Multi-read validation for accurate scanning
   const scanBufferRef = useRef<
@@ -120,10 +123,18 @@ export default function ScanScreen() {
   const loadRecentItems = useCallback(async () => {
     try {
       const recent = await RecentItemsService.getRecent();
+      if (!isMountedRef.current) return;
       setRecentItems(recent.slice(0, 5)); // Get first 5 items
     } catch (error) {
       console.error("Failed to load recent items:", error);
     }
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -150,18 +161,26 @@ export default function ScanScreen() {
     if (!query || query.length < 3) {
       setSearchResults([]);
       setShowResults(false);
+      setIsSearching(false);
       return;
     }
 
+    const requestId = ++searchRequestIdRef.current;
     setIsSearching(true);
     setSearchMethod("standard");
     try {
       const results = await searchItems(query);
+      if (!isMountedRef.current || requestId !== searchRequestIdRef.current) {
+        return;
+      }
       setSearchResults(results);
       setShowResults(true);
     } catch (_error) {
       console.error("Search error:", _error);
     } finally {
+      if (!isMountedRef.current || requestId !== searchRequestIdRef.current) {
+        return;
+      }
       setIsSearching(false);
     }
   }, []);
@@ -169,9 +188,13 @@ export default function ScanScreen() {
   const handleSemanticSearch = async () => {
     if (!searchQuery || searchQuery.length < 2) return;
 
+    const requestId = ++semanticRequestIdRef.current;
     setIsAISearching(true);
     try {
       const results = await searchItemsSemantic(searchQuery);
+      if (!isMountedRef.current || requestId !== semanticRequestIdRef.current) {
+        return;
+      }
       if (results.length > 0) {
         setSearchResults(results);
         setSearchMethod("semantic");
@@ -185,6 +208,9 @@ export default function ScanScreen() {
     } catch {
       toastService.show("Failed to perform semantic search", { type: "error" });
     } finally {
+      if (!isMountedRef.current || requestId !== semanticRequestIdRef.current) {
+        return;
+      }
       setIsAISearching(false);
     }
   };
@@ -208,8 +234,10 @@ export default function ScanScreen() {
       });
 
       if (photo && photo.uri) {
+        if (!isMountedRef.current) return;
         setLoading(true);
         const results = await identifyItem(photo.uri);
+        if (!isMountedRef.current) return;
 
         if (results.length > 0) {
           setSearchResults(results);
@@ -231,8 +259,10 @@ export default function ScanScreen() {
         type: "error",
       });
     } finally {
-      setIsAISearching(false);
-      setLoading(false);
+      if (isMountedRef.current) {
+        setIsAISearching(false);
+        setLoading(false);
+      }
     }
   };
 
@@ -379,9 +409,11 @@ export default function ScanScreen() {
     }
 
     const sanitized = validation.value!;
-    setLoading(true);
-    setSearchQuery(""); // Clear search query on lookup
-    setShowResults(false); // Hide results
+    if (isMountedRef.current) {
+      setLoading(true);
+      setSearchQuery(""); // Clear search query on lookup
+      setShowResults(false); // Hide results
+    }
 
     try {
       let item: any;
@@ -398,6 +430,7 @@ export default function ScanScreen() {
         }
       }
 
+      if (!isMountedRef.current) return;
       if (item) {
         hapticService.scanSuccess();
 
@@ -435,32 +468,51 @@ export default function ScanScreen() {
         setShowScanFeedback(true);
       }
     } catch (error: any) {
+      if (!isMountedRef.current) return;
       hapticService.scanError();
       // Prefer inline feedback instead of a modal to avoid interrupting scanning.
       setScanFeedbackType("error");
       setScanFeedbackMessage(error?.message || "Failed to lookup item");
       setShowScanFeedback(true);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [loadRecentItems, router, sessionId]);
 
-  const handleManualSearch = useCallback(() => {
-    if (searchQuery.trim()) {
-      // Only trigger direct lookup if it looks like a barcode (starts with 51, 52, 53)
-      // Otherwise, just let the search results stay (don't auto-select)
-      if (
-        searchQuery.startsWith("51") ||
-        searchQuery.startsWith("52") ||
-        searchQuery.startsWith("53")
-      ) {
-        handleLookup(searchQuery);
-      } else {
-        // Ensure results are shown (they should be from debounce)
-        Keyboard.dismiss();
-      }
+  const shouldDirectLookup = useCallback((query: string) => {
+    // Numeric-only inputs are treated as barcodes.
+    if (/^\d+$/.test(query)) return true;
+
+    // Known barcode prefixes used in this deployment.
+    if (query.startsWith("51") || query.startsWith("52") || query.startsWith("53")) {
+      return true;
     }
-  }, [handleLookup, searchQuery]);
+
+    // Heuristic for item codes (no spaces, short, contains at least one digit).
+    if (/^[A-Za-z0-9_-]+$/.test(query) && /\d/.test(query) && query.length <= 12) {
+      return true;
+    }
+
+    return false;
+  }, []);
+
+  const handleManualSearch = useCallback(() => {
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    if (shouldDirectLookup(query)) {
+      void handleLookup(query);
+      return;
+    }
+
+    // For non-barcode inputs, treat as search text.
+    if (query.length >= 3) {
+      setShowResults(true);
+    }
+    Keyboard.dismiss();
+  }, [handleLookup, searchQuery, shouldDirectLookup]);
 
   const handleSearchResultPress = useCallback(
     async (item: any) => {
@@ -705,6 +757,9 @@ export default function ScanScreen() {
                 onChangeText={setSearchQuery}
                 onSubmitEditing={handleManualSearch}
                 returnKeyType="search"
+                autoCapitalize="none"
+                autoCorrect={false}
+                spellCheck={false}
               />
               <View style={styles.searchActions}>
                 {searchQuery.length > 0 && (
@@ -979,7 +1034,7 @@ export default function ScanScreen() {
             >
               {recentItems.map((item, index) => (
                 <TouchableOpacity
-                  key={index}
+                  key={item.item_code || item.barcode || String(index)}
                   onPress={() => handleRecentItemPress(item)}
                   activeOpacity={0.7}
                 >

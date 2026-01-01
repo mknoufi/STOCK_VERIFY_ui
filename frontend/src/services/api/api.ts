@@ -700,6 +700,7 @@ export const getItemByBarcode = async (
  */
 export const searchItems = async (
   query: string,
+  options?: { signal?: AbortSignal },
 ): Promise<(Item & { _source?: DataSource })[]> => {
   // Helper to map cached items to frontend Item interface
   const mapCachedItems = (
@@ -730,14 +731,15 @@ export const searchItems = async (
       return mapCachedItems(cachedItems, "cache");
     }
 
-    // Use new optimized search endpoint (fallback to cache on network errors)
-    let response;
-    try {
-      log.debug("Searching via API", { query });
-      response = await api.get("/api/items/search/optimized", {
-        params: { q: query },
-      });
-    } catch (error: any) {
+	    // Use new optimized search endpoint (fallback to cache on network errors)
+	    let response;
+	    try {
+	      log.debug("Searching via API", { query });
+	      response = await api.get("/api/items/search/optimized", {
+	        params: { q: query },
+	        signal: options?.signal,
+	      });
+	    } catch (error: any) {
       log.warn("Search API failed, falling back to cache", {
         error: error.message,
       });
@@ -1035,15 +1037,17 @@ export const getSearchFilters = async (): Promise<{
 export const searchItemsSemantic = async (
   query: string,
   limit: number = 20,
+  options?: { signal?: AbortSignal },
 ): Promise<Item[]> => {
   try {
     if (!isOnline()) {
       return []; // Semantic search requires server-side model
     }
 
-    const response = await api.get("/api/v2/items/semantic", {
-      params: { query, limit },
-    });
+	    const response = await api.get("/api/v2/items/semantic", {
+	      params: { query, limit },
+	      signal: options?.signal,
+	    });
 
     const items = response.data.data?.items || [];
     return items.map((item: any) => ({

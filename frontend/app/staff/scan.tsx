@@ -19,6 +19,7 @@ import {
   Alert,
   StyleSheet,
   ScrollView,
+  FlatList,
   Platform,
   TouchableOpacity,
   TextInput,
@@ -67,6 +68,138 @@ import { localDb } from "@/db/localDb";
 import { OfflineIndicator } from "@/components/common/OfflineIndicator";
 import { validateBarcode } from "@/utils/validation";
 
+type ScanSearchResultItem = any;
+
+type ResultRowColors = {
+  border: string;
+  surfaceElevated: string;
+  text: string;
+  textSecondary: string;
+  muted: string;
+  accent: string;
+  warning: string;
+  success: string;
+};
+
+const SearchResultRow = React.memo(
+  ({
+    item,
+    colors,
+    onPress,
+  }: {
+    item: ScanSearchResultItem;
+    colors: ResultRowColors;
+    onPress: (item: ScanSearchResultItem) => void;
+  }) => {
+    return (
+      <TouchableOpacity
+        style={[styles.resultItem, { borderBottomColor: colors.border }]}
+        onPress={() => onPress(item)}
+        activeOpacity={0.7}
+      >
+        <View
+          style={[
+            styles.resultIcon,
+            { backgroundColor: colors.surfaceElevated },
+          ]}
+        >
+          <Ionicons name="cube-outline" size={18} color={colors.textSecondary} />
+        </View>
+        <View style={styles.resultInfo}>
+          <Text style={[styles.resultName, { color: colors.text }]} numberOfLines={1}>
+            {item.item_name || item.name}
+          </Text>
+          <View style={styles.resultCodeRow}>
+            <Text style={[styles.resultCode, { color: colors.textSecondary }]}>
+              {item.barcode || item.item_code || "—"}
+            </Text>
+            {item.mrp != null && item.mrp > 0 && (
+              <View
+                style={[
+                  styles.mrpBadge,
+                  {
+                    backgroundColor: colors.warning + "15",
+                    borderColor: colors.warning + "30",
+                  },
+                ]}
+              >
+                <Text style={[styles.mrpBadgeText, { color: colors.warning }]}>
+                  ₹{item.mrp}
+                </Text>
+              </View>
+            )}
+            {Boolean(item.batch_id) && (
+              <View
+                style={[
+                  styles.batchBadge,
+                  {
+                    backgroundColor: colors.accent + "10",
+                    borderColor: colors.accent + "20",
+                  },
+                ]}
+              >
+                <Text style={[styles.batchBadgeText, { color: colors.accent }]}>
+                  Batch: {item.batch_id}
+                </Text>
+              </View>
+            )}
+          </View>
+          {Boolean(item.manual_barcode || item.unit2_barcode || item.unit_m_barcode) && (
+            <View style={styles.altBarcodesRow}>
+              {Boolean(item.manual_barcode) && (
+                <View
+                  style={[
+                    styles.otherBarcodeBadge,
+                    {
+                      backgroundColor: colors.success + "10",
+                      borderColor: colors.success + "20",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>
+                    Manual: {item.manual_barcode}
+                  </Text>
+                </View>
+              )}
+              {Boolean(item.unit2_barcode) && (
+                <View
+                  style={[
+                    styles.otherBarcodeBadge,
+                    {
+                      backgroundColor: colors.success + "10",
+                      borderColor: colors.success + "20",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>
+                    Unit2: {item.unit2_barcode}
+                  </Text>
+                </View>
+              )}
+              {Boolean(item.unit_m_barcode) && (
+                <View
+                  style={[
+                    styles.otherBarcodeBadge,
+                    {
+                      backgroundColor: colors.success + "10",
+                      borderColor: colors.success + "20",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>
+                    UnitM: {item.unit_m_barcode}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+        <Ionicons name="chevron-forward" size={16} color={colors.muted} />
+      </TouchableOpacity>
+    );
+  },
+);
+
 export default function ScanScreen() {
   const { themeLegacy: appTheme, isDark } = useThemeContext();
   const { colors } = appTheme;
@@ -84,6 +217,8 @@ export default function ScanScreen() {
   const isMountedRef = useRef(true);
   const searchRequestIdRef = useRef(0);
   const semanticRequestIdRef = useRef(0);
+  const searchAbortControllerRef = useRef<AbortController | null>(null);
+  const semanticAbortControllerRef = useRef<AbortController | null>(null);
 
   // Multi-read validation for accurate scanning
   const scanBufferRef = useRef<
@@ -134,6 +269,8 @@ export default function ScanScreen() {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      searchAbortControllerRef.current?.abort();
+      semanticAbortControllerRef.current?.abort();
     };
   }, []);
 
@@ -159,23 +296,32 @@ export default function ScanScreen() {
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
+      searchAbortControllerRef.current?.abort();
+      searchAbortControllerRef.current = null;
       setSearchResults([]);
       setShowResults(false);
       setIsSearching(false);
       return;
     }
 
+    searchAbortControllerRef.current?.abort();
+    const controller = new AbortController();
+    searchAbortControllerRef.current = controller;
+
     const requestId = ++searchRequestIdRef.current;
     setIsSearching(true);
     setSearchMethod("standard");
     try {
-      const results = await searchItems(query);
+      const results = await searchItems(query, { signal: controller.signal });
       if (!isMountedRef.current || requestId !== searchRequestIdRef.current) {
         return;
       }
       setSearchResults(results);
       setShowResults(true);
-    } catch (_error) {
+    } catch (_error: any) {
+      if (_error?.name === "CanceledError" || _error?.code === "ERR_CANCELED") {
+        return;
+      }
       console.error("Search error:", _error);
     } finally {
       if (!isMountedRef.current || requestId !== searchRequestIdRef.current) {
@@ -188,10 +334,16 @@ export default function ScanScreen() {
   const handleSemanticSearch = async () => {
     if (!searchQuery || searchQuery.length < 2) return;
 
+    semanticAbortControllerRef.current?.abort();
+    const controller = new AbortController();
+    semanticAbortControllerRef.current = controller;
+
     const requestId = ++semanticRequestIdRef.current;
     setIsAISearching(true);
     try {
-      const results = await searchItemsSemantic(searchQuery);
+      const results = await searchItemsSemantic(searchQuery, 20, {
+        signal: controller.signal,
+      });
       if (!isMountedRef.current || requestId !== semanticRequestIdRef.current) {
         return;
       }
@@ -205,7 +357,10 @@ export default function ScanScreen() {
           type: "info",
         });
       }
-    } catch {
+    } catch (error: any) {
+      if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+        return;
+      }
       toastService.show("Failed to perform semantic search", { type: "error" });
     } finally {
       if (!isMountedRef.current || requestId !== semanticRequestIdRef.current) {
@@ -604,6 +759,39 @@ export default function ScanScreen() {
     [scanFeedbackMessage, scanFeedbackType, showScanFeedback],
   );
 
+  const resultRowColors = useMemo<ResultRowColors>(
+    () => ({
+      border: colors.border,
+      surfaceElevated: colors.surfaceElevated,
+      text: colors.text,
+      textSecondary: colors.textSecondary,
+      muted: colors.muted,
+      accent: colors.accent,
+      warning: colors.warning,
+      success: colors.success,
+    }),
+    [colors],
+  );
+
+  const handleResultPress = useCallback(
+    (item: ScanSearchResultItem) => {
+      void handleSearchResultPress(item);
+    },
+    [handleSearchResultPress],
+  );
+
+  const renderSearchResult = useCallback(
+    ({ item }: { item: ScanSearchResultItem }) => (
+      <SearchResultRow item={item} colors={resultRowColors} onPress={handleResultPress} />
+    ),
+    [handleResultPress, resultRowColors],
+  );
+
+  const keyExtractor = useCallback((item: ScanSearchResultItem, index: number) => {
+    const key = item?.barcode || item?.item_code || item?.id;
+    return key ? String(key) : String(index);
+  }, []);
+
   if (isScanning) {
     return (
       <View style={styles.cameraFullScreen}>
@@ -807,167 +995,20 @@ export default function ScanScreen() {
                     style={{ padding: 10 }}
                   />
                 ) : searchResults.length > 0 ? (
-                  <ScrollView
+                  <FlatList
                     style={styles.resultsList}
-                    contentContainerStyle={styles.resultsListContent}
+                    contentContainerStyle={styles.resultsListContent as any}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
-                  >
-                    {searchResults.map((item, index) => (
-                      <TouchableOpacity
-                        key={`${item.barcode || item.item_code || item.id}-${index}`}
-                        style={[
-                          styles.resultItem,
-                          { borderBottomColor: colors.border },
-                        ]}
-                        onPress={() => handleSearchResultPress(item)}
-                      >
-                        <View
-                          style={[
-                            styles.resultIcon,
-                            { backgroundColor: colors.surfaceElevated },
-                          ]}
-                        >
-                          <Ionicons
-                            name="cube-outline"
-                            size={18}
-                            color={colors.textSecondary}
-                          />
-                        </View>
-                        <View style={styles.resultInfo}>
-                          <Text
-                            style={[styles.resultName, { color: colors.text }]}
-                            numberOfLines={1}
-                          >
-                            {item.item_name || item.name}
-                          </Text>
-                          <View style={styles.resultCodeRow}>
-                            <Text
-                              style={[
-                                styles.resultCode,
-                                { color: colors.textSecondary },
-                              ]}
-                            >
-                              {item.barcode || item.item_code || "—"}
-                            </Text>
-                            {item.mrp != null && item.mrp > 0 && (
-                              <View
-                                style={[
-                                  styles.mrpBadge,
-                                  {
-                                    backgroundColor: colors.warning + "15",
-                                    borderColor: colors.warning + "30",
-                                  },
-                                ]}
-                              >
-                                <Text
-                                  style={[
-                                    styles.mrpBadgeText,
-                                    { color: colors.warning },
-                                  ]}
-                                >
-                                  ₹{item.mrp}
-                                </Text>
-                              </View>
-                            )}
-                            {Boolean(item.batch_id) && (
-                              <View
-                                style={[
-                                  styles.batchBadge,
-                                  {
-                                    backgroundColor: colors.accent + "10",
-                                    borderColor: colors.accent + "20",
-                                  },
-                                ]}
-                              >
-                                <Text
-                                  style={[
-                                    styles.batchBadgeText,
-                                    { color: colors.accent },
-                                  ]}
-                                >
-                                  Batch: {item.batch_id}
-                                </Text>
-                              </View>
-                            )}
-                          </View>
-                          {Boolean(
-                            item.manual_barcode ||
-                              item.unit2_barcode ||
-                              item.unit_m_barcode,
-                          ) && (
-                              <View style={styles.altBarcodesRow}>
-                                {Boolean(item.manual_barcode) && (
-                                  <View
-                                    style={[
-                                      styles.otherBarcodeBadge,
-                                      {
-                                        backgroundColor: colors.success + "10",
-                                        borderColor: colors.success + "20",
-                                      },
-                                    ]}
-                                  >
-                                    <Text
-                                      style={[
-                                        styles.otherBarcodeText,
-                                        { color: colors.success },
-                                      ]}
-                                    >
-                                      Manual: {item.manual_barcode}
-                                    </Text>
-                                  </View>
-                                )}
-                                {Boolean(item.unit2_barcode) && (
-                                  <View
-                                    style={[
-                                      styles.otherBarcodeBadge,
-                                      {
-                                        backgroundColor: colors.success + "10",
-                                        borderColor: colors.success + "20",
-                                      },
-                                    ]}
-                                  >
-                                    <Text
-                                      style={[
-                                        styles.otherBarcodeText,
-                                        { color: colors.success },
-                                      ]}
-                                    >
-                                      Unit2: {item.unit2_barcode}
-                                    </Text>
-                                  </View>
-                                )}
-                                {Boolean(item.unit_m_barcode) && (
-                                  <View
-                                    style={[
-                                      styles.otherBarcodeBadge,
-                                      {
-                                        backgroundColor: colors.success + "10",
-                                        borderColor: colors.success + "20",
-                                      },
-                                    ]}
-                                  >
-                                    <Text
-                                      style={[
-                                        styles.otherBarcodeText,
-                                        { color: colors.success },
-                                      ]}
-                                    >
-                                      UnitM: {item.unit_m_barcode}
-                                    </Text>
-                                  </View>
-                                )}
-                              </View>
-                            )}
-                        </View>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={16}
-                          color={colors.muted}
-                        />
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+                    data={searchResults}
+                    renderItem={renderSearchResult}
+                    keyExtractor={keyExtractor}
+                    initialNumToRender={10}
+                    windowSize={5}
+                    removeClippedSubviews={Platform.OS === "android"}
+                    maxToRenderPerBatch={10}
+                    updateCellsBatchingPeriod={16}
+                  />
                 ) : (
                   debouncedSearchQuery.length >= 2 && (
                     <View style={styles.semanticSearchContainer}>

@@ -58,6 +58,7 @@ from backend.services.redis_service import close_redis, init_redis
 from backend.services.refresh_token import RefreshTokenService
 from backend.services.runtime import set_cache_service, set_refresh_token_service
 from backend.services.scheduled_export_service import ScheduledExportService
+from backend.utils.port_detector import PortDetector, save_backend_info
 from backend.services.sync_conflicts_service import SyncConflictsService
 from backend.sql_server_connector import SQLServerConnector
 
@@ -431,7 +432,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     # Initialize default users
     try:
-        await init_default_users()
+        await init_default_users(db)
         logger.info("OK: Default users initialized")
     except Exception as e:
         logger.warning(
@@ -619,7 +620,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     try:
         # Initialize verification API
-        init_verification_api(db)
+        init_verification_api(db, cache_service)
         logger.info("✓ Item verification API initialized")
     except Exception as e:
         logger.error(f"Failed to initialize verification API: {str(e)}")
@@ -695,6 +696,17 @@ async def lifespan(app: FastAPI):  # noqa: C901
         failed = [svc for svc in critical_services if not startup_checklist[svc]]
         logger.warning(f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}")
 
+    # Initialize search service
+    try:
+        from backend.db.runtime import get_db
+        from backend.services.search_service import init_search_service
+
+        database = get_db()
+        init_search_service(database)
+        logger.info("✓ Search service initialized successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize search service: {e}")
+
     logger.info("OK: Application startup complete")
 
     # Inject services into globals and legacy routes module
@@ -752,6 +764,18 @@ async def lifespan(app: FastAPI):  # noqa: C901
         legacy_routes.enterprise_security_service = g.enterprise_security_service
 
     logger.info("✓ Global services injected into legacy routes")
+
+    # Save backend port info (replaces deprecated on_event("startup"))
+    try:
+        port = int(os.getenv("PORT") or getattr(settings, "PORT", 8001))
+    except Exception:
+        port = 8001
+
+    try:
+        local_ip = PortDetector.get_local_ip()
+        save_backend_info(port, local_ip)
+    except Exception as e:
+        logger.error(f"Error saving backend port info: {e}")
 
     yield
 

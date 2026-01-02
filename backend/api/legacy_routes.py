@@ -142,7 +142,8 @@ else:
 logger = logging.getLogger(__name__)
 
 
-# Note: sanitize_for_logging and create_safe_error_response are imported from backend.utils.api_utils (line 73)
+# Note: sanitize_for_logging and create_safe_error_response are imported
+# from backend.utils.api_utils (line 73)
 
 
 # Load configuration with validation

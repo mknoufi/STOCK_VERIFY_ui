@@ -11,13 +11,15 @@ Part of US1: Optimized Item Search
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from backend.api.response_models import ApiResponse
-from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.auth.dependencies import (
+    get_current_user_async as get_current_user,
+)
 from backend.db.runtime import get_db
 from backend.services.search_service import SearchResult, get_search_service
 
@@ -44,12 +46,12 @@ class SearchItemResponse(BaseModel):
     manual_barcode: Optional[str] = Field(None, description="Manual barcode")
     unit2_barcode: Optional[str] = Field(None, description="Unit 2 barcode")
     unit_m_barcode: Optional[str] = Field(None, description="Unit M barcode")
-    batch_id: Optional[str] = Field(None, description="Batch ID")
+    batch_id: Optional[Union[int, str]] = Field(None, description="Batch ID")
     relevance_score: float = Field(0.0, description="Search relevance score")
     match_type: str = Field("none", description="Type of match found")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "000000000000000000000000",
                 "item_name": "Apple iPhone 15 Pro",
@@ -59,19 +61,26 @@ class SearchItemResponse(BaseModel):
                 "mrp": 129900.0,
                 "category": "Electronics",
                 "subcategory": "Smartphones",
-                "warehouse": "Main",
+                "warehouse": "Main Warehouse",
                 "uom_name": "Piece",
-                "relevance_score": 1000.0,
+                "manual_barcode": None,
+                "unit2_barcode": None,
+                "unit_m_barcode": None,
+                "relevance_score": 0.98,
                 "match_type": "exact_barcode",
             }
         }
+    )
 
 
 class SearchMetadata(BaseModel):
     """Search metadata"""
 
     query: str = Field(..., description="Original search query")
-    has_more: bool = Field(False, description="Whether more results are available")
+    has_more: bool = Field(
+        False,
+        description="Whether more results are available",
+    )
 
 
 class OptimizedSearchResponse(BaseModel):
@@ -216,7 +225,7 @@ async def search_optimized(
     "/search/optimized",
     response_model=ApiResponse[OptimizedSearchResponse],
     summary="Optimized item search (POST)",
-    description="POST version for search - allows body parameters for complex queries",
+    description=("POST version for search - allows body parameters for complex queries"),
 )
 async def search_optimized_post(
     q: str = Query(
@@ -230,7 +239,12 @@ async def search_optimized_post(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> ApiResponse[OptimizedSearchResponse]:
     """POST version of optimized search (for compatibility)"""
-    return await search_optimized(q=q, limit=limit, offset=offset, current_user=current_user)
+    return await search_optimized(
+        q=q,
+        limit=limit,
+        offset=offset,
+        current_user=current_user,
+    )
 
 
 @router.get(
@@ -263,17 +277,23 @@ async def get_suggestions(
         )
     except RuntimeError as e:
         logger.error(f"Search service not initialized: {e}")
-        raise HTTPException(status_code=503, detail="Search service unavailable")
+        raise HTTPException(
+            status_code=503,
+            detail="Search service unavailable",
+        )
     except Exception as e:
         logger.error(f"Suggestions failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get suggestions")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to get suggestions",
+        )
 
 
 @router.get(
     "/search/filters",
     response_model=ApiResponse[SearchFiltersResponse],
     summary="Get search filter values",
-    description="Returns distinct categories and warehouses for client-side filters.",
+    description=("Returns distinct categories and warehouses for client-side filters."),
 )
 async def get_search_filters(
     current_user: dict[str, Any] = Depends(get_current_user),
@@ -300,7 +320,13 @@ async def get_search_filters(
         )
     except RuntimeError as e:
         logger.error(f"Database not initialized: {e}")
-        raise HTTPException(status_code=503, detail="Search filters unavailable")
+        raise HTTPException(
+            status_code=503,
+            detail="Search filters unavailable",
+        )
     except Exception as e:
         logger.error(f"Failed to load search filters: {e}")
-        raise HTTPException(status_code=500, detail="Failed to load search filters")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to load search filters",
+        )

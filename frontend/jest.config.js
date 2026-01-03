@@ -1,10 +1,8 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: "jest-expo",
-  setupFilesAfterEnv: [
-    "<rootDir>/jest.polyfills.js",
-    "<rootDir>/jest.setup.js",
-  ],
+  setupFiles: ["<rootDir>/jest.polyfills.js"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testPathIgnorePatterns: [
     "/node_modules/",
     "/dist/",
@@ -21,5 +19,25 @@ module.exports = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+  },
+  // Coverage configuration
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "app/**/*.{ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/*.test.{ts,tsx}",
+    "!src/**/__tests__/**",
+    "!src/**/types/**",
+    "!src/theme/**",
+  ],
+  coverageReporters: ["text", "text-summary", "html", "lcov"],
+  coverageDirectory: "coverage",
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
   },
 };

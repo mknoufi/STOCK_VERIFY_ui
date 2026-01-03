@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, mock_open, patch
+from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -154,3 +155,88 @@ def test_test_sql_server_connection(mock_sql_connector):
     response = client.post("/api/admin/control/sql-server/test", json=config)
     assert response.status_code == 200
     assert mock_sql_connector.connect.called
+
+
+def test_start_backend(mock_service_manager, mock_psutil):
+    # Mock backend not running
+    mock_service_manager.is_port_in_use.return_value = False
+
+    response = client.post("/api/admin/control/services/backend/start")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "start command issued" in data["message"]
+
+
+def test_stop_backend(mock_service_manager, mock_psutil):
+    # Mock backend running
+    mock_service_manager.is_port_in_use.return_value = True
+    mock_service_manager.get_process_using_port.return_value = 1234
+
+    process_mock = MagicMock()
+    process_mock.cmdline.return_value = ["python", "server.py"]
+    mock_psutil.Process.return_value = process_mock
+
+    response = client.post("/api/admin/control/services/backend/stop")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "Stopped" in data["message"]
+
+
+def test_start_frontend(mock_service_manager, mock_psutil):
+    # Mock frontend not running
+    mock_service_manager.is_port_in_use.return_value = False
+
+    response = client.post("/api/admin/control/services/frontend/start")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "start command issued" in data["message"]
+
+
+def test_stop_frontend(mock_service_manager, mock_psutil):
+    # Mock frontend running
+    mock_service_manager.kill_processes_by_name.return_value = 1
+    mock_service_manager.is_port_in_use.return_value = False
+
+    response = client.post("/api/admin/control/services/frontend/stop")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "Stopped" in data["message"]
+
+
+def test_get_available_reports():
+    response = client.get("/api/admin/control/reports/available")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert len(data["data"]["reports"]) > 0
+    assert data["data"]["reports"][0]["id"] == "user_activity"
+
+
+def test_get_login_devices(test_db, admin_user):
+    # Ensure admin user is used (override any defaults from test_db)
+    app.dependency_overrides[get_current_user] = lambda: admin_user
+
+    # Mock sessions collection
+    # Since test_db is an InMemoryDatabase, we can directly insert data
+    test_db.sessions._documents.append(
+        {
+            "user": "user1",
+            "device_info": {"platform": "iOS", "device": "iPhone 12"},
+            "ip_address": "192.168.1.10",
+            "last_activity": datetime.utcnow(),
+            "created_at": datetime.utcnow(),
+        }
+    )
+
+    response = client.get("/api/admin/control/devices")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert len(data["data"]["devices"]) == 1
+    assert data["data"]["devices"][0]["user"] == "user1"
+    assert data["data"]["devices"][0]["platform"] == "iOS"
+    assert data["data"]["devices"][0]["ip_address"] == "192.168.1.10"

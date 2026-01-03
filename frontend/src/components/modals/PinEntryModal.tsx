@@ -103,6 +103,7 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
             placeholder="Enter username"
             placeholderTextColor={modernColors.text.secondary}
             autoCapitalize="none"
+            autoCorrect={false}
           />
         </View>
 
@@ -116,6 +117,7 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
             placeholderTextColor={modernColors.text.secondary}
             secureTextEntry
             keyboardType="numeric"
+            autoCorrect={false}
           />
         </View>
 
@@ -129,6 +131,8 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
             placeholderTextColor={modernColors.text.secondary}
             multiline
             numberOfLines={3}
+            autoCapitalize="sentences"
+            autoCorrect={false}
           />
         </View>
 

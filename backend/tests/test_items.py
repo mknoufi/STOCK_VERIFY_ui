@@ -16,7 +16,7 @@ def fake_environment(monkeypatch):
     # Mock SQL Connector methods to return data instead of 503
     from unittest.mock import MagicMock
 
-    import server
+    import backend.core.lifespan
 
     mock_sql = MagicMock()
     mock_sql.connect.return_value = True
@@ -33,7 +33,7 @@ def fake_environment(monkeypatch):
         "location": "Aisle-1",
     }
 
-    monkeypatch.setattr(server, "sql_connector", mock_sql)
+    monkeypatch.setattr(backend.core.lifespan, "sql_connector", mock_sql)
 
     return db
 

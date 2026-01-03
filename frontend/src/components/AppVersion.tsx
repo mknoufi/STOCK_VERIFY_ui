@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useAppVersion } from "../hooks/useAppVersion";
+import { colors, semanticColors, spacing } from "../theme/unified";
 
 interface AppVersionProps {
   style?: any;
@@ -30,26 +31,26 @@ export const AppVersion: React.FC<AppVersionProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    padding: 16,
+    padding: spacing.md,
   },
   appName: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#4CAF50",
-    marginBottom: 4,
+    color: colors.success[500],
+    marginBottom: spacing.xs,
   },
   version: {
     fontSize: 14,
-    color: "#888",
+    color: semanticColors.text.secondary,
   },
   build: {
     fontSize: 12,
-    color: "#666",
+    color: semanticColors.text.tertiary,
     marginTop: 2,
   },
   platform: {
     fontSize: 12,
-    color: "#666",
+    color: semanticColors.text.tertiary,
     marginTop: 2,
   },
 });

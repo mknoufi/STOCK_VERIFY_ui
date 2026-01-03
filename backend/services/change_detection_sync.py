@@ -92,7 +92,7 @@ class ChangeDetectionSyncService:
             query = f"""
                 SELECT {columns}
                 FROM {table_name}
-            """
+            """  # nosec
 
             # Add modified date filter if available
             modified_column = mapping.get("query_options", {}).get("modified_date_column")

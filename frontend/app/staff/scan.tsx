@@ -32,7 +32,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCameraPermissions, CameraView } from "expo-camera";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
-  FadeInDown,
   FadeInUp,
   useSharedValue,
   useAnimatedStyle,
@@ -51,11 +50,17 @@ import {
 } from "@/components/ui";
 import type { ScanFeedbackType } from "@/components/ui";
 import { theme } from "@/styles/modernDesignSystem";
+import {
+  colors as unifiedColors,
+  radius,
+  spacing,
+} from "@/theme/unified";
 import { useThemeContext } from "@/context/ThemeContext";
 import {
   getItemByBarcode,
   searchItems,
   updateSessionStatus,
+  checkItemScanStatus,
 } from "@/services/api/api";
 import { scanDeduplicationService } from "@/domains/inventory/services/scanDeduplicationService";
 import { RecentItemsService } from "@/services/enhancedFeatures";
@@ -77,7 +82,7 @@ export default function ScanScreen() {
     : rawSessionId;
   const router = useRouter();
   const { user: _user, logout } = useAuthStore();
-  const { sessionType } = useScanSessionStore();
+  const { sessionType, currentFloor, currentRack } = useScanSessionStore();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -106,6 +111,7 @@ export default function ScanScreen() {
   const [showCloseSessionModal, setShowCloseSessionModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
+
   const [recentItems, setRecentItems] = useState<any[]>([]);
   const [showQuickActions, setShowQuickActions] = useState(false);
 
@@ -137,6 +143,18 @@ export default function ScanScreen() {
     loadRecentItems();
   }, []);
 
+  const screenHeader = React.useMemo(() => ({
+    title: "Scan Items",
+    subtitle:
+      sessionType !== "STANDARD"
+        ? `Session: ${sessionId || "None"} • ${sessionType}`
+        : `Session: ${sessionId || "None"}`,
+    showBackButton: true,
+    showUsername: false,
+    showLogoutButton: true,
+    customRightContent: <SyncStatusPill />,
+  }), [sessionType, sessionId]);
+
   const handleSearch = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
       setSearchResults([]);
@@ -148,6 +166,7 @@ export default function ScanScreen() {
     setSearchMethod("standard");
     try {
       const results = await searchItems(query);
+      console.log("Search results for:", query, results);
       setSearchResults(results);
       setShowResults(true);
     } catch (_error) {
@@ -380,7 +399,7 @@ export default function ScanScreen() {
 
     const sanitized = validation.value!;
     setLoading(true);
-    setSearchQuery(""); // Clear search query on lookup
+    // Don't clear searchQuery here - wait until successful navigation
     setShowResults(false); // Hide results
 
     try {
@@ -416,17 +435,70 @@ export default function ScanScreen() {
         }
         await loadRecentItems();
 
-        // Navigate to detail - use barcode (what was scanned) not item_code
-        // The barcode is what the user scanned and what the API can look up
-        const navigationBarcode = item.barcode || sanitized;
+        // Navigation logic encapsulated
+        const proceedToDetail = () => {
+          const navigationBarcode = item.barcode || sanitized;
+          setSearchQuery("");
+          router.push({
+            pathname: "/staff/item-detail",
+            params: {
+              barcode: navigationBarcode,
+              sessionId: sessionId as string,
+            },
+          } as any);
+        };
 
-        router.push({
-          pathname: "/staff/item-detail",
-          params: {
-            barcode: navigationBarcode,
-            sessionId: sessionId as string,
-          },
-        } as any);
+        // Check for duplicate scans
+        try {
+          const scanStatus = await checkItemScanStatus(
+            sessionId as string,
+            item.item_code
+          );
+
+          if (scanStatus.scanned) {
+            // Check if scanned in current location
+            const duplicateInLocation = scanStatus.locations.find(
+              (loc) =>
+                loc.floor_no === currentFloor && loc.rack_no === currentRack
+            );
+
+            if (duplicateInLocation) {
+              // Alert user - Duplicate in SAME location
+              hapticService.notification("warning");
+              Alert.alert(
+                "Duplicate Scan",
+                `This item was already counted in THIS location (${currentFloor} - ${currentRack}) by ${duplicateInLocation.counted_by}.\n\nCounted Qty: ${duplicateInLocation.counted_qty}\n\nDo you want to verify/update?`,
+                [
+                  {
+                    text: "Cancel",
+                    style: "cancel",
+                    onPress: () => {
+                      setLoading(false);
+                      setSearchQuery("");
+                    },
+                  },
+                  {
+                    text: "Verify / Update",
+                    onPress: proceedToDetail,
+                  },
+                ]
+              );
+              return; // Stop execution, wait for user choice
+            } else {
+              // Item exists but in DIFFERENT location
+              // Show toast info
+              toastService.show(
+                `Item found in ${scanStatus.locations.length} other location(s). Total Qty: ${scanStatus.total_qty}`,
+                { type: "info", duration: "long" }
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Failed to check scan status:", error);
+          // Continue even if check fails
+        }
+
+        proceedToDetail();
       } else {
         hapticService.scanError();
         // Show error feedback
@@ -582,7 +654,7 @@ export default function ScanScreen() {
               />
             </View>
 
-            <Text style={[styles.scanInstructions, { color: "#FFFFFF" }]}>
+            <Text style={[styles.scanInstructions, { color: unifiedColors.white }]}>
               Position barcode within the frame
             </Text>
 
@@ -621,19 +693,11 @@ export default function ScanScreen() {
     );
   }
 
+
+
   return (
     <ScreenContainer
-      header={{
-        title: "Scan Items",
-        subtitle:
-          sessionType !== "STANDARD"
-            ? `Session: ${sessionId || "None"} • ${sessionType}`
-            : `Session: ${sessionId || "None"}`,
-        showBackButton: true,
-        showUsername: false,
-        showLogoutButton: true,
-        customRightContent: <SyncStatusPill />,
-      }}
+      header={screenHeader}
       backgroundType="aurora"
       auroraVariant="primary"
       auroraIntensity="medium"
@@ -659,375 +723,474 @@ export default function ScanScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Search Card */}
-        <Animated.View entering={FadeInDown.delay(100).springify()}>
+        {/* Current Section Info */}
+        {(currentFloor || currentRack) && (
           <GlassCard
-            variant="medium"
-            intensity={20}
-            elevation="md"
-            style={styles.searchCard}
+            variant="light"
+            intensity={15}
+            elevation="sm"
+            style={{
+              marginBottom: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: 12,
+              borderRadius: 16
+            }}
           >
-            <Text style={[styles.cardTitle, { color: colors.text }]}>
-              Quick Search
-            </Text>
-            <View
-              style={[
-                styles.searchInputContainer,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-            >
-              <Ionicons
-                name="search"
-                size={20}
-                color={colors.textSecondary}
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Enter barcode or item name..."
-                placeholderTextColor={colors.muted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                onSubmitEditing={handleManualSearch}
-                returnKeyType="search"
-              />
-              <View style={styles.searchActions}>
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchQuery("");
-                      setSearchResults([]);
-                      setShowResults(false);
-                      setSearchMethod("standard");
-                    }}
-                    style={styles.clearButton}
-                  >
-                    <Ionicons
-                      name="close-circle"
-                      size={20}
-                      color={colors.muted}
-                    />
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  onPress={() => setIsScanning(true)}
-                  style={styles.aiButton}
-                >
-                  <Ionicons
-                    name="camera-outline"
-                    size={20}
-                    color={colors.accent}
-                  />
-                </TouchableOpacity>
-              </View>
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: colors.primary + '15',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12
+            }}>
+              <Ionicons name="location" size={20} color={colors.primary} />
             </View>
-
-            {/* Live Search Results */}
-            {showResults && (
-              <View
-                style={[
-                  styles.searchResultsContainer,
-                  { borderTopColor: colors.border },
-                ]}
-              >
-                {isSearching ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={colors.accent}
-                    style={{ padding: 10 }}
-                  />
-                ) : searchResults.length > 0 ? (
-                  <ScrollView
-                    style={styles.resultsList}
-                    contentContainerStyle={styles.resultsListContent}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {searchResults.map((item, index) => (
-                      <TouchableOpacity
-                        key={`${item.barcode || item.item_code || item.id}-${index}`}
-                        style={[
-                          styles.resultItem,
-                          { borderBottomColor: colors.border },
-                        ]}
-                        onPress={() => handleSearchResultPress(item)}
-                      >
-                        <View
-                          style={[
-                            styles.resultIcon,
-                            { backgroundColor: colors.surfaceElevated },
-                          ]}
-                        >
-                          <Ionicons
-                            name="cube-outline"
-                            size={18}
-                            color={colors.textSecondary}
-                          />
-                        </View>
-                        <View style={styles.resultInfo}>
-                          <Text
-                            style={[styles.resultName, { color: colors.text }]}
-                            numberOfLines={1}
-                          >
-                            {item.item_name || item.name}
-                          </Text>
-                          <View style={styles.resultCodeRow}>
-                            <Text
-                              style={[
-                                styles.resultCode,
-                                { color: colors.textSecondary },
-                              ]}
-                            >
-                              {item.barcode || item.item_code || "—"}
-                            </Text>
-                            {item.mrp != null && item.mrp > 0 && (
-                              <View
-                                style={[
-                                  styles.mrpBadge,
-                                  {
-                                    backgroundColor: colors.warning + "15",
-                                    borderColor: colors.warning + "30",
-                                  },
-                                ]}
-                              >
-                                <Text
-                                  style={[
-                                    styles.mrpBadgeText,
-                                    { color: colors.warning },
-                                  ]}
-                                >
-                                  ₹{item.mrp}
-                                </Text>
-                              </View>
-                            )}
-                            {item.batch_id && (
-                              <View
-                                style={[
-                                  styles.batchBadge,
-                                  {
-                                    backgroundColor: colors.accent + "10",
-                                    borderColor: colors.accent + "20",
-                                  },
-                                ]}
-                              >
-                                <Text
-                                  style={[
-                                    styles.batchBadgeText,
-                                    { color: colors.accent },
-                                  ]}
-                                >
-                                  Batch: {item.batch_id}
-                                </Text>
-                              </View>
-                            )}
-                          </View>
-                          {(item.manual_barcode ||
-                            item.unit2_barcode ||
-                            item.unit_m_barcode) && (
-                              <View style={styles.altBarcodesRow}>
-                                {item.manual_barcode && (
-                                  <View
-                                    style={[
-                                      styles.otherBarcodeBadge,
-                                      {
-                                        backgroundColor: colors.success + "10",
-                                        borderColor: colors.success + "20",
-                                      },
-                                    ]}
-                                  >
-                                    <Text
-                                      style={[
-                                        styles.otherBarcodeText,
-                                        { color: colors.success },
-                                      ]}
-                                    >
-                                      Manual: {item.manual_barcode}
-                                    </Text>
-                                  </View>
-                                )}
-                                {item.unit2_barcode && (
-                                  <View
-                                    style={[
-                                      styles.otherBarcodeBadge,
-                                      {
-                                        backgroundColor: colors.success + "10",
-                                        borderColor: colors.success + "20",
-                                      },
-                                    ]}
-                                  >
-                                    <Text
-                                      style={[
-                                        styles.otherBarcodeText,
-                                        { color: colors.success },
-                                      ]}
-                                    >
-                                      Unit2: {item.unit2_barcode}
-                                    </Text>
-                                  </View>
-                                )}
-                                {item.unit_m_barcode && (
-                                  <View
-                                    style={[
-                                      styles.otherBarcodeBadge,
-                                      {
-                                        backgroundColor: colors.success + "10",
-                                        borderColor: colors.success + "20",
-                                      },
-                                    ]}
-                                  >
-                                    <Text
-                                      style={[
-                                        styles.otherBarcodeText,
-                                        { color: colors.success },
-                                      ]}
-                                    >
-                                      UnitM: {item.unit_m_barcode}
-                                    </Text>
-                                  </View>
-                                )}
-                              </View>
-                            )}
-                        </View>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={16}
-                          color={colors.muted}
-                        />
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                ) : (
-                  debouncedSearchQuery.length >= 2 && (
-                    <View style={styles.semanticSearchContainer}>
-                      <Text
-                        style={[
-                          styles.noResultsText,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        No direct matches found
-                      </Text>
-                      <TouchableOpacity
-                        style={[
-                          styles.semanticSearchButton,
-                          {
-                            borderColor: colors.accent + "30",
-                            backgroundColor: colors.accent + "05",
-                          },
-                        ]}
-                        onPress={handleSemanticSearch}
-                        disabled={isAISearching}
-                      >
-                        {isAISearching ? (
-                          <ActivityIndicator
-                            size="small"
-                            color={colors.accent}
-                          />
-                        ) : (
-                          <>
-                            <Ionicons
-                              name="sparkles-outline"
-                              size={16}
-                              color={colors.accent}
-                            />
-                            <Text
-                              style={[
-                                styles.semanticSearchText,
-                                { color: colors.accent },
-                              ]}
-                            >
-                              Search by meaning (AI)
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  )
-                )}
-              </View>
-            )}
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 2, fontWeight: '500' }}>
+                Current Section
+              </Text>
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16 }}>
+                {currentFloor} {currentRack ? `• ${currentRack}` : ''}
+              </Text>
+            </View>
           </GlassCard>
-        </Animated.View>
-
-        {/* Recent Items */}
-        {recentItems.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(200).springify()}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Recent Items
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.recentItemsContainer}
-            >
-              {recentItems.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleRecentItemPress(item)}
-                  activeOpacity={0.7}
-                >
-                  <GlassCard
-                    variant="light"
-                    intensity={15}
-                    elevation="sm"
-                    padding={16}
-                    style={styles.recentItemCard}
+        )}
+        {/* Search Card - Replaced GlassCard with View to fix focus loss */}
+        <View style={{ marginBottom: 20 }}>
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              borderWidth: 1,
+              borderRadius: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 4,
+            }}
+          >
+            <Ionicons
+              name="search"
+              size={22}
+              color={colors.textSecondary}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text, fontSize: 16 }]}
+              placeholder="Search item or scan barcode..."
+              placeholderTextColor={colors.muted}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleManualSearch}
+              returnKeyType="search"
+              autoCapitalize="none"
+              autoCorrect={false}
+              blurOnSubmit={false}
+              keyboardType="default"
+            />
+            <View style={styles.searchActions}>
+              <TouchableOpacity
+                onPress={() => {
+                  setSearchQuery("");
+                  setSearchResults([]);
+                  setShowResults(false);
+                  setSearchMethod("standard");
+                }}
+                style={[styles.clearButton, { opacity: searchQuery.length > 0 ? 1 : 0 }]}
+                disabled={searchQuery.length === 0}
+              >
+                <Ionicons
+                  name="close-circle"
+                  size={20}
+                  color={colors.muted}
+                />
+              </TouchableOpacity>
+              <View style={{ width: 1, height: 24, backgroundColor: colors.border, marginHorizontal: 8 }} />
+              <TouchableOpacity
+                onPress={() => setIsScanning(true)}
+                style={[styles.aiButton, { backgroundColor: colors.accent + '15', padding: 8, borderRadius: 8 }]}
+              >
+                <Ionicons
+                  name="scan-outline"
+                  size={22}
+                  color={colors.accent}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        {/* Live Search Results */}
+        {showResults && (
+          <View
+            style={[
+              styles.searchResultsContainer,
+              { borderTopColor: 'transparent', marginTop: 0 },
+            ]}
+          >
+            {isSearching ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.accent}
+                style={{ padding: 20 }}
+              />
+            ) : searchResults.length > 0 ? (
+              <ScrollView
+                style={styles.resultsList}
+                contentContainerStyle={[styles.resultsListContent, { paddingHorizontal: 4 }]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {searchResults.map((item, index) => (
+                  <TouchableOpacity
+                    key={`${item.barcode || item.item_code || item.id}-${index}`}
+                    style={[
+                      styles.resultItem,
+                      {
+                        backgroundColor: colors.surface,
+                        borderRadius: 12,
+                        marginBottom: 10,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.05,
+                        shadowRadius: 4,
+                        elevation: 2,
+                        padding: 12,
+                      },
+                    ]}
+                    onPress={() => handleSearchResultPress(item)}
                   >
                     <View
                       style={[
-                        styles.recentItemIcon,
-                        { backgroundColor: colors.accent + "15" },
+                        styles.resultIcon,
+                        { backgroundColor: colors.surfaceElevated },
                       ]}
                     >
                       <Ionicons
                         name="cube-outline"
-                        size={24}
-                        color={colors.accent}
+                        size={18}
+                        color={colors.textSecondary}
                       />
                     </View>
-                    <View style={styles.resultCodeRow}>
+                    <View style={styles.resultInfo}>
                       <Text
-                        style={[
-                          styles.recentItemCode,
-                          { color: colors.textSecondary },
-                        ]}
+                        style={[styles.resultName, { color: colors.text }]}
                         numberOfLines={1}
                       >
-                        {item.item_code}
+                        {item.item_name || item.name}
                       </Text>
-                      {item.batch_id && (
-                        <View
+                      <View style={styles.resultCodeRow}>
+                        <Text
                           style={[
-                            styles.batchBadge,
-                            {
-                              backgroundColor: colors.accent + "10",
-                              borderColor: colors.accent + "20",
-                            },
+                            styles.resultCode,
+                            { color: colors.textSecondary },
                           ]}
                         >
-                          <Text
+                          {item.barcode || item.item_code || "—"}
+                        </Text>
+                        {item.mrp != null && item.mrp > 0 && (
+                          <View
                             style={[
-                              styles.batchBadgeText,
-                              { color: colors.accent },
+                              styles.mrpBadge,
+                              {
+                                backgroundColor: colors.warning + "15",
+                                borderColor: colors.warning + "30",
+                              },
                             ]}
                           >
-                            B
-                          </Text>
-                        </View>
-                      )}
+                            <Text
+                              style={[
+                                styles.mrpBadgeText,
+                                { color: colors.warning },
+                              ]}
+                            >
+                              ₹{item.mrp}
+                            </Text>
+                          </View>
+                        )}
+                        {item.batch_id && (
+                          <View
+                            style={[
+                              styles.batchBadge,
+                              {
+                                backgroundColor: colors.accent + "10",
+                                borderColor: colors.accent + "20",
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.batchBadgeText,
+                                { color: colors.accent },
+                              ]}
+                            >
+                              Batch: {item.batch_id}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      {(item.manual_barcode ||
+                        item.unit2_barcode ||
+                        item.unit_m_barcode) && (
+                          <View style={styles.altBarcodesRow}>
+                            {item.manual_barcode && (
+                              <View
+                                style={[
+                                  styles.otherBarcodeBadge,
+                                  {
+                                    backgroundColor: colors.success + "10",
+                                    borderColor: colors.success + "20",
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.otherBarcodeText,
+                                    { color: colors.success },
+                                  ]}
+                                >
+                                  Manual: {item.manual_barcode}
+                                </Text>
+                              </View>
+                            )}
+                            {item.unit2_barcode && (
+                              <View
+                                style={[
+                                  styles.otherBarcodeBadge,
+                                  {
+                                    backgroundColor: colors.success + "10",
+                                    borderColor: colors.success + "20",
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.otherBarcodeText,
+                                    { color: colors.success },
+                                  ]}
+                                >
+                                  Unit2: {item.unit2_barcode}
+                                </Text>
+                              </View>
+                            )}
+                            {item.unit_m_barcode && (
+                              <View
+                                style={[
+                                  styles.otherBarcodeBadge,
+                                  {
+                                    backgroundColor: colors.success + "10",
+                                    borderColor: colors.success + "20",
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.otherBarcodeText,
+                                    { color: colors.success },
+                                  ]}
+                                >
+                                  UnitM: {item.unit_m_barcode}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
                     </View>
-                    <Text
-                      style={[styles.recentItemName, { color: colors.text }]}
-                      numberOfLines={2}
-                    >
-                      {item.item_name || "Unknown Item"}
-                    </Text>
-                  </GlassCard>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={colors.muted}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : (
+              debouncedSearchQuery.length >= 2 && (
+                <View style={styles.semanticSearchContainer}>
+                  <Text
+                    style={[
+                      styles.noResultsText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    No direct matches found
+                  </Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.semanticSearchButton,
+                      {
+                        borderColor: colors.accent + "30",
+                        backgroundColor: colors.accent + "05",
+                      },
+                    ]}
+                    onPress={handleSemanticSearch}
+                    disabled={isAISearching}
+                  >
+                    {isAISearching ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.accent}
+                      />
+                    ) : (
+                      <>
+                        <Ionicons
+                          name="sparkles-outline"
+                          size={16}
+                          color={colors.accent}
+                        />
+                        <Text
+                          style={[
+                            styles.semanticSearchText,
+                            { color: colors.accent },
+                          ]}
+                        >
+                          Search by meaning (AI)
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )
+            )}
+          </View>
+        )}
+
+        {/* Empty State */}
+        {!showResults && recentItems.length === 0 && !searchQuery && (
+          <Animated.View
+            entering={FadeInUp.delay(200).springify()}
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 60,
+              opacity: 0.8
+            }}
+          >
+            <View style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: colors.surfaceElevated,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 16,
+              shadowColor: colors.accent,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 4
+            }}>
+              <Ionicons name="scan-circle-outline" size={48} color={colors.accent} />
+            </View>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 8
+            }}>
+              Ready to Scan
+            </Text>
+            <Text style={{
+              fontSize: 14,
+              color: colors.textSecondary,
+              textAlign: 'center',
+              maxWidth: 250
+            }}>
+              Use the camera or type above to find items in the inventory.
+            </Text>
           </Animated.View>
         )}
+
+        {/* Recent Items */}
+        {
+          recentItems.length > 0 && (
+            <Animated.View entering={FadeInUp.delay(200).springify()}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Recent Items
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recentItemsContainer}
+              >
+                {recentItems.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleRecentItemPress(item)}
+                    activeOpacity={0.7}
+                  >
+                    <GlassCard
+                      variant="light"
+                      intensity={15}
+                      elevation="sm"
+                      padding={16}
+                      style={styles.recentItemCard}
+                    >
+                      <View
+                        style={[
+                          styles.recentItemIcon,
+                          { backgroundColor: colors.accent + "15" },
+                        ]}
+                      >
+                        <Ionicons
+                          name="cube-outline"
+                          size={24}
+                          color={colors.accent}
+                        />
+                      </View>
+                      <View style={styles.resultCodeRow}>
+                        <Text
+                          style={[
+                            styles.recentItemCode,
+                            { color: colors.textSecondary },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {item.item_code}
+                        </Text>
+                        {item.batch_id && (
+                          <View
+                            style={[
+                              styles.batchBadge,
+                              {
+                                backgroundColor: colors.accent + "10",
+                                borderColor: colors.accent + "20",
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.batchBadgeText,
+                                { color: colors.accent },
+                              ]}
+                            >
+                              B
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        style={[styles.recentItemName, { color: colors.text }]}
+                        numberOfLines={2}
+                      >
+                        {item.item_name || "Unknown Item"}
+                      </Text>
+                    </GlassCard>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          )
+        }
 
         {/* Stats Card */}
         <Animated.View entering={FadeInUp.delay(300).springify()}>
@@ -1112,49 +1275,51 @@ export default function ScanScreen() {
 
         {/* Spacing for floating button */}
         <View style={{ height: 120 }} />
-      </ScrollView>
+      </ScrollView >
 
       {/* Floating Scan Button */}
-      <View style={styles.floatingButtonContainer}>
+      < View style={styles.floatingButtonContainer} >
         <FloatingScanButton onPress={handleScanPress} disabled={loading} />
-      </View>
+      </View >
 
       {/* Quick Actions Menu */}
-      {showQuickActions && (
-        <Animated.View
-          style={[styles.quickActionsContainer, quickActionsStyle]}
-        >
-          <TouchableOpacity
-            style={styles.quickActionButton}
-            activeOpacity={0.7}
+      {
+        showQuickActions && (
+          <Animated.View
+            style={[styles.quickActionsContainer, quickActionsStyle]}
           >
-            <LinearGradient
-              colors={appTheme.gradients.accent}
-              style={styles.quickActionGradient}
+            <TouchableOpacity
+              style={styles.quickActionButton}
+              activeOpacity={0.7}
             >
-              <Ionicons name="list" size={24} color="#FFF" />
-            </LinearGradient>
-            <Text style={[styles.quickActionLabel, { color: colors.text }]}>
-              History
-            </Text>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={appTheme.gradients.accent}
+                style={styles.quickActionGradient}
+              >
+                <Ionicons name="list" size={24} color="#FFF" />
+              </LinearGradient>
+              <Text style={[styles.quickActionLabel, { color: colors.text }]}>
+                History
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.quickActionButton}
-            activeOpacity={0.7}
-          >
-            <LinearGradient
-              colors={appTheme.gradients.success}
-              style={styles.quickActionGradient}
+            <TouchableOpacity
+              style={styles.quickActionButton}
+              activeOpacity={0.7}
             >
-              <Ionicons name="checkmark-done" size={24} color="#FFF" />
-            </LinearGradient>
-            <Text style={[styles.quickActionLabel, { color: colors.text }]}>
-              Verify
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+              <LinearGradient
+                colors={appTheme.gradients.success}
+                style={styles.quickActionGradient}
+              >
+                <Ionicons name="checkmark-done" size={24} color="#FFF" />
+              </LinearGradient>
+              <Text style={[styles.quickActionLabel, { color: colors.text }]}>
+                Verify
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )
+      }
 
       {/* Quick Actions Toggle */}
       <TouchableOpacity
@@ -1190,9 +1355,9 @@ export default function ScanScreen() {
       >
         <View
           style={{
-            backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
-            borderRadius: 20,
-            padding: 24,
+            backgroundColor: isDark ? unifiedColors.neutral[800] : unifiedColors.white,
+            borderRadius: radius.xl,
+            padding: spacing['2xl'],
             alignItems: "center",
             shadowColor: "#000",
             shadowOffset: {
@@ -1208,22 +1373,22 @@ export default function ScanScreen() {
             style={{
               width: 64,
               height: 64,
-              borderRadius: 32,
-              backgroundColor: "#EF444420",
+              borderRadius: radius.full,
+              backgroundColor: `${unifiedColors.error[500]}20`,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 16,
+              marginBottom: spacing.lg,
             }}
           >
-            <Ionicons name="log-out" size={32} color="#EF4444" />
+            <Ionicons name="log-out" size={32} color={unifiedColors.error[500]} />
           </View>
 
           <Text
             style={{
               fontSize: 20,
               fontWeight: "700",
-              color: isDark ? "#F8FAFC" : "#0F172A",
-              marginBottom: 8,
+              color: isDark ? unifiedColors.neutral[50] : unifiedColors.neutral[900],
+              marginBottom: spacing.sm,
               textAlign: "center",
             }}
           >
@@ -1233,9 +1398,9 @@ export default function ScanScreen() {
           <Text
             style={{
               fontSize: 15,
-              color: isDark ? "#94A3B8" : "#64748B",
+              color: isDark ? unifiedColors.neutral[400] : unifiedColors.neutral[500],
               textAlign: "center",
-              marginBottom: 24,
+              marginBottom: spacing['2xl'],
               lineHeight: 22,
             }}
           >
@@ -1243,13 +1408,13 @@ export default function ScanScreen() {
             lost.
           </Text>
 
-          <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
+          <View style={{ flexDirection: "row", gap: spacing.md, width: "100%" }}>
             <TouchableOpacity
               style={{
                 flex: 1,
-                paddingVertical: 14,
-                borderRadius: 12,
-                backgroundColor: isDark ? "#334155" : "#F1F5F9",
+                paddingVertical: spacing.md,
+                borderRadius: radius.md,
+                backgroundColor: isDark ? unifiedColors.neutral[700] : unifiedColors.neutral[100],
                 alignItems: "center",
               }}
               onPress={() => setShowLogoutModal(false)}
@@ -1258,7 +1423,7 @@ export default function ScanScreen() {
                 style={{
                   fontSize: 15,
                   fontWeight: "600",
-                  color: isDark ? "#F8FAFC" : "#0F172A",
+                  color: isDark ? unifiedColors.neutral[50] : unifiedColors.neutral[900],
                 }}
               >
                 Cancel
@@ -1268,9 +1433,9 @@ export default function ScanScreen() {
             <TouchableOpacity
               style={{
                 flex: 1,
-                paddingVertical: 14,
-                borderRadius: 12,
-                backgroundColor: "#EF4444",
+                paddingVertical: spacing.md,
+                borderRadius: radius.md,
+                backgroundColor: unifiedColors.error[500],
                 alignItems: "center",
               }}
               onPress={() => {
@@ -1282,7 +1447,7 @@ export default function ScanScreen() {
                 style={{
                   fontSize: 15,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: unifiedColors.white,
                 }}
               >
                 Log Out
@@ -1308,9 +1473,9 @@ export default function ScanScreen() {
       >
         <View
           style={{
-            backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
-            borderRadius: 20,
-            padding: 24,
+            backgroundColor: isDark ? unifiedColors.neutral[800] : unifiedColors.white,
+            borderRadius: radius.xl,
+            padding: spacing['2xl'],
             alignItems: "center",
             shadowColor: "#000",
             shadowOffset: {
@@ -1326,22 +1491,22 @@ export default function ScanScreen() {
             style={{
               width: 64,
               height: 64,
-              borderRadius: 32,
-              backgroundColor: "#10B98120",
+              borderRadius: radius.full,
+              backgroundColor: `${unifiedColors.success[500]}20`,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 16,
+              marginBottom: spacing.lg,
             }}
           >
-            <Ionicons name="checkmark-circle" size={32} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={32} color={unifiedColors.success[500]} />
           </View>
 
           <Text
             style={{
               fontSize: 20,
               fontWeight: "700",
-              color: isDark ? "#F8FAFC" : "#0F172A",
-              marginBottom: 8,
+              color: isDark ? unifiedColors.neutral[50] : unifiedColors.neutral[900],
+              marginBottom: spacing.sm,
               textAlign: "center",
             }}
           >
@@ -1351,9 +1516,9 @@ export default function ScanScreen() {
           <Text
             style={{
               fontSize: 15,
-              color: isDark ? "#94A3B8" : "#64748B",
+              color: isDark ? unifiedColors.neutral[400] : unifiedColors.neutral[500],
               textAlign: "center",
-              marginBottom: 24,
+              marginBottom: spacing['2xl'],
               lineHeight: 22,
             }}
           >
@@ -1361,13 +1526,13 @@ export default function ScanScreen() {
             be able to add more items to this section.
           </Text>
 
-          <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
+          <View style={{ flexDirection: "row", gap: spacing.md, width: "100%" }}>
             <TouchableOpacity
               style={{
                 flex: 1,
-                paddingVertical: 14,
-                borderRadius: 12,
-                backgroundColor: isDark ? "#334155" : "#F1F5F9",
+                paddingVertical: spacing.md,
+                borderRadius: radius.md,
+                backgroundColor: isDark ? unifiedColors.neutral[700] : unifiedColors.neutral[100],
                 alignItems: "center",
               }}
               onPress={() => setShowCloseSessionModal(false)}
@@ -1376,7 +1541,7 @@ export default function ScanScreen() {
                 style={{
                   fontSize: 15,
                   fontWeight: "600",
-                  color: isDark ? "#F8FAFC" : "#0F172A",
+                  color: isDark ? unifiedColors.neutral[50] : unifiedColors.neutral[900],
                 }}
               >
                 Cancel
@@ -1386,22 +1551,22 @@ export default function ScanScreen() {
             <TouchableOpacity
               style={{
                 flex: 1,
-                paddingVertical: 14,
-                borderRadius: 12,
-                backgroundColor: "#10B981",
+                paddingVertical: spacing.md,
+                borderRadius: radius.md,
+                backgroundColor: unifiedColors.success[500],
                 alignItems: "center",
               }}
               onPress={confirmFinishRack}
               disabled={isFinishing}
             >
               {isFinishing ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={unifiedColors.white} />
               ) : (
                 <Text
                   style={{
                     fontSize: 15,
                     fontWeight: "600",
-                    color: "#FFFFFF",
+                    color: unifiedColors.white,
                   }}
                 >
                   Finish Rack
@@ -1411,7 +1576,7 @@ export default function ScanScreen() {
           </View>
         </View>
       </Modal>
-    </ScreenContainer>
+    </ScreenContainer >
   );
 }
 
@@ -1466,10 +1631,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   modeBadgeBlind: {
-    backgroundColor: "#F59E0B",
+    backgroundColor: unifiedColors.warning[500],
   },
   modeBadgeStrict: {
-    backgroundColor: "#EF4444",
+    backgroundColor: unifiedColors.error[500],
   },
   modeBadgeText: {
     fontSize: 9,
@@ -1626,20 +1791,23 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: theme.colors.text.primary,
-    marginBottom: 14,
-    letterSpacing: -0.2,
+    marginBottom: 16,
+    letterSpacing: -0.3,
+    paddingHorizontal: 4,
   },
   recentItemsContainer: {
-    paddingBottom: 14,
-    gap: 14,
+    paddingBottom: 20,
+    gap: 12,
+    paddingHorizontal: 4,
   },
   recentItemCard: {
-    width: 110,
+    width: 120,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 16,
   },
   recentItemIcon: {
     width: 44,
@@ -1678,7 +1846,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#0EA5E9",
+    color: unifiedColors.primary[400],
     marginBottom: 4,
     letterSpacing: -0.5,
   },
@@ -1765,7 +1933,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 40,
     height: 40,
-    borderColor: "#0EA5E9",
+    borderColor: unifiedColors.primary[400],
     borderWidth: 3,
   },
   cornerTopLeft: {
@@ -1861,7 +2029,7 @@ const styles = StyleSheet.create({
   batchBadgeText: {
     fontSize: 9,
     fontWeight: "700",
-    color: "#0EA5E9",
+    color: unifiedColors.primary[400],
     textTransform: "uppercase",
     letterSpacing: 0.3,
   },
@@ -1876,7 +2044,7 @@ const styles = StyleSheet.create({
   mrpBadgeText: {
     fontSize: 9,
     fontWeight: "700",
-    color: "#F59E0B",
+    color: unifiedColors.warning[500],
     textTransform: "uppercase",
     letterSpacing: 0.3,
   },
@@ -1897,7 +2065,7 @@ const styles = StyleSheet.create({
   otherBarcodeText: {
     fontSize: 9,
     fontWeight: "700",
-    color: "#10B981",
+    color: unifiedColors.success[500],
     textTransform: "uppercase",
     letterSpacing: 0.3,
   },

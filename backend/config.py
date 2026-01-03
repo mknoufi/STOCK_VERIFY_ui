@@ -28,7 +28,7 @@ except ImportError:
 
 from pathlib import Path
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 
 ROOT_DIR = Path(__file__).parent
 
@@ -67,8 +67,9 @@ class Settings(PydanticBaseSettings):
         description="Environment: development, staging, production",
     )
 
-    @validator("MIN_CLIENT_VERSION")
-    def validate_min_client_version(cls, v):
+    @field_validator("MIN_CLIENT_VERSION")
+    @classmethod
+    def validate_min_client_version(cls, v: str) -> str:
         """Validate MIN_CLIENT_VERSION is a valid semver-like string"""
         import re
 
@@ -77,7 +78,8 @@ class Settings(PydanticBaseSettings):
         v_str = str(v).strip()
         if not v_str:
             raise ValueError("MIN_CLIENT_VERSION cannot be empty")
-        # Allow formats like '1', '1.2', '1.2.3', optionally with suffix '-beta' or '+meta'
+        # Allow formats like '1', '1.2', '1.2.3',
+        # optionally with suffix '-beta' or '+meta'
         if not re.match(r"^\d+(\.\d+){0,2}([-+][\w.]+)?$", v_str):
             raise ValueError("MIN_CLIENT_VERSION must be a semantic version like '1.2.3'")
         return v_str
@@ -89,9 +91,10 @@ class Settings(PydanticBaseSettings):
     MONGO_URL: str = Field(default="mongodb://localhost:27017")
     DB_NAME: str = "stock_verification"
 
-    @validator("MONGO_URL", pre=True, always=True)
-    def validate_and_detect_mongo_url(cls, v):
-        """Resolve MongoDB URL from env aliases and auto-detect local port when needed."""
+    @field_validator("MONGO_URL", mode="before")
+    @classmethod
+    def validate_and_detect_mongo_url(cls, v: str) -> str:
+        """Resolve MongoDB URL from env aliases and auto-detect local port."""
 
         # 1) Accept common environment aliases.
         # Prefer explicit MONGO_URL, then MONGODB_URI, then MONGODB_URL.
@@ -124,34 +127,43 @@ class Settings(PydanticBaseSettings):
             raise ValueError("MONGO_URL is required")
         return str(v).strip()
 
-    @validator("DB_NAME")
-    def validate_db_name(cls, v):
+    @field_validator("DB_NAME")
+    @classmethod
+    def validate_db_name(cls, v: str) -> str:
         if not v:
             raise ValueError("DB_NAME is required")
         return v
 
     # SQL Server (Optional - app works without it)
-    SQL_SERVER_HOST: Optional[str] = Field(None, description="SQL Server host (optional)")
+    SQL_SERVER_HOST: Optional[str] = Field(
+        None,
+        description="SQL Server host (optional)",
+    )
     SQL_SERVER_PORT: int = 1433
-    SQL_SERVER_DATABASE: Optional[str] = Field(None, description="SQL Server database (optional)")
+    SQL_SERVER_DATABASE: Optional[str] = Field(
+        None,
+        description="SQL Server database (optional)",
+    )
     SQL_SERVER_USER: Optional[str] = None
     SQL_SERVER_PASSWORD: Optional[str] = None
 
-    @validator("SQL_SERVER_PORT")
-    def validate_sql_port(cls, v):
+    @field_validator("SQL_SERVER_PORT")
+    @classmethod
+    def validate_sql_port(cls, v: int) -> int:
         if v and not (1 <= v <= 65535):
             raise ValueError("SQL_SERVER_PORT must be between 1 and 65535")
         return v
 
     # Security
-    # CRITICAL: These MUST be set via environment variables - no defaults allowed
-    # Generate secure secrets using: python -c "import secrets; print(secrets.token_urlsafe(32))"
+    # CRITICAL: These MUST be set via env variables - no defaults allowed
+    # Generate secure secrets using:
+    # python -c "import secrets; print(secrets.token_urlsafe(32))"
     JWT_SECRET: Optional[str] = Field(
         default=None, description="JWT secret key (recommended to use env var)"
     )
     JWT_REFRESH_SECRET: Optional[str] = Field(
         default=None,
-        description="JWT refresh token secret - must be set via JWT_REFRESH_SECRET env var",
+        description=("JWT refresh token secret - must be set via JWT_REFRESH_SECRET env var"),
     )
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(15, ge=1)
@@ -161,8 +173,9 @@ class Settings(PydanticBaseSettings):
     SESSION_TIMEOUT_MINUTES: int = Field(480, ge=1)  # 8 hours
     AUTO_LOGOUT_ENABLED: bool = True
 
-    @validator("JWT_SECRET", pre=True, always=True)
-    def validate_jwt_secret(cls, v):
+    @field_validator("JWT_SECRET", mode="before")
+    @classmethod
+    def validate_jwt_secret(cls, v: Optional[str]) -> str:
         # Check environment variable first
         env_value = os.getenv("JWT_SECRET")
         if env_value:
@@ -190,15 +203,17 @@ class Settings(PydanticBaseSettings):
             )
         return v
 
-    @validator("JWT_REFRESH_SECRET", pre=True, always=True)
-    def validate_jwt_refresh_secret(cls, v):
+    @field_validator("JWT_REFRESH_SECRET", mode="before")
+    @classmethod
+    def validate_jwt_refresh_secret(cls, v: Optional[str]) -> str:
         # Check environment variable first
         env_value = os.getenv("JWT_REFRESH_SECRET")
         if env_value:
             v = env_value
         elif v is None:
             raise ValueError(
-                "JWT_REFRESH_SECRET is required and must be set via JWT_REFRESH_SECRET environment variable"
+                "JWT_REFRESH_SECRET is required and must be set via "
+                "JWT_REFRESH_SECRET environment variable"
             )
 
         if not v:
@@ -227,7 +242,11 @@ class Settings(PydanticBaseSettings):
     RATE_LIMIT_PER_MINUTE: int = Field(100, ge=1)
     RATE_LIMIT_BURST: int = Field(20, ge=1)
     MAX_CONCURRENT: int = Field(50, ge=1)
-    QUEUE_SIZE: int = Field(100, ge=1, description="Queue size for concurrent request handler")
+    QUEUE_SIZE: int = Field(
+        100,
+        ge=1,
+        description="Queue size for concurrent request handler",
+    )
     RATE_LIMIT_MAX_ATTEMPTS: int = Field(5, ge=1)
     RATE_LIMIT_TTL_SECONDS: int = Field(300, ge=1)
 
@@ -237,8 +256,9 @@ class Settings(PydanticBaseSettings):
     CHANGE_DETECTION_SYNC_ENABLED: bool = True
     CHANGE_DETECTION_INTERVAL: int = Field(300, ge=60)  # 5 minutes
 
-    @validator("ERP_SYNC_INTERVAL", "CHANGE_DETECTION_INTERVAL")
-    def validate_sync_interval(cls, v):
+    @field_validator("ERP_SYNC_INTERVAL", "CHANGE_DETECTION_INTERVAL")
+    @classmethod
+    def validate_sync_interval(cls, v: int) -> int:
         if v < 60:
             raise ValueError("Sync interval must be at least 60 seconds")
         return v
@@ -253,12 +273,30 @@ class Settings(PydanticBaseSettings):
     LOG_FORMAT: str = "json"  # json or text
     LOG_FILE: Optional[str] = None
 
+    # Error Tracking (Sentry)
+    SENTRY_DSN: Optional[str] = Field(
+        default=None, description="Sentry DSN for error tracking. Set via SENTRY_DSN env var."
+    )
+    SENTRY_ENVIRONMENT: Optional[str] = Field(
+        default=None, description="Sentry environment (defaults to ENVIRONMENT setting)"
+    )
+    SENTRY_TRACES_SAMPLE_RATE: float = Field(
+        default=0.1,
+        ge=0.0,
+        le=1.0,
+        description="Sentry performance monitoring sample rate (0.0-1.0)",
+    )
+    SENTRY_PROFILES_SAMPLE_RATE: float = Field(
+        default=0.1, ge=0.0, le=1.0, description="Sentry profiling sample rate (0.0-1.0)"
+    )
+
     # Security
     FORCE_HTTPS: bool = False  # Enable HSTS
     BLOCK_SANITIZATION_VIOLATIONS: bool = True
 
-    @validator("LOG_LEVEL")
-    def validate_log_level(cls, v):
+    @field_validator("LOG_LEVEL")
+    @classmethod
+    def validate_log_level(cls, v: str) -> str:
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if v.upper() not in valid_levels:
             raise ValueError(f"LOG_LEVEL must be one of: {', '.join(valid_levels)}")
@@ -268,14 +306,19 @@ class Settings(PydanticBaseSettings):
     CORS_ALLOW_ORIGINS: Optional[str] = None
     CORS_DEV_ORIGINS: Optional[str] = Field(
         None,
-        description="Additional CORS origins for development (comma-separated). Defaults include localhost variants.",
+        description=(
+            "Additional CORS origins for development (comma-separated). "
+            "Defaults include localhost variants."
+        ),
     )
+    # nosec: B104 - Binding to all interfaces is required for Docker and LAN access (React Native)
     HOST: str = "0.0.0.0"
     PORT: int = Field(8001, ge=1, le=65535)
     WORKERS: int = Field(1, ge=1)
 
-    @validator("PORT")
-    def validate_port(cls, v):
+    @field_validator("PORT")
+    @classmethod
+    def validate_port(cls, v: int) -> int:
         if not 1 <= v <= 65535:
             raise ValueError("PORT must be between 1 and 65535")
         return v
@@ -286,7 +329,10 @@ class Settings(PydanticBaseSettings):
 
     # Enhanced Connection Pool Settings
     CONNECTION_RETRY_ATTEMPTS: int = Field(
-        3, ge=1, le=10, description="Number of retry attempts for connection creation"
+        3,
+        ge=1,
+        le=10,
+        description="Number of retry attempts for connection creation",
     )
     CONNECTION_RETRY_DELAY: float = Field(
         1.0,

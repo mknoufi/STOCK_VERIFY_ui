@@ -63,25 +63,8 @@ export type LegacyTheme = {
   updateMode: (value: string) => void;
 };
 
-const hexToRgba = (hex: string, alpha: number): string => {
-  const normalized = hex.replace("#", "").trim();
-  const isValid = /^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(normalized);
-  if (!isValid) return hex;
 
-  const expanded =
-    normalized.length === 3
-      ? normalized
-          .split("")
-          .map((c) => c + c)
-          .join("")
-      : normalized;
 
-  const r = parseInt(expanded.slice(0, 2), 16);
-  const g = parseInt(expanded.slice(2, 4), 16);
-  const b = parseInt(expanded.slice(4, 6), 16);
-  const clampedAlpha = Math.max(0, Math.min(1, alpha));
-  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
-};
 
 const buildLegacyTheme = (isDark: boolean): LegacyTheme => {
   const theme = {

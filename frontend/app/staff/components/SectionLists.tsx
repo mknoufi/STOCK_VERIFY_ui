@@ -72,6 +72,18 @@ export function SectionLists({
   onStartNewSection,
   onResumeSection,
 }: SectionListsProps) {
+  const inputRef = React.useRef<TextInput>(null);
+
+  React.useEffect(() => {
+    if (!showFinishedSearch) return;
+
+    // Small delay to ensure layout is ready
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [showFinishedSearch]);
+
   const styles = React.useMemo(
     () => createStyles(theme, isDark),
     [theme, isDark],
@@ -126,7 +138,7 @@ export function SectionLists({
                 entering={FadeInUp.delay(100 + index * 80)}
               >
                 <ModernCard
-                  variant="glass"
+                  variant="elevated"
                   onPress={() =>
                     onResumeSection(
                       session.session_id || session.id || "",
@@ -179,7 +191,7 @@ export function SectionLists({
                       style={styles.overflowCardWrapper}
                     >
                       <ModernCard
-                        variant="glass"
+                        variant="elevated"
                         onPress={() =>
                           onResumeSection(
                             session.session_id || session.id || "",
@@ -224,7 +236,7 @@ export function SectionLists({
             )}
           </View>
         ) : (
-          <ModernCard variant="glass" intensity={10} style={styles.emptyState}>
+          <ModernCard variant="elevated" intensity={10} style={styles.emptyState}>
             <View style={{ alignItems: "center" }}>
               <Ionicons
                 name="checkmark-circle-outline"
@@ -245,7 +257,7 @@ export function SectionLists({
         <View style={styles.sectionHeaderRow}>
           <View style={styles.sectionHeader}>
             <Ionicons name="checkmark-done-circle" size={22} color="#10B981" />
-            <Text style={[styles.sectionTitle, { color: "#F8FAFC" }]}>
+            <Text style={styles.sectionTitle}>
               Previous Sessions
             </Text>
           </View>
@@ -254,8 +266,8 @@ export function SectionLists({
               styles.searchToggleButton,
               {
                 backgroundColor: showFinishedSearch
-                  ? "#0EA5E9"
-                  : "rgba(255,255,255,0.05)",
+                  ? theme.colors.accent
+                  : theme.colors.background.elevated,
               },
             ]}
             onPress={onToggleSearch}
@@ -263,7 +275,11 @@ export function SectionLists({
             accessibilityRole="button"
             accessibilityLabel="Toggle previous sessions search"
           >
-            <Ionicons name="search" size={18} color="#FFF" />
+            <Ionicons
+              name="search"
+              size={18}
+              color={showFinishedSearch ? "#FFF" : theme.colors.text.primary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -271,13 +287,15 @@ export function SectionLists({
           <View style={styles.searchContainer}>
             <Ionicons name="search" size={18} color="#94A3B8" />
             <TextInput
+              ref={inputRef}
               style={styles.searchInput}
               placeholder="Search previous sessions..."
               placeholderTextColor="#64748B"
               value={finishedSearchQuery}
               onChangeText={onSearchQueryChange}
-              autoFocus
               accessibilityLabel="Search previous sessions"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
             {finishedSearchQuery.length > 0 && (
               <TouchableOpacity
@@ -332,9 +350,9 @@ export function SectionLists({
                         Last used{" "}
                         {getRelativeTime(
                           session.closed_at ||
-                            session.updated_at ||
-                            session.created_at ||
-                            "",
+                          session.updated_at ||
+                          session.created_at ||
+                          "",
                         )}
                       </Text>
                     </View>
@@ -369,7 +387,7 @@ export function SectionLists({
   );
 }
 
-const createStyles = (_theme: AppTheme, _isDark: boolean) =>
+const createStyles = (theme: AppTheme, isDark: boolean) =>
   StyleSheet.create({
     section: {
       marginBottom: 32,
@@ -378,7 +396,7 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 12,
+      marginBottom: 16, // Increased from 12
     },
     sectionHeader: {
       flexDirection: "row",
@@ -389,10 +407,11 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       fontSize: 18,
       fontWeight: "700",
       letterSpacing: -0.5,
+      color: theme.colors.text.primary,
     },
     sectionSubtitle: {
       fontSize: 14,
-      color: "#94A3B8",
+      color: theme.colors.text.secondary,
       marginBottom: 16,
     },
     iconButton: {
@@ -401,8 +420,8 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       borderRadius: 12,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#0EA5E9",
-      shadowColor: "#0EA5E9",
+      backgroundColor: theme.colors.accent,
+      shadowColor: theme.colors.accent,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
@@ -421,15 +440,17 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     activeSessionCard: {
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.05)",
-      marginBottom: 4,
+      borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
+      marginBottom: 12, // Increased from 4
+      backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.7)",
     },
     finishedSessionCard: {
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.05)",
+      borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
       padding: 16,
-      marginBottom: 4,
+      marginBottom: 12, // Increased from 4
+      backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.6)",
     },
     sessionCardContent: {
       flexDirection: "row",
@@ -449,12 +470,12 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     sessionName: {
       fontSize: 16,
       fontWeight: "600",
-      color: "#F8FAFC",
+      color: theme.colors.text.primary,
       marginBottom: 4,
     },
     sessionMeta: {
       fontSize: 13,
-      color: "#94A3B8",
+      color: theme.colors.text.secondary,
     },
     resumeButton: {
       width: 40,
@@ -462,7 +483,7 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#0EA5E9",
+      backgroundColor: theme.colors.accent,
     },
     emptyState: {
       alignItems: "center",
@@ -474,12 +495,12 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       fontSize: 17,
       fontWeight: "700",
       marginTop: 8,
-      color: "#F8FAFC",
+      color: theme.colors.text.primary,
     },
     emptyText: {
       fontSize: 14,
       textAlign: "center",
-      color: "#94A3B8",
+      color: theme.colors.text.secondary,
       lineHeight: 20,
     },
     searchContainer: {
@@ -490,14 +511,14 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       paddingVertical: 12,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.1)",
-      backgroundColor: "rgba(15, 23, 42, 0.6)",
+      borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+      backgroundColor: isDark ? "rgba(15, 23, 42, 0.6)" : "rgba(255, 255, 255, 0.8)",
       marginBottom: 16,
     },
     searchInput: {
       flex: 1,
       fontSize: 16,
-      color: "#F8FAFC",
+      color: theme.colors.text.primary,
       paddingVertical: 4,
     },
     emptyStateSmall: {
@@ -506,18 +527,18 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     },
     emptyTextSmall: {
       fontSize: 14,
-      color: "#64748B",
+      color: theme.colors.text.secondary,
       fontStyle: "italic",
     },
     moreText: {
       fontSize: 14,
-      color: "#64748B",
+      color: theme.colors.text.secondary,
       textAlign: "center",
       marginTop: 8,
     },
     overflowHint: {
       fontSize: 12,
-      color: "#64748B",
+      color: theme.colors.text.secondary,
       marginBottom: 8,
       marginLeft: 4,
     },
@@ -535,8 +556,9 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       minWidth: 260,
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.05)",
+      borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
       padding: 16,
+      backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.7)",
     },
   });
 

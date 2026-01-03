@@ -3,12 +3,46 @@ Port Detection Utility for Backend
 Automatically detect and use available ports
 """
 
+import json
 import logging
 import os
 import socket
+from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+def save_backend_info(port: int, local_ip: str, protocol: str = "http") -> None:
+    """Save backend port info to JSON files."""
+    try:
+        port_data = {
+            "port": port,
+            "ip": local_ip,
+            "url": f"{protocol}://{local_ip}:{port}",
+            "pid": os.getpid(),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+        # Save to backend_port.json in project root
+        # Assuming this file is in backend/utils/port_detector.py
+        # root is ../../
+        root_dir = Path(__file__).parent.parent.parent
+        with open(root_dir / "backend_port.json", "w") as f:
+            json.dump(port_data, f)
+
+        # Save to frontend/public/backend_port.json for Expo Web
+        frontend_public = root_dir / "frontend" / "public"
+        if frontend_public.exists():
+            with open(frontend_public / "backend_port.json", "w") as f:
+                json.dump(port_data, f)
+            logger.info(f"Saved backend port info to {frontend_public / 'backend_port.json'}")
+
+        logger.info(
+            f"Saved backend info (IP: {local_ip}, Port: {port}) to {root_dir / 'backend_port.json'}"
+        )
+    except Exception as e:
+        logger.warning(f"Failed to save backend port info: {e}")
 
 
 class PortDetector:
@@ -173,7 +207,7 @@ class PortDetector:
                 s.close()
 
             # 2. Sanity check: If we got localhost or something weird, try 192.168 specifically
-            if ip.startswith("127.") or ip == "0.0.0.0":
+            if ip.startswith("127.") or ip == "0.0.0.0":  # nosec
                 # Fallback: iterate interfaces (simple approach often restricted, so we rely on socket)
                 # Re-try with a local router guess
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

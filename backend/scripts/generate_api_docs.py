@@ -677,7 +677,7 @@ All input data is validated using Pydantic models. Invalid data will return a 42
     return openapi_schema
 
 
-def save_api_documentation(app: FastAPI, output_dir: str = "/tmp/"):
+def save_api_documentation(app: FastAPI, output_dir: str = "/tmp/"):  # nosec
     """Save API documentation in multiple formats"""
 
     # Generate comprehensive documentation

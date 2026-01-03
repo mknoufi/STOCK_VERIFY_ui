@@ -7,7 +7,7 @@ import os
 import platform
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -59,7 +59,7 @@ def _parse_log_file(
     level: Optional[str] = None,
 ) -> list[dict]:
     """Parse a log file and return structured log entries."""
-    logs = []
+    logs: list[dict[str, Any]] = []
     if not log_file.exists():
         return logs
 

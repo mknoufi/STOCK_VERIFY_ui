@@ -27,6 +27,7 @@ import {
   getItemByBarcode,
   refreshItemStock,
   createCountLine,
+  checkItemScanStatus,
 } from "@/services/api/api";
 import { RecentItemsService } from "@/services/enhancedFeatures";
 import { handleErrorWithRecovery } from "@/services/errorRecovery";
@@ -37,6 +38,7 @@ import { useItemState } from "@/domains/inventory/hooks/scan";
 import { useNetworkStore } from "@/store/networkStore";
 import { localDb } from "@/db/localDb";
 import { OfflineIndicator } from "@/components/common/OfflineIndicator";
+import { toastService } from "@/services/utils/toastService";
 
 const CONDITION_OPTIONS = [
   "Good",
@@ -144,6 +146,38 @@ export default function ItemDetailScreen() {
             console.log("stock_qty:", itemData.stock_qty);
           }
           setItem(itemData);
+
+          // Check for existing count in this location to pre-fill quantity
+          try {
+            const { currentFloor, currentRack } =
+              useScanSessionStore.getState();
+            // Use item_code for the check
+            const itemCodeToCheck =
+              itemData.item_code || itemData.barcode || barcode;
+
+            if (itemCodeToCheck) {
+              const scanStatus = await checkItemScanStatus(
+                sessionId as string,
+                itemCodeToCheck
+              );
+
+              if (scanStatus.scanned) {
+                const existingInLocation = scanStatus.locations.find(
+                  (loc) =>
+                    loc.floor_no === currentFloor && loc.rack_no === currentRack
+                );
+
+                if (existingInLocation) {
+                  setQuantity(String(existingInLocation.counted_qty));
+                  toastService.show("Loaded existing count for this location", {
+                    type: "info",
+                  });
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to check existing scan status", e);
+          }
 
           // Add to recent scans
           try {
@@ -477,7 +511,7 @@ export default function ItemDetailScreen() {
         await handleErrorWithRecovery(() => createCountLine(payload), {
           context: "Save Count",
           recovery: { maxRetries: 3 },
-          showAlert: true,
+          showAlert: false,
         });
       } else {
         __DEV__ && console.log("Offline: Saving to local DB queue...");
@@ -496,7 +530,29 @@ export default function ItemDetailScreen() {
       // Cleanup
       scanDeduplicationService.recordScan(item.item_code);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to submit count");
+      console.error("Submit Error:", error);
+
+      let errorMessage = "Failed to submit count";
+      let errorTitle = "Submission Failed";
+
+      // Extract detailed error message from backend response
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (data.detail) {
+           errorMessage = typeof data.detail === 'string'
+            ? data.detail
+            : JSON.stringify(data.detail);
+        } else if (data.message) {
+          errorMessage = data.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      // User-friendly explanation
+      const fullMessage = `The system could not save your count.\n\nReason: ${errorMessage}\n\nPlease check the data and try again.`;
+
+      Alert.alert(errorTitle, fullMessage);
     } finally {
       setLoading(false);
     }

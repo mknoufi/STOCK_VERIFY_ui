@@ -2,7 +2,6 @@
  * API service layer: network-aware endpoints with offline fallbacks and caching.
  * Most functions prefer online calls and transparently fall back to cache.
  */
-import { useNetworkStore } from "../../store/networkStore";
 import { useAuthStore } from "../../store/authStore";
 import api from "../httpClient";
 import { retryWithBackoff } from "../../utils/retry";
@@ -23,13 +22,9 @@ import {
 } from "../offline/offlineStorage";
 import {
   createOfflineCountLine,
-  setDeviceContext,
 } from "../offline/offlineCountLine";
 import {
-  isOnline as checkIsOnline,
   getNetworkStatus,
-  isDefinitelyOffline,
-  type NetworkStatus,
 } from "../../utils/network";
 import { AppError } from "../../utils/errors";
 import { createLogger } from "../logging";
@@ -653,7 +648,15 @@ export const getItemByBarcode = async (
   } catch (apiError: any) {
     const errorMessage =
       apiError instanceof Error ? apiError.message : String(apiError);
-    log.error("API call failed", { error: errorMessage });
+
+    // Check for 404 status (Item not found) - log as info/warn instead of error
+    const isNotFound = apiError?.response?.status === 404 || errorMessage.includes("404");
+
+    if (isNotFound) {
+      log.info("Item not found via API", { barcode: trimmedBarcode });
+    } else {
+      log.error("API call failed", { error: errorMessage });
+    }
 
     // Only fallback to cache if API fails (degraded mode)
     log.debug("API failed, trying cache fallback");
@@ -1114,6 +1117,52 @@ export const identifyItem = async (imageUri: string): Promise<Item[]> => {
   }
 };
 
+export interface ItemScanStatus {
+  scanned: boolean;
+  total_qty: number;
+  locations: {
+    floor_no: string | null;
+    rack_no: string | null;
+    counted_qty: number;
+    counted_by: string;
+    counted_at: string;
+  }[];
+}
+
+export const checkItemScanStatus = async (
+  sessionId: string,
+  itemCode: string
+): Promise<ItemScanStatus> => {
+  try {
+    if (!isOnline()) {
+      // Offline fallback: check local cache
+      const cachedLines = await getCountLinesBySessionFromCache(sessionId);
+      const itemLines = cachedLines.filter(line => line.item_code === itemCode);
+
+      if (itemLines.length === 0) {
+        return { scanned: false, total_qty: 0, locations: [] };
+      }
+
+      const totalQty = itemLines.reduce((sum, line) => sum + (line.counted_qty || 0), 0);
+      const locations = itemLines.map(line => ({
+        floor_no: (line.floor_no as string) || null,
+        rack_no: (line.rack_no as string) || null,
+        counted_qty: line.counted_qty || 0,
+        counted_by: line.counted_by || "offline_user",
+        counted_at: (line.created_at as string) || new Date().toISOString()
+      }));
+
+      return { scanned: true, total_qty: totalQty, locations };
+    }
+
+    const response = await api.get(`/api/sessions/${sessionId}/items/${itemCode}/scan-status`);
+    return response.data;
+  } catch (error) {
+    console.error("Error checking item scan status:", error);
+    return { scanned: false, total_qty: 0, locations: [] };
+  }
+};
+
 // Create count line (with offline support)
 /**
  * Create a count line with offline fallback.
@@ -1170,7 +1219,19 @@ export const createCountLine = async (
       _source: "api" as DataSource,
     };
   } catch (error: any) {
-    log.error("Error creating count line, falling back to offline", {
+    // CRITICAL FIX: Only fallback to offline if it's a network error.
+    // If the server responded with an error (e.g. 400 Validation Error, 401 Auth, 500 Server Error),
+    // we must NOT hide it behind a "success" offline save.
+    if (error.response) {
+      log.error("Server returned error, NOT falling back to offline", {
+        status: error.response.status,
+        data: error.response.data,
+      });
+      // Propagate the server error so the UI can show the real reason
+      throw error;
+    }
+
+    log.error("Network error creating count line, falling back to offline", {
       error: error instanceof Error ? error.message : String(error),
     });
 

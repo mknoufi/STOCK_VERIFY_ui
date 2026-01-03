@@ -207,6 +207,8 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
           onBlur={handleBlur}
           style={[styles.input, props.style, { paddingTop: label ? 20 : 12 }]}
           placeholderTextColor={modernColors.text.tertiary}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
       </Animated.View>
       {error && <Text style={styles.errorText}>{error}</Text>}

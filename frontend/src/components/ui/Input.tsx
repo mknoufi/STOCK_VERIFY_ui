@@ -112,6 +112,8 @@ export const Input = forwardRef<TextInput, InputProps>(
         <View style={getInputContainerStyles()}>
           {leftIcon}
           <TextInput
+            autoCapitalize="none"
+            autoCorrect={false}
             ref={ref}
             style={[
               {

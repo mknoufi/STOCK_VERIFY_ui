@@ -104,9 +104,23 @@ def _setup_security_headers(app: FastAPI) -> None:
         logger.warning(f"Failed to add SecurityHeadersMiddleware: {str(e)}")
 
 
+def _setup_lan_enforcement(app: FastAPI) -> None:
+    """Add LAN enforcement middleware."""
+    try:
+        from backend.middleware.lan_enforcement import LANEnforcementMiddleware
+
+        app.add_middleware(LANEnforcementMiddleware)
+        logger.info("✓ LAN enforcement middleware enabled")
+    except ImportError as e:
+        logger.warning(f"LAN enforcement middleware not available: {str(e)}")
+    except Exception as e:
+        logger.warning(f"Failed to add LANEnforcementMiddleware: {str(e)}")
+
+
 def setup_middleware(app: FastAPI) -> None:
     """Configure all middleware for the application."""
     _setup_gzip(app)
     _setup_trusted_hosts(app)
     _setup_cors(app)
     _setup_security_headers(app)
+    _setup_lan_enforcement(app)

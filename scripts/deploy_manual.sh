@@ -25,7 +25,7 @@ if pgrep mongod > /dev/null; then
 else
     # Check if we can run mongod
     if command -v mongod > /dev/null; then
-        mongod --dbpath "$MONGO_DATA_DIR" --logpath "$LOG_DIR/mongodb.log" --fork --bind_ip_all
+        mongod --dbpath "$MONGO_DATA_DIR" --logpath "$LOG_DIR/mongodb.log" --bind_ip 127.0.0.1 &
         echo "   MongoDB started in background."
     else
         echo "❌ 'mongod' command not found. Please install MongoDB."
@@ -40,7 +40,7 @@ cd backend
 # Create Venv if missing
 if [ ! -d "venv" ]; then
     echo "   Creating Python virtual environment..."
-    python3.11 -m venv venv
+    python3 -m venv venv
 fi
 
 # Activate Venv

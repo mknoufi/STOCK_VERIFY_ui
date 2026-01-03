@@ -36,7 +36,7 @@ Defines **governance and operational rules** for STOCK_VERIFY_2.1 development, e
 
 ## ⚙️ Backend Stack
 
-- **FastAPI:** 0.115.6
+- **FastAPI:** 0.115.8
 - **Python:** 3.10+
 - **Databases:** MongoDB (Motor), SQL Server (PyODBC)
 - **Auth:** JWT (Authlib)
@@ -46,9 +46,9 @@ Defines **governance and operational rules** for STOCK_VERIFY_2.1 development, e
 
 ## 🧩 Frontend Stack
 
-- **Framework:** React Native 0.81.5 + Expo 54 (Stable)
-- **Language:** TypeScript 6.x
-- **Styling:** NativeWind (Tailwind CSS)
+- **Framework:** React Native 0.81.5 + Expo 54.0.29
+- **Language:** TypeScript 5.9.3
+- **Styling:** StyleSheet + Custom Theme System
 - **State:** Zustand
 - **Routing:** Expo Router
 - **Offline:** AsyncStorage + Offline Queue

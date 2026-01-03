@@ -1,11 +1,39 @@
 {
   "expo": {
+    "name": "Stock Verify",
+    "slug": "stock-verify",
+    "version": "1.0.0",
     "scheme": "stockverify",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.anonymous.frontend"
+      "bundleIdentifier": "com.anonymous.frontend",
+      "supportsTablet": true,
+      "userInterfaceStyle": "automatic",
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch", "remote-notification"],
+        "NSLocalNetworkUsageDescription": "Stock Verify needs access to devices and services on your local network to connect to the Stock Verify backend.",
+        "NSBonjourServices": ["_http._tcp.", "_https._tcp."],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoadsInLocalNetwork": true
+        }
+      }
     },
     "android": {
-      "package": "com.anonymous.frontend"
+      "package": "com.anonymous.frontend",
+      "userInterfaceStyle": "automatic"
+    },
+    "transpilePackages": ["zustand"],
+    "plugins": [
+      [
+        "expo-background-fetch",
+        {
+          "isHeadless": true
+        }
+      ],
+      "./plugins/withQuotedReactNativeBundlePhase"
+    ],
+    "web": {
+      "bundler": "metro"
     }
   }
 }

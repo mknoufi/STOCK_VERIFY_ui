@@ -249,6 +249,8 @@ export default function Register() {
                 }
                 placeholder="Enter your full name"
                 placeholderTextColor="#666"
+                autoCapitalize="words"
+                autoCorrect={false}
               />
             </View>
           </View>
@@ -271,6 +273,8 @@ export default function Register() {
                 }
                 placeholder="Enter employee ID (optional)"
                 placeholderTextColor="#666"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
           </View>
@@ -293,6 +297,7 @@ export default function Register() {
                 }
                 placeholder="Enter phone number (optional)"
                 placeholderTextColor="#666"
+                autoCorrect={false}
                 keyboardType="phone-pad"
               />
             </View>
@@ -320,6 +325,7 @@ export default function Register() {
                 placeholderTextColor="#666"
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
+                autoCorrect={false}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
@@ -356,6 +362,7 @@ export default function Register() {
                 placeholderTextColor="#666"
                 secureTextEntry={!showConfirmPassword}
                 autoCapitalize="none"
+                autoCorrect={false}
               />
               <TouchableOpacity
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -403,12 +410,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     ...(Platform.OS === "web"
       ? {
-          maxWidth: 500,
-          width: "100%",
-          alignSelf: "center",
-          paddingTop: 40,
-          paddingBottom: 40,
-        }
+        maxWidth: 500,
+        width: "100%",
+        alignSelf: "center",
+        paddingTop: 40,
+        paddingBottom: 40,
+      }
       : {}),
   },
   header: {
@@ -418,9 +425,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#2a2a2a",
     ...(Platform.OS === "web"
       ? {
-          borderRadius: 12,
-          marginTop: 20,
-        }
+        borderRadius: 12,
+        marginTop: 20,
+      }
       : {}),
   },
   backButton: {

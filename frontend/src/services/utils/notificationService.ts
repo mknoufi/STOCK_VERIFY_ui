@@ -4,7 +4,10 @@
  */
 
 import { Platform } from "react-native";
-import Notifications, { NotificationTriggerInput } from "expo-notifications";
+import Notifications, {
+  NotificationTriggerInput,
+  SchedulableTriggerInputTypes,
+} from "expo-notifications";
 import { errorReporter } from "./errorRecovery";
 
 export interface NotificationOptions {
@@ -49,7 +52,6 @@ export class NotificationService {
       // Configure notification handler
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
-          shouldShowAlert: true,
           shouldPlaySound: true,
           shouldSetBadge: true,
           shouldShowBanner: true,
@@ -98,8 +100,11 @@ export class NotificationService {
 
       const triggerValue = (
         trigger instanceof Date
-          ? { type: "date", date: trigger }
-          : { type: "timeInterval", seconds: trigger.seconds }
+          ? { type: SchedulableTriggerInputTypes.DATE, date: trigger }
+          : {
+              type: SchedulableTriggerInputTypes.TIME_INTERVAL,
+              seconds: trigger.seconds,
+            }
       ) as NotificationTriggerInput;
 
       await Notifications.scheduleNotificationAsync({

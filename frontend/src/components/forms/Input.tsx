@@ -67,6 +67,8 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             />
           )}
           <TextInput
+            autoCapitalize="none"
+            autoCorrect={false}
             ref={ref}
             style={[
               styles.input,
@@ -79,13 +81,13 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             placeholderTextColor={theme.colors.placeholder}
             {...(Platform.OS === "web"
               ? {
-                  // Web-specific props to ensure input works
-                  autoComplete: textInputProps.autoComplete || "off",
-                  spellCheck:
-                    textInputProps.spellCheck !== undefined
-                      ? textInputProps.spellCheck
-                      : true,
-                }
+                // Web-specific props to ensure input works
+                autoComplete: textInputProps.autoComplete || "off",
+                spellCheck:
+                  textInputProps.spellCheck !== undefined
+                    ? textInputProps.spellCheck
+                    : true,
+              }
               : {})}
             {...textInputProps}
           />

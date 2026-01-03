@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import copy
 import os
-import uuid
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
@@ -19,9 +18,34 @@ from backend.services.error_log import ErrorLogService
 from backend.services.refresh_token import RefreshTokenService
 
 
+def _normalize_value(val: Any) -> Any:
+    """Normalize values for comparison (e.g. ObjectId -> str)."""
+    if hasattr(val, "__class__") and val.__class__.__name__ == "ObjectId":
+        return str(val)
+    return val
+
+
 def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
     """Evaluate comparison operators."""
+    # Handle regex with options if present
+    if "$regex" in condition:
+        import re
+
+        pattern = condition["$regex"]
+        options = condition.get("$options", "")
+        flags = 0
+        if "i" in options:
+            flags |= re.IGNORECASE
+
+        if not re.search(pattern, str(value), flags):
+            return False
+
     for op, expected in condition.items():
+        if op == "$regex" or op == "$options":
+            continue
+
+        expected = _normalize_value(expected)
+
         if op == "$lt" and not (value < expected):
             return False
         if op == "$lte" and not (value <= expected):
@@ -32,7 +56,7 @@ def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
             return False
         if op == "$ne" and not (value != expected):
             return False
-        if op not in {"$lt", "$lte", "$gt", "$gte", "$ne"}:
+        if op not in {"$lt", "$lte", "$gt", "$gte", "$ne", "$regex", "$options"}:
             raise ValueError(f"Unsupported operator: {op}")
     return True
 
@@ -81,6 +105,7 @@ def _match_filter(document: dict[str, Any], filter_query: dict[str, Optional[Any
             if not _match_condition(doc_value, value):
                 return False
         else:
+            value = _normalize_value(value)
             if doc_value != value:
                 return False
     return True
@@ -145,7 +170,8 @@ class InMemoryCollection:
         self._documents: list[dict[str, Any]] = []
 
     def _ensure_id(self, document: dict[str, Any]) -> None:
-        document.setdefault("_id", uuid.uuid4().hex)
+        # Use 24-char hex string to mimic ObjectId
+        document.setdefault("_id", os.urandom(12).hex())
 
     async def find_one(self, filter: dict[str, Any], *args, **kwargs) -> dict[str, Optional[Any]]:
         for doc in self._documents:
@@ -187,6 +213,13 @@ class InMemoryCollection:
             return UpdateResult(matched_count=0, modified_count=1, upserted_id=new_doc["_id"])
 
         return UpdateResult(matched_count=0, modified_count=0)
+
+    async def delete_one(self, filter_query: dict[str, Optional[Any]]) -> DeleteResult:
+        for i, doc in enumerate(self._documents):
+            if _match_filter(doc, filter_query):
+                self._documents.pop(i)
+                return DeleteResult(deleted_count=1)
+        return DeleteResult(deleted_count=0)
 
     async def delete_many(self, filter_query: dict[str, Optional[Any]]) -> DeleteResult:
         to_keep = []
@@ -321,19 +354,22 @@ def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
         async def run_migrations(self):
             return None
 
-    monkeypatch.setattr(server_module, "migration_manager", _NoOpMigrationManager())
+    import backend.core.lifespan as lifespan_module
+
+    monkeypatch.setattr(lifespan_module, "migration_manager", _NoOpMigrationManager())
     monkeypatch.setenv("RATE_LIMIT_ENABLED", "false")
 
 
 def _setup_mock_services(monkeypatch, server_module) -> None:
     """Setup mocked SQL connector, health service, auto sync, and export service."""
     from unittest.mock import AsyncMock, MagicMock
+    import backend.core.lifespan as lifespan_module
 
     # Mock SQL Connector
     mock_sql = MagicMock()
     mock_sql.connect.return_value = None
     mock_sql.test_connection.return_value = False
-    monkeypatch.setattr(server_module, "sql_connector", mock_sql)
+    monkeypatch.setattr(lifespan_module, "sql_connector", mock_sql)
 
     # Mock DatabaseHealthService
     mock_health = MagicMock()
@@ -341,29 +377,43 @@ def _setup_mock_services(monkeypatch, server_module) -> None:
     mock_health.stop = MagicMock()
     mock_health.check_mongo_health = AsyncMock(return_value={"status": "healthy"})
     mock_health.check_sql_server_health = AsyncMock(return_value={"status": "healthy"})
-    monkeypatch.setattr(server_module, "DatabaseHealthService", MagicMock(return_value=mock_health))
-    if hasattr(server_module, "database_health_service"):
-        monkeypatch.setattr(server_module, "database_health_service", mock_health)
+
+    # Patch the class in server module if it's imported there, otherwise just the instance in lifespan
+    if hasattr(server_module, "DatabaseHealthService"):
+        monkeypatch.setattr(
+            server_module, "DatabaseHealthService", MagicMock(return_value=mock_health)
+        )
+
+    monkeypatch.setattr(lifespan_module, "database_health_service", mock_health)
 
     # Mock AutoSyncManager
     mock_auto_sync = MagicMock()
     mock_auto_sync.start = AsyncMock()
     mock_auto_sync.stop = AsyncMock()
-    monkeypatch.setattr(server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync))
-    if hasattr(server_module, "auto_sync_manager"):
-        monkeypatch.setattr(server_module, "auto_sync_manager", mock_auto_sync)
+
+    if hasattr(server_module, "AutoSyncManager"):
+        monkeypatch.setattr(
+            server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync)
+        )
+
+    # Note: auto_sync_manager might not be in lifespan global scope directly if it's set via set_auto_sync_manager
+    # But checking lifespan just in case
+    if hasattr(lifespan_module, "auto_sync_manager"):
+        monkeypatch.setattr(lifespan_module, "auto_sync_manager", mock_auto_sync)
 
     # Mock ScheduledExportService
     mock_export_service = MagicMock()
     mock_export_service.start = MagicMock()
     mock_export_service.stop = MagicMock()
-    monkeypatch.setattr(
-        server_module,
-        "ScheduledExportService",
-        MagicMock(return_value=mock_export_service),
-    )
-    if hasattr(server_module, "scheduled_export_service"):
-        monkeypatch.setattr(server_module, "scheduled_export_service", mock_export_service)
+
+    if hasattr(server_module, "ScheduledExportService"):
+        monkeypatch.setattr(
+            server_module,
+            "ScheduledExportService",
+            MagicMock(return_value=mock_export_service),
+        )
+
+    monkeypatch.setattr(lifespan_module, "scheduled_export_service", mock_export_service)
 
 
 def _setup_cache_and_redis(monkeypatch, server_module) -> Any:
@@ -403,7 +453,6 @@ def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None
     from backend.api.count_lines_api import init_count_lines_api
     from backend.api.erp_api import init_erp_api
     from backend.api.item_verification_api import init_verification_api
-    from backend.api.session_api import init_session_api
 
     init_verification_api(cast(AsyncIOMotorDatabase, fake_db))
     init_erp_api(cast(AsyncIOMotorDatabase, fake_db), cache_service)
@@ -413,7 +462,6 @@ def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None
     server_module.client = cast(AsyncIOMotorClient, fake_db.client)
 
     # Initialize APIs that depend on global db
-    init_session_api(cast(AsyncIOMotorDatabase, fake_db), server_module.activity_log_service)
     init_count_lines_api(server_module.activity_log_service)
 
 
@@ -456,7 +504,7 @@ def _seed_default_users(fake_db, server_module) -> None:
     def _seed_user(username: str, password: str, full_name: str, role: str):
         fake_db.users._documents.append(
             {
-                "_id": uuid.uuid4().hex,
+                "_id": os.urandom(12).hex(),
                 "username": username,
                 "hashed_password": server_module.get_password_hash(password),
                 "full_name": full_name,

@@ -284,6 +284,7 @@ export function ChangePinModal({
               secureTextEntry
               maxLength={6}
               editable={!loading}
+              autoCorrect={false}
             />
           </View>
 
@@ -302,6 +303,7 @@ export function ChangePinModal({
               secureTextEntry
               maxLength={6}
               editable={!loading}
+              autoCorrect={false}
             />
           </View>
 
@@ -320,6 +322,7 @@ export function ChangePinModal({
               secureTextEntry
               maxLength={6}
               editable={!loading}
+              autoCorrect={false}
             />
           </View>
 

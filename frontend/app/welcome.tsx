@@ -15,7 +15,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { colors, spacing, gradients } from "@/styles/globalStyles";
+import {
+  colors,
+  spacing,
+  radius,
+  gradients,
+} from "@/theme/unified";
 import { useAuthStore } from "@/store/authStore";
 import { getRouteForRole, type UserRole } from "@/utils/roleNavigation";
 
@@ -69,7 +74,7 @@ const FeatureCard = ({
   >
     <GlassSurface intensity={20} tint="light" style={styles.featureCard}>
       <View style={styles.iconCircle}>
-        <Ionicons name={icon} size={24} color={colors.primary} />
+        <Ionicons name={icon} size={24} color={colors.primary[400]} />
       </View>
       <Text style={styles.featureText}>{title}</Text>
     </GlassSurface>
@@ -106,7 +111,7 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={["#020617", "#0F172A", "#020617"]}
+        colors={[colors.neutral[950], colors.neutral[900], colors.neutral[950]]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -228,8 +233,8 @@ const styles = StyleSheet.create({
     left: -100,
     width: 300,
     height: 300,
-    borderRadius: 150,
-    backgroundColor: "#0EA5E9",
+    borderRadius: radius.full,
+    backgroundColor: colors.primary[400],
     opacity: 0.05,
     transform: [{ scale: 1.5 }],
   },
@@ -239,8 +244,8 @@ const styles = StyleSheet.create({
     right: -50,
     width: 200,
     height: 200,
-    borderRadius: 100,
-    backgroundColor: "#10B981",
+    borderRadius: radius.full,
+    backgroundColor: colors.success[500],
     opacity: 0.05,
     transform: [{ scale: 1.5 }],
   },
@@ -256,10 +261,10 @@ const styles = StyleSheet.create({
   logoBackground: {
     width: 120,
     height: 120,
-    borderRadius: 35,
+    borderRadius: radius.xl,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#0EA5E9",
+    shadowColor: colors.primary[400],
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -270,8 +275,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 120,
     height: 120,
-    borderRadius: 35,
-    backgroundColor: "#0EA5E9",
+    borderRadius: radius.xl,
+    backgroundColor: colors.primary[400],
     opacity: 0.2,
     transform: [{ scale: 1.1 }],
     zIndex: 1,
@@ -286,22 +291,22 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    color: "#94A3B8",
-    marginBottom: 16,
+    color: colors.neutral[400],
+    marginBottom: spacing.lg,
     textAlign: "center",
     fontWeight: "500",
     letterSpacing: 0.5,
   },
   versionBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "rgba(14, 165, 233, 0.15)",
-    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    backgroundColor: `${colors.primary[400]}26`, // 15% opacity
+    borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: "rgba(14, 165, 233, 0.3)",
+    borderColor: `${colors.primary[400]}4D`, // 30% opacity
   },
   versionText: {
-    color: "#0EA5E9",
+    color: colors.primary[400],
     fontSize: 12,
     fontWeight: "700",
     textTransform: "uppercase",
@@ -330,14 +335,14 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 48,
     height: 48,
-    borderRadius: 16,
-    backgroundColor: "rgba(14, 165, 233, 0.1)",
+    borderRadius: radius.lg,
+    backgroundColor: `${colors.primary[400]}1A`, // 10% opacity
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   featureText: {
-    color: "#94A3B8",
+    color: colors.neutral[400],
     fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
@@ -347,7 +352,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   buttonShadow: {
-    shadowColor: colors.primary,
+    shadowColor: colors.primary[500],
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -389,13 +394,13 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    color: "#64748B",
+    color: colors.neutral[500],
     fontSize: 12,
     fontWeight: "600",
   },
   footerSubtext: {
-    color: "#475569",
+    color: colors.neutral[600],
     fontSize: 10,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 });

@@ -33,6 +33,14 @@ import { mmkvStorage } from "../src/services/mmkvStorage";
 import { AuthGuard } from "../src/components/auth/AuthGuard";
 import { modernColors, modernTypography } from "../src/styles/modernDesignSystem";
 
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
+
 // keep the splash screen visible while complete fetching resources
 // On web, wrap in try-catch to prevent blocking
 if (Platform.OS !== "web") {
@@ -43,14 +51,6 @@ if (Platform.OS !== "web") {
     // Silent fail for web platform
   });
 }
-
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
 
 // Debug logs only in development
 if (__DEV__) {

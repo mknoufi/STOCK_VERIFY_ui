@@ -86,6 +86,8 @@ export const BulkEntryModal: React.FC<BulkEntryModalProps> = ({
               value={inputText}
               onChangeText={setInputText}
               textAlignVertical="top"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
             <View style={styles.footer}>
               <PremiumButton

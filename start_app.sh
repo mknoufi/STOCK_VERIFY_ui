@@ -44,18 +44,29 @@ while [ $COUNT -lt $MAX_RETRIES ]; do
         DETECTED_PORT=$(python3 -c "import json; print(json.load(open('$SCRIPT_DIR/backend_port.json'))['port'])" 2>/dev/null)
 
         if [ ! -z "$DETECTED_PORT" ]; then
-            # 2. Check health using detected port
-            if curl -s "http://$LOCAL_IP:$DETECTED_PORT/api/health" > /dev/null; then
+            # 2. Check health using detected port (try HTTPS first with -k for self-signed, then HTTP)
+            if curl -s -k "https://$LOCAL_IP:$DETECTED_PORT/api/health" > /dev/null; then
                 BACKEND_READY=true
                 PORT=$DETECTED_PORT
-                echo "✅ Connection confirmed: http://$LOCAL_IP:$PORT/api/health"
+                echo "✅ Backend is healthy on port $PORT (HTTPS)"
+                break
+            elif curl -s "http://$LOCAL_IP:$DETECTED_PORT/api/health" > /dev/null; then
+                BACKEND_READY=true
+                PORT=$DETECTED_PORT
+                echo "✅ Backend is healthy on port $PORT (HTTP)"
                 break
             fi
+            
             # Check localhost fallback
-            if curl -s "http://localhost:$DETECTED_PORT/api/health" > /dev/null; then
+            if curl -s -k "https://localhost:$DETECTED_PORT/api/health" > /dev/null; then
                 BACKEND_READY=true
                 PORT=$DETECTED_PORT
-                echo "✅ Connection confirmed: http://localhost:$PORT/api/health"
+                echo "✅ Backend is healthy on localhost:$PORT (HTTPS)"
+                break
+            elif curl -s "http://localhost:$DETECTED_PORT/api/health" > /dev/null; then
+                BACKEND_READY=true
+                PORT=$DETECTED_PORT
+                echo "✅ Backend is healthy on localhost:$PORT (HTTP)"
                 break
             fi
         fi
@@ -71,14 +82,9 @@ if [ "$BACKEND_READY" = true ]; then
 
     echo "🚀 Starting Frontend..."
 
-    # Start Frontend in new Terminal window
-    osascript <<APPLESCRIPT
-    tell application "Terminal"
-        activate
-        set frontendWindow to do script "cd '$SCRIPT_DIR' && ./scripts/start_frontend.sh"
-        set custom title of frontendWindow to "Frontend Server"
-    end tell
-APPLESCRIPT
+    # Start Frontend (LAN Mode) - restart_expo_lan.sh handles its own new window
+    echo "🚀 Starting Frontend (LAN Mode)..."
+    "$SCRIPT_DIR/scripts/restart_expo_lan.sh"
 
     echo "✅ Both servers started!"
     echo "📱 Frontend will automatically connect to Backend at http://$LOCAL_IP:$PORT"

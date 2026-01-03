@@ -35,9 +35,7 @@ class QuerySpec(BaseModel):
     aggregations: Optional[dict[str, Optional[str]]] = Field(
         default=None, description="Aggregations"
     )
-    sort: Optional[dict[str, Optional[int]]] = Field(
-        default=None, description="Sort specification"
-    )
+    sort: Optional[dict[str, Optional[int]]] = Field(default=None, description="Sort specification")
     limit: Optional[int] = Field(None, description="Limit results")
 
 

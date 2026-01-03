@@ -1,0 +1,13 @@
+STARTING FIX_DB_ISSUES.PY
+Connecting to mongodb://localhost:27017?directConnection=true...
+
+--- Checking erp_items for duplicates ---
+No duplicates found in erp_items.
+
+--- Checking indexes ---
+Found 'idx_barcode' in collection 'erp_items'. Dropping it...
+Dropped.
+Found 'idx_warehouse_status' in collection 'sessions'. Dropping it...
+Dropped.
+
+Done.

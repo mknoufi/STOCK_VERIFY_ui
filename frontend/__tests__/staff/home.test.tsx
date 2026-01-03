@@ -14,10 +14,6 @@ jest.mock("react-native-modal", () => {
     return (props: any) => (props.isVisible ? React.createElement(View, { testID: "modal-view" }, props.children) : null);
 });
 
-jest.mock("react-native-safe-area-context", () => ({
-    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
-
 jest.mock("@tanstack/react-query", () => ({
     useQueryClient: jest.fn(() => ({
         invalidateQueries: jest.fn(),
@@ -62,6 +58,9 @@ jest.mock("expo-router", () => ({
         back: jest.fn(),
     }),
     useFocusEffect: jest.fn((cb) => cb()),
+    Stack: {
+        Screen: jest.fn(() => null),
+    },
 }));
 
 jest.mock("../../src/context/ThemeContext", () => {
@@ -74,6 +73,11 @@ jest.mock("../../src/context/ThemeContext", () => {
         surface: "#161B22",
         surfaceElevated: "#21262D",
         accent: "#58A6FF",
+        primary: {
+            500: "#3B82F6",
+            600: "#2563EB",
+            400: "#60A5FA",
+        },
         border: "#30363D",
         borderLight: "#30363D",
         glass: "rgba(255,255,255,0.1)",

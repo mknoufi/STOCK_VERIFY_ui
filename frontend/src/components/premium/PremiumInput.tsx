@@ -4,7 +4,7 @@
  */
 
 /// <reference types="react" />
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -57,6 +57,7 @@ interface PremiumInputProps {
   required?: boolean;
   onBlur?: () => void;
   onSubmitEditing?: () => void;
+  autoCorrect?: boolean;
   returnKeyType?: "done" | "go" | "next" | "search" | "send";
 }
 
@@ -74,7 +75,8 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   numberOfLines = 1,
   secureTextEntry = false,
   keyboardType = "default",
-  autoCapitalize = "sentences",
+  autoCapitalize = "none",
+  autoCorrect = false,
   leftIcon,
   rightIcon,
   onRightIconPress,
@@ -128,7 +130,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   const labelScaleAnim = useSharedValue(value ? 1 : 0);
 
   // Handle focus
-  const handleFocus = () => {
+  const handleFocus = useCallback(() => {
     setIsFocused(true);
     borderColorAnim.value = withTiming(1, {
       duration: modernAnimations.duration.fast,
@@ -136,10 +138,10 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
     labelScaleAnim.value = withTiming(1, {
       duration: modernAnimations.duration.fast,
     });
-  };
+  }, [borderColorAnim, labelScaleAnim]);
 
   // Handle blur
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     setIsFocused(false);
     borderColorAnim.value = withTiming(0, {
       duration: modernAnimations.duration.fast,
@@ -150,7 +152,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
       });
     }
     onBlur?.();
-  };
+  }, [value, onBlur, borderColorAnim, labelScaleAnim]);
 
   // Animated border style
   const animatedBorderStyle = useAnimatedStyle(() => {
@@ -163,7 +165,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   });
 
   // Get variant styles
-  const getVariantStyle = (): ViewStyle => {
+  const variantStyle = useMemo((): ViewStyle => {
     switch (variant) {
       case "filled":
         return {
@@ -187,7 +189,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
           borderRadius: theme ? theme.borderRadius.md : modernBorderRadius.md,
         };
     }
-  };
+  }, [variant, colors, theme]);
 
   const isPasswordField = secureTextEntry;
   const effectiveSecure = isPasswordField && !showPassword;
@@ -266,7 +268,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
       <Animated.View
         style={[
           dynamicStyles.inputContainer,
-          getVariantStyle(),
+          variantStyle,
           animatedBorderStyle,
           disabled && dynamicStyles.disabled,
           multiline && dynamicStyles.multilineContainer,
@@ -301,6 +303,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
           secureTextEntry={effectiveSecure}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
           maxLength={maxLength}
           onFocus={handleFocus}
           onBlur={handleBlur}

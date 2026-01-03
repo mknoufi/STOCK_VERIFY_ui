@@ -65,6 +65,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
             value={floorNo}
             onChangeText={handleFloorChange}
             autoCapitalize="characters"
+            autoCorrect={false}
           />
         </View>
 
@@ -78,6 +79,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
               value={rackNo}
               onChangeText={handleRackChange}
               autoCapitalize="characters"
+              autoCorrect={false}
             />
           </View>
         )}
@@ -92,6 +94,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
               value={shelfNo}
               onChangeText={handleShelfChange}
               autoCapitalize="characters"
+              autoCorrect={false}
             />
           </View>
         )}
@@ -105,6 +108,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
             value={markLocation}
             onChangeText={handleMarkLocationChange}
             autoCapitalize="words"
+            autoCorrect={false}
           />
         </View>
       </View>

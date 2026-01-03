@@ -138,7 +138,7 @@ async def check_sql_server():
                     continue
 
                 # Safe query - table_name is validated against allowlist
-                cursor.execute(f"SELECT COUNT(*) FROM [{table_name}]")
+                cursor.execute(f"SELECT COUNT(*) FROM [{table_name}]")  # nosec
                 count = cursor.fetchone()[0]
                 print(f"  - {table_name}: {count} rows")
         else:

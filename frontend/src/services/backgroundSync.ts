@@ -1,6 +1,7 @@
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 import { syncQueue } from "./syncQueue";
 
 const BACKGROUND_SYNC_TASK = "BACKGROUND_SYNC_TASK";
@@ -34,7 +35,28 @@ export const registerBackgroundSync = async () => {
     return;
   }
 
+  // Expo Go does not support Background Fetch / TaskManager execution.
+  // Avoid surfacing this as a fatal runtime error on physical devices.
+  if (Constants.appOwnership === "expo") {
+    console.log("Background sync registration skipped in Expo Go");
+    return;
+  }
+
   try {
+    // On some iOS configurations (especially on physical devices), background fetch may not be enabled
+    // even if the module is installed. Avoid surfacing this as a fatal runtime error.
+    try {
+      const fetchStatus = await BackgroundFetch.getStatusAsync();
+      if (fetchStatus !== BackgroundFetch.BackgroundFetchStatus.Available) {
+        console.log("Background fetch not available; skipping background sync registration", {
+          status: fetchStatus,
+        });
+        return;
+      }
+    } catch {
+      // If status can't be determined, fall through and attempt registration.
+    }
+
     const isRegistered =
       await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
     if (isRegistered) {

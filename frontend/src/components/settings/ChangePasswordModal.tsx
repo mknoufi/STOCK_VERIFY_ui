@@ -353,6 +353,7 @@ export function ChangePasswordModal({
                   placeholderTextColor={colors.textSecondary}
                   secureTextEntry={!showCurrentPassword}
                   autoCapitalize="none"
+                  autoCorrect={false}
                   editable={!loading}
                 />
                 <TouchableOpacity
@@ -382,6 +383,7 @@ export function ChangePasswordModal({
                   placeholderTextColor={colors.textSecondary}
                   secureTextEntry={!showNewPassword}
                   autoCapitalize="none"
+                  autoCorrect={false}
                   editable={!loading}
                 />
                 <TouchableOpacity
@@ -457,6 +459,7 @@ export function ChangePasswordModal({
                   placeholderTextColor={colors.textSecondary}
                   secureTextEntry
                   autoCapitalize="none"
+                  autoCorrect={false}
                   editable={!loading}
                 />
               </View>

@@ -4,9 +4,11 @@ export const handleErrorWithRecovery = async (
 ) => {
   try {
     return await operation();
-  } catch (error) {
+  } catch (error: any) {
+    // Don't show generic alert if the caller handles it, or show specific message
     if (options?.showAlert) {
-      alert("An error occurred");
+       // Use a more specific message if available, but prefer letting the caller handle UI
+       // console.warn("handleErrorWithRecovery caught error:", error);
     }
     throw error;
   }

@@ -139,7 +139,7 @@ class AutoRecovery:
                 return result, True, None
             except Exception as e:
                 last_error = e
-                self._record_error(e, retry_count, strategy, context, max_retries)
+                self._record_error(e, retry_count, strategy, context or {}, max_retries)
                 if retry_count < max_retries:
                     wait_time = _calculate_backoff(retry_delay, retry_count)
                     logger.debug(f"Waiting {wait_time:.2f}s before retry {retry_count + 1}")
@@ -181,7 +181,7 @@ class AutoRecovery:
                 return result, True, None
             except Exception as e:
                 last_error = e
-                self._record_error(e, retry_count, strategy, context, max_retries)
+                self._record_error(e, retry_count, strategy, context or {}, max_retries)
                 if retry_count < max_retries:
                     wait_time = _calculate_backoff(retry_delay, retry_count)
                     logger.debug(f"Waiting {wait_time:.2f}s before retry {retry_count + 1}")

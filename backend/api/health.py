@@ -496,9 +496,7 @@ async def check_version(
     try:
         from config import settings
 
-        from backend.server import app
-
-        current_version = getattr(app, "version", getattr(settings, "APP_VERSION", "1.0.0"))
+        current_version = getattr(settings, "APP_VERSION", "1.0.0")
         min_version = getattr(settings, "MIN_CLIENT_VERSION", "1.0.0")
 
         result = _compare_versions(client_version, min_version, current_version)

@@ -161,6 +161,8 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
               }
             }}
             keyboardType="numeric"
+            autoCapitalize="none"
+            autoCorrect={false}
             returnKeyType="done"
             onSubmitEditing={onBarcodeSubmit}
           />
@@ -217,6 +219,8 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
               }
             }}
             returnKeyType="search"
+            autoCapitalize="none"
+            autoCorrect={false}
             onSubmitEditing={onItemNameSubmit}
           />
           <TouchableOpacity

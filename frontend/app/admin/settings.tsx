@@ -108,6 +108,8 @@ export default function MasterSettingsScreen() {
         keyboardType={keyboardType}
         placeholder={label}
         placeholderTextColor={auroraTheme.colors.text.muted}
+        autoCapitalize="none"
+        autoCorrect={false}
       />
       {description && (
         <Text style={styles.inputDescription}>{description}</Text>

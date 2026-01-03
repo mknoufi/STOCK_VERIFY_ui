@@ -8,7 +8,7 @@ Provides consistent pagination across all API endpoints with proper typing.
 from typing import Any, Generic, Optional, TypeVar
 
 from fastapi import Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 T = TypeVar("T")
 
@@ -20,14 +20,22 @@ class PaginationParams:
     Usage:
         @router.get("/items")
         async def list_items(pagination: PaginationParams = Depends()):
-            items = await get_items(skip=pagination.skip, limit=pagination.limit)
+            items = await get_items(
+                skip=pagination.skip,
+                limit=pagination.limit,
+            )
             return paginate(items, pagination, total_count)
     """
 
     def __init__(
         self,
         page: int = Query(1, ge=1, description="Page number (1-indexed)"),
-        size: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
+        size: int = Query(
+            20,
+            ge=1,
+            le=100,
+            description="Items per page (max 100)",
+        ),
     ):
         self.page = page
         self.size = size
@@ -51,14 +59,25 @@ class CursorPaginationParams:
     Usage:
         @router.get("/items")
         async def list_items(pagination: CursorPaginationParams = Depends()):
-            items = await get_items_after_cursor(pagination.cursor, pagination.limit)
+            items = await get_items_after_cursor(
+                pagination.cursor,
+                pagination.limit,
+            )
             return cursor_paginate(items, pagination)
     """
 
     def __init__(
         self,
-        cursor: Optional[str] = Query(None, description="Cursor for next page"),
-        limit: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
+        cursor: Optional[str] = Query(
+            None,
+            description="Cursor for next page",
+        ),
+        limit: int = Query(
+            20,
+            ge=1,
+            le=100,
+            description="Items per page (max 100)",
+        ),
     ):
         self.cursor = cursor
         self.limit = limit
@@ -78,8 +97,14 @@ class PageInfo(BaseModel):
 class CursorInfo(BaseModel):
     """Pagination metadata for cursor-based pagination"""
 
-    next_cursor: Optional[str] = Field(None, description="Cursor for next page")
-    previous_cursor: Optional[str] = Field(None, description="Cursor for previous page")
+    next_cursor: Optional[str] = Field(
+        None,
+        description="Cursor for next page",
+    )
+    previous_cursor: Optional[str] = Field(
+        None,
+        description="Cursor for previous page",
+    )
     has_more: bool = Field(..., description="Whether more items exist")
     limit: int = Field(..., ge=1, description="Items per page")
 
@@ -105,12 +130,13 @@ class Page(BaseModel, Generic[T]):
     items: list[Any] = Field(..., description="List of items in current page")
     page_info: PageInfo = Field(..., description="Pagination metadata")
 
-    class Config:
-        """Pydantic configuration"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
-                "items": [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}],
+                "items": [
+                    {"id": 1, "name": "Item 1"},
+                    {"id": 2, "name": "Item 2"},
+                ],
                 "page_info": {
                     "page": 1,
                     "size": 20,
@@ -121,6 +147,7 @@ class Page(BaseModel, Generic[T]):
                 },
             }
         }
+    )
 
 
 class CursorPage(BaseModel, Generic[T]):
@@ -139,7 +166,10 @@ class CursorPage(BaseModel, Generic[T]):
     """
 
     items: list[Any] = Field(..., description="List of items in current page")
-    cursor_info: CursorInfo = Field(..., description="Cursor pagination metadata")
+    cursor_info: CursorInfo = Field(
+        ...,
+        description="Cursor pagination metadata",
+    )
 
 
 def paginate(

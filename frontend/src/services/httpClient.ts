@@ -4,6 +4,8 @@ import { resolveBackendUrl } from "./backendUrl";
 import { createLogger } from "./logging";
 import { secureStorage } from "./storage/secureStorage";
 import { handleUnauthorized } from "./authUnauthorizedHandler";
+import { getDeviceId } from "./deviceId";
+import { useNetworkStore } from "../store/networkStore";
 
 const log = createLogger("httpClient");
 
@@ -97,7 +99,16 @@ const shouldLogNetworkDebug =
 
 // Add request interceptor for debugging (never log raw payloads or auth headers)
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    try {
+      const deviceId = await getDeviceId();
+      if (deviceId) {
+        config.headers["X-Device-ID"] = deviceId;
+      }
+    } catch (err) {
+      log.warn("Failed to attach device ID header", { error: String(err) });
+    }
+
     if (shouldLogNetworkDebug) {
       const fullUrl = toFullUrl(config.baseURL, config.url);
       log.debug("API request", {
@@ -128,8 +139,31 @@ apiClient.interceptors.response.use(
   (error) => {
     const fullUrl = toFullUrl(error.config?.baseURL, error.config?.url);
     const status = error.response?.status;
+    const data = error.response?.data as { code?: string; message?: string } | undefined;
+    const errorCode = data?.code;
 
-    // Handle session expiration (401 Unauthorized)
+    // Handle Network Restrictions (403 NETWORK_NOT_ALLOWED)
+    if (status === 403 && errorCode === "NETWORK_NOT_ALLOWED") {
+      log.warn("Network restricted: App is outside allowed LAN", { url: fullUrl });
+      useNetworkStore.getState().setRestrictedMode(true);
+      // We don't reject immediately if we want the UI to handle it, but usually we reject
+      // and let the UI show the "Restricted Mode" banner based on the store state.
+      return Promise.reject(error);
+    }
+
+    // Handle Session Revocation (401/403 SESSION_REVOKED)
+    if ((status === 401 || status === 403) && errorCode === "SESSION_REVOKED") {
+      log.warn("Session revoked (single device enforcement)", { url: fullUrl });
+      
+      // Clear tokens
+      secureStorage.removeItem("auth_token").catch(() => {});
+      secureStorage.removeItem("refresh_token").catch(() => {});
+      
+      handleUnauthorized();
+      return Promise.reject(error);
+    }
+
+    // Handle session expiration (401 Unauthorized) - General case
     if (status === 401) {
       log.warn("API unauthorized; clearing credentials", { url: fullUrl });
 
@@ -150,11 +184,19 @@ apiClient.interceptors.response.use(
     }
 
     if (status) {
-      log.error("API error response", {
-        status,
-        url: fullUrl,
-        data: summarizeResponseData(error.response?.data),
-      });
+      // 404 is often an expected state (e.g. item not found), so use warn instead of error
+      if (status === 404) {
+        log.warn("API resource not found (404)", {
+          url: fullUrl,
+          data: summarizeResponseData(error.response?.data),
+        });
+      } else {
+        log.error("API error response", {
+          status,
+          url: fullUrl,
+          data: summarizeResponseData(error.response?.data),
+        });
+      }
     } else if (error.request) {
       log.error("API no response received", { url: fullUrl });
     } else {

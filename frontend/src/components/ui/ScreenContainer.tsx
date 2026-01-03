@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ViewStyle,
   StyleProp,
@@ -11,6 +10,7 @@ import {
   RefreshControl,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeContext } from "../../context/ThemeContext";
 import { AuroraBackground } from "./AuroraBackground";
 import type { AuroraVariant } from "./AuroraBackground";
@@ -111,7 +111,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
       style: [styles.content, style],
     };
 
-  const ContentWrapper = ({ children }: { children: React.ReactNode }) => (
+  const renderContent = () => (
     <>
       <StatusBar barStyle={resolvedStatusBarStyle} />
       {header && <ScreenHeader {...header} transparent={gradient} />}
@@ -169,10 +169,10 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
       >
         {safeArea ? (
           <SafeAreaView style={styles.safeArea}>
-            <ContentWrapper>{children}</ContentWrapper>
+            {renderContent()}
           </SafeAreaView>
         ) : (
-          <ContentWrapper>{children}</ContentWrapper>
+          renderContent()
         )}
       </AuroraBackground>
     );
@@ -180,10 +180,10 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 
   const baseContent = safeArea ? (
     <SafeAreaView style={styles.safeArea}>
-      <ContentWrapper>{children}</ContentWrapper>
+      {renderContent()}
     </SafeAreaView>
   ) : (
-    <ContentWrapper>{children}</ContentWrapper>
+    renderContent()
   );
 
   if (resolvedBackground === "pattern") {

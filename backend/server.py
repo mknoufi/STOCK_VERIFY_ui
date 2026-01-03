@@ -8,7 +8,6 @@ from typing import Any, Optional, TypeVar, cast
 
 import jwt
 import uvicorn
-from bson import ObjectId
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 # from motor.motor_asyncio import AsyncIOMotorClient
@@ -20,6 +19,7 @@ from backend.api import auth, supervisor_pin
 from backend.api.admin_control_api import admin_control_router
 from backend.api.admin_dashboard_api import admin_dashboard_router
 from backend.api.auth import router as auth_router
+from backend.api.count_lines_api import router as count_lines_router
 from backend.api.dynamic_fields_api import dynamic_fields_router
 from backend.api.dynamic_reports_api import dynamic_reports_router
 from backend.api.enhanced_item_api import enhanced_item_router as items_router
@@ -30,6 +30,7 @@ from backend.api.item_verification_api import verification_router
 from backend.api.locations_api import router as locations_router
 from backend.api.logs_api import router as logs_router
 from backend.api.mapping_api import router as mapping_router
+from backend.api.master_settings_api import master_settings_router
 from backend.api.metrics_api import metrics_router
 from backend.core.lifespan import (
     lifespan,
@@ -44,6 +45,7 @@ from backend.core.lifespan import (
 from backend.api.permissions_api import permissions_router
 from backend.api.preferences_api import router as preferences_router
 from backend.api.rack_api import router as rack_router
+from backend.api.realtime_dashboard_api import realtime_dashboard_router
 from backend.api.report_generation_api import report_generation_router
 from backend.api.reporting_api import router as reporting_router
 from backend.api.user_management_api import user_management_router
@@ -57,6 +59,9 @@ from backend.api.schemas import (
 from backend.api.search_api import router as search_router
 from backend.api.security_api import security_router
 from backend.api.self_diagnosis_api import self_diagnosis_router
+from backend.api.service_logs_api import service_logs_router
+from backend.api.session_management_api import router as session_mgmt_router
+from backend.api.error_reporting_api import router as error_reporting_router
 
 # Phase 1-3: New Upgrade APIs
 from backend.api.sync_batch_api import router as sync_batch_router
@@ -233,14 +238,18 @@ app.include_router(variance_router, prefix="/api")  # Variance reasons and trend
 app.include_router(admin_control_router)  # Admin control endpoints
 app.include_router(dynamic_fields_router)  # Dynamic fields management
 app.include_router(dynamic_reports_router)  # Dynamic reports (has prefix /api/dynamic-reports)
+app.include_router(realtime_dashboard_router, prefix="/api")  # Real-time dashboard (SSE/WebSocket)
 app.include_router(logs_router, prefix="/api")  # Error and Activity logs
+app.include_router(master_settings_router)  # Master settings
+app.include_router(service_logs_router)  # Service logs
 app.include_router(locations_router)  # Locations (Zones/Warehouses)
+app.include_router(count_lines_router, prefix="/api")  # Count lines management
 
 
 # Phase 1-3: New Upgrade Routers
 app.include_router(sync_batch_router)  # Batch sync API (has prefix /api/sync)
 app.include_router(rack_router)  # Rack management (has prefix /api/racks)
-# app.include_router(session_mgmt_router)  # Session management (has prefix /api/sessions)
+app.include_router(session_mgmt_router)  # Session management (has prefix /api/sessions)
 app.include_router(user_settings_router)  # User settings (has prefix /api/user)
 app.include_router(
     preferences_router, prefix="/api"
@@ -248,6 +257,7 @@ app.include_router(
 app.include_router(reporting_router)  # Reporting API (has prefix /api/reports)
 app.include_router(admin_dashboard_router, prefix="/api")  # Admin Dashboard API
 app.include_router(report_generation_router, prefix="/api")  # Report Generation API
+app.include_router(error_reporting_router)  # Error Reporting API (has prefix /api/admin)
 app.include_router(websocket_router)  # WebSocket updates (endpoint at /ws/updates)
 logger.info("✓ Phase 1-3 upgrade routers registered")
 logger.info("✓ Admin Dashboard, Report Generation, and Dynamic Reports APIs registered")
@@ -1272,6 +1282,24 @@ async def create_count_line(
 
     await db.count_lines.insert_one(count_line)
 
+    # Update item location in ERP items collection if floor/rack provided
+    if line_data.floor_no or line_data.rack_no:
+        update_fields = {}
+        if line_data.floor_no:
+            update_fields["floor_no"] = line_data.floor_no
+        if line_data.rack_no:
+            update_fields["rack_no"] = line_data.rack_no
+
+        if update_fields:
+            try:
+                await db.erp_items.update_one(
+                    {"item_code": line_data.item_code},
+                    {"$set": update_fields}
+                )
+            except Exception as e:
+                logger.error(f"Failed to update item location: {str(e)}")
+                # Non-critical error, continue execution
+
     # Update session stats atomically using aggregation
     try:
         pipeline = [
@@ -1439,111 +1467,6 @@ async def get_count_lines(
     }
 
 
-@api_router.put("/count-lines/{line_id}/approve")
-async def approve_count_line(
-    line_id: str,
-    current_user: dict = Depends(get_current_user),
-):
-    """Approve a count line variance."""
-    if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-
-    try:
-        result = await db.count_lines.update_one(
-            {"_id": ObjectId(line_id)},
-            {
-                "$set": {
-                    "status": "APPROVED",
-                    "approval_status": "approved",
-                    "approved_by": current_user["username"],
-                    "approved_at": datetime.utcnow(),
-                    "verified": True,
-                    "verified_by": current_user["username"],
-                    "verified_at": datetime.utcnow(),
-                }
-            },
-        )
-
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Count line not found")
-
-        return {"success": True, "message": "Count line approved"}
-    except Exception as e:
-        logger.error(f"Error approving count line {line_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-
-@api_router.put("/count-lines/{line_id}/reject")
-async def reject_count_line(
-    line_id: str,
-    current_user: dict = Depends(get_current_user),
-):
-    """Reject a count line (request recount)."""
-    if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-
-    try:
-        result = await db.count_lines.update_one(
-            {"_id": ObjectId(line_id)},
-            {
-                "$set": {
-                    "status": "REJECTED",
-                    "approval_status": "rejected",
-                    "rejected_by": current_user["username"],
-                    "rejected_at": datetime.utcnow(),
-                    "verified": False,
-                }
-            },
-        )
-
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Count line not found")
-
-        return {"success": True, "message": "Count line rejected"}
-    except Exception as e:
-        logger.error(f"Error rejecting count line {line_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-
-@api_router.get("/count-lines/check/{session_id}/{item_code}")
-async def check_item_counted(
-    session_id: str,
-    item_code: str,
-    current_user: dict = Depends(get_current_user),
-):
-    """Check if an item has already been counted in the session"""
-    try:
-        # Find all count lines for this item in this session
-        cursor = db.count_lines.find({"session_id": session_id, "item_code": item_code})
-        count_lines = await cursor.to_list(length=None)
-
-        # Convert ObjectId to string
-        for line in count_lines:
-            line["_id"] = str(line["_id"])
-
-        return {"already_counted": len(count_lines) > 0, "count_lines": count_lines}
-    except Exception as e:
-        logger.error(f"Error checking item count: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-
-@api_router.get("/count-lines/session/{session_id}")
-async def get_count_lines_route(
-    session_id: str,
-    current_user: dict = Depends(get_current_user),
-    page: int = Query(1, ge=1, description="Page number"),
-    page_size: int = Query(50, ge=1, le=100, description="Items per page"),
-    verified: Optional[bool] = Query(None, description="Filter by verification status"),
-):
-    return await get_count_lines(
-        session_id,
-        current_user,
-        page=page,
-        page_size=page_size,
-        verified=verified,
-    )
-
-
 # Register api_router AFTER all routes have been defined
 app.include_router(
     api_router, prefix="/api"
@@ -1558,15 +1481,43 @@ if __name__ == "__main__":
     port = PortDetector.find_available_port(start_port, range(start_port, start_port + 10))
     local_ip = PortDetector.get_local_ip()
 
-    # Save port to file for other services to discover
-    save_backend_info(port, local_ip)
+    # Set PORT env var for lifespan to pick up
+    os.environ["PORT"] = str(port)
 
-    logger.info(f"Starting server on port {port}...")
-    uvicorn.run(
-        "backend.server:app",
-        host=os.getenv("HOST", "127.0.0.1"),
-        port=port,
-        reload=False,
-        log_level="info",
-        access_log=True,
-    )
+    # Check for SSL certificates
+    # Try to find certs in project root/nginx/ssl
+    project_root = Path(__file__).parent.parent
+    default_key = project_root / "nginx" / "ssl" / "privkey.pem"
+    default_cert = project_root / "nginx" / "ssl" / "fullchain.pem"
+
+    ssl_keyfile = os.getenv("SSL_KEYFILE", str(default_key))
+    ssl_certfile = os.getenv("SSL_CERTFILE", str(default_cert))
+    use_ssl = os.path.exists(ssl_keyfile) and os.path.exists(ssl_certfile)
+
+    # Save port to file for other services to discover
+    protocol = "https" if use_ssl else "http"
+    save_backend_info(port, local_ip, protocol)
+
+    if use_ssl:
+        logger.info(f"🔒 SSL certificates found. Starting server with HTTPS on port {port}...")
+        uvicorn.run(
+            "backend.server:app",
+            host=os.getenv("HOST", "0.0.0.0"), # Listen on all interfaces for LAN access
+            port=port,
+            reload=False,
+            log_level="info",
+            access_log=True,
+            ssl_keyfile=ssl_keyfile,
+            ssl_certfile=ssl_certfile,
+        )
+    else:
+        logger.warning("⚠️  No SSL certificates found. Starting server with HTTP (Unencrypted)...")
+        logger.info(f"Starting server on port {port}...")
+        uvicorn.run(
+            "backend.server:app",
+            host=os.getenv("HOST", "0.0.0.0"), # Listen on all interfaces for LAN access
+            port=port,
+            reload=False,
+            log_level="info",
+            access_log=True,
+        )

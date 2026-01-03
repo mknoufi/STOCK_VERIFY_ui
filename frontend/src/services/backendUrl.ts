@@ -16,7 +16,9 @@ const timeoutFetch = async (url: string, timeoutMs = 900): Promise<boolean> => {
     });
     clearTimeout(timeout);
     return res.status >= 200 && res.status < 500;
-  } catch {
+  } catch (error) {
+    // Log error for debugging (especially SSL errors)
+    console.log(`[BackendURL] Probe failed for ${url}:`, error);
     return false;
   }
 };
@@ -40,24 +42,33 @@ const buildCandidates = (): string[] => {
     candidates.push(configUrl);
   }
 
-  // 3) Expo host URI (dev server IP)
+  // 3) mDNS Hostname (stock-verify.local) - Prioritize HTTPS
+  // Note: This requires the device to be able to resolve .local domains
+  candidates.push(`https://stock-verify.local:${DEFAULT_PORT}`);
+  candidates.push(`http://stock-verify.local:${DEFAULT_PORT}`);
+
+  // 4) Expo host URI (dev server IP)
   const hostUri = Constants.expoConfig?.hostUri;
   if (hostUri) {
     const host = hostUri.split(":")[0];
+    candidates.push(`https://${host}:${DEFAULT_PORT}`);
     candidates.push(`http://${host}:${DEFAULT_PORT}`);
   }
 
-  // 4) Platform-specific fallbacks
+  // 5) Platform-specific fallbacks
   if (Platform.OS === "android") {
+    candidates.push(`https://10.0.2.2:${DEFAULT_PORT}`);
     candidates.push(`http://10.0.2.2:${DEFAULT_PORT}`);
   }
 
-  // 5) Web fallback to current hostname
+  // 6) Web fallback to current hostname
   if (Platform.OS === "web" && typeof window !== "undefined") {
+    candidates.push(`https://${window.location.hostname}:${DEFAULT_PORT}`);
     candidates.push(`http://${window.location.hostname}:${DEFAULT_PORT}`);
   }
 
-  // 6) Localhost as final fallback
+  // 7) Localhost as final fallback
+  candidates.push(`https://localhost:${DEFAULT_PORT}`);
   candidates.push(`http://localhost:${DEFAULT_PORT}`);
 
   // De-dupe while preserving order
@@ -74,6 +85,8 @@ export const resolveBackendUrl = async (): Promise<string> => {
   if (resolvedBackendUrl) return resolvedBackendUrl;
 
   const candidates = buildCandidates();
+  console.log("[BackendURL] Probing candidates:", candidates);
+  
   for (const candidate of candidates) {
     const ok = await timeoutFetch(`${candidate}${HEALTH_PATH}`);
     if (ok) {

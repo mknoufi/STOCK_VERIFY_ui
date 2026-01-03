@@ -10,6 +10,11 @@
 // COLOR PALETTE - Semantic Colors with Shades
 // ==========================================
 export const colors = {
+  // Base colors
+  white: '#FFFFFF',
+  black: '#000000',
+  transparent: 'transparent',
+
   // Primary Brand - Electric Blue (main actions, links, focus)
   primary: {
     50: '#EFF6FF',
@@ -120,6 +125,7 @@ export const semanticColors = {
     primary: colors.neutral[900],      // Main text
     secondary: colors.neutral[600],    // Subtle text
     tertiary: colors.neutral[500],     // Placeholder, hint
+    muted: colors.neutral[400],        // Muted text (alias for tertiary)
     disabled: colors.neutral[400],     // Disabled state
     inverse: colors.neutral[0],        // Text on dark backgrounds
     link: colors.primary[600],         // Clickable text
@@ -127,10 +133,13 @@ export const semanticColors = {
 
   // Background colors
   background: {
+    default: colors.neutral[0],        // Alias for primary
     primary: colors.neutral[0],        // Main background
     secondary: colors.neutral[50],     // Cards, sections
     tertiary: colors.neutral[100],     // Nested sections
     elevated: colors.neutral[0],       // Elevated surfaces
+    paper: colors.neutral[0],          // Paper/sheet background
+    card: colors.neutral[0],           // Card background
     overlay: 'rgba(15, 23, 42, 0.5)',  // Modal overlays
   },
 
@@ -167,16 +176,20 @@ export const darkColors = {
     primary: colors.neutral[50],
     secondary: colors.neutral[300],
     tertiary: colors.neutral[400],
+    muted: colors.neutral[500],
     disabled: colors.neutral[600],
     inverse: colors.neutral[900],
     link: colors.primary[400],
   },
 
   background: {
+    default: colors.neutral[900],
     primary: colors.neutral[900],
     secondary: colors.neutral[800],
     tertiary: colors.neutral[700],
     elevated: colors.neutral[800],
+    paper: colors.neutral[800],
+    card: colors.neutral[800],
     overlay: 'rgba(0, 0, 0, 0.7)',
   },
 
@@ -192,12 +205,13 @@ export const darkColors = {
 // GRADIENT PRESETS
 // ==========================================
 export const gradients = {
-  primary: [colors.primary[500], colors.primary[600]],
-  secondary: [colors.secondary[400], colors.secondary[500]],
-  success: [colors.success[400], colors.success[500]],
-  sunset: [colors.warning[400], colors.error[400]],
-  aurora: [colors.primary[400], colors.secondary[400], colors.success[400]],
-  glass: ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)'],
+  primary: [colors.primary[600], colors.primary[700]],
+  secondary: [colors.secondary[500], colors.secondary[600]],
+  success: [colors.success[500], colors.success[600]],
+  sunset: [colors.warning[500], colors.error[500]],
+  aurora: ['#0F766E', '#0891B2', '#2563EB'] as const, // Darker teal-cyan-blue gradient
+  auroraLight: [colors.primary[400], colors.secondary[400], colors.success[400]],
+  glass: ['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)'],
 } as const;
 
 // Type exports

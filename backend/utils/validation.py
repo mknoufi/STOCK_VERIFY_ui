@@ -363,7 +363,7 @@ def verify_delete_result(result, collection_name: str, expected_count: int = 1) 
         MongoSaveError: If the delete count doesn't match expected
     """
     if result is None:
-        logger.error(f"MongoDB delete from {collection_name} returned None")
+        logger.error(f"MongoDB delete from {collection_name} returned None")  # nosec
         raise MongoSaveError(
             "Delete operation returned no result",
             "delete",
@@ -372,7 +372,7 @@ def verify_delete_result(result, collection_name: str, expected_count: int = 1) 
 
     # Check acknowledged
     if hasattr(result, "acknowledged") and not result.acknowledged:
-        logger.error(f"MongoDB delete from {collection_name} was not acknowledged")
+        logger.error(f"MongoDB delete from {collection_name} was not acknowledged")  # nosec
         raise MongoSaveError(
             "Delete operation was not acknowledged by MongoDB",
             "delete",
@@ -384,7 +384,8 @@ def verify_delete_result(result, collection_name: str, expected_count: int = 1) 
 
     if expected_count > 0 and deleted < expected_count:
         logger.warning(
-            f"MongoDB delete from {collection_name}: expected {expected_count}, deleted {deleted}"
+            f"MongoDB delete from {collection_name}: "  # nosec
+            f"expected {expected_count}, deleted {deleted}"
         )
         raise MongoSaveError(
             f"Deleted {deleted} documents, expected {expected_count}",

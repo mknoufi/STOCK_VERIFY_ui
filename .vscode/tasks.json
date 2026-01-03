@@ -1,35 +1,45 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Open FastAPI Docs",
-      "type": "shell",
-      "command": "open https://fastapi.tiangolo.com/",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open MongoDB Docs",
-      "type": "shell",
-      "command": "open https://www.mongodb.com/docs/manual/",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open React Native Docs",
-      "type": "shell",
-      "command": "open https://reactnative.dev/docs/getting-started",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open Expo Docs",
-      "type": "shell",
-      "command": "open https://docs.expo.dev/",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open Redis Docs",
-      "type": "shell",
-      "command": "open https://redis.io/docs/",
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Open FastAPI Docs",
+			"type": "shell",
+			"command": "open https://fastapi.tiangolo.com/",
+			"problemMatcher": []
+		},
+		{
+			"label": "Open MongoDB Docs",
+			"type": "shell",
+			"command": "open https://www.mongodb.com/docs/manual/",
+			"problemMatcher": []
+		},
+		{
+			"label": "Open React Native Docs",
+			"type": "shell",
+			"command": "open https://reactnative.dev/docs/getting-started",
+			"problemMatcher": []
+		},
+		{
+			"label": "Open Expo Docs",
+			"type": "shell",
+			"command": "open https://docs.expo.dev/",
+			"problemMatcher": []
+		},
+		{
+			"label": "Open Redis Docs",
+			"type": "shell",
+			"command": "open https://redis.io/docs/",
+			"problemMatcher": []
+		},
+		{
+			"label": "Add Project to Vibe Kanban",
+			"type": "shell",
+			"command": "curl -X POST http://127.0.0.1:3001/api/projects \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"name\": \"Stock Verify\",\n    \"repositories\": [\n      {\n        \"display_name\": \"Stock Verify Repo\",\n        \"git_repo_path\": \"/Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped\"\n      }\n    ]\n  }'"
+		},
+		{
+			"label": "List Vibe Kanban Projects",
+			"type": "shell",
+			"command": "curl http://127.0.0.1:3001/api/projects"
+		}
+	]
 }

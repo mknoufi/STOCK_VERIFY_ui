@@ -15,7 +15,7 @@ Scoring Algorithm:
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from rapidfuzz import fuzz
@@ -43,7 +43,7 @@ class SearchResult:
     manual_barcode: Optional[str] = None
     unit2_barcode: Optional[str] = None
     unit_m_barcode: Optional[str] = None
-    batch_id: Optional[str] = None
+    batch_id: Optional[Union[int, str]] = None
 
 
 @dataclass
@@ -347,7 +347,7 @@ class SearchService:
 
         try:
             # Get name suggestions
-            pipeline = [
+            pipeline: list[dict[str, Any]] = [
                 {"$match": {"item_name": {"$regex": f"^{prefix}", "$options": "i"}}},
                 {"$group": {"_id": "$item_name"}},
                 {"$limit": limit},

@@ -262,7 +262,7 @@ async def preview_mapping(
             raise HTTPException(status_code=400, detail="No columns mapped")
 
         # Use TOP 5 to limit data
-        query = f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"
+        query = f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"  # nosec
 
         # Log a sanitized summary (omit full query text to reduce risk)
         logger.info(

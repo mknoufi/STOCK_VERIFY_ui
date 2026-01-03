@@ -48,6 +48,23 @@ export { StatsCard } from "./StatsCard";
 export { SpeedDialMenu } from "./SpeedDialMenu";
 export type { SpeedDialAction } from "./SpeedDialMenu";
 export { LiveIndicator } from "./LiveIndicator";
+
+// ==========================================
+// Unified Design System Components (v3.0)
+// ==========================================
+export {
+  TouchableFeedback,
+  TouchableScale,
+  TouchableHighlight,
+  type TouchableFeedbackProps,
+} from "./TouchableFeedback";
+
+export {
+  AnimatedCard as UnifiedAnimatedCard,
+  StatsCardPreset,
+  type AnimatedCardProps,
+  type CardVariant,
+} from "./AnimatedCard";
 export { ActivityFeedItem } from "./ActivityFeedItem";
 export type { ActivityType } from "./ActivityFeedItem";
 export { ProgressRing } from "./ProgressRing";
@@ -93,3 +110,10 @@ export { AnimatedListItem, ListAnimationPresets } from "./AnimatedListItem";
 export type { AnimatedListItemProps } from "./AnimatedListItem";
 export { EnhancedInput } from "./EnhancedInput";
 export type { EnhancedInputProps, InputSize, LabelPosition } from "./EnhancedInput";
+
+// Unified Design System Components (v3.0 - Token-based)
+export { UnifiedText } from "./UnifiedText";
+export type { UnifiedTextProps, TextVariant as UnifiedTextVariant, TextColor as UnifiedTextColor } from "./UnifiedText";
+export { UnifiedView } from "./UnifiedView";
+export type { UnifiedViewProps, BackgroundColor as UnifiedBackgroundColor } from "./UnifiedView";
+

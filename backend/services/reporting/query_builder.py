@@ -208,7 +208,7 @@ class QueryBuilder:
                 logger.warning(f"Rejected invalid filter key: {field}")
                 continue
             if isinstance(condition, dict):
-                mongo_condition = {}
+                mongo_condition: dict[str, Any] = {}
                 for op, value in condition.items():
                     if op == "eq":
                         match_conditions[field] = value

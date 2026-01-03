@@ -20,7 +20,11 @@ async def check_sessions():
         sessions = await db.sessions.find().limit(5).to_list(length=5)
         print("\nSample Sessions:")
         for s in sessions:
-            print(f"  ID: {s.get('id')}, User: {s.get('staff_user')}, Status: {s.get('status')}")
+            print(f"Keys: {list(s.keys())}")
+            print(f"  _id: {s.get('_id')}")
+            print(f"  id: {s.get('id')}")
+            print(f"  session_id: {s.get('session_id')}")
+            print("-" * 20)
     else:
         print("No sessions found.")
 

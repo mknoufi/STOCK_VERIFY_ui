@@ -61,6 +61,7 @@ from backend.services.scheduled_export_service import ScheduledExportService
 from backend.utils.port_detector import PortDetector, save_backend_info
 from backend.services.sync_conflicts_service import SyncConflictsService
 from backend.sql_server_connector import SQLServerConnector
+from backend.services.mdns_service import start_mdns, stop_mdns
 
 # Enterprise Imports
 try:
@@ -363,6 +364,16 @@ async def lifespan(app: FastAPI):  # noqa: C901
     except Exception as e:
         logger.warning(f"⚠️ Redis services not available: {str(e)}")
         logger.warning("Multi-user locking and real-time updates will be disabled")
+
+    # Start mDNS service
+    try:
+        logger.info("🌐 Starting mDNS service...")
+        # Use PORT env var if set (by PortDetector), otherwise settings
+        mdns_port = int(os.getenv("PORT", getattr(settings, "PORT", 8001)))
+        await start_mdns(port=mdns_port)
+        logger.info(f"✓ mDNS service started (stock-verify.local on port {mdns_port})")
+    except Exception as e:
+        logger.warning(f"⚠️ mDNS service failed to start: {str(e)}")
 
     # Create MongoDB indexes
     try:
@@ -774,7 +785,19 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     try:
         local_ip = PortDetector.get_local_ip()
-        save_backend_info(port, local_ip)
+        
+        # Check for SSL certificates to determine protocol
+        # project_root is defined at top of file as backend/
+        repo_root = project_root.parent
+        default_key = repo_root / "nginx" / "ssl" / "privkey.pem"
+        default_cert = repo_root / "nginx" / "ssl" / "fullchain.pem"
+        
+        ssl_keyfile = os.getenv("SSL_KEYFILE", str(default_key))
+        ssl_certfile = os.getenv("SSL_CERTFILE", str(default_cert))
+        use_ssl = os.path.exists(ssl_keyfile) and os.path.exists(ssl_certfile)
+        protocol = "https" if use_ssl else "http"
+        
+        save_backend_info(port, local_ip, protocol)
     except Exception as e:
         logger.error(f"Error saving backend port info: {e}")
 
@@ -874,6 +897,13 @@ async def lifespan(app: FastAPI):  # noqa: C901
         logger.info("✓ MongoDB connection closed")
     except Exception as e:
         logger.error(f"Error closing MongoDB connection: {str(e)}")
+
+    # Stop mDNS service
+    try:
+        await stop_mdns()
+        logger.info("✓ mDNS service stopped")
+    except Exception as e:
+        logger.error(f"Error stopping mDNS service: {str(e)}")
 
     shutdown_duration = time.time() - shutdown_start
     logger.info(f"✓ Application shutdown complete (took {shutdown_duration:.2f}s)")

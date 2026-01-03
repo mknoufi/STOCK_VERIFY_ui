@@ -11,7 +11,7 @@
  * - Consolidated Aurora Theme tokens
  */
 
-import { Platform, StyleSheet, ViewStyle } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 // ==========================================
 // MODERN COLOR PALETTE - DEEP OCEAN

@@ -266,8 +266,8 @@ class AIVarianceService:
         """Process counted items and build high-risk items list."""
         high_risk_items = []
         for item in counted_items:
-            item_code = item.get("item_code")
-            category = item.get("category", "General")
+            item_code = str(item.get("item_code", ""))
+            category = str(item.get("category", "General"))
 
             item_risk = item_risk_map.get(item_code, 0.0)
             cat_risk = cat_risk_map.get(

@@ -24,6 +24,7 @@ import {
   SyncStatus,
 } from "../services/monitoring/databaseStatusService";
 import { useNetworkStore } from "../store/networkStore";
+import { colors, semanticColors, spacing, radius } from "../theme/unified";
 
 // Types imported from databaseStatusService
 
@@ -443,51 +444,51 @@ const styles = StyleSheet.create({
   warningContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 12,
-    backgroundColor: "#FF9800" + "20",
+    gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    marginTop: spacing.sm,
+    backgroundColor: colors.warning[500] + "20",
   },
   warningText: {
     fontSize: 14,
     flex: 1,
   },
   notConfiguredContainer: {
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 12,
-    backgroundColor: "#F5F5F5",
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    marginTop: spacing.sm,
+    backgroundColor: semanticColors.background.tertiary,
   },
   notConfiguredText: {
     fontSize: 14,
     textAlign: "center",
   },
   actionsContainer: {
-    marginTop: 16,
-    gap: 8,
+    marginTop: spacing.md,
+    gap: spacing.sm,
   },
   lastUpdateText: {
     fontSize: 12,
     textAlign: "center",
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   compactContainer: {
-    padding: 12,
-    borderRadius: 8,
-    margin: 8,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    margin: spacing.sm,
   },
   compactRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: spacing.sm,
   },
   compactText: {
     fontSize: 14,
     fontWeight: "500",
   },
   badge: {
-    backgroundColor: "#f44336",
+    backgroundColor: colors.error[500],
     borderRadius: 10,
     minWidth: 20,
     height: 20,

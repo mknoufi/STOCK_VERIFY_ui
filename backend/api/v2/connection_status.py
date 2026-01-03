@@ -20,7 +20,7 @@ async def get_connection_pool_status(current_user: dict = Depends(get_current_us
     Requires authentication
     """
     try:
-        from backend.server import connection_pool
+        from backend.core.lifespan import connection_pool
 
         if not connection_pool:
             return ApiResponse.error_response(
@@ -60,7 +60,7 @@ async def get_connection_pool_stats(current_user: dict = Depends(get_current_use
     Requires authentication
     """
     try:
-        from backend.server import connection_pool
+        from backend.core.lifespan import connection_pool
 
         if not connection_pool:
             return ApiResponse.error_response(
@@ -89,7 +89,7 @@ async def trigger_health_check(current_user: dict = Depends(get_current_user)):
     Requires authentication
     """
     try:
-        from backend.server import connection_pool
+        from backend.core.lifespan import connection_pool
 
         if not connection_pool:
             return ApiResponse.error_response(

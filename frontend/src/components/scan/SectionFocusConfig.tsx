@@ -21,48 +21,32 @@ import {
   modernCommonStyles,
 } from "../../styles/modernDesignSystem";
 import { useScanSessionStore } from "../../store/scanSessionStore";
-import { getSession } from "../../services/api/api";
-
-const ALL_FLOOR_OPTIONS = [
-  "Ground Floor",
-  "First Floor",
-  "Second Floor",
-  "Top Godown",
-  "Main Godown",
-  "Damage Area",
-];
 
 export const SectionFocusConfig: React.FC = () => {
-  const { setFloor, setRack, startSection, activeSessionId } =
+  const { setFloor, setRack, startSection } =
     useScanSessionStore();
+  const [locationType, setLocationType] = useState<'showroom' | 'godown'>('showroom');
   const [selectedFloor, setSelectedFloor] = useState("");
   const [rackInput, setRackInput] = useState("");
   const [showFloorModal, setShowFloorModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [floorOptions, setFloorOptions] = useState<string[]>(ALL_FLOOR_OPTIONS);
+  // Initialize with showroom options to prevent empty list flash
+  const [floorOptions, setFloorOptions] = useState<string[]>(["Ground Floor", "First Floor", "Second Floor"]);
 
   useEffect(() => {
-    const loadOptions = async () => {
-      if (activeSessionId) {
-        try {
-          const session = await getSession(activeSessionId);
-          const warehouse = session.warehouse?.toLowerCase() || "";
+    console.log("Location type changed:", locationType);
+    if (locationType === 'showroom') {
+      setFloorOptions(["Ground Floor", "First Floor", "Second Floor"]);
+    } else {
+      setFloorOptions(["Top Godown", "Main Godown", "Damage Area"]);
+    }
+    setSelectedFloor(""); // Reset floor when type changes
+  }, [locationType]);
 
-          if (warehouse.includes("showroom")) {
-            setFloorOptions(["Ground Floor", "First Floor", "Second Floor"]);
-          } else if (warehouse.includes("godown")) {
-            setFloorOptions(["Top Godown", "Main Godown", "Damage Area"]);
-          } else {
-            setFloorOptions(ALL_FLOOR_OPTIONS);
-          }
-        } catch (e) {
-          console.error("Failed to load session details", e);
-          setFloorOptions(ALL_FLOOR_OPTIONS);
-        }
-      }
-    };
-    loadOptions();
-  }, [activeSessionId]);
+  const handleOpenModal = () => {
+    console.log("Opening floor modal");
+    setShowFloorModal(true);
+  };
 
   const handleStartSection = () => {
     if (!selectedFloor || !rackInput.trim()) {
@@ -94,35 +78,83 @@ export const SectionFocusConfig: React.FC = () => {
               color={modernColors.primary[400]}
             />
           </View>
-          <Text style={styles.title}>Section Focus Mode</Text>
-          <Text style={styles.subtitle}>
-            Set your location to begin scanning items in a specific area.
-          </Text>
+          <Text style={styles.title}>New Section</Text>
         </View>
 
         <View style={styles.form}>
+          <Text style={styles.label}>Choose Location Type</Text>
+          <View style={styles.toggleContainer}>
+            <TouchableOpacity
+              style={[
+                styles.toggleButton,
+                locationType === "showroom" && styles.toggleButtonActive,
+              ]}
+              onPress={() => setLocationType("showroom")}
+            >
+              <Text
+                style={[
+                  styles.toggleButtonText,
+                  locationType === "showroom" && styles.toggleButtonTextActive,
+                ]}
+              >
+                Showroom
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.toggleButton,
+                locationType === "godown" && styles.toggleButtonActive,
+              ]}
+              onPress={() => setLocationType("godown")}
+            >
+              <Text
+                style={[
+                  styles.toggleButtonText,
+                  locationType === "godown" && styles.toggleButtonTextActive,
+                ]}
+              >
+                Godown
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Floor Selection */}
+          <Text style={styles.label}>Select Floor / Area</Text>
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => setShowFloorModal(true)}
+            onPress={handleOpenModal}
             style={styles.dropdownTrigger}
           >
-            <View pointerEvents="none">
-              <PremiumInput
-                label="Floor"
-                value={selectedFloor}
-                onChangeText={() => {}}
-                placeholder="Select Floor"
-                editable={false}
-                leftIcon="layers-outline"
-                rightIcon="chevron-down"
+            <View style={styles.fakeInput}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons
+                  name="layers-outline"
+                  size={20}
+                  color={modernColors.text.tertiary}
+                  style={{ marginRight: modernSpacing.xs, padding: modernSpacing.xs }}
+                />
+                <Text
+                  style={
+                    selectedFloor
+                      ? styles.fakeInputText
+                      : styles.fakeInputPlaceholder
+                  }
+                >
+                  {selectedFloor || "Select Floor"}
+                </Text>
+              </View>
+              <Ionicons
+                name="chevron-down"
+                size={20}
+                color={modernColors.text.tertiary}
+                style={{ padding: modernSpacing.xs }}
               />
             </View>
           </TouchableOpacity>
 
           {/* Rack Input */}
           <PremiumInput
-            label="Rack / Shelf"
+            label="Rack / Shelf Number"
             value={rackInput}
             onChangeText={setRackInput}
             placeholder="Ex. A-01, Shelf 3"
@@ -134,7 +166,7 @@ export const SectionFocusConfig: React.FC = () => {
           <View style={styles.spacer} />
 
           <PremiumButton
-            title="Start Section"
+            title="Start Scanning"
             onPress={handleStartSection}
             variant="primary"
             size="large"
@@ -166,35 +198,41 @@ export const SectionFocusConfig: React.FC = () => {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalList}>
-              {floorOptions.map((floor) => (
-                <TouchableOpacity
-                  key={floor}
-                  style={[
-                    styles.optionItem,
-                    selectedFloor === floor && styles.optionItemSelected,
-                  ]}
-                  onPress={() => {
-                    setSelectedFloor(floor);
-                    setShowFloorModal(false);
-                  }}
-                >
-                  <Text
+              {floorOptions.length > 0 ? (
+                floorOptions.map((floor) => (
+                  <TouchableOpacity
+                    key={floor}
                     style={[
-                      styles.optionText,
-                      selectedFloor === floor && styles.optionTextSelected,
+                      styles.optionItem,
+                      selectedFloor === floor && styles.optionItemSelected,
                     ]}
+                    onPress={() => {
+                      setSelectedFloor(floor);
+                      setShowFloorModal(false);
+                    }}
                   >
-                    {floor}
-                  </Text>
-                  {selectedFloor === floor && (
-                    <Ionicons
-                      name="checkmark"
-                      size={20}
-                      color={modernColors.primary[500]}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.optionText,
+                        selectedFloor === floor && styles.optionTextSelected,
+                      ]}
+                    >
+                      {floor}
+                    </Text>
+                    {selectedFloor === floor && (
+                      <Ionicons
+                        name="checkmark"
+                        size={20}
+                        color={modernColors.primary[500]}
+                      />
+                    )}
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={{ padding: 20, textAlign: "center", color: modernColors.text.secondary }}>
+                  No options available
+                </Text>
+              )}
             </ScrollView>
           </View>
         </View>
@@ -251,8 +289,60 @@ const styles = StyleSheet.create({
   form: {
     width: "100%",
   },
+  label: {
+    ...modernTypography.body.medium,
+    color: modernColors.text.secondary,
+    marginBottom: modernSpacing.sm,
+    marginLeft: modernSpacing.xs,
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    backgroundColor: "rgba(30, 41, 59, 0.5)",
+    borderRadius: modernBorderRadius.lg,
+    padding: 4,
+    marginBottom: modernSpacing.lg,
+    borderWidth: 1,
+    borderColor: modernColors.border.light,
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: modernSpacing.md,
+    alignItems: "center",
+    borderRadius: modernBorderRadius.md,
+  },
+  toggleButtonActive: {
+    backgroundColor: modernColors.primary[500],
+  },
+  toggleButtonText: {
+    ...modernTypography.body.medium,
+    color: modernColors.text.secondary,
+    fontWeight: "600",
+  },
+  toggleButtonTextActive: {
+    color: "#FFFFFF",
+  },
   dropdownTrigger: {
     marginBottom: 0,
+  },
+  fakeInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: modernColors.background.default,
+    borderWidth: 1.5,
+    borderColor: modernColors.border.light,
+    borderRadius: modernBorderRadius.md,
+    paddingHorizontal: modernSpacing.sm,
+    minHeight: 48,
+    marginBottom: modernSpacing.sm,
+  },
+  fakeInputText: {
+    ...modernTypography.body.medium,
+    color: modernColors.text.primary,
+  },
+  fakeInputPlaceholder: {
+    ...modernTypography.body.medium,
+    color: modernColors.text.secondary,
   },
   spacer: {
     height: modernSpacing.xl,

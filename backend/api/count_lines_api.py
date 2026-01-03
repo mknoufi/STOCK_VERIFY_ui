@@ -224,9 +224,7 @@ async def create_count_line(
         "mrp_counted": line_data.mrp_counted,
         # Additional fields
         "split_section": line_data.split_section,
-        "serial_numbers": (
-            line_data.serial_numbers if line_data.serial_numbers else None
-        ),
+        "serial_numbers": (line_data.serial_numbers if line_data.serial_numbers else None),
         # Legacy approval fields
         "status": "pending",
         "verified": False,
@@ -402,7 +400,7 @@ async def approve_count_line(
     db = _get_db_client()
 
     try:
-        query = {"$or": [{"id": line_id}]}
+        query: dict[str, Any] = {"$or": [{"id": line_id}]}
         if ObjectId.is_valid(line_id):
             query["$or"].append({"_id": ObjectId(line_id)})
 
@@ -442,7 +440,7 @@ async def reject_count_line(
     db = _get_db_client()
 
     try:
-        query = {"$or": [{"id": line_id}]}
+        query: dict[str, Any] = {"$or": [{"id": line_id}]}
         if ObjectId.is_valid(line_id):
             query["$or"].append({"_id": ObjectId(line_id)})
 
@@ -595,3 +593,37 @@ async def delete_count_line(
     except Exception as e:
         logger.error(f"Error deleting count line {line_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/sessions/{session_id}/items/{item_code}/scan-status")
+async def check_item_scan_status(
+    session_id: str,
+    item_code: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Check if item has been scanned in this session and where"""
+    db = _get_db_client()
+
+    # Find all count lines for this item in this session
+    cursor = db.count_lines.find({"session_id": session_id, "item_code": item_code})
+
+    count_lines = await cursor.to_list(None)
+
+    if not count_lines:
+        return {"scanned": False, "total_qty": 0, "locations": []}
+
+    total_qty = sum(line.get("counted_qty", 0) for line in count_lines)
+
+    locations = []
+    for line in count_lines:
+        locations.append(
+            {
+                "floor_no": line.get("floor_no"),
+                "rack_no": line.get("rack_no"),
+                "counted_qty": line.get("counted_qty"),
+                "counted_by": line.get("counted_by"),
+                "counted_at": line.get("counted_at"),
+            }
+        )
+
+    return {"scanned": True, "total_qty": total_qty, "locations": locations}

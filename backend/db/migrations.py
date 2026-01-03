@@ -5,7 +5,7 @@ Handles database schema updates and indexing
 
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -92,7 +92,7 @@ class MigrationManager:
             [("status", 1), ("created_at", -1)],
         ]
         for idx in compound_indexes:
-            await self.db.sessions.create_index(idx)
+            await self._create_index_safe(self.db.sessions, idx)
         logger.info("✓ Sessions indexes created")
 
     async def _ensure_count_lines_indexes(self) -> None:
@@ -117,12 +117,13 @@ class MigrationManager:
 
     async def _ensure_erp_items_indexes(self) -> None:
         """Create indexes for erp_items collection."""
-        await self._create_index_safe(
-            self.db.erp_items, "item_code", unique=True, name="erp_items.item_code"
-        )
+        # NOTE: item_code index is handled by backend/db/indexes.py as 'idx_item_code'
+        # await self._create_index_safe(
+        #     self.db.erp_items, "item_code", unique=True, name="erp_items.item_code"
+        # )
 
         simple_indexes = [
-            "barcode",
+            # "barcode",  # Handled by backend/db/indexes.py as 'idx_barcode'
             "warehouse",
             "category",
             "subcategory",
@@ -143,9 +144,9 @@ class MigrationManager:
             [("last_synced", -1)],
             [("warehouse", 1), ("category", 1)],
             [("barcode", 1), ("warehouse", 1)],
-            [("floor", 1), ("rack", 1)],
+            # [("floor", 1), ("rack", 1)],  # Handled by backend/db/indexes.py as 'idx_location'
             [("verified", 1), ("verified_at", -1)],
-            [("category", 1), ("subcategory", 1)],
+            # [("category", 1), ("subcategory", 1)],  # Handled by backend/db/indexes.py as 'idx_category'
             [("warehouse", 1), ("data_complete", 1)],
             [("category", 1), ("data_complete", 1)],
         ]
@@ -203,7 +204,7 @@ class MigrationManager:
     async def _create_index_safe(
         self,
         collection: Any,
-        key: str,
+        key: Union[str, list[tuple[str, int]]],
         unique: bool = False,
         name: str = "",
     ) -> None:
@@ -212,14 +213,15 @@ class MigrationManager:
             await collection.create_index(key, unique=unique)
         except Exception as e:
             err_str = str(e)
+            index_name = name or str(key)
             if "IndexOptionsConflict" in err_str or "already exists" in err_str:
-                logger.debug(f"{name or key} index already exists, skipping")
+                logger.debug(f"{index_name} index already exists, skipping")
             elif "E11000" in err_str or "duplicate key" in err_str:
                 logger.warning(
-                    f"Cannot create unique index on {name or key}, duplicates exist: {err_str}"
+                    f"Cannot create unique index on {index_name}, duplicates exist: {err_str}"
                 )
             else:
-                logger.warning(f"Error creating {name or key} index: {err_str}")
+                logger.warning(f"Error creating {index_name} index: {err_str}")
 
     async def run_migrations(self):
         """Run all pending migrations"""

@@ -139,7 +139,44 @@ export const textStyles = {
     lineHeight: fontSize['2xl'] * lineHeight.normal,
   } as TextStyle,
 
+  h5: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.semiBold,
+    lineHeight: fontSize.xl * lineHeight.normal,
+  } as TextStyle,
+
+  h6: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semiBold,
+    lineHeight: fontSize.lg * lineHeight.normal,
+  } as TextStyle,
+
+  // Subtitle styles
+  subtitle1: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.medium,
+    lineHeight: fontSize.lg * lineHeight.relaxed,
+  } as TextStyle,
+
+  subtitle2: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+    lineHeight: fontSize.md * lineHeight.relaxed,
+  } as TextStyle,
+
   // Body styles
+  body1: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.regular,
+    lineHeight: fontSize.lg * lineHeight.relaxed,
+  } as TextStyle,
+
+  body2: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.regular,
+    lineHeight: fontSize.md * lineHeight.relaxed,
+  } as TextStyle,
+
   bodyLarge: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.regular,

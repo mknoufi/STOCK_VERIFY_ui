@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AuditAction(str, Enum):
@@ -67,8 +67,8 @@ class AuditLogCreate(BaseModel):
     ip_address: Optional[str] = Field(default=None, description="IP address of the request")
     user_agent: Optional[str] = Field(default=None, description="User agent string")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "user_id": "000000000000000000000000",
                 "username": "staff_user",
@@ -79,6 +79,7 @@ class AuditLogCreate(BaseModel):
                 "ip_address": "192.168.1.100",
             }
         }
+    )
 
 
 class AuditLog(AuditLogCreate):
@@ -89,8 +90,8 @@ class AuditLog(AuditLogCreate):
         default_factory=datetime.utcnow, description="Timestamp of the action"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "000000000000000000000000",
                 "user_id": "000000000000000000000000",
@@ -103,3 +104,4 @@ class AuditLog(AuditLogCreate):
                 "timestamp": "2025-12-23T10:30:00Z",
             }
         }
+    )

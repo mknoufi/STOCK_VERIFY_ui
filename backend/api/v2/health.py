@@ -74,7 +74,7 @@ async def health_check_v2() -> ApiResponse[HealthCheckResponse]:
     Returns detailed health status of all services
     """
     try:
-        from backend.server import cache_service, connection_pool, database_health_service
+        from backend.core.lifespan import cache_service, connection_pool, database_health_service
 
         services = {
             "mongodb": _check_mongodb(database_health_service),
@@ -111,7 +111,7 @@ async def detailed_health_check(
     Returns comprehensive system status including metrics
     """
     try:
-        from backend.server import (
+        from backend.core.lifespan import (
             cache_service,
             connection_pool,
             database_health_service,

@@ -10,6 +10,7 @@ import { View, StyleSheet, ViewStyle, Text, TextStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext } from "../../context/ThemeContext";
 import { PatternBackground } from "./PatternBackground";
+import { colors as unifiedColors } from "../../theme/unified";
 
 interface ThemedScreenProps {
   children: React.ReactNode;
@@ -140,7 +141,7 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
         return {
           ...base,
           backgroundColor: theme.colors.surface,
-          shadowColor: isDark ? "#000" : "#64748B",
+          shadowColor: isDark ? unifiedColors.black : unifiedColors.neutral[500],
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: isDark ? 0.3 : 0.1,
           shadowRadius: 12,

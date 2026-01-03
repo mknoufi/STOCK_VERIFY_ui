@@ -39,9 +39,7 @@ def _require_supervisor(current_user: dict):
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(
-    erp_item: dict, line_data: CountLineCreate, variance: float
-) -> list[str]:
+def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
     """Detect high-risk correction patterns"""
     risk_flags = []
 
@@ -67,17 +65,11 @@ def detect_risk_flags(
         risk_flags.append("HIGH_VALUE_VARIANCE")
 
     # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (
-        not line_data.serial_numbers or len(line_data.serial_numbers) == 0
-    ):
+    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
         risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
 
     # Rule 5: Correction without reason when variance exists
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         risk_flags.append("MISSING_CORRECTION_REASON")
 
     # Rule 6: MRP change without reason
@@ -106,9 +98,7 @@ def detect_risk_flags(
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(
-    erp_mrp: float, counted_mrp: float, counted_qty: float
-) -> float:
+def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
@@ -148,11 +138,7 @@ async def create_count_line(
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
     # Validate mandatory correction reason for variance
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         raise HTTPException(
             status_code=400,
             detail="Correction reason is mandatory when variance exists",
@@ -184,9 +170,7 @@ async def create_count_line(
         }
     )
     duplicate_check = (
-        await duplicate_result
-        if inspect.isawaitable(duplicate_result)
-        else duplicate_result
+        await duplicate_result if inspect.isawaitable(duplicate_result) else duplicate_result
     )
     if duplicate_check > 0:
         risk_flags.append("DUPLICATE_CORRECTION")
@@ -218,19 +202,13 @@ async def create_count_line(
         "expiry_date": line_data.expiry_date,
         "non_returnable_damaged_qty": line_data.non_returnable_damaged_qty,
         "correction_reason": (
-            line_data.correction_reason.model_dump()
-            if line_data.correction_reason
-            else None
+            line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs]
-            if line_data.photo_proofs
-            else None
+            [p.model_dump() for p in line_data.photo_proofs] if line_data.photo_proofs else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump()
-            if line_data.correction_metadata
-            else None
+            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
         ),
         "approval_status": approval_status,
         "approval_by": None,
@@ -246,11 +224,7 @@ async def create_count_line(
         "mrp_counted": line_data.mrp_counted,
         # Additional fields
         "split_section": line_data.split_section,
-        "serial_numbers": (
-            [s.model_dump() for s in line_data.serial_numbers]
-            if line_data.serial_numbers
-            else None
-        ),
+        "serial_numbers": (line_data.serial_numbers if line_data.serial_numbers else None),
         # Legacy approval fields
         "status": "pending",
         "verified": False,
@@ -426,7 +400,7 @@ async def approve_count_line(
     db = _get_db_client()
 
     try:
-        query = {"$or": [{"id": line_id}]}
+        query: dict[str, Any] = {"$or": [{"id": line_id}]}
         if ObjectId.is_valid(line_id):
             query["$or"].append({"_id": ObjectId(line_id)})
 
@@ -466,7 +440,7 @@ async def reject_count_line(
     db = _get_db_client()
 
     try:
-        query = {"$or": [{"id": line_id}]}
+        query: dict[str, Any] = {"$or": [{"id": line_id}]}
         if ObjectId.is_valid(line_id):
             query["$or"].append({"_id": ObjectId(line_id)})
 
@@ -619,3 +593,37 @@ async def delete_count_line(
     except Exception as e:
         logger.error(f"Error deleting count line {line_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/sessions/{session_id}/items/{item_code}/scan-status")
+async def check_item_scan_status(
+    session_id: str,
+    item_code: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Check if item has been scanned in this session and where"""
+    db = _get_db_client()
+
+    # Find all count lines for this item in this session
+    cursor = db.count_lines.find({"session_id": session_id, "item_code": item_code})
+
+    count_lines = await cursor.to_list(None)
+
+    if not count_lines:
+        return {"scanned": False, "total_qty": 0, "locations": []}
+
+    total_qty = sum(line.get("counted_qty", 0) for line in count_lines)
+
+    locations = []
+    for line in count_lines:
+        locations.append(
+            {
+                "floor_no": line.get("floor_no"),
+                "rack_no": line.get("rack_no"),
+                "counted_qty": line.get("counted_qty"),
+                "counted_by": line.get("counted_by"),
+                "counted_at": line.get("counted_at"),
+            }
+        )
+
+    return {"scanned": True, "total_qty": total_qty, "locations": locations}

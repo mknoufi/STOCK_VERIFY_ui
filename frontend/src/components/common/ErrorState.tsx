@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeContext } from '../../theme/ThemeContext';
-import { useHapticFeedback } from '../../hooks/useHapticFeedback';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeContext } from "../../context/ThemeContext";
+import { useHapticFeedback } from "../../hooks/useHapticFeedback";
 
 interface ErrorStateProps {
   message?: string;
@@ -13,13 +13,13 @@ interface ErrorStateProps {
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
-  message = 'Something went wrong. Please try again.',
+  message = "Something went wrong. Please try again.",
   onRetry,
-  retryText = 'Try Again',
+  retryText = "Try Again",
   showRetry = true,
   style,
 }) => {
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
   const { colors } = theme;
   const { triggerHaptic } = useHapticFeedback();
 
@@ -27,7 +27,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   const shakeAnim = new Animated.Value(0);
 
   const triggerShake = () => {
-    triggerHaptic('impactLight');
+    triggerHaptic("impactLight");
     Animated.sequence([
       Animated.timing(shakeAnim, {
         toValue: 10,
@@ -61,7 +61,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 
   const shakeInterpolate = shakeAnim.interpolate({
     inputRange: [-10, 0, 10],
-    outputRange: ['-10deg', '0deg', '10deg'],
+    outputRange: ["-10deg", "0deg", "10deg"],
   });
 
   return (
@@ -89,8 +89,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   icon: {
@@ -98,8 +98,8 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
     marginBottom: 24,
     lineHeight: 24,
   },
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 0.5,
   },
 });

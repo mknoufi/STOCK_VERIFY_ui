@@ -82,9 +82,7 @@ export const reportApi = {
    * Get available report types
    */
   getReportTypes: async (): Promise<ReportTypeInfo[]> => {
-    const response = await api.get<{ report_types: ReportTypeInfo[] }>(
-      "/api/reports/types",
-    );
+    const response = await api.get<{ report_types: ReportTypeInfo[] }>("/api/reports/types");
     return response.data.report_types;
   },
 
@@ -93,7 +91,7 @@ export const reportApi = {
    */
   previewReport: async (
     reportType: ReportType,
-    filters?: ReportFilters,
+    filters?: ReportFilters
   ): Promise<ReportPreviewData> => {
     const response = await api.post<ReportPreviewData>("/api/reports/preview", {
       report_type: reportType,
@@ -134,13 +132,8 @@ export const reportApi = {
   /**
    * Create a scheduled report
    */
-  createScheduledReport: async (
-    params: ScheduleReportParams,
-  ): Promise<ScheduledReport> => {
-    const response = await api.post<ScheduledReport>(
-      "/api/reports/schedules",
-      params,
-    );
+  createScheduledReport: async (params: ScheduleReportParams): Promise<ScheduledReport> => {
+    const response = await api.post<ScheduledReport>("/api/reports/schedules", params);
     return response.data;
   },
 
@@ -149,12 +142,9 @@ export const reportApi = {
    */
   updateScheduledReport: async (
     id: string,
-    params: Partial<ScheduleReportParams>,
+    params: Partial<ScheduleReportParams>
   ): Promise<ScheduledReport> => {
-    const response = await api.patch<ScheduledReport>(
-      `/api/reports/schedules/${id}`,
-      params,
-    );
+    const response = await api.patch<ScheduledReport>(`/api/reports/schedules/${id}`, params);
     return response.data;
   },
 
@@ -169,9 +159,7 @@ export const reportApi = {
    * Run a scheduled report immediately
    */
   runScheduledReport: async (id: string): Promise<{ message: string }> => {
-    const response = await api.post<{ message: string }>(
-      `/api/reports/schedules/${id}/run`,
-    );
+    const response = await api.post<{ message: string }>(`/api/reports/schedules/${id}/run`);
     return response.data;
   },
 
@@ -201,7 +189,7 @@ export const reportApi = {
 // Helper function to trigger download
 export async function downloadReport(
   params: GenerateReportParams,
-  filename?: string,
+  filename?: string
 ): Promise<void> {
   const blob = await reportApi.generateReport(params);
 

@@ -15,15 +15,9 @@ logger = logging.getLogger(__name__)
 
 # Context variables for session info (thread-safe)
 current_user_id: ContextVar[Optional[str]] = ContextVar("current_user_id", default=None)
-current_username: ContextVar[Optional[str]] = ContextVar(
-    "current_username", default=None
-)
-current_session_id: ContextVar[Optional[str]] = ContextVar(
-    "current_session_id", default=None
-)
-current_request_id: ContextVar[Optional[str]] = ContextVar(
-    "current_request_id", default=None
-)
+current_username: ContextVar[Optional[str]] = ContextVar("current_username", default=None)
+current_session_id: ContextVar[Optional[str]] = ContextVar("current_session_id", default=None)
+current_request_id: ContextVar[Optional[str]] = ContextVar("current_request_id", default=None)
 
 
 class SessionContextFilter(logging.Filter):
@@ -140,9 +134,7 @@ class SessionContextLoggingMiddleware(BaseHTTPMiddleware):
             # If we can't decode, just continue without context
             return None
 
-    def _log_request_start(
-        self, request: Request, user_info: Optional[dict[str, Any]]
-    ) -> None:
+    def _log_request_start(self, request: Request, user_info: Optional[dict[str, Any]]) -> None:
         """Log request start with context"""
         method = request.method
         path = request.url.path
@@ -158,9 +150,7 @@ class SessionContextLoggingMiddleware(BaseHTTPMiddleware):
         request_id = current_request_id.get()
         req_id_str = f" [req={request_id[:8]}]" if request_id else ""
 
-        logger.info(
-            f"→ {method} {path}{'?' + query if query else ''}{user_context}{req_id_str}"
-        )
+        logger.info(f"→ {method} {path}{'?' + query if query else ''}{user_context}{req_id_str}")
 
     def _log_request_complete(
         self,
@@ -189,9 +179,7 @@ class SessionContextLoggingMiddleware(BaseHTTPMiddleware):
         request_id = current_request_id.get()
         req_id_str = f" [req={request_id[:8]}]" if request_id else ""
 
-        log_fn(
-            f"← {method} {path} → {status} ({duration_ms:.2f}ms){user_context}{req_id_str}"
-        )
+        log_fn(f"← {method} {path} → {status} ({duration_ms:.2f}ms){user_context}{req_id_str}")
 
     def _clear_context(self) -> None:
         """Clear all context variables after request"""

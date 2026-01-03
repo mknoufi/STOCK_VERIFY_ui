@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Animated } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeContext } from '../../theme/ThemeContext';
-import { useHapticFeedback } from '../../hooks/useHapticFeedback';
-import { RecentItemsService } from '../../services/enhancedFeatures';
+import React, { useEffect, useState, useRef } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Animated } from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeContext } from "../../context/ThemeContext";
+import { useHapticFeedback } from "../../hooks/useHapticFeedback";
+import { RecentItemsService } from "../../services/enhancedFeatures";
 
 interface RecentScansProps {
   sessionId: string;
@@ -12,7 +12,7 @@ interface RecentScansProps {
 }
 
 export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }) => {
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
   const { colors } = theme;
   const router = useRouter();
   const { triggerHaptic } = useHapticFeedback();
@@ -25,7 +25,7 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
       const recent = await RecentItemsService.getRecent();
       setItems(recent);
     } catch (error) {
-      console.error('Failed to load recent items', error);
+      console.error("Failed to load recent items", error);
     } finally {
       setIsLoading(false);
     }
@@ -36,17 +36,17 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
   }, [onRefresh]);
 
   const handlePress = (item: any) => {
-    triggerHaptic('impactLight');
+    triggerHaptic("impactLight");
     // Use barcode for navigation (what was originally scanned), fallback to item_code
     const navigationBarcode = item.barcode || item.item_code;
     router.push({
-      pathname: '/staff/item-detail',
+      pathname: "/staff/item-detail",
       params: { barcode: navigationBarcode, sessionId },
     } as any);
   };
 
   const handleLongPress = (_item: any) => {
-    triggerHaptic('impactMedium');
+    triggerHaptic("impactMedium");
     // Could show item details or quick actions
   };
 
@@ -59,7 +59,7 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
       Animated.parallel([
         Animated.timing(opacityAnim, {
           toValue: 1,
-          duration: 300 + (index * 50),
+          duration: 300 + index * 50,
           useNativeDriver: true,
         }),
         Animated.spring(scaleAnim, {
@@ -101,7 +101,7 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
               shadowOpacity: 0.1,
               shadowRadius: 4,
               elevation: 3,
-            }
+            },
           ]}
           onPress={() => handlePress(item)}
           onLongPress={() => handleLongPress(item)}
@@ -117,13 +117,13 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
           </View>
           <View style={styles.textContainer}>
             <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={1}>
-              {item.item_name || 'Unknown Item'}
+              {item.item_name || "Unknown Item"}
             </Text>
             <Text style={[styles.itemCode, { color: colors.textSecondary }]} numberOfLines={1}>
               {item.item_code}
             </Text>
           </View>
-          <Animated.View style={{ transform: [{ rotate: '0deg' }] }}>
+          <Animated.View style={{ transform: [{ rotate: "0deg" }] }}>
             <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
           </Animated.View>
         </TouchableOpacity>
@@ -145,9 +145,7 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
         <Text style={[styles.title, { color: colors.text }]}>Recent Scans</Text>
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading...
-            </Text>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading...</Text>
           </View>
         )}
       </View>
@@ -171,15 +169,15 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     marginBottom: 12,
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   loadingContainer: {
     paddingHorizontal: 8,
@@ -187,27 +185,27 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   listContent: {
     paddingHorizontal: 12,
   },
   itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
     marginHorizontal: 4,
     width: 220,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   iconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
   },
   textContainer: {
@@ -216,12 +214,12 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
     letterSpacing: 0.2,
   },
   itemCode: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

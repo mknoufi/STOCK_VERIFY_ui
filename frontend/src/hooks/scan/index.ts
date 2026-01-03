@@ -7,4 +7,4 @@
  * @deprecated Import from '@/domains/inventory/hooks/scan' instead
  */
 
-export * from '@/domains/inventory/hooks/scan';
+export * from "@/domains/inventory/hooks/scan";

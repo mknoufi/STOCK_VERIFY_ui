@@ -1,4 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createLogger } from "./logging";
+
+const log = createLogger("mmkvStorage");
 
 // In-memory fallback cache to keep synchronous semantics
 const memory = new Map<string, string>();
@@ -43,9 +46,12 @@ export const mmkvStorage = {
     // Fallback: write to memory and persist asynchronously with race condition prevention
     memory.set(key, value);
     const writePromise = AsyncStorage.setItem(key, value)
-      .catch((err) =>
-        console.warn(`[mmkvStorage] Failed to persist ${key}:`, err),
-      )
+      .catch((err) => {
+        log.warn("Failed to persist key", {
+          key,
+          error: (err as { message?: string } | null)?.message || String(err),
+        });
+      })
       .finally(() => {
         // Clean up pending write tracking
         if (pendingWrites.get(key) === writePromise) {
@@ -58,9 +64,12 @@ export const mmkvStorage = {
   removeItem: (key: string): void => {
     memory.delete(key);
     const deletePromise = AsyncStorage.removeItem(key)
-      .catch((err) =>
-        console.warn(`[mmkvStorage] Failed to remove ${key}:`, err),
-      )
+      .catch((err) => {
+        log.warn("Failed to remove key", {
+          key,
+          error: (err as { message?: string } | null)?.message || String(err),
+        });
+      })
       .finally(() => {
         if (pendingWrites.get(key) === deletePromise) {
           pendingWrites.delete(key);
@@ -87,9 +96,11 @@ export const mmkvStorage = {
           memory.set(key, value);
         }
       });
-      console.log(`[mmkvStorage] Initialized with ${memory.size} keys`);
+      log.debug("Initialized in-memory cache", { keyCount: memory.size });
     } catch (err) {
-      console.warn("[mmkvStorage] Initialization failed:", err);
+      log.warn("Initialization failed", {
+        error: (err as { message?: string } | null)?.message || String(err),
+      });
     }
   },
 };

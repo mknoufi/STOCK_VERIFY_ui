@@ -16,4 +16,3 @@ export const handleUnauthorized = () => {
     // Best-effort; auth store will handle logout UX separately.
   }
 };
-

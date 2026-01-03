@@ -14,7 +14,7 @@
  */
 
 // Disable the overly aggressive React Native text validation
-declare module 'react-native' {
+declare module "react-native" {
   export interface TextProps {
     // Allow string literals in JSX expressions without Text wrapping
     children?: React.ReactNode;

@@ -1,13 +1,16 @@
 import logging
+import os
 import re
 import uuid
 from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Any
 from typing import Any as AnyType
+from typing import TypeVar
 
 from fastapi import HTTPException
 
+from backend.config import settings
 from backend.exceptions import (
     AuthenticationError,
     AuthorizationError,
@@ -156,24 +159,36 @@ def handle_result(result: Result[T, E], success_status: int = 200) -> dict[str, 
             # Log unexpected errors
             error_id = str(uuid.uuid4())
             logger.error(
-                f"Unexpected error (ID: {error_id}): {str(error)}\n"
-                f"Type: {type(error).__name__}\n"
-                f"Traceback: {getattr(error, '__traceback__', 'No traceback')}"
+                "Unexpected error (ID: %s) [%s]: %s",
+                error_id,
+                type(error).__name__,
+                str(error),
+                exc_info=True,
             )
+
+            env = getattr(settings, "ENVIRONMENT", "development").lower()
+            include_details = bool(
+                getattr(settings, "DEBUG", False)
+                or env == "development"
+                or os.getenv("TESTING", "false").lower() == "true"
+            )
+
+            error_detail: dict[str, Any] = {
+                "success": False,
+                "error": {
+                    "message": "An unexpected error occurred",
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "error_id": error_id,
+                },
+            }
+            if include_details:
+                error_detail["error"]["details"] = {
+                    "error_type": type(error).__name__,
+                    "error_message": str(error),
+                }
             raise HTTPException(
                 status_code=500,
-                detail={
-                    "success": False,
-                    "error": {
-                        "message": "An unexpected error occurred",
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "error_id": error_id,
-                        "details": {
-                            "error_type": type(error).__name__,
-                            "error_message": str(error),
-                        },
-                    },
-                },
+                detail=error_detail,
             )
 
 

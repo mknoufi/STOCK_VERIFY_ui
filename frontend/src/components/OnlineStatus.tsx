@@ -5,8 +5,7 @@ import { useNetworkStore } from "../services/networkService";
 export const OnlineStatus: React.FC = () => {
   const { isOnline, isInternetReachable } = useNetworkStore();
 
-  const status =
-    isOnline && isInternetReachable !== false ? "online" : "offline";
+  const status = isOnline && isInternetReachable !== false ? "online" : "offline";
   const statusColor = status === "online" ? "#4CAF50" : "#FF9800";
   const statusText = status === "online" ? "Online" : "Offline";
 

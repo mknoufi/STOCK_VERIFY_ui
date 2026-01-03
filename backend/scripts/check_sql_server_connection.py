@@ -187,9 +187,7 @@ def find_sql_server_instances():
         print(f"Testing {host_display}...", end=" ")
         try:
             if port:
-                conn = pymssql.connect(
-                    server=host, port=port, database="master", timeout=2
-                )
+                conn = pymssql.connect(server=host, port=port, database="master", timeout=2)
             else:
                 conn = pymssql.connect(server=host, database="master", timeout=2)
             conn.close()
@@ -236,12 +234,8 @@ def main():
             host = input("\nEnter SQL Server Host/IP [Enter to skip]: ").strip()
             if host:
                 port = input("Enter Port [1433]: ").strip() or "1433"
-                database = (
-                    input(f"Enter Database Name [{DB_NAME}]: ").strip() or DB_NAME
-                )
-                user = (
-                    input("Enter Username [Enter for Windows Auth]: ").strip() or None
-                )
+                database = input(f"Enter Database Name [{DB_NAME}]: ").strip() or DB_NAME
+                user = input("Enter Username [Enter for Windows Auth]: ").strip() or None
                 password = None
                 if user:
                     password = input("Enter Password: ").strip() or None

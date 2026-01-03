@@ -10,14 +10,14 @@
 
 | Layer | Technology | Version |
 |--------|-------------|----------|
-| Backend | FastAPI | 0.115.6 |
+| Backend | FastAPI | 0.115.8 |
 | Backend | Python | 3.10+ |
 | Database | MongoDB | 8.0 (Motor 3.7.1) |
 | Database | SQL Server | 2019 (Read-only) |
 | Frontend | React Native | 0.81.5 |
-| Frontend | Expo | ~54.0 (Stable) |
+| Frontend | Expo | ~54.0.29 |
 | State | Zustand | 5.0.9 |
-| Styling | NativeWind | 3.5.2 |
+| Styling | StyleSheet + Custom Theme System | N/A |
 | Auth | JWT (Authlib) | ≥1.4.0 |
 
 ---
@@ -45,7 +45,7 @@
   "item_code": "ITM-001",
   "barcode": "1234567890",
   "item_name": "Sample Item",
-  "sql_qty": 100,
+  "stock_qty": 100,
   "verified_qty": 98,
   "variance": -2,
   "verified_by": "staff1",
@@ -54,8 +54,8 @@
   "floor": "2",
   "hsn_code": "94054090",
   "mrp": 120.5,
-  "brand": "Generic",
-  "uom": "Nos",
+  "brand_name": "Generic",
+  "uom_name": "Nos",
   "enrichment_history": []
 }
 ```
@@ -64,16 +64,16 @@
 
 ## 🗄️ SQL Server → MongoDB Field Mapping
 
-| ERPNext Table      | SQL Field    | Mongo Field        | Description            |
-| ------------------ | ------------ | ------------------ | ---------------------- |
-| tabItem            | ItemCode     | item_code          | Unique item identifier |
-| tabItem            | ItemName     | item_name          | Item name              |
-| tabItem            | HSNCode      | hsn_code           | HSN classification     |
-| tabItem            | Brand        | brand              | Brand name             |
-| tabBin             | ActualQty    | sql_qty            | ERP stock quantity     |
-| tabBin             | Warehouse    | warehouse          | Storage location       |
-| tabPurchaseInvoice | PostingDate  | last_purchase_date | Recent purchase        |
-| tabSupplier        | SupplierName | last_supplier      | Supplier info          |
+| ERP Table          | SQL Field       | Mongo Field        | Description            |
+| ------------------ | --------------- | ------------------ | ---------------------- |
+| Products           | ProductCode     | item_code          | Unique item identifier |
+| Products           | ProductName     | item_name          | Item name              |
+| Products           | HSNCode         | hsn_code           | HSN classification     |
+| Brands             | BrandName       | brand_name         | Brand name             |
+| ProductBatches     | Stock           | stock_qty          | ERP stock quantity     |
+| Warehouses         | WarehouseName   | warehouse          | Storage location       |
+| InvTransactionMaster| TransactionDate| last_purchase_date | Recent purchase        |
+| Parties            | PartyName       | last_purchase_supplier| Supplier info       |
 
 ---
 

@@ -8,11 +8,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  modernColors,
-  modernTypography,
-  modernSpacing,
-} from "../../styles/modernDesignSystem";
+import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
 
 interface ConnectionStatusProps {
   isOnline: boolean;
@@ -38,11 +34,7 @@ export function ConnectionStatus({
         <Ionicons
           name={isOnline ? "wifi" : "wifi-outline"}
           size={16}
-          color={
-            isOnline
-              ? modernColors.semantic.success
-              : modernColors.semantic.error
-          }
+          color={isOnline ? modernColors.semantic.success : modernColors.semantic.error}
         />
         {serverStatus === "checking" ? (
           <ActivityIndicator size="small" color={modernColors.text.secondary} />
@@ -66,25 +58,15 @@ export function ConnectionStatus({
       {/* Wi-Fi Status */}
       <View style={styles.statusItem}>
         <View
-          style={[
-            styles.statusDot,
-            isOnline ? styles.statusDotSuccess : styles.statusDotError,
-          ]}
+          style={[styles.statusDot, isOnline ? styles.statusDotSuccess : styles.statusDotError]}
         />
         <Ionicons
           name={isOnline ? "wifi" : "wifi-outline"}
           size={18}
-          color={
-            isOnline
-              ? modernColors.semantic.success
-              : modernColors.semantic.error
-          }
+          color={isOnline ? modernColors.semantic.success : modernColors.semantic.error}
         />
         <Text
-          style={[
-            styles.statusText,
-            isOnline ? styles.statusTextSuccess : styles.statusTextError,
-          ]}
+          style={[styles.statusText, isOnline ? styles.statusTextSuccess : styles.statusTextError]}
         >
           {isOnline ? "Connected" : "Offline"}
         </Text>
@@ -102,23 +84,15 @@ export function ConnectionStatus({
               color={modernColors.text.secondary}
               style={styles.statusLoader}
             />
-            <Ionicons
-              name="server-outline"
-              size={18}
-              color={modernColors.text.secondary}
-            />
-            <Text style={[styles.statusText, styles.statusTextChecking]}>
-              Checking...
-            </Text>
+            <Ionicons name="server-outline" size={18} color={modernColors.text.secondary} />
+            <Text style={[styles.statusText, styles.statusTextChecking]}>Checking...</Text>
           </>
         ) : (
           <>
             <View
               style={[
                 styles.statusDot,
-                serverStatus === "connected"
-                  ? styles.statusDotSuccess
-                  : styles.statusDotError,
+                serverStatus === "connected" ? styles.statusDotSuccess : styles.statusDotError,
               ]}
             />
             <Ionicons
@@ -133,9 +107,7 @@ export function ConnectionStatus({
             <Text
               style={[
                 styles.statusText,
-                serverStatus === "connected"
-                  ? styles.statusTextSuccess
-                  : styles.statusTextError,
+                serverStatus === "connected" ? styles.statusTextSuccess : styles.statusTextError,
               ]}
             >
               {serverStatus === "connected" ? "Server OK" : "Server Down"}

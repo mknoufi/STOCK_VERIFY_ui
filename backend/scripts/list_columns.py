@@ -26,7 +26,7 @@ def list_columns():
 
         for table in ["Products", "ProductBatches"]:
             print(f"\nColumns in {table}:")
-            cursor.execute(f"SELECT TOP 0 * FROM {table}")
+            cursor.execute(f"SELECT TOP 0 * FROM {table}")  # nosec
             columns = [column[0] for column in cursor.description]
             print(", ".join(columns))
 

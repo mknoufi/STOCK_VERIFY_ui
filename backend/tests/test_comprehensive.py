@@ -11,6 +11,24 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 
+class AsyncIterator:
+    """Helper class to create async iterators for testing MongoDB cursors"""
+
+    def __init__(self, items):
+        self.items = items
+        self.index = 0
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self.index >= len(self.items):
+            raise StopAsyncIteration
+        item = self.items[self.index]
+        self.index += 1
+        return item
+
+
 @pytest.fixture
 def mock_db():
     """Mock MongoDB database"""
@@ -127,9 +145,7 @@ async def test_activity_logging(mock_db, mock_supervisor):
     service = ActivityLogService(mock_db)
 
     # Mock insert
-    mock_db.activity_logs.insert_one = AsyncMock(
-        return_value=MagicMock(inserted_id="log-1")
-    )
+    mock_db.activity_logs.insert_one = AsyncMock(return_value=MagicMock(inserted_id="log-1"))
 
     # Log activity
     log_id = await service.log_activity(
@@ -175,9 +191,7 @@ async def test_error_logging(mock_db, mock_supervisor):
     service = ErrorLogService(mock_db)
 
     # Mock insert
-    mock_db.error_logs.insert_one = AsyncMock(
-        return_value=MagicMock(inserted_id="error-1")
-    )
+    mock_db.error_logs.insert_one = AsyncMock(return_value=MagicMock(inserted_id="error-1"))
 
     # Log error
     error = ValueError("Test error")
@@ -217,18 +231,22 @@ async def test_separation_of_sql_and_mongo(mock_db):
     """Test that SQL Server is read-only and MongoDB handles writes"""
     from backend.services.sql_sync_service import SQLSyncService
 
-    # Mock SQL connector (read-only)
+    # Mock SQL connector (read-only) with variance sync methods
     mock_sql_connector = MagicMock()
-    mock_sql_connector.get_all_items = MagicMock(
-        return_value=[{"item_code": "ITEM001", "item_name": "Test", "stock_qty": 100}]
+    mock_sql_connector.test_connection = MagicMock(return_value=True)
+    mock_sql_connector.get_item_quantities_only = MagicMock(
+        return_value={"ITEM001": 100.0}  # Different from MongoDB qty
+    )
+
+    # Mock MongoDB find cursor for variance sync
+    mock_db.erp_items.find = MagicMock(
+        return_value=AsyncIterator(
+            [{"item_code": "ITEM001", "stock_qty": 50.0}]  # Variance detected
+        )
     )
 
     # Mock MongoDB writes
     mock_db.erp_items.update_one = AsyncMock(return_value=MagicMock(modified_count=1))
-    # Mock MongoDB read to return a concrete item (avoids MagicMock/coroutine issues)
-    mock_db.erp_items.find_one = AsyncMock(
-        return_value={"item_code": "ITEM001", "sql_server_qty": 50.0, "stock_qty": 50.0}
-    )
 
     service = SQLSyncService(
         sql_connector=mock_sql_connector,
@@ -240,8 +258,8 @@ async def test_separation_of_sql_and_mongo(mock_db):
     # Trigger a sync cycle
     await service.sync_items()
 
-    # Verify SQL connector is called for reading
-    mock_sql_connector.get_all_items.assert_called_once()
+    # Verify SQL connector is called for reading quantities
+    mock_sql_connector.get_item_quantities_only.assert_called()
 
     # Verify MongoDB is used for writing
     mock_db.erp_items.update_one.assert_called()

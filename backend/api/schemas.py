@@ -29,6 +29,8 @@ class ApiResponse(BaseModel, Generic[T]):
 
 
 class ERPItem(BaseModel):
+    model_config = {"extra": "ignore"}  # Ignore extra fields from MongoDB
+
     item_code: str = ""
     item_name: str = ""
     barcode: str = ""
@@ -92,7 +94,7 @@ class ERPItem(BaseModel):
     last_purchase_cost: Optional[float] = None
     purchase_voucher_type: Optional[str] = None
     purchase_type: Optional[str] = None
-    batch_id: Optional[str] = None
+    batch_id: Optional[Union[int, str]] = None
     batch_no: Optional[str] = None
     manufacturing_date: Optional[str] = None
     expiry_date: Optional[str] = None
@@ -199,8 +201,9 @@ class Session(BaseModel):
     def normalize_status(cls, v: Any) -> str:
         if isinstance(v, str):
             v = v.upper()
-            # Map legacy RECONCILE to ACTIVE for now, or allow it if we can't migrate yet.
-            # But the plan says "Normalize session states (OPEN | ACTIVE | CLOSED)".
+            # Map legacy RECONCILE to ACTIVE for now, or allow it if we can't
+            # migrate yet. But the plan says "Normalize session states
+            # (OPEN | ACTIVE | CLOSED)".
             # If we strictly enforce it, we might break existing data.
             # Let's allow RECONCILE but prefer ACTIVE.
             if v == "RECONCILE":
@@ -210,8 +213,9 @@ class Session(BaseModel):
 
     @model_validator(mode="after")
     def compute_legacy_status(self) -> "Session":
-        # If session is ACTIVE but has reconciled_at, present it as RECONCILE to frontend
-        # This maintains backward compatibility while normalizing DB state to ACTIVE
+        # If session is ACTIVE but has reconciled_at, present it as RECONCILE
+        # to frontend. This maintains backward compatibility while normalizing
+        # DB state to ACTIVE.
         if self.status == "ACTIVE" and self.reconciled_at and not self.closed_at:
             self.status = "RECONCILE"
         return self

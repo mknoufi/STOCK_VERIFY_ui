@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import logging
 import re
 from datetime import datetime
@@ -5,9 +7,10 @@ from typing import Any, Optional
 
 import pyodbc
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.auth.dependencies import get_current_user
+from backend.config import settings
 from backend.db.runtime import get_db
 
 router = APIRouter(prefix="/api/mapping", tags=["Database Mapping"])
@@ -35,10 +38,35 @@ class ColumnMapping(BaseModel):
 class MappingConfig(BaseModel):
     tables: dict[str, str]  # e.g. {"items": "ItemMaster"}
     columns: dict[str, ColumnMapping]
-    query_options: dict[str, Any] = {}
+    query_options: dict[str, Any] = Field(default_factory=dict)
 
 
 # --- Helper ---
+
+
+def _require_mapping_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    if current_user.get("role") not in {"admin", "supervisor"}:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    return current_user
+
+
+def _enforce_configured_sql_target(host: str, database: str, port: int) -> None:
+    """Reduce SSRF risk by enforcing configured SQL target when present."""
+    env = getattr(settings, "ENVIRONMENT", "development").lower()
+    if env not in {"production", "staging"}:
+        return
+
+    configured_host = getattr(settings, "SQL_SERVER_HOST", None)
+    configured_database = getattr(settings, "SQL_SERVER_DATABASE", None)
+    configured_port = getattr(settings, "SQL_SERVER_PORT", None)
+
+    # If the app is configured with a target, do not allow overriding via API params.
+    if configured_host and host != configured_host:
+        raise HTTPException(status_code=400, detail="SQL Server host is not allowed")
+    if configured_database and database != configured_database:
+        raise HTTPException(status_code=400, detail="SQL Server database is not allowed")
+    if (configured_host or configured_database) and configured_port and port != configured_port:
+        raise HTTPException(status_code=400, detail="SQL Server port is not allowed")
 
 
 def get_connection_string(host, port, database, user, password):
@@ -56,14 +84,19 @@ def get_connection_string(host, port, database, user, password):
 def get_connection(conn_string):
     try:
         return pyodbc.connect(conn_string, timeout=5)
-    except Exception as e:
-        logger.error(f"Database connection failed: {str(e)}")
-        # Check if it's a driver issue
-        drivers = list(pyodbc.drivers())
-        raise HTTPException(
-            status_code=400,
-            detail=f"Connection failed: {str(e)}. Available drivers: {drivers}",
-        )
+    except Exception as exc:
+        logger.exception("Database connection failed")
+        env = getattr(settings, "ENVIRONMENT", "development").lower()
+        if env == "development":
+            try:
+                drivers = list(pyodbc.drivers())
+            except Exception:
+                drivers = []
+            raise HTTPException(
+                status_code=400,
+                detail=f"Connection failed. Available drivers: {drivers}",
+            ) from exc
+        raise HTTPException(status_code=400, detail="Connection failed") from exc
 
 
 # --- Endpoints ---
@@ -92,6 +125,28 @@ def _safe_identifier(name: str) -> str:
     return name
 
 
+def _encrypt_erp_password(password: str) -> str:
+    """Encrypt an ERP connection password for at-rest storage.
+
+    Derives an encryption key from JWT_SECRET to avoid storing plaintext credentials in MongoDB.
+    """
+    try:
+        from cryptography.fernet import Fernet
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Password encryption is unavailable (missing cryptography): {exc}",
+        ) from exc
+
+    secret = str(settings.JWT_SECRET or "")
+    if not secret:
+        raise HTTPException(status_code=500, detail="JWT_SECRET is required for encryption")
+
+    key = base64.urlsafe_b64encode(hashlib.sha256(secret.encode("utf-8")).digest())
+    fernet = Fernet(key)
+    return fernet.encrypt(password.encode("utf-8")).decode("utf-8")
+
+
 @router.get("/tables")
 async def get_tables(
     host: str,
@@ -100,8 +155,9 @@ async def get_tables(
     user: Optional[str] = None,
     password: Optional[str] = None,
     schema: str = "dbo",
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(_require_mapping_admin),
 ):
+    _enforce_configured_sql_target(host, database, port)
     conn_str = get_connection_string(host, port, database, user, password)
     try:
         conn = get_connection(conn_str)
@@ -134,8 +190,9 @@ async def get_columns(
     user: Optional[str] = None,
     password: Optional[str] = None,
     schema: str = "dbo",
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(_require_mapping_admin),
 ):
+    _enforce_configured_sql_target(host, database, port)
     conn_str = get_connection_string(host, port, database, user, password)
     try:
         conn = get_connection(conn_str)
@@ -177,8 +234,9 @@ async def preview_mapping(
     port: int = 1433,
     user: Optional[str] = None,
     password: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(_require_mapping_admin),
 ):
+    _enforce_configured_sql_target(host, database, port)
     conn_str = get_connection_string(host, port, database, user, password)
     try:
         conn = get_connection(conn_str)
@@ -196,16 +254,15 @@ async def preview_mapping(
         select_fields = []
         for app_field, mapping in config.columns.items():
             erp_col = _safe_identifier(mapping.erp_column)
-            select_fields.append(f"[{erp_col}] as {app_field}")
+            app_alias = _safe_identifier(app_field)
+            select_fields.append(f"[{erp_col}] AS [{app_alias}]")
 
         # Basic check to ensure at least one column
         if not select_fields:
             raise HTTPException(status_code=400, detail="No columns mapped")
 
         # Use TOP 5 to limit data
-        query = (
-            f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"
-        )
+        query = f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"  # nosec
 
         # Log a sanitized summary (omit full query text to reduce risk)
         logger.info(
@@ -233,7 +290,7 @@ async def preview_mapping(
 @router.post("/save")
 async def save_mapping(
     data: dict[str, Any],
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(_require_mapping_admin),
     db=Depends(get_db),
 ):
     """
@@ -241,9 +298,6 @@ async def save_mapping(
     Expects data = { "connection": {...}, "mapping": {...} }
     """
     try:
-        if current_user.get("role") not in {"admin", "supervisor"}:
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
-
         connection = data.get("connection", {})
         mapping = data.get("mapping", {})
 
@@ -251,7 +305,7 @@ async def save_mapping(
         if not mapping:
             raise HTTPException(status_code=400, detail="Missing mapping configuration")
 
-        update_data = {
+        set_data: dict[str, Any] = {
             "mapping": mapping,
             "updated_at": datetime.now(),
             "updated_by": current_user.get("username"),
@@ -259,14 +313,26 @@ async def save_mapping(
 
         # Only update connection if provided
         if connection:
-            # For security, one might want to encrypt password here.
-            # optimizing for functionality per user request.
-            update_data["connection"] = connection
+            # Update nested fields (preserves existing secrets unless explicitly replaced)
+            for key, value in connection.items():
+                if key == "password":
+                    continue
+                set_data[f"connection.{key}"] = value
+
+            if connection.get("password"):
+                set_data["connection.password_encrypted"] = _encrypt_erp_password(
+                    str(connection["password"])
+                )
+                set_data["connection.has_password"] = True
 
         # Save to 'erp_mapping' document in config collection
+        update_op: dict[str, Any] = {"$set": set_data}
+        if connection.get("password"):
+            update_op["$unset"] = {"connection.password": ""}
+
         await db.config.update_one(
             {"_id": "erp_mapping"},
-            {"$set": update_data},
+            update_op,
             upsert=True,
         )
         return {"success": True}
@@ -279,19 +345,25 @@ async def save_mapping(
 
 @router.get("/current")
 async def get_current_mapping(
-    current_user: dict = Depends(get_current_user), db=Depends(get_db)
+    current_user: dict = Depends(_require_mapping_admin),
+    db=Depends(get_db),
 ):
-    if current_user.get("role") not in {"admin", "supervisor"}:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-
     try:
         doc = await db.config.find_one({"_id": "erp_mapping"})
         if not doc:
             return {"mapping": None, "connection": None}
 
+        connection = doc.get("connection")
+        if connection:
+            connection = dict(connection)
+            has_password = bool(connection.get("password_encrypted") or connection.get("password"))
+            connection.pop("password", None)
+            connection.pop("password_encrypted", None)
+            connection["has_password"] = has_password
+
         result = {
             "mapping": doc.get("mapping"),
-            "connection": doc.get("connection"),
+            "connection": connection,
         }
         return result
     except Exception as e:

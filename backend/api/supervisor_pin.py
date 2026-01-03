@@ -51,9 +51,7 @@ async def verify_supervisor_pin(
         )
 
     if not verify_password(request.pin, stored_pin_hash):
-        logger.warning(
-            f"Failed PIN attempt for supervisor {request.supervisor_username}"
-        )
+        logger.warning(f"Failed PIN attempt for supervisor {request.supervisor_username}")
         raise HTTPException(status_code=401, detail="Invalid PIN")
 
     # 4. Log the Activity

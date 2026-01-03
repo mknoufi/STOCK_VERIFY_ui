@@ -11,9 +11,7 @@ class SystemReportService:
     def __init__(self, db):
         self.db = db
 
-    async def generate_report(
-        self, report_id, start_date=None, end_date=None, format="json"
-    ):
+    async def generate_report(self, report_id, start_date=None, end_date=None, format="json"):
         if report_id == "system_health":
             data = await self._get_system_health_data(start_date, end_date)
         elif report_id == "user_activity":

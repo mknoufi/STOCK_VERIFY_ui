@@ -38,11 +38,7 @@ def _setup_trusted_hosts(app: FastAPI) -> None:
 def _get_cors_origins() -> list[str]:
     """Determine allowed CORS origins based on environment."""
     if getattr(settings, "CORS_ALLOW_ORIGINS", None):
-        return [
-            o.strip()
-            for o in (settings.CORS_ALLOW_ORIGINS or "").split(",")
-            if o.strip()
-        ]
+        return [o.strip() for o in (settings.CORS_ALLOW_ORIGINS or "").split(",") if o.strip()]
 
     _env = getattr(settings, "ENVIRONMENT", "development").lower()
     if _env == "development":
@@ -55,16 +51,13 @@ def _get_cors_origins() -> list[str]:
         ]
         if getattr(settings, "CORS_DEV_ORIGINS", None):
             dev_origins = [
-                o.strip()
-                for o in (settings.CORS_DEV_ORIGINS or "").split(",")
-                if o.strip()
+                o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()
             ]
             origins.extend(dev_origins)
         return origins
 
     logger.warning(
-        "CORS_ALLOW_ORIGINS not configured for non-development environment; "
-        "requests may be blocked"
+        "CORS_ALLOW_ORIGINS not configured for non-development environment; requests may be blocked"
     )
     return []
 
@@ -111,9 +104,23 @@ def _setup_security_headers(app: FastAPI) -> None:
         logger.warning(f"Failed to add SecurityHeadersMiddleware: {str(e)}")
 
 
+def _setup_lan_enforcement(app: FastAPI) -> None:
+    """Add LAN enforcement middleware."""
+    try:
+        from backend.middleware.lan_enforcement import LANEnforcementMiddleware
+
+        app.add_middleware(LANEnforcementMiddleware)
+        logger.info("✓ LAN enforcement middleware enabled")
+    except ImportError as e:
+        logger.warning(f"LAN enforcement middleware not available: {str(e)}")
+    except Exception as e:
+        logger.warning(f"Failed to add LANEnforcementMiddleware: {str(e)}")
+
+
 def setup_middleware(app: FastAPI) -> None:
     """Configure all middleware for the application."""
     _setup_gzip(app)
     _setup_trusted_hosts(app)
     _setup_cors(app)
     _setup_security_headers(app)
+    _setup_lan_enforcement(app)

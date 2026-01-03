@@ -61,9 +61,7 @@ async def test_detect_conflict_with_conflict(service):
     assert conflict_id is not None
 
     # Verify conflict record
-    conflict = (
-        await service.db.sync_conflicts.find({"entity_id": "123"}).to_list(length=1)
-    )[0]
+    conflict = (await service.db.sync_conflicts.find({"entity_id": "123"}).to_list(length=1))[0]
 
     assert conflict["entity_type"] == "item"
     assert conflict["status"] == ConflictStatus.PENDING.value

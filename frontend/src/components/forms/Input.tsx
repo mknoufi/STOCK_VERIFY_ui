@@ -37,17 +37,13 @@ export const Input = React.forwardRef<TextInput, InputProps>(
       containerStyle,
       ...textInputProps
     },
-    ref,
+    ref
   ) => {
     const theme = useTheme();
 
     return (
       <View style={[styles.container, containerStyle]}>
-        {label && (
-          <Text style={[styles.label, { color: theme.colors.text }]}>
-            {label}
-          </Text>
-        )}
+        {label && <Text style={[styles.label, { color: theme.colors.text }]}>{label}</Text>}
         <View
           style={[
             styles.inputContainer,
@@ -67,6 +63,8 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             />
           )}
           <TextInput
+            autoCapitalize="none"
+            autoCorrect={false}
             ref={ref}
             style={[
               styles.input,
@@ -82,9 +80,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
                   // Web-specific props to ensure input works
                   autoComplete: textInputProps.autoComplete || "off",
                   spellCheck:
-                    textInputProps.spellCheck !== undefined
-                      ? textInputProps.spellCheck
-                      : true,
+                    textInputProps.spellCheck !== undefined ? textInputProps.spellCheck : true,
                 }
               : {})}
             {...textInputProps}
@@ -103,14 +99,10 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             </TouchableOpacity>
           )}
         </View>
-        {error && (
-          <Text style={[styles.error, { color: theme.colors.error }]}>
-            {error}
-          </Text>
-        )}
+        {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
       </View>
     );
-  },
+  }
 );
 
 Input.displayName = "Input";

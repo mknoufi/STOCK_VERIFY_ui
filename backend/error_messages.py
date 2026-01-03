@@ -248,15 +248,11 @@ def get_error_message(error_key: str, context: Optional[dict] = None) -> dict:
         result["context"] = context
         # Enhance message with context if available
         if "item_code" in context:
-            result["detail"] = (
-                str(result["detail"]) + f" Item code: {context['item_code']}"
-            )
+            result["detail"] = str(result["detail"]) + f" Item code: {context['item_code']}"
         if "barcode" in context:
             result["detail"] = str(result["detail"]) + f" Barcode: {context['barcode']}"
         if "session_id" in context:
-            result["detail"] = (
-                str(result["detail"]) + f" Session ID: {context['session_id']}"
-            )
+            result["detail"] = str(result["detail"]) + f" Session ID: {context['session_id']}"
 
     return result
 

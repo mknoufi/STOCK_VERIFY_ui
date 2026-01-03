@@ -11,9 +11,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { ScreenContainer } from "@/components/ui";
 import { auroraTheme } from "@/theme/auroraTheme";
 import { ItemVerificationAPI } from "@/domains/inventory/services/itemVerificationApi";
 import api from "@/services/httpClient";
@@ -59,9 +58,7 @@ export default function AdminLiveView() {
     Awaited<ReturnType<typeof ItemVerificationAPI.getLiveUsers>>["users"]
   >([]);
   const [liveVerifications, setLiveVerifications] = useState<
-    Awaited<
-      ReturnType<typeof ItemVerificationAPI.getLiveVerifications>
-    >["verifications"]
+    Awaited<ReturnType<typeof ItemVerificationAPI.getLiveVerifications>>["verifications"]
   >([]);
 
   const fetchAll = useCallback(async () => {
@@ -103,9 +100,7 @@ export default function AdminLiveView() {
 
       if (firstReject) {
         setError(
-          firstReject instanceof Error
-            ? firstReject.message
-            : "Some live data failed to load",
+          firstReject instanceof Error ? firstReject.message : "Some live data failed to load"
         );
       }
 
@@ -138,7 +133,7 @@ export default function AdminLiveView() {
           intervalRef.current = null;
         }
       };
-    }, [autoRefresh, fetchAll]),
+    }, [autoRefresh, fetchAll])
   );
 
   const filteredVerifications = useMemo(() => {
@@ -159,23 +154,20 @@ export default function AdminLiveView() {
   }, [liveVerifications, onlyVariance, searchQuery]);
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="Live View"
-        subtitle={
-          lastUpdatedAt
-            ? `Updated ${formatTimeAgo(lastUpdatedAt.toISOString())}`
-            : "Loading…"
-        }
-        showBackButton
-      />
-
+    <ScreenContainer
+      gradient
+      header={{
+        title: "Live View",
+        subtitle: lastUpdatedAt
+          ? `Updated ${formatTimeAgo(lastUpdatedAt.toISOString())}`
+          : "Loading…",
+        showBackButton: true,
+      }}
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         <View style={styles.topRow}>
           <GlassCard style={styles.kpiCard} variant="strong" elevation="md">
@@ -193,11 +185,7 @@ export default function AdminLiveView() {
 
           <GlassCard style={styles.kpiCard} variant="strong" elevation="md">
             <View style={styles.kpiHeader}>
-              <Ionicons
-                name="people"
-                size={18}
-                color={auroraTheme.colors.primary[400]}
-              />
+              <Ionicons name="people" size={18} color={auroraTheme.colors.primary[400]} />
               <Text style={styles.kpiLabel}>Live Users</Text>
             </View>
             <Text style={styles.kpiValue}>{liveUsers.length}</Text>
@@ -206,11 +194,7 @@ export default function AdminLiveView() {
 
           <GlassCard style={styles.kpiCard} variant="strong" elevation="md">
             <View style={styles.kpiHeader}>
-              <Ionicons
-                name="checkmark-done"
-                size={18}
-                color={auroraTheme.colors.primary[400]}
-              />
+              <Ionicons name="checkmark-done" size={18} color={auroraTheme.colors.primary[400]} />
               <Text style={styles.kpiLabel}>Verifications</Text>
             </View>
             <Text style={styles.kpiValue}>{liveVerifications.length}</Text>
@@ -221,11 +205,7 @@ export default function AdminLiveView() {
         <GlassCard style={styles.controlsCard} variant="medium" elevation="sm">
           <View style={styles.controlsRow}>
             <View style={styles.searchWrap}>
-              <Ionicons
-                name="search"
-                size={16}
-                color={auroraTheme.colors.text.secondary}
-              />
+              <Ionicons name="search" size={16} color={auroraTheme.colors.text.secondary} />
               <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -256,19 +236,10 @@ export default function AdminLiveView() {
                 name={autoRefresh ? "sync" : "sync-outline"}
                 size={16}
                 color={
-                  autoRefresh
-                    ? auroraTheme.colors.primary[300]
-                    : auroraTheme.colors.text.secondary
+                  autoRefresh ? auroraTheme.colors.primary[300] : auroraTheme.colors.text.secondary
                 }
               />
-              <Text
-                style={[
-                  styles.toggleText,
-                  autoRefresh && styles.toggleTextActive,
-                ]}
-              >
-                Auto
-              </Text>
+              <Text style={[styles.toggleText, autoRefresh && styles.toggleTextActive]}>Auto</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -281,17 +252,10 @@ export default function AdminLiveView() {
                 name="warning"
                 size={16}
                 color={
-                  onlyVariance
-                    ? auroraTheme.colors.warning[400]
-                    : auroraTheme.colors.text.secondary
+                  onlyVariance ? auroraTheme.colors.warning[400] : auroraTheme.colors.text.secondary
                 }
               />
-              <Text
-                style={[
-                  styles.toggleText,
-                  onlyVariance && styles.toggleTextActive,
-                ]}
-              >
+              <Text style={[styles.toggleText, onlyVariance && styles.toggleTextActive]}>
                 Variance
               </Text>
             </TouchableOpacity>
@@ -299,11 +263,7 @@ export default function AdminLiveView() {
 
           {error && (
             <View style={styles.errorRow}>
-              <Ionicons
-                name="alert-circle"
-                size={16}
-                color={auroraTheme.colors.error[400]}
-              />
+              <Ionicons name="alert-circle" size={16} color={auroraTheme.colors.error[400]} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
@@ -369,7 +329,7 @@ export default function AdminLiveView() {
           </GlassCard>
         </View>
       </ScrollView>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 

@@ -142,9 +142,7 @@ class TestSecurityHeadersMiddleware:
         assert response.headers["X-Frame-Options"] == "SAMEORIGIN"
         assert response.headers["Referrer-Policy"] == "no-referrer"
 
-    def test_middleware_does_not_break_functionality(
-        self, client_with_security_headers
-    ):
+    def test_middleware_does_not_break_functionality(self, client_with_security_headers):
         """Test middleware doesn't break normal functionality"""
         response = client_with_security_headers.get("/test")
 

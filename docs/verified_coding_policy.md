@@ -1,7 +1,7 @@
 # Verified Coding Policy
 
 **Version:** 2.1
-**Last- **Frontend:** Expo ~54 (Stable) - *Do not upgrade to v55 until stable release*25-11-30
+**Last Updated:** 2025-11-30
 
 ---
 

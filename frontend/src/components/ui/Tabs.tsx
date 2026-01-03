@@ -5,24 +5,9 @@
  */
 
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
-import {
-  colorPalette,
-  spacing,
-  typography,
-  borderRadius,
-} from "@/theme/designTokens";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { colorPalette, spacing, typography, borderRadius } from "@/theme/designTokens";
 
 export interface Tab {
   key: string;
@@ -111,9 +96,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
         {tab.badge !== undefined && tab.badge > 0 && (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {tab.badge > 99 ? "99+" : tab.badge}
-            </Text>
+            <Text style={styles.badgeText}>{tab.badge > 99 ? "99+" : tab.badge}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -123,22 +106,18 @@ export const Tabs: React.FC<TabsProps> = ({
   const Container = scrollable ? ScrollView : View;
   const containerProps = scrollable
     ? {
-      horizontal: true,
-      showsHorizontalScrollIndicator: false,
-      contentContainerStyle: styles.scrollContent,
-    }
+        horizontal: true,
+        showsHorizontalScrollIndicator: false,
+        contentContainerStyle: styles.scrollContent,
+      }
     : { style: styles.container };
 
   return (
     <View style={styles.wrapper}>
-      <Container {...containerProps}>
-        {tabs.map((tab, _index) => renderTab(tab, _index))}
-      </Container>
+      <Container {...containerProps}>{tabs.map((tab, _index) => renderTab(tab, _index))}</Container>
 
       {/* Indicator */}
-      {variant === "underline" && (
-        <Animated.View style={[styles.indicator, indicatorStyle]} />
-      )}
+      {variant === "underline" && <Animated.View style={[styles.indicator, indicatorStyle]} />}
     </View>
   );
 };

@@ -11,11 +11,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
-} from "../../src/components/ui";
+import { LoadingSpinner, ScreenContainer } from "../../src/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import api from "../../src/services/api/api";
 
@@ -118,12 +114,7 @@ const ColumnSettingsModal: React.FC<{
   onResetDefaults: () => void;
 }> = ({ visible, columns, onClose, onToggle, onResetDefaults }) => {
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
@@ -133,9 +124,7 @@ const ColumnSettingsModal: React.FC<{
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.modalSubtitle}>
-            Toggle columns to show or hide them in the table
-          </Text>
+          <Text style={styles.modalSubtitle}>Toggle columns to show or hide them in the table</Text>
 
           <ScrollView style={styles.columnList}>
             {columns.map((col) => (
@@ -148,19 +137,14 @@ const ColumnSettingsModal: React.FC<{
                     false: "#767577",
                     true: auroraTheme.colors.primary[300],
                   }}
-                  thumbColor={
-                    col.visible ? auroraTheme.colors.primary[500] : "#f4f3f4"
-                  }
+                  thumbColor={col.visible ? auroraTheme.colors.primary[500] : "#f4f3f4"}
                 />
               </View>
             ))}
           </ScrollView>
 
           <View style={styles.modalActions}>
-            <TouchableOpacity
-              style={styles.resetButton}
-              onPress={onResetDefaults}
-            >
+            <TouchableOpacity style={styles.resetButton} onPress={onResetDefaults}>
               <Text style={styles.resetButtonText}>Reset to Defaults</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.doneButton} onPress={onClose}>
@@ -192,7 +176,11 @@ const ItemDetailsModal: React.FC<{
     { label: "ERP Qty", value: item.stock_qty, format: "number" },
     { label: "Counted Qty", value: item.counted_qty, format: "number" },
     { label: "Variance", value: item.variance, format: "number" },
-    { label: "Variance %", value: item.variance_percentage, format: "percentage" },
+    {
+      label: "Variance %",
+      value: item.variance_percentage,
+      format: "percentage",
+    },
     { label: "MRP", value: item.mrp, format: "currency" },
     { label: "Status", value: item.verified ? "Verified" : "Pending" },
     { label: "Verified By", value: item.verified_by },
@@ -204,12 +192,7 @@ const ItemDetailsModal: React.FC<{
   ];
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.detailsModalContent}>
           <View style={styles.modalHeader}>
@@ -226,9 +209,7 @@ const ItemDetailsModal: React.FC<{
                 row.value !== null && (
                   <View key={index} style={styles.detailRow}>
                     <Text style={styles.detailLabel}>{row.label}</Text>
-                    <Text style={styles.detailValue}>
-                      {formatValue(row.value, row.format)}
-                    </Text>
+                    <Text style={styles.detailValue}>{formatValue(row.value, row.format)}</Text>
                   </View>
                 )
             )}
@@ -292,10 +273,7 @@ export default function RealtimeDashboard() {
   const [verifiedFilter, setVerifiedFilter] = useState<boolean | null>(null);
 
   // Visible columns
-  const visibleColumns = useMemo(
-    () => columns.filter((col) => col.visible),
-    [columns]
-  );
+  const visibleColumns = useMemo(() => columns.filter((col) => col.visible), [columns]);
 
   // Fetch data
   const fetchData = useCallback(
@@ -310,8 +288,7 @@ export default function RealtimeDashboard() {
             field: col.field,
             visible: col.visible,
           })),
-          filters:
-            verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
+          filters: verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
           auto_refresh: autoRefresh,
           refresh_interval_seconds: 10,
         };
@@ -404,9 +381,7 @@ export default function RealtimeDashboard() {
 
   const handleColumnToggle = (field: string) => {
     setColumns((prev) =>
-      prev.map((col) =>
-        col.field === field ? { ...col, visible: !col.visible } : col
-      )
+      prev.map((col) => (col.field === field ? { ...col, visible: !col.visible } : col))
     );
   };
 
@@ -440,8 +415,7 @@ export default function RealtimeDashboard() {
           field: col.field,
           visible: col.visible,
         })),
-        filters:
-          verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
+        filters: verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
         sort_by: sortBy,
         sort_order: sortOrder,
       };
@@ -468,29 +442,35 @@ export default function RealtimeDashboard() {
   // Render loading state
   if (loading) {
     return (
-      <AuroraBackground>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "Real-Time Dashboard",
+          subtitle: `${summary?.filtered_records || 0} items`,
+          showBackButton: true,
+        }}
+      >
         <View style={styles.centered}>
           <LoadingSpinner size={48} color={auroraTheme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading dashboard...</Text>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="Real-Time Dashboard"
-        subtitle={`${summary?.filtered_records || 0} items`}
-        showBackButton
-      />
-
+    <ScreenContainer
+      gradient
+      header={{
+        title: "Real-Time Dashboard",
+        subtitle: `${summary?.filtered_records || 0} items`,
+        showBackButton: true,
+      }}
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {/* Stats Section */}
         {stats && (
@@ -545,10 +525,7 @@ export default function RealtimeDashboard() {
         {/* Controls */}
         <View style={styles.controls}>
           <View style={styles.controlsLeft}>
-            <TouchableOpacity
-              style={styles.filterButton}
-              onPress={() => setVerifiedFilter(null)}
-            >
+            <TouchableOpacity style={styles.filterButton} onPress={() => setVerifiedFilter(null)}>
               <Text
                 style={[
                   styles.filterButtonText,
@@ -558,10 +535,7 @@ export default function RealtimeDashboard() {
                 All
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.filterButton}
-              onPress={() => setVerifiedFilter(true)}
-            >
+            <TouchableOpacity style={styles.filterButton} onPress={() => setVerifiedFilter(true)}>
               <Text
                 style={[
                   styles.filterButtonText,
@@ -571,10 +545,7 @@ export default function RealtimeDashboard() {
                 Verified
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.filterButton}
-              onPress={() => setVerifiedFilter(false)}
-            >
+            <TouchableOpacity style={styles.filterButton} onPress={() => setVerifiedFilter(false)}>
               <Text
                 style={[
                   styles.filterButtonText,
@@ -595,29 +566,16 @@ export default function RealtimeDashboard() {
                 name={autoRefresh ? "sync" : "sync-outline"}
                 size={20}
                 color={
-                  autoRefresh
-                    ? auroraTheme.colors.primary[500]
-                    : auroraTheme.colors.text.secondary
+                  autoRefresh ? auroraTheme.colors.primary[500] : auroraTheme.colors.text.secondary
                 }
               />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setShowColumnSettings(true)}
-            >
-              <Ionicons
-                name="options"
-                size={20}
-                color={auroraTheme.colors.text.primary}
-              />
+            <TouchableOpacity style={styles.iconButton} onPress={() => setShowColumnSettings(true)}>
+              <Ionicons name="options" size={20} color={auroraTheme.colors.text.primary} />
             </TouchableOpacity>
             {isWeb && (
               <TouchableOpacity style={styles.iconButton} onPress={handleExportCSV}>
-                <Ionicons
-                  name="download"
-                  size={20}
-                  color={auroraTheme.colors.text.primary}
-                />
+                <Ionicons name="download" size={20} color={auroraTheme.colors.text.primary} />
               </TouchableOpacity>
             )}
           </View>
@@ -627,8 +585,8 @@ export default function RealtimeDashboard() {
         {summary && (
           <View style={styles.generationInfo}>
             <Text style={styles.generationText}>
-              Generated in {summary.generation_time_ms.toFixed(0)}ms •{" "}
-              {summary.filtered_records} of {summary.total_records} records
+              Generated in {summary.generation_time_ms.toFixed(0)}ms • {summary.filtered_records} of{" "}
+              {summary.total_records} records
             </Text>
             {autoRefresh && (
               <View style={styles.liveIndicator}>
@@ -686,26 +644,20 @@ export default function RealtimeDashboard() {
                     onPress={() => handleItemPress(item)}
                   >
                     {visibleColumns.map((col) => (
-                      <View
-                        key={col.field}
-                        style={[styles.tableCell, { width: col.width || 120 }]}
-                      >
+                      <View key={col.field} style={[styles.tableCell, { width: col.width || 120 }]}>
                         <Text
                           style={[
                             styles.tableCellText,
                             col.field === "variance" &&
-                            (item[col.field] as number) < 0 &&
-                            styles.negativeValue,
+                              (item[col.field] as number) < 0 &&
+                              styles.negativeValue,
                             col.field === "variance" &&
-                            (item[col.field] as number) > 0 &&
-                            styles.positiveValue,
+                              (item[col.field] as number) > 0 &&
+                              styles.positiveValue,
                           ]}
                           numberOfLines={1}
                         >
-                          {formatValue(
-                            item[col.field as keyof DashboardItem],
-                            col.format
-                          )}
+                          {formatValue(item[col.field as keyof DashboardItem], col.format)}
                         </Text>
                       </View>
                     ))}
@@ -802,7 +754,7 @@ export default function RealtimeDashboard() {
         item={selectedItem}
         onClose={() => setShowItemDetails(false)}
       />
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 

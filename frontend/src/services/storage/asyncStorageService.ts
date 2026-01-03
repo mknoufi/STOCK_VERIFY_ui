@@ -27,7 +27,7 @@ export class AsyncStorageService {
   private static instance: AsyncStorageService;
   private debugMode: boolean = __DEV__;
 
-  private constructor() { }
+  private constructor() {}
 
   static getInstance(): AsyncStorageService {
     if (!AsyncStorageService.instance) {
@@ -59,7 +59,7 @@ export class AsyncStorageService {
         error: errorMsg,
         timestamp: Date.now(),
       },
-      { silent: true },
+      { silent: true }
     ).catch(() => {
       // Ignore errors when saving error logs to prevent loops
     });
@@ -68,11 +68,7 @@ export class AsyncStorageService {
   /**
    * Set item with enhanced error handling and options
    */
-  async setItem<T>(
-    key: string,
-    value: T,
-    options: StorageOptions = {},
-  ): Promise<boolean> {
+  async setItem<T>(key: string, value: T, options: StorageOptions = {}): Promise<boolean> {
     try {
       const item: StorageItem<T> = {
         key,
@@ -93,10 +89,7 @@ export class AsyncStorageService {
       this.handleStorageError("setItem", key, error);
 
       if (options.showAlert && !options.silent) {
-        Alert.alert(
-          "Storage Error",
-          `Failed to save ${key}. Please try again.`,
-        );
+        Alert.alert("Storage Error", `Failed to save ${key}. Please try again.`);
       }
 
       return false;
@@ -106,10 +99,7 @@ export class AsyncStorageService {
   /**
    * Get item with automatic expiration check
    */
-  async getItem<T>(
-    key: string,
-    options: GetStorageOptions<T> = {},
-  ): Promise<T | null> {
+  async getItem<T>(key: string, options: GetStorageOptions<T> = {}): Promise<T | null> {
     try {
       const serialized = await AsyncStorage.getItem(key);
 
@@ -126,21 +116,14 @@ export class AsyncStorageService {
       } catch {
         // Fallback: If it's not JSON, treat it as a raw string value (legacy support)
         if (this.debugMode && !options.silent) {
-          __DEV__ &&
-            console.log(
-              `⚠️ AsyncStorage: '${key}' is not JSON, treating as raw string`,
-            );
+          __DEV__ && console.log(`⚠️ AsyncStorage: '${key}' is not JSON, treating as raw string`);
         }
         // Construct a wrapper for the raw value (assuming T is string or unknown)
         item = { key, value: serialized as unknown as T };
       }
 
       // Check expiration (only if it was a valid StorageItem with expires)
-      if (
-        !options.ignoreExpiration &&
-        item.expires &&
-        Date.now() > item.expires
-      ) {
+      if (!options.ignoreExpiration && item.expires && Date.now() > item.expires) {
         if (this.debugMode && !options.silent) {
           __DEV__ && console.log(`⏰ AsyncStorage: '${key}' expired, removing`);
         }
@@ -162,10 +145,7 @@ export class AsyncStorageService {
   /**
    * Remove item with error handling
    */
-  async removeItem(
-    key: string,
-    options: { silent?: boolean } = {},
-  ): Promise<boolean> {
+  async removeItem(key: string, options: { silent?: boolean } = {}): Promise<boolean> {
     try {
       await AsyncStorage.removeItem(key);
 
@@ -196,46 +176,39 @@ export class AsyncStorageService {
   /**
    * Clear all storage with confirmation
    */
-  async clearAll(
-    options: { confirm?: boolean } = { confirm: true },
-  ): Promise<boolean> {
+  async clearAll(options: { confirm?: boolean } = { confirm: true }): Promise<boolean> {
     try {
       // Logic for web environments (safety check mostly)
-      if (typeof window !== 'undefined' && options.confirm) {
+      if (typeof window !== "undefined" && options.confirm) {
         const confirmed = window.confirm("Are you sure you want to clear all data?");
         if (!confirmed) return false;
       }
 
       if (options.confirm) {
         return new Promise((resolve) => {
-          Alert.alert(
-            "Clear All Data",
-            "This will remove all stored data. Are you sure?",
-            [
-              {
-                text: "Cancel",
-                style: "cancel",
-                onPress: () => resolve(false),
-              },
-              {
-                text: "Clear All",
-                style: "destructive",
-                onPress: async () => {
-                  try {
-                    await AsyncStorage.clear();
-                    if (this.debugMode) {
-                      __DEV__ &&
-                        console.log("🧹 AsyncStorage: Cleared all data");
-                    }
-                    resolve(true);
-                  } catch (error) {
-                    this.handleStorageError("clearAll", "ALL", error);
-                    resolve(false);
+          Alert.alert("Clear All Data", "This will remove all stored data. Are you sure?", [
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => resolve(false),
+            },
+            {
+              text: "Clear All",
+              style: "destructive",
+              onPress: async () => {
+                try {
+                  await AsyncStorage.clear();
+                  if (this.debugMode) {
+                    __DEV__ && console.log("🧹 AsyncStorage: Cleared all data");
                   }
-                },
+                  resolve(true);
+                } catch (error) {
+                  this.handleStorageError("clearAll", "ALL", error);
+                  resolve(false);
+                }
               },
-            ],
-          );
+            },
+          ]);
         });
       } else {
         await AsyncStorage.clear();
@@ -356,10 +329,7 @@ export class AsyncStorageService {
         await AsyncStorage.multiRemove(expiredKeys);
 
         if (this.debugMode) {
-          __DEV__ &&
-            console.log(
-              `🧹 AsyncStorage: Cleaned up ${expiredKeys.length} expired items`,
-            );
+          __DEV__ && console.log(`🧹 AsyncStorage: Cleaned up ${expiredKeys.length} expired items`);
         }
       }
 
@@ -442,8 +412,7 @@ export const storage = {
 
   getMultiple: <T = unknown>(keys: string[]) => asyncStorageService.getMultiple<T>(keys),
 
-  setMultiple: <T>(items: [string, T][]) =>
-    asyncStorageService.setMultiple<T>(items),
+  setMultiple: <T>(items: [string, T][]) => asyncStorageService.setMultiple<T>(items),
 
   cleanup: () => asyncStorageService.cleanupExpired(),
 

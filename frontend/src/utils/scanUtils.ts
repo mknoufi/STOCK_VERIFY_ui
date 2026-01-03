@@ -1,7 +1,6 @@
 import { Item, NormalizedMrpVariant } from "../types/scan";
 
-export const normalizeSerialValue = (input: string) =>
-  input ? input.trim().toUpperCase() : "";
+export const normalizeSerialValue = (input: string) => (input ? input.trim().toUpperCase() : "");
 
 export const toNumericMrp = (value: unknown): number | null => {
   if (value === undefined || value === null) {
@@ -10,8 +9,7 @@ export const toNumericMrp = (value: unknown): number | null => {
 
   if (typeof value === "object" && value !== null) {
     const obj = value as Record<string, unknown>;
-    const candidate =
-      obj.value ?? obj.mrp ?? obj.amount ?? obj.price ?? obj.rate ?? null;
+    const candidate = obj.value ?? obj.mrp ?? obj.amount ?? obj.price ?? obj.rate ?? null;
 
     if (candidate !== null && candidate !== undefined) {
       return toNumericMrp(candidate);
@@ -20,8 +18,7 @@ export const toNumericMrp = (value: unknown): number | null => {
     return null;
   }
 
-  const numericValue =
-    typeof value === "number" ? value : parseFloat(String(value));
+  const numericValue = typeof value === "number" ? value : parseFloat(String(value));
   if (Number.isNaN(numericValue)) {
     return null;
   }
@@ -36,9 +33,7 @@ export const formatMrpValue = (value: unknown) => {
   return numericValue.toString();
 };
 
-export const normalizeMrpVariant = (
-  input: unknown,
-): NormalizedMrpVariant | null => {
+export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null => {
   const numericValue = toNumericMrp(input);
   if (numericValue === null) {
     return null;
@@ -69,8 +64,7 @@ export const normalizeMrpVariant = (
           : typeof obj.mrp_source === "string"
             ? obj.mrp_source
             : undefined,
-      item_condition:
-        typeof obj.item_condition === "string" ? obj.item_condition : undefined,
+      item_condition: typeof obj.item_condition === "string" ? obj.item_condition : undefined,
     };
   }
 
@@ -79,9 +73,7 @@ export const normalizeMrpVariant = (
   };
 };
 
-export const getNormalizedMrpVariants = (
-  item: Item | null | undefined,
-): NormalizedMrpVariant[] => {
+export const getNormalizedMrpVariants = (item: Item | null | undefined): NormalizedMrpVariant[] => {
   if (!item) {
     return [];
   }

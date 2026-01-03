@@ -20,7 +20,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       firstSegment === "welcome" ||
       firstSegment === "register" ||
       firstSegment === "help";
-    const inProtectedGroup = firstSegment === "staff" || firstSegment === "supervisor" || firstSegment === "admin";
+    const inProtectedGroup =
+      firstSegment === "staff" || firstSegment === "supervisor" || firstSegment === "admin";
 
     // 1. Unauthenticated user trying to access protected routes
     if (!user && inProtectedGroup) {
@@ -32,7 +33,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // 2. Authenticated user in public routes (login/welcome)
     if (user && inAuthGroup) {
       const targetRoute = getRouteForRole(user.role as UserRole);
-      console.log(`🔒 [AuthGuard] Authenticated user in public route. Redirecting to ${targetRoute}`);
+      console.log(
+        `🔒 [AuthGuard] Authenticated user in public route. Redirecting to ${targetRoute}`
+      );
       router.replace(targetRoute as any);
       return;
     }
@@ -54,7 +57,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // For now, we just log it
       // console.log("🔒 [AuthGuard] Operating in Live Audit mode");
     }
-
   }, [user, segments, isInitialized, isLoading, settings.operationalMode, router]);
 
   return <>{children}</>;

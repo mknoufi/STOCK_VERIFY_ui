@@ -82,15 +82,9 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      onClose={handleClose}
-      title="Supervisor Override Required"
-    >
+    <Modal visible={visible} onClose={handleClose} title="Supervisor Override Required">
       <View style={styles.container}>
-        <Text style={styles.description}>
-          This action requires supervisor authorization.
-        </Text>
+        <Text style={styles.description}>This action requires supervisor authorization.</Text>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
 
@@ -103,6 +97,7 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
             placeholder="Enter username"
             placeholderTextColor={modernColors.text.secondary}
             autoCapitalize="none"
+            autoCorrect={false}
           />
         </View>
 
@@ -116,6 +111,7 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
             placeholderTextColor={modernColors.text.secondary}
             secureTextEntry
             keyboardType="numeric"
+            autoCorrect={false}
           />
         </View>
 
@@ -129,6 +125,8 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
             placeholderTextColor={modernColors.text.secondary}
             multiline
             numberOfLines={3}
+            autoCapitalize="sentences"
+            autoCorrect={false}
           />
         </View>
 

@@ -9,13 +9,7 @@
  */
 
 import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, ViewStyle, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
@@ -34,8 +28,7 @@ import {
   modernShadows,
 } from "../../styles/modernDesignSystem";
 
-const AnimatedTouchableOpacity =
-  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 type TrendDirection = "up" | "down" | "neutral";
 type CardVariant = "default" | "gradient" | "outline";
@@ -61,14 +54,12 @@ interface QuickStatCardProps {
   index?: number;
 }
 
-const trendConfig: Record<
-  TrendDirection,
-  { color: string; icon: keyof typeof Ionicons.glyphMap }
-> = {
-  up: { color: modernColors.success.main, icon: "trending-up" },
-  down: { color: modernColors.error.main, icon: "trending-down" },
-  neutral: { color: modernColors.text.tertiary, icon: "remove" },
-};
+const trendConfig: Record<TrendDirection, { color: string; icon: keyof typeof Ionicons.glyphMap }> =
+  {
+    up: { color: modernColors.success.main, icon: "trending-up" },
+    down: { color: modernColors.error.main, icon: "trending-down" },
+    neutral: { color: modernColors.text.tertiary, icon: "remove" },
+  };
 
 export const QuickStatCard: React.FC<QuickStatCardProps> = ({
   title,
@@ -88,22 +79,16 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
 }) => {
   const scale = useSharedValue(1);
   const animatedValue = useSharedValue(0);
-  const [displayValue, setDisplayValue] = React.useState(
-    typeof value === "number" ? 0 : value,
-  );
+  const [displayValue, setDisplayValue] = React.useState(typeof value === "number" ? 0 : value);
 
   // Animate counter
   useEffect(() => {
     if (animate && typeof value === "number") {
-      animatedValue.value = withTiming(
-        value,
-        { duration: 1000 },
-        (finished) => {
-          if (finished) {
-            runOnJS(setDisplayValue)(value);
-          }
-        },
-      );
+      animatedValue.value = withTiming(value, { duration: 1000 }, (finished) => {
+        if (finished) {
+          runOnJS(setDisplayValue)(value);
+        }
+      });
 
       // Update display value during animation
       const interval = setInterval(() => {
@@ -133,9 +118,7 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
     <View style={styles.content}>
       {/* Icon */}
       {icon && (
-        <View
-          style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}
-        >
+        <View style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}>
           <Ionicons name={icon} size={24} color={iconColor} />
         </View>
       )}
@@ -146,9 +129,7 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
         <View style={styles.valueRow}>
           <Text style={styles.value}>
             {prefix}
-            {typeof displayValue === "number"
-              ? displayValue.toLocaleString()
-              : displayValue}
+            {typeof displayValue === "number" ? displayValue.toLocaleString() : displayValue}
             {suffix}
           </Text>
         </View>
@@ -169,17 +150,10 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
               size={12}
               color={trendConfig[trend.direction].color}
             />
-            <Text
-              style={[
-                styles.trendValue,
-                { color: trendConfig[trend.direction].color },
-              ]}
-            >
+            <Text style={[styles.trendValue, { color: trendConfig[trend.direction].color }]}>
               {trend.value}
             </Text>
-            {trend.label && (
-              <Text style={styles.trendLabel}>{trend.label}</Text>
-            )}
+            {trend.label && <Text style={styles.trendLabel}>{trend.label}</Text>}
           </View>
         )}
       </View>
@@ -197,10 +171,7 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
       <LinearGradient
         colors={
           (gradientColors as [string, string, ...string[]]) ||
-          ([modernColors.primary[600], modernColors.primary[500]] as [
-            string,
-            string,
-          ])
+          ([modernColors.primary[600], modernColors.primary[500]] as [string, string])
         }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -214,10 +185,7 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
 
   if (onPress) {
     return (
-      <Animated.View
-        entering={FadeInUp.delay(index * 75).springify()}
-        style={animatedStyle}
-      >
+      <Animated.View entering={FadeInUp.delay(index * 75).springify()} style={animatedStyle}>
         <AnimatedTouchableOpacity
           onPress={onPress}
           onPressIn={handlePressIn}
@@ -230,11 +198,7 @@ export const QuickStatCard: React.FC<QuickStatCardProps> = ({
     );
   }
 
-  return (
-    <Animated.View entering={FadeInUp.delay(index * 75).springify()}>
-      {card}
-    </Animated.View>
-  );
+  return <Animated.View entering={FadeInUp.delay(index * 75).springify()}>{card}</Animated.View>;
 };
 
 const styles = StyleSheet.create({

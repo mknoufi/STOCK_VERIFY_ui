@@ -63,24 +63,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       transparent
       visible={render}
       animationType={
-        !flags.enableAnimations
-          ? Platform.OS === "ios"
-            ? "slide"
-            : "fade"
-          : undefined
+        !flags.enableAnimations ? (Platform.OS === "ios" ? "slide" : "fade") : undefined
       }
       onRequestClose={onClose}
     >
       <Animated.View style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity
-          style={{ flex: 1 }}
-          activeOpacity={1}
-          onPress={onClose}
-        />
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
       </Animated.View>
-      <Animated.View style={[styles.sheet, { height }, sheetStyle]}>
-        {children}
-      </Animated.View>
+      <Animated.View style={[styles.sheet, { height }, sheetStyle]}>{children}</Animated.View>
     </Modal>
   );
 };

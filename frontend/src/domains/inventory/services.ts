@@ -13,6 +13,17 @@ import {
   getCountLinesBySessionFromCache,
 } from "../../services/offline/offlineStorage";
 
+interface AxiosErrorLike {
+  response?: {
+    status?: number;
+    data?: {
+      detail?: string | { message: string };
+    };
+  };
+  code?: string;
+  message?: string;
+}
+
 // Check if online - simplified logic for better reliability
 export const isOnline = () => {
   const state = useNetworkStore.getState();
@@ -31,10 +42,7 @@ export const isOnline = () => {
  * @param barcode Barcode string scanned/entered
  * @param retryCount Number of retries for transient failures
  */
-export const getItemByBarcode = async (
-  barcode: string,
-  retryCount: number = 3,
-): Promise<Item> => {
+export const getItemByBarcode = async (barcode: string, retryCount: number = 3): Promise<Item> => {
   // Validate and normalize barcode before making API call
   const validation = validateBarcode(barcode);
   if (!validation.valid || !validation.value) {
@@ -44,10 +52,7 @@ export const getItemByBarcode = async (
   // Use normalized barcode if available (6-digit format for numeric barcodes)
   const trimmedBarcode = validation.value;
 
-  __DEV__ &&
-    console.log(
-      `🔍 Looking up barcode: ${trimmedBarcode} (original: ${barcode})`,
-    );
+  __DEV__ && console.log(`🔍 Looking up barcode: ${trimmedBarcode} (original: ${barcode})`);
 
   // Check if offline first - only use cache if truly offline
   if (!isOnline()) {
@@ -59,7 +64,7 @@ export const getItemByBarcode = async (
         const cached = items[0];
         if (!cached) {
           throw new Error(
-            "Offline: Cache returned an empty item. Connect to internet to search server.",
+            "Offline: Cache returned an empty item. Connect to internet to search server."
           );
         }
         return {
@@ -85,13 +90,9 @@ export const getItemByBarcode = async (
           sale_price: cached.sale_price,
         } as Item;
       }
-      throw new Error(
-        "Item not found in offline cache. Connect to internet to search server.",
-      );
+      throw new Error("Item not found in offline cache. Connect to internet to search server.");
     } catch {
-      throw new Error(
-        "Offline: Item not found in cache. Connect to internet to search server.",
-      );
+      throw new Error("Offline: Item not found in cache. Connect to internet to search server.");
     }
   }
 
@@ -102,14 +103,11 @@ export const getItemByBarcode = async (
     // Direct API call with retry
     // Use enhanced v2 endpoint for better performance and metadata
     const response = await retryWithBackoff(
-      () =>
-        api.get(
-          `/api/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`,
-        ),
+      () => api.get(`/api/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`),
       {
         retries: retryCount,
         backoffMs: 1000,
-      },
+      }
     );
 
     // Handle v2 response format { item: ..., metadata: ... }
@@ -117,15 +115,12 @@ export const getItemByBarcode = async (
 
     // Check if we actually got an item
     if (!itemData || !itemData.item_code) {
-      throw new Error(
-        `Item not found: Barcode '${trimmedBarcode}' not in database`,
-      );
+      throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
     }
 
     // Normalize backend fields to the canonical frontend Item interface.
     // Backend field names can vary (e.g. uom vs uom_name, sale_price vs sales_price).
-    const displayName =
-      itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
+    const displayName = itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
 
     const normalizedItem: Item = {
       ...itemData,
@@ -135,14 +130,12 @@ export const getItemByBarcode = async (
       // Prefer the human-readable UOM if available.
       uom_name: itemData.uom_name ?? itemData.uom ?? itemData.uom_code,
       // Prefer sales_price, but accept alternate backend names.
-      sales_price:
-        itemData.sales_price ?? itemData.sale_price ?? itemData.standard_rate,
+      sales_price: itemData.sales_price ?? itemData.sale_price ?? itemData.standard_rate,
       mrp: itemData.mrp,
       category: itemData.category,
       subcategory: itemData.subcategory,
       // Normalize stock quantity naming differences.
-      stock_qty:
-        itemData.stock_qty ?? itemData.current_stock ?? itemData.stock_qty,
+      stock_qty: itemData.stock_qty ?? itemData.current_stock ?? itemData.stock_qty,
     };
 
     __DEV__ && console.log("✅ Found via API:", normalizedItem.item_code);
@@ -166,8 +159,7 @@ export const getItemByBarcode = async (
         unit2_barcode: normalizedItem.unit2_barcode,
         unit_m_barcode: normalizedItem.unit_m_barcode,
         batch_id: normalizedItem.batch_id,
-        current_stock:
-          normalizedItem.current_stock || normalizedItem.stock_qty, // Handle field name difference
+        current_stock: normalizedItem.current_stock || normalizedItem.stock_qty, // Handle field name difference
       });
     } catch (cacheError) {
       __DEV__ && console.warn("Failed to cache item:", cacheError);
@@ -175,7 +167,7 @@ export const getItemByBarcode = async (
     }
 
     return normalizedItem;
-  } catch (apiError: any) {
+  } catch (apiError: unknown) {
     const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
     __DEV__ && console.error("❌ API call failed:", errorMessage);
 
@@ -185,68 +177,60 @@ export const getItemByBarcode = async (
       const items = await searchItemsInCache(trimmedBarcode);
       const cachedItem = items[0];
       if (cachedItem) {
-        __DEV__ &&
-          console.log("✅ Found in cache fallback:", cachedItem.item_code);
+        __DEV__ && console.log("✅ Found in cache fallback:", cachedItem.item_code);
         return {
-            id: cachedItem.item_code,
-            name: cachedItem.item_name,
-            item_code: cachedItem.item_code,
-            barcode: cachedItem.barcode,
-            item_name: cachedItem.item_name,
-            description: cachedItem.description,
-            stock_qty: cachedItem.current_stock,
-            uom_name: cachedItem.uom_name ?? cachedItem.uom,
-            mrp: cachedItem.mrp,
-            sales_price: cachedItem.sales_price,
-            category: cachedItem.category,
-            subcategory: cachedItem.subcategory,
-            uom: cachedItem.uom,
-            warehouse: cachedItem.warehouse,
-            manual_barcode: cachedItem.manual_barcode,
-            unit2_barcode: cachedItem.unit2_barcode,
-            unit_m_barcode: cachedItem.unit_m_barcode,
-            batch_id: cachedItem.batch_id,
-            sale_price: cachedItem.sale_price,
+          id: cachedItem.item_code,
+          name: cachedItem.item_name,
+          item_code: cachedItem.item_code,
+          barcode: cachedItem.barcode,
+          item_name: cachedItem.item_name,
+          description: cachedItem.description,
+          stock_qty: cachedItem.current_stock,
+          uom_name: cachedItem.uom_name ?? cachedItem.uom,
+          mrp: cachedItem.mrp,
+          sales_price: cachedItem.sales_price,
+          category: cachedItem.category,
+          subcategory: cachedItem.subcategory,
+          uom: cachedItem.uom,
+          warehouse: cachedItem.warehouse,
+          manual_barcode: cachedItem.manual_barcode,
+          unit2_barcode: cachedItem.unit2_barcode,
+          unit_m_barcode: cachedItem.unit_m_barcode,
+          batch_id: cachedItem.batch_id,
+          sale_price: cachedItem.sale_price,
         } as Item;
       }
 
       // Cache is empty too
       throw new Error("Item not found in cache");
-    } catch (cacheError: any) {
-      if (cacheError.message !== "Item not found in cache") {
+    } catch (cacheError: unknown) {
+      const errorMessage = cacheError instanceof Error ? cacheError.message : String(cacheError);
+      if (errorMessage !== "Item not found in cache") {
         __DEV__ && console.error("❌ Cache fallback also failed:", cacheError);
       } else {
         __DEV__ && console.log("ℹ️ Item not found in cache either");
       }
 
       // Provide helpful error message
-      if (apiError.response?.status === 404) {
+      const error = apiError as AxiosErrorLike;
+      if (error.response?.status === 404) {
+        throw new Error(`Item not found: Barcode '${trimmedBarcode}' not in database`);
+      } else if (error.response?.status === 400) {
+        __DEV__ && console.error("❌ API Bad Request Details:", error.response?.data);
+        const detail = error.response?.data?.detail;
         throw new Error(
-          `Item not found: Barcode '${trimmedBarcode}' not in database`,
+          (typeof detail === "object" && detail !== null && "message" in detail
+            ? (detail as any).message
+            : detail) || "Invalid request parameters"
         );
-      } else if (apiError.response?.status === 400) {
-        __DEV__ &&
-          console.error("❌ API Bad Request Details:", apiError.response?.data);
-        throw new Error(
-          apiError.response?.data?.detail?.message ||
-          "Invalid request parameters",
-        );
-      } else if (
-        apiError.code === "ECONNABORTED" ||
-        apiError.message?.includes("timeout")
-      ) {
+      } else if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
         throw new Error("Connection timeout. Check your internet connection.");
-      } else if (apiError.code === "ECONNREFUSED" || !apiError.response) {
-        throw new Error(
-          "Cannot connect to server. Check if backend is running.",
-        );
+      } else if (error.code === "ECONNREFUSED" || !error.response) {
+        throw new Error("Cannot connect to server. Check if backend is running.");
       } else {
-        const errorMsg =
-          apiError.response?.data?.detail ||
-          apiError.message ||
-          "Unknown error";
+        const errorMsg = error.response?.data?.detail || error.message || "Unknown error";
         throw new Error(
-          `Barcode lookup failed: ${typeof errorMsg === "object" ? JSON.stringify(errorMsg) : errorMsg}`,
+          `Barcode lookup failed: ${typeof errorMsg === "object" ? JSON.stringify(errorMsg) : errorMsg}`
         );
       }
     }
@@ -342,7 +326,7 @@ export const getCountLines = async (
   sessionId: string,
   page: number = 1,
   pageSize: number = 50,
-  verified?: boolean,
+  verified?: boolean
 ) => {
   try {
     if (!isOnline()) {
@@ -350,9 +334,7 @@ export const getCountLines = async (
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
       // Filter by verified status if provided
       if (verified !== undefined) {
-        const filtered = cachedLines.filter(
-          (line) => line.verified === verified,
-        );
+        const filtered = cachedLines.filter((line) => line.verified === verified);
         return {
           items: filtered,
           pagination: {
@@ -393,9 +375,7 @@ export const getCountLines = async (
     try {
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
       if (verified !== undefined) {
-        const filtered = cachedLines.filter(
-          (line) => line.verified === verified,
-        );
+        const filtered = cachedLines.filter((line) => line.verified === verified);
         return {
           items: filtered,
           pagination: {
@@ -419,7 +399,7 @@ export const getCountLines = async (
           has_prev: false,
         },
       };
-    } catch (cacheError) {
+    } catch {
       throw error;
     }
   }

@@ -71,17 +71,13 @@ class ScheduledExportService:
 
         return str(result.inserted_id)
 
-    async def update_export_schedule(
-        self, schedule_id: str, updates: dict[str, Any]
-    ) -> bool:
+    async def update_export_schedule(self, schedule_id: str, updates: dict[str, Any]) -> bool:
         """Update an existing export schedule"""
         updates["updated_at"] = datetime.now(UTC)
 
         # Recalculate next_run if frequency changed
         if "frequency" in updates:
-            updates["next_run"] = self._calculate_next_run(
-                ExportFrequency(updates["frequency"])
-            )
+            updates["next_run"] = self._calculate_next_run(ExportFrequency(updates["frequency"]))
 
         result = await self.db.export_schedules.update_one(
             {"_id": ObjectId(schedule_id)}, {"$set": updates}
@@ -91,14 +87,10 @@ class ScheduledExportService:
 
     async def delete_export_schedule(self, schedule_id: str) -> bool:
         """Delete an export schedule"""
-        result = await self.db.export_schedules.delete_one(
-            {"_id": ObjectId(schedule_id)}
-        )
+        result = await self.db.export_schedules.delete_one({"_id": ObjectId(schedule_id)})
         return result.deleted_count > 0
 
-    async def get_export_schedules(
-        self, enabled_only: bool = False
-    ) -> list[dict[str, Any]]:
+    async def get_export_schedules(self, enabled_only: bool = False) -> list[dict[str, Any]]:
         """Get all export schedules"""
         query = {"enabled": True} if enabled_only else {}
 
@@ -199,13 +191,9 @@ class ScheduledExportService:
         if "status" in filters:
             query["status"] = filters["status"]
         if "start_date" in filters:
-            query["start_time"] = {
-                "$gte": datetime.fromisoformat(filters["start_date"])
-            }
+            query["start_time"] = {"$gte": datetime.fromisoformat(filters["start_date"])}
         if "end_date" in filters:
-            query.setdefault("start_time", {})["$lte"] = datetime.fromisoformat(
-                filters["end_date"]
-            )
+            query.setdefault("start_time", {})["$lte"] = datetime.fromisoformat(filters["end_date"])
 
         cursor = self.db.sessions.find(query).sort("start_time", -1)
         sessions = await cursor.to_list(length=10000)

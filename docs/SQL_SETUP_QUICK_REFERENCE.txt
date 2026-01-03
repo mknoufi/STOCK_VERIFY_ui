@@ -55,13 +55,13 @@ Ask your SQL Server admin for:
 
 2. Edit with your credentials:
    nano .env
-   
+
    (Update these 5 lines:)
    export SQL_SERVER_HOST="192.168.1.100"
    export SQL_SERVER_PORT="1433"
    export SQL_SERVER_DATABASE="ERP"
    export SQL_SERVER_USER="admin"
-   export SQL_SERVER_PASSWORD="MyPassword"
+   export SQL_SERVER_PASSWORD="CHANGE_ME"  # pragma: allowlist secret
 
 3. Load environment:
    source .env

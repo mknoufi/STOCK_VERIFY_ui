@@ -9,12 +9,7 @@
 
 import React, { useState } from "react";
 import { Stack, Slot } from "expo-router";
-import {
-  View,
-  StyleSheet,
-  Platform,
-  useWindowDimensions,
-} from "react-native";
+import { View, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import { auroraTheme } from "@/theme/auroraTheme";
 import { RoleLayoutGuard } from "@/components/auth/RoleLayoutGuard";
 import { SupervisorSidebar } from "@/components/navigation";
@@ -25,10 +20,7 @@ export default function SupervisorLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <RoleLayoutGuard
-      allowedRoles={["supervisor", "admin"]}
-      layoutName="SupervisorLayout"
-    >
+    <RoleLayoutGuard allowedRoles={["supervisor", "admin"]} layoutName="SupervisorLayout">
       {isLargeScreen ? (
         <View style={styles.webContainer}>
           <SupervisorSidebar
@@ -57,4 +49,3 @@ const styles = StyleSheet.create({
     backgroundColor: auroraTheme.colors.background.primary,
   },
 });
-

@@ -118,10 +118,6 @@ Source of truth: `docs/REFERENCES.md` (governance rule: only the links listed th
   - Docs: https://axios-http.com/docs/intro
   - GitHub: https://github.com/axios/axios
 
-- React Native MMKV
-  - Docs: https://mrousavy.com/react-native-mmkv/
-  - GitHub: https://github.com/mrousavy/react-native-mmkv
-
 - Async Storage
   - Docs: https://react-native-async-storage.github.io/async-storage/
   - GitHub: https://github.com/react-native-async-storage/async-storage

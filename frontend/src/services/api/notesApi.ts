@@ -9,11 +9,7 @@ export interface Note {
   body: string;
 }
 
-export async function listNotes(params?: {
-  q?: string;
-  page?: number;
-  pageSize?: number;
-}) {
+export async function listNotes(params?: { q?: string; page?: number; pageSize?: number }) {
   const res = await apiClient.get("/api/notes", { params });
   return res.data;
 }

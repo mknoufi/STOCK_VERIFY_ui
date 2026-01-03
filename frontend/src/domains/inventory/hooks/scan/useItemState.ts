@@ -62,9 +62,7 @@ export const useItemState = () => {
       const newState = { ...prev, ...updates };
       // Auto-update MRP variants when item changes
       if (updates.currentItem !== undefined) {
-        newState.mrpVariantOptions = getNormalizedMrpVariants(
-          updates.currentItem ?? null,
-        );
+        newState.mrpVariantOptions = getNormalizedMrpVariants(updates.currentItem ?? null);
       }
       return newState;
     });

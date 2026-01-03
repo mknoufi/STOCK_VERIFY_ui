@@ -16,11 +16,18 @@ Usage:
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from backend/.env
+backend_env_path = Path(__file__).parent.parent / "backend" / ".env"
+if backend_env_path.exists():
+    load_dotenv(backend_env_path)
 
 try:
     from crewai import Agent, Crew, Process, Task
     from crewai.tools import tool
     from langchain_community.tools import DuckDuckGoSearchRun
+    import mem0 # Integrated from Awesome-AI-Agents
 except ImportError:
     print("Please install required packages: pip install -r agents/requirements.txt")
     sys.exit(1)
@@ -28,6 +35,14 @@ except ImportError:
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Initialize AgentOps for Observability (from Awesome-AI-Agents)
+try:
+    import agentops
+    if os.getenv("AGENTOPS_API_KEY"):
+        agentops.init(api_key=os.getenv("AGENTOPS_API_KEY"), tags=["stock-verify-crew"])
+except ImportError:
+    pass
 
 # Set up for OpenTelemetry tracing
 os.environ["LANGSMITH_OTEL_ENABLED"] = "true"
@@ -140,6 +155,30 @@ def lint_code_tool(file_path: str) -> str:
         return f"Error linting: {e}"
 
 
+@tool("Security Scan")
+def security_scan_tool(target_path: str = "backend/") -> str:
+    """Run bandit security scanner on a file or directory"""
+    try:
+        import subprocess
+
+        base_path = Path(__file__).parent.parent
+
+        # Ensure target is safe (simple check)
+        if ".." in target_path or target_path.startswith("/"):
+            return "Error: Invalid path. Use relative paths within the project."
+
+        result = subprocess.run(
+            ["bandit", "-r", target_path, "-f", "text"],
+            capture_output=True,
+            text=True,
+            cwd=str(base_path),
+            timeout=60,
+        )
+        return result.stdout[:5000] if result.stdout else "No security issues found."
+    except Exception as e:
+        return f"Error running security scan: {e}"
+
+
 @tool("Web Search")
 def web_search_tool(query: str) -> str:
     """Search the web for documentation, error solutions, or security vulnerabilities."""
@@ -148,6 +187,29 @@ def web_search_tool(query: str) -> str:
         return search.run(query)
     except Exception as e:
         return f"Error searching web: {e}"
+
+
+@tool("Long Term Memory")
+def memory_tool(action: str, data: str) -> str:
+    """
+    Store or retrieve information from long-term memory.
+    Args:
+        action: 'add' to store info, 'search' to retrieve info.
+        data: The text to store or the query to search.
+    """
+    try:
+        from mem0 import Memory
+        m = Memory()
+        if action == "add":
+            m.add(data, user_id="stock_verify_agent")
+            return "Successfully added to memory."
+        elif action == "search":
+            results = m.search(data, user_id="stock_verify_agent")
+            return str(results)
+        else:
+            return "Invalid action. Use 'add' or 'search'."
+    except Exception as e:
+        return f"Error accessing memory: {e}"
 
 
 # ============================================================================
@@ -166,7 +228,14 @@ vulnerabilities with expertise in Python/FastAPI and React Native applications.
 Focus on: SQL injection (CWE-89), CORS misconfiguration (CWE-942),
 authentication bypasses, and sensitive data exposure.
 You have access to the web to search for the latest CVEs and security best practices.""",
-        tools=[read_file_tool, search_code_tool, lint_code_tool, web_search_tool],
+        tools=[
+            read_file_tool,
+            search_code_tool,
+            lint_code_tool,
+            web_search_tool,
+            security_scan_tool,
+            memory_tool,
+        ],
         verbose=True,
         allow_delegation=False,
     )
@@ -181,7 +250,7 @@ def create_code_reviewer() -> Agent:
 Python and TypeScript. You enforce clean code principles and project-specific patterns.
 {PROJECT_CONTEXT}
 Ensure: Type hints, docstrings, error handling, and consistent API patterns.""",
-        tools=[read_file_tool, list_dir_tool, search_code_tool],
+        tools=[read_file_tool, list_dir_tool, search_code_tool, memory_tool],
         verbose=True,
         allow_delegation=True,
     )
@@ -196,7 +265,7 @@ def create_test_engineer() -> Agent:
 {PROJECT_CONTEXT}
 Focus on: Unit tests, integration tests, edge cases, error scenarios,
 and API contract validation. Target 80%+ coverage.""",
-        tools=[read_file_tool, run_tests_tool, search_code_tool],
+        tools=[read_file_tool, run_tests_tool, search_code_tool, memory_tool],
         verbose=True,
         allow_delegation=False,
     )
@@ -211,7 +280,7 @@ def create_documentation_writer() -> Agent:
 documentation following Google/NumPy docstring conventions.
 {PROJECT_CONTEXT}
 Generate: Docstrings, README sections, API documentation, and usage examples.""",
-        tools=[read_file_tool, list_dir_tool],
+        tools=[read_file_tool, list_dir_tool, memory_tool],
         verbose=True,
         allow_delegation=False,
     )
@@ -227,7 +296,14 @@ traces execution paths, and identifies root causes.
 {PROJECT_CONTEXT}
 Approach: Gather symptoms → Form hypotheses → Verify with evidence → Propose fix.
 You can search the web for error messages and library documentation.""",
-        tools=[read_file_tool, search_code_tool, run_tests_tool, lint_code_tool, web_search_tool],
+        tools=[
+            read_file_tool,
+            search_code_tool,
+            run_tests_tool,
+            lint_code_tool,
+            web_search_tool,
+            memory_tool,
+        ],
         verbose=True,
         allow_delegation=True,
     )

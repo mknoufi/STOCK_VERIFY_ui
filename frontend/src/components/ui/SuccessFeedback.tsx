@@ -120,16 +120,7 @@ export const SuccessFeedback: React.FC<SuccessFeedbackProps> = ({
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [
-    visible,
-    opacity,
-    scale,
-    iconScale,
-    duration,
-    haptic,
-    config.hapticType,
-    onComplete,
-  ]);
+  }, [visible, opacity, scale, iconScale, duration, haptic, config.hapticType, onComplete]);
 
   if (!visible) return null;
 

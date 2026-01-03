@@ -37,10 +37,9 @@ import {
   modernShadows,
   modernAnimations,
 } from "../styles/modernDesignSystem";
-import { useThemeContextSafe } from "../theme/ThemeContext";
+import { useThemeContextSafe } from "../context/ThemeContext";
 
-const AnimatedTouchableOpacity =
-  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export type ButtonVariant =
   | "primary"
@@ -88,7 +87,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   accessibilityHint,
 }) => {
   const themeContext = useThemeContextSafe();
-  const theme = themeContext?.theme;
+  const theme = themeContext?.themeLegacy;
 
   // Animation values
   const scale = useSharedValue(1);
@@ -130,7 +129,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   // Get button styles based on variant and size
   const getButtonStyles = (): ViewStyle => {
     const baseStyle: ViewStyle = {
-      borderRadius: theme ? theme.radius.md : modernBorderRadius.button,
+      borderRadius: theme ? theme.borderRadius.md : modernBorderRadius.button,
       alignItems: "center",
       justifyContent: "center",
       flexDirection: "row",
@@ -242,9 +241,7 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   const renderIcon = () => {
     if (!icon || loading) return null;
 
-    return (
-      <Ionicons name={icon} size={sizeConfig.iconSize} color={getIconColor()} />
-    );
+    return <Ionicons name={icon} size={sizeConfig.iconSize} color={getIconColor()} />;
   };
 
   // Render button content
@@ -255,7 +252,9 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
           size="small"
           color={
             variant === "outline" || variant === "ghost"
-              ? (theme ? theme.colors.accent : modernColors.primary[500])
+              ? theme
+                ? theme.colors.accent
+                : modernColors.primary[500]
               : "#FFFFFF"
           }
         />
@@ -276,7 +275,8 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     const buttonStyle = [getButtonStyles(), style];
 
     if (variant === "gradient") {
-      const colors = gradientColors || (theme ? theme.gradients.primary : modernColors.gradients.primary);
+      const colors =
+        gradientColors || (theme ? theme.gradients.primary : modernColors.gradients.primary);
       return (
         <AnimatedTouchableOpacity
           onPress={onPress}

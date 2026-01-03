@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -13,9 +13,9 @@ RUN apt-get update && apt-get install -y \
 # Install Microsoft ODBC Driver for SQL Server (if needed, usually good for pyodbc)
 # For now, we stick to basic unixodbc unless specific driver version is required.
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-COPY . .
+COPY . /app/backend
 
 CMD ["uvicorn", "backend.server:app", "--host", "0.0.0.0", "--port", "8001"]

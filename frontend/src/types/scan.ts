@@ -43,12 +43,7 @@ export interface Item {
 
 export type ScannerMode = "item" | "serial";
 
-export type PhotoProofType =
-  | "ITEM"
-  | "SERIAL"
-  | "LOCATION"
-  | "DAMAGE"
-  | "SHELF";
+export type PhotoProofType = "ITEM" | "SERIAL" | "LOCATION" | "DAMAGE" | "SHELF";
 
 export interface ScanFormData {
   countedQty: string;
@@ -71,7 +66,8 @@ export interface CreateCountLinePayload {
   variance_note?: string | null;
   remark?: string | null;
   item_condition?: string;
-  serial_numbers?: SerialInput[];
+  condition_details?: string;
+  serial_numbers?: string[];
   floor_no?: string | null;
   rack_no?: string | null;
   mark_location?: string | null;
@@ -86,6 +82,7 @@ export interface CreateCountLinePayload {
   variant_barcode?: string;
   category_correction?: string;
   subcategory_correction?: string;
+  batches?: CountLineBatch[];
 }
 
 export interface ApiErrorResponse {

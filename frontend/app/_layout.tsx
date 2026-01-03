@@ -17,23 +17,26 @@ import { ErrorBoundary } from "../src/components/ErrorBoundary";
 import { ThemeService } from "../src/services/themeService";
 import { useSettingsStore } from "../src/store/settingsStore";
 import { useTheme } from "../src/hooks/useTheme";
-import { useSystemTheme } from "../src/hooks/useSystemTheme";
 import { ToastProvider } from "../src/components/feedback/ToastProvider";
 import { initializeBackendURL } from "../src/utils/backendUrl";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../src/services/queryClient";
-
-import { UnistylesThemeProvider } from "../src/theme/Provider";
-import { ThemeProvider } from "../src/theme/ThemeContext";
+import { ThemeProvider } from "../src/context/ThemeContext";
 import { initReactotron } from "../src/services/devtools/reactotron";
-import {
-  startOfflineQueue,
-  stopOfflineQueue,
-} from "../src/services/offlineQueue";
+import { startOfflineQueue, stopOfflineQueue } from "../src/services/offlineQueue";
 import apiClient from "../src/services/httpClient";
 import { initSentry } from "../src/services/sentry";
 import { mmkvStorage } from "../src/services/mmkvStorage";
 import { AuthGuard } from "../src/components/auth/AuthGuard";
+import { modernColors, modernTypography } from "../src/styles/modernDesignSystem";
+
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 // keep the splash screen visible while complete fetching resources
 // On web, wrap in try-catch to prevent blocking
@@ -51,6 +54,29 @@ if (__DEV__) {
   console.log("🌐 [DEV] _layout.tsx module loaded, Platform:", Platform.OS);
 }
 
+function RootStack() {
+  const theme = useTheme();
+
+  return (
+    <>
+      <StatusBar style={theme.isDark ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" />
+        <Stack.Screen name="register" />
+        <Stack.Screen name="help" />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    </>
+  );
+}
+
 // Provide a single place to bootstrap auth, settings, network listeners, and routing.
 export default function RootLayout() {
   if (__DEV__) {
@@ -58,10 +84,15 @@ export default function RootLayout() {
   }
   const { user, isLoading, loadStoredAuth } = useAuthStore();
   const { loadSettings } = useSettingsStore();
-  const theme = useTheme();
-  useSystemTheme();
   const segments = useSegments();
-  const router = useRouter();
+  const _router = useRouter();
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
   const [isInitialized, setIsInitialized] = React.useState(false);
   const [initError, setInitError] = React.useState<string | null>(null);
   const cleanupRef = React.useRef<(() => void)[]>([]);
@@ -80,27 +111,34 @@ export default function RootLayout() {
     initReactotron();
     // Safety: Maximum initialization timeout (10 seconds)
     const maxTimeout = setTimeout(() => {
-      console.warn(
-        "⚠️ Maximum initialization timeout reached - forcing app to render",
-      );
+      console.warn("⚠️ Maximum initialization timeout reached - forcing app to render");
       setIsInitialized(true);
     }, 10000);
 
     // Initialize app with error handling
     const initialize = async (): Promise<void> => {
-      console.log("🔵 [STEP 5] Initialize function called");
-      console.log("🔵 [STEP 5] Starting async initialization...");
+      __DEV__ && console.log("🔵 [STEP 5] Initialize function called");
+      __DEV__ && console.log("🔵 [STEP 5] Starting async initialization...");
+
+      // Wait for fonts to load
+      if (!fontsLoaded) {
+        return;
+      }
 
       // Emergency fallback: force initialization after 3 seconds
       const emergencyTimeout = setTimeout(() => {
-        console.error("🚨 [EMERGENCY] FORCING INITIALIZATION AFTER 3s!");
-        console.error("🚨 Current isLoading:", useAuthStore.getState().isLoading);
-        console.error("🚨 Current isInitialized:", isInitialized);
+        if (__DEV__) {
+          console.error("🚨 [EMERGENCY] FORCING INITIALIZATION AFTER 3s!");
+          console.error("🚨 Current isLoading:", useAuthStore.getState().isLoading);
+          console.error("🚨 Current isInitialized:", isInitialized);
+        }
         useAuthStore.getState().setLoading(false);
         useAuthStore.setState({ isInitialized: true });
         setIsInitialized(true);
         setInitError("Initialization timed out - some features may not work");
-        SplashScreen.hideAsync().catch((e) => console.error("SplashScreen hide failed:", e));
+        SplashScreen.hideAsync().catch((e) => {
+          __DEV__ && console.error("SplashScreen hide failed:", e);
+        });
       }, 3000);
 
       try {
@@ -108,10 +146,7 @@ export default function RootLayout() {
         try {
           const mmkvPromise = mmkvStorage.initialize();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("MMKV initialization timeout")),
-              2000,
-            ),
+            setTimeout(() => reject(new Error("MMKV initialization timeout")), 2000)
           );
           await Promise.race([mmkvPromise, timeoutPromise]);
         } catch (e) {
@@ -122,18 +157,12 @@ export default function RootLayout() {
         try {
           const backendUrlPromise = initializeBackendURL();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Backend URL initialization timeout")),
-              5000,
-            ),
+            setTimeout(() => reject(new Error("Backend URL initialization timeout")), 5000)
           );
           await Promise.race([backendUrlPromise, timeoutPromise]);
         } catch (urlError) {
           if (__DEV__) {
-            console.warn(
-              "⚠️ Backend URL initialization failed or timed out:",
-              urlError,
-            );
+            console.warn("⚠️ Backend URL initialization failed or timed out:", urlError);
           }
           // Continue anyway - will use default URL
         }
@@ -142,7 +171,7 @@ export default function RootLayout() {
         try {
           const authPromise = loadStoredAuth();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Auth loading timeout")), 3000),
+            setTimeout(() => reject(new Error("Auth loading timeout")), 3000)
           );
           await Promise.race([authPromise, timeoutPromise]);
         } catch (authError) {
@@ -156,18 +185,12 @@ export default function RootLayout() {
         try {
           const settingsPromise = loadSettings();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Settings loading timeout")),
-              3000,
-            ),
+            setTimeout(() => reject(new Error("Settings loading timeout")), 3000)
           );
           await Promise.race([settingsPromise, timeoutPromise]);
         } catch (settingsError) {
           if (__DEV__) {
-            console.warn(
-              "⚠️ Settings loading failed or timed out:",
-              settingsError,
-            );
+            console.warn("⚠️ Settings loading failed or timed out:", settingsError);
           }
           // Continue anyway - will use defaults
         }
@@ -229,7 +252,7 @@ export default function RootLayout() {
         useAuthStore.setState({ isInitialized: true }); // Ensure store is initialized
         setIsInitialized(true);
         setInitError(null);
-        console.log("✅ [INIT] Initialization completed successfully");
+        __DEV__ && console.log("✅ [INIT] Initialization completed successfully");
         await SplashScreen.hideAsync();
       } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
@@ -253,7 +276,7 @@ export default function RootLayout() {
         }
         setInitError(errorMessage);
         // Always set initialized to true to prevent infinite loading
-        console.log("⚠️ [INIT] Initialization had errors but continuing...");
+        console.warn("⚠️ [INIT] Initialization had errors but continuing...");
         clearTimeout(maxTimeout);
         clearTimeout(emergencyTimeout);
         useAuthStore.getState().setLoading(false);
@@ -278,7 +301,7 @@ export default function RootLayout() {
     };
     // The store functions are stable but lint cannot verify it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fontsLoaded]);
 
   React.useEffect(() => {
     // Wait for initialization and loading to complete
@@ -306,19 +329,19 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#0F172A", // modernColors.background.primary
+          backgroundColor: modernColors.background.primary,
         }}
       >
         <ActivityIndicator
-          color="#3B82F6" // modernColors.primary[500]
+          color={modernColors.primary[500]}
           style={{ marginBottom: 24 }}
           size="large"
         />
         <Text
           style={{
-            color: "#F8FAFC", // modernColors.text.primary
-            fontSize: 24, // modernTypography.heading.h3.fontSize
-            fontWeight: "700", // modernTypography.heading.h3.fontWeight
+            color: modernColors.text.primary,
+            fontSize: modernTypography.h3.fontSize,
+            fontWeight: "700",
             letterSpacing: 0.5,
           }}
         >
@@ -326,8 +349,8 @@ export default function RootLayout() {
         </Text>
         <Text
           style={{
-            color: "#94A3B8", // modernColors.text.tertiary
-            fontSize: 14, // modernTypography.body.small.fontSize
+            color: modernColors.text.tertiary,
+            fontSize: modernTypography.body.small.fontSize,
             marginTop: 8,
             letterSpacing: 0.5,
           }}
@@ -340,7 +363,7 @@ export default function RootLayout() {
               marginTop: 32,
               padding: 16,
               backgroundColor: "rgba(239, 68, 68, 0.1)", // modernColors.error with opacity
-              borderRadius: 12, // modernBorderRadius.lg
+              borderRadius: 12,
               borderWidth: 1,
               borderColor: "rgba(239, 68, 68, 0.2)",
               maxWidth: 300,
@@ -348,7 +371,7 @@ export default function RootLayout() {
           >
             <Text
               style={{
-                color: "#EF4444", // modernColors.error
+                color: modernColors.error.main,
                 fontSize: 12,
                 textAlign: "center",
               }}
@@ -369,7 +392,7 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#0F172A",
+          backgroundColor: modernColors.background.primary,
           padding: 20,
         }}
       >
@@ -388,7 +411,7 @@ export default function RootLayout() {
         </View>
         <Text
           style={{
-            color: "#EF4444",
+            color: modernColors.error.main,
             fontSize: 20,
             fontWeight: "bold",
             marginBottom: 12,
@@ -398,7 +421,7 @@ export default function RootLayout() {
         </Text>
         <Text
           style={{
-            color: "#94A3B8",
+            color: modernColors.text.tertiary,
             fontSize: 14,
             marginBottom: 32,
             textAlign: "center",
@@ -416,7 +439,13 @@ export default function RootLayout() {
             borderRadius: 8,
           }}
         >
-          <Text style={{ color: "#3B82F6", fontSize: 14, fontWeight: "600" }}>
+          <Text
+            style={{
+              color: modernColors.primary[500],
+              fontSize: 14,
+              fontWeight: "600",
+            }}
+          >
             Attempting to continue...
           </Text>
         </View>
@@ -428,26 +457,11 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <ThemeProvider>
-          <UnistylesThemeProvider>
-            <ToastProvider>
-              <AuthGuard>
-                <StatusBar style={theme.isDark ? "light" : "dark"} />
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: "#121212" },
-                  }}
-                >
-                  <Stack.Screen name="index" options={{ headerShown: false }} />
-                  <Stack.Screen name="login" options={{ headerShown: false }} />
-                  <Stack.Screen name="welcome" />
-                  <Stack.Screen name="register" />
-                  <Stack.Screen name="help" />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-              </AuthGuard>
-            </ToastProvider>
-          </UnistylesThemeProvider>
+          <ToastProvider>
+            <AuthGuard>
+              <RootStack />
+            </AuthGuard>
+          </ToastProvider>
         </ThemeProvider>
       </ErrorBoundary>
     </QueryClientProvider>

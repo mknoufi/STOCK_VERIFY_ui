@@ -4,12 +4,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Animated, {
   useAnimatedStyle,
   withRepeat,

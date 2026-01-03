@@ -62,18 +62,14 @@ export function usePersistentState<T>(
     (newValue: T | ((prev: T) => T)) => {
       setValue((prev) => {
         const resolvedValue =
-          typeof newValue === "function"
-            ? (newValue as (prev: T) => T)(prev)
-            : newValue;
+          typeof newValue === "function" ? (newValue as (prev: T) => T)(prev) : newValue;
 
         // Persist asynchronously (fire and forget)
-        AsyncStorage.setItem(storageKey, JSON.stringify(resolvedValue)).catch(
-          (error) => {
-            if (__DEV__) {
-              console.warn(`Failed to persist state for key "${key}":`, error);
-            }
+        AsyncStorage.setItem(storageKey, JSON.stringify(resolvedValue)).catch((error) => {
+          if (__DEV__) {
+            console.warn(`Failed to persist state for key "${key}":`, error);
           }
-        );
+        });
 
         return resolvedValue;
       });

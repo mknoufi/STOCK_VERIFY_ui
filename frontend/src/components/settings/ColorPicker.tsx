@@ -7,10 +7,7 @@ import React from "react";
 import { View, Text, StyleSheet, Platform, Pressable } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
+import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 import { auroraTheme } from "../../theme/auroraTheme";
 
@@ -74,9 +71,7 @@ const ColorSwatch: React.FC<{
           disabled && styles.disabledSwatch,
         ]}
       >
-        {isSelected && (
-          <Ionicons name="checkmark" size={20} color={color.textColor} />
-        )}
+        {isSelected && <Ionicons name="checkmark" size={20} color={color.textColor} />}
       </View>
       <Text
         style={[
@@ -98,9 +93,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
   disabled = false,
 }) => {
   // Find the matching color (by hex or id)
-  const selectedColor = COLOR_PALETTE.find(
-    (c) => c.color === value || c.id === value
-  );
+  const selectedColor = COLOR_PALETTE.find((c) => c.color === value || c.id === value);
   const selectedId = selectedColor?.id || "aurora";
 
   const handleColorSelect = (color: (typeof COLOR_PALETTE)[number]) => {
@@ -116,15 +109,15 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
             size={18}
             color={disabled ? auroraTheme.colors.text.tertiary : auroraTheme.colors.text.primary}
           />
-          <Text style={[styles.label, disabled && styles.disabledLabel]}>
-            Primary Color
-          </Text>
+          <Text style={[styles.label, disabled && styles.disabledLabel]}>Primary Color</Text>
         </View>
         <View style={styles.selectedPreview}>
           <View
             style={[
               styles.previewDot,
-              { backgroundColor: selectedColor?.color || COLOR_PALETTE[0].color },
+              {
+                backgroundColor: selectedColor?.color || COLOR_PALETTE[0].color,
+              },
             ]}
           />
           <Text style={[styles.selectedLabel, disabled && styles.disabledLabel]}>

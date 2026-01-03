@@ -18,17 +18,18 @@ function init(modules) {
     }
 
     // Override getSemanticDiagnostics to filter out text validation errors
-    proxy.getSemanticDiagnostics = function(fileName) {
+    proxy.getSemanticDiagnostics = function (fileName) {
       const prior = oldLS.getSemanticDiagnostics(fileName);
 
       // Filter out React Native text validation errors
-      return prior.filter(diagnostic => {
-        const messageText = typeof diagnostic.messageText === 'string'
-          ? diagnostic.messageText
-          : diagnostic.messageText?.messageText || '';
+      return prior.filter((diagnostic) => {
+        const messageText =
+          typeof diagnostic.messageText === "string"
+            ? diagnostic.messageText
+            : diagnostic.messageText?.messageText || "";
 
         // Filter out the specific error message
-        return !messageText.includes('must be rendered within a <Text/>');
+        return !messageText.includes("must be rendered within a <Text/>");
       });
     };
 

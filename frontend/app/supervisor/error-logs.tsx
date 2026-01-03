@@ -29,12 +29,7 @@ import {
   resolveError,
 } from "../../src/services/api/api";
 import { useToast } from "../../src/components/feedback/ToastProvider";
-import {
-  AuroraBackground,
-  GlassCard,
-  StatsCard,
-  AnimatedPressable,
-} from "../../src/components/ui";
+import { AuroraBackground, GlassCard, StatsCard, AnimatedPressable } from "../../src/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 
 interface ErrorLog {
@@ -89,15 +84,12 @@ export default function ErrorLogsScreen() {
           filters.severity || undefined,
           undefined,
           undefined,
-          filters.resolved,
+          filters.resolved
         );
         if (pageNum === 1) {
           setErrors(response.errors || []);
         } else {
-          setErrors((prevErrors) => [
-            ...prevErrors,
-            ...(response.errors || []),
-          ]);
+          setErrors((prevErrors) => [...prevErrors, ...(response.errors || [])]);
         }
         setHasMore(response.pagination?.has_next || false);
       } catch {
@@ -109,7 +101,7 @@ export default function ErrorLogsScreen() {
         setRefreshing(false);
       }
     },
-    [filters, show],
+    [filters, show]
   );
 
   const loadStats = React.useCallback(async () => {
@@ -127,8 +119,7 @@ export default function ErrorLogsScreen() {
   }, [loadErrors, loadStats]);
 
   const handleRefresh = async () => {
-    if (Platform.OS !== "web")
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     setPage(1);
     await Promise.all([loadErrors(1), loadStats()]);
@@ -169,8 +160,7 @@ export default function ErrorLogsScreen() {
       setResolutionNote("");
       handleRefresh();
     } catch (error: any) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show(`Failed to resolve error: ${error.message}`, "error");
     } finally {
       setResolving(false);
@@ -222,10 +212,7 @@ export default function ErrorLogsScreen() {
         padding={auroraTheme.spacing.md}
         borderRadius={auroraTheme.borderRadius.lg}
         style={{
-          borderColor:
-            error.severity === "critical"
-              ? auroraTheme.colors.error[500]
-              : undefined,
+          borderColor: error.severity === "critical" ? auroraTheme.colors.error[500] : undefined,
         }}
       >
         <View style={styles.errorHeader}>
@@ -255,12 +242,7 @@ export default function ErrorLogsScreen() {
             padding={auroraTheme.spacing.xs}
             borderRadius={auroraTheme.borderRadius.full}
           >
-            <Text
-              style={[
-                styles.severityText,
-                { color: getSeverityColor(error.severity) },
-              ]}
-            >
+            <Text style={[styles.severityText, { color: getSeverityColor(error.severity) }]}>
               {error.severity.toUpperCase()}
             </Text>
           </GlassCard>
@@ -268,22 +250,12 @@ export default function ErrorLogsScreen() {
 
         <View style={styles.errorMeta}>
           <View style={styles.metaRow}>
-            <Ionicons
-              name="time-outline"
-              size={14}
-              color={auroraTheme.colors.text.tertiary}
-            />
-            <Text style={styles.metaText}>
-              {formatTimestamp(error.timestamp)}
-            </Text>
+            <Ionicons name="time-outline" size={14} color={auroraTheme.colors.text.tertiary} />
+            <Text style={styles.metaText}>{formatTimestamp(error.timestamp)}</Text>
           </View>
           {error.endpoint && (
             <View style={styles.metaRow}>
-              <Ionicons
-                name="globe-outline"
-                size={14}
-                color={auroraTheme.colors.text.tertiary}
-              />
+              <Ionicons name="globe-outline" size={14} color={auroraTheme.colors.text.tertiary} />
               <Text style={styles.metaText}>
                 {error.method} {error.endpoint}
               </Text>
@@ -291,11 +263,7 @@ export default function ErrorLogsScreen() {
           )}
           {error.user && (
             <View style={styles.metaRow}>
-              <Ionicons
-                name="person-outline"
-                size={14}
-                color={auroraTheme.colors.text.tertiary}
-              />
+              <Ionicons name="person-outline" size={14} color={auroraTheme.colors.text.tertiary} />
               <Text style={styles.metaText}>{error.user}</Text>
             </View>
           )}
@@ -308,14 +276,8 @@ export default function ErrorLogsScreen() {
             borderRadius={auroraTheme.borderRadius.md}
             style={styles.resolvedBadge}
           >
-            <Ionicons
-              name="checkmark-circle"
-              size={16}
-              color={auroraTheme.colors.success[500]}
-            />
-            <Text style={styles.resolvedText}>
-              Resolved by {error.resolved_by}
-            </Text>
+            <Ionicons name="checkmark-circle" size={16} color={auroraTheme.colors.success[500]} />
+            <Text style={styles.resolvedText}>Resolved by {error.resolved_by}</Text>
           </GlassCard>
         )}
       </GlassCard>
@@ -327,35 +289,20 @@ export default function ErrorLogsScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View
-          entering={FadeInDown.delay(100).springify()}
-          style={styles.header}
-        >
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
           <View style={styles.headerLeft}>
-            <AnimatedPressable
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color={auroraTheme.colors.text.primary}
-              />
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Error Monitoring</Text>
-              <Text style={styles.pageSubtitle}>
-                System exceptions & failures
-              </Text>
+              <Text style={styles.pageSubtitle}>System exceptions & failures</Text>
             </View>
           </View>
         </Animated.View>
 
         {stats && (
-          <Animated.View
-            entering={FadeInDown.delay(200).springify()}
-            style={styles.statsContainer}
-          >
+          <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
             <StatsCard
               title="Total Errors"
               value={stats.total?.toString() || "0"}
@@ -381,10 +328,7 @@ export default function ErrorLogsScreen() {
         )}
 
         {/* Filters */}
-        <Animated.View
-          entering={FadeInDown.delay(300).springify()}
-          style={styles.filtersContainer}
-        >
+        <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.filtersContainer}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -451,10 +395,7 @@ export default function ErrorLogsScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[
-              styles.filtersScroll,
-              { marginTop: auroraTheme.spacing.sm },
-            ]}
+            contentContainerStyle={[styles.filtersScroll, { marginTop: auroraTheme.spacing.sm }]}
           >
             <AnimatedPressable
               onPress={() => setFilters({ ...filters, resolved: undefined })}
@@ -543,10 +484,7 @@ export default function ErrorLogsScreen() {
         <View style={styles.listContainer}>
           {loading && errors.length === 0 ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator
-                size="large"
-                color={auroraTheme.colors.primary[500]}
-              />
+              <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
               <Text style={styles.loadingText}>Loading error logs...</Text>
             </View>
           ) : (
@@ -578,9 +516,7 @@ export default function ErrorLogsScreen() {
               ListFooterComponent={
                 loading && errors.length > 0 ? (
                   <View style={{ padding: 20 }}>
-                    <ActivityIndicator
-                      color={auroraTheme.colors.primary[500]}
-                    />
+                    <ActivityIndicator color={auroraTheme.colors.primary[500]} />
                   </View>
                 ) : null
               }
@@ -596,11 +532,7 @@ export default function ErrorLogsScreen() {
           transparent={true}
           onRequestClose={() => setShowDetailModal(false)}
         >
-          <AuroraBackground
-            variant="primary"
-            intensity="high"
-            style={styles.modalOverlay}
-          >
+          <AuroraBackground variant="primary" intensity="high" style={styles.modalOverlay}>
             <GlassCard
               variant="modal"
               padding={auroraTheme.spacing.lg}
@@ -610,11 +542,7 @@ export default function ErrorLogsScreen() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Error Details</Text>
                 <AnimatedPressable onPress={() => setShowDetailModal(false)}>
-                  <Ionicons
-                    name="close"
-                    size={24}
-                    color={auroraTheme.colors.text.primary}
-                  />
+                  <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
                 </AnimatedPressable>
               </View>
 
@@ -624,8 +552,7 @@ export default function ErrorLogsScreen() {
                     style={[
                       styles.detailBadge,
                       {
-                        backgroundColor:
-                          getSeverityColor(selectedError.severity) + "20",
+                        backgroundColor: getSeverityColor(selectedError.severity) + "20",
                       },
                     ]}
                   >
@@ -639,12 +566,8 @@ export default function ErrorLogsScreen() {
                     </Text>
                   </View>
 
-                  <Text style={styles.detailMessage}>
-                    {selectedError.error_message}
-                  </Text>
-                  <Text style={styles.detailType}>
-                    {selectedError.error_type}
-                  </Text>
+                  <Text style={styles.detailMessage}>{selectedError.error_message}</Text>
+                  <Text style={styles.detailType}>{selectedError.error_type}</Text>
 
                   <View style={styles.separator} />
 
@@ -658,9 +581,7 @@ export default function ErrorLogsScreen() {
                   {selectedError.error_code && (
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Error Code</Text>
-                      <Text style={styles.detailValue}>
-                        {selectedError.error_code}
-                      </Text>
+                      <Text style={styles.detailValue}>{selectedError.error_code}</Text>
                     </View>
                   )}
 
@@ -681,9 +602,7 @@ export default function ErrorLogsScreen() {
                         padding={auroraTheme.spacing.sm}
                         borderRadius={auroraTheme.borderRadius.md}
                       >
-                        <Text style={styles.stackTraceText}>
-                          {selectedError.stack_trace}
-                        </Text>
+                        <Text style={styles.stackTraceText}>{selectedError.stack_trace}</Text>
                       </GlassCard>
                     </View>
                   )}
@@ -697,9 +616,7 @@ export default function ErrorLogsScreen() {
                         borderRadius={auroraTheme.borderRadius.md}
                         style={{ borderColor: auroraTheme.colors.success[500] }}
                       >
-                        <Text style={styles.resolutionText}>
-                          {selectedError.resolution_note}
-                        </Text>
+                        <Text style={styles.resolutionText}>{selectedError.resolution_note}</Text>
                         <View style={styles.resolverInfo}>
                           <Ionicons
                             name="checkmark-circle"
@@ -729,9 +646,7 @@ export default function ErrorLogsScreen() {
                     }}
                   >
                     <Ionicons name="checkmark-circle" size={20} color="white" />
-                    <Text style={styles.resolveButtonText}>
-                      Mark as Resolved
-                    </Text>
+                    <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
                   </AnimatedPressable>
                 )}
               </View>
@@ -746,11 +661,7 @@ export default function ErrorLogsScreen() {
           transparent={true}
           onRequestClose={() => setShowResolveModal(false)}
         >
-          <AuroraBackground
-            variant="primary"
-            intensity="high"
-            style={styles.modalOverlay}
-          >
+          <AuroraBackground variant="primary" intensity="high" style={styles.modalOverlay}>
             <GlassCard
               variant="modal"
               padding={auroraTheme.spacing.lg}
@@ -760,18 +671,12 @@ export default function ErrorLogsScreen() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Resolve Error</Text>
                 <AnimatedPressable onPress={() => setShowResolveModal(false)}>
-                  <Ionicons
-                    name="close"
-                    size={24}
-                    color={auroraTheme.colors.text.primary}
-                  />
+                  <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
                 </AnimatedPressable>
               </View>
 
               <View style={styles.resolveBody}>
-                <Text style={styles.inputLabel}>
-                  Resolution Note (Optional)
-                </Text>
+                <Text style={styles.inputLabel}>Resolution Note (Optional)</Text>
                 <TextInput
                   style={styles.modalInput}
                   placeholder="Describe how this was resolved..."
@@ -799,9 +704,7 @@ export default function ErrorLogsScreen() {
                 ) : (
                   <>
                     <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                    <Text style={styles.resolveButtonText}>
-                      Confirm Resolution
-                    </Text>
+                    <Text style={styles.resolveButtonText}>Confirm Resolution</Text>
                   </>
                 )}
               </AnimatedPressable>

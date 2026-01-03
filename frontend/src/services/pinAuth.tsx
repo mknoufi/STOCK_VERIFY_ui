@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { errorReporter } from "@/services/errorRecovery";
+import { colors, semanticColors, spacing, radius } from "@/theme/unified";
 
 export interface PINSettings {
   pinEnabled: boolean;
@@ -65,7 +66,10 @@ export class PINAuthService {
         this.attemptCount = parseInt(attempts);
       }
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.initialize");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "PINAuthService.initialize"
+      );
     }
   }
 
@@ -88,7 +92,10 @@ export class PINAuthService {
 
       return true;
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.setPIN");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "PINAuthService.setPIN"
+      );
       throw error instanceof Error ? error : new Error(String(error));
     }
   }
@@ -100,12 +107,8 @@ export class PINAuthService {
     try {
       // Check if locked out
       if (this.isLockedOut()) {
-        const remainingSeconds = Math.ceil(
-          (this.lockedUntil! - Date.now()) / 1000
-        );
-        throw new Error(
-          `Too many attempts. Try again in ${remainingSeconds} seconds.`
-        );
+        const remainingSeconds = Math.ceil((this.lockedUntil! - Date.now()) / 1000);
+        throw new Error(`Too many attempts. Try again in ${remainingSeconds} seconds.`);
       }
 
       // Validate format
@@ -134,21 +137,19 @@ export class PINAuthService {
 
       if (this.attemptCount >= this.maxAttempts) {
         this.lockedUntil = Date.now() + this.lockoutDuration * 1000;
-        await SecureStore.setItemAsync(
-          "pin_lockout_time",
-          this.lockedUntil.toString()
-        );
+        await SecureStore.setItemAsync("pin_lockout_time", this.lockedUntil.toString());
         throw new Error(
           `Too many failed attempts. Account locked for ${this.lockoutDuration} seconds.`
         );
       }
 
       const remainingAttempts = this.maxAttempts - this.attemptCount;
-      throw new Error(
-        `Incorrect PIN. ${remainingAttempts} attempts remaining.`
-      );
+      throw new Error(`Incorrect PIN. ${remainingAttempts} attempts remaining.`);
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.verifyPIN");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "PINAuthService.verifyPIN"
+      );
       throw error;
     }
   }
@@ -161,7 +162,10 @@ export class PINAuthService {
       const enabled = await SecureStore.getItemAsync("pin_enabled");
       return enabled === "true";
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.isPINEnabled");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "PINAuthService.isPINEnabled"
+      );
       return false;
     }
   }
@@ -175,7 +179,10 @@ export class PINAuthService {
       await SecureStore.deleteItemAsync("pin_enabled");
       this.attemptCount = 0;
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.disablePIN");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "PINAuthService.disablePIN"
+      );
       throw error;
     }
   }
@@ -277,10 +284,7 @@ export const PINPad: React.FC<PINPadProps> = ({
       <View style={styles.display}>
         <View style={styles.pinDisplay}>
           {Array.from({ length }).map((_, i) => (
-            <View
-              key={i}
-              style={[styles.pinDot, i < pin.length && styles.pinDotFilled]}
-            />
+            <View key={i} style={[styles.pinDot, i < pin.length && styles.pinDotFilled]} />
           ))}
         </View>
       </View>
@@ -369,11 +373,7 @@ export const PINLoginScreen: React.FC<{
 
   return (
     <View style={styles.screenContainer}>
-      <PINPad
-        onPINComplete={handlePINComplete}
-        onCancel={onCancel}
-        title="Enter Your PIN"
-      />
+      <PINPad onPINComplete={handlePINComplete} onCancel={onCancel} title="Enter Your PIN" />
       {error && <Text style={styles.errorText}>{error}</Text>}
       {isVerifying && <Text style={styles.verifyingText}>Verifying...</Text>}
     </View>
@@ -385,69 +385,69 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: semanticColors.background.primary,
   },
   screenContainer: {
     flex: 1,
     justifyContent: "center",
-    padding: 16,
+    padding: spacing.md,
   },
   header: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
     alignItems: "center",
   },
   title: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#333",
+    color: semanticColors.text.primary,
   },
   display: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
     alignItems: "center",
   },
   pinDisplay: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 12,
+    gap: spacing.sm,
   },
   pinDot: {
     width: 16,
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#ddd",
+    borderColor: semanticColors.border.default,
   },
   pinDotFilled: {
-    backgroundColor: "#007AFF",
-    borderColor: "#007AFF",
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
   },
   padContainer: {
-    gap: 12,
-    marginBottom: 24,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   row: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 12,
+    gap: spacing.sm,
   },
   button: {
     width: Dimensions.get("window").width / 4 - 16,
     height: Dimensions.get("window").width / 4 - 16,
-    borderRadius: 12,
-    backgroundColor: "#f0f0f0",
+    borderRadius: radius.lg,
+    backgroundColor: semanticColors.background.tertiary,
     justifyContent: "center",
     alignItems: "center",
   },
   buttonText: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#333",
+    color: semanticColors.text.primary,
   },
   cancelButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    backgroundColor: "#f44336",
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.md,
+    backgroundColor: colors.error[500],
     alignItems: "center",
   },
   cancelText: {
@@ -456,15 +456,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   errorText: {
-    color: "#f44336",
+    color: colors.error[500],
     textAlign: "center",
-    marginTop: 16,
+    marginTop: spacing.md,
     fontSize: 14,
   },
   verifyingText: {
-    color: "#2196F3",
+    color: colors.primary[500],
     textAlign: "center",
-    marginTop: 16,
+    marginTop: spacing.md,
     fontSize: 14,
   },
 });

@@ -1,10 +1,5 @@
 import { StyleSheet } from "react-native";
-import {
-  borderRadius,
-  spacing,
-  typography,
-  colors,
-} from "../../styles/globalStyles";
+import { borderRadius, spacing, typography, colors } from "../../styles/globalStyles";
 
 export const staffHomeStyles = StyleSheet.create({
   quickActions: {

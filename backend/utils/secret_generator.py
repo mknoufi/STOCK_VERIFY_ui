@@ -58,15 +58,9 @@ JWT_REFRESH_SECRET={jwt_refresh_secret}
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate secure secrets for Stock Verify App"
-    )
-    parser.add_argument(
-        "--write", action="store_true", help="Write secrets to .env file"
-    )
-    parser.add_argument(
-        "--env-file", default=".env", help="Path to .env file (default: .env)"
-    )
+    parser = argparse.ArgumentParser(description="Generate secure secrets for Stock Verify App")
+    parser.add_argument("--write", action="store_true", help="Write secrets to .env file")
+    parser.add_argument("--env-file", default=".env", help="Path to .env file (default: .env)")
 
     args = parser.parse_args()
 

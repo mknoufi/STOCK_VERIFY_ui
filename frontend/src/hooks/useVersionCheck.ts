@@ -36,20 +36,11 @@ export interface UseVersionCheckResult {
   isDismissed: boolean;
 }
 
-export const useVersionCheck = (
-  options: UseVersionCheckOptions = {},
-): UseVersionCheckResult => {
-  const {
-    checkOnMount = true,
-    checkInterval = 0,
-    onForceUpdate,
-    onUpdateAvailable,
-  } = options;
+export const useVersionCheck = (options: UseVersionCheckOptions = {}): UseVersionCheckResult => {
+  const { checkOnMount = true, checkInterval = 0, onForceUpdate, onUpdateAvailable } = options;
 
   const { version: clientVersion } = useAppVersion();
-  const [versionInfo, setVersionInfo] = useState<VersionCheckResult | null>(
-    null,
-  );
+  const [versionInfo, setVersionInfo] = useState<VersionCheckResult | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -59,51 +50,45 @@ export const useVersionCheck = (
   // (which may change reference even if the version string is identical).
   const prevVersionRef = useRef<string | undefined>(undefined);
 
-  const checkForUpdates =
-    useCallback(async (): Promise<VersionCheckResult | null> => {
-      if (!clientVersion || clientVersion === "Unknown") {
-        __DEV__ &&
-          console.log("Version check skipped: client version not available");
-        return null;
+  const checkForUpdates = useCallback(async (): Promise<VersionCheckResult | null> => {
+    if (!clientVersion || clientVersion === "Unknown") {
+      __DEV__ && console.log("Version check skipped: client version not available");
+      return null;
+    }
+
+    setIsChecking(true);
+    setError(null);
+
+    try {
+      const result = await checkVersion(clientVersion);
+      setVersionInfo(result);
+
+      // Handle force update
+      if (result.force_update && onForceUpdate) {
+        onForceUpdate(result);
       }
 
-      setIsChecking(true);
-      setError(null);
-
-      try {
-        const result = await checkVersion(clientVersion);
-        setVersionInfo(result);
-
-        // Handle force update
-        if (result.force_update && onForceUpdate) {
-          onForceUpdate(result);
-        }
-
-        // Handle optional update available
-        if (
-          result.update_available &&
-          !result.force_update &&
-          onUpdateAvailable
-        ) {
-          onUpdateAvailable(result);
-        }
-
-        // Clear dismissed state on new check with different version
-        if (result.current_version !== prevVersionRef.current) {
-          setIsDismissed(false);
-        }
-        prevVersionRef.current = result.current_version;
-
-        return result;
-      } catch (err: any) {
-        const errorMessage = err.message || "Failed to check for updates";
-        setError(errorMessage);
-        __DEV__ && console.error("Version check failed:", err);
-        return null;
-      } finally {
-        setIsChecking(false);
+      // Handle optional update available
+      if (result.update_available && !result.force_update && onUpdateAvailable) {
+        onUpdateAvailable(result);
       }
-    }, [clientVersion, onForceUpdate, onUpdateAvailable]);
+
+      // Clear dismissed state on new check with different version
+      if (result.current_version !== prevVersionRef.current) {
+        setIsDismissed(false);
+      }
+      prevVersionRef.current = result.current_version;
+
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to check for updates";
+      setError(errorMessage);
+      __DEV__ && console.error("Version check failed:", err);
+      return null;
+    } finally {
+      setIsChecking(false);
+    }
+  }, [clientVersion, onForceUpdate, onUpdateAvailable]);
 
   const dismissUpdate = useCallback(() => {
     setIsDismissed(true);

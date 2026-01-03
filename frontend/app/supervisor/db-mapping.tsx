@@ -31,11 +31,7 @@ import {
   saveMapping,
 } from "../../src/services/api/api";
 import { useToast } from "../../src/components/feedback/ToastProvider";
-import {
-  ScreenContainer,
-  GlassCard,
-  AnimatedPressable,
-} from "../../src/components/ui";
+import { ScreenContainer, GlassCard, AnimatedPressable } from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 
 interface Table {
@@ -116,13 +112,9 @@ export default function DatabaseMappingScreen() {
             // Fallback to AsyncStorage if no backend connection config
             const savedHost = await AsyncStorage.getItem("db_mapping_host");
             const savedPort = await AsyncStorage.getItem("db_mapping_port");
-            const savedDatabase = await AsyncStorage.getItem(
-              "db_mapping_database",
-            );
+            const savedDatabase = await AsyncStorage.getItem("db_mapping_database");
             const savedUser = await AsyncStorage.getItem("db_mapping_user");
-            const savedPassword = await AsyncStorage.getItem(
-              "db_mapping_password",
-            );
+            const savedPassword = await AsyncStorage.getItem("db_mapping_password");
             const savedSchema = await AsyncStorage.getItem("db_mapping_schema");
 
             if (savedHost) setHost(savedHost);
@@ -137,23 +129,18 @@ export default function DatabaseMappingScreen() {
           if (response.mapping) {
             if (response.mapping.columns) {
               const mappedColumns: Record<string, ColumnMapping> = {};
-              Object.entries(response.mapping.columns).forEach(
-                ([key, value]: [string, any]) => {
-                  mappedColumns[key] = {
-                    app_field: key,
-                    erp_column: value.erp_column || value,
-                    table_name: value.table_name || selectedTable, // Might be empty initially
-                    is_required:
-                      appFields.find((f) => f.key === key)?.required || false,
-                  };
-                },
-              );
+              Object.entries(response.mapping.columns).forEach(([key, value]: [string, any]) => {
+                mappedColumns[key] = {
+                  app_field: key,
+                  erp_column: value.erp_column || value,
+                  table_name: value.table_name || selectedTable, // Might be empty initially
+                  is_required: appFields.find((f) => f.key === key)?.required || false,
+                };
+              });
               setMapping(mappedColumns);
             }
             if (response.mapping.tables) {
-              const firstTable = Object.values(
-                response.mapping.tables,
-              )[0] as string;
+              const firstTable = Object.values(response.mapping.tables)[0] as string;
               if (firstTable) {
                 setSelectedTable(firstTable);
                 // Update table_name in mapping if it was missing
@@ -174,11 +161,8 @@ export default function DatabaseMappingScreen() {
             }
           }
         }
-      } catch (backendError) {
-        console.log(
-          "Failed to load from backend, trying local storage",
-          backendError,
-        );
+      } catch (_backendError) {
+        __DEV__ && console.log("Failed to load from backend, trying local storage");
         // Fallback to AsyncStorage on error
         const savedHost = await AsyncStorage.getItem("db_mapping_host");
         if (savedHost) setHost(savedHost);
@@ -209,15 +193,13 @@ export default function DatabaseMappingScreen() {
   const handleLoadTables = async () => {
     // Validate required fields
     if (!host || !host.trim()) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show("Please enter a valid host address", "error");
       return;
     }
 
     if (!database || !database.trim()) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show("Please enter a database name", "error");
       return;
     }
@@ -229,8 +211,7 @@ export default function DatabaseMappingScreen() {
       /^[a-zA-Z0-9][a-zA-Z0-9\-._]*[a-zA-Z0-9]$/.test(hostTrimmed) ||
       hostTrimmed === "localhost";
     if (!isValidHost) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show("Invalid host format. Use IP address or hostname", "error");
       return;
     }
@@ -248,14 +229,12 @@ export default function DatabaseMappingScreen() {
 
     // Validate database name (no special characters that could cause issues)
     if (!/^[a-zA-Z0-9_\-]+$/.test(database.trim())) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show("Database name contains invalid characters", "error");
       return;
     }
 
-    if (Platform.OS !== "web")
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setLoading(true);
     try {
       const response = await getAvailableTables(
@@ -264,17 +243,13 @@ export default function DatabaseMappingScreen() {
         database,
         user || undefined,
         password || undefined,
-        schema,
+        schema
       );
       setTables(response.tables.map((name: string) => ({ name, schema })));
       show(`Found ${response.count} tables`, "success");
     } catch (error: any) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      show(
-        `Failed to load tables: ${error.response?.data?.detail || error.message}`,
-        "error",
-      );
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show(`Failed to load tables: ${error.response?.data?.detail || error.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -297,17 +272,13 @@ export default function DatabaseMappingScreen() {
         tableName,
         user || undefined,
         password || undefined,
-        schema,
+        schema
       );
       setColumns(response.columns);
       show(`Found ${response.count} columns`, "success");
     } catch (error: any) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      show(
-        `Failed to load columns: ${error.response?.data?.detail || error.message}`,
-        "error",
-      );
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show(`Failed to load columns: ${error.response?.data?.detail || error.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -328,8 +299,7 @@ export default function DatabaseMappingScreen() {
     if (Platform.OS !== "web") Haptics.selectionAsync();
 
     const appField = selectedAppField;
-    const isRequired =
-      appFields.find((f) => f.key === appField)?.required || false;
+    const isRequired = appFields.find((f) => f.key === appField)?.required || false;
 
     setMapping({
       ...mapping,
@@ -357,8 +327,7 @@ export default function DatabaseMappingScreen() {
       return;
     }
 
-    if (Platform.OS !== "web")
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setLoading(true);
     try {
       const config = {
@@ -375,7 +344,7 @@ export default function DatabaseMappingScreen() {
         parseInt(port) || 1433,
         database,
         user || undefined,
-        password || undefined,
+        password || undefined
       );
 
       if (response.success) {
@@ -384,16 +353,12 @@ export default function DatabaseMappingScreen() {
         Alert.alert(
           "Mapping Test Successful",
           `Query executed successfully.\n\nSample data: ${JSON.stringify(response.sample_data, null, 2)}`,
-          [{ text: "OK" }],
+          [{ text: "OK" }]
         );
       }
     } catch (error: any) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert(
-        "Mapping Test Failed",
-        error.response?.data?.detail || error.message,
-      );
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert("Mapping Test Failed", error.response?.data?.detail || error.message);
     } finally {
       setLoading(false);
     }
@@ -409,17 +374,12 @@ export default function DatabaseMappingScreen() {
     const requiredFields = appFields.filter((f) => f.required);
     const missingFields = requiredFields.filter((f) => !mapping[f.key]);
     if (missingFields.length > 0) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      show(
-        `Missing required fields: ${missingFields.map((f) => f.label).join(", ")}`,
-        "error",
-      );
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show(`Missing required fields: ${missingFields.map((f) => f.label).join(", ")}`, "error");
       return;
     }
 
-    if (Platform.OS !== "web")
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setLoading(true);
     try {
       // Construct full payload with connection and mapping
@@ -448,20 +408,15 @@ export default function DatabaseMappingScreen() {
         await AsyncStorage.setItem("db_mapping_port", port);
         await AsyncStorage.setItem("db_mapping_database", database);
         if (user) await AsyncStorage.setItem("db_mapping_user", user);
-        if (password)
-          await AsyncStorage.setItem("db_mapping_password", password);
+        if (password) await AsyncStorage.setItem("db_mapping_password", password);
         await AsyncStorage.setItem("db_mapping_schema", schema);
 
         show("Mapping saved successfully", "success");
         router.back();
       }
     } catch (error: any) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      show(
-        `Failed to save mapping: ${error.response?.data?.detail || error.message}`,
-        "error",
-      );
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      show(`Failed to save mapping: ${error.response?.data?.detail || error.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -472,20 +427,10 @@ export default function DatabaseMappingScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View
-          entering={FadeInDown.delay(100).springify()}
-          style={styles.header}
-        >
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
           <View style={styles.headerLeft}>
-            <AnimatedPressable
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color={theme.colors.text.primary}
-              />
+            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Database Mapping</Text>
@@ -494,10 +439,7 @@ export default function DatabaseMappingScreen() {
           </View>
         </Animated.View>
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
+        <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 100 }}>
           {/* Connection Settings */}
           <Animated.View entering={FadeInDown.delay(200).springify()}>
             <GlassCard
@@ -507,11 +449,7 @@ export default function DatabaseMappingScreen() {
               style={styles.section}
             >
               <View style={styles.sectionHeader}>
-                <Ionicons
-                  name="server-outline"
-                  size={20}
-                  color={theme.colors.primary[500]}
-                />
+                <Ionicons name="server-outline" size={20} color={theme.colors.primary[500]} />
                 <Text style={styles.sectionTitle}>Connection Settings</Text>
               </View>
 
@@ -587,10 +525,7 @@ export default function DatabaseMappingScreen() {
               </View>
 
               <AnimatedPressable
-                style={[
-                  styles.button,
-                  { backgroundColor: theme.colors.primary[500] },
-                ]}
+                style={[styles.button, { backgroundColor: theme.colors.primary[500] }]}
                 onPress={handleLoadTables}
                 disabled={loading}
               >
@@ -616,14 +551,8 @@ export default function DatabaseMappingScreen() {
                 style={styles.section}
               >
                 <View style={styles.sectionHeader}>
-                  <Ionicons
-                    name="list-outline"
-                    size={20}
-                    color={theme.colors.primary[500]}
-                  />
-                  <Text style={styles.sectionTitle}>
-                    Select Table ({tables.length})
-                  </Text>
+                  <Ionicons name="list-outline" size={20} color={theme.colors.primary[500]} />
+                  <Text style={styles.sectionTitle}>Select Table ({tables.length})</Text>
                 </View>
 
                 <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled>
@@ -633,19 +562,14 @@ export default function DatabaseMappingScreen() {
                       style={[
                         styles.tableItem,
                         selectedTable === table.name && {
-                          backgroundColor:
-                            theme.colors.primary[500] + "20",
+                          backgroundColor: theme.colors.primary[500] + "20",
                           borderColor: theme.colors.primary[500],
                         },
                       ]}
                       onPress={() => handleLoadColumns(table.name)}
                     >
                       <Ionicons
-                        name={
-                          selectedTable === table.name
-                            ? "radio-button-on"
-                            : "radio-button-off"
-                        }
+                        name={selectedTable === table.name ? "radio-button-on" : "radio-button-off"}
                         size={20}
                         color={
                           selectedTable === table.name
@@ -681,11 +605,7 @@ export default function DatabaseMappingScreen() {
                 style={styles.section}
               >
                 <View style={styles.sectionHeader}>
-                  <Ionicons
-                    name="git-merge-outline"
-                    size={20}
-                    color={theme.colors.primary[500]}
-                  />
+                  <Ionicons name="git-merge-outline" size={20} color={theme.colors.primary[500]} />
                   <Text style={styles.sectionTitle}>
                     Map Columns ({columns.length} source cols)
                   </Text>
@@ -699,12 +619,7 @@ export default function DatabaseMappingScreen() {
                         <Text style={styles.fieldLabel}>
                           {field.label}
                           {field.required && (
-                            <Text
-                              style={{ color: theme.colors.error.main }}
-                            >
-                              {" "}
-                              *
-                            </Text>
+                            <Text style={{ color: theme.colors.error.main }}> *</Text>
                           )}
                         </Text>
                       </View>
@@ -713,8 +628,7 @@ export default function DatabaseMappingScreen() {
                         style={[
                           styles.columnSelector,
                           mappedColumn && {
-                            backgroundColor:
-                              theme.colors.success.main + "10",
+                            backgroundColor: theme.colors.success.main + "10",
                             borderColor: theme.colors.success.main,
                           },
                         ]}
@@ -725,25 +639,19 @@ export default function DatabaseMappingScreen() {
                             styles.columnSelectorText,
                             mappedColumn
                               ? {
-                                color: theme.colors.success.main,
-                                fontWeight: "600",
-                              }
+                                  color: theme.colors.success.main,
+                                  fontWeight: "600",
+                                }
                               : { color: theme.colors.text.tertiary },
                           ]}
                         >
-                          {mappedColumn
-                            ? mappedColumn.erp_column
-                            : "Select source column..."}
+                          {mappedColumn ? mappedColumn.erp_column : "Select source column..."}
                         </Text>
                         <Ionicons
-                          name={
-                            mappedColumn ? "checkmark-circle" : "chevron-down"
-                          }
+                          name={mappedColumn ? "checkmark-circle" : "chevron-down"}
                           size={20}
                           color={
-                            mappedColumn
-                              ? theme.colors.success.main
-                              : theme.colors.text.tertiary
+                            mappedColumn ? theme.colors.success.main : theme.colors.text.tertiary
                           }
                         />
                       </AnimatedPressable>
@@ -800,9 +708,7 @@ export default function DatabaseMappingScreen() {
           animationType="fade"
           onRequestClose={() => setShowColumnModal(false)}
         >
-          <ScreenContainer
-            containerStyle={styles.modalOverlay}
-          >
+          <ScreenContainer containerStyle={styles.modalOverlay}>
             <GlassCard
               intensity={20}
               padding={theme.spacing.lg}
@@ -813,16 +719,11 @@ export default function DatabaseMappingScreen() {
                 <View>
                   <Text style={styles.modalTitle}>Select Column</Text>
                   <Text style={styles.modalSubtitle}>
-                    For{" "}
-                    {appFields.find((f) => f.key === selectedAppField)?.label}
+                    For {appFields.find((f) => f.key === selectedAppField)?.label}
                   </Text>
                 </View>
                 <AnimatedPressable onPress={() => setShowColumnModal(false)}>
-                  <Ionicons
-                    name="close"
-                    size={24}
-                    color={theme.colors.text.primary}
-                  />
+                  <Ionicons name="close" size={24} color={theme.colors.text.primary} />
                 </AnimatedPressable>
               </View>
 
@@ -836,17 +737,11 @@ export default function DatabaseMappingScreen() {
                     <View style={styles.columnInfo}>
                       <Text style={styles.columnName}>{column.name}</Text>
                       <View style={styles.columnMetaRec}>
-                        <Text style={styles.columnType}>
-                          {column.data_type.toUpperCase()}
-                        </Text>
+                        <Text style={styles.columnType}>{column.data_type.toUpperCase()}</Text>
                         {column.max_length && (
-                          <Text style={styles.columnMeta}>
-                            Length: {column.max_length}
-                          </Text>
+                          <Text style={styles.columnMeta}>Length: {column.max_length}</Text>
                         )}
-                        {column.nullable && (
-                          <Text style={styles.columnMeta}>Nullable</Text>
-                        )}
+                        {column.nullable && <Text style={styles.columnMeta}>Nullable</Text>}
                       </View>
                     </View>
                     <Ionicons

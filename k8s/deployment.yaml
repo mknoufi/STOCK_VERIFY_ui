@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/mknoufi/stock_verify_ui:latest
+          image: ghcr.io/mknoufi/stock_verify_ui-backend:latest
           ports:
             - containerPort: 8001
           env:
@@ -30,6 +30,11 @@ spec:
                 secretKeyRef:
                   name: backend-secrets
                   key: jwt-secret
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: jwt-refresh-secret
           resources:
             requests:
               memory: "256Mi"
@@ -56,7 +61,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/mknoufi/stock_verify_ui:latest-frontend
+          image: ghcr.io/mknoufi/stock_verify_ui-frontend:latest
           ports:
             - containerPort: 80
           resources:

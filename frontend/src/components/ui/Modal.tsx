@@ -133,25 +133,13 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <RNModal
-      visible={visible}
-      transparent
-      animationType={animationType}
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback
-        onPress={closeOnBackdropPress ? onClose : undefined}
-      >
+    <RNModal visible={visible} transparent animationType={animationType} onRequestClose={onClose}>
+      <TouchableWithoutFeedback onPress={closeOnBackdropPress ? onClose : undefined}>
         <Animated.View style={[styles.backdrop, backdropAnimatedStyle]}>
           {Platform.OS !== "web" ? (
             <BlurView intensity={20} style={StyleSheet.absoluteFill} />
           ) : (
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                { backgroundColor: "rgba(0,0,0,0.5)" },
-              ]}
-            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.5)" }]} />
           )}
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <KeyboardAvoidingView
@@ -170,18 +158,9 @@ export const Modal: React.FC<ModalProps> = ({
                 ]}
               >
                 {(title || showCloseButton) && (
-                  <View
-                    style={[
-                      styles.header,
-                      { borderBottomColor: theme.colors.border },
-                    ]}
-                  >
+                  <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
                     {title && (
-                      <Text
-                        style={[styles.title, { color: theme.colors.text }]}
-                      >
-                        {title}
-                      </Text>
+                      <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
                     )}
                     {showCloseButton && (
                       <TouchableOpacity
@@ -189,11 +168,7 @@ export const Modal: React.FC<ModalProps> = ({
                         style={styles.closeButton}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
-                        <Ionicons
-                          name="close"
-                          size={24}
-                          color={theme.colors.textSecondary}
-                        />
+                        <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
                       </TouchableOpacity>
                     )}
                   </View>

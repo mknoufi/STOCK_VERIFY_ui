@@ -7,16 +7,11 @@
  * - Haptic feedback
  * - Smooth spring animations
  * - Customizable action buttons
+ * - Theme-aware styling
  */
 
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  Platform,
-} from "react-native";
+import { View, Text, StyleSheet, ViewStyle, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
@@ -28,7 +23,7 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from "react-native-reanimated";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 import { GlassCard } from "./GlassCard";
 
 const SWIPE_THRESHOLD = 80;
@@ -56,6 +51,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
   style,
   onSwipeComplete: _onSwipeComplete,
 }) => {
+  const { themeLegacy: theme, getFontSize } = useThemeContext();
   const translateX = useSharedValue(0);
   const contextX = useSharedValue(0);
 
@@ -73,10 +69,8 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       const newValue = contextX.value + event.translationX;
 
       // Limit swipe distance
-      const maxSwipe =
-        rightActions.length > 0 ? SWIPE_THRESHOLD * rightActions.length : 0;
-      const minSwipe =
-        leftActions.length > 0 ? -SWIPE_THRESHOLD * leftActions.length : 0;
+      const maxSwipe = rightActions.length > 0 ? SWIPE_THRESHOLD * rightActions.length : 0;
+      const minSwipe = leftActions.length > 0 ? -SWIPE_THRESHOLD * leftActions.length : 0;
 
       translateX.value = Math.max(minSwipe, Math.min(maxSwipe, newValue));
     })
@@ -85,10 +79,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       if (translateX.value > SWIPE_THRESHOLD / 2 && leftActions.length > 0) {
         translateX.value = withSpring(SWIPE_THRESHOLD);
         runOnJS(triggerHaptic)();
-      } else if (
-        translateX.value < -SWIPE_THRESHOLD / 2 &&
-        rightActions.length > 0
-      ) {
+      } else if (translateX.value < -SWIPE_THRESHOLD / 2 && rightActions.length > 0) {
         translateX.value = withSpring(-SWIPE_THRESHOLD);
         runOnJS(triggerHaptic)();
       } else {
@@ -105,16 +96,11 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       translateX.value,
       [0, SWIPE_THRESHOLD / 2, SWIPE_THRESHOLD],
       [0, 0.5, 1],
-      Extrapolation.CLAMP,
+      Extrapolation.CLAMP
     ),
     transform: [
       {
-        scale: interpolate(
-          translateX.value,
-          [0, SWIPE_THRESHOLD],
-          [0.8, 1],
-          Extrapolation.CLAMP,
-        ),
+        scale: interpolate(translateX.value, [0, SWIPE_THRESHOLD], [0.8, 1], Extrapolation.CLAMP),
       },
     ],
   }));
@@ -124,16 +110,11 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       translateX.value,
       [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD / 2, 0],
       [1, 0.5, 0],
-      Extrapolation.CLAMP,
+      Extrapolation.CLAMP
     ),
     transform: [
       {
-        scale: interpolate(
-          translateX.value,
-          [-SWIPE_THRESHOLD, 0],
-          [1, 0.8],
-          Extrapolation.CLAMP,
-        ),
+        scale: interpolate(translateX.value, [-SWIPE_THRESHOLD, 0], [1, 0.8], Extrapolation.CLAMP),
       },
     ],
   }));
@@ -146,6 +127,27 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
     }
   };
 
+  const actionButtonStyle = {
+    width: 60,
+    height: 60,
+    borderRadius: theme.borderRadius.xl,
+    justifyContent: "center" as const, // Fix type inference
+    alignItems: "center" as const, // Fix type inference
+    // Shadow is tricky with theme string, assuming implementation handles it or use elevation style
+    // theme.shadows.md is a string e.g. "0 4px 6px...", we might need to parse or use elevation if RN
+    // For now, let's just use elevation 4 roughly equivalent to MD
+    elevation: 4,
+    shadowColor: theme.colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  };
+
+  const actionLabelStyle = {
+    fontSize: getFontSize("xs"),
+    marginTop: theme.spacing.xs,
+  };
+
   return (
     <View style={[styles.container, style]}>
       {/* Left Actions */}
@@ -153,17 +155,14 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
         <Animated.View
           style={[
             styles.actionsContainer,
-            styles.leftActions,
+            { left: 0, paddingLeft: theme.spacing.md, gap: theme.spacing.sm },
             leftActionsStyle,
           ]}
         >
           {leftActions.map((action, index) => (
             <Animated.View
               key={index}
-              style={[
-                styles.actionButton,
-                { backgroundColor: action.backgroundColor },
-              ]}
+              style={[actionButtonStyle, { backgroundColor: action.backgroundColor }]}
             >
               <Ionicons
                 name={action.icon}
@@ -172,9 +171,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
                 onPress={() => handleActionPress(action)}
               />
               {action.label && (
-                <Text style={[styles.actionLabel, { color: action.color }]}>
-                  {action.label}
-                </Text>
+                <Text style={[actionLabelStyle, { color: action.color }]}>{action.label}</Text>
               )}
             </Animated.View>
           ))}
@@ -186,17 +183,14 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
         <Animated.View
           style={[
             styles.actionsContainer,
-            styles.rightActions,
+            { right: 0, paddingRight: theme.spacing.md, gap: theme.spacing.sm },
             rightActionsStyle,
           ]}
         >
           {rightActions.map((action, index) => (
             <Animated.View
               key={index}
-              style={[
-                styles.actionButton,
-                { backgroundColor: action.backgroundColor },
-              ]}
+              style={[actionButtonStyle, { backgroundColor: action.backgroundColor }]}
             >
               <Ionicons
                 name={action.icon}
@@ -205,9 +199,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
                 onPress={() => handleActionPress(action)}
               />
               {action.label && (
-                <Text style={[styles.actionLabel, { color: action.color }]}>
-                  {action.label}
-                </Text>
+                <Text style={[actionLabelStyle, { color: action.color }]}>{action.label}</Text>
               )}
             </Animated.View>
           ))}
@@ -236,28 +228,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.sm,
-  },
-  leftActions: {
-    left: 0,
-    paddingLeft: auroraTheme.spacing.md,
-  },
-  rightActions: {
-    right: 0,
-    paddingRight: auroraTheme.spacing.md,
-  },
-  actionButton: {
-    width: 60,
-    height: 60,
-    borderRadius: auroraTheme.borderRadius.xl,
-    justifyContent: "center",
-    alignItems: "center",
-    ...auroraTheme.shadows.md,
-  },
-  actionLabel: {
-    fontSize: auroraTheme.typography.fontSize.xs,
-    fontFamily: auroraTheme.typography.fontFamily.label,
-    marginTop: auroraTheme.spacing.xs,
   },
 });
 

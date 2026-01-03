@@ -12,7 +12,7 @@ function joinUrl(baseUrl, urlPath) {
 }
 
 function probeHealth(baseUrl, timeoutMs = 800) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     try {
       const healthUrl = joinUrl(baseUrl, "/api/health");
       const client = healthUrl.startsWith("https:") ? https : http;
@@ -24,10 +24,10 @@ function probeHealth(baseUrl, timeoutMs = 800) {
             Accept: "application/json",
           },
         },
-        res => {
+        (res) => {
           res.resume();
           resolve(res.statusCode >= 200 && res.statusCode < 500);
-        }
+        },
       );
       req.on("timeout", () => {
         req.destroy(new Error("timeout"));
@@ -53,11 +53,13 @@ function getLocalIpAddress() {
   }
 
   // Priority 1: en0 (standard Mac WiFi)
-  const en0 = allAddresses.find(idx => idx.name === 'en0');
+  const en0 = allAddresses.find((idx) => idx.name === "en0");
   if (en0) return en0.address;
 
   // Priority 2: 192.168.0.x (common home WiFi subnet)
-  const zeroSubnet = allAddresses.find(idx => idx.address.startsWith('192.168.0.'));
+  const zeroSubnet = allAddresses.find((idx) =>
+    idx.address.startsWith("192.168.0."),
+  );
   if (zeroSubnet) return zeroSubnet.address;
 
   // Priority 3: First available
@@ -79,13 +81,25 @@ try {
   const backendPortPath = path.resolve(__dirname, "../../backend_port.json");
   if (fs.existsSync(backendPortPath)) {
     const portData = JSON.parse(fs.readFileSync(backendPortPath, "utf8"));
-    if (portData && typeof portData.url === "string" && portData.url.length > 0) {
+    if (
+      portData &&
+      typeof portData.url === "string" &&
+      portData.url.length > 0
+    ) {
       backendUrlFromFile = portData.url;
-      console.log(`Detected Backend URL from backend_port.json: ${backendUrlFromFile}`);
-    } else if (portData && typeof portData.ip === "string" && portData.ip.length > 0) {
+      console.log(
+        `Detected Backend URL from backend_port.json: ${backendUrlFromFile}`,
+      );
+    } else if (
+      portData &&
+      typeof portData.ip === "string" &&
+      portData.ip.length > 0
+    ) {
       backendIpFromFile = portData.ip;
-      backendUrlFromFile = `http://${portData.ip}:${(portData.port || port)}`;
-      console.log(`Detected Backend IP from backend_port.json: ${backendUrlFromFile}`);
+      backendUrlFromFile = `http://${portData.ip}:${portData.port || port}`;
+      console.log(
+        `Detected Backend IP from backend_port.json: ${backendUrlFromFile}`,
+      );
     }
     if (portData && portData.port) {
       port = portData.port.toString();

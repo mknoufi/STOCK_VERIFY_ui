@@ -27,8 +27,6 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import {
@@ -46,7 +44,7 @@ import {
   diagnoseError,
 } from "../../src/services/api";
 
-import { AuroraBackground } from "../../src/components/ui/AuroraBackground";
+import { ScreenContainer } from "../../src/components/ui/ScreenContainer";
 import { GlassCard } from "../../src/components/ui/GlassCard";
 import { AnimatedPressable } from "../../src/components/ui/AnimatedPressable";
 import { auroraTheme } from "../../src/theme/auroraTheme";
@@ -54,7 +52,6 @@ import { SimpleLineChart } from "../../src/components/charts/SimpleLineChart";
 import { SimpleBarChart } from "../../src/components/charts/SimpleBarChart";
 import { SimplePieChart } from "../../src/components/charts/SimplePieChart";
 import { DateRangePicker } from "../../src/components/forms/DateRangePicker";
-import { useAuthStore } from "../../src/store/authStore";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
@@ -106,8 +103,6 @@ const typography = {
 };
 
 export default function DashboardWeb() {
-  const router = useRouter();
-  const { logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -166,20 +161,14 @@ export default function DashboardWeb() {
         getDiagnosisHealth().catch(() => ({ data: null })),
       ]);
 
-      if (servicesRes.status === "fulfilled")
-        setServicesStatus(servicesRes.value?.data);
+      if (servicesRes.status === "fulfilled") setServicesStatus(servicesRes.value?.data);
       if (statsRes.status === "fulfilled") setSystemStats(statsRes.value?.data);
       if (metricsRes.status === "fulfilled") setMetrics(metricsRes.value?.data);
-      if (reportsRes.status === "fulfilled")
-        setReports(reportsRes.value?.data?.reports || []);
-      if (issuesRes.status === "fulfilled")
-        setIssues(issuesRes.value?.data?.issues || []);
-      if (healthScoreRes.status === "fulfilled")
-        setHealthScore(healthScoreRes.value?.data?.score);
-      if (analyticsRes.status === "fulfilled")
-        setSessionsAnalytics(analyticsRes.value?.data);
-      if (diagnosisHealthRes.status === "fulfilled")
-        setDiagnosisHealth(diagnosisHealthRes.value);
+      if (reportsRes.status === "fulfilled") setReports(reportsRes.value?.data?.reports || []);
+      if (issuesRes.status === "fulfilled") setIssues(issuesRes.value?.data?.issues || []);
+      if (healthScoreRes.status === "fulfilled") setHealthScore(healthScoreRes.value?.data?.score);
+      if (analyticsRes.status === "fulfilled") setSessionsAnalytics(analyticsRes.value?.data);
+      if (diagnosisHealthRes.status === "fulfilled") setDiagnosisHealth(diagnosisHealthRes.value);
 
       setLastUpdate(new Date());
     } catch (error) {
@@ -209,21 +198,14 @@ export default function DashboardWeb() {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute(
-          "download",
-          `${reportType}_report_${new Date().toISOString()}.xlsx`,
-        );
+        link.setAttribute("download", `${reportType}_report_${new Date().toISOString()}.xlsx`);
         document.body.appendChild(link);
         link.click();
         link.remove();
       } else {
         // Native file system handling
-        const documentDir = (
-          FileSystem as { documentDirectory?: string | null }
-        ).documentDirectory;
-        const encodingType = (
-          FileSystem as { EncodingType?: { Base64?: string } }
-        ).EncodingType;
+        const documentDir = (FileSystem as { documentDirectory?: string | null }).documentDirectory;
+        const encodingType = (FileSystem as { EncodingType?: { Base64?: string } }).EncodingType;
         if (documentDir && encodingType?.Base64) {
           const fileUri = `${documentDir}${reportType}_report.xlsx`;
           await (
@@ -231,7 +213,7 @@ export default function DashboardWeb() {
               writeAsStringAsync?: (
                 uri: string,
                 contents: string,
-                options: { encoding: string },
+                options: { encoding: string }
               ) => Promise<void>;
             }
           ).writeAsStringAsync?.(fileUri, response, {
@@ -250,7 +232,10 @@ export default function DashboardWeb() {
   };
 
   const prepareSessionChartData = () => {
-    if (!sessionsAnalytics?.sessions_by_date || Object.keys(sessionsAnalytics.sessions_by_date).length === 0) {
+    if (
+      !sessionsAnalytics?.sessions_by_date ||
+      Object.keys(sessionsAnalytics.sessions_by_date).length === 0
+    ) {
       const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       return days.map((day) => ({
         x: day,
@@ -265,7 +250,7 @@ export default function DashboardWeb() {
     return last7Dates.map((date) => {
       const count = sessionsAnalytics.sessions_by_date[date];
       const dateObj = new Date(date);
-      const label = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+      const label = dateObj.toLocaleDateString(undefined, { weekday: "short" });
       return {
         x: label,
         y: count,
@@ -283,9 +268,7 @@ export default function DashboardWeb() {
       },
       {
         label: "Idle",
-        value:
-          (systemStats.total_sessions || 0) -
-          (systemStats.active_sessions || 0),
+        value: (systemStats.total_sessions || 0) - (systemStats.active_sessions || 0),
         color: auroraTheme.colors.neutral[400],
       },
     ];
@@ -294,15 +277,15 @@ export default function DashboardWeb() {
   const handleAutoFix = async (issueId: string) => {
     try {
       setRefreshing(true);
-      const result = await diagnoseError({ error_type: issueId, error_message: "auto_fix" });
+      const result = await diagnoseError({
+        error_type: issueId,
+        error_message: "auto_fix",
+      });
       if (result.fixed) {
         Alert.alert("Success", "Issue has been automatically resolved.");
         await loadDashboardData(true);
       } else {
-        Alert.alert(
-          "Failed",
-          "Could not auto-fix this issue. Please check logs.",
-        );
+        Alert.alert("Failed", "Could not auto-fix this issue. Please check logs.");
       }
     } catch (error) {
       console.error("Auto-fix error:", error);
@@ -313,50 +296,31 @@ export default function DashboardWeb() {
   };
 
   const renderDiagnosis = () => (
-    <Animated.View
-      entering={FadeInDown.delay(200).springify()}
-      style={styles.tabContent}
-    >
+    <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.tabContent}>
       <GlassCard variant="medium" style={styles.diagnosisCard}>
         <View style={styles.diagnosisHeader}>
           <View>
             <Text style={styles.sectionTitle}>System Self-Diagnosis</Text>
-            <Text style={styles.sectionSubtitle}>
-              Automated health checks and issue resolution
-            </Text>
+            <Text style={styles.sectionSubtitle}>Automated health checks and issue resolution</Text>
           </View>
           <View style={styles.healthBadge}>
-            <Text style={styles.healthScoreText}>
-              {diagnosisHealth?.health_score || 0}%
-            </Text>
+            <Text style={styles.healthScoreText}>{diagnosisHealth?.health_score || 0}%</Text>
           </View>
         </View>
 
         <View style={styles.diagnosisStats}>
           <View style={styles.diagStatItem}>
-            <Text style={styles.diagStatValue}>
-              {diagnosisHealth?.total_issues || 0}
-            </Text>
+            <Text style={styles.diagStatValue}>{diagnosisHealth?.total_issues || 0}</Text>
             <Text style={styles.diagStatLabel}>Total Issues</Text>
           </View>
           <View style={styles.diagStatItem}>
-            <Text
-              style={[
-                styles.diagStatValue,
-                { color: auroraTheme.colors.error[500] },
-              ]}
-            >
+            <Text style={[styles.diagStatValue, { color: auroraTheme.colors.error[500] }]}>
               {diagnosisHealth?.critical_issues || 0}
             </Text>
             <Text style={styles.diagStatLabel}>Critical</Text>
           </View>
           <View style={styles.diagStatItem}>
-            <Text
-              style={[
-                styles.diagStatValue,
-                { color: auroraTheme.colors.success[500] },
-              ]}
-            >
+            <Text style={[styles.diagStatValue, { color: auroraTheme.colors.success[500] }]}>
               {diagnosisHealth?.resolved_issues || 0}
             </Text>
             <Text style={styles.diagStatLabel}>Auto-Fixed</Text>
@@ -389,12 +353,8 @@ export default function DashboardWeb() {
                   />
                 </View>
                 <View style={styles.issueInfo}>
-                  <Text style={styles.issueTitle}>
-                    {issue.title || issue.type}
-                  </Text>
-                  <Text style={styles.issueDesc}>
-                    {issue.description || issue.message}
-                  </Text>
+                  <Text style={styles.issueTitle}>{issue.title || issue.type}</Text>
+                  <Text style={styles.issueDesc}>{issue.description || issue.message}</Text>
                   {issue.auto_fix_available && (
                     <TouchableOpacity
                       style={styles.autoFixButton}
@@ -421,11 +381,7 @@ export default function DashboardWeb() {
             ))
           ) : (
             <View style={styles.noIssues}>
-              <Ionicons
-                name="checkmark-circle"
-                size={48}
-                color={auroraTheme.colors.success[500]}
-              />
+              <Ionicons name="checkmark-circle" size={48} color={auroraTheme.colors.success[500]} />
               <Text style={styles.noIssuesText}>No system issues detected</Text>
             </View>
           )}
@@ -435,22 +391,13 @@ export default function DashboardWeb() {
   );
 
   const renderOverview = () => (
-    <Animated.View
-      entering={FadeInDown.delay(200).springify()}
-      style={styles.tabContent}
-    >
+    <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.tabContent}>
       <View style={styles.quickStatsRow}>
         <GlassCard variant="medium" style={styles.quickStatCard}>
           <View style={styles.quickStatIcon}>
-            <Ionicons
-              name="people"
-              size={24}
-              color={auroraTheme.colors.primary[400]}
-            />
+            <Ionicons name="people" size={24} color={auroraTheme.colors.primary[400]} />
           </View>
-          <Text style={styles.quickStatValue}>
-            {systemStats?.active_sessions || 0}
-          </Text>
+          <Text style={styles.quickStatValue}>{systemStats?.active_sessions || 0}</Text>
           <Text style={styles.quickStatLabel}>Active Sessions</Text>
         </GlassCard>
 
@@ -461,18 +408,9 @@ export default function DashboardWeb() {
               { backgroundColor: auroraTheme.colors.success[500] + "20" },
             ]}
           >
-            <Ionicons
-              name="shield-checkmark"
-              size={24}
-              color={auroraTheme.colors.success[500]}
-            />
+            <Ionicons name="shield-checkmark" size={24} color={auroraTheme.colors.success[500]} />
           </View>
-          <Text
-            style={[
-              styles.quickStatValue,
-              { color: auroraTheme.colors.success[500] },
-            ]}
-          >
+          <Text style={[styles.quickStatValue, { color: auroraTheme.colors.success[500] }]}>
             {healthScore || 0}%
           </Text>
           <Text style={styles.quickStatLabel}>System Health</Text>
@@ -485,16 +423,11 @@ export default function DashboardWeb() {
               { backgroundColor: auroraTheme.colors.secondary[500] + "20" },
             ]}
           >
-            <Ionicons
-              name="server"
-              size={24}
-              color={auroraTheme.colors.secondary[500]}
-            />
+            <Ionicons name="server" size={24} color={auroraTheme.colors.secondary[500]} />
           </View>
           <Text style={styles.quickStatValue}>
             {servicesStatus
-              ? Object.values(servicesStatus).filter((s: any) => s.running)
-                .length
+              ? Object.values(servicesStatus).filter((s: any) => s.running).length
               : 0}
             /4
           </Text>
@@ -508,11 +441,7 @@ export default function DashboardWeb() {
               { backgroundColor: auroraTheme.colors.warning[500] + "20" },
             ]}
           >
-            <Ionicons
-              name="warning"
-              size={24}
-              color={auroraTheme.colors.warning[500]}
-            />
+            <Ionicons name="warning" size={24} color={auroraTheme.colors.warning[500]} />
           </View>
           <Text
             style={[
@@ -553,55 +482,46 @@ export default function DashboardWeb() {
   );
 
   const renderMonitoring = () => (
-    <Animated.View
-      entering={FadeInDown.delay(200).springify()}
-      style={styles.tabContent}
-    >
+    <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.tabContent}>
       <GlassCard variant="medium" style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>Services Status</Text>
         <View style={styles.servicesList}>
           {servicesStatus &&
-            Object.entries(servicesStatus).map(
-              ([key, service]: [string, any]) => (
-                <View key={key} style={styles.serviceRow}>
-                  <View style={styles.serviceInfo}>
-                    <View
-                      style={[
-                        styles.statusDot,
-                        {
-                          backgroundColor: service.running
-                            ? auroraTheme.colors.success[500]
-                            : auroraTheme.colors.error[500],
-                        },
-                      ]}
-                    />
-                    <Text style={styles.serviceName}>{key.toUpperCase()}</Text>
-                  </View>
-                  <View style={styles.serviceDetails}>
-                    <Text style={styles.serviceDetailText}>
-                      Port: {service.port || "N/A"}
-                    </Text>
-                    <Text style={styles.serviceDetailText}>
-                      PID: {service.pid || "-"}
-                    </Text>
-                  </View>
-                  <View style={styles.serviceStatusBadge}>
-                    <Text
-                      style={[
-                        styles.serviceStatusText,
-                        {
-                          color: service.running
-                            ? auroraTheme.colors.success[500]
-                            : auroraTheme.colors.error[500],
-                        },
-                      ]}
-                    >
-                      {service.running ? "Running" : "Stopped"}
-                    </Text>
-                  </View>
+            Object.entries(servicesStatus).map(([key, service]: [string, any]) => (
+              <View key={key} style={styles.serviceRow}>
+                <View style={styles.serviceInfo}>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      {
+                        backgroundColor: service.running
+                          ? auroraTheme.colors.success[500]
+                          : auroraTheme.colors.error[500],
+                      },
+                    ]}
+                  />
+                  <Text style={styles.serviceName}>{key.toUpperCase()}</Text>
                 </View>
-              ),
-            )}
+                <View style={styles.serviceDetails}>
+                  <Text style={styles.serviceDetailText}>Port: {service.port || "N/A"}</Text>
+                  <Text style={styles.serviceDetailText}>PID: {service.pid || "-"}</Text>
+                </View>
+                <View style={styles.serviceStatusBadge}>
+                  <Text
+                    style={[
+                      styles.serviceStatusText,
+                      {
+                        color: service.running
+                          ? auroraTheme.colors.success[500]
+                          : auroraTheme.colors.error[500],
+                      },
+                    ]}
+                  >
+                    {service.running ? "Running" : "Stopped"}
+                  </Text>
+                </View>
+              </View>
+            ))}
         </View>
       </GlassCard>
 
@@ -642,20 +562,13 @@ export default function DashboardWeb() {
   );
 
   const renderReports = () => (
-    <Animated.View
-      entering={FadeInDown.delay(200).springify()}
-      style={styles.tabContent}
-    >
+    <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.tabContent}>
       <View style={styles.reportsGrid}>
         {reports.map((report, index) => (
           <GlassCard key={index} variant="medium" style={styles.reportCard}>
             <View style={styles.reportHeader}>
               <View style={styles.reportIcon}>
-                <Ionicons
-                  name="document-text"
-                  size={32}
-                  color={auroraTheme.colors.primary[400]}
-                />
+                <Ionicons name="document-text" size={32} color={auroraTheme.colors.primary[400]} />
               </View>
               <View style={styles.reportInfo}>
                 <Text style={styles.reportTitle}>{report.name}</Text>
@@ -679,22 +592,15 @@ export default function DashboardWeb() {
   );
 
   const renderAnalytics = () => (
-    <Animated.View
-      entering={FadeInDown.delay(200).springify()}
-      style={styles.tabContent}
-    >
+    <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.tabContent}>
       <GlassCard variant="medium" style={styles.analyticsCard}>
         <View style={styles.analyticsHeader}>
           <Text style={styles.sectionTitle}>Performance Analytics</Text>
           <DateRangePicker
             startDate={analyticsDateRange.start}
             endDate={analyticsDateRange.end}
-            onStartDateChange={(d) =>
-              setAnalyticsDateRange((prev) => ({ ...prev, start: d }))
-            }
-            onEndDateChange={(d) =>
-              setAnalyticsDateRange((prev) => ({ ...prev, end: d }))
-            }
+            onStartDateChange={(d) => setAnalyticsDateRange((prev) => ({ ...prev, start: d }))}
+            onEndDateChange={(d) => setAnalyticsDateRange((prev) => ({ ...prev, end: d }))}
           />
         </View>
 
@@ -710,199 +616,127 @@ export default function DashboardWeb() {
     </Animated.View>
   );
 
-  if (loading) {
-    return (
-      <AuroraBackground>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator
-            size="large"
-            color={auroraTheme.colors.primary[500]}
-          />
-          <Text style={styles.loadingText}>Loading Dashboard...</Text>
-        </View>
-      </AuroraBackground>
-    );
-  }
-
   return (
-    <>
-      <StatusBar style="light" />
-      <AuroraBackground variant="primary" intensity="medium" animated={true}>
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.headerTitle}>Admin Dashboard</Text>
-              <Text style={styles.headerSubtitle}>
-                System Overview & Controls
-              </Text>
-            </View>
-            <View style={styles.headerActions}>
-              <AnimatedPressable
-                onPress={() => loadDashboardData(true)}
-                style={styles.refreshButton}
-              >
-                <Ionicons
-                  name={refreshing ? "sync" : "refresh"}
-                  size={20}
-                  color={auroraTheme.colors.text.primary}
-                />
-              </AnimatedPressable>
-              <AnimatedPressable
-                onPress={() => {
-                  Alert.alert(
-                    "Confirm Logout",
-                    "Are you sure you want to logout?",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      {
-                        text: "Logout",
-                        style: "destructive",
-                        onPress: async () => {
-                          await logout();
-                          router.replace("/login");
-                        },
-                      },
-                    ],
-                  );
-                }}
-                style={styles.logoutButton}
-              >
-                <Ionicons
-                  name="log-out-outline"
-                  size={20}
-                  color={auroraTheme.colors.status.error}
-                />
-              </AnimatedPressable>
-            </View>
-          </View>
-
-          {/* Navigation Tabs */}
-          <View style={styles.tabsContainer}>
-            {(
-              [
-                "overview",
-                "monitoring",
-                "reports",
-                "analytics",
-                "diagnosis",
-              ] as DashboardTab[]
-            ).map((tab) => (
+    <ScreenContainer
+      backgroundType="aurora"
+      auroraVariant="primary"
+      auroraIntensity="medium"
+      header={{
+        title: "Admin Dashboard",
+        subtitle: "System Overview & Controls",
+        showLogoutButton: true,
+        showBackButton: false,
+        rightAction: {
+          icon: refreshing ? "sync" : "refresh",
+          onPress: () => loadDashboardData(true),
+        },
+      }}
+      loading={loading}
+      loadingText="Loading Dashboard..."
+      noPadding
+    >
+      <View style={styles.container}>
+        {/* Navigation Tabs */}
+        <View style={styles.tabsContainer}>
+          {(["overview", "monitoring", "reports", "analytics", "diagnosis"] as DashboardTab[]).map(
+            (tab) => (
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
                 style={[styles.tab, activeTab === tab && styles.activeTab]}
               >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === tab && styles.activeTabText,
-                  ]}
-                >
+                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            )
+          )}
+        </View>
 
-          {/* Content Area */}
-          <ScrollView
-            style={styles.content}
-            contentContainerStyle={styles.contentContainer}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() => loadDashboardData(true)}
-                tintColor="#fff"
-              />
-            }
-          >
-            {activeTab === "overview" && renderOverview()}
-            {activeTab === "monitoring" && renderMonitoring()}
-            {activeTab === "reports" && renderReports()}
-            {activeTab === "analytics" && renderAnalytics()}
-            {activeTab === "diagnosis" && renderDiagnosis()}
-          </ScrollView>
+        {/* Content Area */}
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadDashboardData(true)}
+              tintColor={auroraTheme.colors.primary[500]}
+            />
+          }
+        >
+          {activeTab === "overview" && renderOverview()}
+          {activeTab === "monitoring" && renderMonitoring()}
+          {activeTab === "reports" && renderReports()}
+          {activeTab === "analytics" && renderAnalytics()}
+          {activeTab === "diagnosis" && renderDiagnosis()}
+        </ScrollView>
 
-          {/* Report Modal */}
-          <RNModal
-            visible={showReportModal}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowReportModal(false)}
-          >
-            <BlurView intensity={20} style={styles.modalOverlay}>
-              <GlassCard variant="strong" style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Generate Report</Text>
-                  <TouchableOpacity onPress={() => setShowReportModal(false)}>
+        {/* Report Modal */}
+        <RNModal
+          visible={showReportModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowReportModal(false)}
+        >
+          <BlurView intensity={20} style={styles.modalOverlay}>
+            <GlassCard variant="strong" style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Generate Report</Text>
+                <TouchableOpacity onPress={() => setShowReportModal(false)}>
+                  <Ionicons name="close" size={24} color={auroraTheme.colors.text.secondary} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.modalBody}>
+                <Text style={styles.modalLabel}>Date Range</Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <Text style={{ color: auroraTheme.colors.text.secondary }}>
+                    Last 30 Days (Default)
+                  </Text>
+                </View>
+
+                <Text style={styles.modalLabel}>Format</Text>
+                <View style={styles.formatOptions}>
+                  <TouchableOpacity style={[styles.formatOption, styles.formatOptionActive]}>
+                    <Ionicons name="grid-outline" size={20} color="#FFF" />
+                    <Text style={styles.formatText}>Excel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formatOption}>
                     <Ionicons
-                      name="close"
-                      size={24}
+                      name="document-text-outline"
+                      size={20}
                       color={auroraTheme.colors.text.secondary}
                     />
+                    <Text style={[styles.formatText, { color: auroraTheme.colors.text.secondary }]}>
+                      CSV
+                    </Text>
                   </TouchableOpacity>
                 </View>
-                <View style={styles.modalBody}>
-                  <Text style={styles.modalLabel}>Date Range</Text>
-                  <View style={{ flexDirection: "row", gap: 10 }}>
-                    <Text style={{ color: auroraTheme.colors.text.secondary }}>
-                      Last 30 Days (Default)
-                    </Text>
-                  </View>
-
-                  <Text style={styles.modalLabel}>Format</Text>
-                  <View style={styles.formatOptions}>
-                    <TouchableOpacity
-                      style={[styles.formatOption, styles.formatOptionActive]}
-                    >
-                      <Ionicons name="grid-outline" size={20} color="#FFF" />
-                      <Text style={styles.formatText}>Excel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.formatOption}>
-                      <Ionicons
-                        name="document-text-outline"
-                        size={20}
-                        color={auroraTheme.colors.text.secondary}
-                      />
-                      <Text
-                        style={[
-                          styles.formatText,
-                          { color: auroraTheme.colors.text.secondary },
-                        ]}
-                      >
-                        CSV
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <View style={styles.modalFooter}>
-                  <AnimatedPressable
-                    style={styles.cancelButton}
-                    onPress={() => setShowReportModal(false)}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </AnimatedPressable>
-                  <AnimatedPressable
-                    style={styles.confirmButton}
-                    onPress={() =>
-                      selectedReport && handleGenerateReport(selectedReport)
-                    }
-                    disabled={generating}
-                  >
-                    {generating ? (
-                      <ActivityIndicator size="small" color="#FFF" />
-                    ) : (
-                      <Text style={styles.confirmButtonText}>Download</Text>
-                    )}
-                  </AnimatedPressable>
-                </View>
-              </GlassCard>
-            </BlurView>
-          </RNModal>
-        </View>
-      </AuroraBackground>
-    </>
+              </View>
+              <View style={styles.modalFooter}>
+                <AnimatedPressable
+                  style={styles.cancelButton}
+                  onPress={() => setShowReportModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </AnimatedPressable>
+                <AnimatedPressable
+                  style={styles.confirmButton}
+                  onPress={() => selectedReport && handleGenerateReport(selectedReport)}
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text style={styles.confirmButtonText}>Download</Text>
+                  )}
+                </AnimatedPressable>
+              </View>
+            </GlassCard>
+          </BlurView>
+        </RNModal>
+      </View>
+    </ScreenContainer>
   );
 }
 

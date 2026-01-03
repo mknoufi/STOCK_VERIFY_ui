@@ -8,8 +8,9 @@
 import React from "react";
 import { View, StyleSheet, ViewStyle, Text, TextStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useThemeContext } from "../../theme/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 import { PatternBackground } from "./PatternBackground";
+import { colors as unifiedColors } from "../../theme/unified";
 
 interface ThemedScreenProps {
   children: React.ReactNode;
@@ -28,7 +29,7 @@ export const ThemedScreen: React.FC<ThemedScreenProps> = ({
   useSafeArea = true,
   variant = "default",
 }) => {
-  const { theme, pattern, layout } = useThemeContext();
+  const { themeLegacy: theme, pattern, layout } = useThemeContext();
   const insets = useSafeAreaInsets();
 
   // Get spacing based on layout arrangement
@@ -53,8 +54,7 @@ export const ThemedScreen: React.FC<ThemedScreenProps> = ({
 
   const containerStyle: ViewStyle = {
     flex: 1,
-    backgroundColor:
-      variant === "solid" ? theme.colors.surface : theme.colors.background,
+    backgroundColor: variant === "solid" ? theme.colors.surface : theme.colors.background,
   };
 
   const contentStyle: ViewStyle = {
@@ -110,12 +110,11 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
   variant = "default",
   padding = "medium",
 }) => {
-  const { theme, layout, isDark } = useThemeContext();
+  const { themeLegacy: theme, layout, isDark } = useThemeContext();
 
   // Get padding based on layout and padding prop
   const getPadding = () => {
-    const baseMultiplier =
-      layout === "compact" ? 0.75 : layout === "spacious" ? 1.25 : 1;
+    const baseMultiplier = layout === "compact" ? 0.75 : layout === "spacious" ? 1.25 : 1;
     const sizes = { none: 0, small: 8, medium: 16, large: 24 };
     return sizes[padding] * baseMultiplier;
   };
@@ -123,7 +122,7 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
   // Get card styles based on variant
   const getCardStyle = (): ViewStyle => {
     const base: ViewStyle = {
-      borderRadius: theme.radius.lg,
+      borderRadius: theme.borderRadius.lg,
       padding: getPadding(),
       overflow: "hidden",
     };
@@ -140,7 +139,7 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
         return {
           ...base,
           backgroundColor: theme.colors.surface,
-          shadowColor: isDark ? "#000" : "#64748B",
+          shadowColor: isDark ? unifiedColors.black : unifiedColors.neutral[500],
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: isDark ? 0.3 : 0.1,
           shadowRadius: 12,
@@ -187,7 +186,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   weight = "normal",
   size = "md",
 }) => {
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
 
   const getColor = () => {
     switch (color) {

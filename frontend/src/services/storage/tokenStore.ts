@@ -65,7 +65,7 @@ export const tokenStore = {
   initialize: async (): Promise<void> => {
     cachedAccessToken = await secureStorage.getItem("auth_token");
     cachedRefreshToken = await secureStorage.getItem("refresh_token");
-  }
+  },
 };
 
 export default tokenStore;

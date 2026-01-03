@@ -2,19 +2,14 @@
  * ThemePicker Component
  *
  * Visual theme selection grid with live preview
-  * Shows all available themes with color swatches
-    *
+ * Shows all available themes with color swatches
+ *
  * // cSpell:ignore springify
  */
 
-import React, { useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-} from "react-native";
+import * as React from "react";
+import { useCallback } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, {
@@ -24,7 +19,8 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-import { useThemeContext, ThemeKey, ThemeMode } from "../../theme/ThemeContext";
+import { ThemeKey, ThemeMode } from "../../context/ThemeContext";
+import { useTheme } from "../../hooks/useTheme";
 
 interface ThemePickerProps {
   showModeToggle?: boolean;
@@ -37,23 +33,17 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
   compact = false,
   columns: _columns = 3,
 }) => {
-  const {
-    theme,
-    themeKey,
-    themeMode,
-    setThemeKey,
-    setThemeMode,
-    availableThemes,
-  } = useThemeContext();
+  const { themeObject, themeKey, themeMode, updateTheme, updateMode, availableThemes, colors } =
+    useTheme();
 
   const handleThemeSelect = useCallback(
     (key: ThemeKey) => {
       if (Platform.OS !== "web") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
-      setThemeKey(key);
+      updateTheme(key);
     },
-    [setThemeKey],
+    [updateTheme]
   );
 
   const handleModeChange = useCallback(
@@ -61,9 +51,9 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
       if (Platform.OS !== "web") {
         Haptics.selectionAsync();
       }
-      setThemeMode(mode);
+      updateMode(mode);
     },
-    [setThemeMode],
+    [updateMode]
   );
 
   const cardSize = compact ? 80 : 100;
@@ -73,24 +63,17 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
       {/* Theme Mode Toggle */}
       {showModeToggle && (
         <View style={styles.modeSection}>
-          <Text
-            style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}
-          >
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
             Appearance Mode
           </Text>
-          <View
-            style={[
-              styles.modeToggle,
-              { backgroundColor: theme.colors.surface },
-            ]}
-          >
+          <View style={[styles.modeToggle, { backgroundColor: colors.surface }]}>
             {(["light", "system", "dark"] as ThemeMode[]).map((mode) => (
               <TouchableOpacity
                 key={mode}
                 style={[
                   styles.modeButton,
                   themeMode === mode && {
-                    backgroundColor: theme.colors.accent,
+                    backgroundColor: themeObject.colors.accent,
                   },
                 ]}
                 onPress={() => handleModeChange(mode)}
@@ -104,18 +87,13 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
                         : "phone-portrait-outline"
                   }
                   size={18}
-                  color={
-                    themeMode === mode ? "#FFFFFF" : theme.colors.textSecondary
-                  }
+                  color={themeMode === mode ? "#FFFFFF" : colors.textSecondary}
                 />
                 <Text
                   style={[
                     styles.modeButtonText,
                     {
-                      color:
-                        themeMode === mode
-                          ? "#FFFFFF"
-                          : theme.colors.textSecondary,
+                      color: themeMode === mode ? "#FFFFFF" : colors.textSecondary,
                     },
                   ]}
                 >
@@ -129,27 +107,22 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
 
       {/* Theme Grid */}
       <View style={styles.themeSection}>
-        <Text
-          style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}
-        >
-          Color Theme
-        </Text>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Color Theme</Text>
         <View style={[styles.themeGrid, { gap: compact ? 8 : 12 }]}>
-          {availableThemes.map((t, index) => (
-            <Animated.View
-              key={t.key}
-              entering={FadeInDown.delay(index * 50).springify()}
-            >
-              <ThemeCard
-                themeInfo={t}
-                isSelected={themeKey === t.key}
-                onSelect={() => handleThemeSelect(t.key)}
-                size={cardSize}
-                accentColor={theme.colors.accent}
-                textColor={theme.colors.text}
-              />
-            </Animated.View>
-          ))}
+          {availableThemes.map(
+            (t: { key: ThemeKey; name: string; preview: string[] }, index: number) => (
+              <Animated.View key={t.key} entering={FadeInDown.delay(index * 50).springify() as any}>
+                <ThemeCard
+                  themeInfo={t}
+                  isSelected={themeKey === t.key}
+                  onSelect={() => handleThemeSelect(t.key)}
+                  size={cardSize}
+                  accentColor={themeObject.colors.accent}
+                  textColor={colors.text}
+                />
+              </Animated.View>
+            )
+          )}
         </View>
       </View>
     </View>
@@ -219,22 +192,22 @@ const ThemeCard: React.FC<ThemeCardProps> = ({
               {themeInfo.preview.map((color, i) => (
                 <View
                   key={i}
-                  style={[
-                    styles.colorDot,
-                    {
-                      backgroundColor: color,
-                      borderColor: "rgba(255,255,255,0.3)",
-                    },
-                  ]}
+                  style={
+                    [
+                      styles.colorDot,
+                      {
+                        backgroundColor: color,
+                        borderColor: "rgba(255,255,255,0.3)",
+                      },
+                    ] as any
+                  }
                 />
               ))}
             </View>
 
             {/* Selected Checkmark */}
             {isSelected && (
-              <View
-                style={[styles.checkmark, { backgroundColor: accentColor }]}
-              >
+              <View style={[styles.checkmark, { backgroundColor: accentColor }]}>
                 <Ionicons name="checkmark" size={12} color="#FFFFFF" />
               </View>
             )}
@@ -242,11 +215,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({
 
           {/* Theme Name */}
           <Text
-            style={[
-              styles.themeName,
-              { color: textColor },
-              isSelected && { fontWeight: "600" },
-            ]}
+            style={[styles.themeName, { color: textColor }, isSelected && { fontWeight: "600" }]}
             numberOfLines={1}
           >
             {themeInfo.name}

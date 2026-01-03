@@ -14,10 +14,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
-import {
-  getSystemSettings,
-  updateSystemSettings,
-} from "../../src/services/api";
+import { AppearanceSettings } from "../../src/components/ui/AppearanceSettings";
+import { ScreenContainer } from "../../src/components/ui";
+import { getSystemSettings, updateSystemSettings } from "../../src/services/api";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 
 export default function MasterSettingsScreen() {
   const router = useRouter();
@@ -28,11 +28,9 @@ export default function MasterSettingsScreen() {
 
   useEffect(() => {
     if (!hasRole("admin")) {
-      Alert.alert(
-        "Access Denied",
-        "You do not have permission to view master settings.",
-        [{ text: "OK", onPress: () => router.back() }],
-      );
+      Alert.alert("Access Denied", "You do not have permission to view master settings.", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
       return;
     }
     loadSettings();
@@ -82,7 +80,7 @@ export default function MasterSettingsScreen() {
 
   const renderSectionHeader = (title: string, icon: any) => (
     <View style={styles.sectionHeader}>
-      <Ionicons name={icon} size={24} color="#007AFF" />
+      <Ionicons name={icon} size={24} color={auroraTheme.colors.primary[500]} />
       <Text style={styles.sectionTitle}>{title}</Text>
     </View>
   );
@@ -91,7 +89,7 @@ export default function MasterSettingsScreen() {
     label: string,
     key: string,
     keyboardType: "default" | "numeric" = "default",
-    description?: string,
+    description?: string
   ) => (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -104,10 +102,11 @@ export default function MasterSettingsScreen() {
         }}
         keyboardType={keyboardType}
         placeholder={label}
+        placeholderTextColor={auroraTheme.colors.text.muted}
+        autoCapitalize="none"
+        autoCorrect={false}
       />
-      {description && (
-        <Text style={styles.inputDescription}>{description}</Text>
-      )}
+      {description && <Text style={styles.inputDescription}>{description}</Text>}
     </View>
   );
 
@@ -115,52 +114,74 @@ export default function MasterSettingsScreen() {
     <View style={styles.switchContainer}>
       <View style={styles.switchTextContainer}>
         <Text style={styles.switchLabel}>{label}</Text>
-        {description && (
-          <Text style={styles.switchDescription}>{description}</Text>
-        )}
+        {description && <Text style={styles.switchDescription}>{description}</Text>}
       </View>
       <Switch
         value={settings?.[key] || false}
         onValueChange={(value) => updateSetting(key, value)}
-        trackColor={{ false: "#767577", true: "#81b0ff" }}
-        thumbColor={settings?.[key] ? "#007AFF" : "#f4f3f4"}
+        trackColor={{
+          false: auroraTheme.colors.border.medium,
+          true: auroraTheme.colors.primary[300],
+        }}
+        thumbColor={
+          settings?.[key] ? auroraTheme.colors.primary[500] : auroraTheme.colors.surface.elevated
+        }
       />
     </View>
   );
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading settings...</Text>
-      </View>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "System Settings",
+          subtitle: "Configuration & Preferences",
+          showBackButton: true,
+          customRightContent: (
+            <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={saving}>
+              {saving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.saveButtonText}>Save</Text>
+              )}
+            </TouchableOpacity>
+          ),
+        }}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+          <Text style={styles.loadingText}>Loading settings...</Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Master Settings</Text>
-        <TouchableOpacity
-          onPress={handleSave}
-          style={styles.saveButton}
-          disabled={saving}
-        >
-          {saving ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.saveButtonText}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-
+    <ScreenContainer
+      gradient
+      header={{
+        title: "System Settings",
+        subtitle: "Configuration & Preferences",
+        showBackButton: true,
+        customRightContent: (
+          <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={saving}>
+            {saving ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.saveButtonText}>Save</Text>
+            )}
+          </TouchableOpacity>
+        ),
+      }}
+    >
       <ScrollView style={styles.content}>
+        {/* Appearance Settings */}
+        <View style={styles.section}>
+          {renderSectionHeader("Appearance & UI", "color-palette-outline")}
+          <AppearanceSettings showTitle={false} scrollable={false} compact={true} />
+        </View>
+
         {/* API Settings */}
         <View style={styles.section}>
           {renderSectionHeader("API Configuration", "globe-outline")}
@@ -168,13 +189,13 @@ export default function MasterSettingsScreen() {
             "API Timeout (seconds)",
             "api_timeout",
             "numeric",
-            "Request timeout duration",
+            "Request timeout duration"
           )}
           {renderInput(
             "Rate Limit (per minute)",
             "api_rate_limit",
             "numeric",
-            "Maximum requests per minute",
+            "Maximum requests per minute"
           )}
         </View>
 
@@ -186,13 +207,13 @@ export default function MasterSettingsScreen() {
             "Cache TTL (seconds)",
             "cache_ttl",
             "numeric",
-            "Time to live for cached items",
+            "Time to live for cached items"
           )}
           {renderInput(
             "Max Cache Size",
             "cache_max_size",
             "numeric",
-            "Maximum number of items in cache",
+            "Maximum number of items in cache"
           )}
         </View>
 
@@ -204,29 +225,16 @@ export default function MasterSettingsScreen() {
             "Sync Interval (seconds)",
             "sync_interval",
             "numeric",
-            "Time between automatic syncs",
+            "Time between automatic syncs"
           )}
-          {renderInput(
-            "Batch Size",
-            "sync_batch_size",
-            "numeric",
-            "Items per sync batch",
-          )}
+          {renderInput("Batch Size", "sync_batch_size", "numeric", "Items per sync batch")}
         </View>
 
         {/* Session Settings */}
         <View style={styles.section}>
           {renderSectionHeader("Sessions", "people-outline")}
-          {renderInput(
-            "Session Timeout (seconds)",
-            "session_timeout",
-            "numeric",
-          )}
-          {renderInput(
-            "Max Concurrent Sessions",
-            "max_concurrent_sessions",
-            "numeric",
-          )}
+          {renderInput("Session Timeout (seconds)", "session_timeout", "numeric")}
+          {renderInput("Max Concurrent Sessions", "max_concurrent_sessions", "numeric")}
         </View>
 
         {/* Logging Settings */}
@@ -234,12 +242,7 @@ export default function MasterSettingsScreen() {
           {renderSectionHeader("Logging", "document-text-outline")}
           {renderSwitch("Enable Audit Log", "enable_audit_log")}
           {renderInput("Log Retention (days)", "log_retention_days", "numeric")}
-          {renderInput(
-            "Log Level",
-            "log_level",
-            "default",
-            "DEBUG, INFO, WARN, ERROR",
-          )}
+          {renderInput("Log Level", "log_level", "default", "DEBUG, INFO, WARN, ERROR")}
         </View>
 
         {/* Database Settings */}
@@ -265,11 +268,7 @@ export default function MasterSettingsScreen() {
           {renderSectionHeader("Performance", "speedometer-outline")}
           {renderSwitch("Enable Compression", "enable_compression")}
           {renderSwitch("Enable CORS", "enable_cors")}
-          {renderInput(
-            "Max Request Size (bytes)",
-            "max_request_size",
-            "numeric",
-          )}
+          {renderInput("Max Request Size (bytes)", "max_request_size", "numeric")}
         </View>
 
         <View style={styles.footer}>
@@ -278,15 +277,11 @@ export default function MasterSettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -294,31 +289,13 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: "#666",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    paddingTop: Platform.OS === "ios" ? 50 : 16,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
+    color: auroraTheme.colors.text.secondary,
   },
   saveButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: auroraTheme.colors.primary[500],
+    paddingHorizontal: auroraTheme.spacing.md,
+    paddingVertical: auroraTheme.spacing.sm,
+    borderRadius: auroraTheme.borderRadius.full,
     minWidth: 70,
     alignItems: "center",
   },
@@ -328,31 +305,31 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: auroraTheme.spacing.lg,
   },
   section: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: auroraTheme.colors.surface.base,
+    borderRadius: auroraTheme.borderRadius.lg,
+    padding: auroraTheme.spacing.lg,
+    marginBottom: auroraTheme.spacing.lg,
+    borderWidth: 1,
+    borderColor: auroraTheme.colors.border.subtle,
+    ...(Platform.OS === "web" && {
+      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    }),
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: auroraTheme.colors.border.subtle,
     paddingBottom: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: auroraTheme.colors.text.primary,
     marginLeft: 8,
   },
   inputContainer: {
@@ -360,20 +337,21 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: "#666",
+    color: auroraTheme.colors.text.secondary,
     marginBottom: 4,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 10,
+    borderColor: auroraTheme.colors.border.subtle,
+    borderRadius: auroraTheme.borderRadius.md,
+    padding: auroraTheme.spacing.md,
     fontSize: 16,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: auroraTheme.colors.surface.secondary,
+    color: auroraTheme.colors.text.primary,
   },
   inputDescription: {
     fontSize: 12,
-    color: "#999",
+    color: auroraTheme.colors.text.muted,
     marginTop: 4,
   },
   switchContainer: {
@@ -388,20 +366,20 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 16,
-    color: "#333",
+    color: auroraTheme.colors.text.primary,
   },
   switchDescription: {
     fontSize: 12,
-    color: "#999",
+    color: auroraTheme.colors.text.muted,
     marginTop: 2,
   },
   footer: {
-    padding: 16,
+    padding: auroraTheme.spacing.lg,
     alignItems: "center",
     marginBottom: 32,
   },
   footerText: {
-    color: "#666",
+    color: auroraTheme.colors.text.secondary,
     textAlign: "center",
     fontStyle: "italic",
   },

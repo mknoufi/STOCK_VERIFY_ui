@@ -16,9 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 DB_NAME = "stock_verification"  # Default from config.py
 
 
-async def restore_collection(
-    client, db_name: str, collection_name: str, json_file: Path
-):
+async def restore_collection(client, db_name: str, collection_name: str, json_file: Path):
     """Restore a single collection from JSON file"""
     try:
         db = client[db_name]
@@ -81,9 +79,7 @@ async def restore_backup(backup_dir: Path, db_name: str = DB_NAME):
 
         # Filter out metadata and restore script
         collection_files = [
-            f
-            for f in json_files
-            if f.name not in ["_backup_metadata.json", "restore_backup.py"]
+            f for f in json_files if f.name not in ["_backup_metadata.json", "restore_backup.py"]
         ]
 
         if not collection_files:
@@ -99,9 +95,7 @@ async def restore_backup(backup_dir: Path, db_name: str = DB_NAME):
         total_restored = 0
         for json_file in collection_files:
             collection_name = json_file.stem  # Remove .json extension
-            count = await restore_collection(
-                client, db_name, collection_name, json_file
-            )
+            count = await restore_collection(client, db_name, collection_name, json_file)
             total_restored += count
 
         print("")
@@ -136,9 +130,7 @@ if __name__ == "__main__":
         default="mongodb_backup_temp/mongodb_backup_2025-11-12_031405",
         help="Path to backup directory",
     )
-    parser.add_argument(
-        "--db-name", type=str, default=DB_NAME, help="Database name to restore to"
-    )
+    parser.add_argument("--db-name", type=str, default=DB_NAME, help="Database name to restore to")
 
     args = parser.parse_args()
 

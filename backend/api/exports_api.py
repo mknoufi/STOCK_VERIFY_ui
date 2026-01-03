@@ -109,9 +109,7 @@ async def get_export_schedule(
     """Get details of a specific export schedule"""
     from bson import ObjectId
 
-    schedule = await export_service.db.export_schedules.find_one(
-        {"_id": ObjectId(schedule_id)}
-    )
+    schedule = await export_service.db.export_schedules.find_one({"_id": ObjectId(schedule_id)})
 
     if not schedule:
         raise HTTPException(
@@ -216,9 +214,7 @@ async def execute_export_schedule(
     from bson import ObjectId
 
     # Get schedule
-    schedule = await export_service.db.export_schedules.find_one(
-        {"_id": ObjectId(schedule_id)}
-    )
+    schedule = await export_service.db.export_schedules.find_one({"_id": ObjectId(schedule_id)})
 
     if not schedule:
         raise HTTPException(
@@ -264,9 +260,7 @@ async def list_export_results(
     if schedule_id:
         query["schedule_id"] = ObjectId(schedule_id)
 
-    cursor = (
-        export_service.db.export_results.find(query).sort("created_at", -1).limit(limit)
-    )
+    cursor = export_service.db.export_results.find(query).sort("created_at", -1).limit(limit)
     results = await cursor.to_list(length=limit)
 
     # Remove file_content from list (too large)
@@ -287,9 +281,7 @@ async def download_export_result(
     """Download an export result file"""
     from bson import ObjectId
 
-    result = await export_service.db.export_results.find_one(
-        {"_id": ObjectId(result_id)}
-    )
+    result = await export_service.db.export_results.find_one({"_id": ObjectId(result_id)})
 
     if not result:
         raise HTTPException(

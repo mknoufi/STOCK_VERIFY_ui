@@ -90,7 +90,7 @@
 **Connection Type:**
 ```python
 # Read-only connection string
-SQL_SERVER_CONN = "mssql+pyodbc://user:pass@server/db?ReadOnly=true"
+SQL_SERVER_CONN = "mssql+pyodbc://readonly_user:CHANGE_ME@erp-host/ERP?ReadOnly=true"  # pragma: allowlist secret
 ```
 
 ### **MongoDB (Working Database)**

@@ -10,32 +10,36 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from backend.config import settings
 
 async def check_items():
+    output = []
     client = AsyncIOMotorClient(settings.MONGO_URL)
     db = client[settings.DB_NAME]
 
-    print(f"Checking database: {settings.DB_NAME}")
+    output.append(f"Checking database: {settings.DB_NAME}")
 
     # Check collections
     collections = await db.list_collection_names()
-    print(f"Collections: {collections}")
+    output.append(f"Collections: {collections}")
 
     # Check items count
     if "items" in collections:
         count = await db.items.count_documents({})
-        print(f"Items count: {count}")
+        output.append(f"Items count: {count}")
         if count > 0:
             item = await db.items.find_one()
-            print(f"Sample item: {item}")
+            output.append(f"Sample item: {item}")
     else:
-        print("No 'items' collection found.")
+        output.append("No 'items' collection found.")
 
     # Check erp_items count (if used for caching/sync)
     if "erp_items" in collections:
         count = await db.erp_items.count_documents({})
-        print(f"ERP Items count: {count}")
+        output.append(f"ERP Items count: {count}")
         if count > 0:
             item = await db.erp_items.find_one()
-            print(f"Sample ERP item: {item}")
+            output.append(f"Sample ERP item: {item}")
+
+    with open("mongo_check_output.txt", "w") as f:
+        f.write("\n".join(output))
 
 if __name__ == "__main__":
     asyncio.run(check_items())

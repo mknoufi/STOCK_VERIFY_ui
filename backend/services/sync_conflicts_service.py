@@ -78,10 +78,8 @@ class SyncConflictsService:
             "resolved_by": None,
             "resolved_at": None,
             "created_at": datetime.now(UTC),
-            "local_timestamp": local_data.get("updated_at")
-            or local_data.get("created_at"),
-            "server_timestamp": server_data.get("updated_at")
-            or server_data.get("created_at"),
+            "local_timestamp": local_data.get("updated_at") or local_data.get("created_at"),
+            "server_timestamp": server_data.get("updated_at") or server_data.get("created_at"),
         }
 
         result = await self.db.sync_conflicts.insert_one(conflict_doc)
@@ -123,9 +121,7 @@ class SyncConflictsService:
 
         return conflicts
 
-    async def get_conflict_by_id(
-        self, conflict_id: str
-    ) -> Optional[dict[str, Optional[Any]]]:
+    async def get_conflict_by_id(self, conflict_id: str) -> Optional[dict[str, Optional[Any]]]:
         """Get a specific conflict by ID"""
         conflict = await self.db.sync_conflicts.find_one({"_id": ObjectId(conflict_id)})
 
@@ -190,13 +186,9 @@ class SyncConflictsService:
             entity_type = conflict.get("entity_type")
             entity_id = conflict.get("entity_id")
             if entity_type and entity_id:
-                await self._apply_resolved_data(
-                    str(entity_type), str(entity_id), resolved_data
-                )
+                await self._apply_resolved_data(str(entity_type), str(entity_id), resolved_data)
 
-        logger.info(
-            f"Conflict {conflict_id} resolved with {resolution.value} by {resolved_by}"
-        )
+        logger.info(f"Conflict {conflict_id} resolved with {resolution.value} by {resolved_by}")
 
         return {
             "conflict_id": conflict_id,
@@ -204,9 +196,7 @@ class SyncConflictsService:
             "resolved_data": resolved_data,
         }
 
-    async def _apply_resolved_data(
-        self, entity_type: str, entity_id: str, data: dict[str, Any]
-    ):
+    async def _apply_resolved_data(self, entity_type: str, entity_id: str, data: dict[str, Any]):
         """Apply resolved data to the entity"""
         # Determine collection based on entity type
         if entity_type == "session":
@@ -248,20 +238,14 @@ class SyncConflictsService:
                 if await self._resolve_single_conflict(conflict, strategy):
                     resolved_count += 1
             except (PyMongoError, ValueError) as e:
-                logger.error(
-                    f"Failed to auto-resolve conflict {conflict['id']}: {str(e)}"
-                )
+                logger.error(f"Failed to auto-resolve conflict {conflict['id']}: {str(e)}")
                 continue
 
-        logger.info(
-            f"Auto-resolved {resolved_count} conflicts using '{strategy}' strategy"
-        )
+        logger.info(f"Auto-resolved {resolved_count} conflicts using '{strategy}' strategy")
 
         return resolved_count
 
-    async def _resolve_single_conflict(
-        self, conflict: dict[str, Any], strategy: str
-    ) -> bool:
+    async def _resolve_single_conflict(self, conflict: dict[str, Any], strategy: str) -> bool:
         """Helper to resolve a single conflict based on strategy"""
         # Determine resolution based on strategy
         if strategy == "server_wins":
@@ -277,9 +261,7 @@ class SyncConflictsService:
         await self.resolve_conflict(conflict["id"], resolution, "system_auto_resolve")
         return True
 
-    def _determine_newest_wins_resolution(
-        self, conflict: dict[str, Any]
-    ) -> ConflictResolution:
+    def _determine_newest_wins_resolution(self, conflict: dict[str, Any]) -> ConflictResolution:
         """Determine resolution based on timestamps"""
         local_ts = conflict.get("local_timestamp")
         server_ts = conflict.get("server_timestamp")

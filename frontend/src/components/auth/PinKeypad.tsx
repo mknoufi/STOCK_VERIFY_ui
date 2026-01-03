@@ -26,9 +26,7 @@ import Animated, {
   withTiming,
   useSharedValue,
 } from "react-native-reanimated";
-import {
-  modernColors,
-} from "../../styles/modernDesignSystem";
+import { modernColors } from "../../styles/modernDesignSystem";
 
 interface PinKeypadProps {
   pin: string;
@@ -58,7 +56,7 @@ export function PinKeypad({
       ["7", "8", "9"],
       ["clear", "0", "backspace"],
     ],
-    [],
+    []
   );
 
   // Animation for error shake
@@ -84,7 +82,7 @@ export function PinKeypad({
         }
       }
     },
-    [pin, maxLength, onPinChange, onComplete, disabled],
+    [pin, maxLength, onPinChange, onComplete, disabled]
   );
 
   // Trigger shake animation on error
@@ -95,7 +93,7 @@ export function PinKeypad({
         withTiming(10, { duration: 50 }),
         withTiming(-10, { duration: 50 }),
         withTiming(10, { duration: 50 }),
-        withTiming(0, { duration: 50 }),
+        withTiming(0, { duration: 50 })
       );
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -128,7 +126,10 @@ export function PinKeypad({
 
     if (isEmpty) {
       return (
-        <View key={`empty-${rowIndex}-${colIndex}`} style={[styles.keyEmpty, { width: KEY_SIZE, height: KEY_SIZE }]} />
+        <View
+          key={`empty-${rowIndex}-${colIndex}`}
+          style={[styles.keyEmpty, { width: KEY_SIZE, height: KEY_SIZE }]}
+        />
       );
     }
 
@@ -143,40 +144,26 @@ export function PinKeypad({
             width: KEY_SIZE,
             height: KEY_SIZE,
             borderRadius: KEY_SIZE / 2,
-          }
+          },
         ]}
         onPress={() => handleKeyPress(key)}
         disabled={disabled}
         activeOpacity={0.6}
         accessibilityRole="button"
         accessibilityLabel={
-          key === "backspace"
-            ? "Delete"
-            : key === "clear"
-              ? "Clear"
-              : `Number ${key}`
+          key === "backspace" ? "Delete" : key === "clear" ? "Clear" : `Number ${key}`
         }
       >
         {key === "backspace" ? (
           <Ionicons
             name="backspace-outline"
             size={28}
-            color={
-              disabled
-                ? modernColors.text.disabled
-                : modernColors.text.secondary
-            }
+            color={disabled ? modernColors.text.disabled : modernColors.text.secondary}
           />
         ) : key === "clear" ? (
-          <Text
-            style={[styles.keyTextSpecial, disabled && styles.keyTextDisabled]}
-          >
-            C
-          </Text>
+          <Text style={[styles.keyTextSpecial, disabled && styles.keyTextDisabled]}>C</Text>
         ) : (
-          <Text style={[styles.keyText, disabled && styles.keyTextDisabled]}>
-            {key}
-          </Text>
+          <Text style={[styles.keyText, disabled && styles.keyTextDisabled]}>{key}</Text>
         )}
       </TouchableOpacity>
     );
@@ -245,8 +232,7 @@ const styles = StyleSheet.create({
   keyDisabled: {
     opacity: 0.4,
   },
-  keyEmpty: {
-  },
+  keyEmpty: {},
   keyText: {
     fontSize: 28,
     fontWeight: "600",

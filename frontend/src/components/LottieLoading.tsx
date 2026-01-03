@@ -54,9 +54,7 @@ export const LottieLoading: React.FC<LottieLoadingProps> = ({
         }
       />
       {message && (
-        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>
-          {message}
-        </Text>
+        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>{message}</Text>
       )}
     </View>
   );

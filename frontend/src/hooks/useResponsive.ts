@@ -118,12 +118,12 @@ export function useResponsive(): ResponsiveConfig {
     // Responsive font size (respects system font scaling)
     const fontSize = (base: number): number => {
       let size = base * clampedScale;
-      
+
       // Tablet adjustments
       if (isTablet || isLargeTablet) {
         size = base * 1.1; // Slightly larger on tablets
       }
-      
+
       // Small phone adjustments
       if (isSmallPhone) {
         size = base * 0.9; // Slightly smaller on small phones
@@ -131,7 +131,7 @@ export function useResponsive(): ResponsiveConfig {
 
       // Clamp to reasonable range
       size = Math.min(Math.max(size, base * 0.8), base * 1.3);
-      
+
       return Math.round(size);
     };
 

@@ -208,7 +208,7 @@ class QueryBuilder:
                 logger.warning(f"Rejected invalid filter key: {field}")
                 continue
             if isinstance(condition, dict):
-                mongo_condition = {}
+                mongo_condition: dict[str, Any] = {}
                 for op, value in condition.items():
                     if op == "eq":
                         match_conditions[field] = value
@@ -252,9 +252,7 @@ class QueryBuilder:
                 if func == "count":
                     group_stage["$group"][f"{field}_{func}"] = {"$sum": 1}
                 elif func in _AGG_OPS:
-                    group_stage["$group"][f"{field}_{func}"] = {
-                        _AGG_OPS[func]: f"${field}"
-                    }
+                    group_stage["$group"][f"{field}_{func}"] = {_AGG_OPS[func]: f"${field}"}
 
         return group_stage
 
@@ -280,9 +278,7 @@ class QueryBuilder:
         available_fields = self.FIELDS.get(collection, [])
         for field in fields:
             if field not in available_fields:
-                raise ValueError(
-                    f"Invalid field '{field}' for collection '{collection}'"
-                )
+                raise ValueError(f"Invalid field '{field}' for collection '{collection}'")
 
         # Check aggregations
         if aggregations:
@@ -324,9 +320,7 @@ EXAMPLE_QUERIES = {
     "daily_verification": {
         "collection": "verification_records",
         "filters": {
-            "created_at": {
-                "gte": datetime.now().replace(hour=0, minute=0, second=0).timestamp()
-            }
+            "created_at": {"gte": datetime.now().replace(hour=0, minute=0, second=0).timestamp()}
         },
         "group_by": ["floor"],
         "aggregations": {"verified_qty": "sum"},

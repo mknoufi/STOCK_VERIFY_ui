@@ -70,8 +70,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
         </Text>
         {isWeb && (
           <Text style={styles.photoWebNotice}>
-            Capture and upload photos from the mobile app. Web access is
-            view-only.
+            Capture and upload photos from the mobile app. Web access is view-only.
           </Text>
         )}
         {serialPhotoShortfall > 0 && (
@@ -86,10 +85,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
             return (
               <TouchableOpacity
                 key={option.value}
-                style={[
-                  styles.photoTypePill,
-                  isActive && styles.photoTypePillActive,
-                ]}
+                style={[styles.photoTypePill, isActive && styles.photoTypePillActive]}
                 onPress={() => onPhotoTypeChange(option.value)}
               >
                 <Ionicons
@@ -98,12 +94,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   color={isActive ? "#1E293B" : "#3B82F6"}
                   style={styles.photoTypeIcon}
                 />
-                <Text
-                  style={[
-                    styles.photoTypeText,
-                    isActive && styles.photoTypeTextActive,
-                  ]}
-                >
+                <Text style={[styles.photoTypeText, isActive && styles.photoTypeTextActive]}>
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -112,10 +103,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
         </View>
         <View style={styles.photoControls}>
           <TouchableOpacity
-            style={[
-              styles.photoCaptureButton,
-              isWeb && styles.photoCaptureButtonDisabled,
-            ]}
+            style={[styles.photoCaptureButton, isWeb && styles.photoCaptureButtonDisabled]}
             onPress={onOpenPhotoCapture}
             disabled={isWeb}
           >
@@ -169,21 +157,11 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
             />
             <View style={styles.photoModalOverlay}>
               <View style={styles.photoModalTopBar}>
-                <TouchableOpacity
-                  style={styles.photoModalButton}
-                  onPress={onClosePhotoCapture}
-                >
+                <TouchableOpacity style={styles.photoModalButton} onPress={onClosePhotoCapture}>
                   <Ionicons name="close" size={28} color="#fff" />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.photoModalButton}
-                  onPress={onFlipCamera}
-                >
-                  <Ionicons
-                    name="camera-reverse-outline"
-                    size={24}
-                    color="#fff"
-                  />
+                <TouchableOpacity style={styles.photoModalButton} onPress={onFlipCamera}>
+                  <Ionicons name="camera-reverse-outline" size={24} color="#fff" />
                 </TouchableOpacity>
               </View>
               <View style={styles.photoShutterBar}>
@@ -195,11 +173,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   {photoCaptureLoading ? (
                     <ActivityIndicator size="small" color="#1E293B" />
                   ) : (
-                    <Ionicons
-                      name="radio-button-on"
-                      size={64}
-                      color="#1E293B"
-                    />
+                    <Ionicons name="radio-button-on" size={64} color="#1E293B" />
                   )}
                 </TouchableOpacity>
               </View>

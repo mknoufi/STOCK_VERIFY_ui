@@ -18,7 +18,7 @@ This guide walks you through integrating the four new features into your Stock V
    ```typescript
    // In your root component or main screen
    import { ErrorNotification } from '@/components/ErrorNotification';
-   
+
    export const RootComponent = () => {
      return (
        <>
@@ -32,7 +32,7 @@ This guide walks you through integrating the four new features into your Stock V
 3. **Wrap API Calls with Error Handling**
    ```typescript
    import { errorReporter } from '@/services/errorRecovery';
-   
+
    const fetchItems = async () => {
      try {
        const response = await apiClient.get('/api/items');
@@ -62,7 +62,7 @@ This guide walks you through integrating the four new features into your Stock V
    ```python
    # In backend/server.py
    from backend.api.error_reporting_api import router as error_router
-   
+
    app.include_router(error_router, prefix="/api/admin")
    ```
 
@@ -82,9 +82,9 @@ This guide walks you through integrating the four new features into your Stock V
    ```typescript
    // In a debug/settings screen
    import { SelfTestUI } from '@/services/selfTestService';
-   
-   <Stack.Screen 
-     name="SelfTest" 
+
+   <Stack.Screen
+     name="SelfTest"
      component={SelfTestUI}
      options={{ title: 'System Tests' }}
    />
@@ -94,7 +94,7 @@ This guide walks you through integrating the four new features into your Stock V
    ```typescript
    export const DebugMenu = () => {
      const navigation = useNavigation();
-     
+
      return (
        <View>
          <Button
@@ -113,12 +113,12 @@ This guide walks you through integrating the four new features into your Stock V
      const runDiagnostics = async () => {
        const service = SelfTestService.getInstance();
        const results = await service.runAllTests();
-       
+
        // Log any failures
-       const failures = results.flatMap(s => 
+       const failures = results.flatMap(s =>
          s.tests.filter(t => t.status === 'fail')
        );
-       
+
        if (failures.length > 0) {
          errorReporter.report(
            new Error(`${failures.length} tests failed`),
@@ -126,7 +126,7 @@ This guide walks you through integrating the four new features into your Stock V
          );
        }
      };
-     
+
      runDiagnostics();
    }, []);
    ```
@@ -155,17 +155,17 @@ const apiTests = await service.testAPIConnectivity();
 1. **Add PIN Service to Auth Flow**
    ```typescript
    import { pinAuthService, PINLoginScreen } from '@/services/pinAuth';
-   
+
    export const AuthFlow = () => {
      const [authMethod, setAuthMethod] = useState('email');
-     
+
      return (
        <>
          {authMethod === 'email' && (
            <EmailLoginScreen onSuccess={() => handleLogin()} />
          )}
          {authMethod === 'pin' && (
-           <PINLoginScreen 
+           <PINLoginScreen
              onSuccess={() => handleLogin()}
              onCancel={() => setAuthMethod('email')}
            />
@@ -180,7 +180,7 @@ const apiTests = await service.testAPIConnectivity();
    export const SecuritySettings = () => {
      const [pinEnabled, setPinEnabled] = useState(false);
      const [newPin, setNewPin] = useState('');
-     
+
      const handleEnablePIN = async () => {
        try {
          await pinAuthService.setPIN(newPin);
@@ -190,7 +190,7 @@ const apiTests = await service.testAPIConnectivity();
          Alert.alert('Error', error.message);
        }
      };
-     
+
      return (
        <View>
          <Switch
@@ -222,7 +222,7 @@ const apiTests = await service.testAPIConnectivity();
 export const LoginScreen = () => {
   const [method, setMethod] = useState<'email' | 'pin'>('email');
   const pinEnabled = usePINStatus();
-  
+
   if (method === 'pin' && pinEnabled) {
     return (
       <PINLoginScreen
@@ -231,7 +231,7 @@ export const LoginScreen = () => {
       />
     );
   }
-  
+
   return (
     <>
       <EmailLoginForm />
@@ -260,10 +260,10 @@ export const LoginScreen = () => {
 2. **Add WiFi Status to App**
    ```typescript
    import { useWiFiStatus, WiFiStatusIndicator } from '@/services/wifiConnectionService';
-   
+
    export const App = () => {
      const { isOnline } = useWiFiStatus();
-     
+
      return (
        <>
          {!isOnline && <OfflineIndicator />}
@@ -277,7 +277,7 @@ export const LoginScreen = () => {
    ```typescript
    export const WiFiIndicator = () => {
      const { isOnline, isWiFi, ssid } = useWiFiStatus();
-     
+
      if (!isOnline) {
        return (
          <View style={styles.offlineBar}>
@@ -285,7 +285,7 @@ export const LoginScreen = () => {
          </View>
        );
      }
-     
+
      return (
        <View style={styles.onlineBar}>
          <Text style={styles.onlineText}>
@@ -299,7 +299,7 @@ export const LoginScreen = () => {
 4. **Handle Offline Scenarios**
    ```typescript
    const { isOnline } = useWiFiStatus();
-   
+
    const handleSync = async () => {
      if (!isOnline) {
        Alert.alert(
@@ -308,7 +308,7 @@ export const LoginScreen = () => {
        );
        return;
      }
-     
+
      // Proceed with sync
      await performSync();
    };
@@ -345,19 +345,19 @@ export default function App() {
     const initServices = async () => {
       // 1. Initialize error reporting
       ErrorReporter.getInstance().initialize();
-      
+
       // 2. Initialize PIN auth
       await pinAuthService.initialize();
-      
+
       // 3. Initialize WiFi monitoring
       const wifiService = WiFiConnectionService.getInstance();
       await wifiService.initialize();
-      
+
       // 4. Run self-tests (optional)
       // const service = SelfTestService.getInstance();
       // const results = await service.runAllTests();
     };
-    
+
     initServices();
   }, []);
 
@@ -365,19 +365,19 @@ export default function App() {
     <SafeAreaView style={{ flex: 1 }}>
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen 
-            name="Auth" 
+          <Stack.Screen
+            name="Auth"
             component={AuthNavigator}
             options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name="Home" 
+          <Stack.Screen
+            name="Home"
             component={HomeNavigator}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
       </NavigationContainer>
-      
+
       {/* Global Components */}
       <ErrorNotification />
       <WiFiIndicator />

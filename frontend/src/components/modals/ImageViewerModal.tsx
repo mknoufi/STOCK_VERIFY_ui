@@ -4,11 +4,11 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   FlatList,
   Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -31,12 +31,7 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
   const safeInitialIndex = Math.min(Math.max(initialIndex, 0), Math.max(images.length - 1, 0));
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
           <StatusBar hidden={true} />

@@ -104,18 +104,14 @@ class TestBatchInsert:
             PyMongoError("Database error"),
         ]
 
-        result = await batch_service.batch_insert(
-            "test_collection", documents, ordered=True
-        )
+        result = await batch_service.batch_insert("test_collection", documents, ordered=True)
 
         assert result["inserted_count"] == 100
         assert len(result["errors"]) > 0
         assert result["success"] is False
 
     @pytest.mark.asyncio
-    async def test_batch_insert_unordered_continues_on_error(
-        self, batch_service, mock_db
-    ):
+    async def test_batch_insert_unordered_continues_on_error(self, batch_service, mock_db):
         """Test unordered insert continues on error"""
         documents = [{"_id": i, "name": f"Item {i}"} for i in range(250)]
 
@@ -258,9 +254,7 @@ class TestBatchDelete:
 
         mock_db.test_collection.delete_many.side_effect = PyMongoError("Delete error")
 
-        result = await batch_service.batch_delete(
-            "test_collection", filters, ordered=False
-        )
+        result = await batch_service.batch_delete("test_collection", filters, ordered=False)
         assert len(result["errors"]) > 0
         assert result["success"] is False
 

@@ -4,10 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import NetInfo, {
-  useNetInfo,
-  NetInfoChangeHandler,
-} from "@react-native-community/netinfo";
+import NetInfo, { useNetInfo, NetInfoChangeHandler } from "@react-native-community/netinfo";
 import * as Notifications from "expo-notifications";
 import { errorReporter } from "@/services/errorRecovery";
 
@@ -50,7 +47,10 @@ export class WiFiConnectionService {
       this.initialized = true;
       console.log("WiFi Connection Service initialized");
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "WiFiConnectionService.initialize");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "WiFiConnectionService.initialize"
+      );
     }
   }
 
@@ -66,10 +66,7 @@ export class WiFiConnectionService {
       };
 
       // Check for connection change
-      if (
-        this.lastStatus &&
-        this.lastStatus.isConnected !== status.isConnected
-      ) {
+      if (this.lastStatus && this.lastStatus.isConnected !== status.isConnected) {
         if (!status.isConnected) {
           this.notifyDisconnection(this.lastStatus);
         } else {
@@ -82,7 +79,10 @@ export class WiFiConnectionService {
 
       return status;
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "WiFiConnectionService.checkStatus");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "WiFiConnectionService.checkStatus"
+      );
       return {
         isConnected: false,
         isWiFi: false,
@@ -95,7 +95,10 @@ export class WiFiConnectionService {
     try {
       return NetInfo.addEventListener(handler);
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "WiFiConnectionService.subscribe");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "WiFiConnectionService.subscribe"
+      );
       return () => {};
     }
   }
@@ -114,7 +117,10 @@ export class WiFiConnectionService {
       try {
         listener(status);
       } catch (error) {
-        errorReporter.report(error instanceof Error ? error : new Error(String(error)), "WiFiConnectionService.notifyListeners");
+        errorReporter.report(
+          error instanceof Error ? error : new Error(String(error)),
+          "WiFiConnectionService.notifyListeners"
+        );
       }
     });
   }
@@ -140,7 +146,10 @@ export class WiFiConnectionService {
 
       console.warn(`WiFi disconnected: ${message}`);
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "WiFiConnectionService.notifyDisconnection");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "WiFiConnectionService.notifyDisconnection"
+      );
     }
   }
 
@@ -162,7 +171,10 @@ export class WiFiConnectionService {
 
       console.log(`WiFi reconnected: ${message}`);
     } catch (error) {
-      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "WiFiConnectionService.notifyReconnection");
+      errorReporter.report(
+        error instanceof Error ? error : new Error(String(error)),
+        "WiFiConnectionService.notifyReconnection"
+      );
     }
   }
 }

@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect } from "react";
-import { View, StyleSheet, ViewStyle, useWindowDimensions } from "react-native";
+import { View, StyleSheet, ViewStyle, StyleProp, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -21,15 +21,10 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 import { ParticleField } from "./ParticleField";
 
-export type AuroraVariant =
-  | "primary"
-  | "secondary"
-  | "success"
-  | "warm"
-  | "dark";
+export type AuroraVariant = "primary" | "secondary" | "success" | "warm" | "dark";
 
 interface AuroraBackgroundProps {
   variant?: AuroraVariant;
@@ -37,7 +32,7 @@ interface AuroraBackgroundProps {
   animated?: boolean;
   withParticles?: boolean;
   particleCount?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }
 
@@ -51,9 +46,15 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   children,
 }) => {
   const { width, height } = useWindowDimensions();
-  const colors = variant === "primary"
-    ? ["#0EA5E9", "#10B981", "#020617"]
-    : auroraTheme.colors.aurora[variant];
+  const { theme } = useThemeContext();
+
+  // Use theme colors for aurora variants with a safe fallback for mocks.
+  const fallbackColor = theme.colors.accent || "#6366F1";
+  const auroraPalette = theme.colors.aurora;
+  const colors =
+    auroraPalette?.[variant] ||
+    auroraPalette?.primary ||
+    ([fallbackColor, fallbackColor, fallbackColor] as const);
 
   // Animation values for gradient blobs
   const blob1X = useSharedValue(0);
@@ -72,10 +73,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(-30, {
             duration: 8000,
             easing: Easing.inOut(Easing.ease),
-          }),
+          })
         ),
         -1,
-        true,
+        true
       );
       blob1Y.value = withRepeat(
         withSequence(
@@ -83,10 +84,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(-20, {
             duration: 6000,
             easing: Easing.inOut(Easing.ease),
-          }),
+          })
         ),
         -1,
-        true,
+        true
       );
 
       // Blob 2 animation
@@ -99,10 +100,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(40, {
             duration: 10000,
             easing: Easing.inOut(Easing.ease),
-          }),
+          })
         ),
         -1,
-        true,
+        true
       );
       blob2Y.value = withRepeat(
         withSequence(
@@ -110,10 +111,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             duration: 7000,
             easing: Easing.inOut(Easing.ease),
           }),
-          withTiming(30, { duration: 7000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(30, { duration: 7000, easing: Easing.inOut(Easing.ease) })
         ),
         -1,
-        true,
+        true
       );
 
       // Blob 3 animation
@@ -123,10 +124,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(-25, {
             duration: 9000,
             easing: Easing.inOut(Easing.ease),
-          }),
+          })
         ),
         -1,
-        true,
+        true
       );
       blob3Y.value = withRepeat(
         withSequence(
@@ -134,10 +135,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             duration: 8500,
             easing: Easing.inOut(Easing.ease),
           }),
-          withTiming(25, { duration: 8500, easing: Easing.inOut(Easing.ease) }),
+          withTiming(25, { duration: 8500, easing: Easing.inOut(Easing.ease) })
         ),
         -1,
-        true,
+        true
       );
     }
   }, [animated, blob1X, blob1Y, blob2X, blob2Y, blob3X, blob3Y]);
@@ -164,9 +165,12 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Base gradient background */}
+      {/* Base gradient background - verify if theme has specific background gradient or use colors */}
       <LinearGradient
-        colors={["#020617", "#0F172A"]}
+        colors={[
+          theme.colors.background.default,
+          theme.colors.background.paper || theme.colors.background.default,
+        ]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -181,7 +185,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             left: -width * 0.2,
           },
           blob1Style,
-          { opacity }
+          { opacity },
         ]}
       >
         <LinearGradient
@@ -202,7 +206,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             right: -width * 0.3,
           },
           blob2Style,
-          { opacity }
+          { opacity },
         ]}
       >
         <LinearGradient
@@ -223,7 +227,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             left: width * 0.1,
           },
           blob3Style,
-          { opacity }
+          { opacity },
         ]}
       >
         <LinearGradient
@@ -236,11 +240,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
 
       {/* Optional Particle Field overlay */}
       {withParticles && (
-        <ParticleField
-          count={particleCount}
-          color={colors[1]}
-          animated={animated}
-        />
+        <ParticleField count={particleCount} color={colors[1]} animated={animated} />
       )}
 
       {/* Content overlay */}

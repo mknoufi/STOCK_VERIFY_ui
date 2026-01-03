@@ -27,13 +27,19 @@ def check_other_barcodes():
         columns = ["MannualBarcode", "UPCCode", "UnitMBarCode", "Unit2AutoBarcode"]
 
         for col in columns:
-            query = f"SELECT COUNT(*) FROM ProductBatches WHERE {col} IS NOT NULL AND {col} != ''"
+            query = (
+                f"SELECT COUNT(*) FROM ProductBatches "
+                f"WHERE {col} IS NOT NULL AND {col} != ''"  # nosec
+            )
             cursor.execute(query)
             count = cursor.fetchone()[0]
             print(f"Total in {col}: {count}")
 
             if count > 0:
-                query_sample = f"SELECT TOP 5 {col} FROM ProductBatches WHERE {col} IS NOT NULL AND {col} != ''"
+                query_sample = (
+                    f"SELECT TOP 5 {col} FROM ProductBatches "
+                    f"WHERE {col} IS NOT NULL AND {col} != ''"  # nosec
+                )
                 cursor.execute(query_sample)
                 samples = [r[0] for r in cursor.fetchall()]
                 print(f"  Sample {col}: {samples}")

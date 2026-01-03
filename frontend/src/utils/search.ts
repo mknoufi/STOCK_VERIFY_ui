@@ -27,11 +27,7 @@ export const fuzzyMatch = (pattern: string, str: string): number => {
   let patternIdx = 0;
   let score = 0;
 
-  for (
-    let i = 0;
-    i < strLower.length && patternIdx < patternLower.length;
-    i++
-  ) {
+  for (let i = 0; i < strLower.length && patternIdx < patternLower.length; i++) {
     if (strLower[i] === patternLower[patternIdx]) {
       score += 1;
       patternIdx++;
@@ -81,7 +77,7 @@ export const performFuzzySearch = <T extends SearchableItem>(
     maxResults?: number;
     minScore?: number;
     fields?: (keyof T)[];
-  } = {},
+  } = {}
 ): T[] => {
   const {
     maxResults = 10,
@@ -96,9 +92,7 @@ export const performFuzzySearch = <T extends SearchableItem>(
   const results: SearchResult<T>[] = items
     .map((item) => {
       // Calculate scores for each field
-      const scores = fields.map((field) =>
-        fuzzyMatch(query, String(item[field] || "")),
-      );
+      const scores = fields.map((field) => fuzzyMatch(query, String(item[field] || "")));
 
       // Use maximum score across all fields
       const maxScore = Math.max(...scores);
@@ -138,15 +132,13 @@ export interface SearchFilters {
 export const advancedSearch = <T extends SearchableItem>(
   items: T[],
   query: string,
-  filters: SearchFilters = {},
+  filters: SearchFilters = {}
 ): T[] => {
   // First apply filters
   let filtered = items;
 
   if (filters.barcode) {
-    filtered = filtered.filter((item) =>
-      item.barcode?.includes(filters.barcode!),
-    );
+    filtered = filtered.filter((item) => item.barcode?.includes(filters.barcode!));
   }
 
   if (filters.category) {

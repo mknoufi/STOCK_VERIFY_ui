@@ -1,11 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { ModernCard } from "../ModernCard";
-import {
-  modernColors,
-  modernTypography,
-  modernSpacing,
-} from "../../styles/modernDesignSystem";
+import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
 
 interface QuickStatsProps {
   metrics?: any;
@@ -27,9 +23,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ metrics, issues = [] }) => {
 
       <ModernCard variant="elevated" style={styles.card}>
         <Text style={styles.label}>Sync Errors</Text>
-        <Text style={styles.value}>
-          {issues.filter((i: any) => i.type === "sync").length}
-        </Text>
+        <Text style={styles.value}>{issues.filter((i: any) => i.type === "sync").length}</Text>
       </ModernCard>
     </View>
   );

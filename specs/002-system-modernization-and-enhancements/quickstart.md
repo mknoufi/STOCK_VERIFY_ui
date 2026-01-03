@@ -91,7 +91,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
     if user.role not in ["supervisor", "admin"]:
         await websocket.close(code=4003)
         return
-    
+
     await connection_manager.connect(websocket, user)
     try:
         while True:
@@ -111,7 +111,7 @@ function SupervisorDashboard() {
     token: authToken,
     eventTypes: ['session_update', 'item_update'],
   });
-  
+
   // Events are automatically typed and filtered
 }
 ```
@@ -124,7 +124,7 @@ import { useSyncQueue } from '@/hooks/useSyncQueue';
 
 function CountScreen() {
   const { queueAction, syncStatus, pendingCount } = useSyncQueue();
-  
+
   const handleCount = async (itemCode: string, quantity: number) => {
     // Action queued locally, synced when online
     await queueAction({
@@ -145,10 +145,10 @@ import { useThemeStore } from '@/stores/themeStore';
 
 function App() {
   const { theme, setTheme, colors } = useThemeStore();
-  
+
   // Toggle theme
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
-  
+
   // Access colors (auto-switches based on theme)
   return <View style={{ backgroundColor: colors.background }} />;
 }
@@ -183,7 +183,7 @@ async def get_variance_summary(
     current_user: dict = Depends(get_current_user),
 ):
     require_role(current_user, ["supervisor", "admin"])
-    
+
     summary = await analytics_service.get_variance_summary(
         session_id=session_id,
         start_date=start_date,

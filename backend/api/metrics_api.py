@@ -5,6 +5,8 @@ Prometheus-compatible metrics endpoint
 
 from fastapi import APIRouter, Response
 
+from backend.db.runtime import get_db
+
 metrics_router = APIRouter(prefix="/metrics", tags=["metrics"])
 
 # Global monitoring service reference (will be set from server.py)
@@ -55,7 +57,7 @@ async def get_metrics_json():
 @metrics_router.get("/health")
 async def get_health_metrics():
     """Get health status metrics with database status"""
-    from server import db
+    db = get_db()
 
     health_data = {
         "status": "healthy",
@@ -87,7 +89,7 @@ async def get_metrics_stats():
 
     import psutil
 
-    from server import db
+    db = get_db()
 
     stats = {
         "timestamp": time.time(),
@@ -122,7 +124,7 @@ async def get_metrics_stats():
 @metrics_router.get("/staff-performance")
 async def get_staff_performance():
     """Get staff performance metrics"""
-    from backend.server import db
+    db = get_db()
 
     # Aggregate items scanned per user
     pipeline = [
@@ -139,9 +141,7 @@ async def get_staff_performance():
     items_stats = await db.items.aggregate(pipeline).to_list(length=100)
 
     # Aggregate variances found per user
-    variance_pipeline = [
-        {"$group": {"_id": "$reported_by", "variances_found": {"$sum": 1}}}
-    ]
+    variance_pipeline = [{"$group": {"_id": "$reported_by", "variances_found": {"$sum": 1}}}]
 
     variance_stats = await db.variances.aggregate(variance_pipeline).to_list(length=100)
     variance_map = {v["_id"]: v["variances_found"] for v in variance_stats}

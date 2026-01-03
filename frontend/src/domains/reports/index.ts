@@ -16,7 +16,7 @@ export {
   ScheduledReport,
   DiscrepancyItem,
   DiscrepancyReport,
-} from './types';
+} from "./types";
 
 // Services
 export {
@@ -28,4 +28,4 @@ export {
   getErrorDetail,
   resolveError,
   clearErrorLogs,
-} from './services';
+} from "./services";

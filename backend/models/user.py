@@ -5,7 +5,7 @@ User Model
 from typing import Any, Optional
 
 from bson import ObjectId
-from pydantic import BaseModel, EmailStr, Field, GetJsonSchemaHandler
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
@@ -17,13 +17,13 @@ class PyObjectId(ObjectId):
     ) -> core_schema.CoreSchema:
         return core_schema.json_or_python_schema(
             json_schema=core_schema.str_schema(),
-            python_schema=core_schema.union_schema([
-                core_schema.is_instance_schema(ObjectId),
-                core_schema.no_info_plain_validator_function(cls.validate),
-            ]),
-            serialization=core_schema.plain_serializer_function_ser_schema(
-                lambda x: str(x)
+            python_schema=core_schema.union_schema(
+                [
+                    core_schema.is_instance_schema(ObjectId),
+                    core_schema.no_info_plain_validator_function(cls.validate),
+                ]
             ),
+            serialization=core_schema.plain_serializer_function_ser_schema(lambda x: str(x)),
         )
 
     @classmethod
@@ -34,7 +34,9 @@ class PyObjectId(ObjectId):
 
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, _core_schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
+        cls,
+        _core_schema: core_schema.CoreSchema,
+        handler: GetJsonSchemaHandler,
     ) -> JsonSchemaValue:
         return handler(core_schema.str_schema())
 
@@ -66,10 +68,11 @@ class UserInDB(UserBase):
     hashed_password: str
     pin_hash: Optional[str] = None
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+    )
 
 
 class User(UserInDB):
@@ -79,6 +82,7 @@ class User(UserInDB):
 class UserResponse(UserBase):
     id: str = Field(..., alias="_id")
 
-    class Config:
-        allow_population_by_field_name = True
-        json_encoders = {ObjectId: str}
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_encoders={ObjectId: str},
+    )

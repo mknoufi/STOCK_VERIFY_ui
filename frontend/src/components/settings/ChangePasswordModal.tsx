@@ -4,7 +4,7 @@
  * Modal for changing user password with validation and error handling.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 import {
   Modal,
   View,
@@ -17,11 +17,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { useThemeContext } from "../../theme/ThemeContext";
+} from "react-native";
+import { useThemeContext } from "../../context/ThemeContext";
 import { typography } from "../../theme/designTokens";
-import { authApi } from '../../services/api/authApi';
-import * as Haptics from 'expo-haptics';
+import { authApi } from "../../services/api/authApi";
+import * as Haptics from "expo-haptics";
 
 interface ChangePasswordModalProps {
   visible: boolean;
@@ -31,31 +31,39 @@ interface ChangePasswordModalProps {
 
 // Password strength requirements
 const PASSWORD_REQUIREMENTS = [
-  { key: 'length', label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
-  { key: 'uppercase', label: 'One uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
-  { key: 'lowercase', label: 'One lowercase letter', test: (p: string) => /[a-z]/.test(p) },
-  { key: 'number', label: 'One number', test: (p: string) => /\d/.test(p) },
+  {
+    key: "length",
+    label: "At least 8 characters",
+    test: (p: string) => p.length >= 8,
+  },
+  {
+    key: "uppercase",
+    label: "One uppercase letter",
+    test: (p: string) => /[A-Z]/.test(p),
+  },
+  {
+    key: "lowercase",
+    label: "One lowercase letter",
+    test: (p: string) => /[a-z]/.test(p),
+  },
+  { key: "number", label: "One number", test: (p: string) => /\d/.test(p) },
 ];
 
-export function ChangePasswordModal({
-  visible,
-  onClose,
-  onSuccess,
-}: ChangePasswordModalProps) {
-  const { theme } = useThemeContext();
+export function ChangePasswordModal({ visible, onClose, onSuccess }: ChangePasswordModalProps) {
+  const { themeLegacy: theme } = useThemeContext();
   const { colors } = theme;
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   const resetForm = useCallback(() => {
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
     setError(null);
   }, []);
 
@@ -81,25 +89,25 @@ export function ChangePasswordModal({
 
     // Validate current password
     if (!currentPassword) {
-      setError('Current password is required');
+      setError("Current password is required");
       return;
     }
 
     // Validate new password length
     if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+      setError("New password must be at least 8 characters");
       return;
     }
 
     // Check passwords match
     if (newPassword !== confirmPassword) {
-      setError('New password and confirmation do not match');
+      setError("New password and confirmation do not match");
       return;
     }
 
     // Check not same as current
     if (currentPassword === newPassword) {
-      setError('New password must be different from current password');
+      setError("New password must be different from current password");
       return;
     }
 
@@ -109,16 +117,16 @@ export function ChangePasswordModal({
       await authApi.changePassword(currentPassword, newPassword);
 
       // Success haptic feedback
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== "web") {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
 
       Alert.alert(
-        'Success',
-        'Your password has been changed successfully. You may need to log in again on other devices.',
+        "Success",
+        "Your password has been changed successfully. You may need to log in again on other devices.",
         [
           {
-            text: 'OK',
+            text: "OK",
             onPress: () => {
               resetForm();
               onSuccess?.();
@@ -129,13 +137,12 @@ export function ChangePasswordModal({
       );
     } catch (err: any) {
       // Error haptic feedback
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== "web") {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
 
       const errorMessage =
-        err?.response?.data?.detail?.message ||
-        'Failed to change password. Please try again.';
+        err?.response?.data?.detail?.message || "Failed to change password. Please try again.";
 
       setError(errorMessage);
     } finally {
@@ -149,18 +156,18 @@ export function ChangePasswordModal({
   const styles = StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "center",
+      alignItems: "center",
     },
     container: {
       backgroundColor: colors.surface,
       borderRadius: 16,
       padding: 24,
-      width: '90%',
+      width: "90%",
       maxWidth: 400,
-      maxHeight: '85%',
-      shadowColor: '#000',
+      maxHeight: "85%",
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
@@ -171,15 +178,15 @@ export function ChangePasswordModal({
     },
     title: {
       fontSize: typography.fontSize.xl,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: 8,
     },
     subtitle: {
       fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: 24,
     },
     inputContainer: {
@@ -187,13 +194,13 @@ export function ChangePasswordModal({
     },
     label: {
       fontSize: typography.fontSize.sm,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text,
       marginBottom: 8,
     },
     inputWrapper: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       backgroundColor: colors.background,
       borderRadius: 8,
       borderWidth: 1,
@@ -223,18 +230,18 @@ export function ChangePasswordModal({
       backgroundColor: colors.border,
       borderRadius: 2,
       marginBottom: 8,
-      overflow: 'hidden',
+      overflow: "hidden",
     },
     strengthFill: {
-      height: '100%',
+      height: "100%",
       borderRadius: 2,
     },
     requirementsList: {
       gap: 4,
     },
     requirement: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 8,
     },
     requirementIcon: {
@@ -246,14 +253,14 @@ export function ChangePasswordModal({
     error: {
       fontSize: typography.fontSize.sm,
       color: colors.danger,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: 16,
       padding: 8,
       backgroundColor: `${colors.danger}15`,
       borderRadius: 8,
     },
     buttonContainer: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: 12,
       marginTop: 8,
     },
@@ -261,7 +268,7 @@ export function ChangePasswordModal({
       flex: 1,
       padding: 14,
       borderRadius: 8,
-      alignItems: 'center',
+      alignItems: "center",
     },
     cancelButton: {
       backgroundColor: colors.border,
@@ -275,34 +282,29 @@ export function ChangePasswordModal({
     },
     buttonText: {
       fontSize: typography.fontSize.md,
-      fontWeight: '600',
+      fontWeight: "600",
     },
     cancelButtonText: {
       color: colors.text,
     },
     submitButtonText: {
-      color: '#FFFFFF',
+      color: "#FFFFFF",
     },
   });
 
   const getStrengthColor = () => {
     if (passwordStrength.score === 0) return colors.border;
     if (passwordStrength.score === 1) return colors.danger;
-    if (passwordStrength.score === 2) return '#F59E0B';
-    if (passwordStrength.score === 3) return '#10B981';
+    if (passwordStrength.score === 2) return "#F59E0B";
+    if (passwordStrength.score === 3) return "#10B981";
     return colors.success;
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <KeyboardAvoidingView
         style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.container}>
           <ScrollView
@@ -310,15 +312,13 @@ export function ChangePasswordModal({
             showsVerticalScrollIndicator={false}
           >
             <Text style={styles.title}>Change Password</Text>
-            <Text style={styles.subtitle}>
-              Choose a strong password with at least 8 characters
-            </Text>
+            <Text style={styles.subtitle}>Choose a strong password with at least 8 characters</Text>
 
             {error && <Text style={styles.error}>{error}</Text>}
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Current Password</Text>
-              <View style={[styles.inputWrapper, error?.includes('Current') && styles.inputError]}>
+              <View style={[styles.inputWrapper, error?.includes("Current") && styles.inputError]}>
                 <TextInput
                   style={styles.input}
                   value={currentPassword}
@@ -327,22 +327,21 @@ export function ChangePasswordModal({
                   placeholderTextColor={colors.textSecondary}
                   secureTextEntry={!showCurrentPassword}
                   autoCapitalize="none"
+                  autoCorrect={false}
                   editable={!loading}
                 />
                 <TouchableOpacity
                   style={styles.showButton}
                   onPress={() => setShowCurrentPassword(!showCurrentPassword)}
                 >
-                  <Text style={styles.showButtonText}>
-                    {showCurrentPassword ? 'Hide' : 'Show'}
-                  </Text>
+                  <Text style={styles.showButtonText}>{showCurrentPassword ? "Hide" : "Show"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>New Password</Text>
-              <View style={[styles.inputWrapper, error?.includes('New') && styles.inputError]}>
+              <View style={[styles.inputWrapper, error?.includes("New") && styles.inputError]}>
                 <TextInput
                   style={styles.input}
                   value={newPassword}
@@ -351,15 +350,14 @@ export function ChangePasswordModal({
                   placeholderTextColor={colors.textSecondary}
                   secureTextEntry={!showNewPassword}
                   autoCapitalize="none"
+                  autoCorrect={false}
                   editable={!loading}
                 />
                 <TouchableOpacity
                   style={styles.showButton}
                   onPress={() => setShowNewPassword(!showNewPassword)}
                 >
-                  <Text style={styles.showButtonText}>
-                    {showNewPassword ? 'Hide' : 'Show'}
-                  </Text>
+                  <Text style={styles.showButtonText}>{showNewPassword ? "Hide" : "Show"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -383,15 +381,19 @@ export function ChangePasswordModal({
                       <Text
                         style={[
                           styles.requirementIcon,
-                          { color: req.met ? colors.success : colors.textSecondary },
+                          {
+                            color: req.met ? colors.success : colors.textSecondary,
+                          },
                         ]}
                       >
-                        {req.met ? '✓' : '○'}
+                        {req.met ? "✓" : "○"}
                       </Text>
                       <Text
                         style={[
                           styles.requirementText,
-                          { color: req.met ? colors.success : colors.textSecondary },
+                          {
+                            color: req.met ? colors.success : colors.textSecondary,
+                          },
                         ]}
                       >
                         {req.label}
@@ -404,7 +406,7 @@ export function ChangePasswordModal({
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Confirm New Password</Text>
-              <View style={[styles.inputWrapper, error?.includes('match') && styles.inputError]}>
+              <View style={[styles.inputWrapper, error?.includes("match") && styles.inputError]}>
                 <TextInput
                   style={styles.input}
                   value={confirmPassword}
@@ -413,6 +415,7 @@ export function ChangePasswordModal({
                   placeholderTextColor={colors.textSecondary}
                   secureTextEntry
                   autoCapitalize="none"
+                  autoCorrect={false}
                   editable={!loading}
                 />
               </View>
@@ -424,9 +427,7 @@ export function ChangePasswordModal({
                 onPress={handleClose}
                 disabled={loading}
               >
-                <Text style={[styles.buttonText, styles.cancelButtonText]}>
-                  Cancel
-                </Text>
+                <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -441,9 +442,7 @@ export function ChangePasswordModal({
                 {loading ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={[styles.buttonText, styles.submitButtonText]}>
-                    Change Password
-                  </Text>
+                  <Text style={[styles.buttonText, styles.submitButtonText]}>Change Password</Text>
                 )}
               </TouchableOpacity>
             </View>

@@ -20,13 +20,11 @@ class AnalyticsService:
         verified_items = await self.db.erp_items.count_documents({"verified": True})
 
         # Verification trend (daily)
-        pipeline = [
+        pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}}},
             {
                 "$group": {
-                    "_id": {
-                        "$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}
-                    },
+                    "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}},
                     "count": {"$sum": 1},
                 }
             },
@@ -35,18 +33,16 @@ class AnalyticsService:
         trend = await self.db.verification_logs.aggregate(pipeline).to_list(length=days)
 
         # Top verifiers
-        user_pipeline = [
+        user_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}}},
             {"$group": {"_id": "$username", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}},
             {"$limit": 5},
         ]
-        top_users = await self.db.verification_logs.aggregate(user_pipeline).to_list(
-            length=5
-        )
+        top_users = await self.db.verification_logs.aggregate(user_pipeline).to_list(length=5)
 
         # Variance summary
-        variance_pipeline = [
+        variance_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$ne": 0}}},
             {
                 "$group": {
@@ -57,9 +53,9 @@ class AnalyticsService:
                 }
             },
         ]
-        variance_stats = await self.db.verification_logs.aggregate(
-            variance_pipeline
-        ).to_list(length=1)
+        variance_stats = await self.db.verification_logs.aggregate(variance_pipeline).to_list(
+            length=1
+        )
         variance_data = (
             variance_stats[0]
             if variance_stats
@@ -69,23 +65,21 @@ class AnalyticsService:
         # T078: Enhanced Discrepancy & Accuracy Metrics
 
         # Surplus (variance > 0)
-        surplus_pipeline = [
+        surplus_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$gt": 0}}},
             {"$count": "count"},
         ]
-        surplus_res = await self.db.verification_logs.aggregate(
-            surplus_pipeline
-        ).to_list(length=1)
+        surplus_res = await self.db.verification_logs.aggregate(surplus_pipeline).to_list(length=1)
         surplus_count = surplus_res[0]["count"] if surplus_res else 0
 
         # Shortage (variance < 0)
-        shortage_pipeline = [
+        shortage_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$lt": 0}}},
             {"$count": "count"},
         ]
-        shortage_res = await self.db.verification_logs.aggregate(
-            shortage_pipeline
-        ).to_list(length=1)
+        shortage_res = await self.db.verification_logs.aggregate(shortage_pipeline).to_list(
+            length=1
+        )
         shortage_count = shortage_res[0]["count"] if shortage_res else 0
 
         # Accuracy Rate (Percentage of verifications with 0 variance)
@@ -118,7 +112,7 @@ class AnalyticsService:
 
     async def get_category_distribution(self) -> list[dict[str, Any]]:
         """Get item distribution by category"""
-        pipeline = [
+        pipeline: list[dict[str, Any]] = [
             {
                 "$group": {
                     "_id": "$category",

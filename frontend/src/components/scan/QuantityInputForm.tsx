@@ -13,11 +13,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Controller, Control, FieldErrors } from "react-hook-form";
-import {
-  ScanFormData,
-  NormalizedMrpVariant,
-  WorkflowState,
-} from "@/types/scan";
+import { ScanFormData, NormalizedMrpVariant, WorkflowState } from "@/types/scan";
 import { MRPVariantSelector } from "./MRPVariantSelector";
 import { formatMrpValue } from "@/utils/scanUtils";
 import { Ionicons } from "@expo/vector-icons";
@@ -85,9 +81,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
     const [showSerial, setShowSerial] = useState(serialCaptureEnabled);
     const [showMfgDate, setShowMfgDate] = useState(!!manufacturingDate);
     const [showExpiryDate, setShowExpiryDate] = useState(!!expiryDate);
-    const [showAdditionalDetail, setShowAdditionalDetail] = useState(
-      !!remark || !!markLocation,
-    );
+    const [showAdditionalDetail, setShowAdditionalDetail] = useState(!!remark || !!markLocation);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showExpiryDatePicker, setShowExpiryDatePicker] = useState(false);
 
@@ -96,7 +90,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
 
     const handleDamageChange = (
       text: string,
-      _field: "returnableDamageQty" | "nonReturnableDamageQty",
+      _field: "returnableDamageQty" | "nonReturnableDamageQty"
     ) => {
       onActivityReset?.();
       if (text && currentItemCondition === "good" && onItemConditionChange) {
@@ -106,7 +100,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
 
     const toggleSwitch = (
       setter: React.Dispatch<React.SetStateAction<boolean>>,
-      value: boolean,
+      value: boolean
     ) => {
       onActivityReset?.();
       setter(value);
@@ -139,13 +133,13 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                   onChange(text);
                 }}
                 value={value}
+                autoCapitalize="none"
+                autoCorrect={false}
                 keyboardType="numeric"
               />
             )}
           />
-          {errors.countedQty && (
-            <Text style={styles.errorText}>{errors.countedQty.message}</Text>
-          )}
+          {errors.countedQty && <Text style={styles.errorText}>{errors.countedQty.message}</Text>}
         </View>
 
         {/* Change MRP Toggle */}
@@ -177,9 +171,9 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                       onChange(text);
                     }}
                     value={value}
-                    keyboardType={
-                      Platform.OS === "ios" ? "decimal-pad" : "numeric"
-                    }
+                    keyboardType={Platform.OS === "ios" ? "decimal-pad" : "numeric"}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     returnKeyType="done"
                   />
                 )}
@@ -232,10 +226,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                 name="returnableDamageQty"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    style={[
-                      styles.countInput,
-                      { borderColor: value ? "#FF9800" : "#334155" },
-                    ]}
+                    style={[styles.countInput, { borderColor: value ? "#FF9800" : "#334155" }]}
                     placeholder="0"
                     placeholderTextColor="#94A3B8"
                     onBlur={onBlur}
@@ -244,6 +235,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                       handleDamageChange(text, "returnableDamageQty");
                     }}
                     value={value}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     keyboardType="numeric"
                   />
                 )}
@@ -257,10 +250,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                 name="nonReturnableDamageQty"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    style={[
-                      styles.countInput,
-                      { borderColor: value ? "#EF4444" : "#334155" },
-                    ]}
+                    style={[styles.countInput, { borderColor: value ? "#EF4444" : "#334155" }]}
                     placeholder="0"
                     placeholderTextColor="#94A3B8"
                     onBlur={onBlur}
@@ -269,6 +259,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                       handleDamageChange(text, "nonReturnableDamageQty");
                     }}
                     value={value}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     keyboardType="numeric"
                   />
                 )}
@@ -302,16 +294,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
 
         {showMfgDate && (
           <View style={styles.inputGroup}>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Text
-                style={[
-                  styles.dateButtonText,
-                  !manufacturingDate && styles.placeholderText,
-                ]}
-              >
+            <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+              <Text style={[styles.dateButtonText, !manufacturingDate && styles.placeholderText]}>
                 {manufacturingDate || "Select Manufacturing Date"}
               </Text>
               <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
@@ -327,9 +311,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
             onChange={(event, selectedDate) => {
               setShowDatePicker(false);
               if (selectedDate) {
-                onManufacturingDateChange(
-                  selectedDate.toISOString().split("T")[0] ?? "",
-                );
+                onManufacturingDateChange(selectedDate.toISOString().split("T")[0] ?? "");
               }
             }}
           />
@@ -352,12 +334,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
               style={styles.dateButton}
               onPress={() => setShowExpiryDatePicker(true)}
             >
-              <Text
-                style={[
-                  styles.dateButtonText,
-                  !expiryDate && styles.placeholderText,
-                ]}
-              >
+              <Text style={[styles.dateButtonText, !expiryDate && styles.placeholderText]}>
                 {expiryDate || "Select Expiry Date"}
               </Text>
               <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
@@ -373,9 +350,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
             onChange={(event, selectedDate) => {
               setShowExpiryDatePicker(false);
               if (selectedDate) {
-                onExpiryDateChange(
-                  selectedDate.toISOString().split("T")[0] ?? "",
-                );
+                onExpiryDateChange(selectedDate.toISOString().split("T")[0] ?? "");
               }
             }}
           />
@@ -405,6 +380,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                 }}
                 placeholder="Specific location marker"
                 placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
 
@@ -419,6 +396,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                 }}
                 placeholder="Add a remark"
                 placeholderTextColor="#94A3B8"
+                autoCapitalize="sentences"
+                autoCorrect={true}
                 multiline
               />
             </View>
@@ -435,14 +414,14 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
       prevProps.currentItemCondition === nextProps.currentItemCondition &&
       prevProps.mrpVariants.length === nextProps.mrpVariants.length &&
       prevProps.workflowState.serialCaptureEnabled ===
-      nextProps.workflowState.serialCaptureEnabled &&
+        nextProps.workflowState.serialCaptureEnabled &&
       JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
       prevProps.markLocation === nextProps.markLocation &&
       prevProps.manufacturingDate === nextProps.manufacturingDate &&
       prevProps.expiryDate === nextProps.expiryDate &&
       prevProps.remark === nextProps.remark
     );
-  },
+  }
 );
 
 QuantityInputForm.displayName = "QuantityInputForm";

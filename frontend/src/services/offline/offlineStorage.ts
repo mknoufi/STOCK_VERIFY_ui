@@ -3,7 +3,7 @@ import { storage } from "../storage/asyncStorageService";
 import { levenshteinDistance } from "../../utils/algorithms";
 import { createLogger } from "../logging";
 
-const log = createLogger('OfflineStorage');
+const log = createLogger("OfflineStorage");
 
 const STORAGE_KEYS = {
   ITEMS_CACHE: "items_cache",
@@ -17,7 +17,7 @@ const STORAGE_KEYS = {
 /**
  * Data source metadata for cached items
  */
-export type DataSource = 'api' | 'cache' | 'offline';
+export type DataSource = "api" | "cache" | "offline";
 
 /**
  * Extended result with source metadata
@@ -122,11 +122,11 @@ export interface CacheValidationResult {
 export function assertValidCachedItem(item: Partial<CachedItem>): CacheValidationResult {
   const errors: string[] = [];
 
-  if (!item.item_code || typeof item.item_code !== 'string') {
-    errors.push('item_code is required and must be a string');
+  if (!item.item_code || typeof item.item_code !== "string") {
+    errors.push("item_code is required and must be a string");
   }
-  if (!item.item_name || typeof item.item_name !== 'string') {
-    errors.push('item_name is required and must be a string');
+  if (!item.item_name || typeof item.item_name !== "string") {
+    errors.push("item_name is required and must be a string");
   }
 
   return {
@@ -141,17 +141,17 @@ export function assertValidCachedItem(item: Partial<CachedItem>): CacheValidatio
 export function assertValidCachedCountLine(line: Partial<CachedCountLine>): CacheValidationResult {
   const errors: string[] = [];
 
-  if (!line._id || typeof line._id !== 'string') {
-    errors.push('_id is required and must be a string');
+  if (!line._id || typeof line._id !== "string") {
+    errors.push("_id is required and must be a string");
   }
-  if (!line.session_id || typeof line.session_id !== 'string') {
-    errors.push('session_id is required and must be a string');
+  if (!line.session_id || typeof line.session_id !== "string") {
+    errors.push("session_id is required and must be a string");
   }
-  if (!line.item_code || typeof line.item_code !== 'string') {
-    errors.push('item_code is required and must be a string');
+  if (!line.item_code || typeof line.item_code !== "string") {
+    errors.push("item_code is required and must be a string");
   }
-  if (typeof line.counted_qty !== 'number') {
-    errors.push('counted_qty is required and must be a number');
+  if (typeof line.counted_qty !== "number") {
+    errors.push("counted_qty is required and must be a number");
   }
 
   return {
@@ -166,9 +166,9 @@ export const cacheItem = async (item: Omit<CachedItem, "cached_at">) => {
     // Validate before caching
     const validation = assertValidCachedItem(item);
     if (!validation.valid) {
-      log.warn('Attempted to cache invalid item', {
+      log.warn("Attempted to cache invalid item", {
         errors: validation.errors,
-        itemCode: item.item_code
+        itemCode: item.item_code,
       });
       // Don't throw - just log and skip to avoid breaking main flow
       return null;
@@ -188,24 +188,21 @@ export const cacheItem = async (item: Omit<CachedItem, "cached_at">) => {
     await storage.set(STORAGE_KEYS.ITEMS_CACHE, updatedCache);
     return cachedItem;
   } catch (error) {
-    log.error("Error caching item", { error: error instanceof Error ? error.message : String(error) });
+    log.error("Error caching item", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 };
 
 export const getItemsCache = async (): Promise<Record<string, CachedItem>> => {
-  const cache = await storage.get<Record<string, CachedItem>>(
-    STORAGE_KEYS.ITEMS_CACHE,
-    {
-      defaultValue: {},
-    },
-  );
+  const cache = await storage.get<Record<string, CachedItem>>(STORAGE_KEYS.ITEMS_CACHE, {
+    defaultValue: {},
+  });
   return cache ?? {};
 };
 
-export const getItemFromCache = async (
-  itemCode: string,
-): Promise<CachedItem | null> => {
+export const getItemFromCache = async (itemCode: string): Promise<CachedItem | null> => {
   try {
     const cache = await getItemsCache();
     return cache[itemCode] || null;
@@ -215,9 +212,7 @@ export const getItemFromCache = async (
   }
 };
 
-export const searchItemsInCache = async (
-  query: string,
-): Promise<CachedItem[]> => {
+export const searchItemsInCache = async (query: string): Promise<CachedItem[]> => {
   try {
     const cache = await getItemsCache();
     const items = Object.values(cache);
@@ -230,11 +225,7 @@ export const searchItemsInCache = async (
       const barcode = (item.barcode || "").toLowerCase();
 
       // Direct includes check (fast path)
-      if (
-        code.includes(lowerQuery) ||
-        name.includes(lowerQuery) ||
-        barcode.includes(lowerQuery)
-      ) {
+      if (code.includes(lowerQuery) || name.includes(lowerQuery) || barcode.includes(lowerQuery)) {
         return true;
       }
 
@@ -265,7 +256,7 @@ export const clearItemsCache = async () => {
 // Offline Queue Operations
 export const addToOfflineQueue = async (
   type: OfflineQueueItem["type"],
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ) => {
   try {
     const queue = await getOfflineQueue();
@@ -288,12 +279,9 @@ export const addToOfflineQueue = async (
 
 export const getOfflineQueue = async (): Promise<OfflineQueueItem[]> => {
   try {
-    const queue = await storage.get<OfflineQueueItem[]>(
-      STORAGE_KEYS.OFFLINE_QUEUE,
-      {
-        defaultValue: [],
-      },
-    );
+    const queue = await storage.get<OfflineQueueItem[]>(STORAGE_KEYS.OFFLINE_QUEUE, {
+      defaultValue: [],
+    });
     return queue ?? [];
   } catch (error) {
     __DEV__ && console.error("Error getting offline queue:", error);
@@ -318,7 +306,10 @@ export const removeManyFromOfflineQueue = async (ids: string[]) => {
 
     // T079: Log deletion for verification
     if (queue.length !== updatedQueue.length) {
-      console.log(`[OfflineStorage] Removed ${queue.length - updatedQueue.length} confirmed items from offline queue.`);
+      log.debug("Removed confirmed items from offline queue", {
+        removed: queue.length - updatedQueue.length,
+        remaining: updatedQueue.length,
+      });
     }
 
     await storage.set(STORAGE_KEYS.OFFLINE_QUEUE, updatedQueue);
@@ -331,7 +322,7 @@ export const updateQueueItemRetries = async (id: string) => {
   try {
     const queue = await getOfflineQueue();
     const updatedQueue = queue.map((item) =>
-      item.id === id ? { ...item, retries: item.retries + 1 } : item,
+      item.id === id ? { ...item, retries: item.retries + 1 } : item
     );
     await storage.set(STORAGE_KEYS.OFFLINE_QUEUE, updatedQueue);
   } catch (error) {
@@ -349,7 +340,7 @@ export const clearOfflineQueue = async () => {
 
 // Session Cache Operations
 export const cacheSession = async (
-  session: Omit<CachedSession, "cached_at"> | any, // Use any to allow backend objects to be passed in
+  session: Omit<CachedSession, "cached_at"> | any // Use any to allow backend objects to be passed in
 ) => {
   try {
     // Normalization logic
@@ -370,8 +361,13 @@ export const cacheSession = async (
     };
 
     if (!normalizedSession.id || normalizedSession.id === "undefined") {
-        console.warn("Attempted to cache session with invalid ID:", session);
-        return normalizedSession;
+      log.warn("Attempted to cache session with invalid ID", {
+        session_id: session?.session_id,
+        id: session?.id,
+        warehouse: session?.warehouse,
+        status: session?.status,
+      });
+      return normalizedSession;
     }
 
     const existingCache = await getSessionsCache();
@@ -391,24 +387,19 @@ export const cacheSession = async (
   }
 };
 
-export const getSessionsCache = async (): Promise<
-  Record<string, CachedSession>
-> => {
+export const getSessionsCache = async (): Promise<Record<string, CachedSession>> => {
   try {
-    const cache = await storage.get<Record<string, CachedSession>>(
-      STORAGE_KEYS.SESSIONS_CACHE,
-      {
-        defaultValue: {},
-      },
-    );
+    const cache = await storage.get<Record<string, CachedSession>>(STORAGE_KEYS.SESSIONS_CACHE, {
+      defaultValue: {},
+    });
 
     // Self-healing: remove undefined keys
     if (cache && (cache as any)["undefined"]) {
-        __DEV__ && console.log("🧹 Cleaning up invalid 'undefined' session cache entry");
-        const cleanCache = { ...cache };
-        delete (cleanCache as any)["undefined"];
-        await storage.set(STORAGE_KEYS.SESSIONS_CACHE, cleanCache);
-        return cleanCache;
+      __DEV__ && console.log("🧹 Cleaning up invalid 'undefined' session cache entry");
+      const cleanCache = { ...cache };
+      delete (cleanCache as any)["undefined"];
+      await storage.set(STORAGE_KEYS.SESSIONS_CACHE, cleanCache);
+      return cleanCache;
     }
 
     return cache ?? {};
@@ -418,9 +409,7 @@ export const getSessionsCache = async (): Promise<
   }
 };
 
-export const getSessionFromCache = async (
-  sessionId: string,
-): Promise<CachedSession | null> => {
+export const getSessionFromCache = async (sessionId: string): Promise<CachedSession | null> => {
   try {
     const cache = await getSessionsCache();
     return cache[sessionId] || null;
@@ -431,16 +420,14 @@ export const getSessionFromCache = async (
 };
 
 // Count Lines Cache Operations
-export const cacheCountLine = async (
-  countLine: Omit<CachedCountLine, "cached_at">,
-) => {
+export const cacheCountLine = async (countLine: Omit<CachedCountLine, "cached_at">) => {
   try {
     // Validate before caching
     const validation = assertValidCachedCountLine(countLine);
     if (!validation.valid) {
-      log.warn('Attempted to cache invalid count line', {
+      log.warn("Attempted to cache invalid count line", {
         errors: validation.errors,
-        lineId: countLine._id
+        lineId: countLine._id,
       });
       // Don't throw - just log and skip to avoid breaking main flow
       return null;
@@ -457,7 +444,7 @@ export const cacheCountLine = async (
 
     // Update or add the count line
     const existingIndex = sessionLines.findIndex(
-      (line: CachedCountLine) => line._id === countLine._id,
+      (line: CachedCountLine) => line._id === countLine._id
     );
     if (existingIndex >= 0) {
       sessionLines[existingIndex] = cachedCountLine;
@@ -473,18 +460,18 @@ export const cacheCountLine = async (
     await storage.set(STORAGE_KEYS.COUNT_LINES_CACHE, updatedCache);
     return cachedCountLine;
   } catch (error) {
-    log.error("Error caching count line", { error: error instanceof Error ? error.message : String(error) });
+    log.error("Error caching count line", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 };
 
-export const getCountLinesCache = async (): Promise<
-  Record<string, CachedCountLine[]>
-> => {
+export const getCountLinesCache = async (): Promise<Record<string, CachedCountLine[]>> => {
   try {
     const cache = await storage.get<Record<string, CachedCountLine[]>>(
       STORAGE_KEYS.COUNT_LINES_CACHE,
-      { defaultValue: {} },
+      { defaultValue: {} }
     );
     return cache ?? {};
   } catch (error) {
@@ -494,14 +481,13 @@ export const getCountLinesCache = async (): Promise<
 };
 
 export const getCountLinesBySessionFromCache = async (
-  sessionId: string,
+  sessionId: string
 ): Promise<CachedCountLine[]> => {
   try {
     const cache = await getCountLinesCache();
     return cache[sessionId] || [];
   } catch (error) {
-    __DEV__ &&
-      console.error("Error getting count lines by session from cache:", error);
+    __DEV__ && console.error("Error getting count lines by session from cache:", error);
     return [];
   }
 };
@@ -554,7 +540,7 @@ export const getCacheStats = async () => {
       sessionsCount: Object.keys(sessionsCache).length,
       countLinesCount: Object.values(countLinesCache).reduce(
         (total, lines) => total + lines.length,
-        0,
+        0
       ),
       lastSync,
       cacheSizeKB: Math.round(
@@ -562,7 +548,7 @@ export const getCacheStats = async () => {
           JSON.stringify(offlineQueue).length +
           JSON.stringify(sessionsCache).length +
           JSON.stringify(countLinesCache).length) /
-        1024,
+          1024
       ),
     };
   } catch (error) {

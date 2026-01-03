@@ -72,13 +72,22 @@ export function SectionLists({
   onStartNewSection,
   onResumeSection,
 }: SectionListsProps) {
+  const inputRef = React.useRef<TextInput>(null);
+
+  React.useEffect(() => {
+    if (!showFinishedSearch) return;
+
+    // Small delay to ensure layout is ready
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [showFinishedSearch]);
+
   const styles = React.useMemo(() => createStyles(theme, isDark), [theme, isDark]);
   const [showAllFinished, setShowAllFinished] = React.useState(false);
   const topActiveSections = React.useMemo(() => activeSections.slice(0, 3), [activeSections]);
-  const overflowActiveSections = React.useMemo(
-    () => activeSections.slice(3),
-    [activeSections],
-  );
+  const overflowActiveSections = React.useMemo(() => activeSections.slice(3), [activeSections]);
 
   return (
     <>
@@ -87,7 +96,7 @@ export function SectionLists({
         <View style={styles.sectionHeaderRow}>
           <View style={styles.sectionHeader}>
             <Ionicons name="layers" size={22} color={theme.colors.accent} />
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
               Select Section
             </Text>
           </View>
@@ -101,9 +110,7 @@ export function SectionLists({
             <Ionicons name="add" size={20} color="#FFF" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.sectionSubtitle}>
-          Tap a section to continue scanning
-        </Text>
+        <Text style={styles.sectionSubtitle}>Tap a section to continue scanning</Text>
 
         {isLoading ? (
           <ActivityIndicator color="#0EA5E9" style={{ marginTop: 20 }} />
@@ -115,33 +122,25 @@ export function SectionLists({
                 entering={FadeInUp.delay(100 + index * 80)}
               >
                 <ModernCard
-                  variant="glass"
+                  variant="elevated"
                   onPress={() =>
                     onResumeSection(session.session_id || session.id || "", session.type)
                   }
                   style={styles.activeSessionCard}
                   contentStyle={styles.sessionCardContent}
                 >
-                  <View
-                    style={[
-                      styles.sessionIcon,
-                      { backgroundColor: "#0EA5E915" },
-                    ]}
-                  >
+                  <View style={[styles.sessionIcon, { backgroundColor: "#0EA5E915" }]}>
                     <Ionicons name="layers" size={24} color="#0EA5E9" />
                   </View>
                   <View style={styles.sessionInfo}>
-                    <Text
-                      style={styles.sessionName}
-                      numberOfLines={1}
-                    >
+                    <Text style={styles.sessionName} numberOfLines={1}>
                       {session.warehouse}
                     </Text>
-                    <Text
-                      style={styles.sessionMeta}
-                    >
+                    <Text style={styles.sessionMeta}>
                       {session.item_count || session.total_items || 0} items •{" "}
-                      {new Date(session.created_at || session.started_at || "").toLocaleDateString()}
+                      {new Date(
+                        session.created_at || session.started_at || ""
+                      ).toLocaleDateString()}
                     </Text>
                   </View>
                   <View style={styles.resumeButton}>
@@ -152,9 +151,7 @@ export function SectionLists({
             ))}
             {overflowActiveSections.length > 0 && (
               <>
-                <Text style={styles.overflowHint}>
-                  Drag horizontally to view more sections
-                </Text>
+                <Text style={styles.overflowHint}>Drag horizontally to view more sections</Text>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -168,41 +165,28 @@ export function SectionLists({
                       style={styles.overflowCardWrapper}
                     >
                       <ModernCard
-                        variant="glass"
+                        variant="elevated"
                         onPress={() =>
                           onResumeSection(session.session_id || session.id || "", session.type)
                         }
                         style={styles.overflowCard}
                         contentStyle={styles.sessionCardContent}
                       >
-                        <View
-                          style={[
-                            styles.sessionIcon,
-                            { backgroundColor: "#0EA5E915" },
-                          ]}
-                        >
+                        <View style={[styles.sessionIcon, { backgroundColor: "#0EA5E915" }]}>
                           <Ionicons name="layers" size={24} color="#0EA5E9" />
                         </View>
                         <View style={styles.sessionInfo}>
-                          <Text
-                            style={styles.sessionName}
-                            numberOfLines={1}
-                          >
+                          <Text style={styles.sessionName} numberOfLines={1}>
                             {session.warehouse}
                           </Text>
-                          <Text
-                            style={styles.sessionMeta}
-                          >
-                            {session.item_count || session.total_items || 0} items •
-                            {" "}
+                          <Text style={styles.sessionMeta}>
+                            {session.item_count || session.total_items || 0} items •{" "}
                             {new Date(
-                              session.created_at || session.started_at || "",
+                              session.created_at || session.started_at || ""
                             ).toLocaleDateString()}
                           </Text>
                         </View>
-                        <View
-                          style={styles.resumeButton}
-                        >
+                        <View style={styles.resumeButton}>
                           <Ionicons name="arrow-forward" size={18} color="#FFF" />
                         </View>
                       </ModernCard>
@@ -213,19 +197,11 @@ export function SectionLists({
             )}
           </View>
         ) : (
-          <ModernCard variant="glass" intensity={10} style={styles.emptyState}>
+          <ModernCard variant="elevated" intensity={10} style={styles.emptyState}>
             <View style={{ alignItems: "center" }}>
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={40}
-                color="#10B981"
-              />
-              <Text style={styles.emptyTitle}>
-                All Caught Up!
-              </Text>
-              <Text style={styles.emptyText}>
-                No active sections. Start a new one below.
-              </Text>
+              <Ionicons name="checkmark-circle-outline" size={40} color="#10B981" />
+              <Text style={styles.emptyTitle}>All Caught Up!</Text>
+              <Text style={styles.emptyText}>No active sections. Start a new one below.</Text>
             </View>
           </ModernCard>
         )}
@@ -235,22 +211,16 @@ export function SectionLists({
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
           <View style={styles.sectionHeader}>
-            <Ionicons
-              name="checkmark-done-circle"
-              size={22}
-              color="#10B981"
-            />
-            <Text style={[styles.sectionTitle, { color: "#F8FAFC" }]}>
-              Previous Sessions
-            </Text>
+            <Ionicons name="checkmark-done-circle" size={22} color="#10B981" />
+            <Text style={styles.sectionTitle}>Previous Sessions</Text>
           </View>
           <TouchableOpacity
             style={[
               styles.searchToggleButton,
               {
                 backgroundColor: showFinishedSearch
-                  ? "#0EA5E9"
-                  : "rgba(255,255,255,0.05)",
+                  ? theme.colors.accent
+                  : theme.colors.background.elevated,
               },
             ]}
             onPress={onToggleSearch}
@@ -261,24 +231,24 @@ export function SectionLists({
             <Ionicons
               name="search"
               size={18}
-              color="#FFF"
+              color={showFinishedSearch ? "#FFF" : theme.colors.text.primary}
             />
           </TouchableOpacity>
         </View>
 
         {showFinishedSearch && (
-          <View
-            style={styles.searchContainer}
-          >
+          <View style={styles.searchContainer}>
             <Ionicons name="search" size={18} color="#94A3B8" />
             <TextInput
+              ref={inputRef}
               style={styles.searchInput}
               placeholder="Search previous sessions..."
               placeholderTextColor="#64748B"
               value={finishedSearchQuery}
               onChangeText={onSearchQueryChange}
-              autoFocus
               accessibilityLabel="Search previous sessions"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
             {finishedSearchQuery.length > 0 && (
               <TouchableOpacity onPress={() => onSearchQueryChange("")} accessibilityRole="button">
@@ -290,63 +260,47 @@ export function SectionLists({
 
         {finishedSections.length > 0 ? (
           <View style={styles.listContainer}>
-            {(showAllFinished ? finishedSections : finishedSections.slice(0, 3)).map((session, index) => (
-              <Animated.View
-                key={session.id || session.session_id}
-                entering={FadeInUp.delay(200 + index * 50)}
-              >
-                <View
-                  style={[
-                    styles.finishedSessionCard,
-                    {
-                      backgroundColor: isDark
-                        ? "rgba(255,255,255,0.03)"
-                        : "rgba(0,0,0,0.02)",
-                    },
-                  ]}
+            {(showAllFinished ? finishedSections : finishedSections.slice(0, 3)).map(
+              (session, index) => (
+                <Animated.View
+                  key={session.id || session.session_id}
+                  entering={FadeInUp.delay(200 + index * 50)}
                 >
-                  <View style={styles.sessionCardContent}>
-                    <View
-                      style={[
-                        styles.sessionIcon,
-                        { backgroundColor: "#10B98115" },
-                      ]}
-                    >
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={24}
-                        color="#10B981"
-                      />
-                    </View>
-                    <View style={styles.sessionInfo}>
-                      <Text
-                        style={styles.sessionName}
-                        numberOfLines={1}
-                      >
-                        {session.warehouse}
-                      </Text>
-                      <Text
-                        style={styles.sessionMeta}
-                      >
-                        {session.item_count || session.total_items || 0} items • Last used{" "}
-                        {getRelativeTime(
-                          session.closed_at || session.updated_at || session.created_at || "",
-                        )}
-                      </Text>
+                  <View
+                    style={[
+                      styles.finishedSessionCard,
+                      {
+                        backgroundColor: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                      },
+                    ]}
+                  >
+                    <View style={styles.sessionCardContent}>
+                      <View style={[styles.sessionIcon, { backgroundColor: "#10B98115" }]}>
+                        <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                      </View>
+                      <View style={styles.sessionInfo}>
+                        <Text style={styles.sessionName} numberOfLines={1}>
+                          {session.warehouse}
+                        </Text>
+                        <Text style={styles.sessionMeta}>
+                          {session.item_count || session.total_items || 0} items • Last used{" "}
+                          {getRelativeTime(
+                            session.closed_at || session.updated_at || session.created_at || ""
+                          )}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </Animated.View>
-            ))}
+                </Animated.View>
+              )
+            )}
             {finishedSections.length > 3 && (
               <TouchableOpacity
                 onPress={() => setShowAllFinished(!showAllFinished)}
                 style={{ paddingVertical: 8, alignItems: "center" }}
               >
                 <Text style={styles.moreText}>
-                  {showAllFinished
-                    ? "Show Less"
-                    : `+${finishedSections.length - 3} more sessions`}
+                  {showAllFinished ? "Show Less" : `+${finishedSections.length - 3} more sessions`}
                 </Text>
               </TouchableOpacity>
             )}
@@ -363,7 +317,7 @@ export function SectionLists({
   );
 }
 
-const createStyles = (_theme: AppTheme, _isDark: boolean) =>
+const createStyles = (theme: AppTheme, isDark: boolean) =>
   StyleSheet.create({
     section: {
       marginBottom: 32,
@@ -372,7 +326,7 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 12,
+      marginBottom: 16, // Increased from 12
     },
     sectionHeader: {
       flexDirection: "row",
@@ -383,10 +337,11 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       fontSize: 18,
       fontWeight: "700",
       letterSpacing: -0.5,
+      color: theme.colors.text.primary,
     },
     sectionSubtitle: {
       fontSize: 14,
-      color: "#94A3B8",
+      color: theme.colors.text.secondary,
       marginBottom: 16,
     },
     iconButton: {
@@ -395,8 +350,8 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       borderRadius: 12,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#0EA5E9",
-      shadowColor: "#0EA5E9",
+      backgroundColor: theme.colors.accent,
+      shadowColor: theme.colors.accent,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
@@ -415,15 +370,17 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     activeSessionCard: {
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.05)",
-      marginBottom: 4,
+      borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
+      marginBottom: 12, // Increased from 4
+      backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.7)",
     },
     finishedSessionCard: {
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.05)",
+      borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
       padding: 16,
-      marginBottom: 4,
+      marginBottom: 12, // Increased from 4
+      backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.6)",
     },
     sessionCardContent: {
       flexDirection: "row",
@@ -443,12 +400,12 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     sessionName: {
       fontSize: 16,
       fontWeight: "600",
-      color: "#F8FAFC",
+      color: theme.colors.text.primary,
       marginBottom: 4,
     },
     sessionMeta: {
       fontSize: 13,
-      color: "#94A3B8",
+      color: theme.colors.text.secondary,
     },
     resumeButton: {
       width: 40,
@@ -456,7 +413,7 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#0EA5E9",
+      backgroundColor: theme.colors.accent,
     },
     emptyState: {
       alignItems: "center",
@@ -468,12 +425,12 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       fontSize: 17,
       fontWeight: "700",
       marginTop: 8,
-      color: "#F8FAFC",
+      color: theme.colors.text.primary,
     },
     emptyText: {
       fontSize: 14,
       textAlign: "center",
-      color: "#94A3B8",
+      color: theme.colors.text.secondary,
       lineHeight: 20,
     },
     searchContainer: {
@@ -484,14 +441,14 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       paddingVertical: 12,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.1)",
-      backgroundColor: "rgba(15, 23, 42, 0.6)",
+      borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+      backgroundColor: isDark ? "rgba(15, 23, 42, 0.6)" : "rgba(255, 255, 255, 0.8)",
       marginBottom: 16,
     },
     searchInput: {
       flex: 1,
       fontSize: 16,
-      color: "#F8FAFC",
+      color: theme.colors.text.primary,
       paddingVertical: 4,
     },
     emptyStateSmall: {
@@ -500,18 +457,18 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     },
     emptyTextSmall: {
       fontSize: 14,
-      color: "#64748B",
+      color: theme.colors.text.secondary,
       fontStyle: "italic",
     },
     moreText: {
       fontSize: 14,
-      color: "#64748B",
+      color: theme.colors.text.secondary,
       textAlign: "center",
       marginTop: 8,
     },
     overflowHint: {
       fontSize: 12,
-      color: "#64748B",
+      color: theme.colors.text.secondary,
       marginBottom: 8,
       marginLeft: 4,
     },
@@ -529,8 +486,9 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       minWidth: 260,
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.05)",
+      borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
       padding: 16,
+      backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.7)",
     },
   });
 

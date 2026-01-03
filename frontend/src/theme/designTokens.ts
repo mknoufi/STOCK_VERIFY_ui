@@ -117,14 +117,14 @@ export type Spacing = (typeof spacing)[keyof typeof spacing];
 export const typography = {
   // Font Sizes
   fontSize: {
-    xs: 10, // Caption, labels
-    sm: 12, // Small text
-    base: 14, // Body text
-    md: 16, // Default body
-    lg: 18, // Large body
-    xl: 20, // Subheading
-    "2xl": 24, // Heading 3
-    "3xl": 32, // Heading 2
+    xs: 12, // Caption, labels
+    sm: 14, // Small text
+    base: 16, // Body text
+    md: 18, // Default body
+    lg: 20, // Large body
+    xl: 24, // Subheading
+    "2xl": 30, // Heading 3
+    "3xl": 36, // Heading 2
     "4xl": 48, // Heading 1
   },
 

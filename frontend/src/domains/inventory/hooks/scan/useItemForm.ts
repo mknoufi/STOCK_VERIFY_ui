@@ -28,7 +28,10 @@ export const useItemForm = () => {
   // Other
   const [mfgDate, setMfgDate] = useState("");
   const [remark, setRemark] = useState("");
-  const [itemPhoto, setItemPhoto] = useState<{ uri: string; base64?: string } | null>(null);
+  const [itemPhoto, setItemPhoto] = useState<{
+    uri: string;
+    base64?: string;
+  } | null>(null);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   const quantityInputRef = useRef<TextInput>(null);
@@ -45,7 +48,8 @@ export const useItemForm = () => {
   // Update serial numbers array size when quantity changes
   const updateSerialNumbersSize = (qty: string) => {
     const numQty = parseInt(qty) || 0;
-    if (isSerialEnabled && numQty > 0 && numQty < 100) { // Reasonable limit
+    if (isSerialEnabled && numQty > 0 && numQty < 100) {
+      // Reasonable limit
       if (serialNumbers.length !== numQty) {
         const newSerials = [...serialNumbers];
         if (newSerials.length < numQty) {
@@ -81,7 +85,7 @@ export const useItemForm = () => {
     }
 
     if (isSerialEnabled) {
-      const validSerials = serialNumbers.filter(s => s && s.trim().length > 0);
+      const validSerials = serialNumbers.filter((s) => s && s.trim().length > 0);
       if (validSerials.length !== Number(quantity)) {
         Alert.alert("Missing Serials", `Please enter all ${quantity} serial numbers.`);
         return false;
@@ -122,23 +126,40 @@ export const useItemForm = () => {
 
   return {
     // State
-    quantity, setQuantity,
-    mrp, setMrp,
-    mrpEditable, setMrpEditable,
-    category, setCategory,
-    subCategory, setSubCategory,
-    categoryEditable, setCategoryEditable,
-    condition, setCondition,
-    conditionDetails, setConditionDetails,
-    isDamageEnabled, setIsDamageEnabled,
-    damageQty, setDamageQty,
-    damageRemark, setDamageRemark,
-    isSerialEnabled, setIsSerialEnabled,
-    serialNumbers, setSerialNumbers,
-    mfgDate, setMfgDate,
-    remark, setRemark,
-    itemPhoto, setItemPhoto,
-    showPhotoModal, setShowPhotoModal,
+    quantity,
+    setQuantity,
+    mrp,
+    setMrp,
+    mrpEditable,
+    setMrpEditable,
+    category,
+    setCategory,
+    subCategory,
+    setSubCategory,
+    categoryEditable,
+    setCategoryEditable,
+    condition,
+    setCondition,
+    conditionDetails,
+    setConditionDetails,
+    isDamageEnabled,
+    setIsDamageEnabled,
+    damageQty,
+    setDamageQty,
+    damageRemark,
+    setDamageRemark,
+    isSerialEnabled,
+    setIsSerialEnabled,
+    serialNumbers,
+    setSerialNumbers,
+    mfgDate,
+    setMfgDate,
+    remark,
+    setRemark,
+    itemPhoto,
+    setItemPhoto,
+    showPhotoModal,
+    setShowPhotoModal,
     quantityInputRef,
 
     // Batch Manager
@@ -148,6 +169,6 @@ export const useItemForm = () => {
     handleSerialChange,
     updateSerialNumbersSize,
     validateForm,
-    resetForm
+    resetForm,
   };
 };

@@ -84,9 +84,7 @@ async def calculate_total_stock_value(db) -> float:
                 "$group": {
                     "_id": None,
                     "total_value": {
-                        "$sum": {
-                            "$multiply": ["$stock_qty", {"$ifNull": ["$price", 0]}]
-                        }
+                        "$sum": {"$multiply": ["$stock_qty", {"$ifNull": ["$price", 0]}]}
                     },
                 }
             },
@@ -107,9 +105,7 @@ async def calculate_verified_value(db) -> float:
                 "$group": {
                     "_id": None,
                     "total_value": {
-                        "$sum": {
-                            "$multiply": ["$verified_qty", {"$ifNull": ["$price", 0]}]
-                        }
+                        "$sum": {"$multiply": ["$verified_qty", {"$ifNull": ["$price", 0]}]}
                     },
                 }
             },
@@ -128,9 +124,7 @@ async def calculate_completion_percentage(db) -> float:
         if total_items == 0:
             return 0.0
 
-        verified_items = await db.verification_records.count_documents(
-            {"status": "verified"}
-        )
+        verified_items = await db.verification_records.count_documents({"status": "verified"})
         return round((verified_items / total_items) * 100, 2)
     except Exception as e:
         logger.error(f"Error calculating completion: {e}")
@@ -172,9 +166,7 @@ async def count_pending_variances(db) -> int:
 async def count_items_verified_today(db) -> int:
     """Count items verified today."""
     try:
-        today_start = datetime.utcnow().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         return await db.verification_records.count_documents(
             {"created_at": {"$gte": today_start}, "status": "verified"}
         )
@@ -271,9 +263,7 @@ async def get_system_status(current_user: dict = Depends(require_admin)):
                     "_id": None,
                     "avg_latency": {"$avg": "$latency_ms"},
                     "total_requests": {"$sum": 1},
-                    "error_count": {
-                        "$sum": {"$cond": [{"$gte": ["$status_code", 400]}, 1, 0]}
-                    },
+                    "error_count": {"$sum": {"$cond": [{"$gte": ["$status_code", 400]}, 1, 0]}},
                 }
             },
         ]
@@ -310,9 +300,7 @@ async def get_active_users(current_user: dict = Depends(require_admin)):
 
     try:
         # Get recent user presence records
-        cursor = db.user_presence.find({"last_seen": {"$gte": cutoff}}).sort(
-            "last_seen", -1
-        )
+        cursor = db.user_presence.find({"last_seen": {"$gte": cutoff}}).sort("last_seen", -1)
 
         presence_records = await cursor.to_list(100)
 
@@ -398,9 +386,7 @@ async def get_error_logs(
         )
 
 
-@admin_dashboard_router.get(
-    "/performance-metrics", response_model=list[PerformanceMetric]
-)
+@admin_dashboard_router.get("/performance-metrics", response_model=list[PerformanceMetric])
 async def get_performance_metrics(
     hours: int = Query(default=24, le=168),
     interval_minutes: int = Query(default=60, le=360),
@@ -429,9 +415,7 @@ async def get_performance_metrics(
                     },
                     "avg_latency": {"$avg": "$latency_ms"},
                     "request_count": {"$sum": 1},
-                    "error_count": {
-                        "$sum": {"$cond": [{"$gte": ["$status_code", 400]}, 1, 0]}
-                    },
+                    "error_count": {"$sum": {"$cond": [{"$gte": ["$status_code", 400]}, 1, 0]}},
                 }
             },
             {"$sort": {"_id": 1}},
@@ -449,9 +433,7 @@ async def get_performance_metrics(
             metrics.append(
                 PerformanceMetric(
                     timestamp=(
-                        bucket_time.isoformat()
-                        if bucket_time
-                        else datetime.utcnow().isoformat()
+                        bucket_time.isoformat() if bucket_time else datetime.utcnow().isoformat()
                     ),
                     latency_ms=round(r.get("avg_latency", 0), 2),
                     throughput_rps=round(throughput, 3),

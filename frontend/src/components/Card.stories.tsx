@@ -143,22 +143,11 @@ export const ComplexContent: Story = {
     children: (
       <View style={styles.complexContent}>
         <Text style={styles.description}>
-          This card contains complex content including buttons and multiple text
-          elements.
+          This card contains complex content including buttons and multiple text elements.
         </Text>
         <View style={styles.buttonRow}>
-          <Button
-            title="Edit"
-            variant="outline"
-            size="small"
-            onPress={() => {}}
-          />
-          <Button
-            title="Delete"
-            variant="danger"
-            size="small"
-            onPress={() => {}}
-          />
+          <Button title="Edit" variant="outline" size="small" onPress={() => {}} />
+          <Button title="Delete" variant="danger" size="small" onPress={() => {}} />
         </View>
       </View>
     ),

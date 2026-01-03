@@ -177,36 +177,11 @@ export const FullWidth: Story = {
 export const AllVariants: Story = {
   render: () => (
     <View style={styles.container}>
-      <Button
-        title="Primary"
-        variant="primary"
-        onPress={() => {}}
-        style={styles.button}
-      />
-      <Button
-        title="Secondary"
-        variant="secondary"
-        onPress={() => {}}
-        style={styles.button}
-      />
-      <Button
-        title="Outline"
-        variant="outline"
-        onPress={() => {}}
-        style={styles.button}
-      />
-      <Button
-        title="Text"
-        variant="text"
-        onPress={() => {}}
-        style={styles.button}
-      />
-      <Button
-        title="Danger"
-        variant="danger"
-        onPress={() => {}}
-        style={styles.button}
-      />
+      <Button title="Primary" variant="primary" onPress={() => {}} style={styles.button} />
+      <Button title="Secondary" variant="secondary" onPress={() => {}} style={styles.button} />
+      <Button title="Outline" variant="outline" onPress={() => {}} style={styles.button} />
+      <Button title="Text" variant="text" onPress={() => {}} style={styles.button} />
+      <Button title="Danger" variant="danger" onPress={() => {}} style={styles.button} />
     </View>
   ),
 };
@@ -215,24 +190,9 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   render: () => (
     <View style={styles.container}>
-      <Button
-        title="Small"
-        size="small"
-        onPress={() => {}}
-        style={styles.button}
-      />
-      <Button
-        title="Medium"
-        size="medium"
-        onPress={() => {}}
-        style={styles.button}
-      />
-      <Button
-        title="Large"
-        size="large"
-        onPress={() => {}}
-        style={styles.button}
-      />
+      <Button title="Small" size="small" onPress={() => {}} style={styles.button} />
+      <Button title="Medium" size="medium" onPress={() => {}} style={styles.button} />
+      <Button title="Large" size="large" onPress={() => {}} style={styles.button} />
     </View>
   ),
 };

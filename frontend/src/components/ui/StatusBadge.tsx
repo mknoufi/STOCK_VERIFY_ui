@@ -18,18 +18,9 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import {
-  modernColors,
-  modernBorderRadius,
-} from "../../styles/modernDesignSystem";
+import { modernColors, modernBorderRadius } from "../../styles/modernDesignSystem";
 
-type BadgeVariant =
-  | "success"
-  | "warning"
-  | "error"
-  | "info"
-  | "neutral"
-  | "primary";
+type BadgeVariant = "success" | "warning" | "error" | "info" | "neutral" | "primary";
 type BadgeSize = "small" | "medium" | "large";
 
 interface StatusBadgeProps {
@@ -110,20 +101,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   React.useEffect(() => {
     if (pulse) {
       pulseOpacity.value = withRepeat(
-        withSequence(
-          withTiming(0.6, { duration: 800 }),
-          withTiming(1, { duration: 800 }),
-        ),
+        withSequence(withTiming(0.6, { duration: 800 }), withTiming(1, { duration: 800 })),
         -1,
-        true,
+        true
       );
       pulseScale.value = withRepeat(
-        withSequence(
-          withTiming(1.02, { duration: 800 }),
-          withTiming(1, { duration: 800 }),
-        ),
+        withSequence(withTiming(1.02, { duration: 800 }), withTiming(1, { duration: 800 })),
         -1,
-        true,
+        true
       );
     }
   }, [pulse, pulseOpacity, pulseScale]);
@@ -147,9 +132,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   const content = (
     <>
-      {icon && (
-        <Ionicons name={icon} size={sizeConfig.iconSize} color={colors.text} />
-      )}
+      {icon && <Ionicons name={icon} size={sizeConfig.iconSize} color={colors.text} />}
       <Text
         style={[
           styles.label,
@@ -165,11 +148,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   );
 
   if (pulse) {
-    return (
-      <Animated.View style={[containerStyle, animatedStyle, style]}>
-        {content}
-      </Animated.View>
-    );
+    return <Animated.View style={[containerStyle, animatedStyle, style]}>{content}</Animated.View>;
   }
 
   return <View style={[containerStyle, style]}>{content}</View>;

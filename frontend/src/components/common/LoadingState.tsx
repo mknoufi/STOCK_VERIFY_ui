@@ -1,20 +1,20 @@
-import React from 'react';
-import { View, StyleSheet, ActivityIndicator, Animated } from 'react-native';
-import { useThemeContext } from '../../theme/ThemeContext';
+import React from "react";
+import { View, StyleSheet, ActivityIndicator, Animated } from "react-native";
+import { useThemeContext } from "../../context/ThemeContext";
 
 interface LoadingStateProps {
   message?: string;
-  size?: 'small' | 'large';
+  size?: "small" | "large";
   color?: string;
   style?: any;
 }
 
 export const LoadingState: React.FC<LoadingStateProps> = ({
-  message = 'Loading...',
-  size = 'large',
+  message = "Loading...",
+  size = "large",
   style,
 }) => {
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
   const { colors } = theme;
 
   // Animation for the loading text - use useRef to persist across renders
@@ -39,17 +39,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      <ActivityIndicator
-        size={size}
-        color={colors.accent}
-        style={styles.loader}
-      />
+      <ActivityIndicator size={size} color={colors.accent} style={styles.loader} />
       <Animated.Text
-        style={[
-          styles.message,
-          { color: colors.textSecondary },
-          { opacity: fadeAnim }
-        ]}
+        style={[styles.message, { color: colors.textSecondary }, { opacity: fadeAnim }]}
       >
         {message}
       </Animated.Text>
@@ -60,8 +52,8 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   loader: {
@@ -69,7 +61,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
 });

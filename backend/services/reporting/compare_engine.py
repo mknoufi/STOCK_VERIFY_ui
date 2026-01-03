@@ -38,12 +38,8 @@ class CompareEngine:
             Comparison report
         """
         # Get snapshots
-        snapshot_a = await self.db.report_snapshots.find_one(
-            {"snapshot_id": snapshot_a_id}
-        )
-        snapshot_b = await self.db.report_snapshots.find_one(
-            {"snapshot_id": snapshot_b_id}
-        )
+        snapshot_a = await self.db.report_snapshots.find_one({"snapshot_id": snapshot_a_id})
+        snapshot_b = await self.db.report_snapshots.find_one({"snapshot_id": snapshot_b_id})
 
         if not snapshot_a:
             raise ValueError(f"Snapshot {snapshot_a_id} not found")
@@ -58,9 +54,7 @@ class CompareEngine:
         start_time = time.time()
 
         comparison = {
-            "summary_diff": self._compare_summaries(
-                snapshot_a["summary"], snapshot_b["summary"]
-            ),
+            "summary_diff": self._compare_summaries(snapshot_a["summary"], snapshot_b["summary"]),
             "row_diff": self._compare_rows(
                 snapshot_a.get("row_data", []),
                 snapshot_b.get("row_data", []),
@@ -134,11 +128,7 @@ class CompareEngine:
                     "absolute_diff": absolute_diff,
                     "percent_diff": round(percent_diff, 2),
                     "trend": (
-                        "up"
-                        if absolute_diff > 0
-                        else "down"
-                        if absolute_diff < 0
-                        else "stable"
+                        "up" if absolute_diff > 0 else "down" if absolute_diff < 0 else "stable"
                     ),
                 }
             else:
@@ -196,9 +186,7 @@ class CompareEngine:
             "changed": changed[:100],
         }
 
-    def _create_row_lookup(
-        self, rows: list[dict], group_by: list[str]
-    ) -> dict[str, dict]:
+    def _create_row_lookup(self, rows: list[dict], group_by: list[str]) -> dict[str, dict]:
         """
         Create lookup dictionary keyed by group_by fields
         """
@@ -236,9 +224,7 @@ class CompareEngine:
             value_b = row_b.get(key)
 
             if value_a != value_b:
-                if isinstance(value_a, (int, float)) and isinstance(
-                    value_b, (int, float)
-                ):
+                if isinstance(value_a, (int, float)) and isinstance(value_b, (int, float)):
                     diff[key] = {
                         "from": value_a,
                         "to": value_b,
@@ -262,9 +248,7 @@ class CompareEngine:
         if created_by:
             query["created_by"] = created_by
 
-        cursor = (
-            self.db.report_compare_jobs.find(query).sort("created_at", -1).limit(limit)
-        )
+        cursor = self.db.report_compare_jobs.find(query).sort("created_at", -1).limit(limit)
 
         jobs = await cursor.to_list(length=limit)
         return jobs

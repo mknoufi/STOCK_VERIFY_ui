@@ -11,11 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  modernColors,
-  modernSpacing,
-  modernBorderRadius,
-} from "@/styles/modernDesignSystem";
+import { modernColors, modernSpacing, modernBorderRadius } from "@/styles/modernDesignSystem";
 import {
   SuggestionItem,
   smartSuggestionsService,
@@ -23,10 +19,7 @@ import {
 import * as Haptics from "expo-haptics";
 
 // Enable LayoutAnimation on Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -49,9 +42,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [showAll, setShowAll] = useState(false);
-  const [displayedSuggestions, setDisplayedSuggestions] = useState<
-    SuggestionItem[]
-  >([]);
+  const [displayedSuggestions, setDisplayedSuggestions] = useState<SuggestionItem[]>([]);
 
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const fadeAnimation = useRef(new Animated.Value(0)).current;
@@ -97,8 +88,33 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
       useNativeDriver: true,
     }).start();
 
-    setExpanded(!expanded);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(!expanded);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const renderQuickActions = (suggestion: SuggestionItem) => {
+    if (suggestion.type !== "quantity") return null;
+
+    return (
+      <View style={styles.quickActions}>
+        {[1, 5, 10].map((qty) => (
+          <TouchableOpacity
+            key={qty}
+            style={styles.quickActionButton}
+            onPress={() => {
+              const suggestionWithQty = {
+                ...suggestion,
+                data: { ...suggestion.data, quantity: qty },
+              };
+              onSuggestionPress(suggestionWithQty);
+            }}
+          >
+            <Text style={styles.quickActionText}>{qty}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   // Display suggestions with animation
@@ -186,17 +202,9 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
         ]}
       >
         {/* Header */}
-        <TouchableOpacity
-          style={styles.header}
-          onPress={toggleExpanded}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.header} onPress={toggleExpanded} activeOpacity={0.7}>
           <View style={styles.headerLeft}>
-            <Ionicons
-              name="bulb-outline"
-              size={20}
-              color={modernColors.primary[500]}
-            />
+            <Ionicons name="bulb-outline" size={20} color={modernColors.primary[500]} />
             <Text style={styles.headerTitle}>Smart Suggestions</Text>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{suggestions.length}</Text>
@@ -204,11 +212,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
           </View>
 
           <Animated.View style={{ transform: [{ rotate: rotateStyle }] }}>
-            <Ionicons
-              name="chevron-down"
-              size={20}
-              color={modernColors.text.secondary}
-            />
+            <Ionicons name="chevron-down" size={20} color={modernColors.text.secondary} />
           </Animated.View>
         </TouchableOpacity>
 
@@ -219,22 +223,21 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled
           >
-            {displayedSuggestions.map((suggestion, index) => (
+            {displayedSuggestions.map((suggestion: SuggestionItem, index: number) => (
               <Animated.View
                 key={suggestion.id}
                 style={[
                   styles.suggestionItem,
                   {
-                    opacity:
-                      displayedSuggestions.length > index ? fadeAnimation : 0,
+                    opacity: displayedSuggestions.length > index ? fadeAnimation : 0,
                     transform: [
                       {
                         translateY:
                           displayedSuggestions.length > index
                             ? fadeAnimation.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [20, 0],
-                            })
+                                inputRange: [0, 1],
+                                outputRange: [20, 0],
+                              })
                             : 0,
                       },
                     ],
@@ -252,10 +255,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                     }
 
                     // Track interaction
-                    smartSuggestionsService.trackSuggestionInteraction(
-                      suggestion.id,
-                      "clicked",
-                    );
+                    smartSuggestionsService.trackSuggestionInteraction(suggestion.id, "clicked");
 
                     onSuggestionPress(suggestion);
                   }}
@@ -272,22 +272,16 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                         style={[
                           styles.confidenceDot,
                           {
-                            backgroundColor: getConfidenceColor(
-                              suggestion.confidence,
-                            ),
+                            backgroundColor: getConfidenceColor(suggestion.confidence),
                           },
                         ]}
                       />
                     </View>
 
                     <View style={styles.suggestionText}>
-                      <Text style={styles.suggestionTitle}>
-                        {suggestion.title}
-                      </Text>
+                      <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
                       {suggestion.subtitle && (
-                        <Text style={styles.suggestionSubtitle}>
-                          {suggestion.subtitle}
-                        </Text>
+                        <Text style={styles.suggestionSubtitle}>{suggestion.subtitle}</Text>
                       )}
                     </View>
 
@@ -297,9 +291,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                           styles.confidenceBar,
                           {
                             width: `${suggestion.confidence * 100}%`,
-                            backgroundColor: getConfidenceColor(
-                              suggestion.confidence,
-                            ),
+                            backgroundColor: getConfidenceColor(suggestion.confidence),
                           },
                         ]}
                       />
@@ -308,35 +300,13 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                 </TouchableOpacity>
 
                 {/* Quick Actions */}
-                {suggestion.type === "quantity" && (
-                  <View style={styles.quickActions}>
-                    {[1, 5, 10].map((qty) => (
-                      <TouchableOpacity
-                        key={qty}
-                        style={styles.quickActionButton}
-                        onPress={() => {
-                          const suggestionWithQty = {
-                            ...suggestion,
-                            data: { ...suggestion.data, quantity: qty },
-                          };
-                          onSuggestionPress(suggestionWithQty);
-                        }}
-                      >
-                        <Text style={styles.quickActionText}>{qty}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
+                {renderQuickActions(suggestion) as any}
 
                 {suggestion.type === "location" && suggestion.data.rack && (
                   <View style={styles.locationChip}>
-                    <Ionicons
-                      name="location"
-                      size={12}
-                      color={modernColors.success.main}
-                    />
+                    <Ionicons name="location" size={12} color={modernColors.success.main} />
                     <Text style={styles.locationText}>
-                      {suggestion.data.floor} - {suggestion.data.rack}
+                      {String(suggestion.data.floor || "")} - {String(suggestion.data.rack || "")}
                     </Text>
                   </View>
                 )}
@@ -345,19 +315,14 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
 
             {/* Show More Button */}
             {suggestions.length > 3 && (
-              <TouchableOpacity
-                style={styles.showMoreButton}
-                onPress={() => setShowAll(!showAll)}
-              >
+              <TouchableOpacity style={styles.showMoreButton} onPress={() => setShowAll(!showAll)}>
                 <Ionicons
                   name={showAll ? "chevron-up" : "chevron-down"}
                   size={16}
                   color={modernColors.primary[500]}
                 />
                 <Text style={styles.showMoreText}>
-                  {showAll
-                    ? "Show Less"
-                    : `Show ${suggestions.length - 3} More`}
+                  {showAll ? "Show Less" : `Show ${suggestions.length - 3} More`}
                 </Text>
               </TouchableOpacity>
             )}
@@ -369,7 +334,7 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                 onPress={() => {
                   smartSuggestionsService.trackSuggestionInteraction(
                     "panel_dismissed",
-                    "dismissed",
+                    "dismissed"
                   );
                   onDismiss();
                 }}

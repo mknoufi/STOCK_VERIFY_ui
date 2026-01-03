@@ -17,9 +17,7 @@ from pydantic import BaseModel, Field
 
 # Context variables for request tracing
 request_id_ctx: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
-correlation_id_ctx: ContextVar[Optional[str]] = ContextVar(
-    "correlation_id", default=None
-)
+correlation_id_ctx: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
 span_id_ctx: ContextVar[Optional[str]] = ContextVar("span_id", default=None)
 trace_id_ctx: ContextVar[Optional[str]] = ContextVar("trace_id", default=None)
 
@@ -141,9 +139,7 @@ class StructuredLogger:
         import traceback
 
         try:
-            return "".join(
-                traceback.format_exception(type(error), error, error.__traceback__)
-            )
+            return "".join(traceback.format_exception(type(error), error, error.__traceback__))
         except Exception:
             return str(error)
 
@@ -165,9 +161,7 @@ class StructuredLogger:
 
     def critical(self, message: str, error: Exception = None, **kwargs):
         """Log critical message"""
-        self._logger.critical(
-            self._format_entry("critical", message, error=error, **kwargs)
-        )
+        self._logger.critical(self._format_entry("critical", message, error=error, **kwargs))
 
 
 class Span:
@@ -231,9 +225,7 @@ class Span:
             "parent_span_id": self.parent_span_id,
             "start_time": datetime.fromtimestamp(self.start_time).isoformat(),
             "end_time": (
-                datetime.fromtimestamp(self.end_time).isoformat()
-                if self.end_time
-                else None
+                datetime.fromtimestamp(self.end_time).isoformat() if self.end_time else None
             ),
             "duration_ms": self.duration_ms,
             "status": self.status,
@@ -298,25 +290,19 @@ class MetricsCollector:
         self._histograms: dict[str, list[float]] = {}
         self._lock = asyncio.Lock()
 
-    async def increment(
-        self, name: str, value: int = 1, labels: dict[str, Optional[str]] = None
-    ):
+    async def increment(self, name: str, value: int = 1, labels: dict[str, Optional[str]] = None):
         """Increment a counter"""
         key = self._make_key(name, labels)
         async with self._lock:
             self._counters[key] = self._counters.get(key, 0) + value
 
-    async def set_gauge(
-        self, name: str, value: float, labels: dict[str, Optional[str]] = None
-    ):
+    async def set_gauge(self, name: str, value: float, labels: dict[str, Optional[str]] = None):
         """Set a gauge value"""
         key = self._make_key(name, labels)
         async with self._lock:
             self._gauges[key] = value
 
-    async def observe(
-        self, name: str, value: float, labels: dict[str, Optional[str]] = None
-    ):
+    async def observe(self, name: str, value: float, labels: dict[str, Optional[str]] = None):
         """Record a histogram observation"""
         key = self._make_key(name, labels)
         async with self._lock:

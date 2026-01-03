@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from backend.api.response_models import ApiResponse, PaginatedResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.server import db
+from backend.db.runtime import get_db
 from backend.services.ai_search import ai_search_service
 
 # Add project root to path for direct execution (debugging)
@@ -53,6 +53,7 @@ async def get_items_v2(
     Returns standardized paginated response
     """
     try:
+        db = get_db()
         from rapidfuzz import fuzz
 
         # 1. Fetch Candidates (Hybrid Strategy)
@@ -101,15 +102,9 @@ async def get_items_v2(
                 # Barcode match is critical (weight 1.2)
                 # Code match is high (1.1)
 
-                name_score = fuzz.partial_ratio(
-                    search.lower(), item.get("item_name", "").lower()
-                )
-                code_score = fuzz.ratio(
-                    search.lower(), str(item.get("item_code", "")).lower()
-                )
-                barcode_score = fuzz.ratio(
-                    search.lower(), str(item.get("barcode", "")).lower()
-                )
+                name_score = fuzz.partial_ratio(search.lower(), item.get("item_name", "").lower())
+                code_score = fuzz.ratio(search.lower(), str(item.get("item_code", "")).lower())
+                barcode_score = fuzz.ratio(search.lower(), str(item.get("barcode", "")).lower())
 
                 # Boost exact matches
                 final_score = max(name_score, code_score * 1.1, barcode_score * 1.2)
@@ -171,6 +166,7 @@ async def search_items_semantic(
     Uses sentence-transformers to find items by meaning/context.
     """
     try:
+        db = get_db()
         # 1. Fetch a broad set of candidates (e.g., all active items or recent ones)
         # In a real vector DB, we'd query the vector index.
         # Here, we'll fetch items and rely on the service to rerank/filter.
@@ -209,9 +205,7 @@ async def search_items_semantic(
         ]
 
         return ApiResponse.success_response(
-            data=PaginatedResponse.create(
-                item_responses, len(item_responses), 1, limit
-            ),
+            data=PaginatedResponse.create(item_responses, len(item_responses), 1, limit),
             message=f"Found top {len(item_responses)} semantic matches",
         )
 
@@ -232,6 +226,7 @@ async def get_item_v2(
     Returns standardized response
     """
     try:
+        db = get_db()
         from bson import ObjectId
 
         item = await db.erp_items.find_one({"_id": ObjectId(item_id)})
@@ -278,6 +273,7 @@ async def identify_item(
     Currently a mock/placeholder for the VLM integration.
     """
     try:
+        db = get_db()
         # Mock Processing Delay
         await asyncio.sleep(1.0)
 

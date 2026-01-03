@@ -3,13 +3,7 @@
  */
 
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ViewStyle,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 import { useTheme } from "../hooks/useTheme";
 
 interface CardProps {
@@ -51,22 +45,12 @@ export const Card: React.FC<CardProps> = ({
   const Component = onPress ? TouchableOpacity : View;
 
   return (
-    <Component
-      style={[cardStyle, style]}
-      onPress={onPress}
-      activeOpacity={onPress ? 0.7 : 1}
-    >
+    <Component style={[cardStyle, style]} onPress={onPress} activeOpacity={onPress ? 0.7 : 1}>
       {title && (
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>
-            {title}
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
           {subtitle && (
-            <Text
-              style={[styles.subtitle, { color: theme.colors.textSecondary }]}
-            >
-              {subtitle}
-            </Text>
+            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>
           )}
         </View>
       )}

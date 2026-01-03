@@ -2,13 +2,9 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import {
-  checkItemCounted,
-  createCountLine,
-  addQuantityToCountLine,
-} from "@/services/api";
+import { checkItemCounted, createCountLine, addQuantityToCountLine } from "@/services/api";
 import { normalizeSerialValue } from "@/utils/scanUtils";
-import { Item } from "@/types/scan";
+import { Item, CreateCountLinePayload } from "@/types/scan";
 import { useItemForm } from "./useItemForm";
 
 interface UseItemSubmissionProps {
@@ -18,7 +14,12 @@ interface UseItemSubmissionProps {
   sessionType: string | null;
 }
 
-export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseItemSubmissionProps) => {
+export const useItemSubmission = ({
+  form,
+  item,
+  sessionId,
+  sessionType,
+}: UseItemSubmissionProps) => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -43,8 +44,16 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
             "Strict Mode Warning",
             `Counted quantity (${enteredQty}) does not match stock quantity (${currentStock}). Are you sure?`,
             [
-              { text: "Cancel", onPress: () => resolve(false), style: "cancel" },
-              { text: "Confirm Variance", onPress: () => resolve(true), style: "destructive" },
+              {
+                text: "Cancel",
+                onPress: () => resolve(false),
+                style: "cancel",
+              },
+              {
+                text: "Confirm Variance",
+                onPress: () => resolve(true),
+                style: "destructive",
+              },
             ]
           );
         });
@@ -55,7 +64,11 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
     // Check for existing count
     try {
       const checkResult = await checkItemCounted(sessionId as string, item.item_code);
-      if (checkResult.already_counted && checkResult.count_lines && checkResult.count_lines.length > 0) {
+      if (
+        checkResult.already_counted &&
+        checkResult.count_lines &&
+        checkResult.count_lines.length > 0
+      ) {
         const existingLine = checkResult.count_lines[0];
 
         const userChoice = await new Promise<"ADD" | "CANCEL" | "NEW">((resolve) => {
@@ -63,9 +76,13 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
             "Item Already Counted",
             `This item has already been counted (Qty: ${existingLine.counted_qty}). Do you want to add to the existing count?`,
             [
-              { text: "Cancel", onPress: () => resolve("CANCEL"), style: "cancel" },
+              {
+                text: "Cancel",
+                onPress: () => resolve("CANCEL"),
+                style: "cancel",
+              },
               { text: "Add to Existing", onPress: () => resolve("ADD") },
-              { text: "Create New Entry", onPress: () => resolve("NEW") }
+              { text: "Create New Entry", onPress: () => resolve("NEW") },
             ]
           );
         });
@@ -75,14 +92,19 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
         if (userChoice === "ADD") {
           setLoading(true);
           try {
-            await addQuantityToCountLine(existingLine.line_id, finalQty, form.isBatchMode ? form.batches : undefined);
+            await addQuantityToCountLine(
+              existingLine.line_id,
+              finalQty,
+              form.isBatchMode ? form.batches : undefined
+            );
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             Alert.alert("Success", "Quantity added successfully", [
               { text: "OK", onPress: () => router.back() },
             ]);
             return;
-          } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to add quantity");
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to add quantity";
+            Alert.alert("Error", errorMessage);
             setLoading(false);
             return;
           }
@@ -96,7 +118,7 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
 
     setLoading(true);
     try {
-      const payload: any = {
+      const payload: CreateCountLinePayload = {
         session_id: sessionId as string,
         item_code: item.item_code,
         counted_qty: finalQty,
@@ -113,11 +135,7 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
       };
 
       if (form.isSerialEnabled) {
-        payload.serial_numbers = form.serialNumbers.map((sn, idx) => ({
-          label: `Serial #${idx + 1}`,
-          value: normalizeSerialValue(sn),
-          captured_at: new Date().toISOString(),
-        }));
+        payload.serial_numbers = form.serialNumbers.map((sn) => normalizeSerialValue(sn));
       }
 
       await createCountLine(payload);
@@ -126,9 +144,9 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
       Alert.alert("Success", "Item counted successfully", [
         { text: "OK", onPress: () => router.back() },
       ]);
-
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to submit count");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit count";
+      Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -136,6 +154,6 @@ export const useItemSubmission = ({ form, item, sessionId, sessionType }: UseIte
 
   return {
     loading,
-    handleSubmit
+    handleSubmit,
   };
 };

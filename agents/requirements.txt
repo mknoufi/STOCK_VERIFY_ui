@@ -14,6 +14,12 @@ langchain-groq>=0.1.0  # For Groq LLM support (fast inference)
 # Search Tools
 duckduckgo-search>=5.3.0
 
+# Observability (from Awesome-AI-Agents)
+agentops>=0.3.0
+
+# Security Tools
+bandit>=1.7.0
+
 # Environment & Configuration
 python-dotenv>=1.0.1
 pydantic>=2.0.0
@@ -34,3 +40,9 @@ tenacity>=8.0.0  # Retry logic
 
 # Tracing
 langsmith[otel]>=0.3.45
+
+# Memory
+mem0ai>=0.0.12
+
+# Structured Output
+instructor>=1.2.0

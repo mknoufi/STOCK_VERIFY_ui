@@ -194,9 +194,7 @@ async def update_item_master(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _calculate_variance(
-    request: VerificationRequest, system_qty: float
-) -> Optional[float]:
+def _calculate_variance(request: VerificationRequest, system_qty: float) -> Optional[float]:
     """Calculates the variance based on verified and damaged quantities."""
     if request.verified_qty is not None:
         total_assets = request.verified_qty + (request.damaged_qty or 0.0)
@@ -234,9 +232,7 @@ def _build_item_update_doc(
 
     for req_field, doc_field in field_mapping.items():
         req_value = getattr(request, req_field)
-        if (
-            req_value is not None
-        ):  # Check for None explicitly, as 0.0 or False are valid
+        if req_value is not None:  # Check for None explicitly, as 0.0 or False are valid
             update_fields[doc_field] = req_value
 
     # Special handling for serial_number to set is_serialized
@@ -377,9 +373,7 @@ async def get_filtered_items(
         verified_filter["verified"] = True
 
         items_task = (
-            db.erp_items.find(
-                filter_query, {"_id": 0}
-            )  # Added projection to exclude _id
+            db.erp_items.find(filter_query, {"_id": 0})  # Added projection to exclude _id
             .skip(skip)
             .limit(limit)
             .to_list(length=limit)
@@ -474,9 +468,7 @@ async def export_items_csv(
         async def generate_csv_rows():
             # Create a StringIO object to write CSV data to
             output = io.StringIO()
-            writer = csv.DictWriter(
-                output, fieldnames=fieldnames, extrasaction="ignore"
-            )
+            writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
             writer.writeheader()
             yield output.getvalue()  # Yield header row
             output.seek(0)
@@ -505,20 +497,14 @@ async def export_items_csv(
                     "verified": "Yes" if item.get("verified", False) else "No",
                     "verified_by": item.get("verified_by", ""),
                     "verified_at": serialize_mongo_datetime(item.get("verified_at")),
-                    "last_scanned_at": serialize_mongo_datetime(
-                        item.get("last_scanned_at")
-                    ),
+                    "last_scanned_at": serialize_mongo_datetime(item.get("last_scanned_at")),
                     "verified_qty": item.get("verified_qty", 0.0),
                     "damaged_qty": item.get("damaged_qty", 0.0),
-                    "non_returnable_damaged_qty": item.get(
-                        "non_returnable_damaged_qty", 0.0
-                    ),
+                    "non_returnable_damaged_qty": item.get("non_returnable_damaged_qty", 0.0),
                     "variance": item.get("variance", 0.0),
                     "item_condition": item.get("item_condition", ""),
                     "serial_number": item.get("serial_number", ""),
-                    "is_serialized": (
-                        "Yes" if item.get("is_serialized", False) else "No"
-                    ),
+                    "is_serialized": ("Yes" if item.get("is_serialized", False) else "No"),
                     "session_id": item.get("session_id", ""),
                     "verification_notes": item.get("verification_notes", ""),
                 }
@@ -577,10 +563,7 @@ async def get_variances(
 
         # Get variances
         cursor = (
-            db.item_variances.find(filter_query)
-            .sort("verified_at", -1)
-            .skip(skip)
-            .limit(limit)
+            db.item_variances.find(filter_query).sort("verified_at", -1).skip(skip).limit(limit)
         )
         variances = await cursor.to_list(length=limit)
 
@@ -603,9 +586,7 @@ async def get_variances(
 
     except Exception as e:
         logger.error(f"Error getting variances: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get variances: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get variances: {str(e)}")
 
 
 @verification_router.get("/live/users")
@@ -654,9 +635,7 @@ async def get_live_users(current_user: dict = Depends(get_current_user)):
 
     except Exception as e:
         logger.error(f"Error getting live users: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get live users: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get live users: {str(e)}")
 
 
 @verification_router.get("/live/verifications")
@@ -690,9 +669,7 @@ async def get_live_verifications(
                     "item_name": item.get("item_name", ""),
                     "verified_by": item.get("verified_by", ""),
                     "verified_at": (
-                        item.get("verified_at").isoformat()
-                        if item.get("verified_at")
-                        else None
+                        item.get("verified_at").isoformat() if item.get("verified_at") else None
                     ),
                     "floor": item.get("floor", ""),
                     "rack": item.get("rack", ""),
@@ -705,6 +682,4 @@ async def get_live_verifications(
 
     except Exception as e:
         logger.error(f"Error getting live verifications: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get live verifications: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get live verifications: {str(e)}")

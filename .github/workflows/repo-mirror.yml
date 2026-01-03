@@ -24,6 +24,7 @@ on:
 
 jobs:
   mirror:
+    if: ${{ secrets.GH_PAT != '' }}
     runs-on: ubuntu-latest
     env:
       # Required: a Personal Access Token with repo scope

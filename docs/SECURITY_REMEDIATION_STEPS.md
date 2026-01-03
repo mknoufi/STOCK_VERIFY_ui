@@ -185,7 +185,7 @@ git log --all --full-history -- frontend/.env
 -- Connect to SQL Server as admin
 -- Change the password for the stockapp user
 
-ALTER LOGIN stockapp WITH PASSWORD = 'NewSecurePassword@2025!';
+ALTER LOGIN stockapp WITH PASSWORD = '<new-password>'; <!-- pragma: allowlist secret -->
 GO
 
 -- Update your backend/.env with the new password

@@ -4,20 +4,9 @@
  */
 
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  TextStyle,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, ViewStyle, TextStyle, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  modernColors,
-  modernShadows,
-  modernBorderRadius,
-} from "@/styles/modernDesignSystem";
+import { modernColors, modernShadows, modernBorderRadius } from "@/styles/modernDesignSystem";
 
 export type KPIStatus = "normal" | "warning" | "critical" | "success";
 export type TrendIntent = "good" | "bad" | "neutral";
@@ -128,9 +117,7 @@ export function KPICard({
       testID={testID}
       activeOpacity={0.7}
     >
-      <View
-        style={[styles.iconContainer, { backgroundColor: statusColor + "15" }]}
-      >
+      <View style={[styles.iconContainer, { backgroundColor: statusColor + "15" }]}>
         <MaterialCommunityIcons name={icon} size={24} color={statusColor} />
       </View>
 
@@ -146,11 +133,7 @@ export function KPICard({
 
         {trend !== undefined && (
           <View style={styles.trendContainer}>
-            <MaterialCommunityIcons
-              name={getTrendIcon()}
-              size={16}
-              color={trendColor}
-            />
+            <MaterialCommunityIcons name={getTrendIcon()} size={16} color={trendColor} />
             <Text style={[styles.trendText, { color: trendColor }]}>
               {Math.abs(trend).toFixed(1)}%
             </Text>
@@ -257,5 +240,3 @@ const styles = StyleSheet.create({
 });
 
 export default KPICard;
-
-

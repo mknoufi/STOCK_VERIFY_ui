@@ -16,7 +16,7 @@ export {
   AuthState,
   UserSchema,
   LoginResponseSchema,
-} from './types';
+} from "./types";
 
 // Services
-export { authApi, authService, verifyPin, registerUser } from './services';
+export { authApi, authService, verifyPin, registerUser } from "./services";

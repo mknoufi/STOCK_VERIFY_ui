@@ -39,9 +39,7 @@ class Result(Generic[T, E]):
     @staticmethod
     def error(error: E, message: Optional[str] = None) -> "Result[T, E]":
         """Create error result"""
-        return Result(
-            _type=ResultType.ERROR, _error=error, _error_message=message or str(error)
-        )
+        return Result(_type=ResultType.ERROR, _error=error, _error_message=message or str(error))
 
     @property
     def is_success(self) -> bool:
@@ -99,9 +97,7 @@ class Result(Generic[T, E]):
             return fn(self._error)
         return Result.success(self._value)
 
-    def match(
-        self, on_success: Callable[[T], Any], on_error: Callable[[E, str], Any]
-    ) -> Any:
+    def match(self, on_success: Callable[[T], Any], on_error: Callable[[E, str], Any]) -> Any:
         """Pattern matching style handling"""
         if self.is_success:
             return on_success(self._value)

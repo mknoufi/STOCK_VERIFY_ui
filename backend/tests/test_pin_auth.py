@@ -4,9 +4,9 @@ Tests for PIN Authentication endpoints
 
 import pytest
 from fastapi.testclient import TestClient
+from server import app
 
 from backend.tests.utils.in_memory_db import setup_server_with_in_memory_db
-from server import app
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ class TestPinAuth:
         response = client.post("/api/auth/change-pin", json=payload, headers=headers)
 
         assert response.status_code == 200
-        assert response.json()["message"] == "PIN updated successfully"
+        assert response.json()["message"] == "PIN changed successfully"
 
     def test_change_pin_invalid_format(self, client, auth_token, test_user):
         """Test PIN change with invalid format (too short)"""
@@ -132,9 +132,7 @@ class TestPinAuth:
 
     def test_login_pin_user_not_found(self, client):
         """Test PIN login for non-existent PIN"""
-        login_payload = {
-            "pin": "9999"  # Presumably not set
-        }
+        login_payload = {"pin": "9999"}  # Presumably not set
 
         response = client.post("/api/auth/login-pin", json=login_payload)
 

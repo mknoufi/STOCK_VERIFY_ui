@@ -38,7 +38,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useAuthStore } from "../../store/authStore";
-import { useThemeContext } from "../../theme/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
 // ============================================================================
 // Types
@@ -156,8 +156,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
       : isDark
         ? "rgba(15, 23, 42, 0.85)"
         : "rgba(255, 255, 255, 0.9)",
-    text: theme.colors.text,
-    textSecondary: theme.colors.textSecondary,
+    text: theme.colors.text.primary,
+    textSecondary: theme.colors.text.secondary,
     accent: theme.colors.accent,
     danger: theme.colors.danger,
     border: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
@@ -225,25 +225,14 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
     return (
       <Animated.View entering={FadeIn.delay(100)} style={styles.userSection}>
-        <View
-          style={[
-            styles.avatarContainer,
-            { backgroundColor: `${theme.colors.accent}20` },
-          ]}
-        >
+        <View style={[styles.avatarContainer, { backgroundColor: `${theme.colors.accent}20` }]}>
           <Ionicons name="person" size={16} color={theme.colors.accent} />
         </View>
         <View style={styles.userTextContainer}>
-          <Text
-            style={[styles.welcomeText, { color: colors.textSecondary }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.welcomeText, { color: colors.textSecondary }]} numberOfLines={1}>
             Welcome back
           </Text>
-          <Text
-            style={[styles.usernameText, { color: colors.text }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.usernameText, { color: colors.text }]} numberOfLines={1}>
             {user.full_name || user.username}
           </Text>
         </View>
@@ -257,17 +246,11 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
     return (
       <Animated.View entering={FadeIn.delay(50)} style={styles.titleSection}>
-        <Text
-          style={[styles.titleText, { color: colors.text }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.titleText, { color: colors.text }]} numberOfLines={1}>
           {title}
         </Text>
         {subtitle && (
-          <Text
-            style={[styles.subtitleText, { color: colors.textSecondary }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.subtitleText, { color: colors.textSecondary }]} numberOfLines={1}>
             {subtitle}
           </Text>
         )}

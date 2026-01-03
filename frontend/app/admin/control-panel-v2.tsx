@@ -14,28 +14,22 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  RefreshControl,
   Alert,
   Platform,
   Dimensions,
   ActivityIndicator,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 // @ts-ignore - StatsCard might have strict type checks that we are fixing
 import { StatsCard } from "@/components/ui";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
-import {
-  modernColors,
-  modernTypography,
-} from "@/styles/modernDesignSystem";
+import { modernColors, modernTypography } from "@/styles/modernDesignSystem";
 import {
   getServicesStatus,
   getSystemIssues,
@@ -49,8 +43,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Services that should not show toggle button (read-only status)
 
 const NON_TOGGLEABLE_SERVICES: readonly string[] = [
-  /* database */ 'database',
-  /* sql_server */ 'sql_server',
+  /* database */ "database",
+  /* sql_server */ "sql_server",
 ];
 
 // Health Score Component
@@ -71,12 +65,8 @@ const HealthScore = ({ score }: { score: number }) => {
     <View style={styles.healthScoreContainer}>
       <Text style={styles.healthScoreLabel}>System Health</Text>
       <View style={styles.scoreCircle}>
-        <Text style={[styles.scoreValue, { color: getColor(score) }]}>
-          {score}%
-        </Text>
-        <Text style={[styles.scoreStatus, { color: getColor(score) }]}>
-          {getStatus(score)}
-        </Text>
+        <Text style={[styles.scoreValue, { color: getColor(score) }]}>{score}%</Text>
+        <Text style={[styles.scoreStatus, { color: getColor(score) }]}>{getStatus(score)}</Text>
       </View>
     </View>
   );
@@ -104,16 +94,12 @@ const ServiceItem = ({
           style={[
             styles.statusIndicator,
             {
-              backgroundColor: isRunning
-                ? modernColors.success.main
-                : modernColors.error.main,
+              backgroundColor: isRunning ? modernColors.success.main : modernColors.error.main,
             },
           ]}
         />
         <View>
-          <Text style={styles.serviceName}>
-            {name.charAt(0).toUpperCase() + name.slice(1)}
-          </Text>
+          <Text style={styles.serviceName}>{name.charAt(0).toUpperCase() + name.slice(1)}</Text>
           <Text style={styles.serviceDetail}>
             {isRunning ? `Running on port ${status.port}` : "Stopped"}
           </Text>
@@ -143,9 +129,7 @@ const ServiceItem = ({
               style={[
                 styles.actionButtonText,
                 {
-                  color: isRunning
-                    ? modernColors.error.main
-                    : modernColors.success.main,
+                  color: isRunning ? modernColors.error.main : modernColors.success.main,
                 },
               ]}
             >
@@ -182,8 +166,7 @@ export default function AdminControlPanelV2() {
       if (issuesRes.success) {
         setIssues(issuesRes.data.issues || []);
         let score = 100;
-        if (issuesRes.data.issues?.length > 0)
-          score -= issuesRes.data.issues.length * 10;
+        if (issuesRes.data.issues?.length > 0) score -= issuesRes.data.issues.length * 10;
         if (!servicesRes.data.backend?.running) score -= 20;
         if (!servicesRes.data.mongodb?.running) score -= 20;
         setHealthScore(Math.max(0, score));
@@ -215,10 +198,7 @@ export default function AdminControlPanelV2() {
     loadData();
   };
 
-  const handleServiceAction = async (
-    service: string,
-    action: "start" | "stop",
-  ) => {
+  const handleServiceAction = async (service: string, action: "start" | "stop") => {
     setActionLoading(service);
     try {
       if (action === "start") {
@@ -244,196 +224,129 @@ export default function AdminControlPanelV2() {
     { title: "Database Tools", icon: "server", route: "/admin/database" },
   ];
 
-  if (loading) {
-    return (
-      <AuroraBackground>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={modernColors.primary[400]} />
-          <Text style={styles.loadingText}>Loading System Data...</Text>
-        </View>
-      </AuroraBackground>
-    );
-  }
-
   return (
-    <>
-      <StatusBar style="light" />
-      <AuroraBackground variant="secondary" intensity="medium" animated={true}>
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.contentContainer}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={modernColors.primary[500]}
-            />
-          }
-        >
-          {/* Header */}
-          <Animated.View
-            entering={FadeInDown.delay(100).springify()}
-            style={styles.header}
-          >
-            <View>
-              <Text style={styles.headerTitle}>System Control</Text>
-              <Text style={styles.headerSubtitle}>Admin Dashboard</Text>
-            </View>
-            <View style={styles.headerActions}>
-              <AnimatedPressable
-                style={styles.iconButton}
-                onPress={() => router.back()}
-              >
-                <Ionicons
-                  name="close"
-                  size={24}
-                  color={modernColors.text.secondary}
-                />
-              </AnimatedPressable>
-            </View>
-          </Animated.View>
+    <ScreenContainer
+      backgroundType="aurora"
+      auroraVariant="secondary"
+      auroraIntensity="medium" // Changed from "medium" to match string literal type if needed, or keeping "medium"
+      header={{
+        title: "System Control",
+        subtitle: "Admin Dashboard",
+        showBackButton: true,
+      }}
+      loading={loading}
+      loadingText="Loading System Data..."
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      scrollable
+      contentContainerStyle={styles.contentContainer}
+    >
+      {/* Quick Stats Grid */}
+      <View style={styles.statsGrid}>
+        <Animated.View entering={FadeInUp.delay(200)} style={styles.statCol}>
+          <StatsCard
+            title="Active Devices"
+            value={stats.activeDevices?.toString() || "0"}
+            icon="phone-portrait-outline"
+            subtitle={stats.activeDevices > 0 ? "Online" : "None"}
+            variant="primary"
+          />
+        </Animated.View>
+        <Animated.View entering={FadeInUp.delay(300)} style={styles.statCol}>
+          <StatsCard
+            title="Critical Issues"
+            value={issues.length.toString()}
+            icon="alert-circle-outline"
+            subtitle={issues.length > 0 ? "Action Required" : "None"}
+            variant={issues.length > 0 ? "error" : "success"}
+          />
+        </Animated.View>
+      </View>
 
-          {/* Quick Stats Grid */}
-          <View style={styles.statsGrid}>
-            <Animated.View
-              entering={FadeInUp.delay(200)}
-              style={styles.statCol}
-            >
-              <StatsCard
-                title="Active Devices"
-                value={stats.activeDevices?.toString() || "0"}
-                icon="phone-portrait-outline"
-                subtitle={stats.activeDevices > 0 ? "Online" : "None"}
-                variant="primary"
-              />
-            </Animated.View>
-            <Animated.View
-              entering={FadeInUp.delay(300)}
-              style={styles.statCol}
-            >
-              <StatsCard
-                title="Critical Issues"
-                value={issues.length.toString()}
-                icon="alert-circle-outline"
-                subtitle={issues.length > 0 ? "Action Required" : "None"}
-                variant={issues.length > 0 ? "error" : "success"}
-              />
-            </Animated.View>
+      {/* Health & Services */}
+      <Animated.View entering={FadeInDown.delay(400).springify()} style={styles.section}>
+        <GlassCard variant="medium" style={styles.servicesCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>System Services</Text>
+            <HealthScore score={healthScore} />
           </View>
 
-          {/* Health & Services */}
-          <Animated.View
-            entering={FadeInDown.delay(400).springify()}
-            style={styles.section}
-          >
-            <GlassCard variant="medium" style={styles.servicesCard}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>System Services</Text>
-                <HealthScore score={healthScore} />
-              </View>
+          {/* Service List */}
+          <View style={styles.serviceList}>
+            <ServiceItem
+              name="backend"
+              status={services.backend}
+              loading={actionLoading === "backend"}
+              onToggle={() =>
+                handleServiceAction("backend", services.backend?.running ? "stop" : "start")
+              }
+            />
+            <ServiceItem
+              name="frontend"
+              status={services.frontend}
+              loading={actionLoading === "frontend"}
+              onToggle={() =>
+                handleServiceAction("frontend", services.frontend?.running ? "stop" : "start")
+              }
+            />
+            <ServiceItem
+              name="database"
+              status={services.mongodb}
+              loading={false}
+              onToggle={() => {}}
+            />
+            <ServiceItem
+              name="sql_server"
+              status={services.sql_server}
+              loading={false}
+              onToggle={() => {}}
+            />
+          </View>
+        </GlassCard>
+      </Animated.View>
 
-              {/* Service List */}
-              <View style={styles.serviceList}>
-                <ServiceItem
-                  name="backend"
-                  status={services.backend}
-                  loading={actionLoading === "backend"}
-                  onToggle={() =>
-                    handleServiceAction(
-                      "backend",
-                      services.backend?.running ? "stop" : "start",
-                    )
-                  }
-                />
-                <ServiceItem
-                  name="frontend"
-                  status={services.frontend}
-                  loading={actionLoading === "frontend"}
-                  onToggle={() =>
-                    handleServiceAction(
-                      "frontend",
-                      services.frontend?.running ? "stop" : "start",
-                    )
-                  }
-                />
-                <ServiceItem
-                  name="database"
-                  status={services.mongodb}
-                  loading={false}
-                  onToggle={() => { }}
-                />
-                <ServiceItem
-                  name="sql_server"
-                  status={services.sql_server}
-                  loading={false}
-                  onToggle={() => { }}
-                />
+      {/* Critical Issues List */}
+      {issues.length > 0 && (
+        <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.section}>
+          <Text style={styles.sectionTitle}>Critical Issues</Text>
+          {issues.map((issue, index) => (
+            <GlassCard key={index} variant="medium" style={styles.issueCard}>
+              <Ionicons name="warning" size={24} color={modernColors.error.main} />
+              <View style={styles.issueContent}>
+                <Text style={styles.issueMessage}>{issue.message}</Text>
+                <Text style={styles.issueService}>
+                  {issue.service} • {issue.type}
+                </Text>
               </View>
             </GlassCard>
-          </Animated.View>
+          ))}
+        </Animated.View>
+      )}
 
-          {/* Critical Issues List */}
-          {issues.length > 0 && (
-            <Animated.View
-              entering={FadeInDown.delay(500).springify()}
-              style={styles.section}
-            >
-              <Text style={styles.sectionTitle}>Critical Issues</Text>
-              {issues.map((issue, index) => (
-                <GlassCard
-                  key={index}
-                  variant="medium"
-                  style={styles.issueCard}
-                >
-                  <Ionicons
-                    name="warning"
-                    size={24}
-                    color={modernColors.error.main}
-                  />
-                  <View style={styles.issueContent}>
-                    <Text style={styles.issueMessage}>{issue.message}</Text>
-                    <Text style={styles.issueService}>
-                      {issue.service} • {issue.type}
-                    </Text>
+      {/* Admin Tools Grid */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Management Tools</Text>
+        <View style={styles.toolsGrid}>
+          {menuItems.map((item, index) => (
+            <Animated.View key={index} entering={FadeInDown.delay(600 + index * 100)}>
+              <AnimatedPressable
+                style={styles.toolCard}
+                onPress={() => router.push(item.route as any)}
+              >
+                <GlassCard variant="medium" style={styles.toolCardContent}>
+                  <View style={styles.toolIcon}>
+                    <Ionicons name={item.icon as any} size={28} color={modernColors.primary[400]} />
                   </View>
+                  <Text style={styles.toolTitle}>{item.title}</Text>
                 </GlassCard>
-              ))}
+              </AnimatedPressable>
             </Animated.View>
-          )}
+          ))}
+        </View>
+      </View>
 
-          {/* Admin Tools Grid */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Management Tools</Text>
-            <View style={styles.toolsGrid}>
-              {menuItems.map((item, index) => (
-                <Animated.View
-                  key={index}
-                  entering={FadeInDown.delay(600 + index * 100)}
-                >
-                  <AnimatedPressable
-                    style={styles.toolCard}
-                    onPress={() => router.push(item.route as any)}
-                  >
-                    <GlassCard variant="medium" style={styles.toolCardContent}>
-                      <View style={styles.toolIcon}>
-                        <Ionicons
-                          name={item.icon as any}
-                          size={28}
-                          color={modernColors.primary[400]}
-                        />
-                      </View>
-                      <Text style={styles.toolTitle}>{item.title}</Text>
-                    </GlassCard>
-                  </AnimatedPressable>
-                </Animated.View>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.bottomSpacer} />
-        </ScrollView>
-      </AuroraBackground>
-    </>
+      <View style={styles.bottomSpacer} />
+    </ScreenContainer>
   );
 }
 

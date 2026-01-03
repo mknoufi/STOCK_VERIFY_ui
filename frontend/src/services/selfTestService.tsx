@@ -17,6 +17,7 @@ import {
 import { authService } from "@/services/auth";
 import * as SecureStore from "expo-secure-store";
 import apiClient from "@/services/httpClient";
+import { colors, semanticColors, spacing, radius } from "@/theme/unified";
 
 export interface TestResult {
   name: string;
@@ -214,9 +215,7 @@ export class SelfTestService {
           // This should timeout if network is slow
           const _response = await Promise.race([
             apiClient.get("/health"),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("Timeout")), 5000)
-            ),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000)),
           ]);
           return true;
         } catch (error) {
@@ -367,15 +366,8 @@ export class SelfTestService {
     // Test email validation
     tests.push(
       await this.runTest("Email Validation", async () => {
-        const validEmails = [
-          "test@example.com",
-          "user.name@domain.co.uk",
-        ];
-        const invalidEmails = [
-          "invalid",
-          "test@",
-          "@example.com",
-        ];
+        const validEmails = ["test@example.com", "user.name@domain.co.uk"];
+        const invalidEmails = ["invalid", "test@", "@example.com"];
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -490,10 +482,7 @@ export class SelfTestService {
     return this.createSuite("WiFi Detection", tests);
   }
 
-  private async runTest(
-    name: string,
-    testFn: () => Promise<boolean>
-  ): Promise<TestResult> {
+  private async runTest(name: string, testFn: () => Promise<boolean>): Promise<TestResult> {
     const startTime = Date.now();
 
     try {
@@ -552,13 +541,13 @@ export const SelfTestUI: React.FC = () => {
   const getStatusColor = (status: string): string => {
     switch (status) {
       case "pass":
-        return "#4CAF50";
+        return colors.success[500];
       case "fail":
-        return "#f44336";
+        return colors.error[500];
       case "pending":
-        return "#2196F3";
+        return colors.primary[500];
       default:
-        return "#9E9E9E";
+        return colors.neutral[500];
     }
   };
 
@@ -587,18 +576,13 @@ export const SelfTestUI: React.FC = () => {
               {suite.tests.map((test, tidx) => (
                 <View
                   key={tidx}
-                  style={[
-                    styles.testItem,
-                    { borderLeftColor: getStatusColor(test.status) },
-                  ]}
+                  style={[styles.testItem, { borderLeftColor: getStatusColor(test.status) }]}
                 >
                   <Text style={styles.testName}>{test.name}</Text>
                   <Text style={styles.testStatus}>
                     {test.status.toUpperCase()} ({test.duration}ms)
                   </Text>
-                  {test.error && (
-                    <Text style={styles.testError}>{test.error}</Text>
-                  )}
+                  {test.error && <Text style={styles.testError}>{test.error}</Text>}
                 </View>
               ))}
             </View>
@@ -612,39 +596,39 @@ export const SelfTestUI: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   loadingText: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     textAlign: "center",
   },
   suite: {
-    marginVertical: 8,
-    borderRadius: 8,
+    marginVertical: spacing.sm,
+    borderRadius: radius.md,
     overflow: "hidden",
   },
   testsContainer: {
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   testItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderLeftWidth: 4,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: semanticColors.background.tertiary,
   },
   testName: {
     fontSize: 14,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   testStatus: {
     fontSize: 12,
-    color: "#666",
+    color: semanticColors.text.secondary,
   },
   testError: {
     fontSize: 12,
-    color: "#f44336",
-    marginTop: 4,
+    color: colors.error[500],
+    marginTop: spacing.xs,
     fontStyle: "italic",
   },
 });

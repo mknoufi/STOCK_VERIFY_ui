@@ -13,7 +13,7 @@
   "reportMissingModuleSource": "warning",
   "pythonVersion": "3.10",
   "pythonPlatform": "All",
-  "typeCheckingMode": "basic",
+  "typeCheckingMode": "strict",
   "venvPath": ".",
   "venv": ".venv",
   "executionEnvironments": [

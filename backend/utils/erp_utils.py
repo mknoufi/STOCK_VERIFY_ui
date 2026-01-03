@@ -52,9 +52,7 @@ def _safe_date_str(val: Any) -> Optional[str]:
         return None
 
 
-def _add_optional_fields(
-    mapped: dict, item: dict, field_defs: list[tuple[str, str, str]]
-) -> None:
+def _add_optional_fields(mapped: dict, item: dict, field_defs: list[tuple[str, str, str]]) -> None:
     """Add optional fields to mapped dict if present in item.
 
     field_defs: list of (item_key, mapped_key, type) where type is 'str' or 'float'
@@ -144,9 +142,7 @@ def _get_barcode_variations(barcode: str) -> list[str]:
         if len(normalized_barcode) < 6:
             padded = normalized_barcode.zfill(6)
             variations.append(padded)
-            logger.info(
-                f"Trying padded 6-digit barcode: {padded} (from {normalized_barcode})"
-            )
+            logger.info(f"Trying padded 6-digit barcode: {padded} (from {normalized_barcode})")
 
         # Try exact 6-digit format
         if len(normalized_barcode) != 6:
@@ -162,9 +158,7 @@ def _get_barcode_variations(barcode: str) -> list[str]:
     return variations
 
 
-def _map_erp_item_to_schema(
-    item: dict[str, Any], original_barcode: str = None
-) -> dict[str, Any]:
+def _map_erp_item_to_schema(item: dict[str, Any], original_barcode: str = None) -> dict[str, Any]:
     """Map raw ERP item data to internal schema format."""
     mapped = {
         "item_code": _safe_str(item.get("item_code"), ""),
@@ -209,9 +203,7 @@ def _map_erp_item_to_schema(
     return mapped
 
 
-async def _fetch_from_mongo_fallback(
-    barcode: str, db: Any, cache_service: Any
-) -> ERPItem:
+async def _fetch_from_mongo_fallback(barcode: str, db: Any, cache_service: Any) -> ERPItem:
     """Fallback to MongoDB cache when ERP is unavailable."""
     item = await db.erp_items.find_one({"barcode": barcode})
     if not item:
@@ -289,20 +281,14 @@ async def fetch_item_from_erp(
 
             # Cache for 1 hour
             await cache_service.set("items", barcode, item_data, ttl=3600)
-            logger.info(
-                f"Item fetched from ERP: {item_data.get('item_code')} (barcode: {barcode})"
-            )
+            logger.info(f"Item fetched from ERP: {item_data.get('item_code')} (barcode: {barcode})")
 
             return ERPItem(**item_data)
         except HTTPException:
             raise
         except Exception as e:
-            error = get_error_message(
-                "ERP_QUERY_FAILED", {"barcode": barcode, "error": str(e)}
-            )
-            logger.error(
-                f"ERP query error for barcode {barcode}: {str(e)}", exc_info=True
-            )
+            error = get_error_message("ERP_QUERY_FAILED", {"barcode": barcode, "error": str(e)})
+            logger.error(f"ERP query error for barcode {barcode}: {str(e)}", exc_info=True)
             raise HTTPException(
                 status_code=error["status_code"],
                 detail={
@@ -337,9 +323,7 @@ async def refresh_stock_from_erp(
                     item = sql_connector.get_item_by_barcode(mongo_item.get("barcode"))
 
             if not item:
-                error = get_error_message(
-                    "ERP_ITEM_NOT_FOUND", {"item_code": item_code}
-                )
+                error = get_error_message("ERP_ITEM_NOT_FOUND", {"item_code": item_code})
                 raise HTTPException(
                     status_code=error["status_code"],
                     detail={
@@ -371,9 +355,7 @@ async def refresh_stock_from_erp(
             # Clear cache
             await cache_service.delete("items", item_data.get("barcode", ""))
 
-            logger.info(
-                f"Stock refreshed from ERP: {item_code} - Stock: {item_data['stock_qty']}"
-            )
+            logger.info(f"Stock refreshed from ERP: {item_code} - Stock: {item_data['stock_qty']}")
 
             return {
                 "success": True,
@@ -408,9 +390,7 @@ async def refresh_stock_from_erp(
     }
 
 
-async def search_items_in_erp(
-    search_term: str, sql_connector: Any, db: Any
-) -> list[ERPItem]:
+async def search_items_in_erp(search_term: str, sql_connector: Any, db: Any) -> list[ERPItem]:
     """
     Search items in ERP or MongoDB.
     """
@@ -422,9 +402,7 @@ async def search_items_in_erp(
             items = sql_connector.search_items(search_term)
             result_items = [_map_erp_item_to_schema(item) for item in items]
 
-            logger.info(
-                f"Search in ERP returned {len(result_items)} items for '{search_term}'"
-            )
+            logger.info(f"Search in ERP returned {len(result_items)} items for '{search_term}'")
             return [ERPItem(**item) for item in result_items]
         except Exception as e:
             logger.error(f"ERP search error: {str(e)}")

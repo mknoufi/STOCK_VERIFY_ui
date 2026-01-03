@@ -7,14 +7,7 @@
 import { Platform } from "react-native";
 import * as Speech from "expo-speech";
 
-export type VoiceCommand =
-  | "scan"
-  | "submit"
-  | "cancel"
-  | "next"
-  | "previous"
-  | "help"
-  | "repeat";
+export type VoiceCommand = "scan" | "submit" | "cancel" | "next" | "previous" | "help" | "repeat";
 
 export interface VoiceCommandResult {
   command: VoiceCommand | null;
@@ -59,10 +52,7 @@ class VoiceControlService {
     }
   }
 
-  async speak(
-    text: string,
-    options?: { rate?: number; pitch?: number },
-  ): Promise<void> {
+  async speak(text: string, options?: { rate?: number; pitch?: number }): Promise<void> {
     if (!this.options.feedbackEnabled) return;
 
     try {
@@ -111,7 +101,7 @@ class VoiceControlService {
 
   async provideFeedback(
     message: string,
-    type: "success" | "error" | "info" = "info",
+    type: "success" | "error" | "info" = "info"
   ): Promise<void> {
     if (!this.options.feedbackEnabled) return;
 
@@ -144,9 +134,7 @@ export const parseVoiceCommand = (text: string): VoiceCommandResult => {
   return voiceControlService.parseCommand(text);
 };
 
-export const initializeVoiceControl = async (
-  options?: VoiceControlOptions,
-): Promise<void> => {
+export const initializeVoiceControl = async (options?: VoiceControlOptions): Promise<void> => {
   return voiceControlService.initialize(options);
 };
 

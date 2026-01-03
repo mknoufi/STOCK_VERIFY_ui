@@ -84,9 +84,7 @@ class DynamicReportService:
             logger.error(f"Error creating report template: {str(e)}")
             raise
 
-    async def get_report_templates(
-        self, report_type: Optional[str] = None
-    ) -> list[dict[str, Any]]:
+    async def get_report_templates(self, report_type: Optional[str] = None) -> list[dict[str, Any]]:
         """Get all report templates"""
         try:
             query = {"enabled": True}
@@ -124,9 +122,7 @@ class DynamicReportService:
         try:
             # Get template
             if template_id:
-                template = await self.report_templates.find_one(
-                    {"_id": ObjectId(template_id)}
-                )
+                template = await self.report_templates.find_one({"_id": ObjectId(template_id)})
                 if not template:
                     raise ValueError(f"Template not found: {template_id}")
             elif template_data:
@@ -500,9 +496,7 @@ class DynamicReportService:
             worksheet = writer.sheets["Report"]
             for idx, col in enumerate(df.columns):
                 max_length = max(df[col].astype(str).apply(len).max(), len(str(col)))
-                worksheet.column_dimensions[chr(65 + idx)].width = min(
-                    max_length + 2, 50
-                )
+                worksheet.column_dimensions[chr(65 + idx)].width = min(max_length + 2, 50)
 
         file_data = output.getvalue()
         file_name = f"{template_name}_{timestamp}.xlsx"
@@ -578,9 +572,7 @@ class DynamicReportService:
             if generated_by:
                 query["generated_by"] = generated_by
 
-            cursor = (
-                self.generated_reports.find(query).sort("generated_at", -1).limit(limit)
-            )
+            cursor = self.generated_reports.find(query).sort("generated_at", -1).limit(limit)
             reports = await cursor.to_list(length=None)
 
             return reports
@@ -596,9 +588,7 @@ class DynamicReportService:
             if not report:
                 raise ValueError(f"Report not found: {report_id}")
 
-            file_record = await self.db.report_files.find_one(
-                {"report_id": ObjectId(report_id)}
-            )
+            file_record = await self.db.report_files.find_one({"report_id": ObjectId(report_id)})
             if not file_record:
                 raise ValueError(f"Report file not found: {report_id}")
 

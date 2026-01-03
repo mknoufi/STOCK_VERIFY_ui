@@ -54,16 +54,12 @@ class ActivityLogModel(BaseModel):
 # --- Helpers ---
 
 
-def build_date_query(
-    start_date: Optional[str], end_date: Optional[str]
-) -> dict[str, Any]:
+def build_date_query(start_date: Optional[str], end_date: Optional[str]) -> dict[str, Any]:
     """Build MongoDB date query from ISO strings."""
     date_query: dict[str, Any] = {}
     if start_date:
         try:
-            date_query["$gte"] = datetime.fromisoformat(
-                start_date.replace("Z", "+00:00")
-            )
+            date_query["$gte"] = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
         except ValueError:
             pass
     if end_date:
@@ -148,9 +144,7 @@ async def get_error_stats(
         query["timestamp"] = date_query
 
     total = await auth_deps.db.error_logs.count_documents(query)
-    unresolved = await auth_deps.db.error_logs.count_documents(
-        {**query, "resolved": False}
-    )
+    unresolved = await auth_deps.db.error_logs.count_documents({**query, "resolved": False})
 
     pipeline = [
         {"$match": query},

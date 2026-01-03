@@ -45,10 +45,7 @@ export const getDatabaseStatus = async (): Promise<DatabaseStatus> => {
       configured: false,
       use_sql_server: false,
       connection_status: "error",
-      error:
-        error.response?.data?.detail ||
-        error.message ||
-        "Failed to fetch status",
+      error: error.response?.data?.detail || error.message || "Failed to fetch status",
     };
   }
 };
@@ -75,10 +72,7 @@ export const getSyncStatusData = async (): Promise<SyncStatus> => {
  * Get complete database sync status
  */
 export const getDatabaseSyncStatus = async (): Promise<DatabaseSyncStatus> => {
-  const [database, sync] = await Promise.all([
-    getDatabaseStatus(),
-    getSyncStatusData(),
-  ]);
+  const [database, sync] = await Promise.all([getDatabaseStatus(), getSyncStatusData()]);
 
   return {
     database,
@@ -100,10 +94,7 @@ export const testDatabaseConnection = async (): Promise<{
   } catch (error: any) {
     return {
       status: "error",
-      message:
-        error.response?.data?.detail ||
-        error.message ||
-        "Connection test failed",
+      message: error.response?.data?.detail || error.message || "Connection test failed",
     };
   }
 };

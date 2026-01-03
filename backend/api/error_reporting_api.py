@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from backend.auth import get_current_user
+from backend.db.runtime import get_db
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -204,9 +205,7 @@ async def get_error_dashboard(
         now = datetime.utcnow()
         recent = []
         for error in errors:
-            error_time = datetime.fromisoformat(
-                error["timestamp"].replace("Z", "+00:00")
-            )
+            error_time = datetime.fromisoformat(error["timestamp"].replace("Z", "+00:00"))
             if now - error_time < timedelta(days=1):
                 recent.append(error)
 
@@ -217,9 +216,7 @@ async def get_error_dashboard(
             trends[f"{hour:02d}:00"] = 0
 
         for error in errors:
-            error_time = datetime.fromisoformat(
-                error["timestamp"].replace("Z", "+00:00")
-            )
+            error_time = datetime.fromisoformat(error["timestamp"].replace("Z", "+00:00"))
             if now - error_time < timedelta(days=1):
                 hour = error_time.hour
                 trends[f"{hour:02d}:00"] = trends.get(f"{hour:02d}:00", 0) + 1
@@ -227,9 +224,7 @@ async def get_error_dashboard(
         # Calculate statistics
         total_errors = stats["total"]
         resolved_count = len([e for e in errors if e["status"] == "resolved"])
-        resolution_rate = (
-            (resolved_count / total_errors * 100) if total_errors > 0 else 0
-        )
+        resolution_rate = (resolved_count / total_errors * 100) if total_errors > 0 else 0
 
         dashboard = {
             "errors": errors[:20],  # Latest 20 errors
@@ -332,9 +327,7 @@ async def delete_error(
         raise HTTPException(status_code=403, detail="Admin access required")
 
     try:
-        error_store["errors"] = [
-            e for e in error_store["errors"] if e["id"] != error_id
-        ]
+        error_store["errors"] = [e for e in error_store["errors"] if e["id"] != error_id]
 
         return JSONResponse({"success": True, "message": "Error deleted successfully"})
 
@@ -358,7 +351,7 @@ async def get_error_summary(
         errors = error_store["errors"]
 
         # Calculate summary
-        summary = {
+        summary: dict[str, Any] = {
             "total_errors": len(errors),
             "by_severity": {
                 "critical": len([e for e in errors if e["severity"] == "critical"]),
@@ -368,9 +361,7 @@ async def get_error_summary(
             },
             "by_status": {
                 "new": len([e for e in errors if e["status"] == "new"]),
-                "acknowledged": len(
-                    [e for e in errors if e["status"] == "acknowledged"]
-                ),
+                "acknowledged": len([e for e in errors if e["status"] == "acknowledged"]),
                 "resolved": len([e for e in errors if e["status"] == "resolved"]),
             },
             "by_type": {},
@@ -393,10 +384,37 @@ async def notify_admin_critical_error(error: ErrorReport):
     Send notification to admins about critical error
     """
     try:
-        # TODO: Implement admin notification (email, Slack, etc.)
+        # Always log at critical level.
         logger.critical(
             f"CRITICAL ERROR: {error.type} - {error.message}",
             extra={"context": error.context},
+        )
+
+        # Persist a notification record for admin dashboards (best-effort).
+        try:
+            db = get_db()
+        except RuntimeError:
+            return
+
+        context = error.context if error.context is not None else {}
+        safe_context = {}
+        for key, value in context.items():
+            if value is None or isinstance(value, (str, int, float, bool)):
+                safe_context[key] = value
+            else:
+                safe_context[key] = str(value)[:500]
+
+        await db.system_events.insert_one(
+            {
+                "event_type": "critical_error_reported",
+                "source": "frontend",
+                "error_type": error.type,
+                "message": error.message,
+                "severity": error.severity,
+                "user_id": error.user_id,
+                "timestamp": error.timestamp or datetime.utcnow(),
+                "context": safe_context,
+            }
         )
     except Exception as e:
         logger.error(f"Failed to notify admin: {str(e)}")

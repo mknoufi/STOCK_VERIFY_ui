@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.db.runtime import get_db
 from backend.services.auto_diagnosis import AutoDiagnosisService
 
 # Global instance
@@ -20,9 +21,7 @@ def get_auto_diagnosis() -> AutoDiagnosisService:
     """Get global auto-diagnosis service instance"""
     global _diagnosis_service
     if _diagnosis_service is None:
-        from server import db
-
-        _diagnosis_service = AutoDiagnosisService(mongo_db=db)
+        _diagnosis_service = AutoDiagnosisService(mongo_db=get_db())
     return _diagnosis_service
 
 
@@ -159,9 +158,7 @@ async def attempt_auto_fix(
             "fix_attempted": True,
             "fix_successful": fix_result.is_success,
             "fix_result": (
-                fix_result.unwrap_or(None)
-                if fix_result.is_success
-                else fix_result._error_message
+                fix_result.unwrap_or(None) if fix_result.is_success else fix_result._error_message
             ),
             "diagnosis": diagnosis.to_dict(),
         }
@@ -184,6 +181,4 @@ async def get_error_patterns(current_user: dict = Depends(get_current_user)):
         }
     except Exception as e:
         logger.error(f"Pattern retrieval failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Pattern retrieval failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Pattern retrieval failed: {str(e)}")

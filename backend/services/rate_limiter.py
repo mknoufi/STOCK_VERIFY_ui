@@ -192,8 +192,6 @@ class ConcurrentRequestHandler:
                 "active": self._active,
                 "available": self.max_concurrent - self._active,
                 "utilization": (
-                    (self._active / self.max_concurrent) * 100
-                    if self.max_concurrent > 0
-                    else 0
+                    (self._active / self.max_concurrent) * 100 if self.max_concurrent > 0 else 0
                 ),
             }

@@ -68,6 +68,6 @@ export const useBatchManagement = () => {
     setBatchConditionDetails,
     handleAddBatch,
     handleRemoveBatch,
-    resetBatches
+    resetBatches,
   };
 };

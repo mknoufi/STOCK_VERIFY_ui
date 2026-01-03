@@ -41,10 +41,7 @@ class CodebaseUpgradeChecker:
         python_files = [
             f
             for f in python_files
-            if not any(
-                skip in str(f)
-                for skip in ["__pycache__", ".pyc", "venv", "env", "tests"]
-            )
+            if not any(skip in str(f) for skip in ["__pycache__", ".pyc", "venv", "env", "tests"])
         ]
 
         for py_file in python_files:
@@ -106,9 +103,7 @@ class CodebaseUpgradeChecker:
             if isinstance(node, ast.ExceptHandler):
                 self._check_bare_except(node, file_path, lines)
 
-    def _check_exception_handling(
-        self, node: ast.Try, file_path: Path, lines: list[str]
-    ):
+    def _check_exception_handling(self, node: ast.Try, file_path: Path, lines: list[str]):
         """Check exception handling patterns"""
         for handler in node.handlers:
             if handler.type is None:
@@ -135,9 +130,7 @@ class CodebaseUpgradeChecker:
                     )
                 )
 
-    def _check_type_hints(
-        self, node: ast.FunctionDef, file_path: Path, lines: list[str]
-    ):
+    def _check_type_hints(self, node: ast.FunctionDef, file_path: Path, lines: list[str]):
         """Check for missing type hints"""
         # Skip private methods and test files
         if node.name.startswith("_") or "test" in str(file_path):
@@ -173,9 +166,7 @@ class CodebaseUpgradeChecker:
                     )
                 )
 
-    def _check_bare_except(
-        self, node: ast.ExceptHandler, file_path: Path, lines: list[str]
-    ):
+    def _check_bare_except(self, node: ast.ExceptHandler, file_path: Path, lines: list[str]):
         """Check for bare except clauses"""
         if node.type is None:
             self.issues.append(

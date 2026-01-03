@@ -106,11 +106,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     return (
       <View style={[styles.container, containerStyle, style]} testID={testID}>
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            contentContainerStyle,
-            { flexGrow: 1 },
-          ]}
+          contentContainerStyle={[styles.scrollContent, contentContainerStyle, { flexGrow: 1 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -210,19 +206,33 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
  */
 export const getResponsiveTextStyles = (screenWidth: number) => {
   const scale =
-    screenWidth < BREAKPOINTS.phone
-      ? 0.9
-      : screenWidth >= BREAKPOINTS.tablet
-        ? 1.15
-        : 1;
+    screenWidth < BREAKPOINTS.phone ? 0.9 : screenWidth >= BREAKPOINTS.tablet ? 1.15 : 1;
 
   return {
-    h1: { fontSize: Math.round(32 * scale), lineHeight: Math.round(40 * scale) },
-    h2: { fontSize: Math.round(24 * scale), lineHeight: Math.round(32 * scale) },
-    h3: { fontSize: Math.round(20 * scale), lineHeight: Math.round(28 * scale) },
-    body: { fontSize: Math.round(16 * scale), lineHeight: Math.round(24 * scale) },
-    small: { fontSize: Math.round(14 * scale), lineHeight: Math.round(20 * scale) },
-    caption: { fontSize: Math.round(12 * scale), lineHeight: Math.round(16 * scale) },
+    h1: {
+      fontSize: Math.round(32 * scale),
+      lineHeight: Math.round(40 * scale),
+    },
+    h2: {
+      fontSize: Math.round(24 * scale),
+      lineHeight: Math.round(32 * scale),
+    },
+    h3: {
+      fontSize: Math.round(20 * scale),
+      lineHeight: Math.round(28 * scale),
+    },
+    body: {
+      fontSize: Math.round(16 * scale),
+      lineHeight: Math.round(24 * scale),
+    },
+    small: {
+      fontSize: Math.round(14 * scale),
+      lineHeight: Math.round(20 * scale),
+    },
+    caption: {
+      fontSize: Math.round(12 * scale),
+      lineHeight: Math.round(16 * scale),
+    },
   };
 };
 

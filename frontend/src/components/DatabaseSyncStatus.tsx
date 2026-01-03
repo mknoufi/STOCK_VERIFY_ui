@@ -24,6 +24,7 @@ import {
   SyncStatus,
 } from "../services/monitoring/databaseStatusService";
 import { useNetworkStore } from "../store/networkStore";
+import { colors, semanticColors, spacing, radius } from "../theme/unified";
 
 // Types imported from databaseStatusService
 
@@ -111,32 +112,21 @@ export const DatabaseSyncStatus: React.FC<{
   if (compact) {
     return (
       <TouchableOpacity
-        style={[
-          styles.compactContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
+        style={[styles.compactContainer, { backgroundColor: theme.colors.surface }]}
         onPress={handleRefresh}
       >
         <View style={styles.compactRow}>
           <Ionicons
-            name={
-              dbStatus?.connection_status === "connected"
-                ? "server"
-                : "server-outline"
-            }
+            name={dbStatus?.connection_status === "connected" ? "server" : "server-outline"}
             size={20}
-            color={getStatusColor(
-              dbStatus?.connection_status || "not_configured",
-            )}
+            color={getStatusColor(dbStatus?.connection_status || "not_configured")}
           />
           <Text style={[styles.compactText, { color: theme.colors.text }]}>
             DB: {dbStatus?.connection_status || "Unknown"}
           </Text>
           {syncStatus && syncStatus.queuedOperations > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {syncStatus.queuedOperations}
-              </Text>
+              <Text style={styles.badgeText}>{syncStatus.queuedOperations}</Text>
             </View>
           )}
         </View>
@@ -149,9 +139,7 @@ export const DatabaseSyncStatus: React.FC<{
       <Card title="Database Status">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text
-            style={[styles.loadingText, { color: theme.colors.textSecondary }]}
-          >
+          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
             Loading status...
           </Text>
         </View>
@@ -161,9 +149,7 @@ export const DatabaseSyncStatus: React.FC<{
 
   return (
     <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
       <Card title="Database Sync Status" style={styles.card}>
         {/* Database Connection Status */}
@@ -178,21 +164,15 @@ export const DatabaseSyncStatus: React.FC<{
           <View style={styles.statusRow}>
             <View style={styles.statusIndicator}>
               <Ionicons
-                name={getStatusIcon(
-                  dbStatus?.connection_status || "not_configured",
-                )}
+                name={getStatusIcon(dbStatus?.connection_status || "not_configured")}
                 size={24}
-                color={getStatusColor(
-                  dbStatus?.connection_status || "not_configured",
-                )}
+                color={getStatusColor(dbStatus?.connection_status || "not_configured")}
               />
               <Text
                 style={[
                   styles.statusText,
                   {
-                    color: getStatusColor(
-                      dbStatus?.connection_status || "not_configured",
-                    ),
+                    color: getStatusColor(dbStatus?.connection_status || "not_configured"),
                   },
                 ]}
               >
@@ -216,17 +196,8 @@ export const DatabaseSyncStatus: React.FC<{
           )}
 
           {dbStatus?.error && (
-            <View
-              style={[
-                styles.errorContainer,
-                { backgroundColor: theme.colors.error + "20" },
-              ]}
-            >
-              <Ionicons
-                name="alert-circle"
-                size={16}
-                color={theme.colors.error}
-              />
+            <View style={[styles.errorContainer, { backgroundColor: theme.colors.error + "20" }]}>
+              <Ionicons name="alert-circle" size={16} color={theme.colors.error} />
               <Text style={[styles.errorText, { color: theme.colors.error }]}>
                 {dbStatus.error}
               </Text>
@@ -235,12 +206,7 @@ export const DatabaseSyncStatus: React.FC<{
 
           {!dbStatus?.configured && (
             <View style={styles.notConfiguredContainer}>
-              <Text
-                style={[
-                  styles.notConfiguredText,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
+              <Text style={[styles.notConfiguredText, { color: theme.colors.textSecondary }]}>
                 SQL Server is not configured. Please configure it in Settings.
               </Text>
             </View>
@@ -252,9 +218,7 @@ export const DatabaseSyncStatus: React.FC<{
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="sync" size={20} color={theme.colors.primary} />
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Sync Status
-              </Text>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Sync Status</Text>
             </View>
 
             <View style={styles.infoContainer}>
@@ -262,38 +226,22 @@ export const DatabaseSyncStatus: React.FC<{
                 label="Network"
                 value={syncStatus.isOnline ? "Online" : "Offline"}
                 icon={syncStatus.isOnline ? "wifi" : "wifi-outline"}
-                iconColor={
-                  syncStatus.isOnline
-                    ? theme.colors.success
-                    : theme.colors.error
-                }
+                iconColor={syncStatus.isOnline ? theme.colors.success : theme.colors.error}
               />
-              <InfoRow
-                label="Queued Operations"
-                value={syncStatus.queuedOperations.toString()}
-              />
+              <InfoRow label="Queued Operations" value={syncStatus.queuedOperations.toString()} />
               <InfoRow
                 label="Cache Size"
                 value={`${(syncStatus.cacheSize / 1024).toFixed(2)} KB`}
               />
               {syncStatus.lastSync && (
-                <InfoRow
-                  label="Last Sync"
-                  value={new Date(syncStatus.lastSync).toLocaleString()}
-                />
+                <InfoRow label="Last Sync" value={new Date(syncStatus.lastSync).toLocaleString()} />
               )}
             </View>
 
             {syncStatus.queuedOperations > 0 && syncStatus.isOnline && (
               <View style={styles.warningContainer}>
-                <Ionicons
-                  name="warning"
-                  size={16}
-                  color={theme.colors.warning}
-                />
-                <Text
-                  style={[styles.warningText, { color: theme.colors.warning }]}
-                >
+                <Ionicons name="warning" size={16} color={theme.colors.warning} />
+                <Text style={[styles.warningText, { color: theme.colors.warning }]}>
                   {syncStatus.queuedOperations} operation(s) pending sync
                 </Text>
               </View>
@@ -324,9 +272,7 @@ export const DatabaseSyncStatus: React.FC<{
         </View>
 
         {/* Last Update */}
-        <Text
-          style={[styles.lastUpdateText, { color: theme.colors.textSecondary }]}
-        >
+        <Text style={[styles.lastUpdateText, { color: theme.colors.textSecondary }]}>
           Last updated: {lastUpdate.toLocaleTimeString()}
         </Text>
       </Card>
@@ -348,20 +294,10 @@ const InfoRow: React.FC<InfoRowProps> = ({ label, value, icon, iconColor }) => {
   return (
     <View style={styles.infoRow}>
       <View style={styles.infoLabelContainer}>
-        {icon && (
-          <Ionicons
-            name={icon}
-            size={16}
-            color={iconColor || theme.colors.textSecondary}
-          />
-        )}
-        <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-          {label}:
-        </Text>
+        {icon && <Ionicons name={icon} size={16} color={iconColor || theme.colors.textSecondary} />}
+        <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>{label}:</Text>
       </View>
-      <Text style={[styles.infoValue, { color: theme.colors.text }]}>
-        {value}
-      </Text>
+      <Text style={[styles.infoValue, { color: theme.colors.text }]}>{value}</Text>
     </View>
   );
 };
@@ -443,51 +379,51 @@ const styles = StyleSheet.create({
   warningContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 12,
-    backgroundColor: "#FF9800" + "20",
+    gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    marginTop: spacing.sm,
+    backgroundColor: colors.warning[500] + "20",
   },
   warningText: {
     fontSize: 14,
     flex: 1,
   },
   notConfiguredContainer: {
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 12,
-    backgroundColor: "#F5F5F5",
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    marginTop: spacing.sm,
+    backgroundColor: semanticColors.background.tertiary,
   },
   notConfiguredText: {
     fontSize: 14,
     textAlign: "center",
   },
   actionsContainer: {
-    marginTop: 16,
-    gap: 8,
+    marginTop: spacing.md,
+    gap: spacing.sm,
   },
   lastUpdateText: {
     fontSize: 12,
     textAlign: "center",
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   compactContainer: {
-    padding: 12,
-    borderRadius: 8,
-    margin: 8,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    margin: spacing.sm,
   },
   compactRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: spacing.sm,
   },
   compactText: {
     fontSize: 14,
     fontWeight: "500",
   },
   badge: {
-    backgroundColor: "#f44336",
+    backgroundColor: colors.error[500],
     borderRadius: 10,
     minWidth: 20,
     height: 20,

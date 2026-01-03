@@ -7,19 +7,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Platform,
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
+import { ScreenContainer } from "../../src/components/ui";
 import {
   getSqlServerConfig,
   updateSqlServerConfig,
   testSqlServerConnection,
 } from "../../src/services/api";
-
-const isWeb = Platform.OS === "web";
 
 export default function SqlConfigScreen() {
   const router = useRouter();
@@ -75,10 +73,7 @@ export default function SqlConfigScreen() {
       if (response.data.connected) {
         Alert.alert("Success", "Connection test successful!");
       } else {
-        Alert.alert(
-          "Failed",
-          response.data.message || "Connection test failed",
-        );
+        Alert.alert("Failed", response.data.message || "Connection test failed");
       }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Connection test failed");
@@ -92,10 +87,7 @@ export default function SqlConfigScreen() {
       setSaving(true);
       const response = await updateSqlServerConfig(config);
       if (response.success) {
-        Alert.alert(
-          "Success",
-          "Configuration saved. Restart backend to apply changes.",
-        );
+        Alert.alert("Success", "Configuration saved. Restart backend to apply changes.");
         router.back();
       }
     } catch (error: any) {
@@ -107,39 +99,32 @@ export default function SqlConfigScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading configuration...</Text>
-      </View>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "SQL Server Configuration",
+          subtitle: "Connectivity & Credentials",
+          showBackButton: true,
+        }}
+      >
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Loading configuration...</Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, isWeb && styles.headerWeb]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color="#007AFF" />
-        </TouchableOpacity>
-        <View style={styles.titleContainer}>
-          <Ionicons
-            name="server"
-            size={28}
-            color="#fff"
-            style={styles.titleIcon}
-          />
-          <Text style={styles.title}>SQL Server Configuration</Text>
-        </View>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-      >
+    <ScreenContainer
+      gradient
+      header={{
+        title: "SQL Server Configuration",
+        subtitle: "Connectivity & Credentials",
+        showBackButton: true,
+      }}
+    >
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connection Settings</Text>
 
@@ -162,9 +147,7 @@ export default function SqlConfigScreen() {
               placeholder="1433"
               placeholderTextColor="#666"
               value={config.port.toString()}
-              onChangeText={(text) =>
-                setConfig({ ...config, port: parseInt(text) || 1433 })
-              }
+              onChangeText={(text) => setConfig({ ...config, port: parseInt(text) || 1433 })}
               keyboardType="numeric"
             />
           </View>
@@ -212,9 +195,7 @@ export default function SqlConfigScreen() {
             style={[
               styles.testResult,
               {
-                backgroundColor: testResult.connected
-                  ? "#4CAF5020"
-                  : "#f4433620",
+                backgroundColor: testResult.connected ? "#4CAF5020" : "#f4433620",
               },
             ]}
           >
@@ -269,70 +250,26 @@ export default function SqlConfigScreen() {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={20} color="#007AFF" />
           <Text style={styles.infoText}>
-            SQL Server is optional. The app will work without it, but ERP sync
-            features will be disabled. Restart the backend server after saving
-            configuration changes.
+            SQL Server is optional. The app will work without it, but ERP sync features will be
+            disabled. Restart the backend server after saving configuration changes.
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "transparent",
   },
   loadingText: {
     marginTop: 10,
     color: "#fff",
     fontSize: 16,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    paddingTop: Platform.OS === "web" ? 20 : 16,
-    backgroundColor: "#1a1a1a",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    ...(Platform.OS === "web"
-      ? {
-          position: "sticky" as const,
-          top: 0,
-          zIndex: 100,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-        }
-      : {}),
-  } as any,
-  headerWeb: {
-    paddingHorizontal: isWeb ? 32 : 16,
-  },
-  backButton: {
-    marginRight: 16,
-    padding: 8,
-    borderRadius: 8,
-  },
-  titleContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  titleIcon: {
-    marginRight: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
   },
   content: {
     flex: 1,

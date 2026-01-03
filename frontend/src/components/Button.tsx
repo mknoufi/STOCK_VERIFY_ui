@@ -20,9 +20,9 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../hooks/useTheme";
 import { flags } from "../constants/flags";
+import { colors as unifiedColors } from "../theme/unified";
 
-const AnimatedTouchableOpacity =
-  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface ButtonProps {
   title: string;
@@ -146,11 +146,11 @@ export const Button: React.FC<ButtonProps> = ({
     };
 
     const variantStyles: Record<string, TextStyle> = {
-      primary: { color: "#FFFFFF" },
-      secondary: { color: "#FFFFFF" },
+      primary: { color: unifiedColors.white },
+      secondary: { color: unifiedColors.white },
       outline: { color: theme.colors.primary },
       text: { color: theme.colors.primary },
-      danger: { color: "#FFFFFF" },
+      danger: { color: unifiedColors.white },
     };
 
     return {
@@ -164,7 +164,7 @@ export const Button: React.FC<ButtonProps> = ({
     if (variant === "outline" || variant === "text") {
       return theme.colors.primary;
     }
-    return "#FFFFFF";
+    return unifiedColors.white;
   };
 
   const buttonStyle =
@@ -254,9 +254,7 @@ export const Button: React.FC<ButtonProps> = ({
         <ActivityIndicator
           size="small"
           color={
-            variant === "outline" || variant === "text"
-              ? theme.colors.primary
-              : "#FFFFFF"
+            variant === "outline" || variant === "text" ? theme.colors.primary : unifiedColors.white
           }
         />
       ) : (

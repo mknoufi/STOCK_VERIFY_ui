@@ -11,7 +11,7 @@ This plan breaks down the comprehensive modernization into manageable phases wit
 ## Phase 1: Design System Foundation (Week 1-2)
 
 ### 1.1 Enhanced Theme System
-**Files:** `frontend/services/themeService.ts`, `frontend/styles/globalStyles.ts`
+**Files:** `frontend/src/theme/unified/`, `frontend/src/theme/ThemeProvider.tsx`
 
 **Tasks:**
 - Expand color palette with semantic tokens (50+ color variations)

@@ -1,11 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { ModernCard } from "../ModernCard";
-import {
-  modernColors,
-  modernTypography,
-  modernSpacing,
-} from "../../styles/modernDesignSystem";
+import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
 import { SimpleLineChart as LineChart } from "../charts/SimpleLineChart";
 import { SimpleBarChart as BarChart } from "../charts/SimpleBarChart";
 import { SimplePieChart as PieChart } from "../charts/SimplePieChart";
@@ -27,11 +23,7 @@ const ChartsPanel: React.FC<ChartsPanelProps> = ({
 }) => {
   return (
     <View>
-      <ModernCard
-        variant="elevated"
-        title="Sessions Over Time"
-        icon="trending-up"
-      >
+      <ModernCard variant="elevated" title="Sessions Over Time" icon="trending-up">
         {sessionChartData.length > 0 ? (
           <LineChart
             data={sessionChartData}
@@ -112,11 +104,7 @@ const ChartsPanel: React.FC<ChartsPanelProps> = ({
           style={styles.chartCard}
         >
           {staffPerformanceData.length > 0 ? (
-            <BarChart
-              data={staffPerformanceData}
-              showValues
-              title="Sessions per Staff"
-            />
+            <BarChart data={staffPerformanceData} showValues title="Sessions per Staff" />
           ) : (
             <View style={styles.empty}>
               <Text style={styles.emptyText}>No staff performance data</Text>

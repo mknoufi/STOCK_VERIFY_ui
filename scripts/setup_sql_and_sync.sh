@@ -15,19 +15,19 @@ if [ $# -eq 0 ]; then
     echo "INTERACTIVE SETUP MODE"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    
+
     # Prompt for credentials
     read -p "SQL Server Host (e.g., 192.168.1.100): " SQL_SERVER_HOST
     read -p "SQL Server Port [1433]: " SQL_SERVER_PORT
     SQL_SERVER_PORT=${SQL_SERVER_PORT:-1433}
-    
+
     read -p "Database Name: " SQL_SERVER_DATABASE
     read -p "Username [readonly_user]: " SQL_SERVER_USER
     SQL_SERVER_USER=${SQL_SERVER_USER:-readonly_user}
-    
+
     read -sp "Password: " SQL_SERVER_PASSWORD
     echo ""
-    
+
 else
     # Use command line arguments
     SQL_SERVER_HOST=$1
@@ -77,30 +77,30 @@ import sys
 
 try:
     import pyodbc
-    
+
     host = os.getenv('SQL_SERVER_HOST')
     port = os.getenv('SQL_SERVER_PORT', '1433')
     database = os.getenv('SQL_SERVER_DATABASE')
     user = os.getenv('SQL_SERVER_USER')
     password = os.getenv('SQL_SERVER_PASSWORD')
-    
+
     # Build connection string
     conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={host},{port};DATABASE={database};UID={user};PWD={password}'
-    
+
     print(f"   Connecting to {host}:{port}/{database}...")
     conn = pyodbc.connect(conn_str, timeout=10)
     cursor = conn.cursor()
-    
+
     # Test query
     cursor.execute("SELECT COUNT(*) as count FROM INFORMATION_SCHEMA.TABLES")
     result = cursor.fetchone()
-    
+
     print(f"   ✅ Connection successful!")
     print(f"   Database has {result[0]} tables")
-    
+
     conn.close()
     sys.exit(0)
-    
+
 except ImportError:
     print("   ⚠️  pyodbc not installed - skipping connection test")
     print("   Install with: pip install pyodbc")
@@ -179,7 +179,7 @@ import sys, json
 
 try:
     data = json.load(sys.stdin)
-    
+
     if data.get('success'):
         sync_data = data.get('data', {})
         print(f"✅ Sync completed successfully!")
@@ -187,7 +187,7 @@ try:
         print(f"   Items synced:    {sync_data.get('items_synced', 0):,}")
         print(f"   Duration:        {sync_data.get('duration_seconds', 0):.2f}s")
         print(f"   Status:          {sync_data.get('status', 'completed')}")
-        
+
         if sync_data.get('errors'):
             print(f"   Errors:          {len(sync_data['errors'])}")
             for error in sync_data['errors'][:3]:

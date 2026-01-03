@@ -138,13 +138,11 @@ async def check_sql_server():
                     continue
 
                 # Safe query - table_name is validated against allowlist
-                cursor.execute(f"SELECT COUNT(*) FROM [{table_name}]")
+                cursor.execute(f"SELECT COUNT(*) FROM [{table_name}]")  # nosec
                 count = cursor.fetchone()[0]
                 print(f"  - {table_name}: {count} rows")
         else:
-            print(
-                "  ⚠ No ERP tables found (Products, ProductBase, ProductGroups, ProductBarcodes)"
-            )
+            print("  ⚠ No ERP tables found (Products, ProductBase, ProductGroups, ProductBarcodes)")
 
         cursor.close()
         conn.close()
@@ -159,12 +157,8 @@ async def check_sql_server():
         print(f"  Error: {str(e)}")
         print("\nTroubleshooting:")
         print("  1. Check SQL Server is running")
-        print(
-            "  2. Verify SQL_SERVER_HOST, SQL_SERVER_PORT, SQL_SERVER_DATABASE in .env"
-        )
-        print(
-            "  3. Check SQL Server Authentication (SQL_SERVER_USER and SQL_SERVER_PASSWORD)"
-        )
+        print("  2. Verify SQL_SERVER_HOST, SQL_SERVER_PORT, SQL_SERVER_DATABASE in .env")
+        print("  3. Check SQL Server Authentication (SQL_SERVER_USER and SQL_SERVER_PASSWORD)")
         print("  4. Verify ODBC Driver 17 for SQL Server is installed")
         print("  5. Check network connectivity and firewall")
         return False

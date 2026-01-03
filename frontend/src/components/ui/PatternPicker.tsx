@@ -5,13 +5,7 @@
  */
 
 import React, { useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, {
@@ -20,16 +14,14 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { useThemeContext, PatternType } from "../../theme/ThemeContext";
+import { useThemeContext, PatternType } from "../../context/ThemeContext";
 
 interface PatternPickerProps {
   compact?: boolean;
 }
 
-export const PatternPicker: React.FC<PatternPickerProps> = ({
-  compact = false,
-}) => {
-  const { theme, pattern, setPattern, availablePatterns } = useThemeContext();
+export const PatternPicker: React.FC<PatternPickerProps> = ({ compact = false }) => {
+  const { themeLegacy: theme, pattern, setPattern, availablePatterns } = useThemeContext();
 
   const handlePatternSelect = useCallback(
     (key: PatternType) => {
@@ -38,22 +30,17 @@ export const PatternPicker: React.FC<PatternPickerProps> = ({
       }
       setPattern(key);
     },
-    [setPattern],
+    [setPattern]
   );
 
   return (
     <View style={styles.container}>
-      <Text
-        style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}
-      >
+      <Text style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}>
         Background Pattern
       </Text>
       <View style={styles.patternGrid}>
         {availablePatterns.map((p, index) => (
-          <Animated.View
-            key={p.key}
-            entering={FadeInDown.delay(index * 30).springify()}
-          >
+          <Animated.View key={p.key} entering={FadeInDown.delay(index * 30).springify()}>
             <PatternItem
               pattern={p}
               isSelected={pattern === p.key}
@@ -123,10 +110,7 @@ const PatternItem: React.FC<PatternItemProps> = ({
           color={isSelected ? "#FFFFFF" : textColor}
         />
         <Text
-          style={[
-            styles.patternName,
-            { color: isSelected ? "#FFFFFF" : textColor },
-          ]}
+          style={[styles.patternName, { color: isSelected ? "#FFFFFF" : textColor }]}
           numberOfLines={1}
         >
           {pattern.name}

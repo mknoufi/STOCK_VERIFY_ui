@@ -4,7 +4,7 @@ User Preferences Model
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from backend.models.user import PyObjectId
 
@@ -33,7 +33,8 @@ class UserPreferencesInDB(UserPreferencesBase):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {PyObjectId: str}
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={PyObjectId: str},
+    )

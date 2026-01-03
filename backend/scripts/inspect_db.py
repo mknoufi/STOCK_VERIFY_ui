@@ -41,9 +41,7 @@ async def inspect_database():
     print("=" * 80)
     users = await db.users.find({}, {"password": 0}).to_list(100)
     for user in users:
-        print(
-            f"  • {user['username']:15} | {user['full_name']:20} | Role: {user['role']}"
-        )
+        print(f"  • {user['username']:15} | {user['full_name']:20} | Role: {user['role']}")
     print(f"  Total: {len(users)} users")
     print()
 
@@ -88,9 +86,7 @@ async def inspect_database():
     count_lines = await db.count_lines.find().to_list(100)
     if count_lines:
         for line in count_lines:
-            variance_sign = (
-                "📈" if line["variance"] > 0 else "📉" if line["variance"] < 0 else "✅"
-            )
+            variance_sign = "📈" if line["variance"] > 0 else "📉" if line["variance"] < 0 else "✅"
             if line["status"] == "approved":
                 status_icon = "✅"
             elif line["status"] == "rejected":

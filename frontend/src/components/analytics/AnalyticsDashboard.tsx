@@ -5,21 +5,12 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
 import { KPICard, ActiveUsersPanel, ErrorLogsPanel } from "../admin";
 import { ErrorBoundary } from "../feedback/ErrorBoundary";
 import { VarianceChart } from "./VarianceChart";
 import { colorPalette, spacing, typography } from "@/theme/designTokens";
-import {
-  analyticsService,
-  type AnalyticsDashboardData,
-} from "@/services/analyticsService";
+import { analyticsService, type AnalyticsDashboardData } from "@/services/analyticsService";
 
 interface AnalyticsDashboardProps {
   timeRange?: "24h" | "7d" | "30d";
@@ -82,9 +73,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
       {/* Overview Metrics */}
       <View style={styles.section}>
@@ -96,7 +85,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         >
           {data?.overview.map((metric, index) => {
             // Derive intent based on label (simplified logic)
-            const isNegativeGood = metric.label.includes("Variance") || metric.label.includes("Error");
+            const isNegativeGood =
+              metric.label.includes("Variance") || metric.label.includes("Error");
             let intent: "good" | "bad" | "neutral" = "neutral";
 
             if (metric.change) {
@@ -119,12 +109,14 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 trend={metric.change}
                 trendIntent={intent}
                 formatOptions={
-                  metric.format === 'percentage'
-                    ? { style: 'percent', maximumFractionDigits: 1 }
-                    : { style: 'decimal' }
+                  metric.format === "percentage"
+                    ? { style: "percent", maximumFractionDigits: 1 }
+                    : { style: "decimal" }
                 }
                 // Mock onPress for now
-                onPress={() => console.log('Drill-down', metric.label)}
+                onPress={() => {
+                  __DEV__ && console.log("Drill-down", metric.label);
+                }}
               />
             );
           })}
@@ -144,10 +136,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <View style={styles.panelsContainer}>
           <View style={styles.panelWrapper}>
             <ErrorBoundary>
-              <ActiveUsersPanel
-                users={activeUsers.slice(0, 5)}
-                scrollEnabled={false}
-              />
+              <ActiveUsersPanel users={activeUsers.slice(0, 5)} scrollEnabled={false} />
             </ErrorBoundary>
           </View>
           <View style={styles.panelWrapper}>
@@ -174,27 +163,19 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <Text style={styles.sectionTitle}>Session Analytics</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {data.sessionAnalytics.totalSessions}
-              </Text>
+              <Text style={styles.statValue}>{data.sessionAnalytics.totalSessions}</Text>
               <Text style={styles.statLabel}>Total Sessions</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {data.sessionAnalytics.activeSessions}
-              </Text>
+              <Text style={styles.statValue}>{data.sessionAnalytics.activeSessions}</Text>
               <Text style={styles.statLabel}>Active</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {data.sessionAnalytics.completedSessions}
-              </Text>
+              <Text style={styles.statValue}>{data.sessionAnalytics.completedSessions}</Text>
               <Text style={styles.statLabel}>Completed</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {data.sessionAnalytics.averageDuration}m
-              </Text>
+              <Text style={styles.statValue}>{data.sessionAnalytics.averageDuration}m</Text>
               <Text style={styles.statLabel}>Avg Duration</Text>
             </View>
           </View>

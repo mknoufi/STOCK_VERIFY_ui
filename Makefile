@@ -203,3 +203,28 @@ eval-performance:
 eval-security:
 	@echo "Running security evaluation..."
 	cd backend && pytest tests/evaluation/test_security_evaluation.py -v
+
+# =============================================================================
+# 🚀 DEPLOYMENT
+# =============================================================================
+.PHONY: deploy deploy-check
+
+deploy-check:
+	@echo "🔍 Checking deployment prerequisites..."
+	@if [ ! -f .env.prod ]; then \
+		echo "❌ Error: .env.prod file not found!"; \
+		echo "   Please copy .env.production.example to .env.prod and configure it."; \
+		exit 1; \
+	fi
+	@if [ ! -f nginx/ssl/fullchain.pem ] || [ ! -f nginx/ssl/privkey.pem ]; then \
+		echo "⚠️  Warning: SSL certificates not found in nginx/ssl/. Nginx might fail to start."; \
+		echo "   For testing, you can run: ./scripts/generate_ssl.sh"; \
+	fi
+
+deploy: deploy-check
+	@echo "📦 Building Frontend (Web)..."
+	cd frontend && npm install && npm run build:web
+	@echo "🚀 Deploying Standard App (Production)..."
+	docker-compose --env-file .env.prod -f docker-compose.prod.yml build --no-cache
+	docker-compose --env-file .env.prod -f docker-compose.prod.yml up -d
+	@echo "✅ Deployment complete! Access the app at https://localhost"

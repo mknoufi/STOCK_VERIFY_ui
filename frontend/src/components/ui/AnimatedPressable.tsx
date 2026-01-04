@@ -66,7 +66,7 @@ export const AnimatedPressable: React.FC<AnimatedPressableProps> = ({
 
       onPressIn?.(event);
     },
-    [animatedScale, animatedOpacity, scaleValue, hapticFeedback, onPressIn]
+    [animatedScale, animatedOpacity, scaleValue, hapticFeedback, onPressIn],
   );
 
   const handlePressOut = useCallback(
@@ -87,7 +87,7 @@ export const AnimatedPressable: React.FC<AnimatedPressableProps> = ({
 
       onPressOut?.(event);
     },
-    [animatedScale, animatedOpacity, onPressOut]
+    [animatedScale, animatedOpacity, onPressOut],
   );
 
   return (
@@ -127,7 +127,9 @@ export const AnimatedCard: React.FC<AnimatedPressableProps> = (props) => {
 
 // Convenience wrapper for button-like pressables
 export const AnimatedButton: React.FC<AnimatedPressableProps> = (props) => {
-  return <AnimatedPressable scaleValue={0.95} hapticFeedback="medium" {...props} />;
+  return (
+    <AnimatedPressable scaleValue={0.95} hapticFeedback="medium" {...props} />
+  );
 };
 
 const styles = StyleSheet.create({

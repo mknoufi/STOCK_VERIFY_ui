@@ -40,14 +40,20 @@ async def get_sessions_v2(
     """
     Get sessions with pagination (v2)
     Returns standardized paginated response
+
+    Note: Non-supervisor users only see their own sessions.
     """
     try:
         db = get_db()
 
-        # Build query
+        # Build query with user filtering
         query = {}
         if status:
             query["status"] = status
+
+        # Non-supervisor users only see their own sessions
+        if current_user.get("role") != "supervisor":
+            query["staff_user"] = current_user["username"]
 
         # Get total count
         total = await db.sessions.count_documents(query)

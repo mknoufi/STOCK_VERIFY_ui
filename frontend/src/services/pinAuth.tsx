@@ -68,7 +68,7 @@ export class PINAuthService {
     } catch (error) {
       errorReporter.report(
         error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.initialize"
+        "PINAuthService.initialize",
       );
     }
   }
@@ -94,7 +94,7 @@ export class PINAuthService {
     } catch (error) {
       errorReporter.report(
         error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.setPIN"
+        "PINAuthService.setPIN",
       );
       throw error instanceof Error ? error : new Error(String(error));
     }
@@ -107,8 +107,12 @@ export class PINAuthService {
     try {
       // Check if locked out
       if (this.isLockedOut()) {
-        const remainingSeconds = Math.ceil((this.lockedUntil! - Date.now()) / 1000);
-        throw new Error(`Too many attempts. Try again in ${remainingSeconds} seconds.`);
+        const remainingSeconds = Math.ceil(
+          (this.lockedUntil! - Date.now()) / 1000,
+        );
+        throw new Error(
+          `Too many attempts. Try again in ${remainingSeconds} seconds.`,
+        );
       }
 
       // Validate format
@@ -133,22 +137,30 @@ export class PINAuthService {
 
       // Handle failed attempt
       this.attemptCount++;
-      await SecureStore.setItemAsync("pin_attempts", this.attemptCount.toString());
+      await SecureStore.setItemAsync(
+        "pin_attempts",
+        this.attemptCount.toString(),
+      );
 
       if (this.attemptCount >= this.maxAttempts) {
         this.lockedUntil = Date.now() + this.lockoutDuration * 1000;
-        await SecureStore.setItemAsync("pin_lockout_time", this.lockedUntil.toString());
+        await SecureStore.setItemAsync(
+          "pin_lockout_time",
+          this.lockedUntil.toString(),
+        );
         throw new Error(
-          `Too many failed attempts. Account locked for ${this.lockoutDuration} seconds.`
+          `Too many failed attempts. Account locked for ${this.lockoutDuration} seconds.`,
         );
       }
 
       const remainingAttempts = this.maxAttempts - this.attemptCount;
-      throw new Error(`Incorrect PIN. ${remainingAttempts} attempts remaining.`);
+      throw new Error(
+        `Incorrect PIN. ${remainingAttempts} attempts remaining.`,
+      );
     } catch (error) {
       errorReporter.report(
         error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.verifyPIN"
+        "PINAuthService.verifyPIN",
       );
       throw error;
     }
@@ -164,7 +176,7 @@ export class PINAuthService {
     } catch (error) {
       errorReporter.report(
         error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.isPINEnabled"
+        "PINAuthService.isPINEnabled",
       );
       return false;
     }
@@ -181,7 +193,7 @@ export class PINAuthService {
     } catch (error) {
       errorReporter.report(
         error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.disablePIN"
+        "PINAuthService.disablePIN",
       );
       throw error;
     }
@@ -284,7 +296,10 @@ export const PINPad: React.FC<PINPadProps> = ({
       <View style={styles.display}>
         <View style={styles.pinDisplay}>
           {Array.from({ length }).map((_, i) => (
-            <View key={i} style={[styles.pinDot, i < pin.length && styles.pinDotFilled]} />
+            <View
+              key={i}
+              style={[styles.pinDot, i < pin.length && styles.pinDotFilled]}
+            />
           ))}
         </View>
       </View>
@@ -373,7 +388,11 @@ export const PINLoginScreen: React.FC<{
 
   return (
     <View style={styles.screenContainer}>
-      <PINPad onPINComplete={handlePINComplete} onCancel={onCancel} title="Enter Your PIN" />
+      <PINPad
+        onPINComplete={handlePINComplete}
+        onCancel={onCancel}
+        title="Enter Your PIN"
+      />
       {error && <Text style={styles.errorText}>{error}</Text>}
       {isVerifying && <Text style={styles.verifyingText}>Verifying...</Text>}
     </View>

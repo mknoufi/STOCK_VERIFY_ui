@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Alert, Platform, Dimensions } from "react-native";
-import { LoadingSpinner, AnimatedPressable, ScreenContainer } from "@/components/ui";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  Platform,
+  Dimensions,
+} from "react-native";
+import {
+  LoadingSpinner,
+  AnimatedPressable,
+  ScreenContainer,
+} from "@/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -29,9 +40,11 @@ export default function MetricsScreen() {
 
   useEffect(() => {
     if (!hasRole("admin")) {
-      Alert.alert("Access Denied", "You do not have permission to view system metrics.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to view system metrics.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadMetrics();
@@ -103,7 +116,7 @@ export default function MetricsScreen() {
     value: string | number,
     color: string = "#fff",
     icon?: keyof typeof Ionicons.glyphMap,
-    subtitle?: string
+    subtitle?: string,
   ) => (
     <View style={[styles.metricCard, isWeb && styles.metricCardWeb] as any}>
       {icon && (
@@ -127,7 +140,10 @@ export default function MetricsScreen() {
           showBackButton: true,
           customRightContent: (
             <View style={styles.headerActions}>
-              <AnimatedPressable style={styles.refreshButton} onPress={() => loadMetrics(true)}>
+              <AnimatedPressable
+                style={styles.refreshButton}
+                onPress={() => loadMetrics(true)}
+              >
                 <Ionicons
                   name="refresh"
                   size={24}
@@ -139,7 +155,11 @@ export default function MetricsScreen() {
                 style={styles.controlPanelButton}
                 onPress={() => router.push("/admin/control-panel" as any)}
               >
-                <Ionicons name="settings" size={24} color={auroraTheme.colors.primary[500]} />
+                <Ionicons
+                  name="settings"
+                  size={24}
+                  color={auroraTheme.colors.primary[500]}
+                />
               </AnimatedPressable>
             </View>
           ),
@@ -165,7 +185,10 @@ export default function MetricsScreen() {
         showBackButton: true,
         customRightContent: (
           <View style={styles.headerActions}>
-            <AnimatedPressable style={styles.refreshButton} onPress={() => loadMetrics(true)}>
+            <AnimatedPressable
+              style={styles.refreshButton}
+              onPress={() => loadMetrics(true)}
+            >
               <Ionicons
                 name="refresh"
                 size={24}
@@ -177,12 +200,18 @@ export default function MetricsScreen() {
               style={styles.controlPanelButton}
               onPress={() => router.push("/admin/control-panel" as any)}
             >
-              <Ionicons name="settings" size={24} color={auroraTheme.colors.primary[500]} />
+              <Ionicons
+                name="settings"
+                size={24}
+                color={auroraTheme.colors.primary[500]}
+              />
             </AnimatedPressable>
           </View>
         ),
       }}
-      contentContainerStyle={isWeb ? styles.contentContainerWeb : styles.contentContainer}
+      contentContainerStyle={
+        isWeb ? styles.contentContainerWeb : styles.contentContainer
+      }
     >
       {health && (
         <View style={[styles.section, styles.healthSection]}>
@@ -196,12 +225,15 @@ export default function MetricsScreen() {
                 style={[
                   styles.healthDot,
                   {
-                    backgroundColor: health.status === "healthy" ? "#4CAF50" : "#f44336",
+                    backgroundColor:
+                      health.status === "healthy" ? "#4CAF50" : "#f44336",
                   },
                 ]}
               />
               <Text style={styles.healthText}>
-                {health.status === "healthy" ? "System Healthy" : "System Issues Detected"}
+                {health.status === "healthy"
+                  ? "System Healthy"
+                  : "System Issues Detected"}
               </Text>
             </View>
             <View style={styles.healthDetails}>
@@ -209,13 +241,22 @@ export default function MetricsScreen() {
                 <View style={styles.healthDetailRow}>
                   <Ionicons
                     name={
-                      health.mongodb.status === "connected" ? "checkmark-circle" : "close-circle"
+                      health.mongodb.status === "connected"
+                        ? "checkmark-circle"
+                        : "close-circle"
                     }
                     size={18}
-                    color={health.mongodb.status === "connected" ? "#4CAF50" : "#f44336"}
+                    color={
+                      health.mongodb.status === "connected"
+                        ? "#4CAF50"
+                        : "#f44336"
+                    }
                   />
                   <Text style={styles.healthDetail}>
-                    MongoDB: {health.mongodb.status === "connected" ? "Connected" : "Disconnected"}
+                    MongoDB:{" "}
+                    {health.mongodb.status === "connected"
+                      ? "Connected"
+                      : "Disconnected"}
                   </Text>
                 </View>
               )}
@@ -229,7 +270,9 @@ export default function MetricsScreen() {
                     }
                     size={18}
                     color={
-                      health.dependencies.sql_server.status === "healthy" ? "#4CAF50" : "#ff9800"
+                      health.dependencies.sql_server.status === "healthy"
+                        ? "#4CAF50"
+                        : "#ff9800"
                     }
                   />
                   <Text
@@ -253,7 +296,9 @@ export default function MetricsScreen() {
               {health.uptime && (
                 <View style={styles.healthDetailRow}>
                   <Ionicons name="time" size={18} color="#007AFF" />
-                  <Text style={styles.healthDetail}>Uptime: {formatUptime(health.uptime)}</Text>
+                  <Text style={styles.healthDetail}>
+                    Uptime: {formatUptime(health.uptime)}
+                  </Text>
                 </View>
               )}
             </View>
@@ -261,8 +306,8 @@ export default function MetricsScreen() {
               <View style={styles.notificationBanner}>
                 <Ionicons name="warning" size={20} color="#ff9800" />
                 <Text style={styles.notificationText}>
-                  SQL Server is unavailable. App is running in offline mode. ERP sync features are
-                  disabled.
+                  SQL Server is unavailable. App is running in offline mode. ERP
+                  sync features are disabled.
                 </Text>
               </View>
             )}
@@ -280,13 +325,17 @@ export default function MetricsScreen() {
             <View style={styles.syncStatusRow}>
               <View style={styles.syncStatusLabelRow}>
                 <Ionicons name="server" size={20} color="#aaa" />
-                <Text style={styles.syncStatusLabel}>SQL Server Connection</Text>
+                <Text style={styles.syncStatusLabel}>
+                  SQL Server Connection
+                </Text>
               </View>
               <View
                 style={[
                   styles.statusBadge,
                   {
-                    backgroundColor: syncStatus.sql_available ? "#4CAF50" : "#ff9800",
+                    backgroundColor: syncStatus.sql_available
+                      ? "#4CAF50"
+                      : "#ff9800",
                   },
                 ]}
               >
@@ -324,14 +373,18 @@ export default function MetricsScreen() {
                   <View style={styles.syncStatItem}>
                     <Ionicons name="time" size={16} color="#888" />
                     <Text style={styles.syncStatsText}>
-                      Last: {new Date(syncStatus.last_sync_attempt).toLocaleString()}
+                      Last:{" "}
+                      {new Date(syncStatus.last_sync_attempt).toLocaleString()}
                     </Text>
                   </View>
                 )}
               </View>
             )}
             {syncStatus.sql_available && !syncStatus.sync_in_progress && (
-              <AnimatedPressable style={styles.syncButton} onPress={handleTriggerSync}>
+              <AnimatedPressable
+                style={styles.syncButton}
+                onPress={handleTriggerSync}
+              >
                 <Ionicons name="sync" size={18} color="#fff" />
                 <Text style={styles.syncButtonText}>Trigger Manual Sync</Text>
               </AnimatedPressable>
@@ -352,21 +405,26 @@ export default function MetricsScreen() {
                 "Total Requests",
                 stats.total_requests?.toLocaleString() || "0",
                 "#007AFF",
-                "stats-chart"
+                "stats-chart",
               )}
               {renderMetricCard(
                 "Success Rate",
                 `${((stats.success_rate || 0) * 100).toFixed(1)}%`,
                 stats.success_rate > 0.95 ? "#4CAF50" : "#FF9800",
-                stats.success_rate > 0.95 ? "checkmark-circle" : "warning"
+                stats.success_rate > 0.95 ? "checkmark-circle" : "warning",
               )}
               {renderMetricCard(
                 "Avg Response Time",
                 `${(stats.avg_response_time || 0).toFixed(0)}ms`,
                 stats.avg_response_time < 500 ? "#4CAF50" : "#FF9800",
-                "time"
+                "time",
               )}
-              {renderMetricCard("Error Count", stats.error_count || "0", "#f44336", "alert-circle")}
+              {renderMetricCard(
+                "Error Count",
+                stats.error_count || "0",
+                "#f44336",
+                "alert-circle",
+              )}
             </View>
           </View>
 
@@ -380,14 +438,19 @@ export default function MetricsScreen() {
                 "Active Users",
                 stats.active_users || "0",
                 "#007AFF",
-                "people-circle"
+                "people-circle",
               )}
-              {renderMetricCard("Total Sessions", stats.total_sessions || "0", "#fff", "calendar")}
+              {renderMetricCard(
+                "Total Sessions",
+                stats.total_sessions || "0",
+                "#fff",
+                "calendar",
+              )}
               {renderMetricCard(
                 "Active Sessions",
                 stats.active_sessions || "0",
                 "#4CAF50",
-                "radio-button-on"
+                "radio-button-on",
               )}
             </View>
           </View>
@@ -402,25 +465,25 @@ export default function MetricsScreen() {
                 "Total Count Lines",
                 stats.total_count_lines?.toLocaleString() || "0",
                 "#fff",
-                "list"
+                "list",
               )}
               {renderMetricCard(
                 "Pending Approvals",
                 stats.pending_approvals || "0",
                 "#FF9800",
-                "time-outline"
+                "time-outline",
               )}
               {renderMetricCard(
                 "Total Items",
                 stats.total_items?.toLocaleString() || "0",
                 "#fff",
-                "cube"
+                "cube",
               )}
               {renderMetricCard(
                 "Unknown Items",
                 stats.unknown_items || "0",
                 "#f44336",
-                "help-circle"
+                "help-circle",
               )}
             </View>
           </View>
@@ -472,12 +535,22 @@ export default function MetricsScreen() {
 
       <View style={styles.footer}>
         <View style={styles.footerRow}>
-          <Ionicons name="refresh-circle" size={16} color={auroraTheme.colors.text.muted} />
+          <Ionicons
+            name="refresh-circle"
+            size={16}
+            color={auroraTheme.colors.text.muted}
+          />
           <Text style={styles.footerText}>Auto-refresh every 30 seconds</Text>
         </View>
         <View style={styles.footerRow}>
-          <Ionicons name="time" size={16} color={auroraTheme.colors.text.muted} />
-          <Text style={styles.footerText}>Last updated: {lastUpdate.toLocaleTimeString()}</Text>
+          <Ionicons
+            name="time"
+            size={16}
+            color={auroraTheme.colors.text.muted}
+          />
+          <Text style={styles.footerText}>
+            Last updated: {lastUpdate.toLocaleTimeString()}
+          </Text>
         </View>
       </View>
     </ScreenContainer>

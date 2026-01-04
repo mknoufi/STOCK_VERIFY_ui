@@ -18,7 +18,13 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, spacing, radius, textStyles, semanticColors } from "../../theme/unified";
+import {
+  colors,
+  spacing,
+  radius,
+  textStyles,
+  semanticColors,
+} from "../../theme/unified";
 import apiClient from "../../services/httpClient";
 import * as Haptics from "expo-haptics";
 
@@ -143,7 +149,9 @@ export function UserFormModal({
 
     // Username format check
     if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
-      setError("Username must be 3-30 characters, alphanumeric or underscore only");
+      setError(
+        "Username must be 3-30 characters, alphanumeric or underscore only",
+      );
       return false;
     }
 
@@ -211,7 +219,9 @@ export function UserFormModal({
         await apiClient.put(`/api/users/${user.id}`, updateData);
 
         if (Platform.OS !== "web") {
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          await Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Success,
+          );
         }
 
         Alert.alert("Success", "User updated successfully", [
@@ -239,7 +249,9 @@ export function UserFormModal({
         await apiClient.post("/api/users", createData);
 
         if (Platform.OS !== "web") {
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          await Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Success,
+          );
         }
 
         Alert.alert("Success", `User "${username}" created successfully`, [
@@ -511,7 +523,12 @@ export function UserFormModal({
   });
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+    >
       <KeyboardAvoidingView
         style={styles.overlay}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -519,9 +536,15 @@ export function UserFormModal({
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{isEditMode ? "Edit User" : "Create New User"}</Text>
+            <Text style={styles.title}>
+              {isEditMode ? "Edit User" : "Create New User"}
+            </Text>
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Ionicons name="close" size={24} color={semanticColors.text.secondary} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={semanticColors.text.secondary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -533,7 +556,11 @@ export function UserFormModal({
             {/* Error Display */}
             {error && (
               <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={20} color={colors.error[600]} />
+                <Ionicons
+                  name="alert-circle"
+                  size={20}
+                  color={colors.error[600]}
+                />
                 <Text style={styles.errorText}>{error}</Text>
               </View>
             )}
@@ -598,14 +625,19 @@ export function UserFormModal({
               {/* Password */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>
-                  Password {!isEditMode && <Text style={styles.required}>*</Text>}
+                  Password{" "}
+                  {!isEditMode && <Text style={styles.required}>*</Text>}
                 </Text>
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={[styles.input, styles.passwordInput]}
                     value={password}
                     onChangeText={setPassword}
-                    placeholder={isEditMode ? "Leave blank to keep current" : "Enter password"}
+                    placeholder={
+                      isEditMode
+                        ? "Leave blank to keep current"
+                        : "Enter password"
+                    }
                     placeholderTextColor={semanticColors.text.tertiary}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
@@ -632,7 +664,8 @@ export function UserFormModal({
                           key={i}
                           style={[
                             styles.strengthSegment,
-                            passwordStrength.score >= i && styles.strengthSegmentFilled,
+                            passwordStrength.score >= i &&
+                              styles.strengthSegmentFilled,
                           ]}
                         />
                       ))}
@@ -641,14 +674,22 @@ export function UserFormModal({
                       {passwordStrength.requirements.map((req) => (
                         <View key={req.key} style={styles.requirement}>
                           <Ionicons
-                            name={req.met ? "checkmark-circle" : "ellipse-outline"}
+                            name={
+                              req.met ? "checkmark-circle" : "ellipse-outline"
+                            }
                             size={14}
-                            color={req.met ? colors.success[500] : semanticColors.text.tertiary}
+                            color={
+                              req.met
+                                ? colors.success[500]
+                                : semanticColors.text.tertiary
+                            }
                           />
                           <Text
                             style={[
                               styles.requirementText,
-                              req.met ? styles.requirementMet : styles.requirementUnmet,
+                              req.met
+                                ? styles.requirementMet
+                                : styles.requirementUnmet,
                             ]}
                           >
                             {req.label}
@@ -685,9 +726,13 @@ export function UserFormModal({
                 <TextInput
                   style={styles.input}
                   value={pin}
-                  onChangeText={(text) => setPin(text.replace(/\D/g, "").slice(0, 6))}
+                  onChangeText={(text) =>
+                    setPin(text.replace(/\D/g, "").slice(0, 6))
+                  }
                   placeholder={
-                    isEditMode ? "Leave blank to keep current" : "4-6 digit PIN (optional)"
+                    isEditMode
+                      ? "Leave blank to keep current"
+                      : "4-6 digit PIN (optional)"
                   }
                   placeholderTextColor={semanticColors.text.tertiary}
                   keyboardType="number-pad"
@@ -710,11 +755,17 @@ export function UserFormModal({
                   {availableRoles.map((r) => (
                     <TouchableOpacity
                       key={r}
-                      style={[styles.roleButton, role === r && styles.roleButtonActive]}
+                      style={[
+                        styles.roleButton,
+                        role === r && styles.roleButtonActive,
+                      ]}
                       onPress={() => setRole(r)}
                     >
                       <Text
-                        style={[styles.roleButtonText, role === r && styles.roleButtonTextActive]}
+                        style={[
+                          styles.roleButtonText,
+                          role === r && styles.roleButtonTextActive,
+                        ]}
                       >
                         {r.charAt(0).toUpperCase() + r.slice(1)}
                       </Text>
@@ -736,8 +787,14 @@ export function UserFormModal({
                       isActive ? styles.statusActive : styles.statusInactive,
                     ]}
                   />
-                  <Text style={styles.statusText}>{isActive ? "Active" : "Inactive"}</Text>
-                  <Ionicons name="chevron-forward" size={16} color={semanticColors.text.tertiary} />
+                  <Text style={styles.statusText}>
+                    {isActive ? "Active" : "Inactive"}
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={semanticColors.text.tertiary}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -754,7 +811,11 @@ export function UserFormModal({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.button, styles.submitButton, loading && styles.submitButtonDisabled]}
+              style={[
+                styles.button,
+                styles.submitButton,
+                loading && styles.submitButtonDisabled,
+              ]}
               onPress={handleSubmit}
               disabled={loading}
             >
@@ -762,7 +823,11 @@ export function UserFormModal({
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <>
-                  <Ionicons name={isEditMode ? "save" : "add"} size={18} color="#fff" />
+                  <Ionicons
+                    name={isEditMode ? "save" : "add"}
+                    size={18}
+                    color="#fff"
+                  />
                   <Text style={styles.submitButtonText}>
                     {isEditMode ? "Save Changes" : "Create User"}
                   </Text>

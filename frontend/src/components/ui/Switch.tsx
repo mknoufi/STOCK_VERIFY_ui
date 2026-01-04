@@ -26,7 +26,10 @@ interface SwitchProps {
   style?: ViewStyle;
 }
 
-const sizeStyles: Record<SwitchSize, { width: number; height: number; thumbSize: number }> = {
+const sizeStyles: Record<
+  SwitchSize,
+  { width: number; height: number; thumbSize: number }
+> = {
   sm: { width: 36, height: 20, thumbSize: 16 },
   md: { width: 44, height: 24, thumbSize: 20 },
   lg: { width: 52, height: 28, thumbSize: 24 },
@@ -52,7 +55,11 @@ export const Switch: React.FC<SwitchProps> = ({
   }, [value, progress]);
 
   const trackStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(progress.value, [0, 1], [inactiveColor, activeColor]),
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [inactiveColor, activeColor],
+    ),
   }));
 
   const thumbStyle = useAnimatedStyle(() => ({

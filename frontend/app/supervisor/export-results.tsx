@@ -21,8 +21,15 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { usePermission } from "../../src/hooks/usePermission";
-import { getExportResults, downloadExportResult } from "../../src/services/api/api";
-import { ScreenContainer, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  getExportResults,
+  downloadExportResult,
+} from "../../src/services/api/api";
+import {
+  ScreenContainer,
+  GlassCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 
 interface ExportResult {
@@ -48,10 +55,15 @@ export default function ExportResultsScreen() {
   const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!hasPermission("export.view_all") && !hasPermission("export.view_own")) {
-      Alert.alert("Access Denied", "You do not have permission to view export results.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+    if (
+      !hasPermission("export.view_all") &&
+      !hasPermission("export.view_own")
+    ) {
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to view export results.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadResults();
@@ -73,7 +85,8 @@ export default function ExportResultsScreen() {
 
   const handleDownload = async (resultId: string, fileName: string) => {
     try {
-      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (Platform.OS !== "web")
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setDownloading(resultId);
       const blob = await downloadExportResult(resultId);
 
@@ -90,10 +103,14 @@ export default function ExportResultsScreen() {
         Alert.alert("Success", "File downloaded successfully");
       } else {
         // For mobile: Show message that download is in progress
-        Alert.alert("Download", "Export download feature requires expo-file-system configuration");
+        Alert.alert(
+          "Download",
+          "Export download feature requires expo-file-system configuration",
+        );
       }
     } catch (error: any) {
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to download export");
     } finally {
       setDownloading(null);
@@ -136,7 +153,10 @@ export default function ExportResultsScreen() {
   const renderResultCard = (result: ExportResult, index: number) => {
     const statusColor = getStatusColor(result.status);
     return (
-      <Animated.View key={result._id} entering={FadeInDown.delay(index * 100).springify()}>
+      <Animated.View
+        key={result._id}
+        entering={FadeInDown.delay(index * 100).springify()}
+      >
         <GlassCard
           intensity={15}
           padding={theme.spacing.md}
@@ -145,7 +165,12 @@ export default function ExportResultsScreen() {
         >
           <View style={styles.cardHeader}>
             <View style={styles.cardHeaderLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: statusColor + "20" }]}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: statusColor + "20" },
+                ]}
+              >
                 <Ionicons
                   name={getStatusIcon(result.status) as any}
                   size={24}
@@ -176,12 +201,22 @@ export default function ExportResultsScreen() {
 
           <View style={styles.cardDetails}>
             <View style={styles.detailRow}>
-              <Ionicons name="document-text-outline" size={16} color={theme.colors.text.tertiary} />
-              <Text style={styles.detailText}>Format: {result.format.toUpperCase()}</Text>
+              <Ionicons
+                name="document-text-outline"
+                size={16}
+                color={theme.colors.text.tertiary}
+              />
+              <Text style={styles.detailText}>
+                Format: {result.format.toUpperCase()}
+              </Text>
             </View>
             {result.record_count !== undefined && (
               <View style={styles.detailRow}>
-                <Ionicons name="list-outline" size={16} color={theme.colors.text.tertiary} />
+                <Ionicons
+                  name="list-outline"
+                  size={16}
+                  color={theme.colors.text.tertiary}
+                />
                 <Text style={styles.detailText}>
                   Records: {result.record_count.toLocaleString()}
                 </Text>
@@ -189,26 +224,39 @@ export default function ExportResultsScreen() {
             )}
             {result.file_size && (
               <View style={styles.detailRow}>
-                <Ionicons name="save-outline" size={16} color={theme.colors.text.tertiary} />
-                <Text style={styles.detailText}>Size: {formatFileSize(result.file_size)}</Text>
+                <Ionicons
+                  name="save-outline"
+                  size={16}
+                  color={theme.colors.text.tertiary}
+                />
+                <Text style={styles.detailText}>
+                  Size: {formatFileSize(result.file_size)}
+                </Text>
               </View>
             )}
           </View>
 
           {result.error_message && (
             <View style={styles.errorContainer}>
-              <Ionicons name="warning-outline" size={20} color={theme.colors.error.main} />
+              <Ionicons
+                name="warning-outline"
+                size={20}
+                color={theme.colors.error.main}
+              />
               <Text style={styles.errorText}>{result.error_message}</Text>
             </View>
           )}
 
           {result.status === "completed" && result.file_path && (
             <AnimatedPressable
-              style={[styles.downloadButton, { backgroundColor: theme.colors.success.main }]}
+              style={[
+                styles.downloadButton,
+                { backgroundColor: theme.colors.success.main },
+              ]}
               onPress={() =>
                 handleDownload(
                   result._id,
-                  `export_${result.schedule_name}_${new Date().getTime()}.${result.format}`
+                  `export_${result.schedule_name}_${new Date().getTime()}.${result.format}`,
                 )
               }
               disabled={downloading === result._id}
@@ -233,18 +281,34 @@ export default function ExportResultsScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Export Results</Text>
-              <Text style={styles.pageSubtitle}>View and download generated reports</Text>
+              <Text style={styles.pageSubtitle}>
+                View and download generated reports
+              </Text>
             </View>
           </View>
           <AnimatedPressable onPress={loadResults} style={styles.refreshButton}>
-            <Ionicons name="refresh" size={24} color={theme.colors.primary[500]} />
+            <Ionicons
+              name="refresh"
+              size={24}
+              color={theme.colors.primary[500]}
+            />
           </AnimatedPressable>
         </Animated.View>
 
@@ -304,7 +368,9 @@ export default function ExportResultsScreen() {
                   size={64}
                   color={theme.colors.text.tertiary}
                 />
-                <Text style={styles.emptyStateText}>No export results found</Text>
+                <Text style={styles.emptyStateText}>
+                  No export results found
+                </Text>
                 <Text style={styles.emptyStateSubtext}>
                   Exports will appear here when they complete
                 </Text>

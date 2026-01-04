@@ -8,10 +8,24 @@
 
 // Internal imports for unified theme object
 import { colors as c, semanticColors as sc, gradients as g } from "./colors";
-import { spacing as sp, layout as l, touchTargets as tt, hitSlop as hs } from "./spacing";
+import {
+  spacing as sp,
+  layout as l,
+  touchTargets as tt,
+  hitSlop as hs,
+} from "./spacing";
 import { radius as r, componentRadius as cr } from "./radius";
-import { fontSize as fs, fontWeight as fw, fontFamily as ff, textStyles as ts } from "./typography";
-import { shadows as sh, coloredShadows as csh, blurIntensity as bi } from "./shadows";
+import {
+  fontSize as fs,
+  fontWeight as fw,
+  fontFamily as ff,
+  textStyles as ts,
+} from "./typography";
+import {
+  shadows as sh,
+  coloredShadows as csh,
+  blurIntensity as bi,
+} from "./shadows";
 import {
   duration as d,
   easing as e,
@@ -32,7 +46,14 @@ export {
   type ColorShade,
 } from "./colors";
 
-export { spacing, layout, touchTargets, hitSlop, type Spacing, type SpacingKey } from "./spacing";
+export {
+  spacing,
+  layout,
+  touchTargets,
+  hitSlop,
+  type Spacing,
+  type SpacingKey,
+} from "./spacing";
 
 export { radius, componentRadius, type Radius, type RadiusKey } from "./radius";
 

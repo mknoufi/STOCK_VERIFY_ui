@@ -14,18 +14,33 @@ interface SafeViewProps {
   fallback?: (error: Error) => ReactNode;
 }
 
-export const SafeView: React.FC<SafeViewProps> = ({ children, style, fallback }) => {
+export const SafeView: React.FC<SafeViewProps> = ({
+  children,
+  style,
+  fallback,
+}) => {
   const theme = useTheme();
 
   const defaultFallback = (_error: Error) => (
-    <View style={[styles.errorContainer, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[
+        styles.errorContainer,
+        { backgroundColor: theme.colors.background },
+      ]}
+    >
       <ErrorBoundary fallback={fallback}>{children}</ErrorBoundary>
     </View>
   );
 
   return (
     <ErrorBoundary fallback={fallback || defaultFallback}>
-      <View style={[styles.container, { backgroundColor: theme.colors.background }, style]}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.colors.background },
+          style,
+        ]}
+      >
         {children}
       </View>
     </ErrorBoundary>

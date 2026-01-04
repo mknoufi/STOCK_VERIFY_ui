@@ -4,9 +4,20 @@
  */
 
 import React, { useState, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { modernColors, modernBorderRadius, modernShadows } from "@/styles/modernDesignSystem";
+import {
+  modernColors,
+  modernBorderRadius,
+  modernShadows,
+} from "@/styles/modernDesignSystem";
 
 interface PerformanceDataPoint {
   timestamp: string;
@@ -183,7 +194,11 @@ export function PerformanceChart({
           unit=""
           label="Errors"
           icon="alert-circle-outline"
-          color={stats.totalErrors > 0 ? METRIC_CONFIG.errors.color : modernColors.success.main}
+          color={
+            stats.totalErrors > 0
+              ? METRIC_CONFIG.errors.color
+              : modernColors.success.main
+          }
         />
       </View>
 
@@ -198,9 +213,18 @@ export function PerformanceChart({
             <MaterialCommunityIcons
               name={METRIC_CONFIG[tab].icon}
               size={16}
-              color={activeTab === tab ? modernColors.primary[500] : modernColors.text.secondary}
+              color={
+                activeTab === tab
+                  ? modernColors.primary[500]
+                  : modernColors.text.secondary
+              }
             />
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText,
+              ]}
+            >
               {METRIC_CONFIG[tab].label}
             </Text>
           </TouchableOpacity>
@@ -212,7 +236,8 @@ export function PerformanceChart({
         <View style={styles.chartContainer}>
           <SimpleBarChart data={chartData} color={currentConfig.color} />
           <Text style={styles.chartLabel}>
-            Last {Math.min(chartData.length, 12)} data points • {currentConfig.label}
+            Last {Math.min(chartData.length, 12)} data points •{" "}
+            {currentConfig.label}
           </Text>
         </View>
       ) : (
@@ -223,7 +248,9 @@ export function PerformanceChart({
             color={modernColors.text.secondary}
           />
           <Text style={styles.emptyText}>No data available</Text>
-          <Text style={styles.emptySubtext}>Performance data will appear here once available</Text>
+          <Text style={styles.emptySubtext}>
+            Performance data will appear here once available
+          </Text>
         </View>
       )}
     </View>

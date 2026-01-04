@@ -16,7 +16,10 @@ import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
 import { AppearanceSettings } from "../../src/components/ui/AppearanceSettings";
 import { ScreenContainer } from "../../src/components/ui";
-import { getSystemSettings, updateSystemSettings } from "../../src/services/api";
+import {
+  getSystemSettings,
+  updateSystemSettings,
+} from "../../src/services/api";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 
 export default function MasterSettingsScreen() {
@@ -28,9 +31,11 @@ export default function MasterSettingsScreen() {
 
   useEffect(() => {
     if (!hasRole("admin")) {
-      Alert.alert("Access Denied", "You do not have permission to view master settings.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to view master settings.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadSettings();
@@ -89,7 +94,7 @@ export default function MasterSettingsScreen() {
     label: string,
     key: string,
     keyboardType: "default" | "numeric" = "default",
-    description?: string
+    description?: string,
   ) => (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -106,7 +111,9 @@ export default function MasterSettingsScreen() {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      {description && <Text style={styles.inputDescription}>{description}</Text>}
+      {description && (
+        <Text style={styles.inputDescription}>{description}</Text>
+      )}
     </View>
   );
 
@@ -114,7 +121,9 @@ export default function MasterSettingsScreen() {
     <View style={styles.switchContainer}>
       <View style={styles.switchTextContainer}>
         <Text style={styles.switchLabel}>{label}</Text>
-        {description && <Text style={styles.switchDescription}>{description}</Text>}
+        {description && (
+          <Text style={styles.switchDescription}>{description}</Text>
+        )}
       </View>
       <Switch
         value={settings?.[key] || false}
@@ -124,7 +133,9 @@ export default function MasterSettingsScreen() {
           true: auroraTheme.colors.primary[300],
         }}
         thumbColor={
-          settings?.[key] ? auroraTheme.colors.primary[500] : auroraTheme.colors.surface.elevated
+          settings?.[key]
+            ? auroraTheme.colors.primary[500]
+            : auroraTheme.colors.surface.elevated
         }
       />
     </View>
@@ -139,7 +150,11 @@ export default function MasterSettingsScreen() {
           subtitle: "Configuration & Preferences",
           showBackButton: true,
           customRightContent: (
-            <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={saving}>
+            <TouchableOpacity
+              onPress={handleSave}
+              style={styles.saveButton}
+              disabled={saving}
+            >
               {saving ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
@@ -150,7 +165,10 @@ export default function MasterSettingsScreen() {
         }}
       >
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+          <ActivityIndicator
+            size="large"
+            color={auroraTheme.colors.primary[500]}
+          />
           <Text style={styles.loadingText}>Loading settings...</Text>
         </View>
       </ScreenContainer>
@@ -165,7 +183,11 @@ export default function MasterSettingsScreen() {
         subtitle: "Configuration & Preferences",
         showBackButton: true,
         customRightContent: (
-          <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={saving}>
+          <TouchableOpacity
+            onPress={handleSave}
+            style={styles.saveButton}
+            disabled={saving}
+          >
             {saving ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
@@ -179,7 +201,11 @@ export default function MasterSettingsScreen() {
         {/* Appearance Settings */}
         <View style={styles.section}>
           {renderSectionHeader("Appearance & UI", "color-palette-outline")}
-          <AppearanceSettings showTitle={false} scrollable={false} compact={true} />
+          <AppearanceSettings
+            showTitle={false}
+            scrollable={false}
+            compact={true}
+          />
         </View>
 
         {/* API Settings */}
@@ -189,13 +215,13 @@ export default function MasterSettingsScreen() {
             "API Timeout (seconds)",
             "api_timeout",
             "numeric",
-            "Request timeout duration"
+            "Request timeout duration",
           )}
           {renderInput(
             "Rate Limit (per minute)",
             "api_rate_limit",
             "numeric",
-            "Maximum requests per minute"
+            "Maximum requests per minute",
           )}
         </View>
 
@@ -207,13 +233,13 @@ export default function MasterSettingsScreen() {
             "Cache TTL (seconds)",
             "cache_ttl",
             "numeric",
-            "Time to live for cached items"
+            "Time to live for cached items",
           )}
           {renderInput(
             "Max Cache Size",
             "cache_max_size",
             "numeric",
-            "Maximum number of items in cache"
+            "Maximum number of items in cache",
           )}
         </View>
 
@@ -225,16 +251,29 @@ export default function MasterSettingsScreen() {
             "Sync Interval (seconds)",
             "sync_interval",
             "numeric",
-            "Time between automatic syncs"
+            "Time between automatic syncs",
           )}
-          {renderInput("Batch Size", "sync_batch_size", "numeric", "Items per sync batch")}
+          {renderInput(
+            "Batch Size",
+            "sync_batch_size",
+            "numeric",
+            "Items per sync batch",
+          )}
         </View>
 
         {/* Session Settings */}
         <View style={styles.section}>
           {renderSectionHeader("Sessions", "people-outline")}
-          {renderInput("Session Timeout (seconds)", "session_timeout", "numeric")}
-          {renderInput("Max Concurrent Sessions", "max_concurrent_sessions", "numeric")}
+          {renderInput(
+            "Session Timeout (seconds)",
+            "session_timeout",
+            "numeric",
+          )}
+          {renderInput(
+            "Max Concurrent Sessions",
+            "max_concurrent_sessions",
+            "numeric",
+          )}
         </View>
 
         {/* Logging Settings */}
@@ -242,7 +281,12 @@ export default function MasterSettingsScreen() {
           {renderSectionHeader("Logging", "document-text-outline")}
           {renderSwitch("Enable Audit Log", "enable_audit_log")}
           {renderInput("Log Retention (days)", "log_retention_days", "numeric")}
-          {renderInput("Log Level", "log_level", "default", "DEBUG, INFO, WARN, ERROR")}
+          {renderInput(
+            "Log Level",
+            "log_level",
+            "default",
+            "DEBUG, INFO, WARN, ERROR",
+          )}
         </View>
 
         {/* Database Settings */}
@@ -268,7 +312,11 @@ export default function MasterSettingsScreen() {
           {renderSectionHeader("Performance", "speedometer-outline")}
           {renderSwitch("Enable Compression", "enable_compression")}
           {renderSwitch("Enable CORS", "enable_cors")}
-          {renderInput("Max Request Size (bytes)", "max_request_size", "numeric")}
+          {renderInput(
+            "Max Request Size (bytes)",
+            "max_request_size",
+            "numeric",
+          )}
         </View>
 
         <View style={styles.footer}>

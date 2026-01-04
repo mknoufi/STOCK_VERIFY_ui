@@ -84,10 +84,19 @@ export function SectionLists({
     return () => clearTimeout(timer);
   }, [showFinishedSearch]);
 
-  const styles = React.useMemo(() => createStyles(theme, isDark), [theme, isDark]);
+  const styles = React.useMemo(
+    () => createStyles(theme, isDark),
+    [theme, isDark],
+  );
   const [showAllFinished, setShowAllFinished] = React.useState(false);
-  const topActiveSections = React.useMemo(() => activeSections.slice(0, 3), [activeSections]);
-  const overflowActiveSections = React.useMemo(() => activeSections.slice(3), [activeSections]);
+  const topActiveSections = React.useMemo(
+    () => activeSections.slice(0, 3),
+    [activeSections],
+  );
+  const overflowActiveSections = React.useMemo(
+    () => activeSections.slice(3),
+    [activeSections],
+  );
 
   return (
     <>
@@ -96,12 +105,20 @@ export function SectionLists({
         <View style={styles.sectionHeaderRow}>
           <View style={styles.sectionHeader}>
             <Ionicons name="layers" size={22} color={theme.colors.accent} />
-            <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: theme.colors.text.primary },
+              ]}
+            >
               Select Section
             </Text>
           </View>
           <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: theme.colors.accent }]}
+            style={[
+              styles.iconButton,
+              { backgroundColor: theme.colors.accent },
+            ]}
             onPress={onStartNewSection}
             activeOpacity={0.7}
             accessibilityRole="button"
@@ -110,7 +127,9 @@ export function SectionLists({
             <Ionicons name="add" size={20} color="#FFF" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.sectionSubtitle}>Tap a section to continue scanning</Text>
+        <Text style={styles.sectionSubtitle}>
+          Tap a section to continue scanning
+        </Text>
 
         {isLoading ? (
           <ActivityIndicator color="#0EA5E9" style={{ marginTop: 20 }} />
@@ -124,12 +143,20 @@ export function SectionLists({
                 <ModernCard
                   variant="elevated"
                   onPress={() =>
-                    onResumeSection(session.session_id || session.id || "", session.type)
+                    onResumeSection(
+                      session.session_id || session.id || "",
+                      session.type,
+                    )
                   }
                   style={styles.activeSessionCard}
                   contentStyle={styles.sessionCardContent}
                 >
-                  <View style={[styles.sessionIcon, { backgroundColor: "#0EA5E915" }]}>
+                  <View
+                    style={[
+                      styles.sessionIcon,
+                      { backgroundColor: "#0EA5E915" },
+                    ]}
+                  >
                     <Ionicons name="layers" size={24} color="#0EA5E9" />
                   </View>
                   <View style={styles.sessionInfo}>
@@ -139,7 +166,7 @@ export function SectionLists({
                     <Text style={styles.sessionMeta}>
                       {session.item_count || session.total_items || 0} items •{" "}
                       {new Date(
-                        session.created_at || session.started_at || ""
+                        session.created_at || session.started_at || "",
                       ).toLocaleDateString()}
                     </Text>
                   </View>
@@ -151,7 +178,9 @@ export function SectionLists({
             ))}
             {overflowActiveSections.length > 0 && (
               <>
-                <Text style={styles.overflowHint}>Drag horizontally to view more sections</Text>
+                <Text style={styles.overflowHint}>
+                  Drag horizontally to view more sections
+                </Text>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -167,12 +196,20 @@ export function SectionLists({
                       <ModernCard
                         variant="elevated"
                         onPress={() =>
-                          onResumeSection(session.session_id || session.id || "", session.type)
+                          onResumeSection(
+                            session.session_id || session.id || "",
+                            session.type,
+                          )
                         }
                         style={styles.overflowCard}
                         contentStyle={styles.sessionCardContent}
                       >
-                        <View style={[styles.sessionIcon, { backgroundColor: "#0EA5E915" }]}>
+                        <View
+                          style={[
+                            styles.sessionIcon,
+                            { backgroundColor: "#0EA5E915" },
+                          ]}
+                        >
                           <Ionicons name="layers" size={24} color="#0EA5E9" />
                         </View>
                         <View style={styles.sessionInfo}>
@@ -180,14 +217,19 @@ export function SectionLists({
                             {session.warehouse}
                           </Text>
                           <Text style={styles.sessionMeta}>
-                            {session.item_count || session.total_items || 0} items •{" "}
+                            {session.item_count || session.total_items || 0}{" "}
+                            items •{" "}
                             {new Date(
-                              session.created_at || session.started_at || ""
+                              session.created_at || session.started_at || "",
                             ).toLocaleDateString()}
                           </Text>
                         </View>
                         <View style={styles.resumeButton}>
-                          <Ionicons name="arrow-forward" size={18} color="#FFF" />
+                          <Ionicons
+                            name="arrow-forward"
+                            size={18}
+                            color="#FFF"
+                          />
                         </View>
                       </ModernCard>
                     </Animated.View>
@@ -197,11 +239,21 @@ export function SectionLists({
             )}
           </View>
         ) : (
-          <ModernCard variant="elevated" intensity={10} style={styles.emptyState}>
+          <ModernCard
+            variant="elevated"
+            intensity={10}
+            style={styles.emptyState}
+          >
             <View style={{ alignItems: "center" }}>
-              <Ionicons name="checkmark-circle-outline" size={40} color="#10B981" />
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={40}
+                color="#10B981"
+              />
               <Text style={styles.emptyTitle}>All Caught Up!</Text>
-              <Text style={styles.emptyText}>No active sections. Start a new one below.</Text>
+              <Text style={styles.emptyText}>
+                No active sections. Start a new one below.
+              </Text>
             </View>
           </ModernCard>
         )}
@@ -251,7 +303,10 @@ export function SectionLists({
               autoCorrect={false}
             />
             {finishedSearchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => onSearchQueryChange("")} accessibilityRole="button">
+              <TouchableOpacity
+                onPress={() => onSearchQueryChange("")}
+                accessibilityRole="button"
+              >
                 <Ionicons name="close-circle" size={18} color="#94A3B8" />
               </TouchableOpacity>
             )}
@@ -260,47 +315,65 @@ export function SectionLists({
 
         {finishedSections.length > 0 ? (
           <View style={styles.listContainer}>
-            {(showAllFinished ? finishedSections : finishedSections.slice(0, 3)).map(
-              (session, index) => (
-                <Animated.View
-                  key={session.id || session.session_id}
-                  entering={FadeInUp.delay(200 + index * 50)}
+            {(showAllFinished
+              ? finishedSections
+              : finishedSections.slice(0, 3)
+            ).map((session, index) => (
+              <Animated.View
+                key={session.id || session.session_id}
+                entering={FadeInUp.delay(200 + index * 50)}
+              >
+                <View
+                  style={[
+                    styles.finishedSessionCard,
+                    {
+                      backgroundColor: isDark
+                        ? "rgba(255,255,255,0.03)"
+                        : "rgba(0,0,0,0.02)",
+                    },
+                  ]}
                 >
-                  <View
-                    style={[
-                      styles.finishedSessionCard,
-                      {
-                        backgroundColor: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
-                      },
-                    ]}
-                  >
-                    <View style={styles.sessionCardContent}>
-                      <View style={[styles.sessionIcon, { backgroundColor: "#10B98115" }]}>
-                        <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-                      </View>
-                      <View style={styles.sessionInfo}>
-                        <Text style={styles.sessionName} numberOfLines={1}>
-                          {session.warehouse}
-                        </Text>
-                        <Text style={styles.sessionMeta}>
-                          {session.item_count || session.total_items || 0} items • Last used{" "}
-                          {getRelativeTime(
-                            session.closed_at || session.updated_at || session.created_at || ""
-                          )}
-                        </Text>
-                      </View>
+                  <View style={styles.sessionCardContent}>
+                    <View
+                      style={[
+                        styles.sessionIcon,
+                        { backgroundColor: "#10B98115" },
+                      ]}
+                    >
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color="#10B981"
+                      />
+                    </View>
+                    <View style={styles.sessionInfo}>
+                      <Text style={styles.sessionName} numberOfLines={1}>
+                        {session.warehouse}
+                      </Text>
+                      <Text style={styles.sessionMeta}>
+                        {session.item_count || session.total_items || 0} items •
+                        Last used{" "}
+                        {getRelativeTime(
+                          session.closed_at ||
+                            session.updated_at ||
+                            session.created_at ||
+                            "",
+                        )}
+                      </Text>
                     </View>
                   </View>
-                </Animated.View>
-              )
-            )}
+                </View>
+              </Animated.View>
+            ))}
             {finishedSections.length > 3 && (
               <TouchableOpacity
                 onPress={() => setShowAllFinished(!showAllFinished)}
                 style={{ paddingVertical: 8, alignItems: "center" }}
               >
                 <Text style={styles.moreText}>
-                  {showAllFinished ? "Show Less" : `+${finishedSections.length - 3} more sessions`}
+                  {showAllFinished
+                    ? "Show Less"
+                    : `+${finishedSections.length - 3} more sessions`}
                 </Text>
               </TouchableOpacity>
             )}
@@ -308,7 +381,9 @@ export function SectionLists({
         ) : (
           <View style={styles.emptyStateSmall}>
             <Text style={styles.emptyTextSmall}>
-              {finishedSearchQuery ? "No matching sessions found" : "No previous sessions yet"}
+              {finishedSearchQuery
+                ? "No matching sessions found"
+                : "No previous sessions yet"}
             </Text>
           </View>
         )}
@@ -372,7 +447,9 @@ const createStyles = (theme: AppTheme, isDark: boolean) =>
       borderWidth: 1,
       borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
       marginBottom: 12, // Increased from 4
-      backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.7)",
+      backgroundColor: isDark
+        ? "rgba(30, 41, 59, 0.7)"
+        : "rgba(255, 255, 255, 0.7)",
     },
     finishedSessionCard: {
       borderRadius: 20,
@@ -380,7 +457,9 @@ const createStyles = (theme: AppTheme, isDark: boolean) =>
       borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
       padding: 16,
       marginBottom: 12, // Increased from 4
-      backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.6)",
+      backgroundColor: isDark
+        ? "rgba(30, 41, 59, 0.4)"
+        : "rgba(255, 255, 255, 0.6)",
     },
     sessionCardContent: {
       flexDirection: "row",
@@ -442,7 +521,9 @@ const createStyles = (theme: AppTheme, isDark: boolean) =>
       borderRadius: 16,
       borderWidth: 1,
       borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-      backgroundColor: isDark ? "rgba(15, 23, 42, 0.6)" : "rgba(255, 255, 255, 0.8)",
+      backgroundColor: isDark
+        ? "rgba(15, 23, 42, 0.6)"
+        : "rgba(255, 255, 255, 0.8)",
       marginBottom: 16,
     },
     searchInput: {
@@ -488,7 +569,9 @@ const createStyles = (theme: AppTheme, isDark: boolean) =>
       borderWidth: 1,
       borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
       padding: 16,
-      backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.7)",
+      backgroundColor: isDark
+        ? "rgba(30, 41, 59, 0.7)"
+        : "rgba(255, 255, 255, 0.7)",
     },
   });
 

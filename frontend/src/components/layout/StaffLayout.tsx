@@ -61,13 +61,24 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({
 
   return (
     <View style={[styles.container, style]} testID={testID}>
-      <AppHeader title={screenTitle} showBack={showBack} showUser={true} actions={headerActions} />
-      <Screen variant={screenVariant} style={styles.screen} backgroundColor={backgroundColor}>
+      <AppHeader
+        title={screenTitle}
+        showBack={showBack}
+        showUser={true}
+        actions={headerActions}
+      />
+      <Screen
+        variant={screenVariant}
+        style={styles.screen}
+        backgroundColor={backgroundColor}
+      >
         {children}
       </Screen>
       {isMobile && <StaffTabBar />}
       {showFAB && fabAction && (
-        <View style={styles.fabContainer}>{/* FAB will be implemented separately */}</View>
+        <View style={styles.fabContainer}>
+          {/* FAB will be implemented separately */}
+        </View>
       )}
     </View>
   );

@@ -19,7 +19,7 @@ export class AutoRecovery {
       defaultValue?: T;
       context?: string;
       showAlert?: boolean;
-    } = {}
+    } = {},
   ): Promise<T> {
     const {
       maxRetries = 3,
@@ -43,7 +43,9 @@ export class AutoRecovery {
     }
 
     // Log error and show alert if needed
-    const error = recovery.error ? new Error(recovery.error) : new Error("Operation failed");
+    const error = recovery.error
+      ? new Error(recovery.error)
+      : new Error("Operation failed");
     const issue = AutoErrorFinder.detectRuntimeError(error, context);
 
     if (showAlert) {

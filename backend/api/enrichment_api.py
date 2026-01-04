@@ -264,7 +264,7 @@ async def bulk_import_enrichments_endpoint(
         raise HTTPException(status_code=403, detail="Only admin/supervisor can perform bulk import")
 
     try:
-        enrichments = [e.dict() for e in request.enrichments]
+        enrichments = [e.model_dump() for e in request.enrichments]
 
         results = await enrichment_service.bulk_import_enrichments(
             enrichments=enrichments,

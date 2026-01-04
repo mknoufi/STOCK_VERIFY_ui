@@ -4,11 +4,22 @@
  * Features: 1D-only mode, scan throttling, haptic feedback, visual overlay
  */
 import React, { useRef, useCallback } from "react";
-import { View, Text, TouchableOpacity, Modal, ActivityIndicator, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { ScannerMode } from "@/types/scan";
-import { SCANNER_CONFIG, ScanThrottleManager, BarcodeValidator } from "@/config/scannerConfig";
+import {
+  SCANNER_CONFIG,
+  ScanThrottleManager,
+  BarcodeValidator,
+} from "@/config/scannerConfig";
 import { ScanAreaOverlay } from "./ScanAreaOverlay";
 import { hapticService } from "@/services/hapticService";
 
@@ -42,10 +53,14 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   onToggleContinuousMode,
 }) => {
   // Scan throttle manager to prevent duplicate scans
-  const throttleManagerRef = useRef<ScanThrottleManager>(new ScanThrottleManager());
+  const throttleManagerRef = useRef<ScanThrottleManager>(
+    new ScanThrottleManager(),
+  );
 
   // Track scan feedback state for visual overlay
-  const [scanState, setScanState] = React.useState<"idle" | "success" | "error">("idle");
+  const [scanState, setScanState] = React.useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   // Reset scan state after feedback
   React.useEffect(() => {
@@ -82,7 +97,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       // Call parent handler
       onBarcodeScanned(data);
     },
-    [onBarcodeScanned]
+    [onBarcodeScanned],
   );
 
   if (isWeb) {
@@ -118,7 +133,10 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         />
         <View style={styles.scannerOverlay}>
           <View style={styles.scannerTopBar}>
-            <TouchableOpacity style={styles.closeScannerButton} onPress={onClose}>
+            <TouchableOpacity
+              style={styles.closeScannerButton}
+              onPress={onClose}
+            >
               <Ionicons name="close" size={32} color="#fff" />
             </TouchableOpacity>
             {scannerMode === "item" ? (
@@ -168,25 +186,41 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                 </TouchableOpacity>
                 <View style={styles.serialOverlayBadge}>
                   <Ionicons name="pricetag-outline" size={18} color="#fff" />
-                  <Text style={styles.serialOverlayText}>{serialLabel ?? "Serial capture"}</Text>
+                  <Text style={styles.serialOverlayText}>
+                    {serialLabel ?? "Serial capture"}
+                  </Text>
                 </View>
               </View>
             )}
           </View>
 
           {(scanFeedback || isLoadingItem) && (
-            <View style={[styles.scanFeedbackBanner, isLoadingItem && styles.scanFeedbackLoading]}>
+            <View
+              style={[
+                styles.scanFeedbackBanner,
+                isLoadingItem && styles.scanFeedbackLoading,
+              ]}
+            >
               {isLoadingItem ? (
-                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <ActivityIndicator
+                  size="small"
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                />
               ) : (
                 <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
               )}
-              <Text style={styles.scanFeedbackText}>{scanFeedback || "Loading..."}</Text>
+              <Text style={styles.scanFeedbackText}>
+                {scanFeedback || "Loading..."}
+              </Text>
             </View>
           )}
 
           {/* Enhanced scan area overlay with animations */}
-          <ScanAreaOverlay feedbackState={scanState} hintText={scannerInstruction} />
+          <ScanAreaOverlay
+            feedbackState={scanState}
+            hintText={scannerInstruction}
+          />
 
           <View style={styles.scannerInstructionContainer}>
             <Text style={styles.scannerText}>{scannerInstruction}</Text>

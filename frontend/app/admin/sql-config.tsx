@@ -73,7 +73,10 @@ export default function SqlConfigScreen() {
       if (response.data.connected) {
         Alert.alert("Success", "Connection test successful!");
       } else {
-        Alert.alert("Failed", response.data.message || "Connection test failed");
+        Alert.alert(
+          "Failed",
+          response.data.message || "Connection test failed",
+        );
       }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Connection test failed");
@@ -87,7 +90,10 @@ export default function SqlConfigScreen() {
       setSaving(true);
       const response = await updateSqlServerConfig(config);
       if (response.success) {
-        Alert.alert("Success", "Configuration saved. Restart backend to apply changes.");
+        Alert.alert(
+          "Success",
+          "Configuration saved. Restart backend to apply changes.",
+        );
         router.back();
       }
     } catch (error: any) {
@@ -124,7 +130,10 @@ export default function SqlConfigScreen() {
         showBackButton: true,
       }}
     >
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+      >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connection Settings</Text>
 
@@ -147,7 +156,9 @@ export default function SqlConfigScreen() {
               placeholder="1433"
               placeholderTextColor="#666"
               value={config.port.toString()}
-              onChangeText={(text) => setConfig({ ...config, port: parseInt(text) || 1433 })}
+              onChangeText={(text) =>
+                setConfig({ ...config, port: parseInt(text) || 1433 })
+              }
               keyboardType="numeric"
             />
           </View>
@@ -195,7 +206,9 @@ export default function SqlConfigScreen() {
             style={[
               styles.testResult,
               {
-                backgroundColor: testResult.connected ? "#4CAF5020" : "#f4433620",
+                backgroundColor: testResult.connected
+                  ? "#4CAF5020"
+                  : "#f4433620",
               },
             ]}
           >
@@ -250,8 +263,9 @@ export default function SqlConfigScreen() {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={20} color="#007AFF" />
           <Text style={styles.infoText}>
-            SQL Server is optional. The app will work without it, but ERP sync features will be
-            disabled. Restart the backend server after saving configuration changes.
+            SQL Server is optional. The app will work without it, but ERP sync
+            features will be disabled. Restart the backend server after saving
+            configuration changes.
           </Text>
         </View>
       </ScrollView>

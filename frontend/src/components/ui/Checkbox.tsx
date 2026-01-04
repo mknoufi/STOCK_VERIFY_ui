@@ -7,7 +7,11 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 import {
   colorPalette,
   spacing,
@@ -77,7 +81,11 @@ export const Checkbox: React.FC<CheckboxProps> = ({
 
       {(label || description) && (
         <View style={styles.labelContainer}>
-          {label && <Text style={[styles.label, disabled && styles.labelDisabled]}>{label}</Text>}
+          {label && (
+            <Text style={[styles.label, disabled && styles.labelDisabled]}>
+              {label}
+            </Text>
+          )}
 
           {description && <Text style={styles.description}>{description}</Text>}
         </View>

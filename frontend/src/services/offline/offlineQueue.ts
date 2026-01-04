@@ -41,7 +41,8 @@ async function saveQueue(queue: QueuedMutation[]): Promise<void> {
 }
 
 async function addConflict(item: QueuedMutation, detail?: any): Promise<void> {
-  const existing = (await storage.get<any[]>(CONFLICTS_KEY, { defaultValue: [] })) || [];
+  const existing =
+    (await storage.get<any[]>(CONFLICTS_KEY, { defaultValue: [] })) || [];
   const record = { ...item, detail, resolved: false, timestamp: Date.now() };
   existing.push(record);
   await storage.set(CONFLICTS_KEY, existing, { silent: true });
@@ -53,7 +54,9 @@ function isMutatingMethod(method?: string): method is QueueMethod {
   return m === "post" || m === "put" || m === "patch" || m === "delete";
 }
 
-export async function enqueueMutation(config: AxiosRequestConfig): Promise<QueuedMutation> {
+export async function enqueueMutation(
+  config: AxiosRequestConfig,
+): Promise<QueuedMutation> {
   const queue = await loadQueue();
   const item: QueuedMutation = {
     id: generateId(),
@@ -73,13 +76,14 @@ export async function enqueueMutation(config: AxiosRequestConfig): Promise<Queue
 let flushing = false;
 
 export async function flushOfflineQueue(
-  client: AxiosInstance
+  client: AxiosInstance,
 ): Promise<{ processed: number; remaining: number }> {
   if (!flags.enableOfflineQueue) return { processed: 0, remaining: 0 };
   if (flushing) return { processed: 0, remaining: (await loadQueue()).length };
 
-  const { isOnline, isInternetReachable } = useNetworkStore.getState();
-  const online = isOnline && (isInternetReachable ?? true);
+  const { isOnline, isInternetReachable, isRestrictedMode } =
+    useNetworkStore.getState();
+  const online = !isRestrictedMode && isOnline && (isInternetReachable ?? true);
   onlineManager.setOnline(online);
   if (!online) return { processed: 0, remaining: (await loadQueue()).length };
 
@@ -122,7 +126,11 @@ export async function flushOfflineQueue(
         // We treat 401/403 as fatal for queued items to avoid infinite retry loops
         if (
           status &&
-          (status === 409 || status === 422 || status === 400 || status === 401 || status === 403)
+          (status === 409 ||
+            status === 422 ||
+            status === 400 ||
+            status === 401 ||
+            status === 403)
         ) {
           await addConflict(item, error.response?.data);
           processed += 1; // we consider it handled (moved to conflicts)
@@ -149,13 +157,17 @@ export function startOfflineQueue(client: AxiosInstance): void {
   if (!flags.enableOfflineQueue) return;
 
   // Sync initial online status with React Query
-  const { isOnline, isInternetReachable } = useNetworkStore.getState();
-  onlineManager.setOnline(isOnline && (isInternetReachable ?? true));
+  const { isOnline, isInternetReachable, isRestrictedMode } =
+    useNetworkStore.getState();
+  onlineManager.setOnline(!isRestrictedMode && isOnline && (isInternetReachable ?? true));
 
   // Subscribe to network changes to auto-flush
   if (!unsubscribeNetwork) {
     unsubscribeNetwork = useNetworkStore.subscribe((state: any, _prev: any) => {
-      const online = state.isOnline && (state.isInternetReachable ?? true);
+      const online =
+        !state.isRestrictedMode &&
+        state.isOnline &&
+        (state.isInternetReachable ?? true);
       onlineManager.setOnline(online);
       if (online && !flushing) {
         flushOfflineQueue(client)
@@ -163,12 +175,14 @@ export function startOfflineQueue(client: AxiosInstance): void {
             if (__DEV__ && (res.processed > 0 || res.remaining >= 0)) {
               __DEV__ &&
                 console.log(
-                  `OfflineQueue: flushed processed=${res.processed} remaining=${res.remaining}`
+                  `OfflineQueue: flushed processed=${res.processed} remaining=${res.remaining}`,
                 );
             }
             if (res.processed > 0) {
               try {
-                toastService.showSuccess(`Synced ${res.processed} queued change(s)`);
+                toastService.showSuccess(
+                  `Synced ${res.processed} queued change(s)`,
+                );
               } catch {}
             }
           })
@@ -216,8 +230,31 @@ export function attachOfflineQueueInterceptors(client: AxiosInstance): void {
         return Promise.reject(error);
       }
 
-      const { isOnline, isInternetReachable } = useNetworkStore.getState();
-      const online = isOnline && (isInternetReachable ?? true);
+      // If backend rejects due to LAN policy, treat like offline and queue mutations.
+      const status = error.response?.status;
+      const errorCode = (error.response?.data as { code?: string } | undefined)?.code;
+      if (status === 403 && errorCode === "NETWORK_NOT_ALLOWED") {
+        try {
+          useNetworkStore.getState().setRestrictedMode(true);
+        } catch {}
+        const item = await enqueueMutation(cfg);
+        if (__DEV__) {
+          __DEV__ &&
+            console.warn("OfflineQueue: queued due to restricted mode", {
+              id: item.id,
+              method: item.method,
+              url: item.url,
+            });
+        }
+        try {
+          toastService.showInfo("Restricted network. Saved offline for later sync.");
+        } catch {}
+        return Promise.reject(error);
+      }
+
+      const { isOnline, isInternetReachable, isRestrictedMode } =
+        useNetworkStore.getState();
+      const online = !isRestrictedMode && isOnline && (isInternetReachable ?? true);
 
       // If offline or network error with no response, queue it
       const isNetworkError = !error.response;
@@ -240,7 +277,7 @@ export function attachOfflineQueueInterceptors(client: AxiosInstance): void {
       }
 
       return Promise.reject(error);
-    }
+    },
   );
 }
 

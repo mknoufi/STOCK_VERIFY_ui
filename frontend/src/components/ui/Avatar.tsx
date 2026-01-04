@@ -5,7 +5,14 @@
  */
 
 import React from "react";
-import { View, Text, Image, StyleSheet, ViewStyle, TextStyle } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colorPalette, typography } from "@/theme/designTokens";
 
@@ -22,7 +29,10 @@ interface AvatarProps {
   textStyle?: TextStyle;
 }
 
-const sizeStyles: Record<AvatarSize, { size: number; fontSize: number; iconSize: number }> = {
+const sizeStyles: Record<
+  AvatarSize,
+  { size: number; fontSize: number; iconSize: number }
+> = {
   xs: { size: 24, fontSize: typography.fontSize.xs, iconSize: 12 },
   sm: { size: 32, fontSize: typography.fontSize.sm, iconSize: 16 },
   md: { size: 40, fontSize: typography.fontSize.base, iconSize: 20 },
@@ -66,12 +76,17 @@ export const Avatar: React.FC<AvatarProps> = ({
   textStyle,
 }) => {
   const sizes = sizeStyles[size];
-  const backgroundColor = name ? getBackgroundColor(name) : colorPalette.neutral[400];
+  const backgroundColor = name
+    ? getBackgroundColor(name)
+    : colorPalette.neutral[400];
 
   const renderContent = () => {
     if (source) {
       return (
-        <Image source={source} style={[styles.image, { width: sizes.size, height: sizes.size }]} />
+        <Image
+          source={source}
+          style={[styles.image, { width: sizes.size, height: sizes.size }]}
+        />
       );
     }
 
@@ -93,7 +108,13 @@ export const Avatar: React.FC<AvatarProps> = ({
       );
     }
 
-    return <Ionicons name={fallbackIcon} size={sizes.iconSize} color={colorPalette.neutral[0]} />;
+    return (
+      <Ionicons
+        name={fallbackIcon}
+        size={sizes.iconSize}
+        color={colorPalette.neutral[0]}
+      />
+    );
   };
 
   return (

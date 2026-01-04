@@ -27,6 +27,7 @@ export const storage = {
 
   // Additional methods for compatibility
   get: async (key: string): Promise<string | null> => storage.getItem(key),
-  set: async (key: string, value: string): Promise<void> => storage.setItem(key, value),
+  set: async (key: string, value: string): Promise<void> =>
+    storage.setItem(key, value),
   remove: async (key: string): Promise<void> => storage.removeItem(key),
 };

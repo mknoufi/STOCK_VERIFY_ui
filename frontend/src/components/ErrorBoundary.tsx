@@ -8,7 +8,11 @@ import React, { Component, ReactNode } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { errorReporter } from "../services/errorRecovery";
-import { modernColors, modernTypography, modernSpacing } from "../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../styles/modernDesignSystem";
 import { PremiumButton } from "./premium/PremiumButton";
 
 interface Props {
@@ -79,9 +83,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <View style={styles.container}>
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.iconContainer}>
-              <Ionicons name="warning-outline" size={80} color={modernColors.error.main} />
+              <Ionicons
+                name="warning-outline"
+                size={80}
+                color={modernColors.error.main}
+              />
             </View>
 
             <Text style={styles.title}>Something went wrong</Text>
@@ -93,9 +104,13 @@ export class ErrorBoundary extends Component<Props, State> {
             {__DEV__ && this.state.error && (
               <View style={styles.details}>
                 <Text style={styles.detailsTitle}>Error Details:</Text>
-                <Text style={styles.detailsText}>{this.state.error.toString()}</Text>
+                <Text style={styles.detailsText}>
+                  {this.state.error.toString()}
+                </Text>
                 {this.state.errorInfo?.componentStack && (
-                  <Text style={styles.detailsText}>{this.state.errorInfo.componentStack}</Text>
+                  <Text style={styles.detailsText}>
+                    {this.state.errorInfo.componentStack}
+                  </Text>
                 )}
               </View>
             )}

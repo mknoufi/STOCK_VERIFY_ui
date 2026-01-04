@@ -15,7 +15,9 @@ export default function StaffLayout() {
   return (
     <RoleLayoutGuard allowedRoles={["staff"]} layoutName="StaffLayout">
       <ErrorBoundary
-        fallback={(error, resetError) => <StaffCrashScreen error={error} resetError={resetError} />}
+        fallback={(error, resetError) => (
+          <StaffCrashScreen error={error} resetError={resetError} />
+        )}
       >
         <Stack screenOptions={{ headerShown: false }} />
       </ErrorBoundary>

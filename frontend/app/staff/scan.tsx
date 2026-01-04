@@ -55,7 +55,13 @@ import ModernHeader from "../../src/components/ui/ModernHeader";
 import ModernCard from "../../src/components/ui/ModernCard";
 import ModernButton from "../../src/components/ui/ModernButton";
 import ModernInput from "../../src/components/ui/ModernInput";
-import { colors, spacing, typography, borderRadius, shadows } from "../../src/theme/modernDesign";
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from "../../src/theme/modernDesign";
 
 const SCAN_BUFFER_TIMEOUT = 2000; // 2 seconds
 const SCAN_BUFFER_MAX_SIZE = 10;
@@ -64,7 +70,9 @@ const SCAN_CONFIDENCE_THRESHOLD = 2;
 export default function ScanScreen() {
   const router = useRouter();
   const { sessionId: rawSessionId } = useLocalSearchParams();
-  const sessionId = Array.isArray(rawSessionId) ? rawSessionId[0] : rawSessionId;
+  const sessionId = Array.isArray(rawSessionId)
+    ? rawSessionId[0]
+    : rawSessionId;
 
   const { currentFloor, currentRack } = useScanSessionStore();
   const [permission, requestPermission] = useCameraPermissions();
@@ -92,7 +100,9 @@ export default function ScanScreen() {
   const scanLinePosition = useSharedValue(0);
   const cornerOpacity = useSharedValue(1);
 
-  const scanBufferRef = useRef<{ code: string; count: number; timestamp: number }[]>([]);
+  const scanBufferRef = useRef<
+    { code: string; count: number; timestamp: number }[]
+  >([]);
 
   // Animated scan line
   useEffect(() => {
@@ -100,12 +110,15 @@ export default function ScanScreen() {
       scanLinePosition.value = withRepeat(
         withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
         -1,
-        true
+        true,
       );
       cornerOpacity.value = withRepeat(
-        withSequence(withTiming(0.5, { duration: 1000 }), withTiming(1, { duration: 1000 })),
+        withSequence(
+          withTiming(0.5, { duration: 1000 }),
+          withTiming(1, { duration: 1000 }),
+        ),
         -1,
-        false
+        false,
       );
     }
   }, [isScanning]);
@@ -193,10 +206,12 @@ export default function ScanScreen() {
 
     // Buffer logic
     scanBufferRef.current = scanBufferRef.current.filter(
-      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT
+      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT,
     );
 
-    const existingIndex = scanBufferRef.current.findIndex((entry) => entry.code === trimmedData);
+    const existingIndex = scanBufferRef.current.findIndex(
+      (entry) => entry.code === trimmedData,
+    );
 
     if (existingIndex >= 0) {
       scanBufferRef.current[existingIndex]!.count += 1;
@@ -210,7 +225,7 @@ export default function ScanScreen() {
     }
 
     const confident = scanBufferRef.current.find(
-      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD
+      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD,
     );
 
     if (!confident) {
@@ -227,6 +242,7 @@ export default function ScanScreen() {
   };
 
   const handleLookup = async (barcode: string) => {
+    if (loading) return;
     const validation = validateBarcode(barcode);
     if (!validation.valid) {
       Alert.alert("Invalid Barcode", validation.error || "Please try again");
@@ -253,14 +269,22 @@ export default function ScanScreen() {
 
         // Check for duplicates
         try {
-          const scanStatus = await checkItemScanStatus(sessionId!, item.item_code);
+          const scanStatus = await checkItemScanStatus(
+            sessionId!,
+            item.item_code,
+          );
           if (scanStatus.scanned) {
             const duplicateInLocation = scanStatus.locations.find(
-              (loc: any) => loc.floor_no === currentFloor && loc.rack_no === currentRack
+              (loc: any) =>
+                loc.floor_no === currentFloor && loc.rack_no === currentRack,
             );
 
             if (duplicateInLocation) {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Warning,
+              );
+              setLoading(false);
+              setScanned(false);
               Alert.alert(
                 "Duplicate Scan",
                 `Item already counted here by ${duplicateInLocation.counted_by}.\nQty: ${duplicateInLocation.counted_qty}`,
@@ -268,19 +292,22 @@ export default function ScanScreen() {
                   {
                     text: "Cancel",
                     style: "cancel",
-                    onPress: () => setLoading(false),
                   },
                   {
                     text: "Verify / Update",
-                    onPress: () => navigateToDetail(item.barcode || validation.value!),
+                    onPress: () =>
+                      navigateToDetail(item.barcode || validation.value!),
                   },
-                ]
+                ],
               );
               return;
             } else {
-              toastService.show(`Item found in ${scanStatus.locations.length} other location(s)`, {
-                type: "info",
-              });
+              toastService.show(
+                `Item found in ${scanStatus.locations.length} other location(s)`,
+                {
+                  type: "info",
+                },
+              );
             }
           }
         } catch (e) {
@@ -331,7 +358,9 @@ export default function ScanScreen() {
     if (!permission.granted) {
       return (
         <View style={styles.permissionContainer}>
-          <Text style={styles.permissionText}>We need your permission to show the camera</Text>
+          <Text style={styles.permissionText}>
+            We need your permission to show the camera
+          </Text>
           <ModernButton onPress={requestPermission} title="Grant Permission" />
           <ModernButton
             onPress={() => setIsScanning(false)}
@@ -349,7 +378,15 @@ export default function ScanScreen() {
           style={StyleSheet.absoluteFill}
           onBarcodeScanned={scanned ? undefined : handleBarcodeScan}
           barcodeScannerSettings={{
-            barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e", "code128", "code39", "qr"],
+            barcodeTypes: [
+              "ean13",
+              "ean8",
+              "upc_a",
+              "upc_e",
+              "code128",
+              "code39",
+              "qr",
+            ],
           }}
         >
           <SafeAreaView style={styles.cameraOverlay}>
@@ -368,22 +405,40 @@ export default function ScanScreen() {
               <View style={styles.scanFrameWrapper}>
                 {/* Corner Brackets */}
                 <Animated.View
-                  style={[styles.cornerBracket, styles.cornerTopLeft, animatedCorners]}
+                  style={[
+                    styles.cornerBracket,
+                    styles.cornerTopLeft,
+                    animatedCorners,
+                  ]}
                 />
                 <Animated.View
-                  style={[styles.cornerBracket, styles.cornerTopRight, animatedCorners]}
+                  style={[
+                    styles.cornerBracket,
+                    styles.cornerTopRight,
+                    animatedCorners,
+                  ]}
                 />
                 <Animated.View
-                  style={[styles.cornerBracket, styles.cornerBottomLeft, animatedCorners]}
+                  style={[
+                    styles.cornerBracket,
+                    styles.cornerBottomLeft,
+                    animatedCorners,
+                  ]}
                 />
                 <Animated.View
-                  style={[styles.cornerBracket, styles.cornerBottomRight, animatedCorners]}
+                  style={[
+                    styles.cornerBracket,
+                    styles.cornerBottomRight,
+                    animatedCorners,
+                  ]}
                 />
 
                 {/* Animated Scan Line */}
                 <Animated.View style={[styles.scanLine, animatedScanLine]} />
               </View>
-              <Text style={styles.scanInstruction}>Align barcode within frame</Text>
+              <Text style={styles.scanInstruction}>
+                Align barcode within frame
+              </Text>
             </View>
           </SafeAreaView>
         </CameraView>
@@ -394,7 +449,10 @@ export default function ScanScreen() {
   // Skeleton Loader Component
   const SkeletonLoader = ({ style }: { style?: any }) => (
     <View style={[styles.skeleton, style]}>
-      <Animated.View style={styles.skeletonShimmer} entering={FadeInDown.duration(300)} />
+      <Animated.View
+        style={styles.skeletonShimmer}
+        entering={FadeInDown.duration(300)}
+      />
     </View>
   );
 
@@ -428,7 +486,8 @@ export default function ScanScreen() {
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="none"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -444,23 +503,44 @@ export default function ScanScreen() {
             <ModernCard style={styles.statsCard}>
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
-                  <SkeletonLoader style={{ width: 48, height: 32, borderRadius: 8 }} />
                   <SkeletonLoader
-                    style={{ width: 60, height: 12, marginTop: 8, borderRadius: 4 }}
+                    style={{ width: 48, height: 32, borderRadius: 8 }}
+                  />
+                  <SkeletonLoader
+                    style={{
+                      width: 60,
+                      height: 12,
+                      marginTop: 8,
+                      borderRadius: 4,
+                    }}
                   />
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <SkeletonLoader style={{ width: 48, height: 32, borderRadius: 8 }} />
                   <SkeletonLoader
-                    style={{ width: 60, height: 12, marginTop: 8, borderRadius: 4 }}
+                    style={{ width: 48, height: 32, borderRadius: 8 }}
+                  />
+                  <SkeletonLoader
+                    style={{
+                      width: 60,
+                      height: 12,
+                      marginTop: 8,
+                      borderRadius: 4,
+                    }}
                   />
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <SkeletonLoader style={{ width: 48, height: 32, borderRadius: 8 }} />
                   <SkeletonLoader
-                    style={{ width: 60, height: 12, marginTop: 8, borderRadius: 4 }}
+                    style={{ width: 48, height: 32, borderRadius: 8 }}
+                  />
+                  <SkeletonLoader
+                    style={{
+                      width: 60,
+                      height: 12,
+                      marginTop: 8,
+                      borderRadius: 4,
+                    }}
                   />
                 </View>
               </View>
@@ -469,19 +549,25 @@ export default function ScanScreen() {
             <ModernCard style={styles.statsCard}>
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{sessionStats.scannedItems}</Text>
+                  <Text style={styles.statValue}>
+                    {sessionStats.scannedItems}
+                  </Text>
                   <Text style={styles.statLabel}>Scanned</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: colors.success[600] }]}>
+                  <Text
+                    style={[styles.statValue, { color: colors.success[600] }]}
+                  >
                     {sessionStats.verifiedItems}
                   </Text>
                   <Text style={styles.statLabel}>Verified</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: colors.warning[600] }]}>
+                  <Text
+                    style={[styles.statValue, { color: colors.warning[600] }]}
+                  >
                     {sessionStats.pendingItems}
                   </Text>
                   <Text style={styles.statLabel}>Pending</Text>
@@ -492,7 +578,10 @@ export default function ScanScreen() {
         </Animated.View>
 
         {/* Search Section */}
-        <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.searchSection}>
+        <Animated.View
+          entering={FadeInDown.delay(100).duration(500)}
+          style={styles.searchSection}
+        >
           <View style={styles.searchRow}>
             <View style={styles.searchInputWrapper}>
               <ModernInput
@@ -514,17 +603,26 @@ export default function ScanScreen() {
               />
             </View>
             <TouchableOpacity
-              style={[styles.searchButton, !searchQuery.trim() && styles.searchButtonDisabled]}
+              style={[
+                styles.searchButton,
+                loading && styles.searchButtonDisabled,
+              ]}
               onPress={() => {
                 if (searchQuery.trim()) {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   handleLookup(searchQuery.trim());
+                } else {
+                  setIsScanning(true);
                 }
               }}
-              disabled={!searchQuery.trim()}
+              disabled={loading}
               activeOpacity={0.7}
             >
-              <Ionicons name="arrow-forward" size={24} color={colors.white} />
+              <Ionicons
+                name={searchQuery.trim() ? "arrow-forward" : "scan"}
+                size={24}
+                color={colors.white}
+              />
             </TouchableOpacity>
           </View>
 
@@ -536,85 +634,102 @@ export default function ScanScreen() {
                   style={styles.resultItem}
                   onPress={() => handleLookup(item.barcode || item.item_code)}
                 >
-                  <Ionicons name="cube-outline" size={20} color={colors.primary[600]} />
+                  <Ionicons
+                    name="cube-outline"
+                    size={20}
+                    color={colors.primary[600]}
+                  />
                   <View style={styles.resultInfo}>
                     <Text style={styles.resultName}>{item.item_name}</Text>
                     <Text style={styles.resultCode}>{item.item_code}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.gray[400]} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={colors.gray[400]}
+                  />
                 </TouchableOpacity>
               ))}
             </View>
           )}
         </Animated.View>
 
-        {/* Scan Button */}
-        <Animated.View entering={FadeInDown.delay(200).duration(500)}>
-          <TouchableOpacity
-            style={styles.bigScanButton}
-            onPress={() => setIsScanning(true)}
-            activeOpacity={0.85}
+        {/* Recent Items - Only show when not searching */}
+        {searchResults.length === 0 && (
+          <Animated.View
+            entering={FadeInDown.delay(300).duration(500)}
+            style={styles.recentSection}
           >
-            <View style={styles.scanIconContainer}>
-              <Ionicons name="scan" size={48} color={colors.white} />
-            </View>
-            <Text style={styles.bigScanText}>Tap to Scan</Text>
-            <Text style={styles.bigScanSubtext}>Point camera at barcode</Text>
-          </TouchableOpacity>
-        </Animated.View>
+            <Text style={styles.sectionTitle}>Recent Items</Text>
 
-        {/* Recent Items */}
-        <Animated.View entering={FadeInDown.delay(300).duration(500)} style={styles.recentSection}>
-          <Text style={styles.sectionTitle}>Recent Items</Text>
-
-          {initialLoading ? (
-            // Loading Skeleton
-            <>
-              {[1, 2, 3].map((i) => (
-                <ModernCard key={i} style={styles.recentCard}>
-                  <View style={styles.recentRow}>
-                    <SkeletonLoader style={{ width: 44, height: 44, borderRadius: 12 }} />
-                    <View style={[styles.recentInfo, { marginLeft: spacing.md }]}>
-                      <SkeletonLoader style={{ width: "80%", height: 16, borderRadius: 4 }} />
+            {initialLoading ? (
+              // Loading Skeleton
+              <>
+                {[1, 2, 3].map((i) => (
+                  <ModernCard key={i} style={styles.recentCard}>
+                    <View style={styles.recentRow}>
                       <SkeletonLoader
-                        style={{ width: "50%", height: 12, marginTop: 6, borderRadius: 4 }}
+                        style={{ width: 44, height: 44, borderRadius: 12 }}
+                      />
+                      <View
+                        style={[styles.recentInfo, { marginLeft: spacing.md }]}
+                      >
+                        <SkeletonLoader
+                          style={{ width: "80%", height: 16, borderRadius: 4 }}
+                        />
+                        <SkeletonLoader
+                          style={{
+                            width: "50%",
+                            height: 12,
+                            marginTop: 6,
+                            borderRadius: 4,
+                          }}
+                        />
+                      </View>
+                    </View>
+                  </ModernCard>
+                ))}
+              </>
+            ) : recentItems.length === 0 ? (
+              // Empty State
+              <EmptyState
+                icon="time-outline"
+                title="No Recent Scans"
+                subtitle="Items you scan will appear here for quick access"
+              />
+            ) : (
+              // Recent Items List
+              recentItems.slice(0, 5).map((item, index) => (
+                <ModernCard
+                  key={index}
+                  style={styles.recentCard}
+                  onPress={() => handleLookup(item.barcode || item.item_code)}
+                >
+                  <View style={styles.recentRow}>
+                    <View style={styles.recentIcon}>
+                      <Ionicons
+                        name="cube-outline"
+                        size={22}
+                        color={colors.primary[600]}
                       />
                     </View>
+                    <View style={styles.recentInfo}>
+                      <Text style={styles.recentName} numberOfLines={1}>
+                        {item.item_name}
+                      </Text>
+                      <Text style={styles.recentCode}>{item.item_code}</Text>
+                    </View>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color={colors.gray[400]}
+                    />
                   </View>
                 </ModernCard>
-              ))}
-            </>
-          ) : recentItems.length === 0 ? (
-            // Empty State
-            <EmptyState
-              icon="time-outline"
-              title="No Recent Scans"
-              subtitle="Items you scan will appear here for quick access"
-            />
-          ) : (
-            // Recent Items List
-            recentItems.slice(0, 5).map((item, index) => (
-              <ModernCard
-                key={index}
-                style={styles.recentCard}
-                onPress={() => handleLookup(item.barcode || item.item_code)}
-              >
-                <View style={styles.recentRow}>
-                  <View style={styles.recentIcon}>
-                    <Ionicons name="cube-outline" size={22} color={colors.primary[600]} />
-                  </View>
-                  <View style={styles.recentInfo}>
-                    <Text style={styles.recentName} numberOfLines={1}>
-                      {item.item_name}
-                    </Text>
-                    <Text style={styles.recentCode}>{item.item_code}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.gray[400]} />
-                </View>
-              </ModernCard>
-            ))
-          )}
-        </Animated.View>
+              ))
+            )}
+          </Animated.View>
+        )}
 
         <View style={styles.footerSpacer} />
       </ScrollView>
@@ -638,34 +753,53 @@ export default function ScanScreen() {
         onRequestClose={() => setShowCloseSessionModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <Animated.View entering={FadeInDown.duration(300)} style={styles.modalContent}>
+          <Animated.View
+            entering={FadeInDown.duration(300)}
+            style={styles.modalContent}
+          >
             {/* Modal Icon */}
             <View style={styles.modalIconContainer}>
-              <Ionicons name="checkmark-circle" size={48} color={colors.success[500]} />
+              <Ionicons
+                name="checkmark-circle"
+                size={48}
+                color={colors.success[500]}
+              />
             </View>
 
             <Text style={styles.modalTitle}>Complete Rack Scan?</Text>
             <Text style={styles.modalText}>
               This will finalize the scan for {currentFloor || "this location"}{" "}
-              {currentRack ? `• ${currentRack}` : ""}. You won't be able to add more items after
-              confirming.
+              {currentRack ? `• ${currentRack}` : ""}. You won't be able to add
+              more items after confirming.
             </Text>
 
             {/* Session Summary */}
             <View style={styles.modalSummary}>
               <View style={styles.modalSummaryRow}>
                 <Text style={styles.modalSummaryLabel}>Items Scanned</Text>
-                <Text style={styles.modalSummaryValue}>{sessionStats.scannedItems}</Text>
+                <Text style={styles.modalSummaryValue}>
+                  {sessionStats.scannedItems}
+                </Text>
               </View>
               <View style={styles.modalSummaryRow}>
                 <Text style={styles.modalSummaryLabel}>Verified</Text>
-                <Text style={[styles.modalSummaryValue, { color: colors.success[600] }]}>
+                <Text
+                  style={[
+                    styles.modalSummaryValue,
+                    { color: colors.success[600] },
+                  ]}
+                >
                   {sessionStats.verifiedItems}
                 </Text>
               </View>
               <View style={styles.modalSummaryRow}>
                 <Text style={styles.modalSummaryLabel}>Pending Review</Text>
-                <Text style={[styles.modalSummaryValue, { color: colors.warning[600] }]}>
+                <Text
+                  style={[
+                    styles.modalSummaryValue,
+                    { color: colors.warning[600] },
+                  ]}
+                >
                   {sessionStats.pendingItems}
                 </Text>
               </View>
@@ -692,7 +826,7 @@ export default function ScanScreen() {
       </Modal>
 
       {loading && (
-        <View style={styles.loadingOverlay}>
+        <View pointerEvents="none" style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={colors.primary[600]} />
         </View>
       )}
@@ -707,21 +841,24 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing.lg,
+    paddingBottom: 100,
   },
   statsCard: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
     padding: spacing.lg,
     backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    ...shadows.md,
   },
   statsRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   statItem: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   statDivider: {
     width: 1,
@@ -729,45 +866,53 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[200],
   },
   statValue: {
-    fontSize: 32,
-    fontWeight: typography.fontWeight.bold,
+    fontSize: 36,
+    fontWeight: "800",
     color: colors.gray[900],
     marginBottom: spacing.xs,
+    fontVariant: ["tabular-nums"],
   },
   statLabel: {
     fontSize: typography.fontSize.xs,
     color: colors.gray[500],
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    fontWeight: "600",
   },
   searchSection: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   searchInputWrapper: {
     flex: 1,
+    ...shadows.sm,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.md,
   },
   searchButton: {
-    width: 50,
-    height: 50,
+    width: 56,
+    height: 56,
     borderRadius: borderRadius.md,
     backgroundColor: colors.primary[600],
     alignItems: "center",
     justifyContent: "center",
-    ...shadows.sm,
+    ...shadows.md,
   },
   searchButtonDisabled: {
     backgroundColor: colors.gray[300],
+    shadowOpacity: 0,
   },
   searchResults: {
     marginTop: spacing.sm,
     backgroundColor: colors.white,
     borderRadius: borderRadius.md,
-    ...shadows.sm,
+    ...shadows.lg,
+    zIndex: 200,
+    elevation: 10,
   },
   resultItem: {
     flexDirection: "row",
@@ -789,59 +934,42 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.gray[500],
   },
-  bigScanButton: {
-    backgroundColor: colors.primary[600],
-    borderRadius: borderRadius.xl,
-    paddingVertical: spacing.xl * 1.5,
-    paddingHorizontal: spacing.xl,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.xl,
-    ...shadows.lg,
+  fabContainer: {
+    display: 'none',
   },
-  scanIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: borderRadius.full,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.md,
-  },
-  bigScanText: {
-    color: colors.white,
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-  },
-  bigScanSubtext: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: typography.fontSize.sm,
-    marginTop: spacing.xs,
+  fabButton: {
+    display: 'none',
   },
   recentSection: {
     marginBottom: spacing.lg,
   },
   sectionTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.gray[900],
+    fontSize: typography.fontSize.sm,
+    fontWeight: "700",
+    color: colors.gray[500],
     marginBottom: spacing.md,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    marginLeft: spacing.xs,
   },
   recentCard: {
     marginBottom: spacing.sm,
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.white,
+    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: colors.gray[100],
   },
   recentRow: {
     flexDirection: "row",
     alignItems: "center",
   },
   recentIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.lg,
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.primary[50],
     alignItems: "center",
     justifyContent: "center",
@@ -852,16 +980,17 @@ const styles = StyleSheet.create({
   },
   recentName: {
     fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.medium,
+    fontWeight: typography.fontWeight.semibold,
     color: colors.gray[900],
     marginBottom: 2,
   },
   recentCode: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xs,
     color: colors.gray[500],
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   footerSpacer: {
-    height: 80,
+    height: 20,
   },
   bottomContainer: {
     position: "absolute",
@@ -869,11 +998,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: spacing.lg,
+    paddingBottom: Platform.OS === 'ios' ? 34 : spacing.lg,
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.gray[200],
+    ...shadows.lg,
   },
-  // Camera Styles
   cameraContainer: {
     flex: 1,
     backgroundColor: "black",
@@ -886,6 +1016,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: spacing.lg,
+    paddingTop: Platform.OS === 'android' ? spacing.xl : spacing.lg,
   },
   closeCameraButton: {
     padding: spacing.sm,
@@ -904,21 +1035,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   scanFrame: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: colors.white,
-    borderRadius: borderRadius.lg,
-    backgroundColor: "transparent",
+    width: 280,
+    height: 280,
+    borderWidth: 0,
+    borderRadius: borderRadius.xl,
   },
   scanInstruction: {
     color: colors.white,
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
     fontSize: typography.fontSize.base,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    paddingHorizontal: spacing.md,
+    fontWeight: "500",
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.full,
     overflow: "hidden",
   },
   permissionContainer: {
@@ -926,30 +1056,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: spacing.xl,
+    backgroundColor: colors.gray[50],
   },
   permissionText: {
     fontSize: typography.fontSize.lg,
     textAlign: "center",
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
     color: colors.gray[700],
+    lineHeight: 28,
   },
-  // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
     padding: spacing.lg,
   },
   modalContent: {
     backgroundColor: colors.white,
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius["2xl"],
     padding: spacing.xl,
-    ...shadows.lg,
+    ...shadows.xl,
   },
   modalIconContainer: {
     alignSelf: "center",
-    width: 80,
-    height: 80,
+    width: 72,
+    height: 72,
     borderRadius: borderRadius.full,
     backgroundColor: colors.success[50],
     alignItems: "center",
@@ -957,8 +1088,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   modalTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
+    fontSize: typography.fontSize["2xl"],
+    fontWeight: "800",
     color: colors.gray[900],
     marginBottom: spacing.sm,
     textAlign: "center",
@@ -966,15 +1097,17 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: typography.fontSize.base,
     color: colors.gray[600],
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
     lineHeight: 24,
     textAlign: "center",
   },
   modalSummary: {
     backgroundColor: colors.gray[50],
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
     marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.gray[100],
   },
   modalSummaryRow: {
     flexDirection: "row",
@@ -985,37 +1118,43 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.gray[200],
   },
   modalSummaryLabel: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.base,
     color: colors.gray[600],
+    fontWeight: "500",
   },
   modalSummaryValue: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
+    fontSize: typography.fontSize.lg,
+    fontWeight: "700",
     color: colors.gray[900],
   },
   modalActions: {
     flexDirection: "row",
+    gap: spacing.md,
   },
-  // Empty State Styles
   emptyState: {
     alignItems: "center",
-    paddingVertical: spacing.xl * 2,
+    paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.gray[100],
+    borderStyle: 'dashed',
   },
   emptyIconContainer: {
-    width: 96,
-    height: 96,
+    width: 64,
+    height: 64,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.gray[100],
+    backgroundColor: colors.gray[50],
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   emptyTitle: {
-    fontSize: typography.fontSize.lg,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.gray[700],
-    marginBottom: spacing.sm,
+    color: colors.gray[900],
+    marginBottom: spacing.xs,
   },
   emptySubtitle: {
     fontSize: typography.fontSize.sm,
@@ -1023,7 +1162,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
-  // Skeleton Styles
   skeleton: {
     backgroundColor: colors.gray[200],
     overflow: "hidden",
@@ -1032,7 +1170,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.gray[100],
   },
-  // Animated Scan Frame
   scanFrameWrapper: {
     width: 280,
     height: 280,
@@ -1042,53 +1179,58 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 40,
     height: 40,
-    borderColor: colors.primary[400],
+    borderColor: colors.white,
     borderWidth: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
   },
   cornerTopLeft: {
     top: 0,
     left: 0,
     borderRightWidth: 0,
     borderBottomWidth: 0,
-    borderTopLeftRadius: borderRadius.lg,
+    borderTopLeftRadius: borderRadius.xl,
   },
   cornerTopRight: {
     top: 0,
     right: 0,
     borderLeftWidth: 0,
     borderBottomWidth: 0,
-    borderTopRightRadius: borderRadius.lg,
+    borderTopRightRadius: borderRadius.xl,
   },
   cornerBottomLeft: {
     bottom: 0,
     left: 0,
     borderRightWidth: 0,
     borderTopWidth: 0,
-    borderBottomLeftRadius: borderRadius.lg,
+    borderBottomLeftRadius: borderRadius.xl,
   },
   cornerBottomRight: {
     bottom: 0,
     right: 0,
     borderLeftWidth: 0,
     borderTopWidth: 0,
-    borderBottomRightRadius: borderRadius.lg,
+    borderBottomRightRadius: borderRadius.xl,
   },
   scanLine: {
     position: "absolute",
-    left: 20,
-    right: 20,
-    top: 40,
+    left: 10,
+    right: 10,
+    top: 0,
     height: 2,
     backgroundColor: colors.primary[400],
     shadowColor: colors.primary[400],
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
+    shadowOpacity: 1,
+    shadowRadius: 10,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.8)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 1000,
   },
 });

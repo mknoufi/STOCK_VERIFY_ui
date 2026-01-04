@@ -7,7 +7,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Modal } from "./Modal";
 import { View, Text, StyleSheet } from "react-native";
-import { Button } from "../Button";
+import { ModernButton as Button } from "./ModernButton";
 import { useState } from "react";
 
 const meta: Meta<typeof Modal> = {
@@ -61,7 +61,11 @@ const ModalWrapper = ({ children, ...props }: any) => {
 
   return (
     <View>
-      <Button title="Open Modal" onPress={() => setVisible(true)} style={styles.openButton} />
+      <Button
+        title="Open Modal"
+        onPress={() => setVisible(true)}
+        style={styles.openButton}
+      />
       <Modal {...props} visible={visible} onClose={() => setVisible(false)}>
         {children}
       </Modal>
@@ -119,8 +123,12 @@ export const Fullscreen: Story = {
   render: () => (
     <ModalWrapper title="Fullscreen Modal" size="fullscreen">
       <View style={styles.fullscreenContent}>
-        <Text style={styles.fullscreenText}>This modal takes up the full screen.</Text>
-        <Text style={styles.fullscreenText}>Useful for complex forms or detailed views.</Text>
+        <Text style={styles.fullscreenText}>
+          This modal takes up the full screen.
+        </Text>
+        <Text style={styles.fullscreenText}>
+          Useful for complex forms or detailed views.
+        </Text>
       </View>
     </ModalWrapper>
   ),
@@ -132,11 +140,22 @@ export const ComplexContent: Story = {
     <ModalWrapper title="Confirm Action">
       <View style={styles.complexContent}>
         <Text style={styles.message}>
-          Are you sure you want to delete this item? This action cannot be undone.
+          Are you sure you want to delete this item? This action cannot be
+          undone.
         </Text>
         <View style={styles.buttonRow}>
-          <Button title="Cancel" variant="outline" onPress={() => {}} style={styles.button} />
-          <Button title="Delete" variant="danger" onPress={() => {}} style={styles.button} />
+          <Button
+            title="Cancel"
+            variant="outline"
+            onPress={() => {}}
+            style={styles.button}
+          />
+          <Button
+            title="Delete"
+            variant="danger"
+            onPress={() => {}}
+            style={styles.button}
+          />
         </View>
       </View>
     </ModalWrapper>
@@ -148,7 +167,8 @@ export const WithoutCloseButton: Story = {
   render: () => (
     <ModalWrapper title="No Close Button" showCloseButton={false}>
       <Text>
-        This modal doesn&apos;t have a close button. Use backdrop press or custom action to close.
+        This modal doesn&apos;t have a close button. Use backdrop press or
+        custom action to close.
       </Text>
     </ModalWrapper>
   ),

@@ -4,7 +4,13 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, ViewStyle, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
 import { spacing, typography, layout } from "../../styles/globalStyles";
@@ -39,9 +45,15 @@ export const Section: React.FC<SectionProps> = ({
       {(title || subtitle || action) && (
         <View style={styles.header}>
           <View style={styles.headerText}>
-            {title && <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>}
+            {title && (
+              <Text style={[styles.title, { color: theme.colors.text }]}>
+                {title}
+              </Text>
+            )}
             {subtitle && (
-              <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.subtitle, { color: theme.colors.textSecondary }]}
+              >
                 {subtitle}
               </Text>
             )}
@@ -62,7 +74,9 @@ export const Section: React.FC<SectionProps> = ({
                   style={styles.actionIcon}
                 />
               )}
-              <Text style={[styles.actionLabel, { color: theme.colors.primary }]}>
+              <Text
+                style={[styles.actionLabel, { color: theme.colors.primary }]}
+              >
                 {action.label}
               </Text>
             </TouchableOpacity>

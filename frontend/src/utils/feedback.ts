@@ -20,7 +20,7 @@ interface FeedbackOptions {
 export const showFeedback = (
   message: string,
   updateFn: (feedback: string) => void,
-  options: FeedbackOptions = {}
+  options: FeedbackOptions = {},
 ): (() => void) => {
   const { duration = 2000 } = options;
 

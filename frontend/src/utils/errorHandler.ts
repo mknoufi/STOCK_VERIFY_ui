@@ -72,7 +72,10 @@ export function getUserFriendlyMessage(error: unknown): string {
   if (message.includes("timeout")) {
     return "Request timed out. Please try again.";
   }
-  if (message.includes("unauthorized") || message.includes("invalid credentials")) {
+  if (
+    message.includes("unauthorized") ||
+    message.includes("invalid credentials")
+  ) {
     return "Invalid username or password. Please check your credentials.";
   }
   if (message.includes("forbidden")) {

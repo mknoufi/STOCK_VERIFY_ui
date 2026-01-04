@@ -29,7 +29,7 @@ interface UseCameraEnhancementReturn {
 
 export const useCameraEnhancement = (): UseCameraEnhancementReturn => {
   const [settings, setSettings] = useState<CameraSettings>(
-    cameraEnhancementService.getCurrentSettings()
+    cameraEnhancementService.getCurrentSettings(),
   );
   const [scanRegion, setScanRegion] = useState<ScanRegion>(() => {
     const { width, height } = Dimensions.get("window");
@@ -47,7 +47,9 @@ export const useCameraEnhancement = (): UseCameraEnhancementReturn => {
 
     // Update scan region on dimension changes
     const subscription = Dimensions.addEventListener("change", ({ window }) => {
-      setScanRegion(cameraEnhancementService.getScanRegion(window.width, window.height));
+      setScanRegion(
+        cameraEnhancementService.getScanRegion(window.width, window.height),
+      );
     });
 
     // Cleanup

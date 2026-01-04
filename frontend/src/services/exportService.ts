@@ -23,7 +23,10 @@ export class ExportService {
   /**
    * Export data to CSV format
    */
-  static async exportToCSV(data: ExportRecord[], options: ExportOptions = {}): Promise<void> {
+  static async exportToCSV(
+    data: ExportRecord[],
+    options: ExportOptions = {},
+  ): Promise<void> {
     try {
       if (!data || data.length === 0) {
         throw new Error("No data to export");
@@ -61,7 +64,8 @@ export class ExportService {
 
       await this.saveAndShareFile(csvContent, filename, "text/csv");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to export CSV";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to export CSV";
       __DEV__ && console.error("CSV export error:", error);
       Alert.alert("Export Error", errorMessage);
       throw error;
@@ -71,7 +75,10 @@ export class ExportService {
   /**
    * Export data to JSON format
    */
-  static async exportToJSON(data: ExportRecord[], options: ExportOptions = {}): Promise<void> {
+  static async exportToJSON(
+    data: ExportRecord[],
+    options: ExportOptions = {},
+  ): Promise<void> {
     try {
       if (!data || data.length === 0) {
         throw new Error("No data to export");
@@ -82,7 +89,8 @@ export class ExportService {
 
       await this.saveAndShareFile(jsonContent, filename, "application/json");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to export JSON";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to export JSON";
       __DEV__ && console.error("JSON export error:", error);
       Alert.alert("Export Error", errorMessage);
       throw error;
@@ -92,7 +100,10 @@ export class ExportService {
   /**
    * Export data to text format
    */
-  static async exportToText(data: ExportRecord[], options: ExportOptions = {}): Promise<void> {
+  static async exportToText(
+    data: ExportRecord[],
+    options: ExportOptions = {},
+  ): Promise<void> {
     try {
       if (!data || data.length === 0) {
         throw new Error("No data to export");
@@ -117,7 +128,8 @@ export class ExportService {
 
       await this.saveAndShareFile(textContent, filename, "text/plain");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to export text";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to export text";
       __DEV__ && console.error("Text export error:", error);
       Alert.alert("Export Error", errorMessage);
       throw error;
@@ -188,9 +200,14 @@ export class ExportService {
         headers,
       });
 
-      __DEV__ && console.log("✅ [Export] Sessions with details exported successfully");
+      __DEV__ &&
+        console.log("✅ [Export] Sessions with details exported successfully");
     } catch (error: unknown) {
-      __DEV__ && console.error("❌ [Export] Failed to export sessions with details:", error);
+      __DEV__ &&
+        console.error(
+          "❌ [Export] Failed to export sessions with details:",
+          error,
+        );
       throw error;
     }
   }
@@ -213,7 +230,10 @@ export class ExportService {
         total_variance: session.total_variance || 0,
         variance_percentage:
           session.total_items > 0
-            ? ((Math.abs(session.total_variance || 0) / session.total_items) * 100).toFixed(2)
+            ? (
+                (Math.abs(session.total_variance || 0) / session.total_items) *
+                100
+              ).toFixed(2)
             : "0",
       }));
 
@@ -234,9 +254,11 @@ export class ExportService {
         headers,
       });
 
-      __DEV__ && console.log("✅ [Export] Variance report exported successfully");
+      __DEV__ &&
+        console.log("✅ [Export] Variance report exported successfully");
     } catch (error: unknown) {
-      __DEV__ && console.error("❌ [Export] Failed to export variance report:", error);
+      __DEV__ &&
+        console.error("❌ [Export] Failed to export variance report:", error);
       throw error;
     }
   }
@@ -251,10 +273,20 @@ export class ExportService {
       // Calculate summary statistics
       const totalSessions = sessions.length;
       const openSessions = sessions.filter((s) => s.status === "OPEN").length;
-      const closedSessions = sessions.filter((s) => s.status === "CLOSED").length;
-      const reconciledSessions = sessions.filter((s) => s.status === "RECONCILE").length;
-      const totalItems = sessions.reduce((sum, s) => sum + (s.total_items || 0), 0);
-      const totalVariance = sessions.reduce((sum, s) => sum + Math.abs(s.total_variance || 0), 0);
+      const closedSessions = sessions.filter(
+        (s) => s.status === "CLOSED",
+      ).length;
+      const reconciledSessions = sessions.filter(
+        (s) => s.status === "RECONCILE",
+      ).length;
+      const totalItems = sessions.reduce(
+        (sum, s) => sum + (s.total_items || 0),
+        0,
+      );
+      const totalVariance = sessions.reduce(
+        (sum, s) => sum + Math.abs(s.total_variance || 0),
+        0,
+      );
 
       const summaryData = [
         { metric: "Total Sessions", value: totalSessions },
@@ -274,9 +306,11 @@ export class ExportService {
         headers: ["metric", "value"],
       });
 
-      __DEV__ && console.log("✅ [Export] Summary report exported successfully");
+      __DEV__ &&
+        console.log("✅ [Export] Summary report exported successfully");
     } catch (error: unknown) {
-      __DEV__ && console.error("❌ [Export] Failed to export summary report:", error);
+      __DEV__ &&
+        console.error("❌ [Export] Failed to export summary report:", error);
       throw error;
     }
   }
@@ -336,7 +370,7 @@ export class ExportService {
   private static async saveAndShareFile(
     content: string,
     filename: string,
-    mimeType: string
+    mimeType: string,
   ): Promise<void> {
     try {
       // Use new expo-file-system v19 API
@@ -355,11 +389,14 @@ export class ExportService {
         });
       } else {
         // Fallback: show alert with file location
-        Alert.alert("Export Complete", `File saved to: ${file.uri}`, [{ text: "OK" }]);
+        Alert.alert("Export Complete", `File saved to: ${file.uri}`, [
+          { text: "OK" },
+        ]);
       }
     } catch (error: unknown) {
       __DEV__ && console.error("File save/share error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       throw new Error(`Failed to save or share file: ${errorMessage}`);
     }
   }

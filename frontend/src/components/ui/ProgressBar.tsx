@@ -6,7 +6,11 @@
 
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 import { colorPalette, spacing, typography } from "@/theme/designTokens";
 
 export type ProgressBarVariant = "default" | "success" | "warning" | "error";
@@ -30,7 +34,10 @@ const variantColors: Record<ProgressBarVariant, string> = {
   error: colorPalette.error[500],
 };
 
-const sizeStyles: Record<ProgressBarSize, { height: number; fontSize: number }> = {
+const sizeStyles: Record<
+  ProgressBarSize,
+  { height: number; fontSize: number }
+> = {
   sm: { height: 4, fontSize: typography.fontSize.xs },
   md: { height: 8, fontSize: typography.fontSize.sm },
   lg: { height: 12, fontSize: typography.fontSize.base },

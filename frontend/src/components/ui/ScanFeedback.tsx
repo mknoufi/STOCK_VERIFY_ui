@@ -10,7 +10,13 @@
  */
 
 import React, { useCallback, useEffect } from "react";
-import { View, Text, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -25,7 +31,12 @@ import Animated, {
 } from "react-native-reanimated";
 import { auroraTheme } from "@/theme/auroraTheme";
 
-export type ScanFeedbackType = "success" | "error" | "warning" | "info" | "duplicate";
+export type ScanFeedbackType =
+  | "success"
+  | "error"
+  | "warning"
+  | "info"
+  | "duplicate";
 
 interface ScanFeedbackProps {
   type: ScanFeedbackType;
@@ -41,17 +52,23 @@ const feedbackConfig = {
   success: {
     icon: "checkmark-circle" as const,
     gradient: auroraTheme.colors.aurora.success,
-    haptic: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
+    haptic: () =>
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
   },
   error: {
     icon: "close-circle" as const,
-    gradient: [auroraTheme.colors.error[500], auroraTheme.colors.error[700]] as const,
-    haptic: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error),
+    gradient: [
+      auroraTheme.colors.error[500],
+      auroraTheme.colors.error[700],
+    ] as const,
+    haptic: () =>
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error),
   },
   warning: {
     icon: "warning" as const,
     gradient: auroraTheme.colors.aurora.warm,
-    haptic: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
+    haptic: () =>
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
   },
   info: {
     icon: "information-circle" as const,
@@ -60,8 +77,12 @@ const feedbackConfig = {
   },
   duplicate: {
     icon: "copy" as const,
-    gradient: [auroraTheme.colors.warning[500], auroraTheme.colors.warning[700]] as const,
-    haptic: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
+    gradient: [
+      auroraTheme.colors.warning[500],
+      auroraTheme.colors.warning[700],
+    ] as const,
+    haptic: () =>
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
   },
 };
 
@@ -100,15 +121,18 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
       scale.value = withSpring(1, { damping: 12, stiffness: 180 });
 
       // Icon animation
-      iconScale.value = withDelay(100, withSpring(1, { damping: 10, stiffness: 200 }));
+      iconScale.value = withDelay(
+        100,
+        withSpring(1, { damping: 10, stiffness: 200 }),
+      );
 
       if (type === "success") {
         iconRotation.value = withDelay(
           150,
           withSequence(
             withTiming(-10, { duration: 100 }),
-            withSpring(0, { damping: 8, stiffness: 200 })
-          )
+            withSpring(0, { damping: 8, stiffness: 200 }),
+          ),
         );
       }
 
@@ -116,15 +140,18 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
       ringScale.value = withRepeat(
         withSequence(
           withTiming(1.5, { duration: 600, easing: Easing.out(Easing.ease) }),
-          withTiming(1, { duration: 400 })
+          withTiming(1, { duration: 400 }),
         ),
         3,
-        false
+        false,
       );
       ringOpacity.value = withRepeat(
-        withSequence(withTiming(0, { duration: 600 }), withTiming(0.5, { duration: 0 })),
+        withSequence(
+          withTiming(0, { duration: 600 }),
+          withTiming(0.5, { duration: 0 }),
+        ),
         3,
-        false
+        false,
       );
 
       // Auto dismiss
@@ -166,7 +193,10 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
   }));
 
   const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconScale.value }, { rotate: `${iconRotation.value}deg` }],
+    transform: [
+      { scale: iconScale.value },
+      { rotate: `${iconRotation.value}deg` },
+    ],
   }));
 
   const ringStyle = useAnimatedStyle(() => ({
@@ -178,7 +208,9 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 
   return (
     <View style={styles.overlay} pointerEvents="none">
-      <Animated.View style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}>
+      <Animated.View
+        style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}
+      >
         <LinearGradient
           colors={config.gradient as readonly [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}
@@ -192,7 +224,11 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
           {showIcon && (
             <Animated.View style={iconStyle}>
               <View style={styles.iconContainer}>
-                <Ionicons name={config.icon} size={64} color={auroraTheme.colors.text.primary} />
+                <Ionicons
+                  name={config.icon}
+                  size={64}
+                  color={auroraTheme.colors.text.primary}
+                />
               </View>
             </Animated.View>
           )}

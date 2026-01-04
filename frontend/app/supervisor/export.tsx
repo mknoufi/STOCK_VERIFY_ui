@@ -23,7 +23,11 @@ import { getSessions } from "../../src/services/api/api";
 import { ExportService } from "../../src/services/exportService";
 import { useAutoLogout } from "../../src/hooks/useAutoLogout";
 import { LogoutButton } from "../../src/components/LogoutButton";
-import { ScreenContainer, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  ScreenContainer,
+  GlassCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 
 export default function ExportReports() {
@@ -37,7 +41,8 @@ export default function ExportReports() {
   };
 
   const handleExportStart = (type: string) => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setLoading(true);
     setExportType(type);
   };
@@ -60,15 +65,21 @@ export default function ExportReports() {
         return;
       }
 
-      __DEV__ && console.log("✅ [Export] Exporting", sessions.length, "sessions");
+      __DEV__ &&
+        console.log("✅ [Export] Exporting", sessions.length, "sessions");
       await ExportService.exportSessions(sessions);
 
-      Alert.alert("Export Successful", `Exported ${sessions.length} sessions to Excel file`, [
-        { text: "OK" },
-      ]);
+      Alert.alert(
+        "Export Successful",
+        `Exported ${sessions.length} sessions to Excel file`,
+        [{ text: "OK" }],
+      );
     } catch (error: any) {
       console.error("❌ [Export] Session export failed:", error);
-      Alert.alert("Export Failed", error.message || "Failed to export sessions. Please try again.");
+      Alert.alert(
+        "Export Failed",
+        error.message || "Failed to export sessions. Please try again.",
+      );
     } finally {
       handleExportEnd();
     }
@@ -103,17 +114,20 @@ export default function ExportReports() {
                 Alert.alert(
                   "Export Successful",
                   `Exported detailed data for ${sessions.length} sessions`,
-                  [{ text: "OK" }]
+                  [{ text: "OK" }],
                 );
               } catch (error: any) {
                 console.error("❌ [Export] Details export failed:", error);
-                Alert.alert("Export Failed", error.message || "Failed to export details");
+                Alert.alert(
+                  "Export Failed",
+                  error.message || "Failed to export details",
+                );
               } finally {
                 handleExportEnd();
               }
             },
           },
-        ]
+        ],
       );
     } catch (error: any) {
       console.error("❌ [Export] Error:", error);
@@ -133,7 +147,9 @@ export default function ExportReports() {
         return;
       }
 
-      const varianceSessions = sessions.filter((s: any) => Math.abs(s.total_variance || 0) > 0);
+      const varianceSessions = sessions.filter(
+        (s: any) => Math.abs(s.total_variance || 0) > 0,
+      );
 
       if (varianceSessions.length === 0) {
         Alert.alert("No Variance", "No sessions with variance found");
@@ -144,11 +160,14 @@ export default function ExportReports() {
       Alert.alert(
         "Export Successful",
         `Exported variance report for ${varianceSessions.length} sessions`,
-        [{ text: "OK" }]
+        [{ text: "OK" }],
       );
     } catch (error: any) {
       console.error("❌ [Export] Variance report failed:", error);
-      Alert.alert("Export Failed", error.message || "Failed to export variance report");
+      Alert.alert(
+        "Export Failed",
+        error.message || "Failed to export variance report",
+      );
     } finally {
       handleExportEnd();
     }
@@ -167,12 +186,17 @@ export default function ExportReports() {
       }
 
       await ExportService.exportSummaryReport(sessions);
-      Alert.alert("Export Successful", `Exported summary report with ${sessions.length} sessions`, [
-        { text: "OK" },
-      ]);
+      Alert.alert(
+        "Export Successful",
+        `Exported summary report with ${sessions.length} sessions`,
+        [{ text: "OK" }],
+      );
     } catch (error: any) {
       console.error("❌ [Export] Summary report failed:", error);
-      Alert.alert("Export Failed", error.message || "Failed to export summary report");
+      Alert.alert(
+        "Export Failed",
+        error.message || "Failed to export summary report",
+      );
     } finally {
       handleExportEnd();
     }
@@ -213,7 +237,12 @@ export default function ExportReports() {
             style={isDisabled ? { opacity: 0.5 } : undefined}
           >
             <View style={styles.cardContent}>
-              <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: `${color}20` },
+                ]}
+              >
                 {isLoading ? (
                   <ActivityIndicator size="small" color={color} />
                 ) : (
@@ -246,14 +275,26 @@ export default function ExportReports() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Data Exports</Text>
-              <Text style={styles.pageSubtitle}>Generate & Download Reports</Text>
+              <Text style={styles.pageSubtitle}>
+                Generate & Download Reports
+              </Text>
             </View>
           </View>
           <LogoutButton variant="icon" size="large" showText={false} />
@@ -314,7 +355,9 @@ export default function ExportReports() {
             />
             <View style={styles.infoContent}>
               <Text style={styles.infoTitle}>Export Information</Text>
-              <Text style={styles.infoText}>• Reports are generated in Excel format (.xlsx)</Text>
+              <Text style={styles.infoText}>
+                • Reports are generated in Excel format (.xlsx)
+              </Text>
               <Text style={styles.infoText}>
                 • Files are saved to your device&apos;s Downloads folder
               </Text>

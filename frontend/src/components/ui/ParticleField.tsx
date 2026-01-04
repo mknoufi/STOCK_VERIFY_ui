@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useMemo } from "react";
-import { View, StyleSheet, useWindowDimensions } from "react-native";
+import { View, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -50,7 +50,7 @@ const ParticleElement: React.FC<{
   const scale = useSharedValue(1);
 
   useEffect(() => {
-    if (animated) {
+    if (animated && Platform.OS !== "web") {
       // Floating animation
       translateY.value = withDelay(
         particle.delay,
@@ -63,11 +63,11 @@ const ParticleElement: React.FC<{
             withTiming(30, {
               duration: 3000 + Math.random() * 2000,
               easing: Easing.inOut(Easing.ease),
-            })
+            }),
           ),
           -1,
-          true
-        )
+          true,
+        ),
       );
 
       // Pulse opacity
@@ -82,11 +82,11 @@ const ParticleElement: React.FC<{
             withTiming(particle.opacity * 0.5, {
               duration: 2000,
               easing: Easing.inOut(Easing.ease),
-            })
+            }),
           ),
           -1,
-          true
-        )
+          true,
+        ),
       );
 
       // Slight scale pulse
@@ -101,11 +101,11 @@ const ParticleElement: React.FC<{
             withTiming(0.8, {
               duration: 2500,
               easing: Easing.inOut(Easing.ease),
-            })
+            }),
           ),
           -1,
-          true
-        )
+          true,
+        ),
       );
     }
   }, [animated, opacity, particle.delay, particle.opacity, scale, translateY]);
@@ -115,8 +115,10 @@ const ParticleElement: React.FC<{
     opacity: opacity.value,
   }));
 
+  const Component = Platform.OS === "web" ? View : Animated.View;
+
   return (
-    <Animated.View
+    <Component
       style={[
         styles.particle,
         {
@@ -131,7 +133,7 @@ const ParticleElement: React.FC<{
           shadowOpacity: 0.8,
           shadowRadius: particle.size,
         },
-        animatedStyle,
+        Platform.OS !== "web" && animatedStyle,
       ]}
     />
   );

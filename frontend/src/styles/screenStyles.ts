@@ -379,7 +379,7 @@ export const useScreenStyles = () => {
           },
         }),
       }),
-    [isWeb, isTablet]
+    [isWeb, isTablet],
   );
 };
 
@@ -533,7 +533,7 @@ export const useThemeScreenStyles = (colors: ThemeColors) => {
           textAlign: "center",
         },
       }),
-    [colors]
+    [colors],
   );
 };
 
@@ -566,12 +566,15 @@ export const useResponsiveHelpers = () => {
       },
 
       // Get responsive width percentage
-      gridItemWidth: (columns: number, gap: number = modernSpacing.md): string => {
+      gridItemWidth: (
+        columns: number,
+        gap: number = modernSpacing.md,
+      ): string => {
         const totalGap = gap * (columns - 1);
         const itemWidth = (100 - (totalGap / width) * 100) / columns;
         return `${Math.floor(itemWidth)}%`;
       },
     }),
-    [width, height, isWeb, isTablet]
+    [width, height, isWeb, isTablet],
   );
 };

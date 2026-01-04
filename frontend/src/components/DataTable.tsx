@@ -4,7 +4,13 @@
  */
 
 import React, { useState, useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -95,7 +101,9 @@ export const DataTable: React.FC<DataTableProps> = ({
       {columns.map((column) => (
         <TouchableOpacity
           key={column.key}
-          style={[styles.headerCell, column.width && { width: column.width }] as any}
+          style={
+            [styles.headerCell, column.width && { width: column.width }] as any
+          }
           onPress={() => column.sortable && handleSort(column.key)}
           disabled={!column.sortable}
         >
@@ -129,7 +137,9 @@ export const DataTable: React.FC<DataTableProps> = ({
           {column.render ? (
             column.render(item[column.key], item)
           ) : (
-            <Text style={styles.cellText}>{String(item[column.key] || "")}</Text>
+            <Text style={styles.cellText}>
+              {String(item[column.key] || "")}
+            </Text>
           )}
         </View>
       ))}
@@ -145,11 +155,18 @@ export const DataTable: React.FC<DataTableProps> = ({
     return (
       <View style={styles.pagination}>
         <TouchableOpacity
-          style={[styles.paginationButton, currentPage === 1 && styles.paginationButtonDisabled]}
+          style={[
+            styles.paginationButton,
+            currentPage === 1 && styles.paginationButtonDisabled,
+          ]}
           onPress={() => setCurrentPage(currentPage - 1)}
           disabled={currentPage === 1}
         >
-          <Ionicons name="chevron-back" size={20} color={currentPage === 1 ? "#ccc" : "#2196F3"} />
+          <Ionicons
+            name="chevron-back"
+            size={20}
+            color={currentPage === 1 ? "#ccc" : "#2196F3"}
+          />
         </TouchableOpacity>
 
         <Text style={styles.paginationText}>
@@ -194,7 +211,9 @@ export const DataTable: React.FC<DataTableProps> = ({
               renderItem={({ item, index }) => renderRow(item, index)}
               keyExtractor={(item, index) => {
                 // Create a stable key from item data
-                const keyParts = columns.map((col) => String(item[col.key] || "")).join("-");
+                const keyParts = columns
+                  .map((col) => String(item[col.key] || ""))
+                  .join("-");
                 return `row-${index}-${keyParts.substring(0, 30)}`;
               }}
               extraData={sortColumn}

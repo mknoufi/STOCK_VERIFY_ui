@@ -3,9 +3,10 @@
  * Accessible form input with modern design principles
  */
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
+  Pressable,
   TextInput,
   Text,
   StyleSheet,
@@ -15,7 +16,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { colors, spacing, typography, borderRadius, shadows } from "../../theme/modernDesign";
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from "../../theme/modernDesign";
 
 interface ModernInputProps {
   label?: string;
@@ -68,6 +75,7 @@ export const ModernInput: React.FC<ModernInputProps> = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   const isPassword = secureTextEntry;
   const showPasswordToggle = isPassword && value.length > 0;
@@ -136,18 +144,26 @@ export const ModernInput: React.FC<ModernInputProps> = ({
         </Text>
       )}
 
-      <View style={[getInputContainerStyles(), style]}>
+      <Pressable
+        style={[getInputContainerStyles(), style]}
+        onPress={() => inputRef.current?.focus()}
+      >
         {icon && (
           <TouchableOpacity
             onPress={onIconPress}
             style={styles.iconContainer}
             disabled={!onIconPress}
           >
-            <Ionicons name={icon} size={20} color={error ? colors.error[500] : colors.gray[500]} />
+            <Ionicons
+              name={icon}
+              size={20}
+              color={error ? colors.error[500] : colors.gray[500]}
+            />
           </TouchableOpacity>
         )}
 
         <TextInput
+          ref={inputRef}
           style={[getInputStyles(), inputStyle]}
           placeholder={placeholder}
           placeholderTextColor={colors.gray[400]}
@@ -167,7 +183,10 @@ export const ModernInput: React.FC<ModernInputProps> = ({
         />
 
         {showPasswordToggle && (
-          <TouchableOpacity onPress={togglePasswordVisibility} style={styles.iconContainer}>
+          <TouchableOpacity
+            onPress={togglePasswordVisibility}
+            style={styles.iconContainer}
+          >
             <Ionicons
               name={isPasswordVisible ? "eye-off" : "eye"}
               size={20}
@@ -185,7 +204,8 @@ export const ModernInput: React.FC<ModernInputProps> = ({
             <Ionicons name={rightIcon} size={20} color={colors.gray[500]} />
           </TouchableOpacity>
         )}
-      </View>
+
+      </Pressable>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>

@@ -67,15 +67,15 @@ def test_invalid_barcodes(barcode):
     response = client.get(f"/api/v2/erp/items/barcode/{barcode}/enhanced")
     if response.status_code != 400:
         print(f"\nEnhanced API Response for {barcode}: {response.status_code} - {response.text}")
-    assert (
-        response.status_code == 400
-    ), f"Invalid barcode {barcode} should be rejected by Enhanced API. Got {response.status_code}"
+    assert response.status_code == 400, (
+        f"Invalid barcode {barcode} should be rejected by Enhanced API. Got {response.status_code}"
+    )
     # Check for specific error message if possible, but status 400 is the main requirement
 
     # ERP API
     response = client.get(f"/api/erp/items/barcode/{barcode}")
     if response.status_code != 400:
         print(f"\nERP API Response for {barcode}: {response.status_code} - {response.text}")
-    assert (
-        response.status_code == 400
-    ), f"Invalid barcode {barcode} should be rejected by ERP API. Got {response.status_code}"
+    assert response.status_code == 400, (
+        f"Invalid barcode {barcode} should be rejected by ERP API. Got {response.status_code}"
+    )

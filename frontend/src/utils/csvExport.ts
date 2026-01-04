@@ -32,7 +32,10 @@ export const convertToCSV = (data: any[], headers: string[]): string => {
     const values = headers.map((header) => {
       const value = row[header] ?? "";
       // Escape commas and quotes
-      if (typeof value === "string" && (value.includes(",") || value.includes('"'))) {
+      if (
+        typeof value === "string" &&
+        (value.includes(",") || value.includes('"'))
+      ) {
         return `"${value.replace(/"/g, '""')}"`;
       }
       return value;
@@ -78,8 +81,12 @@ export const exportItemsToCSV = (items: any[]): string => {
     warehouse: item.warehouse || "",
     verified: item.verified ? "Yes" : "No",
     verified_by: item.verified_by || "",
-    verified_at: item.verified_at ? new Date(item.verified_at).toISOString() : "",
-    last_scanned_at: item.last_scanned_at ? new Date(item.last_scanned_at).toISOString() : "",
+    verified_at: item.verified_at
+      ? new Date(item.verified_at).toISOString()
+      : "",
+    last_scanned_at: item.last_scanned_at
+      ? new Date(item.last_scanned_at).toISOString()
+      : "",
   }));
 
   return convertToCSV(csvData, headers);
@@ -108,7 +115,9 @@ export const exportVariancesToCSV = (variances: any[]): string => {
     verified_qty: variance.verified_qty || 0,
     variance: variance.variance || 0,
     verified_by: variance.verified_by || "",
-    verified_at: variance.verified_at ? new Date(variance.verified_at).toISOString() : "",
+    verified_at: variance.verified_at
+      ? new Date(variance.verified_at).toISOString()
+      : "",
     category: variance.category || "",
     subcategory: variance.subcategory || "",
     floor: variance.floor || "",

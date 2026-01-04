@@ -12,13 +12,15 @@ export const queryClient = new QueryClient({
       staleTime: QUERY_STALE_TIME_MS,
       gcTime: QUERY_CACHE_TIME_MS,
       retry: API_MAX_RETRIES,
-      retryDelay: (attemptIndex) => Math.min(API_RETRY_BACKOFF_MS * 2 ** attemptIndex, 1000 * 10),
+      retryDelay: (attemptIndex) =>
+        Math.min(API_RETRY_BACKOFF_MS * 2 ** attemptIndex, 1000 * 10),
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
     },
     mutations: {
       retry: API_MAX_RETRIES,
-      retryDelay: (attemptIndex) => Math.min(API_RETRY_BACKOFF_MS * 2 ** attemptIndex, 1000 * 10),
+      retryDelay: (attemptIndex) =>
+        Math.min(API_RETRY_BACKOFF_MS * 2 ** attemptIndex, 1000 * 10),
     },
   },
 });

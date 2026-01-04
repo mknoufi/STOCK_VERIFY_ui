@@ -159,8 +159,16 @@ export const AllStates: Story = {
   render: () => (
     <View style={styles.container}>
       <Input label="Default Input" placeholder="Default state" />
-      <Input label="With Value" placeholder="Enter text" defaultValue="Sample text" />
-      <Input label="With Error" placeholder="Enter text" error="This field is required" />
+      <Input
+        label="With Value"
+        placeholder="Enter text"
+        defaultValue="Sample text"
+      />
+      <Input
+        label="With Error"
+        placeholder="Enter text"
+        error="This field is required"
+      />
       <Input label="Disabled" placeholder="Disabled input" editable={false} />
       <Input
         label="With Icons"

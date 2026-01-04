@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Alert, Platform } from "react-native";
-import { LoadingSpinner, AnimatedPressable, ScreenContainer } from "@/components/ui";
+import {
+  LoadingSpinner,
+  AnimatedPressable,
+  ScreenContainer,
+} from "@/components/ui";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
@@ -52,7 +56,7 @@ export default function ReportsScreen() {
       if (response.success) {
         Alert.alert(
           "Success",
-          `Report '${reportId}' generation started. Check back in a few moments.`
+          `Report '${reportId}' generation started. Check back in a few moments.`,
         );
       }
     } catch (error: any) {
@@ -126,8 +130,8 @@ export default function ReportsScreen() {
       contentContainerStyle={styles.contentContainer}
     >
       <Text style={styles.description}>
-        Generate and download system reports. Reports are generated in the background and can be
-        downloaded when ready.
+        Generate and download system reports. Reports are generated in the
+        background and can be downloaded when ready.
       </Text>
 
       {reports.length === 0 ? (
@@ -156,7 +160,9 @@ export default function ReportsScreen() {
                 </View>
                 <View style={styles.reportInfo}>
                   <Text style={styles.reportName}>{report.name}</Text>
-                  <Text style={styles.reportDescription}>{report.description}</Text>
+                  <Text style={styles.reportDescription}>
+                    {report.description}
+                  </Text>
                   <View style={styles.reportCategory}>
                     <Text
                       style={[

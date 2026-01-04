@@ -42,7 +42,7 @@ export interface TextStyles {
 export const createTextStyles = (
   textColor: string,
   textSecondary: string,
-  textTertiary: string
+  textTertiary: string,
 ): TextStyles => {
   return {
     // Headings
@@ -179,21 +179,27 @@ export const getFontSize = (size: keyof typeof typography.fontSize): number => {
 /**
  * Get font weight from typography scale
  */
-export const getFontWeight = (weight: keyof typeof typography.fontWeight): string => {
+export const getFontWeight = (
+  weight: keyof typeof typography.fontWeight,
+): string => {
   return typography.fontWeight[weight];
 };
 
 /**
  * Get line height multiplier
  */
-export const getLineHeight = (multiplier: keyof typeof typography.lineHeight): number => {
+export const getLineHeight = (
+  multiplier: keyof typeof typography.lineHeight,
+): number => {
   return typography.lineHeight[multiplier];
 };
 
 /**
  * Get letter spacing
  */
-export const getLetterSpacing = (spacing: keyof typeof typography.letterSpacing): number => {
+export const getLetterSpacing = (
+  spacing: keyof typeof typography.letterSpacing,
+): number => {
   return typography.letterSpacing[spacing];
 };
 

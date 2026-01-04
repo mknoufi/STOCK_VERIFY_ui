@@ -20,7 +20,10 @@ export default function SupervisorLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <RoleLayoutGuard allowedRoles={["supervisor", "admin"]} layoutName="SupervisorLayout">
+    <RoleLayoutGuard
+      allowedRoles={["supervisor", "admin"]}
+      layoutName="SupervisorLayout"
+    >
       {isLargeScreen ? (
         <View style={styles.webContainer}>
           <SupervisorSidebar

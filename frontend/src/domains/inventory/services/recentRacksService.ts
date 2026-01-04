@@ -11,7 +11,7 @@ export const RecentRacksService = {
   async getRecent(
     sessionId: string,
     floor: string | null | undefined,
-    limit = 5
+    limit = 5,
   ): Promise<string[]> {
     try {
       const k = keyFor(sessionId, floor);
@@ -28,11 +28,15 @@ export const RecentRacksService = {
     sessionId: string,
     floor: string | null | undefined,
     rack: string,
-    max = 5
+    max = 5,
   ): Promise<void> {
     try {
       const k = keyFor(sessionId, floor);
-      const current = await RecentRacksService.getRecent(sessionId, floor, max + 5);
+      const current = await RecentRacksService.getRecent(
+        sessionId,
+        floor,
+        max + 5,
+      );
       const value = normalize(rack);
       if (!value) return;
       const existing = new Set<string>();
@@ -56,7 +60,10 @@ export const RecentRacksService = {
     }
   },
 
-  async clear(sessionId: string, floor: string | null | undefined): Promise<void> {
+  async clear(
+    sessionId: string,
+    floor: string | null | undefined,
+  ): Promise<void> {
     try {
       const k = keyFor(sessionId, floor);
       await AsyncStorage.removeItem(k);

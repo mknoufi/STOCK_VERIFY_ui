@@ -4,7 +4,13 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface QuickAction {
@@ -55,7 +61,9 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               />
               {action.badge !== undefined && action.badge > 0 && (
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{action.badge > 99 ? "99+" : action.badge}</Text>
+                  <Text style={styles.badgeText}>
+                    {action.badge > 99 ? "99+" : action.badge}
+                  </Text>
                 </View>
               )}
             </View>

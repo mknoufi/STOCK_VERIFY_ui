@@ -16,7 +16,7 @@ interface UseAIBarcodeReturn {
   error: string | null;
   recognizeBarcode: (
     imageUri: string,
-    options?: BarcodeRecognitionOptions
+    options?: BarcodeRecognitionOptions,
   ) => Promise<BarcodeResult | null>;
   enhanceImage: (imageUri: string) => Promise<string>;
   isAvailable: boolean;
@@ -49,7 +49,7 @@ export const useAIBarcode = (): UseAIBarcodeReturn => {
   const recognizeBarcode = useCallback(
     async (
       imageUri: string,
-      options?: BarcodeRecognitionOptions
+      options?: BarcodeRecognitionOptions,
     ): Promise<BarcodeResult | null> => {
       if (!isInitialized) {
         setError("Service not initialized");
@@ -60,17 +60,21 @@ export const useAIBarcode = (): UseAIBarcodeReturn => {
       setError(null);
 
       try {
-        const result = await aiBarcodeService.recognizeBarcode(imageUri, options);
+        const result = await aiBarcodeService.recognizeBarcode(
+          imageUri,
+          options,
+        );
         return result;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Recognition failed";
+        const errorMessage =
+          err instanceof Error ? err.message : "Recognition failed";
         setError(errorMessage);
         return null;
       } finally {
         setIsLoading(false);
       }
     },
-    [isInitialized]
+    [isInitialized],
   );
 
   const enhanceImage = useCallback(
@@ -86,7 +90,7 @@ export const useAIBarcode = (): UseAIBarcodeReturn => {
         return imageUri;
       }
     },
-    [isInitialized]
+    [isInitialized],
   );
 
   return {

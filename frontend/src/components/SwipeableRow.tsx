@@ -19,7 +19,10 @@ const Action = ({
   color: string;
   onPress?: () => void;
 }) => (
-  <TouchableOpacity style={[styles.action, { backgroundColor: color }]} onPress={onPress}>
+  <TouchableOpacity
+    style={[styles.action, { backgroundColor: color }]}
+    onPress={onPress}
+  >
     <Text style={styles.actionText}>{label}</Text>
   </TouchableOpacity>
 );

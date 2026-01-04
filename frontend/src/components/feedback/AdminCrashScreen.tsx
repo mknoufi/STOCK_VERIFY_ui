@@ -6,7 +6,13 @@
  */
 
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { auroraTheme } from "../../theme/auroraTheme";
@@ -16,7 +22,10 @@ interface AdminCrashScreenProps {
   resetError: () => void;
 }
 
-export const AdminCrashScreen: React.FC<AdminCrashScreenProps> = ({ error, resetError }) => {
+export const AdminCrashScreen: React.FC<AdminCrashScreenProps> = ({
+  error,
+  resetError,
+}) => {
   const router = useRouter();
 
   const handleGoHome = () => {
@@ -33,15 +42,23 @@ export const AdminCrashScreen: React.FC<AdminCrashScreenProps> = ({ error, reset
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Ionicons name="warning-outline" size={64} color={auroraTheme.colors.status.error} />
+          <Ionicons
+            name="warning-outline"
+            size={64}
+            color={auroraTheme.colors.status.error}
+          />
         </View>
 
         <Text style={styles.title}>Admin Panel Error</Text>
-        <Text style={styles.subtitle}>Something went wrong in the admin interface.</Text>
+        <Text style={styles.subtitle}>
+          Something went wrong in the admin interface.
+        </Text>
 
         <View style={styles.errorBox}>
           <Text style={styles.errorLabel}>Error Details:</Text>
-          <Text style={styles.errorMessage}>{error.message || "An unexpected error occurred"}</Text>
+          <Text style={styles.errorMessage}>
+            {error.message || "An unexpected error occurred"}
+          </Text>
         </View>
 
         {__DEV__ && error.stack && (
@@ -52,18 +69,35 @@ export const AdminCrashScreen: React.FC<AdminCrashScreenProps> = ({ error, reset
         )}
 
         <View style={styles.actions}>
-          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={resetError}>
+          <TouchableOpacity
+            style={[styles.button, styles.primaryButton]}
+            onPress={resetError}
+          >
             <Ionicons name="refresh" size={20} color="#FFFFFF" />
             <Text style={styles.primaryButtonText}>Try Again</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={handleGoHome}>
-            <Ionicons name="home-outline" size={20} color={auroraTheme.colors.primary[500]} />
+          <TouchableOpacity
+            style={[styles.button, styles.secondaryButton]}
+            onPress={handleGoHome}
+          >
+            <Ionicons
+              name="home-outline"
+              size={20}
+              color={auroraTheme.colors.primary[500]}
+            />
             <Text style={styles.secondaryButtonText}>Go to Dashboard</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.button, styles.outlineButton]} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={20} color={auroraTheme.colors.text.secondary} />
+          <TouchableOpacity
+            style={[styles.button, styles.outlineButton]}
+            onPress={handleLogout}
+          >
+            <Ionicons
+              name="log-out-outline"
+              size={20}
+              color={auroraTheme.colors.text.secondary}
+            />
             <Text style={styles.outlineButtonText}>Logout</Text>
           </TouchableOpacity>
         </View>

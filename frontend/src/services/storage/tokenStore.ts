@@ -35,7 +35,10 @@ export const tokenStore = {
   /**
    * Set tokens
    */
-  setTokens: async (accessToken: string, refreshToken: string): Promise<void> => {
+  setTokens: async (
+    accessToken: string,
+    refreshToken: string,
+  ): Promise<void> => {
     cachedAccessToken = accessToken;
     cachedRefreshToken = refreshToken;
     await secureStorage.setItem("auth_token", accessToken);

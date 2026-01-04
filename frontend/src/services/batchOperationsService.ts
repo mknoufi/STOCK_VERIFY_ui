@@ -37,7 +37,7 @@ export class BatchOperationsService {
     options: {
       onProgress?: (current: number, total: number) => void;
       onItemComplete?: (itemCode: string, success: boolean) => void;
-    } = {}
+    } = {},
   ): Promise<BatchOperationResult> {
     const { onProgress, onItemComplete } = options;
     const result: BatchOperationResult = {
@@ -78,7 +78,7 @@ export class BatchOperationsService {
                   context: "Batch Count",
                   recovery: { maxRetries: 2 },
                   showAlert: false,
-                }
+                },
               );
 
               result.success++;
@@ -95,14 +95,14 @@ export class BatchOperationsService {
                 onItemComplete(item.item_code, false);
               }
             }
-          })
+          }),
         );
 
         if (onProgress) {
           onProgress(result.success + result.failed, result.total);
         }
       },
-      onProgress
+      onProgress,
     );
 
     return result;
@@ -117,7 +117,7 @@ export class BatchOperationsService {
     quantity: number,
     options: {
       onProgress?: (current: number, total: number) => void;
-    } = {}
+    } = {},
   ): Promise<BatchOperationResult> {
     const items = itemCodes.map((itemCode) => ({
       item_code: itemCode,
@@ -129,7 +129,7 @@ export class BatchOperationsService {
         session_id: sessionId,
         items,
       },
-      options
+      options,
     );
   }
 
@@ -143,7 +143,7 @@ export class BatchOperationsService {
     }[],
     options: {
       onProgress?: (current: number, total: number) => void;
-    } = {}
+    } = {},
   ): Promise<BatchOperationResult> {
     const result: BatchOperationResult = {
       success: 0,
@@ -173,7 +173,7 @@ export class BatchOperationsService {
                   context: "Bulk Update",
                   recovery: { maxRetries: 2 },
                   showAlert: false,
-                }
+                },
               );
 
               result.success++;
@@ -184,14 +184,14 @@ export class BatchOperationsService {
                 error: error.message || "Unknown error",
               });
             }
-          })
+          }),
         );
 
         if (options.onProgress) {
           options.onProgress(result.success + result.failed, result.total);
         }
       },
-      options.onProgress
+      options.onProgress,
     );
 
     return result;

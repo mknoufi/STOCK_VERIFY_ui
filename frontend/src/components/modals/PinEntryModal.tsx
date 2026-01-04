@@ -82,9 +82,15 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} onClose={handleClose} title="Supervisor Override Required">
+    <Modal
+      visible={visible}
+      onClose={handleClose}
+      title="Supervisor Override Required"
+    >
       <View style={styles.container}>
-        <Text style={styles.description}>This action requires supervisor authorization.</Text>
+        <Text style={styles.description}>
+          This action requires supervisor authorization.
+        </Text>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
 

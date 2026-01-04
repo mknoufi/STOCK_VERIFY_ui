@@ -21,7 +21,13 @@
  * ```
  */
 import React, { useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -31,7 +37,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, semanticColors, spacing, radius, shadows, textStyles } from "../../theme/unified";
+import {
+  colors,
+  semanticColors,
+  spacing,
+  radius,
+  shadows,
+  textStyles,
+} from "../../theme/unified";
 
 const { width: _SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -88,7 +101,8 @@ export function BulkActionBar({
   // Don't render if not visible
   if (!visible) return null;
 
-  const bottomPadding = position === "bottom" ? Math.max(insets.bottom, spacing.md) : 0;
+  const bottomPadding =
+    position === "bottom" ? Math.max(insets.bottom, spacing.md) : 0;
   const topPadding = position === "top" ? Math.max(insets.top, spacing.md) : 0;
 
   return (
@@ -108,7 +122,9 @@ export function BulkActionBar({
         <View style={styles.countContainer}>
           <Text style={styles.countText}>
             {selectedCount}
-            {totalCount !== undefined && <Text style={styles.totalText}> of {totalCount}</Text>}
+            {totalCount !== undefined && (
+              <Text style={styles.totalText}> of {totalCount}</Text>
+            )}
           </Text>
           <Text style={styles.selectedLabel}>selected</Text>
         </View>
@@ -118,7 +134,11 @@ export function BulkActionBar({
           style={styles.clearButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="close-circle" size={20} color={semanticColors.text.tertiary} />
+          <Ionicons
+            name="close-circle"
+            size={20}
+            color={semanticColors.text.tertiary}
+          />
           <Text style={styles.clearText}>Clear</Text>
         </TouchableOpacity>
       </View>
@@ -154,9 +174,13 @@ function ActionButton({ action }: { action: BulkAction }) {
     transform: [{ scale: scale.value }],
   }));
 
-  const buttonColor = action.destructive ? semanticColors.status.error : colors.primary[500];
+  const buttonColor = action.destructive
+    ? semanticColors.status.error
+    : colors.primary[500];
 
-  const textColor = action.destructive ? semanticColors.status.error : colors.primary[600];
+  const textColor = action.destructive
+    ? semanticColors.status.error
+    : colors.primary[600];
 
   return (
     <AnimatedTouchable
@@ -164,10 +188,19 @@ function ActionButton({ action }: { action: BulkAction }) {
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={action.disabled || action.loading}
-      style={[styles.actionButton, action.disabled && styles.actionButtonDisabled, animatedStyle]}
+      style={[
+        styles.actionButton,
+        action.disabled && styles.actionButtonDisabled,
+        animatedStyle,
+      ]}
       activeOpacity={0.7}
     >
-      <View style={[styles.actionIconContainer, { backgroundColor: `${buttonColor}15` }]}>
+      <View
+        style={[
+          styles.actionIconContainer,
+          { backgroundColor: `${buttonColor}15` },
+        ]}
+      >
         <Ionicons
           name={action.icon as any}
           size={20}

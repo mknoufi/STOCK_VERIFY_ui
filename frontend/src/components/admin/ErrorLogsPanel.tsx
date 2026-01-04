@@ -19,7 +19,11 @@ import {
   TextStyle,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { modernColors, modernShadows, modernBorderRadius } from "../../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernShadows,
+  modernBorderRadius,
+} from "../../styles/modernDesignSystem";
 import { copyToClipboard } from "../../utils/clipboard";
 
 // --- Domain Types ---
@@ -153,31 +157,48 @@ const LogRow = React.memo(
         activeOpacity={0.7}
       >
         <View style={styles.logIconContainer}>
-          <MaterialCommunityIcons name={config.icon} size={22} color={config.color} />
+          <MaterialCommunityIcons
+            name={config.icon}
+            size={22}
+            color={config.color}
+          />
           {log.count && log.count > 1 && (
             <View style={styles.countBadge}>
-              <Text style={styles.countText}>{log.count > 99 ? "99+" : log.count}</Text>
+              <Text style={styles.countText}>
+                {log.count > 99 ? "99+" : log.count}
+              </Text>
             </View>
           )}
         </View>
 
         <View style={styles.logContent}>
           <View style={styles.logHeader}>
-            <Text style={[styles.logLevel, { color: config.color }]}>{config.label}</Text>
+            <Text style={[styles.logLevel, { color: config.color }]}>
+              {config.label}
+            </Text>
             <View style={styles.metaContainer}>
               {log.status !== "active" && (
-                <View style={[styles.statusBadge, { borderColor: statusInfo.color }]}>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { borderColor: statusInfo.color },
+                  ]}
+                >
                   <MaterialCommunityIcons
                     name={statusInfo.icon}
                     size={10}
                     color={statusInfo.color}
                   />
-                  <Text style={[styles.statusText, { color: statusInfo.color }]}>
+                  <Text
+                    style={[styles.statusText, { color: statusInfo.color }]}
+                  >
                     {statusInfo.label}
                   </Text>
                 </View>
               )}
-              <Text style={styles.logTime}>{formatDateTime(log.timestamp)}</Text>
+              <Text style={styles.logTime}>
+                {formatDateTime(log.timestamp)}
+              </Text>
             </View>
           </View>
           <Text style={styles.logMessage} numberOfLines={2}>
@@ -215,7 +236,7 @@ const LogRow = React.memo(
         </View>
       </TouchableOpacity>
     );
-  }
+  },
 );
 
 LogRow.displayName = "LogRow";
@@ -227,7 +248,12 @@ interface DetailModalProps {
   onResolve?: (id: string) => void;
 }
 
-function ErrorDetailModal({ log, visible, onClose, onResolve }: DetailModalProps) {
+function ErrorDetailModal({
+  log,
+  visible,
+  onClose,
+  onResolve,
+}: DetailModalProps) {
   if (!log) return null;
 
   const config = SEVERITY_CONFIG[log.level];
@@ -250,21 +276,34 @@ function ErrorDetailModal({ log, visible, onClose, onResolve }: DetailModalProps
       <View style={styles.modalContainer}>
         <View style={styles.modalHeader}>
           <View style={styles.modalHeaderTitle}>
-            <MaterialCommunityIcons name={config.icon} size={24} color={config.color} />
+            <MaterialCommunityIcons
+              name={config.icon}
+              size={24}
+              color={config.color}
+            />
             <Text style={styles.modalTitle}>Error Details</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialCommunityIcons name="close" size={24} color={modernColors.text.primary} />
+            <MaterialCommunityIcons
+              name="close"
+              size={24}
+              color={modernColors.text.primary}
+            />
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.modalContent} contentContainerStyle={{ paddingBottom: 40 }}>
+        <ScrollView
+          style={styles.modalContent}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
           {/* Primary Info */}
           <View style={styles.section}>
             <Text style={styles.logMessageLarge}>{log.message}</Text>
             <View style={styles.tagsRow}>
               <View style={[styles.tag, { backgroundColor: config.bgColor }]}>
-                <Text style={[styles.tagText, { color: config.color }]}>{config.label}</Text>
+                <Text style={[styles.tagText, { color: config.color }]}>
+                  {config.label}
+                </Text>
               </View>
               <View
                 style={[
@@ -276,7 +315,12 @@ function ErrorDetailModal({ log, visible, onClose, onResolve }: DetailModalProps
                   },
                 ]}
               >
-                <Text style={[styles.tagText, { color: modernColors.text.secondary }]}>
+                <Text
+                  style={[
+                    styles.tagText,
+                    { color: modernColors.text.secondary },
+                  ]}
+                >
                   {log.status.toUpperCase()}
                 </Text>
               </View>
@@ -292,20 +336,35 @@ function ErrorDetailModal({ log, visible, onClose, onResolve }: DetailModalProps
                 onClose();
               }}
             >
-              <MaterialCommunityIcons name="check-circle-outline" size={20} color="white" />
+              <MaterialCommunityIcons
+                name="check-circle-outline"
+                size={20}
+                color="white"
+              />
               <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
             </TouchableOpacity>
           )}
 
           {/* Details Table */}
           <View style={styles.detailsCard}>
-            <DetailRow label="Timestamp" value={formatDateTime(log.timestamp)} />
+            <DetailRow
+              label="Timestamp"
+              value={formatDateTime(log.timestamp)}
+            />
             <DetailRow label="Endpoint" value={log.endpoint} canCopy />
             {log.reference_id && (
-              <DetailRow label="Reference ID" value={log.reference_id} canCopy />
+              <DetailRow
+                label="Reference ID"
+                value={log.reference_id}
+                canCopy
+              />
             )}
-            {log.user_id && <DetailRow label="User ID" value={log.user_id} canCopy />}
-            {log.request_id && <DetailRow label="Request ID" value={log.request_id} canCopy />}
+            {log.user_id && (
+              <DetailRow label="User ID" value={log.user_id} canCopy />
+            )}
+            {log.request_id && (
+              <DetailRow label="Request ID" value={log.request_id} canCopy />
+            )}
           </View>
 
           {/* Stack Trace */}
@@ -313,7 +372,9 @@ function ErrorDetailModal({ log, visible, onClose, onResolve }: DetailModalProps
             <View style={styles.stackTraceContainer}>
               <View style={styles.stackHeader}>
                 <Text style={styles.detailLabel}>Stack Trace</Text>
-                <TouchableOpacity onPress={() => handleCopy("Stack Trace", log.stack_trace)}>
+                <TouchableOpacity
+                  onPress={() => handleCopy("Stack Trace", log.stack_trace)}
+                >
                   <MaterialCommunityIcons
                     name="content-copy"
                     size={16}
@@ -384,7 +445,11 @@ export function ErrorLogsPanel({
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <MaterialCommunityIcons name="alert-box" size={20} color={modernColors.error.main} />
+          <MaterialCommunityIcons
+            name="alert-box"
+            size={20}
+            color={modernColors.error.main}
+          />
           <Text style={styles.title}>Error Logs</Text>
         </View>
         <View style={styles.loadingContainer}>
@@ -394,14 +459,22 @@ export function ErrorLogsPanel({
     );
   }
 
-  const criticalCount = logs.filter((l) => l.level === "critical" && l.status === "active").length;
-  const errorCount = logs.filter((l) => l.level === "error" && l.status === "active").length;
+  const criticalCount = logs.filter(
+    (l) => l.level === "critical" && l.status === "active",
+  ).length;
+  const errorCount = logs.filter(
+    (l) => l.level === "error" && l.status === "active",
+  ).length;
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <MaterialCommunityIcons name="alert-box" size={20} color={modernColors.error.main} />
+          <MaterialCommunityIcons
+            name="alert-box"
+            size={20}
+            color={modernColors.error.main}
+          />
           <Text style={styles.title}>Error Logs</Text>
         </View>
         {criticalCount > 0 && (
@@ -413,11 +486,17 @@ export function ErrorLogsPanel({
 
       <View style={styles.summary}>
         <View style={styles.summaryItem}>
-          <View style={[styles.dot, { backgroundColor: modernColors.error.main }]} />
-          <Text style={styles.summaryText}>{errorCount + criticalCount} active</Text>
+          <View
+            style={[styles.dot, { backgroundColor: modernColors.error.main }]}
+          />
+          <Text style={styles.summaryText}>
+            {errorCount + criticalCount} active
+          </Text>
         </View>
         <View style={styles.summaryItem}>
-          <View style={[styles.dot, { backgroundColor: modernColors.success.main }]} />
+          <View
+            style={[styles.dot, { backgroundColor: modernColors.success.main }]}
+          />
           <Text style={styles.summaryText}>
             {logs.filter((l) => l.status === "resolved").length} resolved
           </Text>
@@ -426,7 +505,11 @@ export function ErrorLogsPanel({
 
       {logs.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <MaterialCommunityIcons name="check-circle" size={32} color={modernColors.success.main} />
+          <MaterialCommunityIcons
+            name="check-circle"
+            size={32}
+            color={modernColors.success.main}
+          />
           <Text style={styles.emptyText}>System Healthy</Text>
         </View>
       ) : (
@@ -434,7 +517,11 @@ export function ErrorLogsPanel({
           data={logs}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <LogRow log={item} onPress={() => handleLogPress(item)} onAcknowledge={onAcknowledge} />
+            <LogRow
+              log={item}
+              onPress={() => handleLogPress(item)}
+              onAcknowledge={onAcknowledge}
+            />
           )}
           style={styles.list}
           contentContainerStyle={{ paddingBottom: 8 }}

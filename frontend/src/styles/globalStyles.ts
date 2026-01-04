@@ -23,7 +23,8 @@ export const colors = {
   // Secondary colors
   secondary: defaultTheme.colors.info?.main || defaultTheme.colors.accent,
   secondaryDark: defaultTheme.colors.accentDark,
-  secondaryLight: defaultTheme.colors.info?.light || defaultTheme.colors.accentLight,
+  secondaryLight:
+    defaultTheme.colors.info?.light || defaultTheme.colors.accentLight,
 
   // Background colors
   backgroundDark: defaultTheme.colors.background.default,

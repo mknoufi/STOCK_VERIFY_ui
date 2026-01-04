@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,12 +8,12 @@ async def check_items():
     client = AsyncIOMotorClient(mongo_url)
     db = client[settings.DB_NAME]
 
-    count = await db.items.count_documents({})
-    print(f"Total items in MongoDB: {count}")
+    count = await db.erp_items.count_documents({})
+    print(f"Total items in MongoDB (erp_items): {count}")
 
     if count > 0:
-        sample = await db.items.find_one({})
-        print(f"Sample item: {sample.get('item_name', 'N/A')} ({sample.get('barcode', 'N/A')})")
+        sample = await db.erp_items.find_one({})
+        print(f"Sample item: {sample}")
 
 if __name__ == "__main__":
     asyncio.run(check_items())

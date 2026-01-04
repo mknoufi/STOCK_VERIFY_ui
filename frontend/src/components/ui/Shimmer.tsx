@@ -9,7 +9,13 @@
  */
 
 import React, { useEffect } from "react";
-import { View, StyleSheet, ViewStyle, useWindowDimensions, DimensionValue } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  useWindowDimensions,
+  DimensionValue,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -50,7 +56,7 @@ export const Shimmer: React.FC<ShimmerProps> = ({
         easing: Easing.linear,
       }),
       -1,
-      false
+      false,
     );
   }, [duration, translateX, screenWidth]);
 
@@ -80,7 +86,9 @@ export const Shimmer: React.FC<ShimmerProps> = ({
           height,
           borderRadius,
           backgroundColor:
-            variant === "dark" ? auroraTheme.colors.neutral[800] : auroraTheme.colors.neutral[200],
+            variant === "dark"
+              ? auroraTheme.colors.neutral[800]
+              : auroraTheme.colors.neutral[200],
         },
         style,
       ]}
@@ -99,7 +107,13 @@ export const Shimmer: React.FC<ShimmerProps> = ({
  * ShimmerPlaceholder - Pre-built shimmer placeholders
  */
 export const ShimmerPlaceholder = {
-  Text: ({ lines = 3, variant = "dark" }: { lines?: number; variant?: "light" | "dark" }) => (
+  Text: ({
+    lines = 3,
+    variant = "dark",
+  }: {
+    lines?: number;
+    variant?: "light" | "dark";
+  }) => (
     <View style={styles.textContainer}>
       {Array.from({ length: lines }).map((_, index) => (
         <Shimmer
@@ -123,13 +137,29 @@ export const ShimmerPlaceholder = {
       />
       <View style={styles.cardContent}>
         <Shimmer height={24} width="40%" variant={variant} />
-        <Shimmer height={14} width="70%" variant={variant} style={{ marginTop: 8 }} />
+        <Shimmer
+          height={14}
+          width="70%"
+          variant={variant}
+          style={{ marginTop: 8 }}
+        />
       </View>
     </View>
   ),
 
-  Avatar: ({ size = 48, variant = "dark" }: { size?: number; variant?: "light" | "dark" }) => (
-    <Shimmer height={size} width={size} borderRadius={size / 2} variant={variant} />
+  Avatar: ({
+    size = 48,
+    variant = "dark",
+  }: {
+    size?: number;
+    variant?: "light" | "dark";
+  }) => (
+    <Shimmer
+      height={size}
+      width={size}
+      borderRadius={size / 2}
+      variant={variant}
+    />
   ),
 
   StatsCard: ({ variant = "dark" }: { variant?: "light" | "dark" }) => (
@@ -140,8 +170,18 @@ export const ShimmerPlaceholder = {
         borderRadius={auroraTheme.borderRadius.xl}
         variant={variant}
       />
-      <Shimmer height={36} width="50%" variant={variant} style={{ marginTop: 12 }} />
-      <Shimmer height={14} width="70%" variant={variant} style={{ marginTop: 8 }} />
+      <Shimmer
+        height={36}
+        width="50%"
+        variant={variant}
+        style={{ marginTop: 12 }}
+      />
+      <Shimmer
+        height={14}
+        width="70%"
+        variant={variant}
+        style={{ marginTop: 8 }}
+      />
     </View>
   ),
 
@@ -150,7 +190,12 @@ export const ShimmerPlaceholder = {
       <Shimmer height={40} width={40} borderRadius={20} variant={variant} />
       <View style={styles.listItemContent}>
         <Shimmer height={16} width="60%" variant={variant} />
-        <Shimmer height={12} width="40%" variant={variant} style={{ marginTop: 6 }} />
+        <Shimmer
+          height={12}
+          width="40%"
+          variant={variant}
+          style={{ marginTop: 6 }}
+        />
       </View>
     </View>
   ),

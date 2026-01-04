@@ -178,7 +178,7 @@ async def update_field_definition(
     **Permissions Required:** manage_dynamic_fields
     """
     try:
-        update_dict = updates.dict(exclude_unset=True)
+        update_dict = updates.model_dump(exclude_unset=True)
 
         field_def = await service.update_field_definition(
             field_id=field_id,

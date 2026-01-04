@@ -461,7 +461,7 @@ async def generate_report(
         )
 
     # Build summary
-    filters_applied = {k: v for k, v in filters.dict().items() if v is not None}
+    filters_applied = {k: v for k, v in filters.model_dump().items() if v is not None}
 
     summary = ReportSummary(
         total_records=len(data),

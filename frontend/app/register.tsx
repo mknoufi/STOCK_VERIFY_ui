@@ -84,7 +84,10 @@ export default function Register() {
         if (typeof errorData === "object" && errorData.message) {
           errorMessage = errorData.message;
         } else if (typeof errorData === "object" && errorData.detail) {
-          if (typeof errorData.detail === "object" && errorData.detail.message) {
+          if (
+            typeof errorData.detail === "object" &&
+            errorData.detail.message
+          ) {
             errorMessage = errorData.detail.message;
           } else if (typeof errorData.detail === "string") {
             errorMessage = errorData.detail;
@@ -97,18 +100,33 @@ export default function Register() {
       }
 
       // Provide helpful context
-      if (errorMessage.includes("already exists") || errorMessage.includes("Username")) {
-        errorMessage = "Username already exists. Please choose a different username.";
-      } else if (errorMessage.includes("timeout") || errorMessage.includes("ECONNABORTED")) {
-        errorMessage = "Connection timeout. Please check your connection and try again.";
-      } else if (errorMessage.includes("ECONNREFUSED") || errorMessage.includes("Cannot connect")) {
-        errorMessage = "Cannot connect to server. Please check if the backend server is running.";
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("Username")
+      ) {
+        errorMessage =
+          "Username already exists. Please choose a different username.";
+      } else if (
+        errorMessage.includes("timeout") ||
+        errorMessage.includes("ECONNABORTED")
+      ) {
+        errorMessage =
+          "Connection timeout. Please check your connection and try again.";
+      } else if (
+        errorMessage.includes("ECONNREFUSED") ||
+        errorMessage.includes("Cannot connect")
+      ) {
+        errorMessage =
+          "Cannot connect to server. Please check if the backend server is running.";
       }
 
       // Add fix button based on error type
       let fixButton: { text: string; onPress: () => void } | undefined;
 
-      if (errorMessage.includes("already exists") || errorMessage.includes("Username")) {
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("Username")
+      ) {
         fixButton = {
           text: "Choose Different Username",
           onPress: () => {
@@ -116,21 +134,30 @@ export default function Register() {
             // Focus will be handled by component state
           },
         };
-      } else if (errorMessage.includes("timeout") || errorMessage.includes("ECONNABORTED")) {
+      } else if (
+        errorMessage.includes("timeout") ||
+        errorMessage.includes("ECONNABORTED")
+      ) {
         fixButton = {
           text: "Retry Registration",
           onPress: () => {
             setTimeout(() => handleRegister(), 500);
           },
         };
-      } else if (errorMessage.includes("ECONNREFUSED") || errorMessage.includes("Cannot connect")) {
+      } else if (
+        errorMessage.includes("ECONNREFUSED") ||
+        errorMessage.includes("Cannot connect")
+      ) {
         fixButton = {
           text: "Check Connection & Retry",
           onPress: () => {
             setTimeout(() => handleRegister(), 1000);
           },
         };
-      } else if (errorMessage.includes("validation") || errorMessage.includes("required")) {
+      } else if (
+        errorMessage.includes("validation") ||
+        errorMessage.includes("required")
+      ) {
         fixButton = {
           text: "Fix Form",
           onPress: () => {
@@ -143,7 +170,9 @@ export default function Register() {
       Alert.alert(
         "Registration Failed",
         errorMessage,
-        fixButton ? [{ text: "Cancel", style: "cancel" }, fixButton] : [{ text: "OK" }]
+        fixButton
+          ? [{ text: "Cancel", style: "cancel" }, fixButton]
+          : [{ text: "OK" }],
       );
       __DEV__ && console.error("Registration error details:", error);
     } finally {
@@ -157,10 +186,16 @@ export default function Register() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar style="light" />
-      <LinearGradient colors={["#1a1a1a", "#0d0d0d", "#000000"]} style={StyleSheet.absoluteFill} />
+      <LinearGradient
+        colors={["#1a1a1a", "#0d0d0d", "#000000"]}
+        style={StyleSheet.absoluteFill}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <AppLogo size="medium" showText={true} variant="default" />
@@ -174,11 +209,18 @@ export default function Register() {
               Username <Text style={styles.required}>*</Text>
             </Text>
             <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color="#888"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={formData.username}
-                onChangeText={(text) => setFormData({ ...formData, username: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, username: text })
+                }
                 placeholder="Enter username"
                 placeholderTextColor="#666"
                 autoCapitalize="none"
@@ -193,11 +235,18 @@ export default function Register() {
               Full Name <Text style={styles.required}>*</Text>
             </Text>
             <View style={styles.inputContainer}>
-              <Ionicons name="person" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons
+                name="person"
+                size={20}
+                color="#888"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={formData.full_name}
-                onChangeText={(text) => setFormData({ ...formData, full_name: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, full_name: text })
+                }
                 placeholder="Enter your full name"
                 placeholderTextColor="#666"
                 autoCapitalize="words"
@@ -210,11 +259,18 @@ export default function Register() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Employee ID</Text>
             <View style={styles.inputContainer}>
-              <Ionicons name="card-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons
+                name="card-outline"
+                size={20}
+                color="#888"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={formData.employee_id}
-                onChangeText={(text) => setFormData({ ...formData, employee_id: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, employee_id: text })
+                }
                 placeholder="Enter employee ID (optional)"
                 placeholderTextColor="#666"
                 autoCapitalize="none"
@@ -227,11 +283,18 @@ export default function Register() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Phone Number</Text>
             <View style={styles.inputContainer}>
-              <Ionicons name="call-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons
+                name="call-outline"
+                size={20}
+                color="#888"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={formData.phone}
-                onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, phone: text })
+                }
                 placeholder="Enter phone number (optional)"
                 placeholderTextColor="#666"
                 autoCorrect={false}
@@ -255,7 +318,9 @@ export default function Register() {
               <TextInput
                 style={styles.input}
                 value={formData.password}
-                onChangeText={(text) => setFormData({ ...formData, password: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, password: text })
+                }
                 placeholder="Enter password (min 6 characters)"
                 placeholderTextColor="#666"
                 secureTextEntry={!showPassword}
@@ -290,7 +355,9 @@ export default function Register() {
               <TextInput
                 style={styles.input}
                 value={formData.confirmPassword}
-                onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, confirmPassword: text })
+                }
                 placeholder="Re-enter password"
                 placeholderTextColor="#666"
                 secureTextEntry={!showConfirmPassword}

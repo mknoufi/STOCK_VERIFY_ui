@@ -1,11 +1,12 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useNetworkStore } from "../services/networkService";
+import { useNetworkStore } from "../store/networkStore";
 
 export const OnlineStatus: React.FC = () => {
   const { isOnline, isInternetReachable } = useNetworkStore();
 
-  const status = isOnline && isInternetReachable !== false ? "online" : "offline";
+  const status =
+    isOnline && isInternetReachable !== false ? "online" : "offline";
   const statusColor = status === "online" ? "#4CAF50" : "#FF9800";
   const statusText = status === "online" ? "Online" : "Offline";
 

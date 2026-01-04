@@ -107,7 +107,7 @@ const getLuminance = (color: string): number => {
 export const meetsWCAGAA = (
   foreground: string,
   background: string,
-  isLargeText = false
+  isLargeText = false,
 ): boolean => {
   const ratio = getContrastRatio(foreground, background);
   return isLargeText ? ratio >= 3 : ratio >= 4.5;
@@ -119,7 +119,7 @@ export const meetsWCAGAA = (
 export const meetsWCAGAAA = (
   foreground: string,
   background: string,
-  isLargeText = false
+  isLargeText = false,
 ): boolean => {
   const ratio = getContrastRatio(foreground, background);
   return isLargeText ? ratio >= 4.5 : ratio >= 7;
@@ -128,9 +128,12 @@ export const meetsWCAGAAA = (
 /**
  * Generate semantic colors from base theme
  */
-export const generateSemanticColors = (baseColors: ThemeColors): SemanticColors => {
+export const generateSemanticColors = (
+  baseColors: ThemeColors,
+): SemanticColors => {
   // Helper to safely get color with fallback
-  const getColor = (key: string, fallback: string): string => baseColors[key] ?? fallback;
+  const getColor = (key: string, fallback: string): string =>
+    baseColors[key] ?? fallback;
 
   const primary = getColor("primary", "#007bff");
   const secondary = getColor("secondary", "#6c757d");

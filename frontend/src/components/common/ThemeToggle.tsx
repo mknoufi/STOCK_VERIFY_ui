@@ -69,7 +69,10 @@ export const ThemeToggle: React.FC = () => {
 
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
       onPress={handleToggle}
       activeOpacity={0.7}
       accessibilityLabel={getAccessibilityLabel()}

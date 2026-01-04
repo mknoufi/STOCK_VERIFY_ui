@@ -3,7 +3,7 @@
  * Search autocomplete for finding items by name or barcode
  * Enhanced with pagination and infinite scroll
  */
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -78,20 +78,27 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
         <View style={styles.searchResultContent}>
           <View style={styles.resultHeader}>
             <Text style={styles.searchResultName}>{item.item_name}</Text>
-            {item.relevance_score !== undefined && item.relevance_score >= 500 && (
-              <View style={styles.exactMatchBadge}>
-                <Text style={styles.exactMatchText}>Exact</Text>
-              </View>
-            )}
+            {item.relevance_score !== undefined &&
+              item.relevance_score >= 500 && (
+                <View style={styles.exactMatchBadge}>
+                  <Text style={styles.exactMatchText}>Exact</Text>
+                </View>
+              )}
           </View>
           <Text style={styles.searchResultCode}>Code: {item.item_code}</Text>
-          {item.barcode && <Text style={styles.searchResultBarcode}>Barcode: {item.barcode}</Text>}
-          <Text style={styles.searchResultStock}>Stock: {item.stock_qty || 0}</Text>
+          {item.barcode && (
+            <Text style={styles.searchResultBarcode}>
+              Barcode: {item.barcode}
+            </Text>
+          )}
+          <Text style={styles.searchResultStock}>
+            Stock: {item.stock_qty || 0}
+          </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
       </TouchableOpacity>
     ),
-    [onSearchResultSelect]
+    [onSearchResultSelect],
   );
 
   // Footer component for infinite scroll
@@ -122,6 +129,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
     }
   }, [hasNextPage, isLoadingMore, onLoadMore]);
 
+  const itemNameSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
   return (
     <View style={styles.manualEntryContainer}>
       <View style={styles.headerRow}>
@@ -149,9 +160,6 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onChangeText={(text) => {
               onActivityReset?.();
               onBarcodeChange(text);
-              if (text.length === 6) {
-                onBarcodeSubmit();
-              }
             }}
             keyboardType="numeric"
             autoCapitalize="none"
@@ -165,7 +173,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.searchButton, !manualBarcode && styles.searchButtonDisabled]}
+            style={[
+              styles.searchButton,
+              !manualBarcode && styles.searchButtonDisabled,
+            ]}
             onPress={() => {
               onActivityReset?.();
               onBarcodeSubmit();
@@ -183,7 +194,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           <Ionicons name="search-outline" size={20} color="#3B82F6" />
           <Text style={styles.inputLabel}>Search Item Name</Text>
           {onVoiceSearch && (
-            <TouchableOpacity style={styles.voiceButton} onPress={onVoiceSearch}>
+            <TouchableOpacity
+              style={styles.voiceButton}
+              onPress={onVoiceSearch}
+            >
               <Ionicons
                 name={isListening ? "mic" : "mic-outline"}
                 size={20}
@@ -201,8 +215,19 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onChangeText={(text) => {
               onActivityReset?.();
               onItemNameChange(text);
-              if (text.trim().length >= 3) {
-                onSearch(text);
+
+              if (itemNameSearchTimeoutRef.current) {
+                clearTimeout(itemNameSearchTimeoutRef.current);
+                itemNameSearchTimeoutRef.current = null;
+              }
+
+              const trimmed = text.trim();
+              if (trimmed.length >= 3) {
+                itemNameSearchTimeoutRef.current = setTimeout(() => {
+                  onSearch(text);
+                }, 350);
+              } else {
+                onSearch("");
               }
             }}
             returnKeyType="search"
@@ -211,7 +236,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onSubmitEditing={onItemNameSubmit}
           />
           <TouchableOpacity
-            style={[styles.searchButton, !manualItemName && styles.searchButtonDisabled]}
+            style={[
+              styles.searchButton,
+              !manualItemName && styles.searchButtonDisabled,
+            ]}
             onPress={() => {
               onActivityReset?.();
               onItemNameSubmit();

@@ -86,7 +86,9 @@ export class EnhancedSyncManager {
       const queue = await this.getQueue();
 
       // Check if record already exists (update instead of duplicate)
-      const existingIndex = queue.findIndex((r) => r.client_record_id === record.client_record_id);
+      const existingIndex = queue.findIndex(
+        (r) => r.client_record_id === record.client_record_id,
+      );
 
       if (existingIndex >= 0) {
         queue[existingIndex] = {
@@ -170,7 +172,9 @@ export class EnhancedSyncManager {
   /**
    * Sync offline queue with exponential backoff
    */
-  async syncQueue(onProgress?: (progress: number, total: number) => void): Promise<{
+  async syncQueue(
+    onProgress?: (progress: number, total: number) => void,
+  ): Promise<{
     synced: number;
     conflicts: number;
     errors: number;
@@ -193,7 +197,9 @@ export class EnhancedSyncManager {
       return {
         synced: 0, // Will be updated during sync
         conflicts: conflicts.length,
-        errors: queue.filter((r) => (r.retry_count || 0) >= this.config.maxRetries).length,
+        errors: queue.filter(
+          (r) => (r.retry_count || 0) >= this.config.maxRetries,
+        ).length,
       };
     } finally {
       this.isSyncing = false;
@@ -202,7 +208,7 @@ export class EnhancedSyncManager {
   }
 
   private async _syncQueueInternal(
-    onProgress?: (progress: number, total: number) => void
+    onProgress?: (progress: number, total: number) => void,
   ): Promise<void> {
     const queue = await this.getQueue();
 
@@ -225,7 +231,9 @@ export class EnhancedSyncManager {
 
         // Remove successfully synced records
         const syncedIds = new Set(response.ok);
-        const remainingQueue = queue.filter((r) => !syncedIds.has(r.client_record_id));
+        const remainingQueue = queue.filter(
+          (r) => !syncedIds.has(r.client_record_id),
+        );
 
         // Store conflicts
         if (response.conflicts.length > 0) {
@@ -234,14 +242,19 @@ export class EnhancedSyncManager {
 
         // Handle errors - increment retry count
         for (const error of response.errors) {
-          const record = queue.find((r) => r.client_record_id === error.client_record_id);
+          const record = queue.find(
+            (r) => r.client_record_id === error.client_record_id,
+          );
           if (record) {
             record.retry_count = (record.retry_count || 0) + 1;
 
             if (record.retry_count < this.config.maxRetries) {
               failedRecords.push(record);
             } else {
-              __DEV__ && console.error(`❌ Max retries reached for ${record.client_record_id}`);
+              __DEV__ &&
+                console.error(
+                  `❌ Max retries reached for ${record.client_record_id}`,
+                );
             }
           }
         }
@@ -249,7 +262,7 @@ export class EnhancedSyncManager {
         // Update queue
         await AsyncStorage.setItem(
           QUEUE_KEY,
-          JSON.stringify([...remainingQueue, ...failedRecords])
+          JSON.stringify([...remainingQueue, ...failedRecords]),
         );
 
         synced += response.ok.length;
@@ -263,13 +276,16 @@ export class EnhancedSyncManager {
           console.log(
             `✅ Batch synced: ${response.ok.length} ok, ` +
               `${response.conflicts.length} conflicts, ` +
-              `${response.errors.length} errors`
+              `${response.errors.length} errors`,
           );
       } catch (error: any) {
         console.error("Batch sync error:", error);
 
         // On network error, add delay before next batch
-        if (error.code === "ECONNABORTED" || error.message?.includes("Network")) {
+        if (
+          error.code === "ECONNABORTED" ||
+          error.message?.includes("Network")
+        ) {
           const delay = this.calculateBackoff(1);
           __DEV__ && console.log(`⏱️ Network error, waiting ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));

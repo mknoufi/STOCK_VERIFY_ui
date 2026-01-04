@@ -80,7 +80,8 @@ class EnhancedApiClient {
           success: false,
           error: {
             code: errorData.error.code || "UNKNOWN_ERROR",
-            message: errorData.error.message || error.message || "An error occurred",
+            message:
+              errorData.error.message || error.message || "An error occurred",
             details: errorData.error.details,
           },
           request_id: errorData.request_id,
@@ -92,13 +93,18 @@ class EnhancedApiClient {
         success: false,
         error: {
           code: errorData.error_code || "UNKNOWN_ERROR",
-          message: errorData.detail || errorData.message || error.message || "An error occurred",
+          message:
+            errorData.detail ||
+            errorData.message ||
+            error.message ||
+            "An error occurred",
           details: errorData.details || {},
         },
       };
     }
 
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
 
     // Network or other error
     return {
@@ -119,14 +125,14 @@ class EnhancedApiClient {
   async get<T>(
     endpoint: string,
     params?: Record<string, unknown>,
-    retries: number = 3
+    retries: number = 3,
   ): Promise<ApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.get(`${this.baseURL}${endpoint}`, { params });
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -138,13 +144,17 @@ class EnhancedApiClient {
   /**
    * POST request with retry logic
    */
-  async post<T>(endpoint: string, data?: unknown, retries: number = 3): Promise<ApiResponse<T>> {
+  async post<T>(
+    endpoint: string,
+    data?: unknown,
+    retries: number = 3,
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.post(`${this.baseURL}${endpoint}`, data);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -156,13 +166,17 @@ class EnhancedApiClient {
   /**
    * PUT request with retry logic
    */
-  async put<T>(endpoint: string, data?: unknown, retries: number = 3): Promise<ApiResponse<T>> {
+  async put<T>(
+    endpoint: string,
+    data?: unknown,
+    retries: number = 3,
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.put(`${this.baseURL}${endpoint}`, data);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -174,13 +188,17 @@ class EnhancedApiClient {
   /**
    * PATCH request with retry logic
    */
-  async patch<T>(endpoint: string, data?: unknown, retries: number = 3): Promise<ApiResponse<T>> {
+  async patch<T>(
+    endpoint: string,
+    data?: unknown,
+    retries: number = 3,
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.patch(`${this.baseURL}${endpoint}`, data);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -192,13 +210,16 @@ class EnhancedApiClient {
   /**
    * DELETE request with retry logic
    */
-  async delete<T>(endpoint: string, retries: number = 3): Promise<ApiResponse<T>> {
+  async delete<T>(
+    endpoint: string,
+    retries: number = 3,
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await retryWithBackoff(
         async () => {
           return await api.delete(`${this.baseURL}${endpoint}`);
         },
-        { retries }
+        { retries },
       );
 
       return this.handleResponse<T>(response.data);
@@ -217,9 +238,13 @@ class EnhancedApiClient {
       page_size?: number;
       [key: string]: unknown;
     },
-    retries: number = 3
+    retries: number = 3,
   ): Promise<ApiResponse<PaginatedResponse<T>>> {
-    const response = await this.get<PaginatedResponse<T>>(endpoint, params, retries);
+    const response = await this.get<PaginatedResponse<T>>(
+      endpoint,
+      params,
+      retries,
+    );
     return response;
   }
 

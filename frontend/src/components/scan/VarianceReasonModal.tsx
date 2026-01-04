@@ -3,7 +3,14 @@
  * Modal for selecting variance reason when quantity differs
  */
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
+} from "react-native";
 import { VarianceReason } from "@/types/scan";
 
 interface VarianceReasonModalProps {
@@ -30,12 +37,17 @@ export const VarianceReasonModal: React.FC<VarianceReasonModalProps> = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Variance Reason Required</Text>
-          <Text style={styles.modalSubtitle}>Please select a reason for the variance</Text>
+          <Text style={styles.modalSubtitle}>
+            Please select a reason for the variance
+          </Text>
 
           {reasons.map((reason) => (
             <TouchableOpacity
               key={reason.code}
-              style={[styles.reasonOption, selectedReason === reason.code && styles.reasonSelected]}
+              style={[
+                styles.reasonOption,
+                selectedReason === reason.code && styles.reasonSelected,
+              ]}
               onPress={() => onReasonSelect(reason.code)}
             >
               <Text style={styles.reasonText}>{reason.label}</Text>
@@ -54,7 +66,10 @@ export const VarianceReasonModal: React.FC<VarianceReasonModalProps> = ({
           )}
 
           <TouchableOpacity
-            style={[styles.confirmButton, !selectedReason && styles.buttonDisabled]}
+            style={[
+              styles.confirmButton,
+              !selectedReason && styles.buttonDisabled,
+            ]}
             onPress={onContinue}
             disabled={!selectedReason}
           >

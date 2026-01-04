@@ -67,7 +67,11 @@ export class AnimationService {
   /**
    * Create scale animation
    */
-  static createScale(from: number = 0, to: number = 1, _duration: number = 300): Animated.Value {
+  static createScale(
+    from: number = 0,
+    to: number = 1,
+    _duration: number = 300,
+  ): Animated.Value {
     const scale = new Animated.Value(from);
     Animated.spring(scale, {
       toValue: to,

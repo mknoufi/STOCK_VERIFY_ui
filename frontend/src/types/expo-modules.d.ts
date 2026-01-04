@@ -21,7 +21,9 @@ declare module "expo-haptics" {
   }
 
   export function impactAsync(style?: ImpactFeedbackStyle): Promise<void>;
-  export function notificationAsync(type?: NotificationFeedbackType): Promise<void>;
+  export function notificationAsync(
+    type?: NotificationFeedbackType,
+  ): Promise<void>;
   export function selectionAsync(): Promise<void>;
 }
 
@@ -82,7 +84,9 @@ declare module "expo-brightness" {
   export function useSystemBrightnessAsync(): Promise<void>;
   export function isUsingSystemBrightnessAsync(): Promise<boolean>;
   export function getSystemBrightnessModeAsync(): Promise<BrightnessMode>;
-  export function setSystemBrightnessModeAsync(mode: BrightnessMode): Promise<void>;
+  export function setSystemBrightnessModeAsync(
+    mode: BrightnessMode,
+  ): Promise<void>;
   export function requestPermissionsAsync(): Promise<{
     status: string;
     granted: boolean;
@@ -146,14 +150,22 @@ declare module "expo-sharing" {
     UTI?: string;
   }
 
-  export function shareAsync(url: string, options?: SharingOptions): Promise<void>;
+  export function shareAsync(
+    url: string,
+    options?: SharingOptions,
+  ): Promise<void>;
   export function isAvailableAsync(): Promise<boolean>;
 }
 
 declare module "expo-image" {
   import { ViewProps } from "react-native";
 
-  export type ImageContentFit = "cover" | "contain" | "fill" | "none" | "scale-down";
+  export type ImageContentFit =
+    | "cover"
+    | "contain"
+    | "fill"
+    | "none"
+    | "scale-down";
   export type ImageContentPosition =
     | "center"
     | "top"
@@ -188,7 +200,9 @@ declare module "expo-image" {
     cachePolicy?: "none" | "disk" | "memory" | "memory-disk";
     recyclingKey?: string;
     onLoadStart?: () => void;
-    onLoad?: (event: { source: { width: number; height: number; url: string } }) => void;
+    onLoad?: (event: {
+      source: { width: number; height: number; url: string };
+    }) => void;
     onLoadEnd?: () => void;
     onError?: (event: { error: string }) => void;
   }

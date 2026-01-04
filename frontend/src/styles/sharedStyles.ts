@@ -479,7 +479,7 @@ export const sharedStyles = StyleSheet.create({
  * Create consistent card styling with variant
  */
 export const createCardStyle = (
-  variant: "default" | "accent" | "success" | "warning" | "danger" = "default"
+  variant: "default" | "accent" | "success" | "warning" | "danger" = "default",
 ) => {
   const variants = {
     default: {

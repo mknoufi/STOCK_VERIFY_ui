@@ -4,9 +4,25 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, useWindowDimensions, Platform } from "react-native";
-import Svg, { Polyline, Circle, Line, Text as SvgText, G } from "react-native-svg";
-import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
+import {
+  View,
+  Text,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
+import Svg, {
+  Polyline,
+  Circle,
+  Line,
+  Text as SvgText,
+  G,
+} from "react-native-svg";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
 const CHART_HEIGHT = 200;
 const PADDING = 20;
@@ -85,7 +101,9 @@ export const LineChart: React.FC<LineChartProps> = ({
 
   // Generate x-axis labels
   const xLabels = data
-    .filter((_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1)
+    .filter(
+      (_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1,
+    )
     .map((point, _i) => ({
       x: PADDING + data.indexOf(point) * scaleX,
       label: String(point.x),

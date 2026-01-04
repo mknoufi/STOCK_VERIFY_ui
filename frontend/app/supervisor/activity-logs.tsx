@@ -4,7 +4,14 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, RefreshControl, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -14,7 +21,12 @@ import { FlashList } from "@shopify/flash-list";
 
 import { getActivityLogs, getActivityStats } from "../../src/services/api/api";
 import { useToast } from "../../src/components/feedback/ToastProvider";
-import { AuroraBackground, GlassCard, StatsCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  AuroraBackground,
+  GlassCard,
+  StatsCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 
 interface ActivityLog {
@@ -61,7 +73,7 @@ export default function ActivityLogsScreen() {
         setRefreshing(false);
       }
     },
-    [show]
+    [show],
   );
 
   const loadStats = React.useCallback(async () => {
@@ -79,7 +91,8 @@ export default function ActivityLogsScreen() {
   }, [loadLogs, loadStats]);
 
   const handleRefresh = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     setPage(1);
     loadLogs(1);
@@ -128,7 +141,9 @@ export default function ActivityLogsScreen() {
                 styles.iconContainer,
                 {
                   backgroundColor:
-                    log.status === "error" ? "rgba(239, 68, 68, 0.1)" : "rgba(59, 130, 246, 0.1)",
+                    log.status === "error"
+                      ? "rgba(239, 68, 68, 0.1)"
+                      : "rgba(59, 130, 246, 0.1)",
                 },
               ]}
             >
@@ -143,7 +158,9 @@ export default function ActivityLogsScreen() {
               />
             </View>
             <View style={styles.logInfo}>
-              <Text style={styles.logAction}>{log.action.replace(/_/g, " ").toUpperCase()}</Text>
+              <Text style={styles.logAction}>
+                {log.action.replace(/_/g, " ").toUpperCase()}
+              </Text>
               <Text style={styles.logUser}>
                 {log.user} • {log.role}
               </Text>
@@ -198,8 +215,17 @@ export default function ActivityLogsScreen() {
               backgroundColor: "rgba(239, 68, 68, 0.1)",
             }}
           >
-            <Ionicons name="alert-circle" size={16} color={auroraTheme.colors.error[500]} />
-            <Text style={[styles.errorText, { color: auroraTheme.colors.error[500] }]}>
+            <Ionicons
+              name="alert-circle"
+              size={16}
+              color={auroraTheme.colors.error[500]}
+            />
+            <Text
+              style={[
+                styles.errorText,
+                { color: auroraTheme.colors.error[500] },
+              ]}
+            >
               {log.error_message}
             </Text>
           </GlassCard>
@@ -226,20 +252,35 @@ export default function ActivityLogsScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Activity Logs</Text>
-              <Text style={styles.pageSubtitle}>System audit & user actions</Text>
+              <Text style={styles.pageSubtitle}>
+                System audit & user actions
+              </Text>
             </View>
           </View>
         </Animated.View>
 
         {stats && (
-          <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
+          <Animated.View
+            entering={FadeInDown.delay(200).springify()}
+            style={styles.statsContainer}
+          >
             <StatsCard
               title="Total Activities"
               value={stats.total?.toString() || "0"}
@@ -267,7 +308,10 @@ export default function ActivityLogsScreen() {
         <View style={styles.listContainer}>
           {loading && logs.length === 0 ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+              <ActivityIndicator
+                size="large"
+                color={auroraTheme.colors.primary[500]}
+              />
               <Text style={styles.loadingText}>Loading activity logs...</Text>
             </View>
           ) : (
@@ -299,7 +343,9 @@ export default function ActivityLogsScreen() {
               ListFooterComponent={
                 loading && logs.length > 0 ? (
                   <View style={{ padding: 20 }}>
-                    <ActivityIndicator color={auroraTheme.colors.primary[500]} />
+                    <ActivityIndicator
+                      color={auroraTheme.colors.primary[500]}
+                    />
                   </View>
                 ) : null
               }

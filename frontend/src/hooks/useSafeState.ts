@@ -52,7 +52,7 @@ export function useSafeAsyncState<T>(initialValue: T) {
         setLoading(false);
       }
     },
-    [setState, setLoading, setError]
+    [setState, setLoading, setError],
   );
 
   return {

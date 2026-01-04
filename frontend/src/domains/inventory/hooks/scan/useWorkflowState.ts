@@ -22,7 +22,8 @@ const initialState: WorkflowState = {
 };
 
 export const useWorkflowState = () => {
-  const [workflowState, setWorkflowState] = useState<WorkflowState>(initialState);
+  const [workflowState, setWorkflowState] =
+    useState<WorkflowState>(initialState);
 
   const updateWorkflowState = useCallback((updates: Partial<WorkflowState>) => {
     setWorkflowState((prev) => ({ ...prev, ...updates }));
@@ -42,18 +43,23 @@ export const useWorkflowState = () => {
   const removeSerialInput = useCallback((id: string) => {
     setWorkflowState((prev) => ({
       ...prev,
-      serialInputs: (prev.serialInputs ?? []).filter((input) => input.id !== id),
-    }));
-  }, []);
-
-  const updateSerialInput = useCallback((id: string, updates: Partial<SerialInput>) => {
-    setWorkflowState((prev) => ({
-      ...prev,
-      serialInputs: (prev.serialInputs ?? []).map((input) =>
-        input.id === id ? { ...input, ...updates } : input
+      serialInputs: (prev.serialInputs ?? []).filter(
+        (input) => input.id !== id,
       ),
     }));
   }, []);
+
+  const updateSerialInput = useCallback(
+    (id: string, updates: Partial<SerialInput>) => {
+      setWorkflowState((prev) => ({
+        ...prev,
+        serialInputs: (prev.serialInputs ?? []).map((input) =>
+          input.id === id ? { ...input, ...updates } : input,
+        ),
+      }));
+    },
+    [],
+  );
 
   return {
     workflowState,

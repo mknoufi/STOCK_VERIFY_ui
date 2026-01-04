@@ -1,4 +1,7 @@
-export const handleErrorWithRecovery = async (operation: () => Promise<any>, options: any) => {
+export const handleErrorWithRecovery = async (
+  operation: () => Promise<any>,
+  options: any,
+) => {
   try {
     return await operation();
   } catch (error: any) {

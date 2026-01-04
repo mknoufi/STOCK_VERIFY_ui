@@ -105,7 +105,12 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
           },
         ]}
       >
-        <Ionicons name="search" size={22} color={colors.textSecondary} style={styles.icon} />
+        <Ionicons
+          name="search"
+          size={22}
+          color={colors.textSecondary}
+          style={styles.icon}
+        />
         <TextInput
           style={[styles.input, { color: colors.text }]}
           placeholder={placeholder}
@@ -121,11 +126,23 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
           onSubmitEditing={() => triggerHaptic("impactLight")}
         />
         {loading ? (
-          <ActivityIndicator size="small" color={colors.accent} style={styles.icon} />
+          <ActivityIndicator
+            size="small"
+            color={colors.accent}
+            style={styles.icon}
+          />
         ) : query.length > 0 ? (
-          <TouchableOpacity onPress={handleClear} style={styles.icon} onPressIn={handlePress}>
+          <TouchableOpacity
+            onPress={handleClear}
+            style={styles.icon}
+            onPressIn={handlePress}
+          >
             <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <Ionicons name="close-circle" size={22} color={colors.textSecondary} />
+              <Ionicons
+                name="close-circle"
+                size={22}
+                color={colors.textSecondary}
+              />
             </Animated.View>
           </TouchableOpacity>
         ) : null}
@@ -134,7 +151,9 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
       {showResultsCount !== undefined && (
         <View style={styles.resultsContainer}>
           <Text style={[styles.resultsText, { color: colors.textSecondary }]}>
-            {showResultsCount === 0 ? "No results found" : `${showResultsCount} results`}
+            {showResultsCount === 0
+              ? "No results found"
+              : `${showResultsCount} results`}
           </Text>
         </View>
       )}

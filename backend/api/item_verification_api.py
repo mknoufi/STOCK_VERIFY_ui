@@ -179,7 +179,7 @@ async def update_item_master(
             {
                 "action": "MASTER_UPDATE",
                 "item_code": item_code,
-                "changes": request.dict(exclude_none=True),
+                "changes": request.model_dump(exclude_none=True),
                 "user": current_user["username"],
                 "timestamp": datetime.utcnow(),
             }
@@ -330,7 +330,9 @@ async def verify_item(
             "success": True,
             "item": updated_item,
             "variance": variance,
-            "message": f"Item {item_code} marked as {'verified' if request.verified else 'unverified'}",
+            "message": (
+                f"Item {item_code} marked as {'verified' if request.verified else 'unverified'}"
+            ),
         }
 
     except HTTPException:

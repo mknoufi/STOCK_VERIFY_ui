@@ -66,7 +66,7 @@ export class EnhancedDatabaseAPI {
     options: {
       force_source?: "sql_server" | "mongodb" | "cache";
       include_metadata?: boolean;
-    } = {}
+    } = {},
   ): Promise<EnhancedItem> {
     try {
       const params = new URLSearchParams();
@@ -80,14 +80,14 @@ export class EnhancedDatabaseAPI {
       }
 
       const response = await api.get(
-        `/api/v2/erp/items/barcode/${encodeURIComponent(barcode)}/enhanced?${params}`
+        `/api/v2/erp/items/barcode/${encodeURIComponent(barcode)}/enhanced?${params}`,
       );
       return response.data;
     } catch (error: unknown) {
       const apiError = error as ApiError;
       __DEV__ && console.error("Enhanced barcode lookup failed:", apiError);
       throw new Error(
-        `Enhanced lookup failed: ${apiError.response?.data?.detail || apiError.message}`
+        `Enhanced lookup failed: ${apiError.response?.data?.detail || apiError.message}`,
       );
     }
   }
@@ -95,13 +95,17 @@ export class EnhancedDatabaseAPI {
   /**
    * Advanced search with multiple criteria and filters
    */
-  static async searchItemsAdvanced(params: AdvancedSearchParams): Promise<Record<string, unknown>> {
+  static async searchItemsAdvanced(
+    params: AdvancedSearchParams,
+  ): Promise<Record<string, unknown>> {
     try {
       const queryParams = new URLSearchParams();
       queryParams.append("query", params.query);
 
       if (params.search_fields) {
-        params.search_fields.forEach((field) => queryParams.append("search_fields", field));
+        params.search_fields.forEach((field) =>
+          queryParams.append("search_fields", field),
+        );
       }
 
       if (params.limit) queryParams.append("limit", params.limit.toString());
@@ -109,18 +113,22 @@ export class EnhancedDatabaseAPI {
       if (params.sort_by) queryParams.append("sort_by", params.sort_by);
 
       // Add filters
-      if (params.filters?.category) queryParams.append("category", params.filters.category);
-      if (params.filters?.warehouse) queryParams.append("warehouse", params.filters.warehouse);
+      if (params.filters?.category)
+        queryParams.append("category", params.filters.category);
+      if (params.filters?.warehouse)
+        queryParams.append("warehouse", params.filters.warehouse);
       if (params.filters?.stock_level)
         queryParams.append("stock_level", params.filters.stock_level);
 
-      const response = await api.get(`/api/v2/erp/items/search/advanced?${queryParams}`);
+      const response = await api.get(
+        `/api/v2/erp/items/search/advanced?${queryParams}`,
+      );
       return response.data;
     } catch (error: unknown) {
       const apiError = error as ApiError;
       __DEV__ && console.error("Advanced search failed:", apiError);
       throw new Error(
-        `Advanced search failed: ${apiError.response?.data?.detail || apiError.message}`
+        `Advanced search failed: ${apiError.response?.data?.detail || apiError.message}`,
       );
     }
   }
@@ -136,7 +144,7 @@ export class EnhancedDatabaseAPI {
       const apiError = error as ApiError;
       __DEV__ && console.error("Database health check failed:", apiError);
       throw new Error(
-        `Health check failed: ${apiError.response?.data?.detail || apiError.message}`
+        `Health check failed: ${apiError.response?.data?.detail || apiError.message}`,
       );
     }
   }
@@ -152,7 +160,7 @@ export class EnhancedDatabaseAPI {
       const apiError = error as ApiError;
       __DEV__ && console.error("Performance stats failed:", apiError);
       throw new Error(
-        `Performance stats failed: ${apiError.response?.data?.detail || apiError.message}`
+        `Performance stats failed: ${apiError.response?.data?.detail || apiError.message}`,
       );
     }
   }
@@ -160,7 +168,9 @@ export class EnhancedDatabaseAPI {
   /**
    * Trigger real-time sync for specific items
    */
-  static async syncItemsRealtime(itemCodes?: string[]): Promise<Record<string, unknown>> {
+  static async syncItemsRealtime(
+    itemCodes?: string[],
+  ): Promise<Record<string, unknown>> {
     try {
       const response = await api.post("/api/v2/erp/items/sync/realtime", {
         item_codes: itemCodes,
@@ -170,7 +180,7 @@ export class EnhancedDatabaseAPI {
       const apiError = error as ApiError;
       __DEV__ && console.error("Realtime sync failed:", apiError);
       throw new Error(
-        `Realtime sync failed: ${apiError.response?.data?.detail || apiError.message}`
+        `Realtime sync failed: ${apiError.response?.data?.detail || apiError.message}`,
       );
     }
   }
@@ -186,7 +196,7 @@ export class EnhancedDatabaseAPI {
       const apiError = error as ApiError;
       __DEV__ && console.error("Database optimization failed:", apiError);
       throw new Error(
-        `Database optimization failed: ${apiError.response?.data?.detail || apiError.message}`
+        `Database optimization failed: ${apiError.response?.data?.detail || apiError.message}`,
       );
     }
   }
@@ -227,7 +237,9 @@ export class EnhancedDatabaseAPI {
       const sql_found = sql_result?.item != null;
       const mongo_found = mongo_result?.item != null;
       const data_consistent =
-        sql_found && mongo_found && sql_result.item?.item_code === mongo_result.item?.item_code;
+        sql_found &&
+        mongo_found &&
+        sql_result.item?.item_code === mongo_result.item?.item_code;
 
       return {
         sql_to_api: sql_found,

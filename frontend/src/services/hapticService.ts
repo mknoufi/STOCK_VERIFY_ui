@@ -14,14 +14,20 @@ export type HapticIntensity = "light" | "medium" | "heavy";
 /**
  * Haptic feedback patterns
  */
-export type HapticPattern = "success" | "error" | "warning" | "selection" | "impact";
+export type HapticPattern =
+  | "success"
+  | "error"
+  | "warning"
+  | "selection"
+  | "impact";
 
 /**
  * Haptic Service for providing tactile feedback
  */
 export class HapticService {
   private enabled: boolean = SCANNER_CONFIG.haptics.enabled;
-  private isSupported: boolean = Platform.OS === "ios" || Platform.OS === "android";
+  private isSupported: boolean =
+    Platform.OS === "ios" || Platform.OS === "android";
 
   /**
    * Enable haptic feedback
@@ -119,7 +125,9 @@ export class HapticService {
       // Double tap for success confirmation
       await Haptics.impactAsync(style);
       setTimeout(async () => {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        );
       }, 100);
     } catch (error) {
       __DEV__ && console.warn("Scan success haptic failed:", error);
@@ -190,7 +198,9 @@ export class HapticService {
   /**
    * Get impact style from intensity
    */
-  private getImpactStyle(intensity: HapticIntensity): Haptics.ImpactFeedbackStyle {
+  private getImpactStyle(
+    intensity: HapticIntensity,
+  ): Haptics.ImpactFeedbackStyle {
     switch (intensity) {
       case "light":
         return Haptics.ImpactFeedbackStyle.Light;
@@ -206,7 +216,7 @@ export class HapticService {
    * Get notification type
    */
   private getNotificationType(
-    type: "success" | "warning" | "error"
+    type: "success" | "warning" | "error",
   ): Haptics.NotificationFeedbackType {
     switch (type) {
       case "success":
@@ -236,7 +246,8 @@ export const {
 } = {
   selection: () => hapticService.selection(),
   impact: (intensity?: HapticIntensity) => hapticService.impact(intensity),
-  notification: (type: "success" | "warning" | "error") => hapticService.notification(type),
+  notification: (type: "success" | "warning" | "error") =>
+    hapticService.notification(type),
   success: () => hapticService.success(),
   error: () => hapticService.error(),
   warning: () => hapticService.warning(),

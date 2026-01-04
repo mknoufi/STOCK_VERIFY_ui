@@ -3,7 +3,14 @@
  * Visual feedback indicators for barcode scanning results
  */
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Dimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SCANNER_CONFIG } from "../../config/scannerConfig";
 
@@ -89,7 +96,14 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
     }, feedbackDuration - 200);
 
     return () => clearTimeout(timer);
-  }, [type, feedbackDuration, opacityAnim, scaleAnim, translateYAnim, onComplete]);
+  }, [
+    type,
+    feedbackDuration,
+    opacityAnim,
+    scaleAnim,
+    translateYAnim,
+    onComplete,
+  ]);
 
   if (type === "none") return null;
 
@@ -112,7 +126,9 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
           <Ionicons name={iconName} size={40} color="#fff" />
         </View>
         <View style={styles.contentContainer}>
-          <Text style={styles.title}>{isSuccess ? "Scan Successful!" : "Scan Failed"}</Text>
+          <Text style={styles.title}>
+            {isSuccess ? "Scan Successful!" : "Scan Failed"}
+          </Text>
           {barcode && <Text style={styles.barcode}>{barcode}</Text>}
           {itemName && (
             <Text style={styles.itemName} numberOfLines={2}>
@@ -224,7 +240,10 @@ interface ScanIndicatorProps {
   scannedCount?: number;
 }
 
-export const ScanIndicator: React.FC<ScanIndicatorProps> = ({ isScanning, scannedCount = 0 }) => {
+export const ScanIndicator: React.FC<ScanIndicatorProps> = ({
+  isScanning,
+  scannedCount = 0,
+}) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -241,7 +260,7 @@ export const ScanIndicator: React.FC<ScanIndicatorProps> = ({ isScanning, scanne
             duration: 500,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
       animation.start();
       return () => animation.stop();

@@ -6,8 +6,17 @@
 
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { colorPalette, spacing, typography, touchTargets } from "@/theme/designTokens";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
+import {
+  colorPalette,
+  spacing,
+  typography,
+  touchTargets,
+} from "@/theme/designTokens";
 
 export interface RadioOption {
   value: string;
@@ -23,7 +32,12 @@ interface RadioProps {
   disabled?: boolean;
 }
 
-export const Radio: React.FC<RadioProps> = ({ options, value, onChange, disabled = false }) => {
+export const Radio: React.FC<RadioProps> = ({
+  options,
+  value,
+  onChange,
+  disabled = false,
+}) => {
   return (
     <View style={styles.container}>
       {options.map((option) => (
@@ -46,7 +60,12 @@ interface RadioItemProps {
   disabled?: boolean;
 }
 
-const RadioItem: React.FC<RadioItemProps> = ({ option, selected, onSelect, disabled = false }) => {
+const RadioItem: React.FC<RadioItemProps> = ({
+  option,
+  selected,
+  onSelect,
+  disabled = false,
+}) => {
   const scale = useSharedValue(selected ? 1 : 0);
 
   React.useEffect(() => {
@@ -68,17 +87,29 @@ const RadioItem: React.FC<RadioItemProps> = ({ option, selected, onSelect, disab
       activeOpacity={0.7}
     >
       <View
-        style={[styles.radio, selected && styles.radioSelected, disabled && styles.radioDisabled]}
+        style={[
+          styles.radio,
+          selected && styles.radioSelected,
+          disabled && styles.radioDisabled,
+        ]}
       >
         <Animated.View
-          style={[styles.radioInner, selected && styles.radioInnerSelected, innerCircleStyle]}
+          style={[
+            styles.radioInner,
+            selected && styles.radioInnerSelected,
+            innerCircleStyle,
+          ]}
         />
       </View>
 
       <View style={styles.labelContainer}>
-        <Text style={[styles.label, disabled && styles.labelDisabled]}>{option.label}</Text>
+        <Text style={[styles.label, disabled && styles.labelDisabled]}>
+          {option.label}
+        </Text>
 
-        {option.description && <Text style={styles.description}>{option.description}</Text>}
+        {option.description && (
+          <Text style={styles.description}>{option.description}</Text>
+        )}
       </View>
     </TouchableOpacity>
   );

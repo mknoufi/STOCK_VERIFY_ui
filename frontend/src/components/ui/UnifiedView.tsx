@@ -11,8 +11,20 @@
  */
 
 import React from "react";
-import { View, ViewStyle, StyleProp, StyleSheet, ViewProps } from "react-native";
-import { colors, spacing, radius, shadows, semanticColors } from "../../theme/unified";
+import {
+  View,
+  ViewStyle,
+  StyleProp,
+  StyleSheet,
+  ViewProps,
+} from "react-native";
+import {
+  colors,
+  spacing,
+  radius,
+  shadows,
+  semanticColors,
+} from "../../theme/unified";
 import type { SpacingKey } from "../../theme/unified";
 import type { RadiusKey } from "../../theme/unified";
 import type { ShadowKey } from "../../theme/unified";

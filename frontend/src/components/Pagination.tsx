@@ -63,7 +63,10 @@ export const Pagination: React.FC<PaginationProps> = ({
 
       <View style={styles.controls}>
         <TouchableOpacity
-          style={[styles.button, (currentPage === 1 || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === 1 || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handleFirst}
           disabled={currentPage === 1 || isLoading}
         >
@@ -78,7 +81,10 @@ export const Pagination: React.FC<PaginationProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, (currentPage === 1 || isLoading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (currentPage === 1 || isLoading) && styles.buttonDisabled,
+          ]}
           onPress={handlePrevious}
           disabled={currentPage === 1 || isLoading}
         >
@@ -109,7 +115,8 @@ export const Pagination: React.FC<PaginationProps> = ({
           <Text
             style={[
               styles.buttonText,
-              (currentPage === totalPages || isLoading) && styles.buttonTextDisabled,
+              (currentPage === totalPages || isLoading) &&
+                styles.buttonTextDisabled,
             ]}
           >
             »
@@ -127,7 +134,8 @@ export const Pagination: React.FC<PaginationProps> = ({
           <Text
             style={[
               styles.buttonText,
-              (currentPage === totalPages || isLoading) && styles.buttonTextDisabled,
+              (currentPage === totalPages || isLoading) &&
+                styles.buttonTextDisabled,
             ]}
           >
             »»

@@ -43,11 +43,17 @@ export const MRPVariantSelector: React.FC<MRPVariantSelectorProps> = ({
             return (
               <TouchableOpacity
                 key={`mrp-variant-${variant.id ?? variant.barcode ?? variantString}`}
-                style={[styles.mrpVariantChip, isSelected && styles.mrpVariantChipActive]}
+                style={[
+                  styles.mrpVariantChip,
+                  isSelected && styles.mrpVariantChipActive,
+                ]}
                 onPress={() => onVariantSelect(variant)}
               >
                 <Text
-                  style={[styles.mrpVariantChipText, isSelected && styles.mrpVariantChipTextActive]}
+                  style={[
+                    styles.mrpVariantChipText,
+                    isSelected && styles.mrpVariantChipTextActive,
+                  ]}
                 >
                   ₹{variantString}
                 </Text>

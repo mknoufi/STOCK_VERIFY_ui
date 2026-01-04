@@ -15,8 +15,10 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useAuthStore } from "../../store/authStore";
 
-import { colors, spacing, typography, shadows } from "../../theme/modernDesign";
+import { colors, spacing, typography, shadows, gradients } from "../../theme/modernDesign";
 
 interface ModernHeaderProps {
   title?: string;
@@ -32,6 +34,39 @@ interface ModernHeaderProps {
   style?: ViewStyle;
 }
 
+const LogoWithBorder = ({ size = 40 }: { size?: number }) => (
+  <LinearGradient
+    colors={gradients.primary}
+    style={{
+      width: size,
+      height: size,
+      borderRadius: size / 2,
+      padding: 2,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+  >
+    <View
+      style={{
+        flex: 1,
+        width: "100%",
+        backgroundColor: colors.white,
+        borderRadius: size / 2,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Image
+        source={require("../../../assets/images/logo.png")}
+        style={{ width: size * 0.6, height: size * 0.6 }}
+        resizeMode="contain"
+      />
+    </View>
+  </LinearGradient>
+);
+
 export const ModernHeader: React.FC<ModernHeaderProps> = ({
   title,
   showLogo = false,
@@ -42,14 +77,20 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
   subtitle,
   style,
 }) => {
+  const { user } = useAuthStore();
+
   return (
     <SafeAreaView style={[styles.safeArea, style]}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} translucent={false} />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={colors.white}
+        translucent={false}
+      />
 
       <View style={styles.header}>
         {/* Left Section */}
         <View style={styles.leftSection}>
-          {showBackButton && (
+          {showBackButton ? (
             <TouchableOpacity
               onPress={onBackPress}
               style={styles.backButton}
@@ -57,18 +98,18 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
             >
               <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
             </TouchableOpacity>
-          )}
+          ) : !showLogo ? (
+            <View style={styles.logoContainer}>
+              <LogoWithBorder size={36} />
+            </View>
+          ) : null}
         </View>
 
         {/* Center Section */}
         <View style={styles.centerSection}>
           {showLogo ? (
             <View style={styles.logoContainer}>
-              <Image
-                source={require("../../assets/images/lavanya-mart-logo.svg")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+              <LogoWithBorder size={48} />
               {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
             </View>
           ) : title ? (
@@ -78,7 +119,16 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
               </Text>
               {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
             </View>
-          ) : null}
+          ) : (
+            <View style={styles.titleContainer}>
+              <Text style={styles.brandName}>Lavanya Mart</Text>
+              {user?.full_name && (
+                <Text style={styles.userName} numberOfLines={1}>
+                  {user.full_name}
+                </Text>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Right Section */}
@@ -90,7 +140,11 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
               style={styles.backButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name={rightAction.icon} size={24} color={colors.gray[700]} />
+              <Ionicons
+                name={rightAction.icon}
+                size={24}
+                color={colors.gray[700]}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -108,7 +162,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    height: 56,
+    height: 60,
     paddingHorizontal: spacing.md,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
@@ -117,24 +171,28 @@ const styles = StyleSheet.create({
   leftSection: {
     flex: 1,
     alignItems: "flex-start",
+    justifyContent: "center",
   },
   centerSection: {
     flex: 2,
     alignItems: "center",
+    justifyContent: "center",
   },
   rightSection: {
     flex: 1,
     alignItems: "flex-end",
+    justifyContent: "center",
   },
   backButton: {
     padding: spacing.xs,
   },
   logoContainer: {
     alignItems: "center",
+    justifyContent: "center",
   },
   logo: {
     height: 32,
-    width: 120,
+    width: 32,
   },
   titleContainer: {
     alignItems: "center",
@@ -145,8 +203,22 @@ const styles = StyleSheet.create({
     color: colors.gray[900],
     textAlign: "center",
   },
+  brandName: {
+    fontSize: typography.fontSize.base,
+    fontWeight: "800",
+    color: colors.primary[600],
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
+  userName: {
+    fontSize: typography.fontSize.xs,
+    color: colors.gray[500],
+    marginTop: 2,
+    textAlign: "center",
+    fontWeight: "500",
+  },
   subtitle: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.normal,
     color: colors.gray[500],
     marginTop: 2,

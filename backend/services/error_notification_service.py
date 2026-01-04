@@ -106,7 +106,7 @@ class ErrorNotificationService:
                 details=details,
             )
 
-            result = await self.collection.insert_one(notification.dict())
+            result = await self.collection.insert_one(notification.model_dump())
             notification_id = str(result.inserted_id)
 
             logger.log(

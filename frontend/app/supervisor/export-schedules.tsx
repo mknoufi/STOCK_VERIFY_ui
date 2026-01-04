@@ -30,7 +30,11 @@ import {
   deleteExportSchedule,
   triggerExportSchedule,
 } from "../../src/services/api/api";
-import { ScreenContainer, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  ScreenContainer,
+  GlassCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 
 interface ExportSchedule {
@@ -52,7 +56,9 @@ export default function ExportSchedulesScreen() {
   const [loading, setLoading] = useState(true);
   const [schedules, setSchedules] = useState<ExportSchedule[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<ExportSchedule | null>(null);
+  const [editingSchedule, setEditingSchedule] = useState<ExportSchedule | null>(
+    null,
+  );
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -74,9 +80,11 @@ export default function ExportSchedulesScreen() {
 
   useEffect(() => {
     if (!hasPermission("export.schedule")) {
-      Alert.alert("Access Denied", "You do not have permission to access export schedules.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to access export schedules.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadSchedules();
@@ -97,7 +105,8 @@ export default function ExportSchedulesScreen() {
       });
       loadSchedules();
     } catch (error: any) {
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to create export schedule");
     }
   };
@@ -120,34 +129,44 @@ export default function ExportSchedulesScreen() {
       });
       loadSchedules();
     } catch (error: any) {
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message || "Failed to update export schedule");
     }
   };
 
   const handleDeleteSchedule = async (scheduleId: string) => {
-    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    Alert.alert("Confirm Delete", "Are you sure you want to delete this export schedule?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteExportSchedule(scheduleId);
-            Alert.alert("Success", "Export schedule deleted successfully");
-            loadSchedules();
-          } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to delete export schedule");
-          }
+    if (Platform.OS !== "web")
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this export schedule?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteExportSchedule(scheduleId);
+              Alert.alert("Success", "Export schedule deleted successfully");
+              loadSchedules();
+            } catch (error: any) {
+              Alert.alert(
+                "Error",
+                error.message || "Failed to delete export schedule",
+              );
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const handleTriggerSchedule = async (scheduleId: string) => {
     try {
-      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (Platform.OS !== "web")
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await triggerExportSchedule(scheduleId);
       Alert.alert("Success", "Export triggered successfully");
     } catch (error: any) {
@@ -180,7 +199,10 @@ export default function ExportSchedulesScreen() {
   };
 
   const renderScheduleCard = (schedule: ExportSchedule, index: number) => (
-    <Animated.View key={schedule._id} entering={FadeInDown.delay(index * 100).springify()}>
+    <Animated.View
+      key={schedule._id}
+      entering={FadeInDown.delay(index * 100).springify()}
+    >
       <GlassCard
         intensity={15}
         padding={theme.spacing.md}
@@ -190,9 +212,16 @@ export default function ExportSchedulesScreen() {
         <View style={styles.cardHeader}>
           <View style={styles.cardHeaderLeft}>
             <View
-              style={[styles.iconContainer, { backgroundColor: theme.colors.primary[500] + "20" }]}
+              style={[
+                styles.iconContainer,
+                { backgroundColor: theme.colors.primary[500] + "20" },
+              ]}
             >
-              <Ionicons name="calendar-outline" size={24} color={theme.colors.primary[500]} />
+              <Ionicons
+                name="calendar-outline"
+                size={24}
+                color={theme.colors.primary[500]}
+              />
             </View>
             <View>
               <Text style={styles.cardTitle}>{schedule.name}</Text>
@@ -227,11 +256,17 @@ export default function ExportSchedulesScreen() {
           </View>
         </View>
 
-        {schedule.description && <Text style={styles.cardDescription}>{schedule.description}</Text>}
+        {schedule.description && (
+          <Text style={styles.cardDescription}>{schedule.description}</Text>
+        )}
 
         <View style={styles.cardDetails}>
           <View style={styles.detailRow}>
-            <Ionicons name="time-outline" size={16} color={theme.colors.text.tertiary} />
+            <Ionicons
+              name="time-outline"
+              size={16}
+              color={theme.colors.text.tertiary}
+            />
             <Text style={styles.cardDetailText}>
               Frequency:{" "}
               <Text
@@ -245,7 +280,11 @@ export default function ExportSchedulesScreen() {
             </Text>
           </View>
           <View style={styles.detailRow}>
-            <Ionicons name="document-text-outline" size={16} color={theme.colors.text.tertiary} />
+            <Ionicons
+              name="document-text-outline"
+              size={16}
+              color={theme.colors.text.tertiary}
+            />
             <Text style={styles.cardDetailText}>
               Format:{" "}
               <Text
@@ -277,7 +316,10 @@ export default function ExportSchedulesScreen() {
 
         <View style={styles.cardActions}>
           <AnimatedPressable
-            style={[styles.actionButton, { backgroundColor: theme.colors.primary[500] }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: theme.colors.primary[500] },
+            ]}
             onPress={() => handleTriggerSchedule(schedule._id)}
           >
             <Ionicons name="play" size={16} color="#fff" />
@@ -285,7 +327,10 @@ export default function ExportSchedulesScreen() {
           </AnimatedPressable>
 
           <AnimatedPressable
-            style={[styles.actionButton, { backgroundColor: theme.colors.warning.main }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: theme.colors.warning.main },
+            ]}
             onPress={() => openEditModal(schedule)}
           >
             <Ionicons name="create-outline" size={16} color="#fff" />
@@ -293,7 +338,10 @@ export default function ExportSchedulesScreen() {
           </AnimatedPressable>
 
           <AnimatedPressable
-            style={[styles.actionButton, { backgroundColor: theme.colors.error.main }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: theme.colors.error.main },
+            ]}
             onPress={() => handleDeleteSchedule(schedule._id)}
           >
             <Ionicons name="trash-outline" size={16} color="#fff" />
@@ -309,10 +357,20 @@ export default function ExportSchedulesScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Export Schedules</Text>
@@ -320,7 +378,10 @@ export default function ExportSchedulesScreen() {
             </View>
           </View>
           <AnimatedPressable
-            style={[styles.createButton, { backgroundColor: theme.colors.success.main }]}
+            style={[
+              styles.createButton,
+              { backgroundColor: theme.colors.success.main },
+            ]}
             onPress={openCreateModal}
           >
             <Ionicons name="add" size={24} color="#fff" />
@@ -341,14 +402,22 @@ export default function ExportSchedulesScreen() {
           >
             {schedules.length === 0 ? (
               <View style={styles.emptyState}>
-                <Ionicons name="calendar-outline" size={64} color={theme.colors.text.tertiary} />
-                <Text style={styles.emptyStateText}>No export schedules found</Text>
+                <Ionicons
+                  name="calendar-outline"
+                  size={64}
+                  color={theme.colors.text.tertiary}
+                />
+                <Text style={styles.emptyStateText}>
+                  No export schedules found
+                </Text>
                 <Text style={styles.emptyStateSubtext}>
                   Create a schedule to automatically export data
                 </Text>
               </View>
             ) : (
-              schedules.map((schedule, index) => renderScheduleCard(schedule, index))
+              schedules.map((schedule, index) =>
+                renderScheduleCard(schedule, index),
+              )
             )}
           </ScrollView>
         )}
@@ -371,7 +440,11 @@ export default function ExportSchedulesScreen() {
                   {editingSchedule ? "Edit Schedule" : "Create Schedule"}
                 </Text>
                 <AnimatedPressable onPress={() => setModalVisible(false)}>
-                  <Ionicons name="close" size={24} color={theme.colors.text.primary} />
+                  <Ionicons
+                    name="close"
+                    size={24}
+                    color={theme.colors.text.primary}
+                  />
                 </AnimatedPressable>
               </View>
 
@@ -381,7 +454,9 @@ export default function ExportSchedulesScreen() {
                 placeholder="Schedule Name"
                 placeholderTextColor={theme.colors.text.tertiary}
                 value={formData.name}
-                onChangeText={(text) => setFormData({ ...formData, name: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, name: text })
+                }
               />
 
               <Text style={styles.inputLabel}>Description</Text>
@@ -390,7 +465,9 @@ export default function ExportSchedulesScreen() {
                 placeholder="Description (optional)"
                 placeholderTextColor={theme.colors.text.tertiary}
                 value={formData.description}
-                onChangeText={(text) => setFormData({ ...formData, description: text })}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, description: text })
+                }
                 multiline
               />
 
@@ -406,7 +483,9 @@ export default function ExportSchedulesScreen() {
                         borderColor: theme.colors.primary[500],
                       },
                     ]}
-                    onPress={() => setFormData({ ...formData, frequency: freq })}
+                    onPress={() =>
+                      setFormData({ ...formData, frequency: freq })
+                    }
                   >
                     <Text
                       style={[
@@ -464,14 +543,26 @@ export default function ExportSchedulesScreen() {
                   ]}
                   onPress={() => setModalVisible(false)}
                 >
-                  <Text style={[styles.modalButtonText, { color: theme.colors.text.primary }]}>
+                  <Text
+                    style={[
+                      styles.modalButtonText,
+                      { color: theme.colors.text.primary },
+                    ]}
+                  >
                     Cancel
                   </Text>
                 </AnimatedPressable>
 
                 <AnimatedPressable
-                  style={[styles.modalButton, { backgroundColor: theme.colors.primary[500] }]}
-                  onPress={editingSchedule ? handleUpdateSchedule : handleCreateSchedule}
+                  style={[
+                    styles.modalButton,
+                    { backgroundColor: theme.colors.primary[500] },
+                  ]}
+                  onPress={
+                    editingSchedule
+                      ? handleUpdateSchedule
+                      : handleCreateSchedule
+                  }
                 >
                   <Text style={styles.modalButtonText}>
                     {editingSchedule ? "Update" : "Create"}

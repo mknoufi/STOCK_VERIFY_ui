@@ -11,7 +11,14 @@
  */
 
 import React, { useEffect } from "react";
-import { View, StyleSheet, ViewStyle, StyleProp, useWindowDimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -24,7 +31,12 @@ import Animated, {
 import { useThemeContext } from "../../context/ThemeContext";
 import { ParticleField } from "./ParticleField";
 
-export type AuroraVariant = "primary" | "secondary" | "success" | "warm" | "dark";
+export type AuroraVariant =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warm"
+  | "dark";
 
 interface AuroraBackgroundProps {
   variant?: AuroraVariant;
@@ -65,7 +77,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   const blob3Y = useSharedValue(0);
 
   useEffect(() => {
-    if (animated) {
+    if (animated && Platform.OS !== "web") {
       // Blob 1 animation
       blob1X.value = withRepeat(
         withSequence(
@@ -73,10 +85,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(-30, {
             duration: 8000,
             easing: Easing.inOut(Easing.ease),
-          })
+          }),
         ),
         -1,
-        true
+        true,
       );
       blob1Y.value = withRepeat(
         withSequence(
@@ -84,10 +96,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(-20, {
             duration: 6000,
             easing: Easing.inOut(Easing.ease),
-          })
+          }),
         ),
         -1,
-        true
+        true,
       );
 
       // Blob 2 animation
@@ -100,10 +112,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(40, {
             duration: 10000,
             easing: Easing.inOut(Easing.ease),
-          })
+          }),
         ),
         -1,
-        true
+        true,
       );
       blob2Y.value = withRepeat(
         withSequence(
@@ -111,10 +123,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             duration: 7000,
             easing: Easing.inOut(Easing.ease),
           }),
-          withTiming(30, { duration: 7000, easing: Easing.inOut(Easing.ease) })
+          withTiming(30, { duration: 7000, easing: Easing.inOut(Easing.ease) }),
         ),
         -1,
-        true
+        true,
       );
 
       // Blob 3 animation
@@ -124,10 +136,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           withTiming(-25, {
             duration: 9000,
             easing: Easing.inOut(Easing.ease),
-          })
+          }),
         ),
         -1,
-        true
+        true,
       );
       blob3Y.value = withRepeat(
         withSequence(
@@ -135,10 +147,10 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             duration: 8500,
             easing: Easing.inOut(Easing.ease),
           }),
-          withTiming(25, { duration: 8500, easing: Easing.inOut(Easing.ease) })
+          withTiming(25, { duration: 8500, easing: Easing.inOut(Easing.ease) }),
         ),
         -1,
-        true
+        true,
       );
     }
   }, [animated, blob1X, blob1Y, blob2X, blob2Y, blob3X, blob3Y]);
@@ -163,6 +175,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
 
   const opacity = opacityByIntensity[intensity];
 
+  const BlobComponent = Platform.OS === "web" ? View : Animated.View;
+
   return (
     <View style={[styles.container, style]}>
       {/* Base gradient background - verify if theme has specific background gradient or use colors */}
@@ -175,7 +189,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
       />
 
       {/* Animated gradient blobs */}
-      <Animated.View
+      <BlobComponent
         style={[
           styles.blob,
           {
@@ -184,8 +198,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             top: -width * 0.3,
             left: -width * 0.2,
           },
-          blob1Style,
-          { opacity },
+          Platform.OS === "web" ? { opacity } : blob1Style,
+          Platform.OS !== "web" && { opacity },
         ]}
       >
         <LinearGradient
@@ -194,9 +208,9 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           end={{ x: 1, y: 1 }}
           style={styles.blobGradient}
         />
-      </Animated.View>
+      </BlobComponent>
 
-      <Animated.View
+      <BlobComponent
         style={[
           styles.blob,
           {
@@ -205,8 +219,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             bottom: -width * 0.2,
             right: -width * 0.3,
           },
-          blob2Style,
-          { opacity },
+          Platform.OS === "web" ? { opacity } : blob2Style,
+          Platform.OS !== "web" && { opacity },
         ]}
       >
         <LinearGradient
@@ -215,9 +229,9 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           end={{ x: 0, y: 1 }}
           style={styles.blobGradient}
         />
-      </Animated.View>
+      </BlobComponent>
 
-      <Animated.View
+      <BlobComponent
         style={[
           styles.blob,
           {
@@ -226,8 +240,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             top: height * 0.4,
             left: width * 0.1,
           },
-          blob3Style,
-          { opacity },
+          Platform.OS === "web" ? { opacity } : blob3Style,
+          Platform.OS !== "web" && { opacity },
         ]}
       >
         <LinearGradient
@@ -236,11 +250,15 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           end={{ x: 0.5, y: 1 }}
           style={styles.blobGradient}
         />
-      </Animated.View>
+      </BlobComponent>
 
       {/* Optional Particle Field overlay */}
       {withParticles && (
-        <ParticleField count={particleCount} color={colors[1]} animated={animated} />
+        <ParticleField
+          count={particleCount}
+          color={colors[1]}
+          animated={animated}
+        />
       )}
 
       {/* Content overlay */}

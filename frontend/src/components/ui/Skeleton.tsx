@@ -37,7 +37,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
           toValue: 1,
           duration: 1200,
           useNativeDriver: true,
-        })
+        }),
       );
       shimmerAnimation.start();
       return () => shimmerAnimation.stop();
@@ -55,7 +55,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
             duration: 800,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
       pulseAnimation.start();
       return () => pulseAnimation.stop();
@@ -185,7 +185,9 @@ export const SkeletonCard: React.FC<{ style?: ViewStyle }> = ({ style }) => {
 };
 
 // List item skeleton
-export const SkeletonListItem: React.FC<{ style?: ViewStyle }> = ({ style }) => {
+export const SkeletonListItem: React.FC<{ style?: ViewStyle }> = ({
+  style,
+}) => {
   return (
     <View style={[styles.listItem, style]}>
       <Skeleton width={40} height={40} borderRadius={8} />

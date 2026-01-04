@@ -26,7 +26,7 @@ export const ActiveSectionHeader: React.FC = () => {
           style: "destructive",
           onPress: closeSection,
         },
-      ]
+      ],
     );
   };
 
@@ -36,7 +36,11 @@ export const ActiveSectionHeader: React.FC = () => {
         <View style={styles.infoContainer}>
           <View style={styles.locationRow}>
             <View style={styles.locationItem}>
-              <Ionicons name="layers-outline" size={16} color={modernColors.primary[400]} />
+              <Ionicons
+                name="layers-outline"
+                size={16}
+                color={modernColors.primary[400]}
+              />
               <Text style={styles.locationLabel}>Floor:</Text>
               <Text style={styles.locationValue} numberOfLines={1}>
                 {currentFloor}
@@ -44,7 +48,11 @@ export const ActiveSectionHeader: React.FC = () => {
             </View>
             <View style={styles.divider} />
             <View style={styles.locationItem}>
-              <Ionicons name="grid-outline" size={16} color={modernColors.primary[400]} />
+              <Ionicons
+                name="grid-outline"
+                size={16}
+                color={modernColors.primary[400]}
+              />
               <Text style={styles.locationLabel}>Rack:</Text>
               <Text style={styles.locationValue} numberOfLines={1}>
                 {currentRack}

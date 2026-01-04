@@ -39,9 +39,12 @@ export const sanitizeBarcode = (barcode: string): string | null => {
  * that handles both numeric and alphanumeric barcodes
  */
 
-export const sanitizeText = (value: string): string => value.replace(/[<>"']/g, "").trim();
+export const sanitizeText = (value: string): string =>
+  value.replace(/[<>"']/g, "").trim();
 
-export const validateQuantity = (qty: string | number): ValidationResult<number> => {
+export const validateQuantity = (
+  qty: string | number,
+): ValidationResult<number> => {
   const numericValue = typeof qty === "string" ? parseFloat(qty) : qty;
 
   if (Number.isNaN(numericValue)) {
@@ -61,7 +64,7 @@ export const validateQuantity = (qty: string | number): ValidationResult<number>
 
 export const validateSessionName = (
   floorName: string,
-  rackName: string
+  rackName: string,
 ): ValidationResult<string> => {
   const floor = sanitizeText(floorName);
   const rack = sanitizeText(rackName);
@@ -142,7 +145,8 @@ export const validateBarcode = (barcode: string): ValidationResult<string> => {
 
   return {
     valid: false,
-    error: "Invalid barcode format. Use letters, numbers, hyphens, and underscores.",
+    error:
+      "Invalid barcode format. Use letters, numbers, hyphens, and underscores.",
   };
 };
 

@@ -10,7 +10,13 @@
  */
 
 import React, { useCallback } from "react";
-import { Pressable, PressableProps, Platform, ViewStyle, StyleProp } from "react-native";
+import {
+  Pressable,
+  PressableProps,
+  Platform,
+  ViewStyle,
+  StyleProp,
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,7 +24,11 @@ import Animated, {
   withTiming,
   interpolate,
 } from "react-native-reanimated";
-import { AnimationEasings, AnimationTimings, Opacity } from "@/theme/uiConstants";
+import {
+  AnimationEasings,
+  AnimationTimings,
+  Opacity,
+} from "@/theme/uiConstants";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -85,7 +95,7 @@ export const MyPressable: React.FC<MyPressableProps> = ({
       }
       onPressIn?.(event);
     },
-    [noFeedback, disabled, onPressIn, pressed]
+    [noFeedback, disabled, onPressIn, pressed],
   );
 
   const handlePressOut = useCallback(
@@ -93,7 +103,7 @@ export const MyPressable: React.FC<MyPressableProps> = ({
       pressed.value = withTiming(0, { duration: AnimationTimings.fast });
       onPressOut?.(event);
     },
-    [onPressOut, pressed]
+    [onPressOut, pressed],
   );
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -105,7 +115,9 @@ export const MyPressable: React.FC<MyPressableProps> = ({
     const shouldFade = feedbackType === "opacity" || feedbackType === "both";
 
     return {
-      opacity: shouldFade ? interpolate(pressed.value, [0, 1], [1, pressedOpacity]) : 1,
+      opacity: shouldFade
+        ? interpolate(pressed.value, [0, 1], [1, pressedOpacity])
+        : 1,
       transform: shouldScale
         ? [{ scale: interpolate(pressed.value, [0, 1], [1, scaleValue]) }]
         : [],

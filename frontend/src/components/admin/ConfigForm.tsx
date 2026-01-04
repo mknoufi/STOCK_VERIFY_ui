@@ -14,7 +14,13 @@ import {
   ViewStyle,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, spacing, radius, textStyles, semanticColors } from "../../theme/unified";
+import {
+  colors,
+  spacing,
+  radius,
+  textStyles,
+  semanticColors,
+} from "../../theme/unified";
 
 // Field type definitions
 export type FieldType =
@@ -73,7 +79,7 @@ export function ConfigForm({
   style,
 }: ConfigFormProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(sections.map((s) => s.id))
+    new Set(sections.map((s) => s.id)),
   );
 
   const toggleSection = useCallback((sectionId: string) => {
@@ -98,7 +104,9 @@ export function ConfigForm({
         return (
           <View key={field.key} style={styles.toggleField}>
             <View style={styles.toggleInfo}>
-              <Text style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}>
+              <Text
+                style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}
+              >
                 {field.label}
                 {field.required && <Text style={styles.required}> *</Text>}
               </Text>
@@ -114,7 +122,9 @@ export function ConfigForm({
                 false: semanticColors.border.default,
                 true: colors.primary[300],
               }}
-              thumbColor={value ? colors.primary[500] : semanticColors.background.tertiary}
+              thumbColor={
+                value ? colors.primary[500] : semanticColors.background.tertiary
+              }
             />
           </View>
         );
@@ -122,7 +132,9 @@ export function ConfigForm({
       case "select":
         return (
           <View key={field.key} style={styles.inputField}>
-            <Text style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}>
+            <Text
+              style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}
+            >
               {field.label}
               {field.required && <Text style={styles.required}> *</Text>}
             </Text>
@@ -135,7 +147,9 @@ export function ConfigForm({
                     value === option.value && styles.selectOptionActive,
                     isDisabled && styles.selectOptionDisabled,
                   ]}
-                  onPress={() => !isDisabled && onChange(field.key, option.value)}
+                  onPress={() =>
+                    !isDisabled && onChange(field.key, option.value)
+                  }
                   disabled={isDisabled}
                 >
                   <Text
@@ -149,7 +163,9 @@ export function ConfigForm({
                 </TouchableOpacity>
               ))}
             </View>
-            {field.description && <Text style={styles.fieldDescription}>{field.description}</Text>}
+            {field.description && (
+              <Text style={styles.fieldDescription}>{field.description}</Text>
+            )}
             {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
         );
@@ -157,7 +173,9 @@ export function ConfigForm({
       case "textarea":
         return (
           <View key={field.key} style={styles.inputField}>
-            <Text style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}>
+            <Text
+              style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}
+            >
               {field.label}
               {field.required && <Text style={styles.required}> *</Text>}
             </Text>
@@ -179,7 +197,9 @@ export function ConfigForm({
               autoCapitalize="sentences"
               autoCorrect={false}
             />
-            {field.description && <Text style={styles.fieldDescription}>{field.description}</Text>}
+            {field.description && (
+              <Text style={styles.fieldDescription}>{field.description}</Text>
+            )}
             {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
         );
@@ -187,13 +207,18 @@ export function ConfigForm({
       case "number":
         return (
           <View key={field.key} style={styles.inputField}>
-            <Text style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}>
+            <Text
+              style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}
+            >
               {field.label}
               {field.required && <Text style={styles.required}> *</Text>}
             </Text>
             <View style={styles.numberInputContainer}>
               <TouchableOpacity
-                style={[styles.numberButton, isDisabled && styles.numberButtonDisabled]}
+                style={[
+                  styles.numberButton,
+                  isDisabled && styles.numberButtonDisabled,
+                ]}
                 onPress={() => {
                   const current = Number(value) || 0;
                   const step = field.step || 1;
@@ -205,7 +230,11 @@ export function ConfigForm({
                 <Ionicons
                   name="remove"
                   size={20}
-                  color={isDisabled ? semanticColors.text.tertiary : colors.primary[600]}
+                  color={
+                    isDisabled
+                      ? semanticColors.text.tertiary
+                      : colors.primary[600]
+                  }
                 />
               </TouchableOpacity>
               <TextInput
@@ -232,7 +261,10 @@ export function ConfigForm({
                 autoCorrect={false}
               />
               <TouchableOpacity
-                style={[styles.numberButton, isDisabled && styles.numberButtonDisabled]}
+                style={[
+                  styles.numberButton,
+                  isDisabled && styles.numberButtonDisabled,
+                ]}
                 onPress={() => {
                   const current = Number(value) || 0;
                   const step = field.step || 1;
@@ -244,11 +276,17 @@ export function ConfigForm({
                 <Ionicons
                   name="add"
                   size={20}
-                  color={isDisabled ? semanticColors.text.tertiary : colors.primary[600]}
+                  color={
+                    isDisabled
+                      ? semanticColors.text.tertiary
+                      : colors.primary[600]
+                  }
                 />
               </TouchableOpacity>
             </View>
-            {field.description && <Text style={styles.fieldDescription}>{field.description}</Text>}
+            {field.description && (
+              <Text style={styles.fieldDescription}>{field.description}</Text>
+            )}
             {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
         );
@@ -256,23 +294,33 @@ export function ConfigForm({
       default: // text, email, password
         return (
           <View key={field.key} style={styles.inputField}>
-            <Text style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}>
+            <Text
+              style={[styles.fieldLabel, isDisabled && styles.labelDisabled]}
+            >
               {field.label}
               {field.required && <Text style={styles.required}> *</Text>}
             </Text>
             <TextInput
-              style={[styles.input, error && styles.inputError, isDisabled && styles.inputDisabled]}
+              style={[
+                styles.input,
+                error && styles.inputError,
+                isDisabled && styles.inputDisabled,
+              ]}
               value={String(value ?? "")}
               onChangeText={(v) => onChange(field.key, v)}
               placeholder={field.placeholder}
               placeholderTextColor={semanticColors.text.tertiary}
               editable={!isDisabled}
               secureTextEntry={field.type === "password"}
-              keyboardType={field.type === "email" ? "email-address" : "default"}
+              keyboardType={
+                field.type === "email" ? "email-address" : "default"
+              }
               autoCapitalize={field.type === "email" ? "none" : "none"}
               autoCorrect={false}
             />
-            {field.description && <Text style={styles.fieldDescription}>{field.description}</Text>}
+            {field.description && (
+              <Text style={styles.fieldDescription}>{field.description}</Text>
+            )}
             {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
         );
@@ -295,13 +343,19 @@ export function ConfigForm({
               <View style={styles.sectionTitleRow}>
                 {section.icon && (
                   <View style={styles.sectionIcon}>
-                    <Ionicons name={section.icon} size={20} color={colors.primary[600]} />
+                    <Ionicons
+                      name={section.icon}
+                      size={20}
+                      color={colors.primary[600]}
+                    />
                   </View>
                 )}
                 <View style={styles.sectionTitleContainer}>
                   <Text style={styles.sectionTitle}>{section.title}</Text>
                   {section.description && (
-                    <Text style={styles.sectionDescription}>{section.description}</Text>
+                    <Text style={styles.sectionDescription}>
+                      {section.description}
+                    </Text>
                   )}
                 </View>
               </View>
@@ -314,7 +368,9 @@ export function ConfigForm({
 
             {/* Section Content */}
             {isExpanded && (
-              <View style={styles.sectionContent}>{section.fields.map(renderField)}</View>
+              <View style={styles.sectionContent}>
+                {section.fields.map(renderField)}
+              </View>
             )}
           </View>
         );
@@ -347,12 +403,19 @@ export function ConfigFormActions({
           onPress={onReset}
           disabled={disabled || saving}
         >
-          <Ionicons name="refresh" size={18} color={semanticColors.text.secondary} />
+          <Ionicons
+            name="refresh"
+            size={18}
+            color={semanticColors.text.secondary}
+          />
           <Text style={styles.resetButtonText}>Reset to Default</Text>
         </TouchableOpacity>
       )}
       <TouchableOpacity
-        style={[styles.saveButton, (disabled || saving) && styles.saveButtonDisabled]}
+        style={[
+          styles.saveButton,
+          (disabled || saving) && styles.saveButtonDisabled,
+        ]}
         onPress={onSave}
         disabled={disabled || saving}
       >

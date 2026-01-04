@@ -51,19 +51,19 @@ export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
     pulseScale.value = withRepeat(
       withSequence(
         withTiming(1.3, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) })
+        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
-      true
+      true,
     );
 
     pulseOpacity.value = withRepeat(
       withSequence(
         withTiming(0.3, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) })
+        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
-      true
+      true,
     );
   }, [pulseOpacity, pulseScale]);
 
@@ -76,7 +76,12 @@ export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
 
   return (
     <View style={[styles.container, { gap: theme.spacing.sm }, style]}>
-      <View style={[styles.dotContainer, { width: dotSize * 2, height: dotSize * 2 }]}>
+      <View
+        style={[
+          styles.dotContainer,
+          { width: dotSize * 2, height: dotSize * 2 },
+        ]}
+      >
         {/* Pulse ring */}
         <Animated.View
           style={[

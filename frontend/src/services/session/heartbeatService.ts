@@ -3,7 +3,11 @@
  * Automatically sends heartbeats every 20-30 seconds
  */
 
-import { AppState, AppStateStatus, NativeEventSubscription } from "react-native";
+import {
+  AppState,
+  AppStateStatus,
+  NativeEventSubscription,
+} from "react-native";
 import api from "../httpClient";
 
 interface HeartbeatResponse {
@@ -44,7 +48,10 @@ export class HeartbeatService {
    * Listen to app state changes
    */
   private setupAppStateListener(): void {
-    this.appStateSubscription = AppState.addEventListener("change", this.handleAppStateChange);
+    this.appStateSubscription = AppState.addEventListener(
+      "change",
+      this.handleAppStateChange,
+    );
   }
 
   /**
@@ -88,7 +95,7 @@ export class HeartbeatService {
 
     __DEV__ &&
       console.log(
-        `💓 Heartbeat started for session ${sessionId} (interval: ${this.config.intervalMs}ms)`
+        `💓 Heartbeat started for session ${sessionId} (interval: ${this.config.intervalMs}ms)`,
       );
   }
 
@@ -124,7 +131,7 @@ export class HeartbeatService {
 
     try {
       const response = await api.post<HeartbeatResponse>(
-        `/api/sessions/${this.sessionId}/heartbeat`
+        `/api/sessions/${this.sessionId}/heartbeat`,
       );
 
       if (response.data.success) {
@@ -134,12 +141,14 @@ export class HeartbeatService {
         __DEV__ &&
           console.log(
             `💓 Heartbeat sent: rack_renewed=${response.data.rack_lock_renewed}, ` +
-              `ttl=${response.data.lock_ttl_remaining}s`
+              `ttl=${response.data.lock_ttl_remaining}s`,
           );
 
         // Warn if lock TTL is getting low
         if (response.data.lock_ttl_remaining < 20) {
-          console.warn(`⚠️ Lock TTL is low: ${response.data.lock_ttl_remaining}s remaining`);
+          console.warn(
+            `⚠️ Lock TTL is low: ${response.data.lock_ttl_remaining}s remaining`,
+          );
         }
       } else {
         // Response received but not successful - still reset to avoid false positives
@@ -150,7 +159,7 @@ export class HeartbeatService {
 
       console.error(
         `❌ Heartbeat failed (${this.missedHeartbeats}/${this.maxMissedHeartbeats}):`,
-        error.message
+        error.message,
       );
 
       // Stop heartbeat if too many failures

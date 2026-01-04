@@ -3,7 +3,15 @@
  * Handles serial number input, validation, and management
  */
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Switch,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SerialInput } from "@/types/scan";
 
@@ -60,7 +68,7 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
     if (requiredSerialCount > 0 && serialInputs.length <= requiredSerialCount) {
       Alert.alert(
         "Cannot Remove",
-        `At least ${requiredSerialCount} serial number${requiredSerialCount > 1 ? "s are" : " is"} required.`
+        `At least ${requiredSerialCount} serial number${requiredSerialCount > 1 ? "s are" : " is"} required.`,
       );
       return;
     }
@@ -83,11 +91,14 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
           </View>
         )}
       </View>
-      <Text style={styles.serialRequirementText}>{serialRequirementMessage}</Text>
+      <Text style={styles.serialRequirementText}>
+        {serialRequirementMessage}
+      </Text>
       {missingSerialCount > 0 && (
         <Text style={styles.serialHelperText}>
           {missingSerialCount} more serial number
-          {missingSerialCount > 1 ? "s" : ""} needed to match the counted quantity.
+          {missingSerialCount > 1 ? "s" : ""} needed to match the counted
+          quantity.
         </Text>
       )}
       {extraSerialCount > 0 && (
@@ -101,13 +112,18 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
         <View style={styles.serialInputsContainer}>
           {serialInputs.map((entry, index) => {
             const isActiveSerialSlot =
-              showScanner && scannerMode === "serial" && serialScanTargetId === entry.id;
+              showScanner &&
+              scannerMode === "serial" &&
+              serialScanTargetId === entry.id;
             const serialLabel = entry.label || `Serial #${index + 1}`;
 
             return (
               <View
                 key={entry.id}
-                style={[styles.serialInputRow, isActiveSerialSlot && styles.serialInputRowActive]}
+                style={[
+                  styles.serialInputRow,
+                  isActiveSerialSlot && styles.serialInputRowActive,
+                ]}
               >
                 <View style={styles.serialInputHeader}>
                   <Text style={styles.serialInputLabel}>{serialLabel}</Text>
@@ -118,7 +134,8 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                     >
                       <Ionicons name="scan-outline" size={18} color="#3B82F6" />
                     </TouchableOpacity>
-                    {(requiredSerialCount === 0 || serialInputs.length > requiredSerialCount) && (
+                    {(requiredSerialCount === 0 ||
+                      serialInputs.length > requiredSerialCount) && (
                       <TouchableOpacity
                         style={styles.removeSerialButton}
                         onPress={() => handleRemove(entry.id ?? "")}
@@ -133,7 +150,9 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                   placeholder="Scan or enter serial number"
                   placeholderTextColor="#94A3B8"
                   value={entry.value}
-                  onChangeText={(text) => handleSerialChange(entry.id ?? "", text)}
+                  onChangeText={(text) =>
+                    handleSerialChange(entry.id ?? "", text)
+                  }
                   autoCapitalize="characters"
                   autoCorrect={false}
                 />
@@ -141,12 +160,18 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
             );
           })}
           <View style={styles.serialControlsRow}>
-            <TouchableOpacity style={styles.scanSerialButton} onPress={onScanNextSerial}>
+            <TouchableOpacity
+              style={styles.scanSerialButton}
+              onPress={onScanNextSerial}
+            >
               <Ionicons name="scan-outline" size={18} color="#3B82F6" />
               <Text style={styles.scanSerialButtonText}>Scan Next</Text>
             </TouchableOpacity>
             {serialInputs.length < serialInputTarget && (
-              <TouchableOpacity style={styles.addSerialButton} onPress={onAddSerial}>
+              <TouchableOpacity
+                style={styles.addSerialButton}
+                onPress={onAddSerial}
+              >
                 <Ionicons name="add-circle-outline" size={18} color="#3B82F6" />
                 <Text style={styles.addSerialButtonText}>Add Serial</Text>
               </TouchableOpacity>

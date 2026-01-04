@@ -46,7 +46,10 @@ export const authApi = {
    * @returns Promise with change confirmation
    * @throws Error if current PIN is wrong or new PIN is invalid
    */
-  async changePin(currentPin: string, newPin: string): Promise<ChangePinResponse> {
+  async changePin(
+    currentPin: string,
+    newPin: string,
+  ): Promise<ChangePinResponse> {
     const response = await api.post<ChangePinResponse>("/api/auth/change-pin", {
       current_pin: currentPin,
       new_pin: newPin,
@@ -64,12 +67,15 @@ export const authApi = {
    */
   async changePassword(
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<ChangePasswordResponse> {
-    const response = await api.post<ChangePasswordResponse>("/api/auth/change-password", {
-      current_password: currentPassword,
-      new_password: newPassword,
-    });
+    const response = await api.post<ChangePasswordResponse>(
+      "/api/auth/change-password",
+      {
+        current_password: currentPassword,
+        new_password: newPassword,
+      },
+    );
     return response.data;
   },
 
@@ -79,7 +85,9 @@ export const authApi = {
    * @returns Promise with user settings
    */
   async getUserSettings(): Promise<UserSettings> {
-    const response = await api.get<{ data: UserSettings }>("/api/user/settings");
+    const response = await api.get<{ data: UserSettings }>(
+      "/api/user/settings",
+    );
     return response.data.data;
   },
 
@@ -89,8 +97,13 @@ export const authApi = {
    * @param settings - Partial settings to update
    * @returns Promise with updated settings
    */
-  async updateUserSettings(settings: Partial<UserSettings>): Promise<UserSettings> {
-    const response = await api.patch<{ data: UserSettings }>("/api/user/settings", settings);
+  async updateUserSettings(
+    settings: Partial<UserSettings>,
+  ): Promise<UserSettings> {
+    const response = await api.patch<{ data: UserSettings }>(
+      "/api/user/settings",
+      settings,
+    );
     return response.data.data;
   },
 
@@ -100,7 +113,9 @@ export const authApi = {
    * @returns Promise with heartbeat response
    */
   async heartbeat(): Promise<{ status: string; timestamp: string }> {
-    const response = await api.get<{ status: string; timestamp: string }>("/api/auth/heartbeat");
+    const response = await api.get<{ status: string; timestamp: string }>(
+      "/api/auth/heartbeat",
+    );
     return response.data;
   },
 };

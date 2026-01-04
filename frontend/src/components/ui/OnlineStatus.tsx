@@ -19,8 +19,14 @@ export default function OnlineStatus() {
   if (isConnected === null) return null;
 
   return (
-    <View style={[styles.container, isConnected ? styles.online : styles.offline]}>
-      <Ionicons name={isConnected ? "cloud-done" : "cloud-offline"} size={14} color="#fff" />
+    <View
+      style={[styles.container, isConnected ? styles.online : styles.offline]}
+    >
+      <Ionicons
+        name={isConnected ? "cloud-done" : "cloud-offline"}
+        size={14}
+        color="#fff"
+      />
       <Text style={styles.text}>{isConnected ? "Online" : "Offline"}</Text>
     </View>
   );

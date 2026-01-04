@@ -1,5 +1,10 @@
 import React from "react";
-import { View, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface ResultOverlayProps {
@@ -26,7 +31,11 @@ export const ResultOverlay: React.FC<ResultOverlayProps> = ({
         </TouchableOpacity>
       </View>
       <View style={styles.shutterBar}>
-        <TouchableOpacity style={styles.shutterButton} onPress={onCapture} disabled={loading}>
+        <TouchableOpacity
+          style={styles.shutterButton}
+          onPress={onCapture}
+          disabled={loading}
+        >
           {loading ? (
             <ActivityIndicator size="small" color="#1E293B" />
           ) : (

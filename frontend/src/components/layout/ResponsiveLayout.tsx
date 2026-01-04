@@ -106,7 +106,11 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     return (
       <View style={[styles.container, containerStyle, style]} testID={testID}>
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, contentContainerStyle, { flexGrow: 1 }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            contentContainerStyle,
+            { flexGrow: 1 },
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -131,7 +135,12 @@ interface ResponsiveRowProps {
   style?: ViewStyle;
   gap?: number;
   wrap?: boolean;
-  justify?: "flex-start" | "center" | "flex-end" | "space-between" | "space-around";
+  justify?:
+    | "flex-start"
+    | "center"
+    | "flex-end"
+    | "space-between"
+    | "space-around";
   align?: "flex-start" | "center" | "flex-end" | "stretch";
 }
 
@@ -206,7 +215,11 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
  */
 export const getResponsiveTextStyles = (screenWidth: number) => {
   const scale =
-    screenWidth < BREAKPOINTS.phone ? 0.9 : screenWidth >= BREAKPOINTS.tablet ? 1.15 : 1;
+    screenWidth < BREAKPOINTS.phone
+      ? 0.9
+      : screenWidth >= BREAKPOINTS.tablet
+        ? 1.15
+        : 1;
 
   return {
     h1: {

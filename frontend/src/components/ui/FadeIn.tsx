@@ -26,10 +26,14 @@ export const FadeIn: React.FC<FadeInProps> = ({
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(
-    new Animated.Value(direction === "up" ? distance : direction === "down" ? -distance : 0)
+    new Animated.Value(
+      direction === "up" ? distance : direction === "down" ? -distance : 0,
+    ),
   ).current;
   const translateX = useRef(
-    new Animated.Value(direction === "left" ? distance : direction === "right" ? -distance : 0)
+    new Animated.Value(
+      direction === "left" ? distance : direction === "right" ? -distance : 0,
+    ),
   ).current;
 
   useEffect(() => {
@@ -49,7 +53,7 @@ export const FadeIn: React.FC<FadeInProps> = ({
           duration,
           delay,
           useNativeDriver: true,
-        })
+        }),
       );
     }
 
@@ -60,7 +64,7 @@ export const FadeIn: React.FC<FadeInProps> = ({
           duration,
           delay,
           useNativeDriver: true,
-        })
+        }),
       );
     }
 
@@ -118,7 +122,12 @@ export const StaggeredFadeIn: React.FC<StaggeredFadeInProps> = ({
   return (
     <>
       {React.Children.map(children, (child, index) => (
-        <FadeIn key={index} delay={index * staggerDelay} duration={duration} direction={direction}>
+        <FadeIn
+          key={index}
+          delay={index * staggerDelay}
+          duration={duration}
+          direction={direction}
+        >
           {child}
         </FadeIn>
       ))}

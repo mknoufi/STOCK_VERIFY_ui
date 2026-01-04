@@ -38,11 +38,15 @@ export const triggerHaptic = async (pattern: HapticPattern): Promise<void> => {
         break;
 
       case "success":
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        );
         break;
 
       case "warning":
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        );
         break;
 
       case "error":
@@ -70,7 +74,9 @@ export const triggerHaptic = async (pattern: HapticPattern): Promise<void> => {
         break;
 
       case "notification":
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        );
         break;
 
       default:
@@ -85,7 +91,9 @@ export const triggerHaptic = async (pattern: HapticPattern): Promise<void> => {
 /**
  * Trigger simple impact feedback
  */
-export const triggerImpact = async (intensity: HapticIntensity = "medium"): Promise<void> => {
+export const triggerImpact = async (
+  intensity: HapticIntensity = "medium",
+): Promise<void> => {
   if (Platform.OS === "web") return;
 
   const style = {
@@ -118,7 +126,7 @@ export const triggerSelection = async (): Promise<void> => {
  * Trigger notification feedback
  */
 export const triggerNotification = async (
-  type: "success" | "warning" | "error" = "success"
+  type: "success" | "warning" | "error" = "success",
 ): Promise<void> => {
   if (Platform.OS === "web") return;
 

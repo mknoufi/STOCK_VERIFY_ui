@@ -10,7 +10,7 @@ export const useHapticFeedback = () => {
         | "impactHeavy"
         | "notificationSuccess"
         | "notificationWarning"
-        | "notificationError"
+        | "notificationError",
     ) => {
       switch (type) {
         case "impactLight":
@@ -33,7 +33,7 @@ export const useHapticFeedback = () => {
           break;
       }
     },
-    []
+    [],
   );
 
   return { triggerHaptic };

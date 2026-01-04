@@ -3,7 +3,15 @@
  * Modal for starting a scanning session with location details
  */
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  Alert,
+  StyleSheet,
+} from "react-native";
 
 interface SessionStartModalProps {
   visible: boolean;
@@ -31,11 +39,18 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={() => {}}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => {}}
+    >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Start Session</Text>
-          <Text style={styles.modalSubtitle}>Enter location details to begin</Text>
+          <Text style={styles.modalSubtitle}>
+            Enter location details to begin
+          </Text>
 
           <Text style={styles.modalLabel}>Floor Number</Text>
           <TextInput
@@ -60,7 +75,10 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
           />
 
           <TouchableOpacity
-            style={[styles.confirmButton, !floorNo.trim() && styles.buttonDisabled]}
+            style={[
+              styles.confirmButton,
+              !floorNo.trim() && styles.buttonDisabled,
+            ]}
             onPress={handleStart}
             disabled={!floorNo.trim()}
           >

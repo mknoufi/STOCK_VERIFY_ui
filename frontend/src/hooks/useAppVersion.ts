@@ -18,7 +18,11 @@ export const useAppVersion = () => {
       setAppInfo({
         version: manifest?.version || nativeAppVersion || "1.0.0",
         buildVersion: nativeBuildVersion || "dev",
-        platform: Constants.platform?.ios ? "iOS" : Constants.platform?.android ? "Android" : "Web",
+        platform: Constants.platform?.ios
+          ? "iOS"
+          : Constants.platform?.android
+            ? "Android"
+            : "Web",
         appName: manifest?.name || "Stock Count",
       });
     };

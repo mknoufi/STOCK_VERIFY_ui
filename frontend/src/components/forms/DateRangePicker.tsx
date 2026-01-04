@@ -4,7 +4,13 @@
  */
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -44,18 +50,36 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.dateRow}>
-        <TouchableOpacity style={styles.dateButton} onPress={() => setShowStartPicker(true)}>
-          <Ionicons name="calendar" size={20} color={modernColors.primary[500]} />
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowStartPicker(true)}
+        >
+          <Ionicons
+            name="calendar"
+            size={20}
+            color={modernColors.primary[500]}
+          />
           <View style={styles.dateContent}>
             <Text style={styles.dateLabel}>Start Date</Text>
             <Text style={styles.dateValue}>{formatDate(startDate)}</Text>
           </View>
         </TouchableOpacity>
 
-        <Ionicons name="arrow-forward" size={20} color={modernColors.text.secondary} />
+        <Ionicons
+          name="arrow-forward"
+          size={20}
+          color={modernColors.text.secondary}
+        />
 
-        <TouchableOpacity style={styles.dateButton} onPress={() => setShowEndPicker(true)}>
-          <Ionicons name="calendar" size={20} color={modernColors.primary[500]} />
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowEndPicker(true)}
+        >
+          <Ionicons
+            name="calendar"
+            size={20}
+            color={modernColors.primary[500]}
+          />
           <View style={styles.dateContent}>
             <Text style={styles.dateLabel}>End Date</Text>
             <Text style={styles.dateValue}>{formatDate(endDate)}</Text>

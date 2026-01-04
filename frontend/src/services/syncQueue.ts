@@ -48,9 +48,12 @@ export const syncQueue = {
       if (result.conflicts) {
         for (const conflict of result.conflicts) {
           if (conflict.client_record_id) {
-            await updatePendingVerificationStatus(parseInt(conflict.client_record_id), "locked");
+            await updatePendingVerificationStatus(
+              parseInt(conflict.client_record_id),
+              "locked",
+            );
             console.log(
-              `Marked verification ${conflict.client_record_id} as locked due to conflict: ${conflict.message}`
+              `Marked verification ${conflict.client_record_id} as locked due to conflict: ${conflict.message}`,
             );
           }
         }

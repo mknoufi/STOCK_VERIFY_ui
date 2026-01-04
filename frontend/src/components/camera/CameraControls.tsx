@@ -7,8 +7,17 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { colorPalette, spacing, borderRadius, shadows } from "@/theme/designTokens";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
+import {
+  colorPalette,
+  spacing,
+  borderRadius,
+  shadows,
+} from "@/theme/designTokens";
 
 interface CameraControlsProps {
   torchEnabled: boolean;
@@ -47,14 +56,20 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
       {/* Torch/Flash Control */}
       <Animated.View style={torchAnimatedStyle}>
         <TouchableOpacity
-          style={[styles.controlButton, torchEnabled && styles.controlButtonActive, shadows[3]]}
+          style={[
+            styles.controlButton,
+            torchEnabled && styles.controlButtonActive,
+            shadows[3],
+          ]}
           onPress={handleTorchPress}
           activeOpacity={0.7}
         >
           <Ionicons
             name={torchEnabled ? "flash" : "flash-off"}
             size={24}
-            color={torchEnabled ? colorPalette.warning[500] : colorPalette.neutral[0]}
+            color={
+              torchEnabled ? colorPalette.warning[500] : colorPalette.neutral[0]
+            }
           />
         </TouchableOpacity>
       </Animated.View>
@@ -70,7 +85,9 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
           <Ionicons
             name="remove"
             size={20}
-            color={zoom <= 0 ? colorPalette.neutral[400] : colorPalette.neutral[0]}
+            color={
+              zoom <= 0 ? colorPalette.neutral[400] : colorPalette.neutral[0]
+            }
           />
         </TouchableOpacity>
 
@@ -91,7 +108,9 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
           <Ionicons
             name="add"
             size={20}
-            color={zoom >= 1 ? colorPalette.neutral[400] : colorPalette.neutral[0]}
+            color={
+              zoom >= 1 ? colorPalette.neutral[400] : colorPalette.neutral[0]
+            }
           />
         </TouchableOpacity>
       </View>

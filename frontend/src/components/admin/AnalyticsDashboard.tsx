@@ -36,7 +36,9 @@ export const AnalyticsDashboard: React.FC = () => {
   const fetchAnalytics = async (period: number) => {
     setLoading(true);
     try {
-      const response = await apiClient.get(`/api/reports/analytics?days=${period}`);
+      const response = await apiClient.get(
+        `/api/reports/analytics?days=${period}`,
+      );
       if (response.data.success) {
         setData(response.data.data);
       }
@@ -61,9 +63,13 @@ export const AnalyticsDashboard: React.FC = () => {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text }]}>Analytics</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          Analytics
+        </Text>
         <View style={styles.periodSelector}>
           {[7, 30, 90].map((p) => (
             <TouchableOpacity
@@ -72,11 +78,14 @@ export const AnalyticsDashboard: React.FC = () => {
               style={[
                 styles.periodButton,
                 {
-                  backgroundColor: days === p ? theme.colors.accent : theme.colors.surface,
+                  backgroundColor:
+                    days === p ? theme.colors.accent : theme.colors.surface,
                 },
               ]}
             >
-              <Text style={{ color: days === p ? "#fff" : theme.colors.text }}>{p}d</Text>
+              <Text style={{ color: days === p ? "#fff" : theme.colors.text }}>
+                {p}d
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -111,25 +120,37 @@ export const AnalyticsDashboard: React.FC = () => {
             />
           </View>
 
-          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Top Performers</Text>
+          <View
+            style={[styles.section, { backgroundColor: theme.colors.surface }]}
+          >
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              Top Performers
+            </Text>
             {data.stats.top_users.map((user, index) => (
               <View key={user._id} style={styles.userRow}>
                 <Text style={{ color: theme.colors.text }}>
                   {index + 1}. {user._id}
                 </Text>
-                <Text style={[styles.userCount, { color: theme.colors.accent }]}>{user.count}</Text>
+                <Text
+                  style={[styles.userCount, { color: theme.colors.accent }]}
+                >
+                  {user.count}
+                </Text>
               </View>
             ))}
           </View>
 
-          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
+          <View
+            style={[styles.section, { backgroundColor: theme.colors.surface }]}
+          >
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
               Category Distribution
             </Text>
             {data.category_distribution.map((cat) => (
               <View key={cat._id} style={styles.barContainer}>
-                <Text style={[styles.barLabel, { color: theme.colors.text }]}>{cat._id}</Text>
+                <Text style={[styles.barLabel, { color: theme.colors.text }]}>
+                  {cat._id}
+                </Text>
                 <View style={styles.barWrapper}>
                   <View
                     style={[
@@ -156,8 +177,12 @@ const StatCard = ({ title, value, icon, color }: any) => {
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
       <Ionicons name={icon} size={24} color={color} />
-      <Text style={[styles.cardValue, { color: theme.colors.text }]}>{value}</Text>
-      <Text style={[styles.cardTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
+      <Text style={[styles.cardValue, { color: theme.colors.text }]}>
+        {value}
+      </Text>
+      <Text style={[styles.cardTitle, { color: theme.colors.textSecondary }]}>
+        {title}
+      </Text>
     </View>
   );
 };

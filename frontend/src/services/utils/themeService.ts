@@ -211,7 +211,10 @@ export class ThemeService {
   static async setTheme(theme: Theme): Promise<void> {
     try {
       this.currentTheme = theme;
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, JSON.stringify({ dark: theme.dark }));
+      await AsyncStorage.setItem(
+        THEME_STORAGE_KEY,
+        JSON.stringify({ dark: theme.dark }),
+      );
       this.notifyListeners();
     } catch (error) {
       __DEV__ && console.error("Error saving theme:", error);
@@ -254,7 +257,10 @@ export class ThemeService {
   /**
    * Create custom theme from base
    */
-  static createCustomTheme(base: Theme, overrides: Partial<ThemeColors>): Theme {
+  static createCustomTheme(
+    base: Theme,
+    overrides: Partial<ThemeColors>,
+  ): Theme {
     return {
       ...base,
       colors: {

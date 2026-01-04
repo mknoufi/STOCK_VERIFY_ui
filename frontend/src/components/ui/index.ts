@@ -9,7 +9,10 @@ export * from "./Skeleton";
 export * from "./GlassCard";
 export { EmptyState } from "./EmptyState";
 export { LoadingSpinner } from "./LoadingSpinner";
-export { ModernCard } from "../ModernCard";
+export { ModernCard } from "./ModernCard";
+export { ModernButton } from "./ModernButton";
+export { ModernInput } from "./ModernInput";
+export { ModernHeader } from "./ModernHeader";
 
 // Premium UI Components
 export { PremiumHeader } from "./PremiumHeader";
@@ -101,13 +104,22 @@ export type { ResponsiveTextProps, TextVariant } from "./ResponsiveText";
 export { MyPressable, PressablePresets } from "./MyPressable";
 export type { MyPressableProps } from "./MyPressable";
 export { EnhancedButton } from "./EnhancedButton";
-export type { EnhancedButtonProps, ButtonType, ButtonSize, IconPosition } from "./EnhancedButton";
+export type {
+  EnhancedButtonProps,
+  ButtonType,
+  ButtonSize,
+  IconPosition,
+} from "./EnhancedButton";
 export { Separator, SeparatorPresets } from "./Separator";
 export type { SeparatorProps, SeparatorOrientation } from "./Separator";
 export { AnimatedListItem, ListAnimationPresets } from "./AnimatedListItem";
 export type { AnimatedListItemProps } from "./AnimatedListItem";
 export { EnhancedInput } from "./EnhancedInput";
-export type { EnhancedInputProps, InputSize, LabelPosition } from "./EnhancedInput";
+export type {
+  EnhancedInputProps,
+  InputSize,
+  LabelPosition,
+} from "./EnhancedInput";
 
 // Unified Design System Components (v3.0 - Token-based)
 export { UnifiedText } from "./UnifiedText";
@@ -117,4 +129,7 @@ export type {
   TextColor as UnifiedTextColor,
 } from "./UnifiedText";
 export { UnifiedView } from "./UnifiedView";
-export type { UnifiedViewProps, BackgroundColor as UnifiedBackgroundColor } from "./UnifiedView";
+export type {
+  UnifiedViewProps,
+  BackgroundColor as UnifiedBackgroundColor,
+} from "./UnifiedView";

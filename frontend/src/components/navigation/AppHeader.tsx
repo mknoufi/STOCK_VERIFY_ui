@@ -4,7 +4,14 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ViewStyle,
+  Platform,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -51,7 +58,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   };
 
   // Calculate header height including safe area
-  const headerHeight = layout.headerHeight + (Platform.OS === "ios" ? insets.top : 0);
+  const headerHeight =
+    layout.headerHeight + (Platform.OS === "ios" ? insets.top : 0);
   const paddingTop = Platform.OS === "ios" ? insets.top : 0;
 
   return (
@@ -91,7 +99,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               {title}
             </Text>
             {showUser && user && (
-              <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.subtitle, { color: theme.colors.textSecondary }]}
+              >
                 Hello, {user.full_name || user.username}
               </Text>
             )}
@@ -120,10 +130,21 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               accessibilityRole="button"
               accessibilityLabel={action.label}
             >
-              <Ionicons name={action.icon} size={22} color={action.color || theme.colors.text} />
+              <Ionicons
+                name={action.icon}
+                size={22}
+                color={action.color || theme.colors.text}
+              />
               {action.badge !== undefined && action.badge > 0 && (
-                <View style={[styles.badge, { backgroundColor: theme.colors.error }]}>
-                  <Text style={styles.badgeText}>{action.badge > 99 ? "99+" : action.badge}</Text>
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: theme.colors.error },
+                  ]}
+                >
+                  <Text style={styles.badgeText}>
+                    {action.badge > 99 ? "99+" : action.badge}
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>

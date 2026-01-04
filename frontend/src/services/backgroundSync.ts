@@ -48,16 +48,20 @@ export const registerBackgroundSync = async () => {
     try {
       const fetchStatus = await BackgroundFetch.getStatusAsync();
       if (fetchStatus !== BackgroundFetch.BackgroundFetchStatus.Available) {
-        console.log("Background fetch not available; skipping background sync registration", {
-          status: fetchStatus,
-        });
+        console.log(
+          "Background fetch not available; skipping background sync registration",
+          {
+            status: fetchStatus,
+          },
+        );
         return;
       }
     } catch {
       // If status can't be determined, fall through and attempt registration.
     }
 
-    const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
+    const isRegistered =
+      await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
     if (isRegistered) {
       console.log("Background sync task already registered");
       return;

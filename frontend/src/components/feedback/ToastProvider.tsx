@@ -3,7 +3,9 @@ import { View, StyleSheet } from "react-native";
 import { Toast } from "./Toast";
 import { toastService } from "../../services/utils/toastService";
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [toasts, setToasts] = useState<
     {
       id: string;
@@ -80,7 +82,7 @@ export const useToast = () => {
     show: (
       message: string,
       type: "success" | "error" | "info" | "warning" = "info",
-      duration?: number
+      duration?: number,
     ) => {
       const durationOption: "short" | "long" | undefined = duration
         ? duration > 3000

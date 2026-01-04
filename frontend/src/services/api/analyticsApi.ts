@@ -117,7 +117,7 @@ export class AnalyticsApiError extends Error {
     public code: string,
     message: string,
     public userMessage: string,
-    public context?: Record<string, unknown>
+    public context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "AnalyticsApiError";
@@ -147,12 +147,14 @@ export const analyticsApi = {
       throw new AnalyticsApiError(
         "ANALYTICS_OFFLINE",
         "Analytics require network connection",
-        "Please connect to the network to view analytics."
+        "Please connect to the network to view analytics.",
       );
     }
 
     try {
-      const response = await api.get<SessionAnalyticsResponse>("/api/sessions/analytics");
+      const response = await api.get<SessionAnalyticsResponse>(
+        "/api/sessions/analytics",
+      );
 
       log.info("Session analytics fetched", {
         totalSessions: response.data.data.total_sessions,
@@ -165,7 +167,7 @@ export const analyticsApi = {
         "ANALYTICS_FETCH_FAILED",
         "Failed to fetch analytics",
         "Could not load analytics data. Please try again.",
-        { error }
+        { error },
       );
     }
   },
@@ -186,7 +188,7 @@ export const analyticsApi = {
       throw new AnalyticsApiError(
         "ENRICHMENT_STATS_OFFLINE",
         "Enrichment stats require network",
-        "Please connect to view enrichment statistics."
+        "Please connect to view enrichment statistics.",
       );
     }
 
@@ -204,7 +206,7 @@ export const analyticsApi = {
         "ENRICHMENT_STATS_FAILED",
         "Failed to fetch enrichment stats",
         "Could not load enrichment data.",
-        { error }
+        { error },
       );
     }
   },
@@ -253,13 +255,13 @@ export const analyticsApi = {
       throw new AnalyticsApiError(
         "CONFLICT_STATS_OFFLINE",
         "Conflict stats require network",
-        "Please connect to view conflict statistics."
+        "Please connect to view conflict statistics.",
       );
     }
 
     try {
       const response = await api.get<{ success: boolean; data: ConflictStats }>(
-        "/api/sync-conflicts/stats/summary"
+        "/api/sync-conflicts/stats/summary",
       );
       return response.data.data;
     } catch (error) {
@@ -268,7 +270,7 @@ export const analyticsApi = {
         "CONFLICT_STATS_FAILED",
         "Failed to fetch conflict stats",
         "Could not load conflict data.",
-        { error }
+        { error },
       );
     }
   },
@@ -289,7 +291,7 @@ export const analyticsApi = {
       throw new AnalyticsApiError(
         "DASHBOARD_OFFLINE",
         "Dashboard requires network connection",
-        "Please connect to the network to view the dashboard."
+        "Please connect to the network to view the dashboard.",
       );
     }
 
@@ -308,10 +310,9 @@ export const analyticsApi = {
       const summary: DashboardSummary = {
         sessions: {
           today: sessionsToday,
-          this_week: Object.values(sessionAnalytics?.data.sessions_by_date ?? {}).reduce(
-            (sum, count) => sum + count,
-            0
-          ),
+          this_week: Object.values(
+            sessionAnalytics?.data.sessions_by_date ?? {},
+          ).reduce((sum, count) => sum + count, 0),
           this_month: sessionAnalytics?.data.total_sessions ?? 0,
           trend: "stable",
           trend_percent: 0,
@@ -327,23 +328,25 @@ export const analyticsApi = {
                   (1 -
                     Math.abs(sessionAnalytics.data.overall.avg_variance) /
                       sessionAnalytics.data.overall.total_items) *
-                    100
+                    100,
                 )
               : 100,
         },
         staff: {
-          active_today: Object.keys(sessionAnalytics?.data.items_by_staff ?? {}).length,
+          active_today: Object.keys(sessionAnalytics?.data.items_by_staff ?? {})
+            .length,
           top_performer:
             Object.entries(sessionAnalytics?.data.items_by_staff ?? {}).sort(
-              (a, b) => b[1] - a[1]
+              (a, b) => b[1] - a[1],
             )[0]?.[0] ?? null,
           items_leader:
-            Object.values(sessionAnalytics?.data.items_by_staff ?? {}).sort((a, b) => b - a)[0] ??
-            0,
+            Object.values(sessionAnalytics?.data.items_by_staff ?? {}).sort(
+              (a, b) => b - a,
+            )[0] ?? 0,
         },
         alerts: {
           high_variance_count: Object.values(
-            sessionAnalytics?.data.variance_by_warehouse ?? {}
+            sessionAnalytics?.data.variance_by_warehouse ?? {},
           ).filter((v) => Math.abs(v) > 100).length,
           unresolved_conflicts: conflictStats?.unresolved ?? 0,
           pending_reconcile: 0, // Would need additional endpoint
@@ -352,7 +355,9 @@ export const analyticsApi = {
 
       log.info("Dashboard summary fetched", {
         totalSessions: summary.sessions.this_month,
-        alerts: summary.alerts.high_variance_count + summary.alerts.unresolved_conflicts,
+        alerts:
+          summary.alerts.high_variance_count +
+          summary.alerts.unresolved_conflicts,
       });
 
       return summary;
@@ -362,7 +367,7 @@ export const analyticsApi = {
         "DASHBOARD_FETCH_FAILED",
         "Failed to fetch dashboard data",
         "Could not load dashboard. Please try again.",
-        { error }
+        { error },
       );
     }
   },
@@ -381,7 +386,7 @@ export const analyticsApi = {
   async getVarianceTrends(
     startDate: string,
     endDate: string,
-    warehouseId?: string
+    warehouseId?: string,
   ): Promise<VarianceTrendPoint[]> {
     log.debug("Fetching variance trends", { startDate, endDate, warehouseId });
 
@@ -389,7 +394,7 @@ export const analyticsApi = {
       throw new AnalyticsApiError(
         "VARIANCE_OFFLINE",
         "Variance analysis requires network",
-        "Please connect to view variance trends."
+        "Please connect to view variance trends.",
       );
     }
 
@@ -416,7 +421,7 @@ export const analyticsApi = {
         "VARIANCE_TRENDS_FAILED",
         "Failed to fetch variance trends",
         "Could not load variance data.",
-        { error }
+        { error },
       );
     }
   },
@@ -437,23 +442,27 @@ export const analyticsApi = {
       throw new AnalyticsApiError(
         "PERFORMANCE_OFFLINE",
         "Performance metrics require network",
-        "Please connect to view performance data."
+        "Please connect to view performance data.",
       );
     }
 
     try {
       const analytics = await this.getSessionAnalytics();
-      const { total_items, total_sessions, avg_variance } = analytics.data.overall;
+      const { total_items, total_sessions, avg_variance } =
+        analytics.data.overall;
 
       // Calculate metrics
-      const avgItemsPerSession = total_sessions > 0 ? total_items / total_sessions : 0;
+      const avgItemsPerSession =
+        total_sessions > 0 ? total_items / total_sessions : 0;
 
       const metrics: PerformanceMetrics = {
         avg_items_per_session: Math.round(avgItemsPerSession),
         avg_session_duration: 45, // Would need duration data from backend
         items_per_hour: Math.round(avgItemsPerSession / 0.75), // Estimate
         accuracy_rate:
-          total_items > 0 ? Math.round((1 - Math.abs(avg_variance) / total_items) * 100) : 100,
+          total_items > 0
+            ? Math.round((1 - Math.abs(avg_variance) / total_items) * 100)
+            : 100,
       };
 
       return metrics;
@@ -463,7 +472,7 @@ export const analyticsApi = {
         "PERFORMANCE_FAILED",
         "Failed to fetch performance metrics",
         "Could not load performance data.",
-        { error }
+        { error },
       );
     }
   },

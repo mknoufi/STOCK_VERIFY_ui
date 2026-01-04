@@ -12,7 +12,14 @@
  */
 
 import React from "react";
-import { StyleSheet, Text, ActivityIndicator, ViewStyle, TextStyle, StyleProp } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  ViewStyle,
+  TextStyle,
+  StyleProp,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { MyPressable, MyPressableProps } from "./MyPressable";
@@ -31,7 +38,10 @@ export type ButtonType = "solid" | "outline" | "text" | "gradient";
 export type ButtonSize = "sm" | "md" | "lg" | "xl";
 export type IconPosition = "left" | "right" | "top" | "bottom";
 
-export interface EnhancedButtonProps extends Omit<MyPressableProps, "children" | "style"> {
+export interface EnhancedButtonProps extends Omit<
+  MyPressableProps,
+  "children" | "style"
+> {
   /** Button label text */
   title: string;
   /** Button type/variant */
@@ -109,7 +119,8 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   // Determine colors based on type
   const primaryColor = color || themeLegacy.colors.primary;
   const resolvedTextColor =
-    textColor || (type === "solid" || type === "gradient" ? "#FFFFFF" : primaryColor);
+    textColor ||
+    (type === "solid" || type === "gradient" ? "#FFFFFF" : primaryColor);
 
   // Size configurations
   const sizeConfig = {
@@ -197,7 +208,12 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
     }
     if (!icon) return null;
     return (
-      <Ionicons name={icon} size={finalIconSize} color={resolvedTextColor} style={iconMargin} />
+      <Ionicons
+        name={icon}
+        size={finalIconSize}
+        color={resolvedTextColor}
+        style={iconMargin}
+      />
     );
   };
 
@@ -205,7 +221,11 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   const renderContent = () => {
     const textElement = (
       <Text
-        style={[styles.text, { fontSize: config.fontSize, color: resolvedTextColor }, textStyle]}
+        style={[
+          styles.text,
+          { fontSize: config.fontSize, color: resolvedTextColor },
+          textStyle,
+        ]}
         numberOfLines={1}
       >
         {title}

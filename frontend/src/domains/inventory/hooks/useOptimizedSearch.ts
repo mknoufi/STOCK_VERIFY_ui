@@ -109,7 +109,7 @@ export interface UseOptimizedSearchResult {
 async function fetchOptimizedSearch(
   query: string,
   page: number,
-  pageSize: number
+  pageSize: number,
 ): Promise<OptimizedSearchResponse> {
   const offset = (page - 1) * pageSize;
 
@@ -154,7 +154,7 @@ async function fetchOptimizedSearch(
  * ```
  */
 export function useOptimizedSearch(
-  options: UseOptimizedSearchOptions = {}
+  options: UseOptimizedSearchOptions = {},
 ): UseOptimizedSearchResult {
   const {
     initialQuery = "",
@@ -181,7 +181,7 @@ export function useOptimizedSearch(
       setQueryState(value);
       debouncedSetQuery(value);
     },
-    [debouncedSetQuery]
+    [debouncedSetQuery],
   );
 
   // Clear search
@@ -194,7 +194,7 @@ export function useOptimizedSearch(
   // Should we fetch?
   const shouldFetch = useMemo(
     () => enabled && debouncedQuery.trim().length >= minChars,
-    [enabled, debouncedQuery, minChars]
+    [enabled, debouncedQuery, minChars],
   );
 
   // React Query for fetching

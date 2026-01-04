@@ -1485,7 +1485,11 @@ if __name__ == "__main__":
 
     ssl_keyfile = os.getenv("SSL_KEYFILE", str(default_key))
     ssl_certfile = os.getenv("SSL_CERTFILE", str(default_cert))
-    use_ssl = os.path.exists(ssl_keyfile) and os.path.exists(ssl_certfile)
+
+    # Allow explicit disable via env var
+    disable_ssl = os.getenv("DISABLE_SSL", "false").lower() == "true"
+
+    use_ssl = (not disable_ssl) and os.path.exists(ssl_keyfile) and os.path.exists(ssl_certfile)
 
     # Save port to file for other services to discover
     protocol = "https" if use_ssl else "http"

@@ -18,7 +18,12 @@ import { useRouter, useSegments } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
 import { useAuthStore } from "../../store/authStore";
-import { layout, spacing, typography, breakpoints } from "../../styles/globalStyles";
+import {
+  layout,
+  spacing,
+  typography,
+  breakpoints,
+} from "../../styles/globalStyles";
 
 interface SidebarItem {
   key: string;
@@ -133,13 +138,15 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
   // On mobile, show as drawer (controlled by parent)
   // On web/tablet, show as persistent sidebar
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(SUPERVISOR_GROUPS.map((g) => g.title))
+    new Set(SUPERVISOR_GROUPS.map((g) => g.title)),
   );
 
   const currentRoute = segments.join("/");
   const isActive = (route: string) => {
     const routePath = route.replace(/^\//, "");
-    return currentRoute === routePath || currentRoute.startsWith(routePath + "/");
+    return (
+      currentRoute === routePath || currentRoute.startsWith(routePath + "/")
+    );
   };
 
   const handleItemPress = (item: SidebarItem) => {
@@ -156,7 +163,9 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
     setExpandedGroups(newExpanded);
   };
 
-  const sidebarWidth = collapsed ? layout.sidebarCollapsedWidth : layout.sidebarWidth;
+  const sidebarWidth = collapsed
+    ? layout.sidebarCollapsedWidth
+    : layout.sidebarWidth;
 
   if (isMobile && !collapsed) {
     // On mobile, sidebar is handled by drawer component
@@ -176,18 +185,34 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
       ]}
       testID={testID}
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* User Profile Section */}
         {!collapsed && (
-          <View style={[styles.profileSection, { borderBottomColor: theme.colors.border }]}>
+          <View
+            style={[
+              styles.profileSection,
+              { borderBottomColor: theme.colors.border },
+            ]}
+          >
             <View style={styles.profileAvatar}>
               <Ionicons name="person" size={24} color={theme.colors.primary} />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={[styles.profileName, { color: theme.colors.text }]} numberOfLines={1}>
+              <Text
+                style={[styles.profileName, { color: theme.colors.text }]}
+                numberOfLines={1}
+              >
                 {user?.full_name || "User"}
               </Text>
-              <Text style={[styles.profileRole, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.profileRole,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 {user?.role === "admin" ? "Administrator" : "Supervisor"}
               </Text>
             </View>
@@ -206,7 +231,12 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
                   onPress={() => toggleGroup(group.title)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.groupTitle, { color: theme.colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.groupTitle,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {group.title}
                   </Text>
                   <Ionicons
@@ -221,7 +251,9 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
                 <View style={styles.groupItems}>
                   {group.items.map((item) => {
                     const active = isActive(item.route);
-                    const iconColor = active ? theme.colors.primary : theme.colors.textSecondary;
+                    const iconColor = active
+                      ? theme.colors.primary
+                      : theme.colors.textSecondary;
                     const bgColor = active
                       ? theme.colors.overlayPrimary || "rgba(76, 175, 80, 0.1)"
                       : "transparent";
@@ -240,14 +272,20 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
                         accessibilityState={{ selected: active }}
                         accessibilityLabel={item.label}
                       >
-                        <Ionicons name={item.icon} size={20} color={iconColor} />
+                        <Ionicons
+                          name={item.icon}
+                          size={20}
+                          color={iconColor}
+                        />
                         {!collapsed && (
                           <>
                             <Text
                               style={[
                                 styles.itemLabel,
                                 {
-                                  color: active ? theme.colors.primary : theme.colors.text,
+                                  color: active
+                                    ? theme.colors.primary
+                                    : theme.colors.text,
                                 },
                               ]}
                             >
@@ -255,7 +293,10 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
                             </Text>
                             {item.badge !== undefined && item.badge > 0 && (
                               <View
-                                style={[styles.itemBadge, { backgroundColor: theme.colors.error }]}
+                                style={[
+                                  styles.itemBadge,
+                                  { backgroundColor: theme.colors.error },
+                                ]}
                               >
                                 <Text style={styles.itemBadgeText}>
                                   {item.badge > 99 ? "99+" : item.badge}
@@ -283,8 +324,14 @@ export const SupervisorSidebar: React.FC<SupervisorSidebarProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Logout"
         >
-          <Ionicons name="log-out-outline" size={20} color={theme.colors.error} />
-          <Text style={[styles.logoutLabel, { color: theme.colors.error }]}>Logout</Text>
+          <Ionicons
+            name="log-out-outline"
+            size={20}
+            color={theme.colors.error}
+          />
+          <Text style={[styles.logoutLabel, { color: theme.colors.error }]}>
+            Logout
+          </Text>
         </TouchableOpacity>
       )}
     </View>

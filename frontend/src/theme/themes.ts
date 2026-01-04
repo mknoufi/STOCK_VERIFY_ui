@@ -179,7 +179,11 @@ const commonAurora = {
     danger: modernColors.error.main,
     overlay: "rgba(0, 0, 0, 0.5)",
     glass: "rgba(255, 255, 255, 0.15)",
-    shimmer: ["rgba(255,255,255,0)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"] as const,
+    shimmer: [
+      "rgba(255,255,255,0)",
+      "rgba(255,255,255,0.05)",
+      "rgba(255,255,255,0)",
+    ] as const,
     aurora: {
       primary: modernGradients.auroraPrimary,
       secondary: modernGradients.auroraSecondary,

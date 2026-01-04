@@ -187,7 +187,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
       focusProgress.value = withTiming(1, { duration: AnimationTimings.fast });
       onFocus?.(e);
     },
-    [onFocus, focusProgress]
+    [onFocus, focusProgress],
   );
 
   const handleBlur = useCallback(
@@ -196,7 +196,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
       focusProgress.value = withTiming(0, { duration: AnimationTimings.fast });
       onBlur?.(e);
     },
-    [onBlur, focusProgress]
+    [onBlur, focusProgress],
   );
 
   const togglePasswordVisibility = useCallback(() => {
@@ -210,9 +210,13 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
     const translateY = interpolate(
       shouldFloat ? 1 : focusProgress.value,
       [0, 1],
-      [0, -(config.height / 2 + 4)]
+      [0, -(config.height / 2 + 4)],
     );
-    const scale = interpolate(shouldFloat ? 1 : focusProgress.value, [0, 1], [1, 0.85]);
+    const scale = interpolate(
+      shouldFloat ? 1 : focusProgress.value,
+      [0, 1],
+      [1, 0.85],
+    );
 
     return {
       transform: [{ translateY }, { scale }],
@@ -229,7 +233,9 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
   const passwordIcon = isPasswordVisible ? "eye-off" : "eye";
 
   return (
-    <View style={[styles.container, fullWidth && styles.fullWidth, containerStyle]}>
+    <View
+      style={[styles.container, fullWidth && styles.fullWidth, containerStyle]}
+    >
       {/* Fixed label */}
       {label && labelPosition === "fixed" && (
         <Text
@@ -263,8 +269,11 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
             style={[
               styles.floatingLabel,
               {
-                color: isFocused ? themeLegacy.colors.primary : themeLegacy.colors.textSecondary,
-                backgroundColor: themeLegacy.colors.surface || themeLegacy.colors.background,
+                color: isFocused
+                  ? themeLegacy.colors.primary
+                  : themeLegacy.colors.textSecondary,
+                backgroundColor:
+                  themeLegacy.colors.surface || themeLegacy.colors.background,
               },
               error && { color: themeLegacy.colors.error },
               labelAnimatedStyle,
@@ -330,13 +339,24 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
         {/* Helper/Error/Success text */}
         <View style={styles.helperContainer}>
           {error ? (
-            <Text style={[styles.helperText, { color: themeLegacy.colors.error }]}>{error}</Text>
+            <Text
+              style={[styles.helperText, { color: themeLegacy.colors.error }]}
+            >
+              {error}
+            </Text>
           ) : success && successMessage ? (
-            <Text style={[styles.helperText, { color: themeLegacy.colors.success }]}>
+            <Text
+              style={[styles.helperText, { color: themeLegacy.colors.success }]}
+            >
               {successMessage}
             </Text>
           ) : helperText ? (
-            <Text style={[styles.helperText, { color: themeLegacy.colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.helperText,
+                { color: themeLegacy.colors.textSecondary },
+              ]}
+            >
               {helperText}
             </Text>
           ) : null}

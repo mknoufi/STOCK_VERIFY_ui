@@ -11,7 +11,7 @@ import { SEARCH_DEBOUNCE_MS } from "../constants/config";
  */
 export const useStableDebouncedCallback = <Args extends any[]>(
   callback: (...args: Args) => void,
-  delay: number = SEARCH_DEBOUNCE_MS
+  delay: number = SEARCH_DEBOUNCE_MS,
 ) => {
   // useDebouncedCallback already handles memoization internally
   // It maintains a stable reference as long as callback and delay don't change

@@ -133,6 +133,22 @@ async def create_session(
     import uuid
     from datetime import datetime
 
+    # Check session limit - users can have maximum 5 open sessions
+    MAX_OPEN_SESSIONS = 5
+    open_sessions_count = await db.sessions.count_documents(
+        {"staff_user": current_user["username"], "status": "OPEN"}
+    )
+
+    if open_sessions_count >= MAX_OPEN_SESSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Session limit reached. You already have {open_sessions_count} open sessions. "
+                f"Please close existing sessions before creating a new one "
+                f"(maximum {MAX_OPEN_SESSIONS})."
+            ),
+        )
+
     # Input validation
     warehouse = session_data.warehouse.strip()
     if not warehouse:

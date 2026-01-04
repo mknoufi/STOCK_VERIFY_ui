@@ -12,7 +12,11 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
-import { LoadingSpinner, AnimatedPressable, ScreenContainer } from "../../src/components/ui";
+import {
+  LoadingSpinner,
+  AnimatedPressable,
+  ScreenContainer,
+} from "../../src/components/ui";
 import {
   getSecuritySummary,
   getFailedLogins,
@@ -45,9 +49,11 @@ export default function SecurityScreen() {
 
   useEffect(() => {
     if (!hasRole("admin")) {
-      Alert.alert("Access Denied", "You do not have permission to view the security dashboard.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to view the security dashboard.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadData();
@@ -66,30 +72,37 @@ export default function SecurityScreen() {
         setLoading(true);
       }
 
-      const [summaryRes, failedRes, suspiciousRes, sessionsRes, auditRes, ipRes] =
-        await Promise.all([
-          getSecuritySummary().catch(() => ({ success: false, data: null })),
-          getFailedLogins(50, 24).catch(() => ({
-            success: false,
-            data: { failed_logins: [] },
-          })),
-          getSuspiciousActivity(24).catch(() => ({ success: false, data: null })),
-          getSecuritySessions(50, false).catch(() => ({
-            success: false,
-            data: { sessions: [] },
-          })),
-          getSecurityAuditLog(50, 24).catch(() => ({
-            success: false,
-            data: { audit_logs: [] },
-          })),
-          getIpTracking(24).catch(() => ({
-            success: false,
-            data: { ip_tracking: [] },
-          })),
-        ]);
+      const [
+        summaryRes,
+        failedRes,
+        suspiciousRes,
+        sessionsRes,
+        auditRes,
+        ipRes,
+      ] = await Promise.all([
+        getSecuritySummary().catch(() => ({ success: false, data: null })),
+        getFailedLogins(50, 24).catch(() => ({
+          success: false,
+          data: { failed_logins: [] },
+        })),
+        getSuspiciousActivity(24).catch(() => ({ success: false, data: null })),
+        getSecuritySessions(50, false).catch(() => ({
+          success: false,
+          data: { sessions: [] },
+        })),
+        getSecurityAuditLog(50, 24).catch(() => ({
+          success: false,
+          data: { audit_logs: [] },
+        })),
+        getIpTracking(24).catch(() => ({
+          success: false,
+          data: { ip_tracking: [] },
+        })),
+      ]);
 
       if (summaryRes.success) setSummary(summaryRes.data);
-      if (failedRes.success) setFailedLogins(failedRes.data?.failed_logins || []);
+      if (failedRes.success)
+        setFailedLogins(failedRes.data?.failed_logins || []);
       if (suspiciousRes.success) setSuspiciousActivity(suspiciousRes.data);
       if (sessionsRes.success) setSessions(sessionsRes.data?.sessions || []);
       if (auditRes.success) setAuditLog(auditRes.data?.audit_logs || []);
@@ -129,7 +142,9 @@ export default function SecurityScreen() {
           </View>
           <View style={styles.metricCard}>
             <Ionicons name="checkmark-circle" size={32} color="#4CAF50" />
-            <Text style={styles.metricValue}>{stats.successful_logins || 0}</Text>
+            <Text style={styles.metricValue}>
+              {stats.successful_logins || 0}
+            </Text>
             <Text style={styles.metricLabel}>Successful Logins</Text>
           </View>
           <View style={styles.metricCard}>
@@ -181,14 +196,18 @@ export default function SecurityScreen() {
         <Text style={styles.sectionTitle}>Failed Login Attempts</Text>
       </View>
       {failedLogins.length === 0 ? (
-        <Text style={styles.emptyText}>No failed login attempts in the last 24 hours</Text>
+        <Text style={styles.emptyText}>
+          No failed login attempts in the last 24 hours
+        </Text>
       ) : (
         <View style={styles.listContainer}>
           {failedLogins.map((login: any, index: number) => (
             <View key={index} style={styles.listItem}>
               <Ionicons name="close-circle" size={20} color="#f44336" />
               <View style={styles.listItemContent}>
-                <Text style={styles.listItemTitle}>{login.username || "Unknown"}</Text>
+                <Text style={styles.listItemTitle}>
+                  {login.username || "Unknown"}
+                </Text>
                 <Text style={styles.listItemSubtitle}>
                   {login.ip_address} • {login.error || "Login failed"} •{" "}
                   {new Date(login.timestamp).toLocaleString()}
@@ -211,41 +230,55 @@ export default function SecurityScreen() {
           <Text style={styles.sectionTitle}>Suspicious Activity</Text>
         </View>
 
-        {suspiciousActivity.suspicious_ips && suspiciousActivity.suspicious_ips.length > 0 && (
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>Suspicious IP Addresses</Text>
-            {suspiciousActivity.suspicious_ips.map((item: any, index: number) => (
-              <View key={index} style={styles.suspiciousItem}>
-                <Ionicons name="globe" size={20} color="#FF9800" />
-                <View style={styles.suspiciousContent}>
-                  <Text style={styles.suspiciousTitle}>{item.ip_address}</Text>
-                  <Text style={styles.suspiciousSubtitle}>
-                    {item.count} failed attempts • {item.usernames?.length || 0} users • Last:{" "}
-                    {new Date(item.last_attempt).toLocaleString()}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        {suspiciousActivity.suspicious_ips &&
+          suspiciousActivity.suspicious_ips.length > 0 && (
+            <View style={styles.subsection}>
+              <Text style={styles.subsectionTitle}>
+                Suspicious IP Addresses
+              </Text>
+              {suspiciousActivity.suspicious_ips.map(
+                (item: any, index: number) => (
+                  <View key={index} style={styles.suspiciousItem}>
+                    <Ionicons name="globe" size={20} color="#FF9800" />
+                    <View style={styles.suspiciousContent}>
+                      <Text style={styles.suspiciousTitle}>
+                        {item.ip_address}
+                      </Text>
+                      <Text style={styles.suspiciousSubtitle}>
+                        {item.count} failed attempts •{" "}
+                        {item.usernames?.length || 0} users • Last:{" "}
+                        {new Date(item.last_attempt).toLocaleString()}
+                      </Text>
+                    </View>
+                  </View>
+                ),
+              )}
+            </View>
+          )}
 
-        {suspiciousActivity.suspicious_users && suspiciousActivity.suspicious_users.length > 0 && (
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>Suspicious Usernames</Text>
-            {suspiciousActivity.suspicious_users.map((item: any, index: number) => (
-              <View key={index} style={styles.suspiciousItem}>
-                <Ionicons name="person" size={20} color="#FF9800" />
-                <View style={styles.suspiciousContent}>
-                  <Text style={styles.suspiciousTitle}>{item.username}</Text>
-                  <Text style={styles.suspiciousSubtitle}>
-                    {item.count} failed attempts • {item.ips?.length || 0} IPs • Last:{" "}
-                    {new Date(item.last_attempt).toLocaleString()}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        {suspiciousActivity.suspicious_users &&
+          suspiciousActivity.suspicious_users.length > 0 && (
+            <View style={styles.subsection}>
+              <Text style={styles.subsectionTitle}>Suspicious Usernames</Text>
+              {suspiciousActivity.suspicious_users.map(
+                (item: any, index: number) => (
+                  <View key={index} style={styles.suspiciousItem}>
+                    <Ionicons name="person" size={20} color="#FF9800" />
+                    <View style={styles.suspiciousContent}>
+                      <Text style={styles.suspiciousTitle}>
+                        {item.username}
+                      </Text>
+                      <Text style={styles.suspiciousSubtitle}>
+                        {item.count} failed attempts • {item.ips?.length || 0}{" "}
+                        IPs • Last:{" "}
+                        {new Date(item.last_attempt).toLocaleString()}
+                      </Text>
+                    </View>
+                  </View>
+                ),
+              )}
+            </View>
+          )}
       </View>
     );
   };
@@ -268,7 +301,8 @@ export default function SecurityScreen() {
                   {session.username} ({session.role})
                 </Text>
                 <Text style={styles.listItemSubtitle}>
-                  {session.ip_address} • Created: {new Date(session.created_at).toLocaleString()}
+                  {session.ip_address} • Created:{" "}
+                  {new Date(session.created_at).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -285,7 +319,9 @@ export default function SecurityScreen() {
         <Text style={styles.sectionTitle}>Security Audit Log</Text>
       </View>
       {auditLog.length === 0 ? (
-        <Text style={styles.emptyText}>No audit log entries in the last 24 hours</Text>
+        <Text style={styles.emptyText}>
+          No audit log entries in the last 24 hours
+        </Text>
       ) : (
         <View style={styles.listContainer}>
           {auditLog.map((log: any, index: number) => (
@@ -294,7 +330,8 @@ export default function SecurityScreen() {
               <View style={styles.listItemContent}>
                 <Text style={styles.listItemTitle}>{log.action}</Text>
                 <Text style={styles.listItemSubtitle}>
-                  {log.user} • {log.ip_address} • {new Date(log.timestamp).toLocaleString()}
+                  {log.user} • {log.ip_address} •{" "}
+                  {new Date(log.timestamp).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -320,12 +357,12 @@ export default function SecurityScreen() {
               <View style={styles.listItemContent}>
                 <Text style={styles.listItemTitle}>{ip.ip_address}</Text>
                 <Text style={styles.listItemSubtitle}>
-                  {ip.total_attempts} attempts ({ip.successful_logins} success, {ip.failed_logins}{" "}
-                  failed) • {ip.unique_user_count} users
+                  {ip.total_attempts} attempts ({ip.successful_logins} success,{" "}
+                  {ip.failed_logins} failed) • {ip.unique_user_count} users
                 </Text>
                 <Text style={styles.listItemSubtitle}>
-                  First seen: {new Date(ip.first_seen).toLocaleString()} • Last seen:{" "}
-                  {new Date(ip.last_seen).toLocaleString()}
+                  First seen: {new Date(ip.first_seen).toLocaleString()} • Last
+                  seen: {new Date(ip.last_seen).toLocaleString()}
                 </Text>
               </View>
             </View>
@@ -344,7 +381,10 @@ export default function SecurityScreen() {
           subtitle: "Monitoring & Audit",
           showBackButton: true,
           customRightContent: (
-            <AnimatedPressable style={styles.refreshButton} onPress={() => loadData(true)}>
+            <AnimatedPressable
+              style={styles.refreshButton}
+              onPress={() => loadData(true)}
+            >
               <Ionicons
                 name="refresh"
                 size={24}
@@ -371,7 +411,10 @@ export default function SecurityScreen() {
         subtitle: "Monitoring & Audit",
         showBackButton: true,
         customRightContent: (
-          <AnimatedPressable style={styles.refreshButton} onPress={() => loadData(true)}>
+          <AnimatedPressable
+            style={styles.refreshButton}
+            onPress={() => loadData(true)}
+          >
             <Ionicons
               name="refresh"
               size={24}
@@ -411,7 +454,12 @@ export default function SecurityScreen() {
                   : auroraTheme.colors.text.muted
               }
             />
-            <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab.id && styles.activeTabText,
+              ]}
+            >
               {tab.label}
             </Text>
           </AnimatedPressable>
@@ -420,7 +468,10 @@ export default function SecurityScreen() {
 
       <ScrollView
         style={styles.content}
-        contentContainerStyle={[styles.contentContainer, isWeb && styles.contentContainerWeb]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          isWeb && styles.contentContainerWeb,
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -439,12 +490,22 @@ export default function SecurityScreen() {
 
         <View style={styles.footer}>
           <View style={styles.footerRow}>
-            <Ionicons name="refresh-circle" size={16} color={auroraTheme.colors.text.muted} />
+            <Ionicons
+              name="refresh-circle"
+              size={16}
+              color={auroraTheme.colors.text.muted}
+            />
             <Text style={styles.footerText}>Auto-refresh every 30 seconds</Text>
           </View>
           <View style={styles.footerRow}>
-            <Ionicons name="time" size={16} color={auroraTheme.colors.text.muted} />
-            <Text style={styles.footerText}>Last updated: {lastUpdate.toLocaleTimeString()}</Text>
+            <Ionicons
+              name="time"
+              size={16}
+              color={auroraTheme.colors.text.muted}
+            />
+            <Text style={styles.footerText}>
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </Text>
           </View>
         </View>
       </ScrollView>

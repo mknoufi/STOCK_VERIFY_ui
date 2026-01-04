@@ -68,8 +68,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         result = pwd_context.verify(plain_password, hashed_password)
         if result:
             logger.debug("Password verified using passlib CryptContext")
-            return True
-        # If result is False, we continue to fallback
+        return result
     except Exception as e:
         logger.debug(f"Passlib verification failed: {type(e).__name__}: {str(e)}")
 

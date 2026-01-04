@@ -99,15 +99,26 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Ionicons name="close" size={24} color={modernColors.text.primary} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={modernColors.text.primary}
+              />
             </TouchableOpacity>
           </View>
           <View style={styles.permissionContainer}>
-            <Ionicons name="camera-outline" size={64} color={modernColors.text.tertiary} />
+            <Ionicons
+              name="camera-outline"
+              size={64}
+              color={modernColors.text.tertiary}
+            />
             <Text style={styles.permissionText}>
               Camera permission is required to capture photos
             </Text>
-            <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+            <TouchableOpacity
+              style={styles.permissionButton}
+              onPress={requestPermission}
+            >
               <Text style={styles.permissionButtonText}>Grant Permission</Text>
             </TouchableOpacity>
           </View>
@@ -129,14 +140,22 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Ionicons name="close" size={24} color={modernColors.text.primary} />
+            <Ionicons
+              name="close"
+              size={24}
+              color={modernColors.text.primary}
+            />
           </TouchableOpacity>
         </View>
 
         {/* Camera or Preview */}
         <View style={styles.cameraContainer}>
           {capturedPhoto ? (
-            <Image source={{ uri: capturedPhoto }} style={styles.preview} resizeMode="cover" />
+            <Image
+              source={{ uri: capturedPhoto }}
+              style={styles.preview}
+              resizeMode="cover"
+            />
           ) : (
             <CameraView ref={cameraRef} style={styles.camera} facing="back">
               {isCapturing && (

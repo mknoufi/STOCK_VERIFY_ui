@@ -23,13 +23,18 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import Modal from "react-native-modal";
+import ReactNativeModal from "react-native-modal";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAutoLogout } from "../../src/hooks/useAutoLogout";
-import { getSessions, createSession, getZones, getWarehouses } from "../../src/services/api/api";
+import {
+  getSessions,
+  createSession,
+  getZones,
+  getWarehouses,
+} from "../../src/services/api/api";
 import {
   GlassCard,
   StatsCard,
@@ -46,6 +51,8 @@ import { SpeedDialAction, ActivityType } from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 import { Session } from "../../src/types";
 import { colors as unifiedColors } from "../../src/theme/unified";
+
+const Modal = ReactNativeModal as unknown as React.ComponentType<any>;
 
 interface DashboardStats {
   totalSessions: number;
@@ -204,7 +211,9 @@ export default function SupervisorDashboard() {
       router.push(`/supervisor/session/${session.id}` as any);
     } catch (error) {
       console.error("Failed to create session:", error);
-      show("Failed to create session", "error");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create session";
+      show(errorMessage, "error");
     } finally {
       setIsCreatingSession(false);
     }
@@ -228,10 +237,13 @@ export default function SupervisorDashboard() {
           acc.totalItems += session.total_items || 0;
           acc.totalVariance += session.total_variance || 0;
 
-          if ((session.total_variance || 0) > 0) acc.positiveVariance += session.total_variance;
-          if ((session.total_variance || 0) < 0) acc.negativeVariance += session.total_variance;
+          if ((session.total_variance || 0) > 0)
+            acc.positiveVariance += session.total_variance;
+          if ((session.total_variance || 0) < 0)
+            acc.negativeVariance += session.total_variance;
 
-          if (Math.abs(session.total_variance ?? 0) > 1000) acc.highRiskSessions++;
+          if (Math.abs(session.total_variance ?? 0) > 1000)
+            acc.highRiskSessions++;
 
           return acc;
         },
@@ -246,11 +258,13 @@ export default function SupervisorDashboard() {
           negativeVariance: 0,
           avgVariancePerSession: 0,
           highRiskSessions: 0,
-        }
+        },
       );
 
       newStats.avgVariancePerSession =
-        newStats.totalSessions > 0 ? newStats.totalVariance / newStats.totalSessions : 0;
+        newStats.totalSessions > 0
+          ? newStats.totalVariance / newStats.totalSessions
+          : 0;
 
       setStats(newStats);
 
@@ -341,7 +355,9 @@ export default function SupervisorDashboard() {
 
   const completionPercentage =
     stats.totalSessions > 0
-      ? ((stats.closedSessions + stats.reconciledSessions) / stats.totalSessions) * 100
+      ? ((stats.closedSessions + stats.reconciledSessions) /
+          stats.totalSessions) *
+        100
       : 0;
 
   return (
@@ -361,14 +377,18 @@ export default function SupervisorDashboard() {
       noPadding
     >
       {loading && !refreshing ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Ionicons
             name="cube-outline"
             size={48}
             color={theme.colors.primary[500]}
             style={{ marginBottom: 16 }}
           />
-          <Text style={{ color: theme.colors.text.secondary }}>Loading Dashboard...</Text>
+          <Text style={{ color: theme.colors.text.secondary }}>
+            Loading Dashboard...
+          </Text>
         </View>
       ) : (
         <ScrollView
@@ -385,7 +405,10 @@ export default function SupervisorDashboard() {
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
-          <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
+          <Animated.View
+            entering={FadeInDown.delay(0).springify()}
+            style={styles.header}
+          >
             <View>
               <Text
                 style={[
@@ -405,7 +428,11 @@ export default function SupervisorDashboard() {
               hapticFeedback="light"
             >
               <View style={styles.settingsButton}>
-                <Ionicons name="settings-outline" size={24} color={theme.colors.text.primary} />
+                <Ionicons
+                  name="settings-outline"
+                  size={24}
+                  color={theme.colors.text.primary}
+                />
               </View>
             </AnimatedPressable>
           </Animated.View>
@@ -493,22 +520,28 @@ export default function SupervisorDashboard() {
                       },
                     ]}
                   >
-                    {stats.closedSessions + stats.reconciledSessions} of {stats.totalSessions}{" "}
-                    completed
+                    {stats.closedSessions + stats.reconciledSessions} of{" "}
+                    {stats.totalSessions} completed
                   </Text>
                 </View>
                 <ProgressRing
                   progress={completionPercentage}
                   size={100}
                   strokeWidth={10}
-                  colors={[theme.colors.success.main, theme.colors.success.main + "CC"]}
+                  colors={[
+                    theme.colors.success.main,
+                    theme.colors.success.main + "CC",
+                  ]}
                 />
               </View>
             </GlassCard>
           </Animated.View>
 
           {/* Activity Feed */}
-          <Animated.View entering={FadeInDown.delay(350).springify()} style={styles.section}>
+          <Animated.View
+            entering={FadeInDown.delay(350).springify()}
+            style={styles.section}
+          >
             <View style={styles.sectionHeader}>
               <Text
                 style={[
@@ -548,7 +581,11 @@ export default function SupervisorDashboard() {
             >
               {activities.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <Ionicons name="time-outline" size={48} color={theme.colors.text.secondary} />
+                  <Ionicons
+                    name="time-outline"
+                    size={48}
+                    color={theme.colors.text.secondary}
+                  />
                   <Text
                     style={[
                       styles.emptyText,
@@ -572,7 +609,9 @@ export default function SupervisorDashboard() {
                       description={activity.description}
                       timestamp={activity.timestamp}
                       status={activity.status}
-                      onPress={() => router.push(`/supervisor/session/${activity.id}` as any)}
+                      onPress={() =>
+                        router.push(`/supervisor/session/${activity.id}` as any)
+                      }
                       delay={index * 50}
                     />
                   ))
@@ -581,7 +620,10 @@ export default function SupervisorDashboard() {
           </Animated.View>
 
           {/* Recent Sessions */}
-          <Animated.View entering={FadeInDown.delay(400).springify()} style={styles.section}>
+          <Animated.View
+            entering={FadeInDown.delay(400).springify()}
+            style={styles.section}
+          >
             <View style={styles.sectionHeader}>
               <Text
                 style={[
@@ -618,7 +660,9 @@ export default function SupervisorDashboard() {
                 entering={FadeInDown.delay(450 + index * 50).springify()}
               >
                 <AnimatedPressable
-                  onPress={() => router.push(`/supervisor/session/${session.id}` as any)}
+                  onPress={() =>
+                    router.push(`/supervisor/session/${session.id}` as any)
+                  }
                   hapticFeedback="light"
                 >
                   <GlassCard
@@ -751,7 +795,11 @@ export default function SupervisorDashboard() {
               onPress={() => setShowCreateSessionModal(false)}
               style={styles.modalCloseButton}
             >
-              <Ionicons name="close" size={24} color={theme.colors.text.primary} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -765,14 +813,16 @@ export default function SupervisorDashboard() {
                     key={zone.id}
                     style={[
                       styles.optionButton,
-                      locationType === zone.zone_name && styles.optionButtonSelected,
+                      locationType === zone.zone_name &&
+                        styles.optionButtonSelected,
                     ]}
                     onPress={() => handleLocationTypeChange(zone.zone_name)}
                   >
                     <Text
                       style={[
                         styles.optionText,
-                        locationType === zone.zone_name && styles.optionTextSelected,
+                        locationType === zone.zone_name &&
+                          styles.optionTextSelected,
                       ]}
                     >
                       {zone.zone_name}
@@ -795,7 +845,8 @@ export default function SupervisorDashboard() {
                         key={wh.id}
                         style={[
                           styles.optionButton,
-                          selectedFloor === wh.warehouse_name && styles.optionButtonSelected,
+                          selectedFloor === wh.warehouse_name &&
+                            styles.optionButtonSelected,
                         ]}
                         onPress={() => {
                           if (Platform.OS !== "web") Haptics.selectionAsync();
@@ -805,7 +856,8 @@ export default function SupervisorDashboard() {
                         <Text
                           style={[
                             styles.optionText,
-                            selectedFloor === wh.warehouse_name && styles.optionTextSelected,
+                            selectedFloor === wh.warehouse_name &&
+                              styles.optionTextSelected,
                           ]}
                         >
                           {wh.warehouse_name}
@@ -834,11 +886,19 @@ export default function SupervisorDashboard() {
             <TouchableOpacity
               style={[
                 styles.createButton,
-                (!locationType || !selectedFloor || !rackName.trim() || isCreatingSession) &&
+                (!locationType ||
+                  !selectedFloor ||
+                  !rackName.trim() ||
+                  isCreatingSession) &&
                   styles.createButtonDisabled,
               ]}
               onPress={handleCreateSession}
-              disabled={!locationType || !selectedFloor || !rackName.trim() || isCreatingSession}
+              disabled={
+                !locationType ||
+                !selectedFloor ||
+                !rackName.trim() ||
+                isCreatingSession
+              }
             >
               {isCreatingSession ? (
                 <ActivityIndicator color="#FFFFFF" />

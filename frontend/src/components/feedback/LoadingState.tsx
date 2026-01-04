@@ -133,9 +133,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   useEffect(() => {
     progress.value = withRepeat(
-      withSequence(withTiming(1, { duration: 1000 }), withTiming(0, { duration: 1000 })),
+      withSequence(
+        withTiming(1, { duration: 1000 }),
+        withTiming(0, { duration: 1000 }),
+      ),
       -1,
-      false
+      false,
     );
   }, [progress]);
 
@@ -183,10 +186,24 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
   return (
     <View style={styles.listContainer}>
       {Array.from({ length: count }).map((_, index) => (
-        <View key={index} style={[styles.listItem, { marginBottom: spacing, height: itemHeight }]}>
-          <Skeleton width={60} height={60} borderRadius={modernBorderRadius.md} />
+        <View
+          key={index}
+          style={[
+            styles.listItem,
+            { marginBottom: spacing, height: itemHeight },
+          ]}
+        >
+          <Skeleton
+            width={60}
+            height={60}
+            borderRadius={modernBorderRadius.md}
+          />
           <View style={styles.listItemContent}>
-            <Skeleton width="70%" height={14} borderRadius={modernBorderRadius.sm} />
+            <Skeleton
+              width="70%"
+              height={14}
+              borderRadius={modernBorderRadius.sm}
+            />
             <Skeleton
               width="50%"
               height={12}
@@ -218,10 +235,24 @@ export const CardSkeleton: React.FC<CardSkeletonProps> = ({
   return (
     <View style={styles.cardContainer}>
       {Array.from({ length: count }).map((_, index) => (
-        <View key={index} style={[styles.card, { marginBottom: index < count - 1 ? spacing : 0 }]}>
-          <Skeleton width="100%" height={120} borderRadius={modernBorderRadius.md} />
+        <View
+          key={index}
+          style={[
+            styles.card,
+            { marginBottom: index < count - 1 ? spacing : 0 },
+          ]}
+        >
+          <Skeleton
+            width="100%"
+            height={120}
+            borderRadius={modernBorderRadius.md}
+          />
           <View style={styles.cardContent}>
-            <Skeleton width="80%" height={16} borderRadius={modernBorderRadius.sm} />
+            <Skeleton
+              width="80%"
+              height={16}
+              borderRadius={modernBorderRadius.sm}
+            />
             <Skeleton
               width="60%"
               height={14}
@@ -280,7 +311,10 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
       <ActivityIndicator size={size} color={color} />
       {message && (
         <Text
-          style={[{ marginTop: 12, fontSize: 16, color: overlay ? "#FFF" : "#666" }, textStyle]}
+          style={[
+            { marginTop: 12, fontSize: 16, color: overlay ? "#FFF" : "#666" },
+            textStyle,
+          ]}
         >
           {message}
         </Text>

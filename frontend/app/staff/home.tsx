@@ -15,6 +15,7 @@ import {
   Platform,
   Modal,
   KeyboardAvoidingView,
+  BackHandler,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,7 +27,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../src/store/authStore";
 import { useScanSessionStore } from "../../src/store/scanSessionStore";
 import { useSessionsQuery } from "../../src/hooks/useSessionsQuery";
-import { createSession, getZones, getWarehouses } from "../../src/services/api/api";
+import {
+  createSession,
+  getZones,
+  getWarehouses,
+} from "../../src/services/api/api";
 import { SESSION_PAGE_SIZE } from "../../src/constants/config";
 import { toastService } from "../../src/services/utils/toastService";
 import { SessionType } from "../../src/types";
@@ -35,7 +40,13 @@ import ModernHeader from "../../src/components/ui/ModernHeader";
 import ModernCard from "../../src/components/ui/ModernCard";
 import ModernButton from "../../src/components/ui/ModernButton";
 import ModernInput from "../../src/components/ui/ModernInput";
-import { colors, spacing, typography, borderRadius, shadows } from "../../src/theme/modernDesign";
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from "../../src/theme/modernDesign";
 
 interface Zone {
   id: string;
@@ -51,6 +62,28 @@ export default function StaffHome() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
+
+  // Handle Back Button for Exit Confirmation
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert("Exit App", "Are you sure you want to exit?", [
+        {
+          text: "Cancel",
+          onPress: () => null,
+          style: "cancel",
+        },
+        { text: "YES", onPress: () => BackHandler.exitApp() },
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   // State
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -80,7 +113,7 @@ export default function StaffHome() {
 
   const sessions = useMemo(
     () => (Array.isArray(sessionsData?.items) ? sessionsData.items : []),
-    [sessionsData?.items]
+    [sessionsData?.items],
   );
 
   const activeSessions = useMemo(() => {
@@ -103,7 +136,9 @@ export default function StaffHome() {
       const status = String(s.status || "")
         .trim()
         .toUpperCase();
-      return status === "CLOSED" || status === "COMPLETED" || status === "RECONCILE";
+      return (
+        status === "CLOSED" || status === "COMPLETED" || status === "RECONCILE"
+      );
     });
   }, [sessions]);
 
@@ -180,7 +215,10 @@ export default function StaffHome() {
 
     const trimmedRack = rackName.trim();
     if (!/^[a-zA-Z0-9\-_]+$/.test(trimmedRack)) {
-      Alert.alert("Invalid Rack Name", "Only letters, numbers, dashes, and underscores allowed");
+      Alert.alert(
+        "Invalid Rack Name",
+        "Only letters, numbers, dashes, and underscores allowed",
+      );
       return;
     }
 
@@ -194,10 +232,13 @@ export default function StaffHome() {
       });
 
       // Optimistic update
-      queryClient.setQueryData(["sessions", 1, SESSION_PAGE_SIZE], (old: any) => ({
-        ...old,
-        items: [session, ...(old?.items || [])],
-      }));
+      queryClient.setQueryData(
+        ["sessions", 1, SESSION_PAGE_SIZE],
+        (old: any) => ({
+          ...old,
+          items: [session, ...(old?.items || [])],
+        }),
+      );
 
       // Reset and navigate
       setShowCreateModal(false);
@@ -214,7 +255,9 @@ export default function StaffHome() {
         params: { sessionId: session.id },
       } as any);
     } catch (error) {
-      Alert.alert("Error", "Failed to create session");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create session";
+      toastService.showError(errorMessage);
     } finally {
       setIsCreating(false);
     }
@@ -247,6 +290,7 @@ export default function StaffHome() {
     <ModernCard
       key={session.id || session._id}
       style={styles.sessionCard}
+      padding={spacing.md}
       onPress={() => handleResumeSession(session)}
     >
       <View style={styles.sessionHeader}>
@@ -279,7 +323,10 @@ export default function StaffHome() {
             style={[
               styles.statValue,
               {
-                color: session.discrepancy_count > 0 ? colors.error[500] : colors.success[600],
+                color:
+                  session.discrepancy_count > 0
+                    ? colors.error[500]
+                    : colors.success[600],
               },
             ]}
           >
@@ -295,6 +342,58 @@ export default function StaffHome() {
       </View>
     </ModernCard>
   );
+
+  const renderContent = () => {
+    if (activeTab === "active") {
+      return (
+        <Animated.View entering={FadeInDown.duration(500)}>
+          <ModernButton
+            title="Start New Session"
+            icon="add-circle-outline"
+            onPress={() => setShowCreateModal(true)}
+            style={styles.createButton}
+          />
+
+          {activeSessions.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="clipboard-outline"
+                size={48}
+                color={colors.gray[300]}
+              />
+              <Text style={styles.emptyText}>No active sessions</Text>
+              <Text style={styles.emptySubtext}>
+                Start a new session to begin scanning
+              </Text>
+            </View>
+          ) : (
+            activeSessions.map(renderSessionCard)
+          )}
+        </Animated.View>
+      );
+    }
+
+    if (activeTab === "history") {
+      return (
+        <Animated.View entering={FadeInDown.duration(500)}>
+          {finishedSessions.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="time-outline"
+                size={48}
+                color={colors.gray[300]}
+              />
+              <Text style={styles.emptyText}>No history yet</Text>
+            </View>
+          ) : (
+            finishedSessions.map(renderSessionCard)
+          )}
+        </Animated.View>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -317,7 +416,12 @@ export default function StaffHome() {
           style={[styles.tab, activeTab === "active" && styles.activeTab]}
           onPress={() => setActiveTab("active")}
         >
-          <Text style={[styles.tabText, activeTab === "active" && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "active" && styles.activeTabText,
+            ]}
+          >
             Active ({activeSessions.length})
           </Text>
         </TouchableOpacity>
@@ -325,7 +429,12 @@ export default function StaffHome() {
           style={[styles.tab, activeTab === "history" && styles.activeTab]}
           onPress={() => setActiveTab("history")}
         >
-          <Text style={[styles.tabText, activeTab === "history" && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "history" && styles.activeTabText,
+            ]}
+          >
             History
           </Text>
         </TouchableOpacity>
@@ -333,41 +442,11 @@ export default function StaffHome() {
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
       >
-        {activeTab === "active" ? (
-          <Animated.View entering={FadeInDown.duration(500)}>
-            <ModernButton
-              title="Start New Session"
-              icon="add-circle-outline"
-              onPress={() => setShowCreateModal(true)}
-              style={styles.createButton}
-            />
-
-            {activeSessions.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="clipboard-outline" size={48} color={colors.gray[300]} />
-                <Text style={styles.emptyText}>No active sessions</Text>
-                <Text style={styles.emptySubtext}>Start a new session to begin scanning</Text>
-              </View>
-            ) : (
-              activeSessions.map(renderSessionCard)
-            )}
-          </Animated.View>
-        ) : null}
-
-        {activeTab === "history" ? (
-          <Animated.View entering={FadeInDown.duration(500)}>
-            {finishedSessions.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="time-outline" size={48} color={colors.gray[300]} />
-                <Text style={styles.emptyText}>No history yet</Text>
-              </View>
-            ) : (
-              finishedSessions.map(renderSessionCard)
-            )}
-          </Animated.View>
-        ) : null}
+        {renderContent()}
       </ScrollView>
 
       {/* Create Session Modal */}
@@ -378,7 +457,7 @@ export default function StaffHome() {
         onRequestClose={() => setShowCreateModal(false)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.modalContainer}
         >
           <View style={styles.modalHeader}>
@@ -388,13 +467,20 @@ export default function StaffHome() {
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.modalContent}>
+          <ScrollView
+            contentContainerStyle={styles.modalContent}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
+          >
             <Text style={styles.sectionLabel}>Select Location</Text>
             <View style={styles.chipContainer}>
               {zones.map((zone) => (
                 <TouchableOpacity
                   key={zone.id}
-                  style={[styles.chip, locationType === zone.zone_name && styles.chipActive]}
+                  style={[
+                    styles.chip,
+                    locationType === zone.zone_name && styles.chipActive,
+                  ]}
                   onPress={() => setLocationType(zone.zone_name)}
                 >
                   <Text
@@ -418,14 +504,16 @@ export default function StaffHome() {
                       key={wh.id}
                       style={[
                         styles.chip,
-                        selectedFloor === wh.warehouse_name && styles.chipActive,
+                        selectedFloor === wh.warehouse_name &&
+                          styles.chipActive,
                       ]}
                       onPress={() => setSelectedFloor(wh.warehouse_name)}
                     >
                       <Text
                         style={[
                           styles.chipText,
-                          selectedFloor === wh.warehouse_name && styles.chipTextActive,
+                          selectedFloor === wh.warehouse_name &&
+                            styles.chipTextActive,
                         ]}
                       >
                         {wh.warehouse_name}
@@ -505,22 +593,22 @@ const styles = StyleSheet.create({
   sessionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   sessionIcon: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     borderRadius: borderRadius.full,
     backgroundColor: colors.primary[50],
     alignItems: "center",
     justifyContent: "center",
-    marginRight: spacing.md,
+    marginRight: spacing.sm,
   },
   sessionInfo: {
     flex: 1,
   },
   warehouseText: {
-    fontSize: typography.fontSize.base,
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.gray[900],
   },
@@ -536,7 +624,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: colors.gray[50],
     borderRadius: borderRadius.md,
-    padding: spacing.sm,
+    padding: spacing.xs,
   },
   statItem: {
     flex: 1,
@@ -547,7 +635,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[200],
   },
   statValue: {
-    fontSize: typography.fontSize.lg,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
     color: colors.gray[900],
   },

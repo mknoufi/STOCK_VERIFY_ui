@@ -48,7 +48,7 @@ $env:SQL_SERVER_HOST="192.168.1.100"
 $env:SQL_SERVER_PORT="1433"
 $env:SQL_SERVER_DATABASE="YourDatabase"
 $env:SQL_SERVER_USER="readonly_user"
-$env:SQL_SERVER_PASSWORD="YourPassword"
+$env:SQL_SERVER_PASSWORD="YourPassword"  # pragma: allowlist secret
 ```
 
 **Windows (CMD):**

@@ -29,7 +29,7 @@ export class ToastService {
     const handlers = this.events.get(event)!;
     this.events.set(
       event,
-      handlers.filter((h) => h !== handler)
+      handlers.filter((h) => h !== handler),
     );
   }
 
@@ -41,7 +41,9 @@ export class ToastService {
   show(message: string, options?: ToastOptions | string) {
     // Support both old string format and new object format
     const opts: ToastOptions =
-      typeof options === "string" ? { type: options as ToastData["type"] } : options || {};
+      typeof options === "string"
+        ? { type: options as ToastData["type"] }
+        : options || {};
 
     const id = `toast_${++this.toastId}`;
     const duration = opts.duration === "long" ? 5000 : 3000;

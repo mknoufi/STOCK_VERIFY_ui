@@ -24,7 +24,9 @@ export interface VersionCheckResult {
  * Check if the current app version is compatible with the backend
  * and if updates are available
  */
-export const checkVersion = async (clientVersion: string): Promise<VersionCheckResult> => {
+export const checkVersion = async (
+  clientVersion: string,
+): Promise<VersionCheckResult> => {
   try {
     const response = await api.get<VersionCheckResult>("/version/check", {
       params: { client_version: clientVersion },

@@ -22,8 +22,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
     depends_on:
       - backend
@@ -100,7 +100,7 @@ services:
   # MongoDB Database
   # ===========================================
   mongo:
-    image: mongo:6.0
+    image: mongo:6.0.14
     container_name: stock-verify-mongo
     expose:
       - "27017"

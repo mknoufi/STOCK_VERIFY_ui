@@ -29,7 +29,10 @@ export const clientWinsStrategy: ConflictStrategy = {
  */
 export const mergeQuantityStrategy: ConflictStrategy = {
   resolve: (clientData: any, serverData: any) => {
-    if (typeof clientData.quantity === "number" && typeof serverData.quantity === "number") {
+    if (
+      typeof clientData.quantity === "number" &&
+      typeof serverData.quantity === "number"
+    ) {
       return {
         ...serverData,
         quantity: serverData.quantity + clientData.quantity,
@@ -45,7 +48,7 @@ export const mergeQuantityStrategy: ConflictStrategy = {
 export const resolveConflict = <T>(
   clientData: T,
   serverData: T,
-  strategy: ConflictStrategy = serverWinsStrategy
+  strategy: ConflictStrategy = serverWinsStrategy,
 ): T => {
   return strategy.resolve(clientData, serverData);
 };

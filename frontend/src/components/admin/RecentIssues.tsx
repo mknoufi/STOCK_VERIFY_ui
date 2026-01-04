@@ -1,8 +1,12 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ModernCard } from "../ModernCard";
-import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
+import { ModernCard } from "../ui/ModernCard";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
 interface RecentIssuesProps {
   issues?: any[];

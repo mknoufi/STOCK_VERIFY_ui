@@ -69,7 +69,10 @@ export const SettingItem: React.FC<SettingItemProps> = ({
           />
         )}
         <Text
-          style={[styles.label, { color: disabled ? theme.colors.disabled : theme.colors.text }]}
+          style={[
+            styles.label,
+            { color: disabled ? theme.colors.disabled : theme.colors.text },
+          ]}
         >
           {label}
         </Text>
@@ -92,9 +95,14 @@ export const SettingItem: React.FC<SettingItemProps> = ({
         {type === "select" && (
           <View style={styles.selectContainer}>
             <Text style={[styles.value, { color: theme.colors.textSecondary }]}>
-              {options.find((opt) => opt.value === value)?.label || String(value)}
+              {options.find((opt) => opt.value === value)?.label ||
+                String(value)}
             </Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.placeholder} />
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={theme.colors.placeholder}
+            />
           </View>
         )}
 

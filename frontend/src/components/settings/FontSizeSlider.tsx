@@ -61,11 +61,19 @@ export const FontSizeSlider: React.FC<FontSizeSliderProps> = ({
           <Ionicons
             name="text-outline"
             size={18}
-            color={disabled ? auroraTheme.colors.text.tertiary : auroraTheme.colors.text.primary}
+            color={
+              disabled
+                ? auroraTheme.colors.text.tertiary
+                : auroraTheme.colors.text.primary
+            }
           />
-          <Text style={[styles.label, disabled && styles.disabledLabel]}>Font Size</Text>
+          <Text style={[styles.label, disabled && styles.disabledLabel]}>
+            Font Size
+          </Text>
         </View>
-        <Text style={[styles.valueLabel, disabled && styles.disabledLabel]}>{getSizeLabel()}</Text>
+        <Text style={[styles.valueLabel, disabled && styles.disabledLabel]}>
+          {getSizeLabel()}
+        </Text>
       </View>
 
       <View style={styles.sliderContainer}>
@@ -89,7 +97,13 @@ export const FontSizeSlider: React.FC<FontSizeSliderProps> = ({
 
       {/* Preview Text */}
       <View style={styles.previewContainer}>
-        <Text style={[styles.previewText, { fontSize: value }, disabled && styles.disabledLabel]}>
+        <Text
+          style={[
+            styles.previewText,
+            { fontSize: value },
+            disabled && styles.disabledLabel,
+          ]}
+        >
           Sample Text Preview
         </Text>
       </View>

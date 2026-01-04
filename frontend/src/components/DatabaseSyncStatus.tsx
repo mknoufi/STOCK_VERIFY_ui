@@ -15,8 +15,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../hooks/useTheme";
-import { Card } from "./Card";
-import { Button } from "./Button";
+import { ModernCard } from "./ui/ModernCard";
+import { ModernButton } from "./ui/ModernButton";
 import {
   getDatabaseSyncStatus,
   testDatabaseConnection,
@@ -112,21 +112,32 @@ export const DatabaseSyncStatus: React.FC<{
   if (compact) {
     return (
       <TouchableOpacity
-        style={[styles.compactContainer, { backgroundColor: theme.colors.surface }]}
+        style={[
+          styles.compactContainer,
+          { backgroundColor: theme.colors.surface },
+        ]}
         onPress={handleRefresh}
       >
         <View style={styles.compactRow}>
           <Ionicons
-            name={dbStatus?.connection_status === "connected" ? "server" : "server-outline"}
+            name={
+              dbStatus?.connection_status === "connected"
+                ? "server"
+                : "server-outline"
+            }
             size={20}
-            color={getStatusColor(dbStatus?.connection_status || "not_configured")}
+            color={getStatusColor(
+              dbStatus?.connection_status || "not_configured",
+            )}
           />
           <Text style={[styles.compactText, { color: theme.colors.text }]}>
             DB: {dbStatus?.connection_status || "Unknown"}
           </Text>
           {syncStatus && syncStatus.queuedOperations > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{syncStatus.queuedOperations}</Text>
+              <Text style={styles.badgeText}>
+                {syncStatus.queuedOperations}
+              </Text>
             </View>
           )}
         </View>
@@ -136,22 +147,26 @@ export const DatabaseSyncStatus: React.FC<{
 
   if (loading && !dbStatus) {
     return (
-      <Card title="Database Status">
+      <ModernCard title="Database Status">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+          <Text
+            style={[styles.loadingText, { color: theme.colors.textSecondary }]}
+          >
             Loading status...
           </Text>
         </View>
-      </Card>
+      </ModernCard>
     );
   }
 
   return (
     <ScrollView
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
     >
-      <Card title="Database Sync Status" style={styles.card}>
+      <ModernCard title="Database Sync Status" style={styles.card}>
         {/* Database Connection Status */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -164,15 +179,21 @@ export const DatabaseSyncStatus: React.FC<{
           <View style={styles.statusRow}>
             <View style={styles.statusIndicator}>
               <Ionicons
-                name={getStatusIcon(dbStatus?.connection_status || "not_configured")}
+                name={getStatusIcon(
+                  dbStatus?.connection_status || "not_configured",
+                )}
                 size={24}
-                color={getStatusColor(dbStatus?.connection_status || "not_configured")}
+                color={getStatusColor(
+                  dbStatus?.connection_status || "not_configured",
+                )}
               />
               <Text
                 style={[
                   styles.statusText,
                   {
-                    color: getStatusColor(dbStatus?.connection_status || "not_configured"),
+                    color: getStatusColor(
+                      dbStatus?.connection_status || "not_configured",
+                    ),
                   },
                 ]}
               >
@@ -196,8 +217,17 @@ export const DatabaseSyncStatus: React.FC<{
           )}
 
           {dbStatus?.error && (
-            <View style={[styles.errorContainer, { backgroundColor: theme.colors.error + "20" }]}>
-              <Ionicons name="alert-circle" size={16} color={theme.colors.error} />
+            <View
+              style={[
+                styles.errorContainer,
+                { backgroundColor: theme.colors.error + "20" },
+              ]}
+            >
+              <Ionicons
+                name="alert-circle"
+                size={16}
+                color={theme.colors.error}
+              />
               <Text style={[styles.errorText, { color: theme.colors.error }]}>
                 {dbStatus.error}
               </Text>
@@ -206,7 +236,12 @@ export const DatabaseSyncStatus: React.FC<{
 
           {!dbStatus?.configured && (
             <View style={styles.notConfiguredContainer}>
-              <Text style={[styles.notConfiguredText, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.notConfiguredText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 SQL Server is not configured. Please configure it in Settings.
               </Text>
             </View>
@@ -218,7 +253,9 @@ export const DatabaseSyncStatus: React.FC<{
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="sync" size={20} color={theme.colors.primary} />
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Sync Status</Text>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                Sync Status
+              </Text>
             </View>
 
             <View style={styles.infoContainer}>
@@ -226,22 +263,38 @@ export const DatabaseSyncStatus: React.FC<{
                 label="Network"
                 value={syncStatus.isOnline ? "Online" : "Offline"}
                 icon={syncStatus.isOnline ? "wifi" : "wifi-outline"}
-                iconColor={syncStatus.isOnline ? theme.colors.success : theme.colors.error}
+                iconColor={
+                  syncStatus.isOnline
+                    ? theme.colors.success
+                    : theme.colors.error
+                }
               />
-              <InfoRow label="Queued Operations" value={syncStatus.queuedOperations.toString()} />
+              <InfoRow
+                label="Queued Operations"
+                value={syncStatus.queuedOperations.toString()}
+              />
               <InfoRow
                 label="Cache Size"
                 value={`${(syncStatus.cacheSize / 1024).toFixed(2)} KB`}
               />
               {syncStatus.lastSync && (
-                <InfoRow label="Last Sync" value={new Date(syncStatus.lastSync).toLocaleString()} />
+                <InfoRow
+                  label="Last Sync"
+                  value={new Date(syncStatus.lastSync).toLocaleString()}
+                />
               )}
             </View>
 
             {syncStatus.queuedOperations > 0 && syncStatus.isOnline && (
               <View style={styles.warningContainer}>
-                <Ionicons name="warning" size={16} color={theme.colors.warning} />
-                <Text style={[styles.warningText, { color: theme.colors.warning }]}>
+                <Ionicons
+                  name="warning"
+                  size={16}
+                  color={theme.colors.warning}
+                />
+                <Text
+                  style={[styles.warningText, { color: theme.colors.warning }]}
+                >
                   {syncStatus.queuedOperations} operation(s) pending sync
                 </Text>
               </View>
@@ -251,7 +304,7 @@ export const DatabaseSyncStatus: React.FC<{
 
         {/* Actions */}
         <View style={styles.actionsContainer}>
-          <Button
+          <ModernButton
             title="Test Connection"
             onPress={handleTestConnection}
             icon="flash"
@@ -260,7 +313,7 @@ export const DatabaseSyncStatus: React.FC<{
             loading={loading}
             style={{ marginBottom: 8 }}
           />
-          <Button
+          <ModernButton
             title="Refresh Status"
             onPress={handleRefresh}
             icon="refresh"
@@ -272,10 +325,12 @@ export const DatabaseSyncStatus: React.FC<{
         </View>
 
         {/* Last Update */}
-        <Text style={[styles.lastUpdateText, { color: theme.colors.textSecondary }]}>
+        <Text
+          style={[styles.lastUpdateText, { color: theme.colors.textSecondary }]}
+        >
           Last updated: {lastUpdate.toLocaleTimeString()}
         </Text>
-      </Card>
+      </ModernCard>
     </ScrollView>
   );
 };
@@ -294,10 +349,20 @@ const InfoRow: React.FC<InfoRowProps> = ({ label, value, icon, iconColor }) => {
   return (
     <View style={styles.infoRow}>
       <View style={styles.infoLabelContainer}>
-        {icon && <Ionicons name={icon} size={16} color={iconColor || theme.colors.textSecondary} />}
-        <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>{label}:</Text>
+        {icon && (
+          <Ionicons
+            name={icon}
+            size={16}
+            color={iconColor || theme.colors.textSecondary}
+          />
+        )}
+        <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
+          {label}:
+        </Text>
       </View>
-      <Text style={[styles.infoValue, { color: theme.colors.text }]}>{value}</Text>
+      <Text style={[styles.infoValue, { color: theme.colors.text }]}>
+        {value}
+      </Text>
     </View>
   );
 };

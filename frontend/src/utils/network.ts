@@ -33,12 +33,19 @@ export interface NetworkCheckResult {
  */
 export function getNetworkStatus(): NetworkCheckResult {
   const state = useNetworkStore.getState();
-  const { isOnline, isInternetReachable, connectionType } = state;
+  const { isOnline, isInternetReachable, connectionType, isRestrictedMode } = state;
 
   let status: NetworkStatus;
 
+  // If the backend has told us we're outside the allowed LAN, treat as offline.
+  // This is distinct from "no internet": the device may be connected, but the app
+  // cannot reach its backend due to policy.
+  if (isRestrictedMode) {
+    status = "OFFLINE";
+  }
+
   // Determine three-state status
-  if (isOnline === undefined || isOnline === null) {
+  else if (isOnline === undefined || isOnline === null) {
     // Network state is indeterminate
     status = "UNKNOWN";
   } else if (!isOnline) {

@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useTheme } from "../../hooks/useTheme";
 import apiClient from "../../services/httpClient";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,16 +28,22 @@ export const ReportExport: React.FC<ReportExportProps> = ({ days }) => {
       const file = new File(Paths.document, filename);
 
       // Use axios to download the file
-      const response = await apiClient.get(`/api/reports/analytics/export/pdf?days=${days}`, {
-        responseType: "arraybuffer",
-        headers: {
-          Accept: "application/pdf",
+      const response = await apiClient.get(
+        `/api/reports/analytics/export/pdf?days=${days}`,
+        {
+          responseType: "arraybuffer",
+          headers: {
+            Accept: "application/pdf",
+          },
         },
-      });
+      );
 
       // Convert arraybuffer to base64
       const base64 = btoa(
-        new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), "")
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          "",
+        ),
       );
 
       await file.write(base64, { encoding: "base64" });

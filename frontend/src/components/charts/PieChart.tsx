@@ -6,7 +6,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { G, Path, Text as SvgText } from "react-native-svg";
-import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
 const CHART_SIZE = 200;
 const RADIUS = 80;
@@ -25,7 +29,11 @@ interface PieChartProps {
   showLegend?: boolean;
 }
 
-export const PieChart: React.FC<PieChartProps> = ({ data, title, showLegend = true }) => {
+export const PieChart: React.FC<PieChartProps> = ({
+  data,
+  title,
+  showLegend = true,
+}) => {
   if (!data || data.length === 0) {
     return (
       <View style={styles.container}>
@@ -111,7 +119,9 @@ export const PieChart: React.FC<PieChartProps> = ({ data, title, showLegend = tr
           <View style={styles.legend}>
             {data.map((item, index) => (
               <View key={index} style={styles.legendItem}>
-                <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                <View
+                  style={[styles.legendColor, { backgroundColor: item.color }]}
+                />
                 <Text style={styles.legendLabel}>{item.label}</Text>
                 <Text style={styles.legendValue}>
                   {item.value} ({((item.value / total) * 100).toFixed(1)}%)

@@ -67,8 +67,17 @@ export const SupervisorLayout: React.FC<SupervisorLayoutProps> = ({
 
   return (
     <View style={[styles.container, style]} testID={testID}>
-      <AppHeader title={screenTitle} showBack={showBack} showUser={true} actions={actions} />
-      <Screen variant={screenVariant} style={styles.screen} backgroundColor={backgroundColor}>
+      <AppHeader
+        title={screenTitle}
+        showBack={showBack}
+        showUser={true}
+        actions={actions}
+      />
+      <Screen
+        variant={screenVariant}
+        style={styles.screen}
+        backgroundColor={backgroundColor}
+      >
         {children}
       </Screen>
     </View>

@@ -1,5 +1,11 @@
 import React, { Component, ReactNode, ErrorInfo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -13,7 +19,10 @@ interface ErrorBoundaryState {
   errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -71,7 +80,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <View style={styles.container}>
           <View style={styles.content}>
             <Text style={styles.title}>Oops! Something went wrong</Text>
-            <Text style={styles.message}>{error.message || "An unexpected error occurred"}</Text>
+            <Text style={styles.message}>
+              {error.message || "An unexpected error occurred"}
+            </Text>
 
             {__DEV__ && (
               <ScrollView style={styles.stackContainer}>

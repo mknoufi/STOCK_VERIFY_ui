@@ -3,7 +3,13 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Header } from "@/components/layout/Header";
@@ -94,7 +100,8 @@ const helpSections: HelpSection[] = [
       },
       {
         question: "How do I view activity logs?",
-        answer: "Go to Dashboard > Activity Logs to view all user activities and system events.",
+        answer:
+          "Go to Dashboard > Activity Logs to view all user activities and system events.",
         icon: "list",
       },
     ],
@@ -123,7 +130,8 @@ const helpSections: HelpSection[] = [
       },
       {
         question: "App crashes or freezes",
-        answer: "Close and restart the app. If problem persists, clear app cache or reinstall.",
+        answer:
+          "Close and restart the app. If problem persists, clear app cache or reinstall.",
         icon: "warning",
       },
     ],
@@ -133,7 +141,9 @@ const helpSections: HelpSection[] = [
 export default function HelpScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
+  const [expandedItems, setExpandedItems] = React.useState<Set<string>>(
+    new Set(),
+  );
 
   const toggleItem = (sectionIndex: number, itemIndex: number) => {
     const key = `${sectionIndex}-${itemIndex}`;
@@ -147,7 +157,9 @@ export default function HelpScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <Header
         title="Help & Documentation"
         leftIcon="arrow-back"
@@ -156,9 +168,16 @@ export default function HelpScreen() {
 
       <ScrollView style={styles.scrollView}>
         {helpSections.map((section, sectionIndex) => (
-          <View key={sectionIndex} style={[styles.section, { backgroundColor: theme.colors.card }]}>
+          <View
+            key={sectionIndex}
+            style={[styles.section, { backgroundColor: theme.colors.card }]}
+          >
             <View style={styles.sectionHeader}>
-              <Ionicons name={section.icon as any} size={24} color={theme.colors.primary} />
+              <Ionicons
+                name={section.icon as any}
+                size={24}
+                color={theme.colors.primary}
+              />
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
                 {section.title}
               </Text>
@@ -184,7 +203,9 @@ export default function HelpScreen() {
                           style={styles.itemIcon}
                         />
                       )}
-                      <Text style={[styles.question, { color: theme.colors.text }]}>
+                      <Text
+                        style={[styles.question, { color: theme.colors.text }]}
+                      >
                         {item.question}
                       </Text>
                     </View>
@@ -197,9 +218,17 @@ export default function HelpScreen() {
 
                   {isExpanded && (
                     <View
-                      style={[styles.answerContainer, { backgroundColor: theme.colors.background }]}
+                      style={[
+                        styles.answerContainer,
+                        { backgroundColor: theme.colors.background },
+                      ]}
                     >
-                      <Text style={[styles.answer, { color: theme.colors.textSecondary }]}>
+                      <Text
+                        style={[
+                          styles.answer,
+                          { color: theme.colors.textSecondary },
+                        ]}
+                      >
                         {item.answer}
                       </Text>
                     </View>
@@ -211,11 +240,21 @@ export default function HelpScreen() {
         ))}
 
         {/* Contact Support */}
-        <View style={[styles.contactSection, { backgroundColor: theme.colors.card }]}>
+        <View
+          style={[
+            styles.contactSection,
+            { backgroundColor: theme.colors.card },
+          ]}
+        >
           <Ionicons name="mail" size={32} color={theme.colors.primary} />
-          <Text style={[styles.contactTitle, { color: theme.colors.text }]}>Need More Help?</Text>
-          <Text style={[styles.contactText, { color: theme.colors.textSecondary }]}>
-            Contact your system administrator or IT support team for additional assistance.
+          <Text style={[styles.contactTitle, { color: theme.colors.text }]}>
+            Need More Help?
+          </Text>
+          <Text
+            style={[styles.contactText, { color: theme.colors.textSecondary }]}
+          >
+            Contact your system administrator or IT support team for additional
+            assistance.
           </Text>
         </View>
       </ScrollView>

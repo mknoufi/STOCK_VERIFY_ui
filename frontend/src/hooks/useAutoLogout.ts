@@ -37,7 +37,7 @@ export const useAutoLogout = (enabled: boolean = true) => {
             onPress: () => resetTimer(),
           },
         ],
-        { cancelable: false }
+        { cancelable: false },
       );
     }, WARNING_TIMEOUT);
 
@@ -55,7 +55,7 @@ export const useAutoLogout = (enabled: boolean = true) => {
             },
           },
         ],
-        { cancelable: false }
+        { cancelable: false },
       );
     }, INACTIVITY_TIMEOUT);
   }, [enabled, user, logout, router]);

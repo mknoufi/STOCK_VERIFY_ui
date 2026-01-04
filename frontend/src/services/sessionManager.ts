@@ -8,7 +8,11 @@
  * - App state awareness (foreground/background)
  */
 
-import { AppState, AppStateStatus, NativeEventSubscription } from "react-native";
+import {
+  AppState,
+  AppStateStatus,
+  NativeEventSubscription,
+} from "react-native";
 import api from "./httpClient";
 import { eventEmitter } from "../utils/eventEmitter";
 
@@ -84,7 +88,8 @@ class SessionManager {
       await this.startHeartbeat();
     }
 
-    __DEV__ && console.log("📱 SessionManager initialized", { userId, username });
+    __DEV__ &&
+      console.log("📱 SessionManager initialized", { userId, username });
   }
 
   /**
@@ -109,7 +114,9 @@ class SessionManager {
     }, this.config.heartbeatIntervalMs) as unknown as NodeJS.Timeout;
 
     __DEV__ &&
-      console.log(`💓 Auth heartbeat started (interval: ${this.config.heartbeatIntervalMs}ms)`);
+      console.log(
+        `💓 Auth heartbeat started (interval: ${this.config.heartbeatIntervalMs}ms)`,
+      );
   }
 
   /**
@@ -173,7 +180,7 @@ class SessionManager {
       __DEV__ &&
         console.error(
           `❌ Auth heartbeat failed (${this.consecutiveFailures}/${this.config.maxHeartbeatFailures}):`,
-          errorMessage
+          errorMessage,
         );
 
       // 401 means token expired or invalid
@@ -243,14 +250,18 @@ class SessionManager {
    * Listen to app state changes (foreground/background)
    */
   private setupAppStateListener(): void {
-    this.appStateSubscription = AppState.addEventListener("change", this.handleAppStateChange);
+    this.appStateSubscription = AppState.addEventListener(
+      "change",
+      this.handleAppStateChange,
+    );
   }
 
   /**
    * Handle app state changes
    */
   private handleAppStateChange = (nextAppState: AppStateStatus): void => {
-    const wasBackground = this.appState === "background" || this.appState === "inactive";
+    const wasBackground =
+      this.appState === "background" || this.appState === "inactive";
     const isNowActive = nextAppState === "active";
 
     this.appState = nextAppState;
@@ -295,7 +306,7 @@ class SessionManager {
    */
   on(
     event: (typeof SESSION_EVENTS)[keyof typeof SESSION_EVENTS],
-    callback: (data: any) => void
+    callback: (data: any) => void,
   ): () => void {
     eventEmitter.on(event, callback);
     return () => eventEmitter.off(event, callback);

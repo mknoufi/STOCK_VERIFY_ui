@@ -9,7 +9,13 @@
 
 import * as React from "react";
 import { useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, {
@@ -33,8 +39,15 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
   compact = false,
   columns: _columns = 3,
 }) => {
-  const { themeObject, themeKey, themeMode, updateTheme, updateMode, availableThemes, colors } =
-    useTheme();
+  const {
+    themeObject,
+    themeKey,
+    themeMode,
+    updateTheme,
+    updateMode,
+    availableThemes,
+    colors,
+  } = useTheme();
 
   const handleThemeSelect = useCallback(
     (key: ThemeKey) => {
@@ -43,7 +56,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
       }
       updateTheme(key);
     },
-    [updateTheme]
+    [updateTheme],
   );
 
   const handleModeChange = useCallback(
@@ -53,7 +66,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
       }
       updateMode(mode);
     },
-    [updateMode]
+    [updateMode],
   );
 
   const cardSize = compact ? 80 : 100;
@@ -66,7 +79,9 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
           <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
             Appearance Mode
           </Text>
-          <View style={[styles.modeToggle, { backgroundColor: colors.surface }]}>
+          <View
+            style={[styles.modeToggle, { backgroundColor: colors.surface }]}
+          >
             {(["light", "system", "dark"] as ThemeMode[]).map((mode) => (
               <TouchableOpacity
                 key={mode}
@@ -93,7 +108,8 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
                   style={[
                     styles.modeButtonText,
                     {
-                      color: themeMode === mode ? "#FFFFFF" : colors.textSecondary,
+                      color:
+                        themeMode === mode ? "#FFFFFF" : colors.textSecondary,
                     },
                   ]}
                 >
@@ -107,11 +123,19 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
 
       {/* Theme Grid */}
       <View style={styles.themeSection}>
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Color Theme</Text>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+          Color Theme
+        </Text>
         <View style={[styles.themeGrid, { gap: compact ? 8 : 12 }]}>
           {availableThemes.map(
-            (t: { key: ThemeKey; name: string; preview: string[] }, index: number) => (
-              <Animated.View key={t.key} entering={FadeInDown.delay(index * 50).springify() as any}>
+            (
+              t: { key: ThemeKey; name: string; preview: string[] },
+              index: number,
+            ) => (
+              <Animated.View
+                key={t.key}
+                entering={FadeInDown.delay(index * 50).springify() as any}
+              >
                 <ThemeCard
                   themeInfo={t}
                   isSelected={themeKey === t.key}
@@ -121,7 +145,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
                   textColor={colors.text}
                 />
               </Animated.View>
-            )
+            ),
           )}
         </View>
       </View>
@@ -207,7 +231,9 @@ const ThemeCard: React.FC<ThemeCardProps> = ({
 
             {/* Selected Checkmark */}
             {isSelected && (
-              <View style={[styles.checkmark, { backgroundColor: accentColor }]}>
+              <View
+                style={[styles.checkmark, { backgroundColor: accentColor }]}
+              >
                 <Ionicons name="checkmark" size={12} color="#FFFFFF" />
               </View>
             )}
@@ -215,7 +241,11 @@ const ThemeCard: React.FC<ThemeCardProps> = ({
 
           {/* Theme Name */}
           <Text
-            style={[styles.themeName, { color: textColor }, isSelected && { fontWeight: "600" }]}
+            style={[
+              styles.themeName,
+              { color: textColor },
+              isSelected && { fontWeight: "600" },
+            ]}
             numberOfLines={1}
           >
             {themeInfo.name}

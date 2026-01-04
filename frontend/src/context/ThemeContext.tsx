@@ -11,7 +11,14 @@
  */
 
 import * as React from "react";
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { useColorScheme, Appearance } from "react-native";
 import { themes, AppTheme } from "../theme/themes";
 import { mmkvStorage } from "../services/mmkvStorage";
@@ -38,7 +45,13 @@ const hexToRgba = (hex: string, alpha: number): string => {
 };
 
 // Available theme keys
-export type ThemeKey = "light" | "dark" | "premium" | "ocean" | "sunset" | "highContrast";
+export type ThemeKey =
+  | "light"
+  | "dark"
+  | "premium"
+  | "ocean"
+  | "sunset"
+  | "highContrast";
 export type ThemeMode = "light" | "dark" | "system";
 
 // Pattern types for background arrangements
@@ -53,7 +66,13 @@ export type PatternType =
   | "hexagon";
 
 // Layout arrangement types
-export type LayoutArrangement = "default" | "compact" | "spacious" | "cards" | "list" | "grid";
+export type LayoutArrangement =
+  | "default"
+  | "compact"
+  | "spacious"
+  | "cards"
+  | "list"
+  | "grid";
 
 interface ThemeContextType {
   // Current theme
@@ -136,7 +155,9 @@ interface ThemeContextType {
 
   // Helpers
   getThemeColor: (colorPath: string) => string;
-  getFontSize: (scale?: number | "xs" | "sm" | "md" | "lg" | "xl" | "xxl") => number;
+  getFontSize: (
+    scale?: number | "xs" | "sm" | "md" | "lg" | "xl" | "xxl",
+  ) => number;
   availableThemes: { key: ThemeKey; name: string; preview: string[] }[];
   availablePatterns: { key: PatternType; name: string; icon: string }[];
   availableLayouts: { key: LayoutArrangement; name: string; icon: string }[];
@@ -196,7 +217,9 @@ const LAYOUT_METADATA: {
   { key: "grid", name: "Grid", icon: "grid-outline" },
 ];
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const systemColorScheme = useColorScheme();
   const { settings } = useSettingsStore();
 
@@ -226,9 +249,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [themeMode, themeKey, systemColorScheme]);
 
   const theme = useMemo<AppTheme>(() => {
-    const resolved = (themes as any)?.[effectiveThemeKey] as AppTheme | undefined;
+    const resolved = (themes as any)?.[effectiveThemeKey] as
+      | AppTheme
+      | undefined;
     const fallback = (themes as any)?.premium ?? (themes as any)?.light;
-    return (resolved ?? fallback ?? (Object.values(themes)[0] as AppTheme)) as AppTheme;
+    return (resolved ??
+      fallback ??
+      (Object.values(themes)[0] as AppTheme)) as AppTheme;
   }, [effectiveThemeKey]);
 
   const isDark = useMemo(() => {
@@ -350,11 +377,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Listen for system theme changes
   useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme: _colorScheme }) => {
-      if (themeMode === "system") {
-        // Theme will auto-update via effectiveThemeKey computation
-      }
-    });
+    const subscription = Appearance.addChangeListener(
+      ({ colorScheme: _colorScheme }) => {
+        if (themeMode === "system") {
+          // Theme will auto-update via effectiveThemeKey computation
+        }
+      },
+    );
 
     return () => subscription.remove();
   }, [themeMode]);
@@ -397,15 +426,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       for (const part of parts) {
         value = value?.[part];
       }
-      return typeof value === "string" ? value : currentTheme.colors.text.primary;
+      return typeof value === "string"
+        ? value
+        : currentTheme.colors.text.primary;
     },
-    [theme]
+    [theme],
   );
 
   // Helper to get scaled font size based on user preference
   const getFontSize = useCallback(
     (scale: number | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" = 1): number => {
-      const namedScales: Record<"xs" | "sm" | "md" | "lg" | "xl" | "xxl", number> = {
+      const namedScales: Record<
+        "xs" | "sm" | "md" | "lg" | "xl" | "xxl",
+        number
+      > = {
         xs: 0.75,
         sm: 0.875,
         md: 1,
@@ -414,10 +448,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         xxl: 1.5,
       };
 
-      const numericScale = typeof scale === "number" ? scale : (namedScales[scale] ?? 1);
+      const numericScale =
+        typeof scale === "number" ? scale : (namedScales[scale] ?? 1);
       return Math.round(fontSize * numericScale);
     },
-    [fontSize]
+    [fontSize],
   );
 
   const contextValue = useMemo<ThemeContextType>(
@@ -459,15 +494,23 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       toggleDarkMode,
       getThemeColor,
       getFontSize,
-    ]
+    ],
   );
 
   if (!isInitialized) {
     // Return a loading placeholder instead of null to prevent blank screen
-    return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
+    return (
+      <ThemeContext.Provider value={contextValue}>
+        {children}
+      </ThemeContext.Provider>
+    );
   }
 
-  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={contextValue}>
+      {children}
+    </ThemeContext.Provider>
+  );
 };
 
 // Hook to use theme context

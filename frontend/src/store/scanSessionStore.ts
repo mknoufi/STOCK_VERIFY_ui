@@ -33,8 +33,10 @@ export const useScanSessionStore = create<ScanSessionState>()(
 
       setFloor: (floor) => set({ currentFloor: floor }),
       setRack: (rack) => set({ currentRack: rack }),
-      setActiveSession: (id, type) => set({ activeSessionId: id, sessionType: type }),
-      clearActiveSession: () => set({ activeSessionId: null, sessionType: "STANDARD" }),
+      setActiveSession: (id, type) =>
+        set({ activeSessionId: id, sessionType: type }),
+      clearActiveSession: () =>
+        set({ activeSessionId: null, sessionType: "STANDARD" }),
 
       startSection: () => {
         const { currentFloor, currentRack } = get();
@@ -71,6 +73,6 @@ export const useScanSessionStore = create<ScanSessionState>()(
     {
       name: "scan-session-storage",
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );

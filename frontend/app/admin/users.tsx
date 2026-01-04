@@ -18,13 +18,43 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
-import { LoadingSpinner, AnimatedPressable, ScreenContainer } from "../../src/components/ui";
-import { colors, spacing, radius, textStyles, semanticColors } from "../../src/theme/unified";
+import {
+  LoadingSpinner,
+  AnimatedPressable,
+  ScreenContainer,
+} from "../../src/components/ui";
+import { auroraTheme } from "../../src/theme/auroraTheme";
 import apiClient from "../../src/services/httpClient";
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const isTablet = width > 768;
+
+// Typography helper
+const textStyles = {
+  h2: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize["2xl"],
+    fontWeight: "700" as const,
+  },
+  h3: {
+    fontFamily: auroraTheme.typography.fontFamily.heading,
+    fontSize: auroraTheme.typography.fontSize.xl,
+    fontWeight: "600" as const,
+  },
+  body: {
+    fontFamily: auroraTheme.typography.fontFamily.body,
+    fontSize: auroraTheme.typography.fontSize.base,
+  },
+  label: {
+    fontFamily: auroraTheme.typography.fontFamily.label,
+    fontSize: auroraTheme.typography.fontSize.sm,
+  },
+  caption: {
+    fontFamily: auroraTheme.typography.fontFamily.body,
+    fontSize: auroraTheme.typography.fontSize.xs,
+  },
+};
 
 // Types
 interface User {
@@ -54,19 +84,34 @@ type SortOrder = "asc" | "desc";
 const getRoleBadgeStyle = (role: string) => {
   switch (role) {
     case "admin":
-      return { bg: colors.error[100], text: colors.error[700] };
+      return {
+        bg: auroraTheme.colors.error[100],
+        text: auroraTheme.colors.error[700],
+      };
     case "supervisor":
-      return { bg: colors.warning[100], text: colors.warning[700] };
+      return {
+        bg: auroraTheme.colors.warning[100],
+        text: auroraTheme.colors.warning[700],
+      };
     default:
-      return { bg: colors.primary[100], text: colors.primary[700] };
+      return {
+        bg: auroraTheme.colors.primary[100],
+        text: auroraTheme.colors.primary[700],
+      };
   }
 };
 
 // Status badge
 const getStatusStyle = (isActive: boolean) => {
   return isActive
-    ? { bg: colors.success[100], text: colors.success[700] }
-    : { bg: colors.neutral[200], text: colors.neutral[600] };
+    ? {
+        bg: auroraTheme.colors.success[100],
+        text: auroraTheme.colors.success[700],
+      }
+    : {
+        bg: auroraTheme.colors.neutral[200],
+        text: auroraTheme.colors.neutral[600],
+      };
 };
 
 export default function UsersScreen() {
@@ -108,9 +153,12 @@ export default function UsersScreen() {
 
         if (search) params.append("search", search);
         if (roleFilter) params.append("role", roleFilter);
-        if (activeFilter !== null) params.append("is_active", activeFilter.toString());
+        if (activeFilter !== null)
+          params.append("is_active", activeFilter.toString());
 
-        const response = await apiClient.get<UserListResponse>(`/users?${params.toString()}`);
+        const response = await apiClient.get<UserListResponse>(
+          `/users?${params.toString()}`,
+        );
 
         if (response.data) {
           // Normalize snake_case to camelCase
@@ -139,15 +187,17 @@ export default function UsersScreen() {
         setRefreshing(false);
       }
     },
-    [page, pageSize, sortBy, sortOrder, search, roleFilter, activeFilter]
+    [page, pageSize, sortBy, sortOrder, search, roleFilter, activeFilter],
   );
 
   // Check permissions
   useEffect(() => {
     if (!hasRole("admin")) {
-      Alert.alert("Access Denied", "You do not have permission to manage users.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to manage users.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
       return;
     }
     loadUsers();
@@ -184,7 +234,9 @@ export default function UsersScreen() {
     }
   };
 
-  const handleBulkAction = async (action: "activate" | "deactivate" | "delete") => {
+  const handleBulkAction = async (
+    action: "activate" | "deactivate" | "delete",
+  ) => {
     if (selectedUsers.size === 0) {
       Alert.alert("No Selection", "Please select users first.");
       return;
@@ -209,9 +261,15 @@ export default function UsersScreen() {
             });
             setSelectedUsers(new Set());
             loadUsers();
-            Alert.alert("Success", `Successfully ${actionText}d ${selectedUsers.size} user(s)`);
+            Alert.alert(
+              "Success",
+              `Successfully ${actionText}d ${selectedUsers.size} user(s)`,
+            );
           } catch (error: any) {
-            Alert.alert("Error", error.message || `Failed to ${actionText} users`);
+            Alert.alert(
+              "Error",
+              error.message || `Failed to ${actionText} users`,
+            );
           }
         },
       },
@@ -237,7 +295,7 @@ export default function UsersScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -261,17 +319,21 @@ export default function UsersScreen() {
     <View style={styles.filterBar}>
       {/* Search Input */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color={colors.neutral[400]} />
+        <Ionicons name="search" size={20} color={auroraTheme.colors.neutral[400]} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search users..."
-          placeholderTextColor={colors.neutral[400]}
+          placeholderTextColor={auroraTheme.colors.neutral[400]}
           value={search}
           onChangeText={setSearch}
         />
         {search.length > 0 && (
           <AnimatedPressable onPress={() => setSearch("")}>
-            <Ionicons name="close-circle" size={20} color={colors.neutral[400]} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={auroraTheme.colors.neutral[400]}
+            />
           </AnimatedPressable>
         )}
       </View>
@@ -281,17 +343,28 @@ export default function UsersScreen() {
         <Text style={styles.filterLabel}>Role:</Text>
         <View style={styles.filterButtons}>
           <AnimatedPressable
-            style={[styles.filterButton, !roleFilter && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              !roleFilter && styles.filterButtonActive,
+            ]}
             onPress={() => setRoleFilter(null)}
           >
-            <Text style={[styles.filterButtonText, !roleFilter && styles.filterButtonTextActive]}>
+            <Text
+              style={[
+                styles.filterButtonText,
+                !roleFilter && styles.filterButtonTextActive,
+              ]}
+            >
               All
             </Text>
           </AnimatedPressable>
           {["staff", "supervisor", "admin"].map((role) => (
             <AnimatedPressable
               key={role}
-              style={[styles.filterButton, roleFilter === role && styles.filterButtonActive]}
+              style={[
+                styles.filterButton,
+                roleFilter === role && styles.filterButtonActive,
+              ]}
               onPress={() => setRoleFilter(roleFilter === role ? null : role)}
             >
               <Text
@@ -312,7 +385,10 @@ export default function UsersScreen() {
         <Text style={styles.filterLabel}>Status:</Text>
         <View style={styles.filterButtons}>
           <AnimatedPressable
-            style={[styles.filterButton, activeFilter === null && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              activeFilter === null && styles.filterButtonActive,
+            ]}
             onPress={() => setActiveFilter(null)}
           >
             <Text
@@ -325,7 +401,10 @@ export default function UsersScreen() {
             </Text>
           </AnimatedPressable>
           <AnimatedPressable
-            style={[styles.filterButton, activeFilter === true && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              activeFilter === true && styles.filterButtonActive,
+            ]}
             onPress={() => setActiveFilter(activeFilter === true ? null : true)}
           >
             <Text
@@ -338,8 +417,13 @@ export default function UsersScreen() {
             </Text>
           </AnimatedPressable>
           <AnimatedPressable
-            style={[styles.filterButton, activeFilter === false && styles.filterButtonActive]}
-            onPress={() => setActiveFilter(activeFilter === false ? null : false)}
+            style={[
+              styles.filterButton,
+              activeFilter === false && styles.filterButtonActive,
+            ]}
+            onPress={() =>
+              setActiveFilter(activeFilter === false ? null : false)
+            }
           >
             <Text
               style={[
@@ -395,10 +479,12 @@ export default function UsersScreen() {
       <AnimatedPressable style={styles.checkboxCell} onPress={handleSelectAll}>
         <Ionicons
           name={
-            selectedUsers.size === users.length && users.length > 0 ? "checkbox" : "square-outline"
+            selectedUsers.size === users.length && users.length > 0
+              ? "checkbox"
+              : "square-outline"
           }
           size={20}
-          color={colors.primary[600]}
+          color={auroraTheme.colors.primary[600]}
         />
       </AnimatedPressable>
       <AnimatedPressable
@@ -410,7 +496,7 @@ export default function UsersScreen() {
           <Ionicons
             name={sortOrder === "asc" ? "arrow-up" : "arrow-down"}
             size={14}
-            color={colors.primary[600]}
+            color={auroraTheme.colors.primary[600]}
           />
         )}
       </AnimatedPressable>
@@ -423,7 +509,7 @@ export default function UsersScreen() {
           <Ionicons
             name={sortOrder === "asc" ? "arrow-up" : "arrow-down"}
             size={14}
-            color={colors.primary[600]}
+            color={auroraTheme.colors.primary[600]}
           />
         )}
       </AnimatedPressable>
@@ -436,7 +522,7 @@ export default function UsersScreen() {
           <Ionicons
             name={sortOrder === "asc" ? "arrow-up" : "arrow-down"}
             size={14}
-            color={colors.primary[600]}
+            color={auroraTheme.colors.primary[600]}
           />
         )}
       </AnimatedPressable>
@@ -452,7 +538,7 @@ export default function UsersScreen() {
           <Ionicons
             name={sortOrder === "asc" ? "arrow-up" : "arrow-down"}
             size={14}
-            color={colors.primary[600]}
+            color={auroraTheme.colors.primary[600]}
           />
         )}
       </AnimatedPressable>
@@ -469,22 +555,32 @@ export default function UsersScreen() {
     const isSelected = selectedUsers.has(user.id);
 
     return (
-      <View key={user.id} style={[styles.tableRow, isSelected && styles.tableRowSelected]}>
-        <AnimatedPressable style={styles.checkboxCell} onPress={() => handleSelectUser(user.id)}>
+      <View
+        key={user.id}
+        style={[styles.tableRow, isSelected && styles.tableRowSelected]}
+      >
+        <AnimatedPressable
+          style={styles.checkboxCell}
+          onPress={() => handleSelectUser(user.id)}
+        >
           <Ionicons
             name={isSelected ? "checkbox" : "square-outline"}
             size={20}
-            color={colors.primary[600]}
+            color={auroraTheme.colors.primary[600]}
           />
         </AnimatedPressable>
         <View style={[styles.cell, styles.usernameCell]}>
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{user.username.charAt(0).toUpperCase()}</Text>
+              <Text style={styles.avatarText}>
+                {user.username.charAt(0).toUpperCase()}
+              </Text>
             </View>
             <View>
               <Text style={styles.username}>{user.username}</Text>
-              {user.fullName && <Text style={styles.fullName}>{user.fullName}</Text>}
+              {user.fullName && (
+                <Text style={styles.fullName}>{user.fullName}</Text>
+              )}
             </View>
           </View>
         </View>
@@ -510,18 +606,35 @@ export default function UsersScreen() {
         </View>
         <View style={[styles.cell, styles.actionsCell]}>
           <View style={styles.actionButtons}>
-            <AnimatedPressable style={styles.actionButton} onPress={() => setEditingUser(user)}>
-              <Ionicons name="pencil" size={18} color={colors.primary[600]} />
+            <AnimatedPressable
+              style={styles.actionButton}
+              onPress={() => setEditingUser(user)}
+            >
+              <Ionicons name="pencil" size={18} color={auroraTheme.colors.primary[600]} />
             </AnimatedPressable>
-            <AnimatedPressable style={styles.actionButton} onPress={() => handleToggleStatus(user)}>
+            <AnimatedPressable
+              style={styles.actionButton}
+              onPress={() => handleToggleStatus(user)}
+            >
               <Ionicons
-                name={user.isActive ? "pause-circle-outline" : "play-circle-outline"}
+                name={
+                  user.isActive ? "pause-circle-outline" : "play-circle-outline"
+                }
                 size={18}
-                color={user.isActive ? colors.warning[600] : colors.success[600]}
+                color={
+                  user.isActive ? auroraTheme.colors.warning[600] : auroraTheme.colors.success[600]
+                }
               />
             </AnimatedPressable>
-            <AnimatedPressable style={styles.actionButton} onPress={() => handleDeleteUser(user)}>
-              <Ionicons name="trash-outline" size={18} color={colors.error[600]} />
+            <AnimatedPressable
+              style={styles.actionButton}
+              onPress={() => handleDeleteUser(user)}
+            >
+              <Ionicons
+                name="trash-outline"
+                size={18}
+                color={auroraTheme.colors.error[600]}
+              />
             </AnimatedPressable>
           </View>
         </View>
@@ -533,7 +646,8 @@ export default function UsersScreen() {
   const renderPagination = () => (
     <View style={styles.pagination}>
       <Text style={styles.paginationText}>
-        Showing {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} of {total}
+        Showing {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)}{" "}
+        of {total}
       </Text>
       <View style={styles.paginationButtons}>
         <AnimatedPressable
@@ -544,21 +658,26 @@ export default function UsersScreen() {
           <Ionicons
             name="chevron-back"
             size={20}
-            color={page === 1 ? colors.neutral[300] : colors.primary[600]}
+            color={page === 1 ? auroraTheme.colors.neutral[300] : auroraTheme.colors.primary[600]}
           />
         </AnimatedPressable>
         <Text style={styles.pageNumber}>
           Page {page} of {totalPages}
         </Text>
         <AnimatedPressable
-          style={[styles.pageButton, page === totalPages && styles.pageButtonDisabled]}
+          style={[
+            styles.pageButton,
+            page === totalPages && styles.pageButtonDisabled,
+          ]}
           onPress={() => page < totalPages && setPage(page + 1)}
           disabled={page === totalPages}
         >
           <Ionicons
             name="chevron-forward"
             size={20}
-            color={page === totalPages ? colors.neutral[300] : colors.primary[600]}
+            color={
+              page === totalPages ? auroraTheme.colors.neutral[300] : auroraTheme.colors.primary[600]
+            }
           />
         </AnimatedPressable>
       </View>
@@ -577,15 +696,20 @@ export default function UsersScreen() {
     <ScreenContainer>
       <ScrollView
         style={styles.container}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTitle}>
-            <Ionicons name="people" size={28} color={colors.primary[600]} />
+            <Ionicons name="people" size={28} color={auroraTheme.colors.primary[600]} />
             <Text style={styles.title}>User Management</Text>
           </View>
-          <AnimatedPressable style={styles.createButton} onPress={() => setShowCreateModal(true)}>
+          <AnimatedPressable
+            style={styles.createButton}
+            onPress={() => setShowCreateModal(true)}
+          >
             <Ionicons name="add" size={20} color="#fff" />
             <Text style={styles.createButtonText}>Add User</Text>
           </AnimatedPressable>
@@ -598,11 +722,15 @@ export default function UsersScreen() {
             <Text style={styles.statLabel}>Total Users</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{users.filter((u) => u.isActive).length}</Text>
+            <Text style={styles.statValue}>
+              {users.filter((u) => u.isActive).length}
+            </Text>
             <Text style={styles.statLabel}>Active</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{users.filter((u) => u.role === "admin").length}</Text>
+            <Text style={styles.statValue}>
+              {users.filter((u) => u.role === "admin").length}
+            </Text>
             <Text style={styles.statLabel}>Admins</Text>
           </View>
         </View>
@@ -620,7 +748,11 @@ export default function UsersScreen() {
               {renderTableHeader()}
               {users.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <Ionicons name="people-outline" size={48} color={colors.neutral[300]} />
+                  <Ionicons
+                    name="people-outline"
+                    size={48}
+                    color={auroraTheme.colors.neutral[300]}
+                  />
                   <Text style={styles.emptyText}>No users found</Text>
                 </View>
               ) : (
@@ -630,7 +762,11 @@ export default function UsersScreen() {
           ) : // Mobile card layout
           users.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="people-outline" size={48} color={colors.neutral[300]} />
+              <Ionicons
+                name="people-outline"
+                size={48}
+                color={auroraTheme.colors.neutral[300]}
+              />
               <Text style={styles.emptyText}>No users found</Text>
             </View>
           ) : (
@@ -648,17 +784,36 @@ export default function UsersScreen() {
                       </View>
                       <View>
                         <Text style={styles.username}>{user.username}</Text>
-                        {user.email && <Text style={styles.mobileEmail}>{user.email}</Text>}
+                        {user.email && (
+                          <Text style={styles.mobileEmail}>{user.email}</Text>
+                        )}
                       </View>
                     </View>
                     <View style={styles.mobileBadges}>
-                      <View style={[styles.badge, { backgroundColor: roleBadge.bg }]}>
-                        <Text style={[styles.badgeText, { color: roleBadge.text }]}>
+                      <View
+                        style={[
+                          styles.badge,
+                          { backgroundColor: roleBadge.bg },
+                        ]}
+                      >
+                        <Text
+                          style={[styles.badgeText, { color: roleBadge.text }]}
+                        >
                           {user.role}
                         </Text>
                       </View>
-                      <View style={[styles.badge, { backgroundColor: statusBadge.bg }]}>
-                        <Text style={[styles.badgeText, { color: statusBadge.text }]}>
+                      <View
+                        style={[
+                          styles.badge,
+                          { backgroundColor: statusBadge.bg },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.badgeText,
+                            { color: statusBadge.text },
+                          ]}
+                        >
                           {user.isActive ? "Active" : "Inactive"}
                         </Text>
                       </View>
@@ -669,7 +824,11 @@ export default function UsersScreen() {
                       style={styles.mobileAction}
                       onPress={() => setEditingUser(user)}
                     >
-                      <Ionicons name="pencil" size={18} color={colors.primary[600]} />
+                      <Ionicons
+                        name="pencil"
+                        size={18}
+                        color={auroraTheme.colors.primary[600]}
+                      />
                       <Text style={styles.mobileActionText}>Edit</Text>
                     </AnimatedPressable>
                     <AnimatedPressable
@@ -679,7 +838,11 @@ export default function UsersScreen() {
                       <Ionicons
                         name={user.isActive ? "pause-circle" : "play-circle"}
                         size={18}
-                        color={user.isActive ? colors.warning[600] : colors.success[600]}
+                        color={
+                          user.isActive
+                            ? auroraTheme.colors.warning[600]
+                            : auroraTheme.colors.success[600]
+                        }
                       />
                       <Text style={styles.mobileActionText}>
                         {user.isActive ? "Deactivate" : "Activate"}
@@ -689,8 +852,17 @@ export default function UsersScreen() {
                       style={styles.mobileAction}
                       onPress={() => handleDeleteUser(user)}
                     >
-                      <Ionicons name="trash" size={18} color={colors.error[600]} />
-                      <Text style={[styles.mobileActionText, { color: colors.error[600] }]}>
+                      <Ionicons
+                        name="trash"
+                        size={18}
+                        color={auroraTheme.colors.error[600]}
+                      />
+                      <Text
+                        style={[
+                          styles.mobileActionText,
+                          { color: auroraTheme.colors.error[600] },
+                        ]}
+                      >
                         Delete
                       </Text>
                     </AnimatedPressable>
@@ -711,32 +883,32 @@ export default function UsersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: semanticColors.background.primary,
+    backgroundColor: auroraTheme.colors.background.primary,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingHorizontal: auroraTheme.spacing.lg,
+    paddingVertical: auroraTheme.spacing.md,
   },
   headerTitle: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: auroraTheme.spacing.sm,
   },
   title: {
     ...textStyles.h2,
-    color: semanticColors.text.primary,
+    color: auroraTheme.colors.text.primary,
   },
   createButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: colors.primary[600],
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.md,
+    gap: auroraTheme.spacing.xs,
+    backgroundColor: auroraTheme.colors.primary[600],
+    paddingHorizontal: auroraTheme.spacing.md,
+    paddingVertical: auroraTheme.spacing.sm,
+    borderRadius: auroraTheme.borderRadius.md,
   },
   createButtonText: {
     ...textStyles.label,
@@ -745,119 +917,119 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: "row",
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-    marginBottom: spacing.lg,
+    paddingHorizontal: auroraTheme.spacing.lg,
+    gap: auroraTheme.spacing.md,
+    marginBottom: auroraTheme.spacing.lg,
   },
   statCard: {
     flex: 1,
-    backgroundColor: semanticColors.background.secondary,
-    padding: spacing.md,
-    borderRadius: radius.lg,
+    backgroundColor: auroraTheme.colors.background.secondary,
+    padding: auroraTheme.spacing.md,
+    borderRadius: auroraTheme.borderRadius.lg,
     alignItems: "center",
   },
   statValue: {
     ...textStyles.h3,
-    color: colors.primary[600],
+    color: auroraTheme.colors.primary[600],
   },
   statLabel: {
     ...textStyles.caption,
-    color: semanticColors.text.secondary,
-    marginTop: spacing.xs,
+    color: auroraTheme.colors.text.secondary,
+    marginTop: auroraTheme.spacing.xs,
   },
   filterBar: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: semanticColors.background.secondary,
-    marginBottom: spacing.md,
-    gap: spacing.md,
+    paddingHorizontal: auroraTheme.spacing.lg,
+    paddingVertical: auroraTheme.spacing.md,
+    backgroundColor: auroraTheme.colors.background.secondary,
+    marginBottom: auroraTheme.spacing.md,
+    gap: auroraTheme.spacing.md,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: semanticColors.background.primary,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    gap: spacing.xs,
+    backgroundColor: auroraTheme.colors.background.primary,
+    borderRadius: auroraTheme.borderRadius.md,
+    paddingHorizontal: auroraTheme.spacing.sm,
+    paddingVertical: auroraTheme.spacing.xs,
+    gap: auroraTheme.spacing.xs,
   },
   searchInput: {
     flex: 1,
     ...textStyles.body,
-    color: semanticColors.text.primary,
-    padding: spacing.xs,
+    color: auroraTheme.colors.text.primary,
+    padding: auroraTheme.spacing.xs,
   },
   filterGroup: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: auroraTheme.spacing.sm,
     flexWrap: "wrap",
   },
   filterLabel: {
     ...textStyles.label,
-    color: semanticColors.text.secondary,
+    color: auroraTheme.colors.text.secondary,
   },
   filterButtons: {
     flexDirection: "row",
-    gap: spacing.xs,
+    gap: auroraTheme.spacing.xs,
     flexWrap: "wrap",
   },
   filterButton: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.md,
-    backgroundColor: semanticColors.background.primary,
+    paddingHorizontal: auroraTheme.spacing.sm,
+    paddingVertical: auroraTheme.spacing.xs,
+    borderRadius: auroraTheme.borderRadius.md,
+    backgroundColor: auroraTheme.colors.background.primary,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderColor: auroraTheme.colors.neutral[200],
   },
   filterButtonActive: {
-    backgroundColor: colors.primary[100],
-    borderColor: colors.primary[300],
+    backgroundColor: auroraTheme.colors.primary[100],
+    borderColor: auroraTheme.colors.primary[300],
   },
   filterButtonText: {
     ...textStyles.caption,
-    color: semanticColors.text.secondary,
+    color: auroraTheme.colors.text.secondary,
   },
   filterButtonTextActive: {
-    color: colors.primary[700],
+    color: auroraTheme.colors.primary[700],
     fontWeight: "600",
   },
   bulkActions: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.primary[50],
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-    borderRadius: radius.md,
+    paddingHorizontal: auroraTheme.spacing.lg,
+    paddingVertical: auroraTheme.spacing.sm,
+    backgroundColor: auroraTheme.colors.primary[50],
+    marginHorizontal: auroraTheme.spacing.lg,
+    marginBottom: auroraTheme.spacing.md,
+    borderRadius: auroraTheme.borderRadius.md,
   },
   bulkText: {
     ...textStyles.label,
-    color: colors.primary[700],
+    color: auroraTheme.colors.primary[700],
     fontWeight: "600",
   },
   bulkButtons: {
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: auroraTheme.spacing.sm,
   },
   bulkButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.sm,
+    gap: auroraTheme.spacing.xs,
+    paddingHorizontal: auroraTheme.spacing.sm,
+    paddingVertical: auroraTheme.spacing.xs,
+    borderRadius: auroraTheme.borderRadius.sm,
   },
   bulkButtonSuccess: {
-    backgroundColor: colors.success[600],
+    backgroundColor: auroraTheme.colors.success[600],
   },
   bulkButtonWarning: {
-    backgroundColor: colors.warning[600],
+    backgroundColor: auroraTheme.colors.warning[600],
   },
   bulkButtonDanger: {
-    backgroundColor: colors.error[600],
+    backgroundColor: auroraTheme.colors.error[600],
   },
   bulkButtonText: {
     ...textStyles.caption,
@@ -865,45 +1037,45 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   tableContainer: {
-    marginHorizontal: spacing.lg,
-    backgroundColor: semanticColors.background.secondary,
-    borderRadius: radius.lg,
+    marginHorizontal: auroraTheme.spacing.lg,
+    backgroundColor: auroraTheme.colors.background.secondary,
+    borderRadius: auroraTheme.borderRadius.lg,
     overflow: "hidden",
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: colors.neutral[100],
+    backgroundColor: auroraTheme.colors.neutral[100],
     borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[200],
-    paddingVertical: spacing.sm,
+    borderBottomColor: auroraTheme.colors.neutral[200],
+    paddingVertical: auroraTheme.spacing.sm,
   },
   headerCell: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
+    gap: auroraTheme.spacing.xs,
+    paddingHorizontal: auroraTheme.spacing.sm,
   },
   headerText: {
     ...textStyles.label,
-    color: semanticColors.text.secondary,
+    color: auroraTheme.colors.text.secondary,
     fontWeight: "600",
   },
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[100],
-    paddingVertical: spacing.sm,
+    borderBottomColor: auroraTheme.colors.neutral[100],
+    paddingVertical: auroraTheme.spacing.sm,
     alignItems: "center",
   },
   tableRowSelected: {
-    backgroundColor: colors.primary[50],
+    backgroundColor: auroraTheme.colors.primary[50],
   },
   cell: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: auroraTheme.spacing.sm,
   },
   cellText: {
     ...textStyles.body,
-    color: semanticColors.text.primary,
+    color: auroraTheme.colors.text.primary,
   },
   checkboxCell: {
     width: 40,
@@ -935,34 +1107,34 @@ const styles = StyleSheet.create({
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: auroraTheme.spacing.sm,
   },
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.primary[100],
+    backgroundColor: auroraTheme.colors.primary[100],
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
     ...textStyles.label,
-    color: colors.primary[700],
+    color: auroraTheme.colors.primary[700],
     fontWeight: "700",
   },
   username: {
     ...textStyles.body,
-    color: semanticColors.text.primary,
+    color: auroraTheme.colors.text.primary,
     fontWeight: "600",
   },
   fullName: {
     ...textStyles.caption,
-    color: semanticColors.text.secondary,
+    color: auroraTheme.colors.text.secondary,
   },
   badge: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: auroraTheme.spacing.sm,
     paddingVertical: 2,
-    borderRadius: radius.sm,
+    borderRadius: auroraTheme.borderRadius.sm,
   },
   badgeText: {
     ...textStyles.caption,
@@ -970,78 +1142,78 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: "row",
-    gap: spacing.xs,
+    gap: auroraTheme.spacing.xs,
   },
   actionButton: {
-    padding: spacing.xs,
-    borderRadius: radius.sm,
+    padding: auroraTheme.spacing.xs,
+    borderRadius: auroraTheme.borderRadius.sm,
   },
   emptyState: {
-    padding: spacing["2xl"],
+    padding: auroraTheme.spacing["2xl"],
     alignItems: "center",
-    gap: spacing.md,
+    gap: auroraTheme.spacing.md,
   },
   emptyText: {
     ...textStyles.body,
-    color: semanticColors.text.tertiary,
+    color: auroraTheme.colors.text.tertiary,
   },
   pagination: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingHorizontal: auroraTheme.spacing.lg,
+    paddingVertical: auroraTheme.spacing.md,
   },
   paginationText: {
     ...textStyles.caption,
-    color: semanticColors.text.secondary,
+    color: auroraTheme.colors.text.secondary,
   },
   paginationButtons: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: auroraTheme.spacing.sm,
   },
   pageButton: {
-    padding: spacing.xs,
-    borderRadius: radius.sm,
+    padding: auroraTheme.spacing.xs,
+    borderRadius: auroraTheme.borderRadius.sm,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderColor: auroraTheme.colors.neutral[200],
   },
   pageButtonDisabled: {
     opacity: 0.5,
   },
   pageNumber: {
     ...textStyles.label,
-    color: semanticColors.text.primary,
+    color: auroraTheme.colors.text.primary,
   },
   mobileCard: {
-    backgroundColor: semanticColors.background.primary,
-    margin: spacing.sm,
-    borderRadius: radius.md,
-    padding: spacing.md,
+    backgroundColor: auroraTheme.colors.background.primary,
+    margin: auroraTheme.spacing.sm,
+    borderRadius: auroraTheme.borderRadius.md,
+    padding: auroraTheme.spacing.md,
     borderWidth: 1,
-    borderColor: colors.neutral[100],
+    borderColor: auroraTheme.colors.neutral[100],
   },
   mobileCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: spacing.md,
+    marginBottom: auroraTheme.spacing.md,
   },
   mobileBadges: {
     flexDirection: "row",
-    gap: spacing.xs,
+    gap: auroraTheme.spacing.xs,
   },
   mobileEmail: {
     ...textStyles.caption,
-    color: semanticColors.text.secondary,
+    color: auroraTheme.colors.text.secondary,
   },
   mobileCardActions: {
     flexDirection: "row",
     justifyContent: "space-around",
     borderTopWidth: 1,
-    borderTopColor: colors.neutral[100],
-    paddingTop: spacing.sm,
+    borderTopColor: auroraTheme.colors.neutral[100],
+    paddingTop: auroraTheme.spacing.sm,
   },
   mobileAction: {
     alignItems: "center",
@@ -1049,6 +1221,6 @@ const styles = StyleSheet.create({
   },
   mobileActionText: {
     ...textStyles.caption,
-    color: semanticColors.text.secondary,
+    color: auroraTheme.colors.text.secondary,
   },
 });

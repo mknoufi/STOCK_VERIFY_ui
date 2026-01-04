@@ -100,7 +100,9 @@ export const BarcodeValidator = {
    */
   is1DBarcode: (type: string): boolean => {
     const normalized = type.toLowerCase().replace(/[-_]/g, "");
-    return SUPPORTED_1D_BARCODES.some((b) => b.toLowerCase().replace(/[-_]/g, "") === normalized);
+    return SUPPORTED_1D_BARCODES.some(
+      (b) => b.toLowerCase().replace(/[-_]/g, "") === normalized,
+    );
   },
 
   /**
@@ -164,7 +166,10 @@ export class ScanThrottleManager {
     }
 
     // Check if same barcode was scanned recently
-    if (barcode === this.lastBarcode && timeSinceLastScan < this.config.sameBarcode) {
+    if (
+      barcode === this.lastBarcode &&
+      timeSinceLastScan < this.config.sameBarcode
+    ) {
       return false;
     }
 

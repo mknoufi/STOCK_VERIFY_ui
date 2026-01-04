@@ -1,6 +1,6 @@
 import axios from "axios";
 import Constants from "expo-constants";
-import { resolveBackendUrl } from "./backendUrl";
+import { BACKEND_URL, resolveBackendUrl } from "./backendUrl";
 import { createLogger } from "./logging";
 import { secureStorage } from "./storage/secureStorage";
 import { handleUnauthorized } from "./authUnauthorizedHandler";
@@ -13,14 +13,16 @@ const log = createLogger("httpClient");
 const getInitialBackendUrl = (): string => {
   const configUrl = Constants.expoConfig?.extra?.backendUrl;
   if (configUrl) return configUrl as string;
-  if (process.env.EXPO_PUBLIC_BACKEND_URL) return process.env.EXPO_PUBLIC_BACKEND_URL;
-  return "http://localhost:8001";
+  if (process.env.EXPO_PUBLIC_BACKEND_URL)
+    return process.env.EXPO_PUBLIC_BACKEND_URL;
+  return BACKEND_URL;
 };
 
 export const API_BASE_URL: string = getInitialBackendUrl();
 
 const IS_TEST_ENV =
-  process.env.NODE_ENV === "test" || typeof process.env.JEST_WORKER_ID !== "undefined";
+  process.env.NODE_ENV === "test" ||
+  typeof process.env.JEST_WORKER_ID !== "undefined";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -30,10 +32,14 @@ const apiClient = axios.create({
   },
 });
 
-const summarizePayload = (payload: unknown): Record<string, unknown> | undefined => {
+const summarizePayload = (
+  payload: unknown,
+): Record<string, unknown> | undefined => {
   if (payload == null) return undefined;
-  if (typeof payload === "string") return { type: "string", length: payload.length };
-  if (typeof payload === "number" || typeof payload === "boolean") return { type: typeof payload };
+  if (typeof payload === "string")
+    return { type: "string", length: payload.length };
+  if (typeof payload === "number" || typeof payload === "boolean")
+    return { type: typeof payload };
   if (Array.isArray(payload)) return { type: "array", length: payload.length };
   if (typeof payload === "object") {
     const keys = Object.keys(payload as Record<string, unknown>);
@@ -70,7 +76,9 @@ const toFullUrl = (baseURL: string | undefined, url: string | undefined) => {
   return base ? `${base}/${path}` : url;
 };
 
-const summarizeResponseData = (data: unknown): Record<string, unknown> | undefined => {
+const summarizeResponseData = (
+  data: unknown,
+): Record<string, unknown> | undefined => {
   if (data == null) return undefined;
   if (typeof data === "string") return { type: "string", length: data.length };
   if (Array.isArray(data)) return { type: "array", length: data.length };
@@ -91,7 +99,9 @@ const summarizeResponseData = (data: unknown): Record<string, unknown> | undefin
 
 const shouldLogNetworkDebug =
   !IS_TEST_ENV &&
-  (typeof __DEV__ !== "undefined" ? __DEV__ : process.env.NODE_ENV === "development");
+  (typeof __DEV__ !== "undefined"
+    ? __DEV__
+    : process.env.NODE_ENV === "development");
 
 // Add request interceptor for debugging (never log raw payloads or auth headers)
 apiClient.interceptors.request.use(
@@ -120,7 +130,7 @@ apiClient.interceptors.request.use(
       error: (error as { message?: string } | null)?.message || String(error),
     });
     return Promise.reject(error);
-  }
+  },
 );
 
 // Add response interceptor for debugging and session handling
@@ -135,7 +145,9 @@ apiClient.interceptors.response.use(
   (error) => {
     const fullUrl = toFullUrl(error.config?.baseURL, error.config?.url);
     const status = error.response?.status;
-    const data = error.response?.data as { code?: string; message?: string } | undefined;
+    const data = error.response?.data as
+      | { code?: string; message?: string }
+      | undefined;
     const errorCode = data?.code;
 
     // Handle Network Restrictions (403 NETWORK_NOT_ALLOWED)
@@ -205,7 +217,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

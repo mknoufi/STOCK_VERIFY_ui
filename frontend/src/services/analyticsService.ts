@@ -4,7 +4,11 @@
  * Phase 0: Advanced Analytics Dashboard
  */
 
-import { getSessionsAnalytics, getSystemStats, getSystemIssues } from "./api/api";
+import {
+  getSessionsAnalytics,
+  getSystemStats,
+  getSystemIssues,
+} from "./api/api";
 
 export interface AnalyticsMetric {
   label: string;
@@ -55,7 +59,9 @@ class AnalyticsService {
   /**
    * Get dashboard analytics data
    */
-  async getDashboardData(_timeRange: "24h" | "7d" | "30d" = "7d"): Promise<AnalyticsDashboardData> {
+  async getDashboardData(
+    _timeRange: "24h" | "7d" | "30d" = "7d",
+  ): Promise<AnalyticsDashboardData> {
     try {
       const [analyticsRes, statsRes] = await Promise.all([
         getSessionsAnalytics(),
@@ -95,12 +101,15 @@ class AnalyticsService {
         sessionAnalytics: {
           totalSessions: analytics.total_sessions || 0,
           activeSessions: stats.active_sessions || 0,
-          completedSessions: (analytics.total_sessions || 0) - (stats.active_sessions || 0),
+          completedSessions:
+            (analytics.total_sessions || 0) - (stats.active_sessions || 0),
           averageDuration: 0,
           totalItemsScanned: analytics.total_items || 0,
           varianceRate: analytics.avg_variance || 0,
         },
-        varianceTrends: this.mapSessionsToTrends(analytics.sessions_by_date || {}),
+        varianceTrends: this.mapSessionsToTrends(
+          analytics.sessions_by_date || {},
+        ),
         topPerformers: [],
         recentActivity: [],
       };
@@ -110,7 +119,9 @@ class AnalyticsService {
     }
   }
 
-  private mapSessionsToTrends(sessionsByDate: Record<string, number>): VarianceTrend[] {
+  private mapSessionsToTrends(
+    sessionsByDate: Record<string, number>,
+  ): VarianceTrend[] {
     return Object.entries(sessionsByDate)
       .map(([date, count]) => ({
         date,

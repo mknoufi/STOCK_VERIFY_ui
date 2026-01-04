@@ -79,7 +79,7 @@ export function getDeviceContext(): DeviceContext {
  */
 export async function createOfflineCountLine(
   countData: CreateCountLinePayload,
-  deviceContext?: Partial<DeviceContext>
+  deviceContext?: Partial<DeviceContext>,
 ): Promise<OfflineCountLine> {
   const context = { ...globalDeviceContext, ...deviceContext };
   const user = useAuthStore.getState().user;
@@ -131,17 +131,23 @@ export async function createOfflineCountLine(
   // Add extended fields if present (preserving any extra data)
   const extendedData: Record<string, unknown> = {};
   if (countData.floor_no) extendedData.floor_no = countData.floor_no;
-  if (countData.mark_location) extendedData.mark_location = countData.mark_location;
+  if (countData.mark_location)
+    extendedData.mark_location = countData.mark_location;
   if (countData.sr_no) extendedData.sr_no = countData.sr_no;
-  if (countData.manufacturing_date) extendedData.manufacturing_date = countData.manufacturing_date;
-  if (countData.variance_reason) extendedData.variance_reason = countData.variance_reason;
-  if (countData.variance_note) extendedData.variance_note = countData.variance_note;
+  if (countData.manufacturing_date)
+    extendedData.manufacturing_date = countData.manufacturing_date;
+  if (countData.variance_reason)
+    extendedData.variance_reason = countData.variance_reason;
+  if (countData.variance_note)
+    extendedData.variance_note = countData.variance_note;
   if (countData.remark) extendedData.remark = countData.remark;
   if (countData.damage_included !== undefined)
     extendedData.damage_included = countData.damage_included;
-  if (countData.damaged_qty !== undefined) extendedData.damaged_qty = countData.damaged_qty;
+  if (countData.damaged_qty !== undefined)
+    extendedData.damaged_qty = countData.damaged_qty;
   if (countData.non_returnable_damaged_qty !== undefined) {
-    extendedData.non_returnable_damaged_qty = countData.non_returnable_damaged_qty;
+    extendedData.non_returnable_damaged_qty =
+      countData.non_returnable_damaged_qty;
   }
   if (countData.batch_id) extendedData.batch_id = countData.batch_id;
 

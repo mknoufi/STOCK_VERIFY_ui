@@ -77,7 +77,9 @@ export const adminApi = {
    * Get real-time system health metrics
    */
   getSystemStatus: async (): Promise<SystemStatusResponse> => {
-    const response = await api.get<SystemStatusResponse>("/api/admin/dashboard/system-status");
+    const response = await api.get<SystemStatusResponse>(
+      "/api/admin/dashboard/system-status",
+    );
     return response.data;
   },
 
@@ -85,7 +87,9 @@ export const adminApi = {
    * Get list of currently active users
    */
   getActiveUsers: async (): Promise<ActiveUserInfo[]> => {
-    const response = await api.get<ActiveUserInfo[]>("/api/admin/dashboard/active-users");
+    const response = await api.get<ActiveUserInfo[]>(
+      "/api/admin/dashboard/active-users",
+    );
     return response.data;
   },
 
@@ -97,9 +101,12 @@ export const adminApi = {
     level?: "error" | "warning" | "critical";
     hours?: number;
   }): Promise<ErrorLogEntry[]> => {
-    const response = await api.get<ErrorLogEntry[]>("/api/admin/dashboard/error-logs", {
-      params,
-    });
+    const response = await api.get<ErrorLogEntry[]>(
+      "/api/admin/dashboard/error-logs",
+      {
+        params,
+      },
+    );
     return response.data;
   },
 
@@ -116,7 +123,7 @@ export const adminApi = {
     };
     const response = await api.get<PerformanceMetric[]>(
       "/api/admin/dashboard/performance-metrics",
-      { params: queryParams }
+      { params: queryParams },
     );
     return response.data;
   },
@@ -125,7 +132,9 @@ export const adminApi = {
    * Get complete dashboard summary in one call
    */
   getDashboardSummary: async (): Promise<DashboardSummary> => {
-    const response = await api.get<DashboardSummary>("/api/admin/dashboard/summary");
+    const response = await api.get<DashboardSummary>(
+      "/api/admin/dashboard/summary",
+    );
     return response.data;
   },
 };

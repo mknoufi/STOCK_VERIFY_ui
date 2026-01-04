@@ -3,7 +3,14 @@
  * Visual overlay showing the optimal scan area for 1D barcodes
  */
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Dimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Platform,
+} from "react-native";
 import { SCANNER_CONFIG } from "../../config/scannerConfig";
 
 interface ScanAreaOverlayProps {
@@ -34,9 +41,12 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
   animateScanLine = true,
 }) => {
   // Calculate scan area dimensions
-  const areaWidth = scanAreaWidth || (SCREEN_WIDTH * SCANNER_CONFIG.scanArea.widthPercent) / 100;
+  const areaWidth =
+    scanAreaWidth ||
+    (SCREEN_WIDTH * SCANNER_CONFIG.scanArea.widthPercent) / 100;
   const areaHeight =
-    scanAreaHeight || (SCREEN_HEIGHT * SCANNER_CONFIG.scanArea.heightPercent) / 100;
+    scanAreaHeight ||
+    (SCREEN_HEIGHT * SCANNER_CONFIG.scanArea.heightPercent) / 100;
 
   // Animation for scanning line
   const scanLineAnim = useRef(new Animated.Value(0)).current;
@@ -61,7 +71,7 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
           duration: 2000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     animation.start();
 
@@ -123,23 +133,32 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
           styles.overlay,
           styles.topOverlay,
           {
-            height: (SCREEN_HEIGHT - areaHeight) / 2 + SCANNER_CONFIG.scanArea.verticalOffset,
+            height:
+              (SCREEN_HEIGHT - areaHeight) / 2 +
+              SCANNER_CONFIG.scanArea.verticalOffset,
           },
         ]}
       />
       <View style={styles.middleRow}>
         <View
-          style={[styles.overlay, styles.sideOverlay, { width: (SCREEN_WIDTH - areaWidth) / 2 }]}
+          style={[
+            styles.overlay,
+            styles.sideOverlay,
+            { width: (SCREEN_WIDTH - areaWidth) / 2 },
+          ]}
         />
 
         {/* Scan Area */}
-        <View style={[styles.scanArea, { width: areaWidth, height: areaHeight }]}>
+        <View
+          style={[styles.scanArea, { width: areaWidth, height: areaHeight }]}
+        >
           {/* Flash overlay for feedback */}
           <Animated.View
             style={[
               styles.flashOverlay,
               {
-                backgroundColor: feedbackState === "success" ? "#22C55E" : "#EF4444",
+                backgroundColor:
+                  feedbackState === "success" ? "#22C55E" : "#EF4444",
                 opacity: flashOpacity,
               },
             ]}
@@ -149,16 +168,32 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
           {showCorners && (
             <>
               <View
-                style={[styles.corner, styles.cornerTopLeft, { borderColor: getBorderColor() }]}
+                style={[
+                  styles.corner,
+                  styles.cornerTopLeft,
+                  { borderColor: getBorderColor() },
+                ]}
               />
               <View
-                style={[styles.corner, styles.cornerTopRight, { borderColor: getBorderColor() }]}
+                style={[
+                  styles.corner,
+                  styles.cornerTopRight,
+                  { borderColor: getBorderColor() },
+                ]}
               />
               <View
-                style={[styles.corner, styles.cornerBottomLeft, { borderColor: getBorderColor() }]}
+                style={[
+                  styles.corner,
+                  styles.cornerBottomLeft,
+                  { borderColor: getBorderColor() },
+                ]}
               />
               <View
-                style={[styles.corner, styles.cornerBottomRight, { borderColor: getBorderColor() }]}
+                style={[
+                  styles.corner,
+                  styles.cornerBottomRight,
+                  { borderColor: getBorderColor() },
+                ]}
               />
             </>
           )}
@@ -177,11 +212,17 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
           )}
 
           {/* Center guide lines */}
-          <View style={[styles.centerLineH, { backgroundColor: getBorderColor() }]} />
+          <View
+            style={[styles.centerLineH, { backgroundColor: getBorderColor() }]}
+          />
         </View>
 
         <View
-          style={[styles.overlay, styles.sideOverlay, { width: (SCREEN_WIDTH - areaWidth) / 2 }]}
+          style={[
+            styles.overlay,
+            styles.sideOverlay,
+            { width: (SCREEN_WIDTH - areaWidth) / 2 },
+          ]}
         />
       </View>
       <View
@@ -189,14 +230,21 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
           styles.overlay,
           styles.bottomOverlay,
           {
-            height: (SCREEN_HEIGHT - areaHeight) / 2 - SCANNER_CONFIG.scanArea.verticalOffset,
+            height:
+              (SCREEN_HEIGHT - areaHeight) / 2 -
+              SCANNER_CONFIG.scanArea.verticalOffset,
           },
         ]}
       />
 
       {/* Hint text */}
       <View style={styles.hintContainer}>
-        <Text style={[styles.hintText, feedbackState !== "idle" && styles.hintTextFeedback]}>
+        <Text
+          style={[
+            styles.hintText,
+            feedbackState !== "idle" && styles.hintTextFeedback,
+          ]}
+        >
           {feedbackState === "success"
             ? "✓ Barcode Scanned!"
             : feedbackState === "error"

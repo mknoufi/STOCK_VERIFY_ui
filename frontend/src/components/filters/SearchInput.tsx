@@ -33,9 +33,18 @@ import Animated, {
   interpolate,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, semanticColors, spacing, radius, shadows } from "../../theme/unified";
+import {
+  colors,
+  semanticColors,
+  spacing,
+  radius,
+  shadows,
+} from "../../theme/unified";
 
-export interface SearchInputProps extends Omit<TextInputProps, "onChangeText" | "value"> {
+export interface SearchInputProps extends Omit<
+  TextInputProps,
+  "onChangeText" | "value"
+> {
   /** Search callback - receives debounced query */
   onSearch: (query: string) => void;
   /** Debounce delay in milliseconds */
@@ -83,7 +92,8 @@ export function SearchInput({
   const [isFocused, setIsFocused] = useState(false);
 
   // Use controlled value if provided
-  const currentValue = controlledValue !== undefined ? controlledValue : localValue;
+  const currentValue =
+    controlledValue !== undefined ? controlledValue : localValue;
 
   // Debounced search
   useEffect(() => {
@@ -109,7 +119,7 @@ export function SearchInput({
       }
       onChangeText?.(text);
     },
-    [controlledValue, onChangeText]
+    [controlledValue, onChangeText],
   );
 
   const handleClear = useCallback(() => {
@@ -129,7 +139,9 @@ export function SearchInput({
 
   // Container animation style
   const containerAnimatedStyle = useAnimatedStyle(() => ({
-    borderColor: isFocused ? colors.primary[500] : semanticColors.border.default,
+    borderColor: isFocused
+      ? colors.primary[500]
+      : semanticColors.border.default,
     shadowOpacity: interpolate(focusProgress.value, [0, 1], [0, 0.1]),
   }));
 
@@ -144,12 +156,16 @@ export function SearchInput({
 
   return (
     <View style={styles.wrapper}>
-      <Animated.View style={[styles.container, containerAnimatedStyle, { height }]}>
+      <Animated.View
+        style={[styles.container, containerAnimatedStyle, { height }]}
+      >
         <View style={styles.searchIconContainer}>
           <Ionicons
             name="search-outline"
             size={iconSize}
-            color={isFocused ? colors.primary[500] : semanticColors.text.tertiary}
+            color={
+              isFocused ? colors.primary[500] : semanticColors.text.tertiary
+            }
           />
         </View>
 
@@ -172,7 +188,11 @@ export function SearchInput({
         {/* Loading or Clear button */}
         <View style={styles.rightContainer}>
           {loading && (
-            <ActivityIndicator size="small" color={colors.primary[500]} style={styles.loader} />
+            <ActivityIndicator
+              size="small"
+              color={colors.primary[500]}
+              style={styles.loader}
+            />
           )}
 
           {!loading && currentValue.length > 0 && (
@@ -199,11 +219,17 @@ export function SearchInput({
           <Ionicons
             name="options-outline"
             size={iconSize}
-            color={activeFilterCount > 0 ? colors.primary[500] : semanticColors.text.secondary}
+            color={
+              activeFilterCount > 0
+                ? colors.primary[500]
+                : semanticColors.text.secondary
+            }
           />
           {activeFilterCount > 0 && (
             <View style={styles.filterBadge}>
-              <Animated.Text style={styles.filterBadgeText}>{activeFilterCount}</Animated.Text>
+              <Animated.Text style={styles.filterBadgeText}>
+                {activeFilterCount}
+              </Animated.Text>
             </View>
           )}
         </TouchableOpacity>

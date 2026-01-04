@@ -69,15 +69,25 @@ export class AutoErrorFinder {
     let severity: CodeIssue["severity"] = "warning";
     let suggestion: string | undefined;
 
-    if (errorMessage.includes("Cannot read property") || errorMessage.includes("undefined")) {
+    if (
+      errorMessage.includes("Cannot read property") ||
+      errorMessage.includes("undefined")
+    ) {
       issueType = "type_error";
       severity = "critical";
-      suggestion = "Check if object/variable is properly initialized before accessing properties";
-    } else if (errorMessage.includes("Network") || errorMessage.includes("fetch")) {
+      suggestion =
+        "Check if object/variable is properly initialized before accessing properties";
+    } else if (
+      errorMessage.includes("Network") ||
+      errorMessage.includes("fetch")
+    ) {
       issueType = "runtime_error";
       severity = "warning";
       suggestion = "Check network connection and API endpoint availability";
-    } else if (errorMessage.includes("TypeError") || errorMessage.includes("type")) {
+    } else if (
+      errorMessage.includes("TypeError") ||
+      errorMessage.includes("type")
+    ) {
       issueType = "type_error";
       severity = "critical";
       suggestion = "Check variable types and ensure correct data format";
@@ -109,7 +119,7 @@ export class AutoErrorFinder {
     functionName: string,
     error: any,
     filePath: string,
-    lineNumber: number
+    lineNumber: number,
   ): BrokenFunction {
     const errorMessage = error?.message || String(error);
     const issues: string[] = [];
@@ -159,14 +169,20 @@ export class AutoErrorFinder {
       fallback?: () => Promise<T>;
       defaultValue?: T;
       context?: string;
-    } = {}
+    } = {},
   ): Promise<{
     result: T | null;
     success: boolean;
     error?: string;
     retryCount: number;
   }> {
-    const { maxRetries = 3, retryDelay = 1000, fallback, defaultValue, context } = options;
+    const {
+      maxRetries = 3,
+      retryDelay = 1000,
+      fallback,
+      defaultValue,
+      context,
+    } = options;
 
     let lastError: any;
     let retryCount = 0;
@@ -179,7 +195,8 @@ export class AutoErrorFinder {
         if (retryCount > 0) {
           this.recoveryStats.successful_recoveries++;
           this.recoveryStats.retry_count += retryCount;
-          __DEV__ && console.log(`✅ Auto-recovered after ${retryCount} retries`);
+          __DEV__ &&
+            console.log(`✅ Auto-recovered after ${retryCount} retries`);
         }
 
         this.recoveryStats.total_recoveries++;
@@ -266,7 +283,8 @@ export class AutoErrorFinder {
   private static updateSuccessRate() {
     const total = this.recoveryStats.total_recoveries;
     const successful = this.recoveryStats.successful_recoveries;
-    this.recoveryStats.success_rate = total > 0 ? (successful / total) * 100 : 0;
+    this.recoveryStats.success_rate =
+      total > 0 ? (successful / total) * 100 : 0;
   }
 
   /**
@@ -325,7 +343,10 @@ export class AutoErrorFinder {
     }
 
     // Add auto-fix logic here
-    if (issue.issue_type === "type_error" && issue.message.includes("undefined")) {
+    if (
+      issue.issue_type === "type_error" &&
+      issue.message.includes("undefined")
+    ) {
       return {
         success: true,
         message: "Added null check - verify fix is correct",

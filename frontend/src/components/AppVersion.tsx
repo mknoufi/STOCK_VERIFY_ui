@@ -8,7 +8,10 @@ interface AppVersionProps {
   showDetails?: boolean;
 }
 
-export const AppVersion: React.FC<AppVersionProps> = ({ style, showDetails = false }) => {
+export const AppVersion: React.FC<AppVersionProps> = ({
+  style,
+  showDetails = false,
+}) => {
   const { version, buildVersion, platform, appName } = useAppVersion();
 
   return (

@@ -3,7 +3,13 @@
  * Shows update available or force update banners
  */
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { VersionCheckResult } from "../services/versionService";
 
@@ -90,7 +96,11 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.modalIconContainer}>
-            <Ionicons name={getIcon() as any} size={64} color={getIconColor()} />
+            <Ionicons
+              name={getIcon() as any}
+              size={64}
+              color={getIconColor()}
+            />
           </View>
 
           <Text style={styles.modalTitle}>
@@ -101,12 +111,16 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
 
           <View style={styles.versionInfo}>
             <Text style={styles.versionLabel}>Current Version:</Text>
-            <Text style={styles.versionValue}>{versionInfo.client_version ?? "unknown"}</Text>
+            <Text style={styles.versionValue}>
+              {versionInfo.client_version ?? "unknown"}
+            </Text>
           </View>
 
           <View style={styles.versionInfo}>
             <Text style={styles.versionLabel}>Latest Version:</Text>
-            <Text style={styles.versionValue}>{versionInfo.current_version ?? "unknown"}</Text>
+            <Text style={styles.versionValue}>
+              {versionInfo.current_version ?? "unknown"}
+            </Text>
           </View>
 
           <TouchableOpacity
@@ -130,7 +144,10 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
   // Banner variant
   return (
     <View
-      style={[styles.bannerContainer, { backgroundColor: forceUpdate ? "#FFEBEE" : "#E3F2FD" }]}
+      style={[
+        styles.bannerContainer,
+        { backgroundColor: forceUpdate ? "#FFEBEE" : "#E3F2FD" },
+      ]}
     >
       <View style={styles.bannerContent}>
         <Ionicons
@@ -150,14 +167,20 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
         </View>
 
         <TouchableOpacity
-          style={[styles.bannerUpdateButton, { backgroundColor: getIconColor() }]}
+          style={[
+            styles.bannerUpdateButton,
+            { backgroundColor: getIconColor() },
+          ]}
           onPress={handleUpdate}
         >
           <Text style={styles.bannerUpdateButtonText}>Update</Text>
         </TouchableOpacity>
 
         {!forceUpdate && onDismiss && (
-          <TouchableOpacity style={styles.bannerCloseButton} onPress={onDismiss}>
+          <TouchableOpacity
+            style={styles.bannerCloseButton}
+            onPress={onDismiss}
+          >
             <Ionicons name="close" size={20} color="#666" />
           </TouchableOpacity>
         )}

@@ -5,7 +5,13 @@
  */
 
 import React, { useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, {
@@ -20,8 +26,15 @@ interface LayoutPickerProps {
   compact?: boolean;
 }
 
-export const LayoutPicker: React.FC<LayoutPickerProps> = ({ compact = false }) => {
-  const { themeLegacy: theme, layout, setLayout, availableLayouts } = useThemeContext();
+export const LayoutPicker: React.FC<LayoutPickerProps> = ({
+  compact = false,
+}) => {
+  const {
+    themeLegacy: theme,
+    layout,
+    setLayout,
+    availableLayouts,
+  } = useThemeContext();
 
   const handleLayoutSelect = useCallback(
     (key: LayoutArrangement) => {
@@ -30,15 +43,22 @@ export const LayoutPicker: React.FC<LayoutPickerProps> = ({ compact = false }) =
       }
       setLayout(key);
     },
-    [setLayout]
+    [setLayout],
   );
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}>Layout Style</Text>
+      <Text
+        style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}
+      >
+        Layout Style
+      </Text>
       <View style={styles.layoutGrid}>
         {availableLayouts.map((l, index) => (
-          <Animated.View key={l.key} entering={FadeInDown.delay(index * 30).springify()}>
+          <Animated.View
+            key={l.key}
+            entering={FadeInDown.delay(index * 30).springify()}
+          >
             <LayoutItem
               layout={l}
               isSelected={layout === l.key}
@@ -108,7 +128,10 @@ const LayoutItem: React.FC<LayoutItemProps> = ({
           color={isSelected ? "#FFFFFF" : textColor}
         />
         <Text
-          style={[styles.layoutName, { color: isSelected ? "#FFFFFF" : textColor }]}
+          style={[
+            styles.layoutName,
+            { color: isSelected ? "#FFFFFF" : textColor },
+          ]}
           numberOfLines={1}
         >
           {layout.name}

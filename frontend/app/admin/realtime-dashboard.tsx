@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   View,
   Text,
@@ -114,17 +120,28 @@ const ColumnSettingsModal: React.FC<{
   onResetDefaults: () => void;
 }> = ({ visible, columns, onClose, onToggle, onResetDefaults }) => {
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Column Settings</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+              />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.modalSubtitle}>Toggle columns to show or hide them in the table</Text>
+          <Text style={styles.modalSubtitle}>
+            Toggle columns to show or hide them in the table
+          </Text>
 
           <ScrollView style={styles.columnList}>
             {columns.map((col) => (
@@ -137,14 +154,19 @@ const ColumnSettingsModal: React.FC<{
                     false: "#767577",
                     true: auroraTheme.colors.primary[300],
                   }}
-                  thumbColor={col.visible ? auroraTheme.colors.primary[500] : "#f4f3f4"}
+                  thumbColor={
+                    col.visible ? auroraTheme.colors.primary[500] : "#f4f3f4"
+                  }
                 />
               </View>
             ))}
           </ScrollView>
 
           <View style={styles.modalActions}>
-            <TouchableOpacity style={styles.resetButton} onPress={onResetDefaults}>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={onResetDefaults}
+            >
               <Text style={styles.resetButtonText}>Reset to Defaults</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.doneButton} onPress={onClose}>
@@ -192,13 +214,22 @@ const ItemDetailsModal: React.FC<{
   ];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <View style={styles.modalOverlay}>
         <View style={styles.detailsModalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Item Details</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -209,9 +240,11 @@ const ItemDetailsModal: React.FC<{
                 row.value !== null && (
                   <View key={index} style={styles.detailRow}>
                     <Text style={styles.detailLabel}>{row.label}</Text>
-                    <Text style={styles.detailValue}>{formatValue(row.value, row.format)}</Text>
+                    <Text style={styles.detailValue}>
+                      {formatValue(row.value, row.format)}
+                    </Text>
                   </View>
-                )
+                ),
             )}
           </ScrollView>
 
@@ -233,7 +266,9 @@ const StatsCard: React.FC<{
   format?: string;
 }> = ({ label, value, icon, color, format }) => (
   <View style={[styles.statsCard, { borderLeftColor: color }]}>
-    <View style={[styles.statsIconContainer, { backgroundColor: color + "20" }]}>
+    <View
+      style={[styles.statsIconContainer, { backgroundColor: color + "20" }]}
+    >
       <Ionicons name={icon as any} size={20} color={color} />
     </View>
     <View style={styles.statsTextContainer}>
@@ -245,7 +280,9 @@ const StatsCard: React.FC<{
 
 // Main Dashboard Component
 export default function RealtimeDashboard() {
-  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
 
   // State
   const [loading, setLoading] = useState(true);
@@ -273,7 +310,10 @@ export default function RealtimeDashboard() {
   const [verifiedFilter, setVerifiedFilter] = useState<boolean | null>(null);
 
   // Visible columns
-  const visibleColumns = useMemo(() => columns.filter((col) => col.visible), [columns]);
+  const visibleColumns = useMemo(
+    () => columns.filter((col) => col.visible),
+    [columns],
+  );
 
   // Fetch data
   const fetchData = useCallback(
@@ -288,7 +328,8 @@ export default function RealtimeDashboard() {
             field: col.field,
             visible: col.visible,
           })),
-          filters: verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
+          filters:
+            verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
           auto_refresh: autoRefresh,
           refresh_interval_seconds: 10,
         };
@@ -309,7 +350,14 @@ export default function RealtimeDashboard() {
         setError(err.message || "Failed to fetch data");
       }
     },
-    [columns, sortBy, sortOrder, verifiedFilter, pagination.page_size, autoRefresh]
+    [
+      columns,
+      sortBy,
+      sortOrder,
+      verifiedFilter,
+      pagination.page_size,
+      autoRefresh,
+    ],
   );
 
   // Fetch stats
@@ -327,7 +375,9 @@ export default function RealtimeDashboard() {
   // Fetch columns
   const fetchColumns = useCallback(async () => {
     try {
-      const response = await api.get("/api/dashboard/columns?report_type=verified_items");
+      const response = await api.get(
+        "/api/dashboard/columns?report_type=verified_items",
+      );
       if (response.data.success) {
         setColumns(response.data.columns);
       }
@@ -381,7 +431,9 @@ export default function RealtimeDashboard() {
 
   const handleColumnToggle = (field: string) => {
     setColumns((prev) =>
-      prev.map((col) => (col.field === field ? { ...col, visible: !col.visible } : col))
+      prev.map((col) =>
+        col.field === field ? { ...col, visible: !col.visible } : col,
+      ),
     );
   };
 
@@ -415,7 +467,8 @@ export default function RealtimeDashboard() {
           field: col.field,
           visible: col.visible,
         })),
-        filters: verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
+        filters:
+          verifiedFilter !== null ? { verified: verifiedFilter } : undefined,
         sort_by: sortBy,
         sort_order: sortOrder,
       };
@@ -470,7 +523,9 @@ export default function RealtimeDashboard() {
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         {/* Stats Section */}
         {stats && (
@@ -525,7 +580,10 @@ export default function RealtimeDashboard() {
         {/* Controls */}
         <View style={styles.controls}>
           <View style={styles.controlsLeft}>
-            <TouchableOpacity style={styles.filterButton} onPress={() => setVerifiedFilter(null)}>
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setVerifiedFilter(null)}
+            >
               <Text
                 style={[
                   styles.filterButtonText,
@@ -535,7 +593,10 @@ export default function RealtimeDashboard() {
                 All
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterButton} onPress={() => setVerifiedFilter(true)}>
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setVerifiedFilter(true)}
+            >
               <Text
                 style={[
                   styles.filterButtonText,
@@ -545,7 +606,10 @@ export default function RealtimeDashboard() {
                 Verified
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterButton} onPress={() => setVerifiedFilter(false)}>
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setVerifiedFilter(false)}
+            >
               <Text
                 style={[
                   styles.filterButtonText,
@@ -566,16 +630,32 @@ export default function RealtimeDashboard() {
                 name={autoRefresh ? "sync" : "sync-outline"}
                 size={20}
                 color={
-                  autoRefresh ? auroraTheme.colors.primary[500] : auroraTheme.colors.text.secondary
+                  autoRefresh
+                    ? auroraTheme.colors.primary[500]
+                    : auroraTheme.colors.text.secondary
                 }
               />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton} onPress={() => setShowColumnSettings(true)}>
-              <Ionicons name="options" size={20} color={auroraTheme.colors.text.primary} />
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setShowColumnSettings(true)}
+            >
+              <Ionicons
+                name="options"
+                size={20}
+                color={auroraTheme.colors.text.primary}
+              />
             </TouchableOpacity>
             {isWeb && (
-              <TouchableOpacity style={styles.iconButton} onPress={handleExportCSV}>
-                <Ionicons name="download" size={20} color={auroraTheme.colors.text.primary} />
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={handleExportCSV}
+              >
+                <Ionicons
+                  name="download"
+                  size={20}
+                  color={auroraTheme.colors.text.primary}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -585,8 +665,8 @@ export default function RealtimeDashboard() {
         {summary && (
           <View style={styles.generationInfo}>
             <Text style={styles.generationText}>
-              Generated in {summary.generation_time_ms.toFixed(0)}ms • {summary.filtered_records} of{" "}
-              {summary.total_records} records
+              Generated in {summary.generation_time_ms.toFixed(0)}ms •{" "}
+              {summary.filtered_records} of {summary.total_records} records
             </Text>
             {autoRefresh && (
               <View style={styles.liveIndicator}>
@@ -606,7 +686,10 @@ export default function RealtimeDashboard() {
                 {visibleColumns.map((col) => (
                   <TouchableOpacity
                     key={col.field}
-                    style={[styles.tableHeaderCell, { width: col.width || 120 }]}
+                    style={[
+                      styles.tableHeaderCell,
+                      { width: col.width || 120 },
+                    ]}
                     onPress={() => col.sortable && handleSort(col.field)}
                     disabled={!col.sortable}
                   >
@@ -644,7 +727,10 @@ export default function RealtimeDashboard() {
                     onPress={() => handleItemPress(item)}
                   >
                     {visibleColumns.map((col) => (
-                      <View key={col.field} style={[styles.tableCell, { width: col.width || 120 }]}>
+                      <View
+                        key={col.field}
+                        style={[styles.tableCell, { width: col.width || 120 }]}
+                      >
                         <Text
                           style={[
                             styles.tableCellText,
@@ -657,7 +743,10 @@ export default function RealtimeDashboard() {
                           ]}
                           numberOfLines={1}
                         >
-                          {formatValue(item[col.field as keyof DashboardItem], col.format)}
+                          {formatValue(
+                            item[col.field as keyof DashboardItem],
+                            col.format,
+                          )}
                         </Text>
                       </View>
                     ))}
@@ -671,7 +760,10 @@ export default function RealtimeDashboard() {
         {/* Pagination */}
         <View style={styles.pagination}>
           <TouchableOpacity
-            style={[styles.pageButton, !pagination.has_prev && styles.pageButtonDisabled]}
+            style={[
+              styles.pageButton,
+              !pagination.has_prev && styles.pageButtonDisabled,
+            ]}
             onPress={() => handlePageChange(pagination.page - 1)}
             disabled={!pagination.has_prev}
           >
@@ -683,7 +775,10 @@ export default function RealtimeDashboard() {
           </Text>
 
           <TouchableOpacity
-            style={[styles.pageButton, !pagination.has_next && styles.pageButtonDisabled]}
+            style={[
+              styles.pageButton,
+              !pagination.has_next && styles.pageButtonDisabled,
+            ]}
             onPress={() => handlePageChange(pagination.page + 1)}
             disabled={!pagination.has_next}
           >
@@ -692,52 +787,54 @@ export default function RealtimeDashboard() {
         </View>
 
         {/* Aggregations */}
-        {summary?.aggregations && Object.keys(summary.aggregations).length > 0 && (
-          <View style={styles.aggregations}>
-            <Text style={styles.aggregationsTitle}>Summary</Text>
-            <View style={styles.aggregationGrid}>
-              {summary.aggregations.total_items !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text style={styles.aggregationValue}>
-                    {summary.aggregations.total_items.toLocaleString()}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Total Items</Text>
-                </View>
-              )}
-              {summary.aggregations.total_variance !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text
-                    style={[
-                      styles.aggregationValue,
-                      summary.aggregations.total_variance < 0
-                        ? styles.negativeValue
-                        : styles.positiveValue,
-                    ]}
-                  >
-                    {summary.aggregations.total_variance.toLocaleString()}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Total Variance</Text>
-                </View>
-              )}
-              {summary.aggregations.total_value !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text style={styles.aggregationValue}>
-                    ₹{summary.aggregations.total_value.toLocaleString("en-IN")}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Total Value</Text>
-                </View>
-              )}
-              {summary.aggregations.verified_count !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text style={styles.aggregationValue}>
-                    {summary.aggregations.verified_count.toLocaleString()}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Verified Count</Text>
-                </View>
-              )}
+        {summary?.aggregations &&
+          Object.keys(summary.aggregations).length > 0 && (
+            <View style={styles.aggregations}>
+              <Text style={styles.aggregationsTitle}>Summary</Text>
+              <View style={styles.aggregationGrid}>
+                {summary.aggregations.total_items !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text style={styles.aggregationValue}>
+                      {summary.aggregations.total_items.toLocaleString()}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Total Items</Text>
+                  </View>
+                )}
+                {summary.aggregations.total_variance !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text
+                      style={[
+                        styles.aggregationValue,
+                        summary.aggregations.total_variance < 0
+                          ? styles.negativeValue
+                          : styles.positiveValue,
+                      ]}
+                    >
+                      {summary.aggregations.total_variance.toLocaleString()}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Total Variance</Text>
+                  </View>
+                )}
+                {summary.aggregations.total_value !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text style={styles.aggregationValue}>
+                      ₹
+                      {summary.aggregations.total_value.toLocaleString("en-IN")}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Total Value</Text>
+                  </View>
+                )}
+                {summary.aggregations.verified_count !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text style={styles.aggregationValue}>
+                      {summary.aggregations.verified_count.toLocaleString()}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Verified Count</Text>
+                  </View>
+                )}
+              </View>
             </View>
-          </View>
-        )}
+          )}
       </ScrollView>
 
       {/* Modals */}

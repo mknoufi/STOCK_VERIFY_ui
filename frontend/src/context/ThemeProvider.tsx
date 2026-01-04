@@ -9,7 +9,13 @@
  * - Unified design tokens
  */
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { useColorScheme, ColorSchemeName } from "react-native";
 import {
   colors,
@@ -209,10 +215,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       setThemeMode,
       toggleTheme,
     }),
-    [theme, themeMode, isDark, toggleTheme]
+    [theme, themeMode, isDark, toggleTheme],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 // ==========================================

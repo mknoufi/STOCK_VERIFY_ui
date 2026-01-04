@@ -14,7 +14,7 @@ import { Platform } from "react-native";
  */
 export const copyToClipboard = async (
   text: string,
-  showAlert: boolean = true
+  showAlert: boolean = true,
 ): Promise<boolean> => {
   try {
     await Clipboard.setStringAsync(text);

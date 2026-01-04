@@ -9,7 +9,12 @@
  */
 
 import { useMemo } from "react";
-import { Dimensions, Platform, PixelRatio, useWindowDimensions } from "react-native";
+import {
+  Dimensions,
+  Platform,
+  PixelRatio,
+  useWindowDimensions,
+} from "react-native";
 
 // Base design dimensions (iPhone 14 Pro)
 const BASE_WIDTH = 393;
@@ -78,8 +83,10 @@ export function useResponsive(): ResponsiveConfig {
     // Device type detection
     const isSmallPhone = width < BREAKPOINTS.phone;
     const isPhone = width >= BREAKPOINTS.phone && width < BREAKPOINTS.tablet;
-    const isLargePhone = width >= BREAKPOINTS.largePhone && width < BREAKPOINTS.tablet;
-    const isTablet = width >= BREAKPOINTS.tablet && width < BREAKPOINTS.largeTablet;
+    const isLargePhone =
+      width >= BREAKPOINTS.largePhone && width < BREAKPOINTS.tablet;
+    const isTablet =
+      width >= BREAKPOINTS.tablet && width < BREAKPOINTS.largeTablet;
     const isLargeTablet = width >= BREAKPOINTS.largeTablet;
 
     // Scale factors relative to base design
@@ -136,7 +143,11 @@ export function useResponsive(): ResponsiveConfig {
     };
 
     // Responsive columns for grid layouts
-    const columns = (phone: number, tablet: number, desktop: number = tablet): number => {
+    const columns = (
+      phone: number,
+      tablet: number,
+      desktop: number = tablet,
+    ): number => {
       if (isWeb && width >= BREAKPOINTS.desktop) return desktop;
       if (isTablet || isLargeTablet) return tablet;
       return phone;

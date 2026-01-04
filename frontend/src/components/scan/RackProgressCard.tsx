@@ -30,11 +30,20 @@ export const RackProgressCard: React.FC<RackProgressCardProps> = ({
   else if (percentage < 30) progressColor = modernColors.warning.main;
 
   return (
-    <View style={[styles.container, isSelected && styles.selectedContainer]} onTouchEnd={onPress}>
+    <View
+      style={[styles.container, isSelected && styles.selectedContainer]}
+      onTouchEnd={onPress}
+    >
       <View style={styles.header}>
-        <Text style={[styles.rackName, isSelected && styles.selectedText]}>Rack {rack}</Text>
+        <Text style={[styles.rackName, isSelected && styles.selectedText]}>
+          Rack {rack}
+        </Text>
         <Text
-          style={[styles.percentage, { color: progressColor }, isSelected && styles.selectedText]}
+          style={[
+            styles.percentage,
+            { color: progressColor },
+            isSelected && styles.selectedText,
+          ]}
         >
           {percentage}%
         </Text>

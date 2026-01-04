@@ -3,7 +3,14 @@
  * Tests for AsyncStorage wrapper and caching
  */
 
-import { describe, it, expect, jest, beforeEach, afterEach } from "@jest/globals";
+import {
+  describe,
+  it,
+  expect,
+  jest,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { asyncStorageService as AsyncStorageService } from "../storage/asyncStorageService";
 
@@ -82,7 +89,7 @@ describe("AsyncStorageService - Basic Operations", () => {
 
       expect(mockSetItem).toHaveBeenCalledWith(
         "test-key",
-        expect.stringMatching(/"value":{"name":"Test","value":456}/)
+        expect.stringMatching(/"value":{"name":"Test","value":456}/),
       );
       expect(result).toBe(true);
     });
@@ -148,9 +155,18 @@ describe("AsyncStorageService - Batch Operations", () => {
     it("should retrieve multiple items", async () => {
       const keys = ["key1", "key2", "key3"];
       const values = [
-        ["key1", JSON.stringify({ value: { value: 1 }, timestamp: Date.now() })],
-        ["key2", JSON.stringify({ value: { value: 2 }, timestamp: Date.now() })],
-        ["key3", JSON.stringify({ value: { value: 3 }, timestamp: Date.now() })],
+        [
+          "key1",
+          JSON.stringify({ value: { value: 1 }, timestamp: Date.now() }),
+        ],
+        [
+          "key2",
+          JSON.stringify({ value: { value: 2 }, timestamp: Date.now() }),
+        ],
+        [
+          "key3",
+          JSON.stringify({ value: { value: 3 }, timestamp: Date.now() }),
+        ],
       ];
       mockMultiGet.mockResolvedValue(values);
 
@@ -167,7 +183,10 @@ describe("AsyncStorageService - Batch Operations", () => {
     it("should handle null values in batch", async () => {
       const keys = ["key1", "key2"];
       const values = [
-        ["key1", JSON.stringify({ value: { value: 1 }, timestamp: Date.now() })],
+        [
+          "key1",
+          JSON.stringify({ value: { value: 1 }, timestamp: Date.now() }),
+        ],
         ["key2", null],
       ];
       mockMultiGet.mockResolvedValue(values);

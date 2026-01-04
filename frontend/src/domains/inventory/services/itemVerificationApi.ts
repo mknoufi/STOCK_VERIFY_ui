@@ -143,17 +143,18 @@ export class ItemVerificationAPI {
    */
   static async verifyItem(
     itemCode: string,
-    request: VerificationRequest
+    request: VerificationRequest,
   ): Promise<VerificationResponse> {
     try {
       const response = await api.patch(
         `/v2/erp/items/${encodeURIComponent(itemCode)}/verify`,
-        request
+        request,
       );
       return response.data;
     } catch (error: unknown) {
       __DEV__ && console.error("Verification failed:", error);
-      const errorMessage = error instanceof Error ? error.message : "Verification failed";
+      const errorMessage =
+        error instanceof Error ? error.message : "Verification failed";
       throw new Error(errorMessage);
     }
   }
@@ -161,22 +162,28 @@ export class ItemVerificationAPI {
   /**
    * Get filtered items
    */
-  static async getFilteredItems(params: FilteredItemsParams): Promise<FilteredItemsResponse> {
+  static async getFilteredItems(
+    params: FilteredItemsParams,
+  ): Promise<FilteredItemsResponse> {
     try {
       const queryParams = new URLSearchParams();
 
       if (params.category) queryParams.append("category", params.category);
-      if (params.subcategory) queryParams.append("subcategory", params.subcategory);
+      if (params.subcategory)
+        queryParams.append("subcategory", params.subcategory);
       if (params.floor) queryParams.append("floor", params.floor);
       if (params.rack) queryParams.append("rack", params.rack);
       if (params.warehouse) queryParams.append("warehouse", params.warehouse);
       if (params.uom_code) queryParams.append("uom_code", params.uom_code);
-      if (params.verified !== undefined) queryParams.append("verified", params.verified.toString());
+      if (params.verified !== undefined)
+        queryParams.append("verified", params.verified.toString());
       if (params.search) queryParams.append("search", params.search);
       if (params.limit) queryParams.append("limit", params.limit.toString());
       if (params.skip) queryParams.append("skip", params.skip.toString());
 
-      const response = await api.get(`/api/v2/erp/items/filtered?${queryParams.toString()}`);
+      const response = await api.get(
+        `/api/v2/erp/items/filtered?${queryParams.toString()}`,
+      );
       return response.data;
     } catch (error: unknown) {
       __DEV__ && console.error("Get filtered items failed:", error);
@@ -198,16 +205,21 @@ export class ItemVerificationAPI {
       const queryParams = new URLSearchParams();
 
       if (params.category) queryParams.append("category", params.category);
-      if (params.subcategory) queryParams.append("subcategory", params.subcategory);
+      if (params.subcategory)
+        queryParams.append("subcategory", params.subcategory);
       if (params.floor) queryParams.append("floor", params.floor);
       if (params.rack) queryParams.append("rack", params.rack);
       if (params.warehouse) queryParams.append("warehouse", params.warehouse);
-      if (params.verified !== undefined) queryParams.append("verified", params.verified.toString());
+      if (params.verified !== undefined)
+        queryParams.append("verified", params.verified.toString());
       if (params.search) queryParams.append("search", params.search);
 
-      const response = await api.get(`/api/v2/erp/items/export/csv?${queryParams.toString()}`, {
-        responseType: "blob",
-      });
+      const response = await api.get(
+        `/api/v2/erp/items/export/csv?${queryParams.toString()}`,
+        {
+          responseType: "blob",
+        },
+      );
       return response.data;
     } catch (error: unknown) {
       __DEV__ && console.error("CSV export failed:", error);
@@ -253,7 +265,9 @@ export class ItemVerificationAPI {
       if (params.limit) queryParams.append("limit", params.limit.toString());
       if (params.skip) queryParams.append("skip", params.skip.toString());
 
-      const response = await api.get(`/api/v2/erp/items/variances?${queryParams.toString()}`);
+      const response = await api.get(
+        `/api/v2/erp/items/variances?${queryParams.toString()}`,
+      );
       return response.data;
     } catch (error: unknown) {
       __DEV__ && console.error("Get variances failed:", error);
@@ -289,7 +303,9 @@ export class ItemVerificationAPI {
   /**
    * Get live verifications
    */
-  static async getLiveVerifications(limit: number = 10): Promise<LiveVerificationsResponse> {
+  static async getLiveVerifications(
+    limit: number = 10,
+  ): Promise<LiveVerificationsResponse> {
     try {
       const response = await api.get("/api/v2/erp/items/live/verifications", {
         params: { limit },
@@ -302,7 +318,9 @@ export class ItemVerificationAPI {
       const message =
         typeof detail === "object" && detail !== null
           ? detail.message
-          : (detail as string) || err.message || "Failed to get live verifications";
+          : (detail as string) ||
+            err.message ||
+            "Failed to get live verifications";
       throw new Error(message);
     }
   }
@@ -326,7 +344,7 @@ export class ItemVerificationAPI {
    */
   static async approveVariance(
     countLineId: string,
-    notes?: string
+    notes?: string,
   ): Promise<Record<string, unknown>> {
     const response = await api.put(`/api/count-lines/${countLineId}/approve`, {
       notes,
@@ -339,7 +357,7 @@ export class ItemVerificationAPI {
    */
   static async requestRecount(
     countLineId: string,
-    notes?: string
+    notes?: string,
   ): Promise<Record<string, unknown>> {
     const response = await api.put(`/api/count-lines/${countLineId}/reject`, {
       notes,
@@ -352,12 +370,12 @@ export class ItemVerificationAPI {
    */
   static async updateItemMaster(
     itemCode: string,
-    request: ItemUpdateRequest
+    request: ItemUpdateRequest,
   ): Promise<{ success: boolean; message: string }> {
     try {
       const response = await api.patch(
         `/api/v2/erp/items/${encodeURIComponent(itemCode)}/update-master`,
-        request
+        request,
       );
       return response.data;
     } catch (error: unknown) {
@@ -367,7 +385,9 @@ export class ItemVerificationAPI {
       const message =
         typeof detail === "object" && detail !== null
           ? detail.message
-          : (detail as string) || err.message || "Failed to update item details";
+          : (detail as string) ||
+            err.message ||
+            "Failed to update item details";
       throw new Error(message);
     }
   }
@@ -377,7 +397,7 @@ export class ItemVerificationAPI {
    */
   static async getVarianceDetails(
     itemCode: string,
-    sessionId: string
+    sessionId: string,
   ): Promise<VarianceItem | null> {
     try {
       // First try to find the count line
@@ -389,7 +409,11 @@ export class ItemVerificationAPI {
         },
       });
 
-      if (response.data && response.data.items && response.data.items.length > 0) {
+      if (
+        response.data &&
+        response.data.items &&
+        response.data.items.length > 0
+      ) {
         const countLine = response.data.items[0];
         // Map to expected format if needed, or return as is
         // The UI expects: item_code, item_name, system_qty, verified_qty, variance, etc.

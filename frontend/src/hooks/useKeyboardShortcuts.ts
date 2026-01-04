@@ -19,13 +19,24 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
 
     const handler = (event: KeyboardEvent) => {
       for (const shortcut of shortcuts) {
-        const keyMatches = event.key.toLowerCase() === shortcut.key.toLowerCase();
-        const shiftMatches = shortcut.shift === undefined || shortcut.shift === event.shiftKey;
-        const ctrlMatches = shortcut.ctrl === undefined || shortcut.ctrl === event.ctrlKey;
-        const altMatches = shortcut.alt === undefined || shortcut.alt === event.altKey;
-        const metaMatches = shortcut.meta === undefined || shortcut.meta === event.metaKey;
+        const keyMatches =
+          event.key.toLowerCase() === shortcut.key.toLowerCase();
+        const shiftMatches =
+          shortcut.shift === undefined || shortcut.shift === event.shiftKey;
+        const ctrlMatches =
+          shortcut.ctrl === undefined || shortcut.ctrl === event.ctrlKey;
+        const altMatches =
+          shortcut.alt === undefined || shortcut.alt === event.altKey;
+        const metaMatches =
+          shortcut.meta === undefined || shortcut.meta === event.metaKey;
 
-        if (keyMatches && shiftMatches && ctrlMatches && altMatches && metaMatches) {
+        if (
+          keyMatches &&
+          shiftMatches &&
+          ctrlMatches &&
+          altMatches &&
+          metaMatches
+        ) {
           if (shortcut.preventDefault ?? true) {
             event.preventDefault();
           }

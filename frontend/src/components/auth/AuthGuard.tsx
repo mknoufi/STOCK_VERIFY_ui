@@ -2,7 +2,11 @@ import React, { useEffect } from "react";
 import { useRouter, useSegments } from "expo-router";
 import { useAuthStore } from "../../store/authStore";
 import { useSettingsStore } from "../../store/settingsStore";
-import { getRouteForRole, isRouteAllowedForRole, UserRole } from "../../utils/roleNavigation";
+import {
+  getRouteForRole,
+  isRouteAllowedForRole,
+  UserRole,
+} from "../../utils/roleNavigation";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isInitialized, isLoading } = useAuthStore();
@@ -21,11 +25,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       firstSegment === "register" ||
       firstSegment === "help";
     const inProtectedGroup =
-      firstSegment === "staff" || firstSegment === "supervisor" || firstSegment === "admin";
+      firstSegment === "staff" ||
+      firstSegment === "supervisor" ||
+      firstSegment === "admin";
 
     // 1. Unauthenticated user trying to access protected routes
     if (!user && inProtectedGroup) {
-      console.log("🔒 [AuthGuard] Unauthenticated access attempt. Redirecting to welcome.");
+      console.log(
+        "🔒 [AuthGuard] Unauthenticated access attempt. Redirecting to welcome.",
+      );
       router.replace("/welcome");
       return;
     }
@@ -34,7 +42,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (user && inAuthGroup) {
       const targetRoute = getRouteForRole(user.role as UserRole);
       console.log(
-        `🔒 [AuthGuard] Authenticated user in public route. Redirecting to ${targetRoute}`
+        `🔒 [AuthGuard] Authenticated user in public route. Redirecting to ${targetRoute}`,
       );
       router.replace(targetRoute as any);
       return;
@@ -45,7 +53,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       const currentPath = "/" + segments.join("/");
       if (!isRouteAllowedForRole(currentPath, user.role as UserRole)) {
         const targetRoute = getRouteForRole(user.role as UserRole);
-        console.warn(`🔒 [AuthGuard] Unauthorized role access. Redirecting to ${targetRoute}`);
+        console.warn(
+          `🔒 [AuthGuard] Unauthorized role access. Redirecting to ${targetRoute}`,
+        );
         router.replace(targetRoute as any);
         return;
       }
@@ -57,7 +67,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // For now, we just log it
       // console.log("🔒 [AuthGuard] Operating in Live Audit mode");
     }
-  }, [user, segments, isInitialized, isLoading, settings.operationalMode, router]);
+  }, [
+    user,
+    segments,
+    isInitialized,
+    isLoading,
+    settings.operationalMode,
+    router,
+  ]);
 
   return <>{children}</>;
 }

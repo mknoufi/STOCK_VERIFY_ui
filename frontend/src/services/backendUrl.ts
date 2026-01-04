@@ -23,7 +23,8 @@ const timeoutFetch = async (url: string, timeoutMs = 900): Promise<boolean> => {
   }
 };
 
-const stripTrailingSlash = (url: string) => (url.endsWith("/") ? url.slice(0, -1) : url);
+const stripTrailingSlash = (url: string) =>
+  url.endsWith("/") ? url.slice(0, -1) : url;
 
 const buildCandidates = (): string[] => {
   const candidates: string[] = [];
@@ -34,46 +35,51 @@ const buildCandidates = (): string[] => {
   }
 
   // 2) Runtime config from app.config.js extra
-  const configUrl = Constants.expoConfig?.extra?.backendUrl as string | undefined;
+  const configUrl = Constants.expoConfig?.extra?.backendUrl as
+    | string
+    | undefined;
   if (configUrl) {
     candidates.push(configUrl);
   }
 
-  // 3) mDNS Hostname (stock-verify.local) - Prioritize HTTPS
-  // Note: This requires the device to be able to resolve .local domains
-  candidates.push(`https://stock-verify.local:${DEFAULT_PORT}`);
-  candidates.push(`http://stock-verify.local:${DEFAULT_PORT}`);
-
-  // 4) Expo host URI (dev server IP)
+  // 3) Expo host URI (dev server IP)
   const hostUri = Constants.expoConfig?.hostUri;
   if (hostUri) {
     const host = hostUri.split(":")[0];
-    candidates.push(`https://${host}:${DEFAULT_PORT}`);
     candidates.push(`http://${host}:${DEFAULT_PORT}`);
+    candidates.push(`https://${host}:${DEFAULT_PORT}`);
   }
+
+  // 4) mDNS Hostname (stock-verify.local) - Prioritize HTTP for dev
+  // Note: This requires the device to be able to resolve .local domains
+  candidates.push(`http://stock-verify.local:${DEFAULT_PORT}`);
+  candidates.push(`https://stock-verify.local:${DEFAULT_PORT}`);
 
   // 5) Platform-specific fallbacks
   if (Platform.OS === "android") {
-    candidates.push(`https://10.0.2.2:${DEFAULT_PORT}`);
     candidates.push(`http://10.0.2.2:${DEFAULT_PORT}`);
+    candidates.push(`https://10.0.2.2:${DEFAULT_PORT}`);
   }
 
   // 6) Web fallback to current hostname
   if (Platform.OS === "web" && typeof window !== "undefined") {
-    candidates.push(`https://${window.location.hostname}:${DEFAULT_PORT}`);
     candidates.push(`http://${window.location.hostname}:${DEFAULT_PORT}`);
+    candidates.push(`https://${window.location.hostname}:${DEFAULT_PORT}`);
   }
 
   // 7) Localhost as final fallback
-  candidates.push(`https://localhost:${DEFAULT_PORT}`);
   candidates.push(`http://localhost:${DEFAULT_PORT}`);
+  candidates.push(`https://localhost:${DEFAULT_PORT}`);
 
   // De-dupe while preserving order
-  return Array.from(new Set(candidates.filter(Boolean).map(stripTrailingSlash)));
+  return Array.from(
+    new Set(candidates.filter(Boolean).map(stripTrailingSlash)),
+  );
 };
 
 // Best-effort initial URL (sync) used until async probing finishes.
-export const BACKEND_URL = buildCandidates()[0] ?? `http://localhost:${DEFAULT_PORT}`;
+export const BACKEND_URL =
+  buildCandidates()[0] ?? `http://localhost:${DEFAULT_PORT}`;
 
 let resolvedBackendUrl: string | null = null;
 
@@ -94,7 +100,10 @@ export const resolveBackendUrl = async (): Promise<string> => {
 
   // If none reachable, stick to the best-effort initial URL
   resolvedBackendUrl = BACKEND_URL;
-  console.warn("[BackendURL] No backend reachable; falling back to", resolvedBackendUrl);
+  console.warn(
+    "[BackendURL] No backend reachable; falling back to",
+    resolvedBackendUrl,
+  );
   return resolvedBackendUrl;
 };
 

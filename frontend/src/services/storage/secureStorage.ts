@@ -44,7 +44,9 @@ class SecureStorage {
       }
 
       // Add timeout to prevent hanging
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+      const timeoutPromise = new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 2000),
+      );
 
       const getPromise = SecureStore.getItemAsync(key, OPTIONS);
       const result = await Promise.race([getPromise, timeoutPromise]);

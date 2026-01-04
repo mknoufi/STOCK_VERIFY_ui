@@ -29,9 +29,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   useEffect(() => {
     if (flags.enableAnimations) {
       progress.value = withRepeat(
-        withSequence(withTiming(1, { duration: 1000 }), withTiming(0, { duration: 1000 })),
+        withSequence(
+          withTiming(1, { duration: 1000 }),
+          withTiming(0, { duration: 1000 }),
+        ),
         -1,
-        false
+        false,
       );
     } else {
       progress.value = 0.25;
@@ -67,7 +70,12 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
           <Skeleton width={60} height={60} borderRadius={8} />
           <View style={styles.listItemContent}>
             <Skeleton width="70%" height={16} borderRadius={4} />
-            <Skeleton width="50%" height={14} borderRadius={4} style={{ marginTop: 8 }} />
+            <Skeleton
+              width="50%"
+              height={14}
+              borderRadius={4}
+              style={{ marginTop: 8 }}
+            />
           </View>
         </View>
       ))}

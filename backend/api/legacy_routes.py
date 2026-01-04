@@ -698,6 +698,23 @@ async def create_session(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> Session:
     logger.debug(f"create_session called. User: {current_user.get('username')}")
+
+    # Check session limit - users can have maximum 5 open sessions
+    MAX_OPEN_SESSIONS = 5
+    open_sessions_count = await db.sessions.count_documents(
+        {"staff_user": current_user["username"], "status": "OPEN"}
+    )
+
+    if open_sessions_count >= MAX_OPEN_SESSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Session limit reached. You already have {open_sessions_count} open sessions. "
+                f"Please close existing sessions before creating a new one "
+                f"(maximum {MAX_OPEN_SESSIONS})."
+            ),
+        )
+
     # Input validation and sanitization
     warehouse = session_data.warehouse.strip()
     if not warehouse:
@@ -1172,6 +1189,12 @@ async def create_count_line(
         "mark_location": line_data.mark_location,
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
+        "mfg_date_format": (line_data.mfg_date_format.value if line_data.mfg_date_format else None),
+        "expiry_date": line_data.expiry_date,
+        "expiry_date_format": (
+            line_data.expiry_date_format.value if line_data.expiry_date_format else None
+        ),
+        "non_returnable_damaged_qty": line_data.non_returnable_damaged_qty,
         "correction_reason": (
             line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
@@ -1196,6 +1219,10 @@ async def create_count_line(
         # Additional fields
         "split_section": line_data.split_section,
         "serial_numbers": line_data.serial_numbers,
+        # Enhanced serial entries with per-serial attributes
+        "serial_entries": (
+            [s.model_dump() for s in line_data.serial_entries] if line_data.serial_entries else None
+        ),
         # Legacy approval fields
         "status": "pending",
         "verified": False,

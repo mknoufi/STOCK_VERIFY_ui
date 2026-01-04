@@ -85,9 +85,14 @@ export const useItemForm = () => {
     }
 
     if (isSerialEnabled) {
-      const validSerials = serialNumbers.filter((s) => s && s.trim().length > 0);
+      const validSerials = serialNumbers.filter(
+        (s) => s && s.trim().length > 0,
+      );
       if (validSerials.length !== Number(quantity)) {
-        Alert.alert("Missing Serials", `Please enter all ${quantity} serial numbers.`);
+        Alert.alert(
+          "Missing Serials",
+          `Please enter all ${quantity} serial numbers.`,
+        );
         return false;
       }
     }
@@ -95,7 +100,10 @@ export const useItemForm = () => {
     if (isDamageEnabled) {
       const dQty = Number(damageQty);
       if (isNaN(dQty) || dQty < 0 || dQty > Number(quantity)) {
-        Alert.alert("Invalid Damage Qty", "Damage quantity cannot exceed total quantity.");
+        Alert.alert(
+          "Invalid Damage Qty",
+          "Damage quantity cannot exceed total quantity.",
+        );
         return false;
       }
     }

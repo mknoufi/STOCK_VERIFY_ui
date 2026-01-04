@@ -29,9 +29,16 @@ export class ValidationService {
   /**
    * Validate field
    */
-  static validateField(value: any, rule: ValidationRule, fieldName: string): string | null {
+  static validateField(
+    value: any,
+    rule: ValidationRule,
+    fieldName: string,
+  ): string | null {
     // Required check
-    if (rule.required && (!value || (typeof value === "string" && !value.trim()))) {
+    if (
+      rule.required &&
+      (!value || (typeof value === "string" && !value.trim()))
+    ) {
       return `${fieldName} is required`;
     }
 
@@ -52,7 +59,11 @@ export class ValidationService {
     }
 
     // Pattern check
-    if (rule.pattern && typeof value === "string" && !rule.pattern.test(value)) {
+    if (
+      rule.pattern &&
+      typeof value === "string" &&
+      !rule.pattern.test(value)
+    ) {
       return `${fieldName} format is invalid`;
     }
 
@@ -82,7 +93,7 @@ export class ValidationService {
    */
   static validateForm(
     data: Record<string, any>,
-    rules: Record<string, ValidationRule>
+    rules: Record<string, ValidationRule>,
   ): ValidationResult {
     const errors: Record<string, string> = {};
 

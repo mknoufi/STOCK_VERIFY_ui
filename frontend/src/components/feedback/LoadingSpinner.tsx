@@ -24,7 +24,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 }) => {
   const theme = useTheme();
   const spinnerColor = color || theme.colors.primary;
-  const containerStyle = overlay ? [styles.container, styles.overlay] : styles.container;
+  const containerStyle = overlay
+    ? [styles.container, styles.overlay]
+    : styles.container;
 
   // Reanimated fade animation for smooth appearance
   const opacity = useSharedValue(0);
@@ -60,7 +62,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <Animated.View style={[containerStyle, animatedStyle]}>
       <ActivityIndicator size={size} color={spinnerColor} />
       {message && (
-        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>{message}</Text>
+        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>
+          {message}
+        </Text>
       )}
     </Animated.View>
   );

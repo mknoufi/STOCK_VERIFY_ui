@@ -86,7 +86,10 @@ export const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
   };
 
   const content = (
-    <Animated.View entering={FadeInRight.delay(delay).springify()} style={styles.container}>
+    <Animated.View
+      entering={FadeInRight.delay(delay).springify()}
+      style={styles.container}
+    >
       <View style={styles.content}>
         {/* Icon */}
         <LinearGradient
@@ -95,7 +98,11 @@ export const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
           end={{ x: 1, y: 1 }}
           style={styles.iconContainer}
         >
-          <Ionicons name={config.icon} size={20} color={auroraTheme.colors.text.primary} />
+          <Ionicons
+            name={config.icon}
+            size={20}
+            color={auroraTheme.colors.text.primary}
+          />
         </LinearGradient>
 
         {/* Text Content */}
@@ -115,7 +122,12 @@ export const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
               {title}
             </Text>
             {status && (
-              <View style={[styles.statusDot, { backgroundColor: statusColors[status] }]} />
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: statusColors[status] },
+                ]}
+              />
             )}
           </View>
 
@@ -149,7 +161,11 @@ export const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
 
         {/* Chevron */}
         {onPress && (
-          <Ionicons name="chevron-forward" size={20} color={auroraTheme.colors.text.tertiary} />
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={auroraTheme.colors.text.tertiary}
+          />
         )}
       </View>
 

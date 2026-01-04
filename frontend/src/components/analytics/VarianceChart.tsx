@@ -6,7 +6,13 @@
 
 import React from "react";
 import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
-import { colorPalette, spacing, typography, borderRadius, shadows } from "@/theme/designTokens";
+import {
+  colorPalette,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from "@/theme/designTokens";
 import type { VarianceTrend } from "@/services/analyticsService";
 
 interface VarianceChartProps {
@@ -33,7 +39,8 @@ export const VarianceChart: React.FC<VarianceChartProps> = ({
 
   // Simple bar chart implementation (can be replaced with react-native-chart-kit when installed)
   const renderSimpleChart = () => {
-    const barWidth = (chartWidth - spacing.base * (data.length + 1)) / data.length;
+    const barWidth =
+      (chartWidth - spacing.base * (data.length + 1)) / data.length;
     const chartHeight = 200;
     const range = maxVariance - minVariance || 1;
 
@@ -41,7 +48,8 @@ export const VarianceChart: React.FC<VarianceChartProps> = ({
       <View style={styles.chartContainer}>
         <View style={[styles.barsContainer, { height: chartHeight }]}>
           {data.map((item, index) => {
-            const barHeight = ((item.variance - minVariance) / range) * (chartHeight - 40);
+            const barHeight =
+              ((item.variance - minVariance) / range) * (chartHeight - 40);
             const barColor =
               item.variance > 3
                 ? colorPalette.error[500]
@@ -52,7 +60,9 @@ export const VarianceChart: React.FC<VarianceChartProps> = ({
             return (
               <View key={index} style={styles.barWrapper}>
                 <View style={styles.barContainer}>
-                  <Text style={styles.barValue}>{item.variance.toFixed(1)}%</Text>
+                  <Text style={styles.barValue}>
+                    {item.variance.toFixed(1)}%
+                  </Text>
                   <View
                     style={[
                       styles.bar,

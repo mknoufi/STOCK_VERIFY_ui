@@ -57,15 +57,17 @@ export const useItemDetailLogic = () => {
           // Auto-detect batches
           if (itemData.batches && itemData.batches.length > 0) {
             setIsBatchMode(true);
-            const mappedBatches: CountLineBatch[] = itemData.batches.map((b) => ({
-              quantity: b.stock_qty || 0,
-              mrp: b.mrp,
-              manufacturing_date: b.manufacturing_date,
-              item_condition: "No Issue",
-              condition_details: "",
-              barcode: b.barcode,
-              batch_no: b.batch_no,
-            }));
+            const mappedBatches: CountLineBatch[] = itemData.batches.map(
+              (b) => ({
+                quantity: b.stock_qty || 0,
+                mrp: b.mrp,
+                manufacturing_date: b.manufacturing_date,
+                item_condition: "No Issue",
+                condition_details: "",
+                barcode: b.barcode,
+                batch_no: b.batch_no,
+              }),
+            );
             setBatches(mappedBatches);
           }
         } else {
@@ -73,7 +75,8 @@ export const useItemDetailLogic = () => {
           router.back();
         }
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to load item";
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load item";
         Alert.alert("Error", errorMessage);
         router.back();
       } finally {
@@ -83,7 +86,15 @@ export const useItemDetailLogic = () => {
     if (barcode) {
       loadItem();
     }
-  }, [barcode, router, setMrp, setCategory, setSubCategory, setIsBatchMode, setBatches]);
+  }, [
+    barcode,
+    router,
+    setMrp,
+    setCategory,
+    setSubCategory,
+    setIsBatchMode,
+    setBatches,
+  ]);
 
   // Auto-focus quantity input when item loads
   useEffect(() => {
@@ -123,7 +134,7 @@ export const useItemDetailLogic = () => {
         setRefreshingStock(false);
       }
     },
-    [item, mrpEditable, setMrp]
+    [item, mrpEditable, setMrp],
   );
 
   const { loading: submitting, handleSubmit } = submission;

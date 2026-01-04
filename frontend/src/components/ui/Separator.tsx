@@ -10,7 +10,14 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, ViewStyle, TextStyle, StyleProp } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
+  StyleProp,
+} from "react-native";
 import { useThemeContext } from "@/context/ThemeContext";
 import { Spacing, FontSizes, FontWeights } from "@/theme/uiConstants";
 
@@ -114,7 +121,11 @@ export const Separator: React.FC<SeparatorProps> = ({
     <View style={[containerStyle, style]}>
       <View style={lineStyle} />
       <Text
-        style={[styles.label, { color: themeLegacy.colors.textSecondary || "#666" }, labelStyle]}
+        style={[
+          styles.label,
+          { color: themeLegacy.colors.textSecondary || "#666" },
+          labelStyle,
+        ]}
       >
         {label}
       </Text>

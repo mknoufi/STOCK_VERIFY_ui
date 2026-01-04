@@ -1,5 +1,11 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../store/authStore";
 import { useRouter } from "expo-router";
@@ -44,7 +50,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
             }
           },
         },
-      ]
+      ],
     );
   };
 

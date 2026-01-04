@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +19,18 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { colors, spacing, radius, gradients } from "@/theme/unified";
 import { useAuthStore } from "@/store/authStore";
 import { getRouteForRole, type UserRole } from "@/utils/roleNavigation";
+
+// Safe Animated View for Web
+const SafeAnimatedView = ({ children, style, entering, ...props }: any) => {
+  if (Platform.OS === "web") {
+    return <View style={style} {...props}>{children}</View>;
+  }
+  return (
+    <Animated.View style={style} entering={entering} {...props}>
+      {children}
+    </Animated.View>
+  );
+};
 
 const GlassSurface = ({
   children,
@@ -63,14 +76,17 @@ const FeatureCard = ({
   title: string;
   delay: number;
 }) => (
-  <Animated.View entering={FadeInDown.delay(delay).springify()} style={styles.featureWrapper}>
+  <SafeAnimatedView
+    entering={FadeInDown.delay(delay).springify()}
+    style={styles.featureWrapper}
+  >
     <GlassSurface intensity={20} tint="light" style={styles.featureCard}>
       <View style={styles.iconCircle}>
         <Ionicons name={icon} size={24} color={colors.primary[400]} />
       </View>
       <Text style={styles.featureText}>{title}</Text>
     </GlassSurface>
-  </Animated.View>
+  </SafeAnimatedView>
 );
 
 export default function WelcomeScreen() {
@@ -108,8 +124,8 @@ export default function WelcomeScreen() {
       />
 
       {/* Decorative Background Elements */}
-      <View style={styles.decorativeCircle1} />
-      <View style={styles.decorativeCircle2} />
+      <View style={styles.decorativeCircle1} pointerEvents="none" />
+      <View style={styles.decorativeCircle2} pointerEvents="none" />
 
       <View
         style={[
@@ -122,17 +138,36 @@ export default function WelcomeScreen() {
         ]}
       >
         {/* Header Section */}
-        <Animated.View entering={FadeInUp.duration(1000).springify()} style={styles.header}>
+        <SafeAnimatedView
+          entering={FadeInUp.duration(1000).springify()}
+          style={styles.header}
+        >
           <View style={styles.logoContainer}>
             <LinearGradient
               colors={gradients.primary}
-              style={styles.logoBackground}
+              style={[styles.logoBackground, { padding: 3, borderRadius: 999 }]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Ionicons name="cube-outline" size={64} color="#fff" />
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#fff",
+                  borderRadius: 999,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "100%",
+                  height: "100%",
+                }}
+              >
+                <Image
+                  source={require("../assets/images/logo.png")}
+                  style={{ width: 70, height: 70 }}
+                  resizeMode="contain"
+                />
+              </View>
             </LinearGradient>
-            <View style={styles.logoGlow} />
+            <View style={[styles.logoGlow, { borderRadius: 999 }]} />
           </View>
 
           <Text style={styles.title}>Lavanya Mart</Text>
@@ -140,17 +175,28 @@ export default function WelcomeScreen() {
           <View style={styles.versionBadge}>
             <Text style={styles.versionText}>v2.5 Enterprise</Text>
           </View>
-        </Animated.View>
+        </SafeAnimatedView>
 
         {/* Features Grid */}
         <View style={styles.featuresContainer}>
-          <FeatureCard icon="barcode-outline" title="Smart Scanning" delay={400} />
+          <FeatureCard
+            icon="barcode-outline"
+            title="Smart Scanning"
+            delay={400}
+          />
           <FeatureCard icon="sync-outline" title="Live Sync" delay={600} />
-          <FeatureCard icon="shield-checkmark-outline" title="Verified" delay={800} />
+          <FeatureCard
+            icon="shield-checkmark-outline"
+            title="Verified"
+            delay={800}
+          />
         </View>
 
         {/* Action Buttons */}
-        <Animated.View entering={FadeInDown.delay(1000).springify()} style={styles.actions}>
+        <SafeAnimatedView
+          entering={FadeInDown.delay(1000).springify()}
+          style={styles.actions}
+        >
           <TouchableOpacity
             onPress={() => handlePress("/login")}
             activeOpacity={0.9}
@@ -172,17 +218,21 @@ export default function WelcomeScreen() {
             activeOpacity={0.7}
             style={styles.registerButtonWrapper}
           >
-            <GlassSurface intensity={10} tint="light" style={styles.registerButton}>
+            <GlassSurface
+              intensity={10}
+              tint="light"
+              style={styles.registerButton}
+            >
               <Text style={styles.registerButtonText}>Create Account</Text>
             </GlassSurface>
           </TouchableOpacity>
-        </Animated.View>
+        </SafeAnimatedView>
 
         {/* Footer */}
-        <Animated.View entering={FadeInDown.delay(1200)} style={styles.footer}>
+        <SafeAnimatedView entering={FadeInDown.delay(1200)} style={styles.footer}>
           <Text style={styles.footerText}>© 2024 Lavanya E-Mart</Text>
           <Text style={styles.footerSubtext}>Powered by Stock Verify</Text>
-        </Animated.View>
+        </SafeAnimatedView>
       </View>
     </View>
   );

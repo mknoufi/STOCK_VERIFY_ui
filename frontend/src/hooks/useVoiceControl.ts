@@ -22,7 +22,7 @@ interface UseVoiceControlReturn {
 
 export const useVoiceControl = (
   onCommand?: (command: VoiceCommand) => void,
-  options?: VoiceControlOptions
+  options?: VoiceControlOptions,
 ): UseVoiceControlReturn => {
   const [isListening, setIsListening] = useState(false);
   const [lastCommand, setLastCommand] = useState<VoiceCommand | null>(null);
@@ -69,7 +69,7 @@ export const useVoiceControl = (
         onCommand(command);
       }
     },
-    [onCommand]
+    [onCommand],
   );
 
   return {

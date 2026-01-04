@@ -109,7 +109,7 @@ async def create_snapshot(
     snapshot = await snapshot_engine.create_snapshot(
         name=request.name,
         description=request.description,
-        query_spec=request.query_spec.dict(),
+        query_spec=request.query_spec.model_dump(),
         created_by=current_user["username"],
         snapshot_type=request.snapshot_type,
         tags=request.tags,

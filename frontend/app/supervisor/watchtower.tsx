@@ -65,7 +65,9 @@ const ChartBar = ({
             backgroundColor: active
               ? auroraTheme.colors.success[500]
               : auroraTheme.colors.background.glass,
-            borderColor: active ? auroraTheme.colors.success[400] : auroraTheme.colors.border.light,
+            borderColor: active
+              ? auroraTheme.colors.success[400]
+              : auroraTheme.colors.border.light,
           },
         ]}
       />
@@ -146,10 +148,20 @@ export default function WatchtowerScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(0).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text
@@ -174,7 +186,10 @@ export default function WatchtowerScreen() {
 
         {loading && !stats && !refreshing ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+            <ActivityIndicator
+              size="large"
+              color={auroraTheme.colors.primary[500]}
+            />
             <Text style={styles.loadingText}>Connecting to Watchtower...</Text>
           </View>
         ) : stats ? (
@@ -221,7 +236,10 @@ export default function WatchtowerScreen() {
             </View>
 
             {/* Throughput Chart */}
-            <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.section}>
+            <Animated.View
+              entering={FadeInDown.delay(300).springify()}
+              style={styles.section}
+            >
               <GlassCard
                 variant="medium"
                 intensity={20}
@@ -252,11 +270,18 @@ export default function WatchtowerScreen() {
 
             {/* AI Predictive Risk Section */}
             {stats.high_risk_items && stats.high_risk_items.length > 0 && (
-              <Animated.View entering={FadeInDown.delay(325).springify()} style={styles.section}>
+              <Animated.View
+                entering={FadeInDown.delay(325).springify()}
+                style={styles.section}
+              >
                 <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Predictive Risk Analysis</Text>
+                  <Text style={styles.sectionTitle}>
+                    Predictive Risk Analysis
+                  </Text>
                   <View style={styles.riskBadge}>
-                    <Text style={styles.riskBadgeText}>{stats.predicted_risk_count} High Risk</Text>
+                    <Text style={styles.riskBadgeText}>
+                      {stats.predicted_risk_count} High Risk
+                    </Text>
                   </View>
                 </View>
 
@@ -273,7 +298,8 @@ export default function WatchtowerScreen() {
                       key={`${item.item_code}-${idx}`}
                       style={[
                         styles.riskItem,
-                        idx < (stats.high_risk_items?.length || 0) - 1 && styles.riskItemSeparator,
+                        idx < (stats.high_risk_items?.length || 0) - 1 &&
+                          styles.riskItemSeparator,
                       ]}
                     >
                       <View style={styles.riskItemLeft}>
@@ -317,7 +343,10 @@ export default function WatchtowerScreen() {
                 </GlassCard>
               </Animated.View>
             )}
-            <Animated.View entering={FadeInDown.delay(350).springify()} style={styles.section}>
+            <Animated.View
+              entering={FadeInDown.delay(350).springify()}
+              style={styles.section}
+            >
               <Text
                 style={[
                   styles.sectionTitle,
@@ -364,7 +393,11 @@ export default function WatchtowerScreen() {
           </>
         ) : (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle-outline" size={48} color={auroraTheme.colors.error[500]} />
+            <Ionicons
+              name="alert-circle-outline"
+              size={48}
+              color={auroraTheme.colors.error[500]}
+            />
             <Text style={styles.errorText}>Failed to load statistics</Text>
             <AnimatedPressable onPress={fetchStats} style={styles.retryButton}>
               <Text style={styles.retryText}>Retry</Text>

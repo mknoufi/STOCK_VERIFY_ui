@@ -6,7 +6,11 @@
 import React from "react";
 import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import Svg, { Rect, Line, Text as SvgText, G } from "react-native-svg";
-import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
 const CHART_HEIGHT = 200;
 const PADDING = 20;
@@ -116,7 +120,14 @@ export const BarChart: React.FC<BarChartProps> = ({
 
             return (
               <G key={index}>
-                <Rect x={x} y={y} width={barWidth} height={barHeight} fill={color} rx={4} />
+                <Rect
+                  x={x}
+                  y={y}
+                  width={barWidth}
+                  height={barHeight}
+                  fill={color}
+                  rx={4}
+                />
                 {showValues && (
                   <SvgText
                     x={x + barWidth / 2}

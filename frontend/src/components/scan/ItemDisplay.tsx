@@ -45,14 +45,22 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
 
         <View style={styles.contentContainer}>
           <Text style={styles.itemName}>{item.name}</Text>
-          {item.item_code && <Text style={styles.itemCode}>Code: {item.item_code}</Text>}
-          {item.barcode && <Text style={styles.itemBarcode}>Barcode: {item.barcode}</Text>}
+          {item.item_code && (
+            <Text style={styles.itemCode}>Code: {item.item_code}</Text>
+          )}
+          {item.barcode && (
+            <Text style={styles.itemBarcode}>Barcode: {item.barcode}</Text>
+          )}
 
           {/* Additional Item Information */}
           <View style={styles.itemInfoGrid}>
             {item.category && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="pricetag" size={14} color={unifiedColors.neutral[400]} />
+                <Ionicons
+                  name="pricetag"
+                  size={14}
+                  color={unifiedColors.neutral[400]}
+                />
                 <Text style={styles.itemInfoText}>
                   {item.category}
                   {item.subcategory && ` • ${item.subcategory}`}
@@ -61,14 +69,24 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
             )}
             {item.item_type && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="layers" size={14} color={unifiedColors.neutral[400]} />
+                <Ionicons
+                  name="layers"
+                  size={14}
+                  color={unifiedColors.neutral[400]}
+                />
                 <Text style={styles.itemInfoText}>Type: {item.item_type}</Text>
               </View>
             )}
             {item.item_group && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="albums" size={14} color={unifiedColors.neutral[400]} />
-                <Text style={styles.itemInfoText}>Group: {item.item_group}</Text>
+                <Ionicons
+                  name="albums"
+                  size={14}
+                  color={unifiedColors.neutral[400]}
+                />
+                <Text style={styles.itemInfoText}>
+                  Group: {item.item_group}
+                </Text>
               </View>
             )}
           </View>
@@ -76,7 +94,11 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
           {/* Location Display */}
           {(item.location || (item as any).floor || (item as any).rack) && (
             <View style={styles.locationRow}>
-              <Ionicons name="location" size={16} color={unifiedColors.primary[300]} />
+              <Ionicons
+                name="location"
+                size={16}
+                color={unifiedColors.primary[300]}
+              />
               <Text style={styles.locationText}>
                 {[(item as any).floor, (item as any).rack, item.location]
                   .filter(Boolean)
@@ -88,7 +110,11 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
           {/* Verification Badge */}
           {(item as any).verified && (
             <View style={styles.verificationBadge}>
-              <Ionicons name="checkmark-circle" size={16} color={unifiedColors.success[400]} />
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={unifiedColors.success[400]}
+              />
               <Text style={styles.verificationText}>
                 Verified by {(item as any).verified_by || "Unknown"}
                 {(item as any).verified_at && (
@@ -105,7 +131,12 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
           <View style={{ flexDirection: "row", gap: 12 }}>
             {/* Left Column: ERP Stock */}
             <View style={{ flex: 1 }}>
-              <View style={[styles.qtyBox, { height: "100%", justifyContent: "center" }]}>
+              <View
+                style={[
+                  styles.qtyBox,
+                  { height: "100%", justifyContent: "center" },
+                ]}
+              >
                 <View style={styles.qtyHeader}>
                   <Text style={styles.qtyLabel}>ERP Stock</Text>
                   {onRefreshStock && (
@@ -118,9 +149,16 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
                       disabled={refreshingStock}
                     >
                       {refreshingStock ? (
-                        <ActivityIndicator size="small" color={unifiedColors.primary[300]} />
+                        <ActivityIndicator
+                          size="small"
+                          color={unifiedColors.primary[300]}
+                        />
                       ) : (
-                        <Ionicons name="refresh" size={18} color={unifiedColors.primary[300]} />
+                        <Ionicons
+                          name="refresh"
+                          size={18}
+                          color={unifiedColors.primary[300]}
+                        />
                       )}
                     </TouchableOpacity>
                   )}
@@ -130,7 +168,9 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
                     {item.stock_qty ?? item.quantity ?? 0}
                   </Text>
                   {item.uom_name && (
-                    <Text style={[styles.uomText, { marginTop: 0 }]}>{item.uom_name}</Text>
+                    <Text style={[styles.uomText, { marginTop: 0 }]}>
+                      {item.uom_name}
+                    </Text>
                   )}
                 </View>
               </View>
@@ -165,7 +205,7 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
       prevProps.item.sales_price === nextProps.item.sales_price &&
       prevProps.refreshingStock === nextProps.refreshingStock
     );
-  }
+  },
 );
 
 ItemDisplay.displayName = "ItemDisplay";

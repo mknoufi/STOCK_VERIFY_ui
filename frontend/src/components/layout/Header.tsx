@@ -3,7 +3,13 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
 
@@ -34,11 +40,21 @@ export const Header: React.FC<HeaderProps> = ({
         barStyle={theme.isDark ? "light-content" : "dark-content"}
         backgroundColor={theme.colors.background}
       />
-      <View style={[styles.container, { backgroundColor: theme.colors.primary }]}>
+      <View
+        style={[styles.container, { backgroundColor: theme.colors.primary }]}
+      >
         <View style={styles.leftContainer}>
           {(leftIcon || showBack) && (
-            <TouchableOpacity style={styles.iconButton} onPress={onLeftPress} activeOpacity={0.7}>
-              <Ionicons name={leftIcon || "arrow-back"} size={24} color="#FFFFFF" />
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={onLeftPress}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={leftIcon || "arrow-back"}
+                size={24}
+                color="#FFFFFF"
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -50,7 +66,11 @@ export const Header: React.FC<HeaderProps> = ({
 
         <View style={styles.rightContainer}>
           {rightIcon && (
-            <TouchableOpacity style={styles.iconButton} onPress={onRightPress} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={onRightPress}
+              activeOpacity={0.7}
+            >
               <Ionicons name={rightIcon} size={24} color="#FFFFFF" />
             </TouchableOpacity>
           )}

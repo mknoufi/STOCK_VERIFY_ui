@@ -26,13 +26,21 @@ import {
   ItemVerificationAPI,
   VarianceItem,
 } from "../../src/domains/inventory/services/itemVerificationApi";
-import { ItemFilters, FilterValues } from "../../src/domains/inventory/components/ItemFilters";
+import {
+  ItemFilters,
+  FilterValues,
+} from "../../src/domains/inventory/components/ItemFilters";
 import { exportVariancesToCSV, downloadCSV } from "../../src/utils/csvExport";
-import { ScreenContainer, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  ScreenContainer,
+  GlassCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 
 const getLocalFileUri = (filename: string) => {
-  const baseDir = FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
+  const baseDir =
+    FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
   return `${baseDir}${filename}`;
 };
 
@@ -80,7 +88,7 @@ export default function VariancesScreen() {
         setRefreshing(false);
       }
     },
-    [filters, pagination.limit, pagination.skip]
+    [filters, pagination.limit, pagination.skip],
   );
 
   useEffect(() => {
@@ -88,7 +96,8 @@ export default function VariancesScreen() {
   }, [loadVariances]);
 
   const handleRefresh = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     loadVariances(true);
   };
@@ -153,7 +162,9 @@ export default function VariancesScreen() {
   const renderVarianceItem = ({ item }: { item: VarianceItem }) => {
     // Determine status color based on variance
     const isPositive = item.variance > 0;
-    const statusColor = isPositive ? theme.colors.success.main : theme.colors.error.main;
+    const statusColor = isPositive
+      ? theme.colors.success.main
+      : theme.colors.error.main;
 
     const varianceSign = isPositive ? "+" : "";
 
@@ -202,12 +213,19 @@ export default function VariancesScreen() {
             <View style={styles.qtyRow}>
               <View style={styles.qtyItem}>
                 <Text style={styles.qtyLabel}>System Qty</Text>
-                <Text style={styles.qtyValue}>{(item.system_qty ?? 0).toFixed(2)}</Text>
+                <Text style={styles.qtyValue}>
+                  {(item.system_qty ?? 0).toFixed(2)}
+                </Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.qtyItem}>
                 <Text style={styles.qtyLabel}>Verified Qty</Text>
-                <Text style={[styles.qtyValue, { color: theme.colors.text.primary }]}>
+                <Text
+                  style={[
+                    styles.qtyValue,
+                    { color: theme.colors.text.primary },
+                  ]}
+                >
                   {(item.verified_qty ?? 0).toFixed(2)}
                 </Text>
               </View>
@@ -215,7 +233,11 @@ export default function VariancesScreen() {
 
             {(item.floor || item.rack) && (
               <View style={styles.locationRow}>
-                <Ionicons name="location-outline" size={14} color={theme.colors.text.tertiary} />
+                <Ionicons
+                  name="location-outline"
+                  size={14}
+                  color={theme.colors.text.tertiary}
+                />
                 <Text style={styles.locationText}>
                   {[item.floor, item.rack].filter(Boolean).join(" / ")}
                 </Text>
@@ -230,10 +252,15 @@ export default function VariancesScreen() {
             )}
 
             <View style={styles.verificationInfo}>
-              <Ionicons name="person-outline" size={12} color={theme.colors.text.tertiary} />
+              <Ionicons
+                name="person-outline"
+                size={12}
+                color={theme.colors.text.tertiary}
+              />
               <Text style={styles.verificationInfoText}>
                 Verified by {item.verified_by}
-                {item.verified_at && ` • ${new Date(item.verified_at).toLocaleDateString()}`}
+                {item.verified_at &&
+                  ` • ${new Date(item.verified_at).toLocaleDateString()}`}
               </Text>
             </View>
           </View>
@@ -247,24 +274,47 @@ export default function VariancesScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Variances</Text>
-              <Text style={styles.pageSubtitle}>{pagination.total} discrepancies found</Text>
+              <Text style={styles.pageSubtitle}>
+                {pagination.total} discrepancies found
+              </Text>
             </View>
           </View>
 
           <AnimatedPressable
-            style={[styles.exportButton, variances.length === 0 && { opacity: 0.5 }]}
+            style={[
+              styles.exportButton,
+              variances.length === 0 && { opacity: 0.5 },
+            ]}
             onPress={handleExportCSV}
             disabled={variances.length === 0}
           >
-            <GlassCard intensity={20} padding={8} borderRadius={theme.borderRadius.full}>
-              <Ionicons name="download-outline" size={20} color={theme.colors.text.primary} />
+            <GlassCard
+              intensity={20}
+              padding={8}
+              borderRadius={theme.borderRadius.full}
+            >
+              <Ionicons
+                name="download-outline"
+                size={20}
+                color={theme.colors.text.primary}
+              />
             </GlassCard>
           </AnimatedPressable>
         </Animated.View>
@@ -292,7 +342,9 @@ export default function VariancesScreen() {
               color={theme.colors.success.main}
             />
             <Text style={styles.emptyText}>No variances found</Text>
-            <Text style={styles.emptySubtext}>All items match system quantities</Text>
+            <Text style={styles.emptySubtext}>
+              All items match system quantities
+            </Text>
           </View>
         ) : (
           <View style={{ flex: 1 }}>
@@ -301,7 +353,9 @@ export default function VariancesScreen() {
               renderItem={renderVarianceItem}
               // @ts-ignore
               estimatedItemSize={180}
-              keyExtractor={(item, index) => `${item.item_code}-${item.verified_at}-${index}`}
+              keyExtractor={(item, index) =>
+                `${item.item_code}-${item.verified_at}-${index}`
+              }
               contentContainerStyle={styles.listContent}
               refreshControl={
                 <RefreshControl
@@ -316,7 +370,10 @@ export default function VariancesScreen() {
               ListFooterComponent={
                 loading && variances.length > 0 ? (
                   <View style={{ paddingVertical: 20 }}>
-                    <ActivityIndicator size="small" color={theme.colors.primary[500]} />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary[500]}
+                    />
                   </View>
                 ) : (
                   <View style={{ height: 20 }} />

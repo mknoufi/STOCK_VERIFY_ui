@@ -56,7 +56,7 @@ export function PinKeypad({
       ["7", "8", "9"],
       ["clear", "0", "backspace"],
     ],
-    []
+    [],
   );
 
   // Animation for error shake
@@ -82,7 +82,7 @@ export function PinKeypad({
         }
       }
     },
-    [pin, maxLength, onPinChange, onComplete, disabled]
+    [pin, maxLength, onPinChange, onComplete, disabled],
   );
 
   // Trigger shake animation on error
@@ -93,7 +93,7 @@ export function PinKeypad({
         withTiming(10, { duration: 50 }),
         withTiming(-10, { duration: 50 }),
         withTiming(10, { duration: 50 }),
-        withTiming(0, { duration: 50 })
+        withTiming(0, { duration: 50 }),
       );
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -151,19 +151,33 @@ export function PinKeypad({
         activeOpacity={0.6}
         accessibilityRole="button"
         accessibilityLabel={
-          key === "backspace" ? "Delete" : key === "clear" ? "Clear" : `Number ${key}`
+          key === "backspace"
+            ? "Delete"
+            : key === "clear"
+              ? "Clear"
+              : `Number ${key}`
         }
       >
         {key === "backspace" ? (
           <Ionicons
             name="backspace-outline"
             size={28}
-            color={disabled ? modernColors.text.disabled : modernColors.text.secondary}
+            color={
+              disabled
+                ? modernColors.text.disabled
+                : modernColors.text.secondary
+            }
           />
         ) : key === "clear" ? (
-          <Text style={[styles.keyTextSpecial, disabled && styles.keyTextDisabled]}>C</Text>
+          <Text
+            style={[styles.keyTextSpecial, disabled && styles.keyTextDisabled]}
+          >
+            C
+          </Text>
         ) : (
-          <Text style={[styles.keyText, disabled && styles.keyTextDisabled]}>{key}</Text>
+          <Text style={[styles.keyText, disabled && styles.keyTextDisabled]}>
+            {key}
+          </Text>
         )}
       </TouchableOpacity>
     );

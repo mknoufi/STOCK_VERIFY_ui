@@ -164,7 +164,7 @@ async def validate_record(
                     conflict_id = await sync_service.detect_conflict(
                         entity_type="item_serial",
                         entity_id=str(existing.get("_id")),
-                        local_data=record.dict(),
+                        local_data=record.model_dump(),
                         server_data=server_data,
                         user=user_id,
                         session_id=record.session_id,

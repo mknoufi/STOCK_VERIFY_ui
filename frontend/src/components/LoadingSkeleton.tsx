@@ -6,7 +6,10 @@ interface SkeletonListProps {
   count: number;
 }
 
-export const SkeletonList: React.FC<SkeletonListProps> = ({ itemHeight, count }) => {
+export const SkeletonList: React.FC<SkeletonListProps> = ({
+  itemHeight,
+  count,
+}) => {
   return (
     <View>
       {Array.from({ length: count }).map((_, index) => (

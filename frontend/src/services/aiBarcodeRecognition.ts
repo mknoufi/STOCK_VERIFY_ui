@@ -26,7 +26,7 @@ interface AIBarcodeRecognitionService {
   initialize(): Promise<void>;
   recognizeBarcode(
     imageUri: string,
-    options?: BarcodeRecognitionOptions
+    options?: BarcodeRecognitionOptions,
   ): Promise<BarcodeResult | null>;
   enhanceImage(imageUri: string): Promise<string>;
   isAvailable(): boolean;
@@ -52,7 +52,9 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
           // Initialize MobileNet for image processing
           this.model = await mobilenet.load();
         } catch (_importError) {
-          console.warn("TensorFlow.js not available, AI features will be limited");
+          console.warn(
+            "TensorFlow.js not available, AI features will be limited",
+          );
         }
       }
 
@@ -65,14 +67,17 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
       this.isInitialized = true;
       console.log("✅ AI Barcode Recognition Service initialized");
     } catch (error) {
-      console.warn("⚠️ AI Barcode Recognition Service initialization failed:", error);
+      console.warn(
+        "⚠️ AI Barcode Recognition Service initialization failed:",
+        error,
+      );
       throw error;
     }
   }
 
   async recognizeBarcode(
     imageUri: string,
-    options: BarcodeRecognitionOptions = {}
+    options: BarcodeRecognitionOptions = {},
   ): Promise<BarcodeResult | null> {
     if (!this.isInitialized) {
       await this.initialize();
@@ -94,11 +99,17 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
       }
 
       // Try camera-based recognition first
-      let result = await this.recognizeWithCamera(processedImageUri, confidenceThreshold);
+      let result = await this.recognizeWithCamera(
+        processedImageUri,
+        confidenceThreshold,
+      );
 
       if (!result && useOCR) {
         // Fallback to OCR for damaged/faded barcodes
-        result = await this.recognizeWithOCR(processedImageUri, confidenceThreshold);
+        result = await this.recognizeWithOCR(
+          processedImageUri,
+          confidenceThreshold,
+        );
       }
 
       if (!result && maxRetries > 0) {
@@ -107,7 +118,10 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
           processedImageUri = await this.enhanceImage(imageUri, {
             contrast: 1.2 + attempt * 0.3,
           });
-          result = await this.recognizeWithCamera(processedImageUri, confidenceThreshold * 0.8);
+          result = await this.recognizeWithCamera(
+            processedImageUri,
+            confidenceThreshold * 0.8,
+          );
 
           if (result) break;
         }
@@ -122,7 +136,7 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
 
   private async recognizeWithCamera(
     _imageUri: string,
-    _confidenceThreshold: number
+    _confidenceThreshold: number,
   ): Promise<BarcodeResult | null> {
     // This would integrate with the existing camera barcode scanner
     // For now, return null to indicate camera recognition should be handled by existing system
@@ -131,7 +145,7 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
 
   private async recognizeWithOCR(
     imageUri: string,
-    confidenceThreshold: number
+    confidenceThreshold: number,
   ): Promise<BarcodeResult | null> {
     if (Platform.OS === "web") {
       try {
@@ -160,7 +174,10 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
           }
         }
       } catch (error) {
-        console.warn("OCR recognition failed (tesseract.js may not be installed):", error);
+        console.warn(
+          "OCR recognition failed (tesseract.js may not be installed):",
+          error,
+        );
       }
     }
 
@@ -179,7 +196,7 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
       if (matches) {
         // Return the longest match
         return matches.reduce((longest, current) =>
-          current.length > longest.length ? current : longest
+          current.length > longest.length ? current : longest,
         );
       }
     }
@@ -189,7 +206,7 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
 
   async enhanceImage(
     imageUri: string,
-    options: { contrast?: number; brightness?: number } = {}
+    options: { contrast?: number; brightness?: number } = {},
   ): Promise<string> {
     const { contrast = 1.2, brightness = 1.1 } = options;
 
@@ -250,13 +267,15 @@ class TensorFlowBarcodeService implements AIBarcodeRecognitionService {
 export const aiBarcodeService = new TensorFlowBarcodeService();
 
 // Utility functions
-export const enhanceBarcodeImage = async (imageUri: string): Promise<string> => {
+export const enhanceBarcodeImage = async (
+  imageUri: string,
+): Promise<string> => {
   return await aiBarcodeService.enhanceImage(imageUri);
 };
 
 export const recognizeBarcodeWithAI = async (
   imageUri: string,
-  options?: BarcodeRecognitionOptions
+  options?: BarcodeRecognitionOptions,
 ): Promise<BarcodeResult | null> => {
   return await aiBarcodeService.recognizeBarcode(imageUri, options);
 };
@@ -290,7 +309,7 @@ export const useAIBarcodeRecognition = () => {
   const recognizeBarcode = React.useCallback(
     async (
       imageUri: string,
-      options?: BarcodeRecognitionOptions
+      options?: BarcodeRecognitionOptions,
     ): Promise<BarcodeResult | null> => {
       if (!isInitialized) return null;
 
@@ -302,7 +321,7 @@ export const useAIBarcodeRecognition = () => {
         setIsLoading(false);
       }
     },
-    [isInitialized]
+    [isInitialized],
   );
 
   return {

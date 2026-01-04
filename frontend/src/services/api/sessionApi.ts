@@ -30,7 +30,12 @@ const log = createLogger("SessionApi");
 // Types
 // ============================================================================
 
-export type SessionStatus = "OPEN" | "CLOSED" | "RECONCILE" | "EXPORTED" | "ARCHIVED";
+export type SessionStatus =
+  | "OPEN"
+  | "CLOSED"
+  | "RECONCILE"
+  | "EXPORTED"
+  | "ARCHIVED";
 
 export interface Session {
   id: string;
@@ -93,7 +98,7 @@ export class SessionApiError extends Error {
     message: string,
     public userMessage: string,
     public recoverable: boolean = true,
-    public context?: Record<string, unknown>
+    public context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "SessionApiError";
@@ -138,7 +143,10 @@ export const sessionApi = {
     }
 
     try {
-      const response = await api.post<BulkOperationResult>("/api/sessions/bulk/close", sessionIds);
+      const response = await api.post<BulkOperationResult>(
+        "/api/sessions/bulk/close",
+        sessionIds,
+      );
 
       log.info("Bulk close completed", {
         updated: response.data.updated_count,
@@ -153,7 +161,7 @@ export const sessionApi = {
         "Failed to close sessions",
         "Could not close the selected sessions. Please try again.",
         true,
-        { sessionIds, error }
+        { sessionIds, error },
       );
     }
   },
@@ -185,7 +193,7 @@ export const sessionApi = {
     try {
       const response = await api.post<BulkOperationResult>(
         "/api/sessions/bulk/reconcile",
-        sessionIds
+        sessionIds,
       );
 
       log.info("Bulk reconcile completed", {
@@ -201,7 +209,7 @@ export const sessionApi = {
         "Failed to reconcile sessions",
         "Could not reconcile the selected sessions. Please try again.",
         true,
-        { sessionIds, error }
+        { sessionIds, error },
       );
     }
   },
@@ -214,7 +222,7 @@ export const sessionApi = {
    */
   async bulkExport(
     sessionIds: string[],
-    format: ExportFormat = "excel"
+    format: ExportFormat = "excel",
   ): Promise<BulkExportResult> {
     log.info("Bulk export sessions", { count: sessionIds.length, format });
 
@@ -223,14 +231,14 @@ export const sessionApi = {
         "EXPORT_REQUIRES_NETWORK",
         "Export requires network connection",
         "Please connect to the network to export sessions.",
-        true
+        true,
       );
     }
 
     try {
       const response = await api.post<BulkExportResult>(
         `/api/sessions/bulk/export?format=${format}`,
-        sessionIds
+        sessionIds,
       );
 
       log.info("Bulk export completed", {
@@ -245,7 +253,7 @@ export const sessionApi = {
         "Failed to export sessions",
         "Could not export the selected sessions. Please try again.",
         true,
-        { sessionIds, format, error }
+        { sessionIds, format, error },
       );
     }
   },
@@ -258,7 +266,7 @@ export const sessionApi = {
    */
   async bulkUpdateStatus(
     sessionIds: string[],
-    status: SessionStatus
+    status: SessionStatus,
   ): Promise<BulkOperationResult> {
     log.info("Bulk update status", { count: sessionIds.length, status });
 
@@ -273,7 +281,7 @@ export const sessionApi = {
           "UNSUPPORTED_BULK_STATUS",
           `Bulk update to ${status} is not supported`,
           `Cannot bulk update sessions to "${status}" status.`,
-          false
+          false,
         );
     }
   },
@@ -292,7 +300,7 @@ export const sessionApi = {
   async getSessions(
     page: number = 1,
     pageSize: number = 20,
-    filters?: SessionFilters
+    filters?: SessionFilters,
   ): Promise<SessionListResponse> {
     log.debug("Get sessions", { page, pageSize, filters });
 
@@ -302,7 +310,9 @@ export const sessionApi = {
     });
 
     if (filters?.status) {
-      const statuses = Array.isArray(filters.status) ? filters.status.join(",") : filters.status;
+      const statuses = Array.isArray(filters.status)
+        ? filters.status.join(",")
+        : filters.status;
       params.append("status", statuses);
     }
     if (filters?.warehouse) params.append("warehouse", filters.warehouse);
@@ -312,7 +322,9 @@ export const sessionApi = {
     if (filters?.search) params.append("search", filters.search);
 
     try {
-      const response = await api.get<SessionListResponse>(`/api/sessions?${params.toString()}`);
+      const response = await api.get<SessionListResponse>(
+        `/api/sessions?${params.toString()}`,
+      );
       return response.data;
     } catch (error) {
       log.error("Get sessions failed", { error });
@@ -321,7 +333,7 @@ export const sessionApi = {
         "Failed to fetch sessions",
         "Could not load sessions. Please try again.",
         true,
-        { page, pageSize, filters, error }
+        { page, pageSize, filters, error },
       );
     }
   },
@@ -344,7 +356,7 @@ export const sessionApi = {
         "Failed to fetch session",
         "Could not load session details. Please try again.",
         true,
-        { sessionId, error }
+        { sessionId, error },
       );
     }
   },
@@ -377,7 +389,9 @@ export const sessionApi = {
     }
 
     try {
-      const response = await api.post<Session>(`/api/sessions/${sessionId}/close`);
+      const response = await api.post<Session>(
+        `/api/sessions/${sessionId}/close`,
+      );
       return response.data;
     } catch (error) {
       log.error("Close session failed", { sessionId, error });
@@ -386,7 +400,7 @@ export const sessionApi = {
         "Failed to close session",
         "Could not close the session. Please try again.",
         true,
-        { sessionId, error }
+        { sessionId, error },
       );
     }
   },
@@ -414,7 +428,9 @@ export const sessionApi = {
     }
 
     try {
-      const response = await api.post<Session>(`/api/sessions/${sessionId}/reconcile`);
+      const response = await api.post<Session>(
+        `/api/sessions/${sessionId}/reconcile`,
+      );
       return response.data;
     } catch (error) {
       log.error("Reconcile session failed", { sessionId, error });
@@ -423,7 +439,7 @@ export const sessionApi = {
         "Failed to reconcile session",
         "Could not reconcile the session. Please try again.",
         true,
-        { sessionId, error }
+        { sessionId, error },
       );
     }
   },

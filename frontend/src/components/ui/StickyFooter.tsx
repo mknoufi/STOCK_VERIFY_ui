@@ -11,7 +11,13 @@ interface Props {
   testID?: string;
 }
 
-export function StickyFooter({ title, disabled, loading, onPress, testID }: Props) {
+export function StickyFooter({
+  title,
+  disabled,
+  loading,
+  onPress,
+  testID,
+}: Props) {
   const { theme } = useThemeContext();
 
   return (

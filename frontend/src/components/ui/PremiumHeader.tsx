@@ -9,7 +9,14 @@
  */
 
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform, ViewStyle } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  ViewStyle,
+} from "react-native";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
@@ -60,9 +67,12 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
 
   React.useEffect(() => {
     logoScale.value = withRepeat(
-      withSequence(withTiming(1.05, { duration: 2000 }), withTiming(1, { duration: 2000 })),
+      withSequence(
+        withTiming(1.05, { duration: 2000 }),
+        withTiming(1, { duration: 2000 }),
+      ),
       -1,
-      true
+      true,
     );
   }, [logoScale]);
 
@@ -83,7 +93,10 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
   );
 
   const renderLogo = () => (
-    <Animated.View style={[styles.logoContainer, logoStyle]} entering={FadeIn.delay(100)}>
+    <Animated.View
+      style={[styles.logoContainer, logoStyle]}
+      entering={FadeIn.delay(100)}
+    >
       <View style={styles.iconGlow}>
         <Ionicons name="cube" size={32} color={theme.colors.primary[400]} />
       </View>
@@ -98,7 +111,10 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
     if (rightAction) {
       return (
         <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: "rgba(99, 102, 241, 0.15)" }]}
+          style={[
+            styles.actionButton,
+            { backgroundColor: "rgba(99, 102, 241, 0.15)" },
+          ]}
           onPress={rightAction.onPress}
           activeOpacity={0.7}
         >
@@ -118,15 +134,27 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
           onPress={onLogout}
           activeOpacity={0.7}
         >
-          <Ionicons name="log-out-outline" size={22} color={theme.colors.error.main} />
+          <Ionicons
+            name="log-out-outline"
+            size={22}
+            color={theme.colors.error.main}
+          />
         </TouchableOpacity>
       );
     }
 
     if (onMenuPress) {
       return (
-        <TouchableOpacity style={styles.actionButton} onPress={onMenuPress} activeOpacity={0.7}>
-          <Ionicons name="menu-outline" size={24} color={theme.colors.text.primary} />
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={onMenuPress}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="menu-outline"
+            size={24}
+            color={theme.colors.text.primary}
+          />
         </TouchableOpacity>
       );
     }
@@ -152,10 +180,16 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
           <View style={styles.rightContent}>
             {showUserInfo && showLogo && userName && (
               <View style={styles.compactUserInfo}>
-                <Ionicons name="person-circle" size={28} color={theme.colors.primary[400]} />
+                <Ionicons
+                  name="person-circle"
+                  size={28}
+                  color={theme.colors.primary[400]}
+                />
                 <View style={styles.compactUserText}>
                   <Text style={styles.compactUserName}>{userName}</Text>
-                  {userRole && <Text style={styles.compactRole}>{userRole}</Text>}
+                  {userRole && (
+                    <Text style={styles.compactRole}>{userRole}</Text>
+                  )}
                 </View>
               </View>
             )}
@@ -174,7 +208,9 @@ const createStyles = (theme: AppTheme, isDark: boolean) =>
       zIndex: 100,
     },
     blurContainer: {
-      backgroundColor: isDark ? "rgba(15, 23, 42, 0.75)" : "rgba(255, 255, 255, 0.85)",
+      backgroundColor: isDark
+        ? "rgba(15, 23, 42, 0.75)"
+        : "rgba(255, 255, 255, 0.85)",
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.border.light,
     },
@@ -275,7 +311,9 @@ const createStyles = (theme: AppTheme, isDark: boolean) =>
       width: 42,
       height: 42,
       borderRadius: theme.borderRadius.lg,
-      backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)",
+      backgroundColor: isDark
+        ? "rgba(255, 255, 255, 0.08)"
+        : "rgba(0, 0, 0, 0.05)",
       justifyContent: "center",
       alignItems: "center",
       borderWidth: 1,

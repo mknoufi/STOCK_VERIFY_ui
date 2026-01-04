@@ -1,5 +1,11 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity, Platform, type ViewStyle } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  type ViewStyle,
+} from "react-native";
 
 interface AccessibilityEnhancerProps {
   children: React.ReactNode;
@@ -34,10 +40,13 @@ export const AccessibilityEnhancer: React.FC<AccessibilityEnhancerProps> = ({
   };
 
   // Create a wrapper component based on role
-  const WrapperComponent = accessibilityRole === "button" ? TouchableOpacity : View;
+  const WrapperComponent =
+    accessibilityRole === "button" ? TouchableOpacity : View;
 
   const androidAccessibilityProps =
-    Platform.OS === "android" ? ({ accessibilityLiveRegion: "polite" } as const) : undefined;
+    Platform.OS === "android"
+      ? ({ accessibilityLiveRegion: "polite" } as const)
+      : undefined;
 
   return (
     <WrapperComponent
@@ -59,7 +68,7 @@ export const AccessibilityEnhancer: React.FC<AccessibilityEnhancerProps> = ({
 // Higher-order component for accessibility
 export const withAccessibility = (
   Component: React.ComponentType<any>,
-  defaultProps: Partial<AccessibilityEnhancerProps> = {}
+  defaultProps: Partial<AccessibilityEnhancerProps> = {},
 ) => {
   return React.forwardRef<any, any>((props, ref) => (
     <AccessibilityEnhancer {...defaultProps} {...props}>

@@ -22,9 +22,18 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { FlashList } from "@shopify/flash-list";
 
-import { listNotes, createNote, deleteNote, Note } from "../../src/services/api/notesApi";
+import {
+  listNotes,
+  createNote,
+  deleteNote,
+  Note,
+} from "../../src/services/api/notesApi";
 import { flags } from "../../src/constants/flags";
-import { AuroraBackground, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  AuroraBackground,
+  GlassCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import { useToast } from "../../src/components/feedback/ToastProvider";
 
@@ -59,7 +68,8 @@ export default function NotesScreen() {
   }, [loadNotes, router]);
 
   const onRefresh = async () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     await loadNotes();
     setRefreshing(false);
@@ -68,7 +78,8 @@ export default function NotesScreen() {
   const addNote = async () => {
     if (!newNote.trim()) return;
 
-    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (Platform.OS !== "web")
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsSubmitting(true);
     try {
       await createNote({ body: newNote.trim() });
@@ -76,7 +87,8 @@ export default function NotesScreen() {
       await loadNotes();
       show("Note added successfully", "success");
     } catch {
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       show("Failed to add note", "error");
     } finally {
       setIsSubmitting(false);
@@ -85,7 +97,8 @@ export default function NotesScreen() {
 
   const removeNote = (id?: string) => {
     if (!id) return;
-    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    if (Platform.OS !== "web")
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
     Alert.alert("Delete Note", "Are you sure you want to delete this note?", [
       { text: "Cancel", style: "cancel" },
@@ -121,13 +134,26 @@ export default function NotesScreen() {
           <Text style={styles.cardBody}>{item.body}</Text>
           <View style={styles.cardRow}>
             <View style={styles.metaContainer}>
-              <Ionicons name="time-outline" size={12} color={auroraTheme.colors.text.tertiary} />
+              <Ionicons
+                name="time-outline"
+                size={12}
+                color={auroraTheme.colors.text.tertiary}
+              />
               <Text style={styles.cardMeta}>
-                {item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}
+                {item.createdAt
+                  ? new Date(item.createdAt).toLocaleString()
+                  : ""}
               </Text>
             </View>
-            <AnimatedPressable onPress={() => removeNote(item.id)} style={styles.deleteButton}>
-              <Ionicons name="trash-outline" size={18} color={auroraTheme.colors.error[500]} />
+            <AnimatedPressable
+              onPress={() => removeNote(item.id)}
+              style={styles.deleteButton}
+            >
+              <Ionicons
+                name="trash-outline"
+                size={18}
+                color={auroraTheme.colors.error[500]}
+              />
             </AnimatedPressable>
           </View>
         </GlassCard>
@@ -140,23 +166,43 @@ export default function NotesScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Notes</Text>
-              <Text style={styles.pageSubtitle}>Personal notes & reminders</Text>
+              <Text style={styles.pageSubtitle}>
+                Personal notes & reminders
+              </Text>
             </View>
           </View>
         </Animated.View>
 
         {/* Search & Add */}
         <Animated.View entering={FadeInDown.delay(200).springify()}>
-          <GlassCard variant="medium" padding={auroraTheme.spacing.sm} style={styles.controlsCard}>
+          <GlassCard
+            variant="medium"
+            padding={auroraTheme.spacing.sm}
+            style={styles.controlsCard}
+          >
             <View style={styles.searchRow}>
-              <Ionicons name="search" size={20} color={auroraTheme.colors.text.secondary} />
+              <Ionicons
+                name="search"
+                size={20}
+                color={auroraTheme.colors.text.secondary}
+              />
               <TextInput
                 placeholder="Search notes..."
                 placeholderTextColor={auroraTheme.colors.text.tertiary}
@@ -198,7 +244,10 @@ export default function NotesScreen() {
         <View style={styles.listContainer}>
           {loading && !refreshing ? (
             <View style={styles.centerContainer}>
-              <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+              <ActivityIndicator
+                size="large"
+                color={auroraTheme.colors.primary[500]}
+              />
             </View>
           ) : (
             <FlashList
@@ -222,7 +271,9 @@ export default function NotesScreen() {
                     color={auroraTheme.colors.text.disabled}
                   />
                   <Text style={styles.emptyText}>No notes yet</Text>
-                  <Text style={styles.emptySubtext}>Add a note to get started</Text>
+                  <Text style={styles.emptySubtext}>
+                    Add a note to get started
+                  </Text>
                 </View>
               }
             />

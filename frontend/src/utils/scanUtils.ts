@@ -1,6 +1,114 @@
 import { Item, NormalizedMrpVariant } from "../types/scan";
 
-export const normalizeSerialValue = (input: string) => (input ? input.trim().toUpperCase() : "");
+export const normalizeSerialValue = (input: string) =>
+  input ? input.trim().toUpperCase() : "";
+
+/**
+ * Validate serial number format
+ * Allows alphanumeric characters and hyphens
+ * Returns error message if invalid, null if valid
+ */
+export const validateSerialNumber = (serial: string): string | null => {
+  const normalized = normalizeSerialValue(serial);
+  if (!normalized) {
+    return "Serial number cannot be empty";
+  }
+  if (normalized.length < 3) {
+    return "Serial number must be at least 3 characters";
+  }
+  if (normalized.length > 50) {
+    return "Serial number cannot exceed 50 characters";
+  }
+  if (!/^[A-Z0-9\-]+$/.test(normalized)) {
+    return "Serial number must contain only letters, numbers, and hyphens";
+  }
+  return null;
+};
+
+/**
+ * Check if serial numbers array is valid for a serialized item
+ */
+export const validateSerialNumbers = (
+  serialNumbers: string[],
+  requiredCount: number
+): { valid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  const normalizedSerials = serialNumbers.map(normalizeSerialValue).filter(Boolean);
+
+  // Check count
+  if (normalizedSerials.length < requiredCount) {
+    errors.push(`${requiredCount - normalizedSerials.length} more serial number(s) required`);
+  }
+
+  // Check for duplicates
+  const uniqueSerials = new Set(normalizedSerials);
+  if (uniqueSerials.size !== normalizedSerials.length) {
+    errors.push("Duplicate serial numbers detected");
+  }
+
+  // Validate each serial
+  normalizedSerials.forEach((serial, index) => {
+    const error = validateSerialNumber(serial);
+    if (error) {
+      errors.push(`Serial #${index + 1}: ${error}`);
+    }
+  });
+
+  return { valid: errors.length === 0, errors };
+};
+
+/**
+ * Check if a scanned code is a valid serial number (not a barcode)
+ * Serial numbers are typically longer and more complex than barcodes
+ * Barcodes in this system are 6-digit numeric with specific prefixes (51, 52, 53)
+ */
+export const isSerialNumberFormat = (code: string): boolean => {
+  const normalized = normalizeSerialValue(code);
+  if (!normalized) return false;
+
+  // Barcode pattern: 6 digits starting with 51, 52, or 53
+  const barcodePattern = /^5[123]\d{4}$/;
+
+  // If it matches barcode pattern, it's NOT a serial number
+  if (barcodePattern.test(normalized)) {
+    return false;
+  }
+
+  // Serial numbers should be at least 3 chars
+  return normalized.length >= 3;
+};
+
+/**
+ * Validate a scanned value as a serial number
+ * Returns { valid: true } or { valid: false, error: string }
+ */
+export const validateScannedSerial = (
+  code: string,
+  existingSerials: string[]
+): { valid: boolean; error?: string } => {
+  const normalized = normalizeSerialValue(code);
+
+  // Check if it looks like a barcode instead
+  if (!isSerialNumberFormat(code)) {
+    return {
+      valid: false,
+      error: "This appears to be a product barcode, not a serial number"
+    };
+  }
+
+  // Standard validation
+  const validationError = validateSerialNumber(normalized);
+  if (validationError) {
+    return { valid: false, error: validationError };
+  }
+
+  // Check for duplicates
+  if (existingSerials.map(normalizeSerialValue).includes(normalized)) {
+    return { valid: false, error: "This serial number has already been added" };
+  }
+
+  return { valid: true };
+};
 
 export const toNumericMrp = (value: unknown): number | null => {
   if (value === undefined || value === null) {
@@ -9,7 +117,8 @@ export const toNumericMrp = (value: unknown): number | null => {
 
   if (typeof value === "object" && value !== null) {
     const obj = value as Record<string, unknown>;
-    const candidate = obj.value ?? obj.mrp ?? obj.amount ?? obj.price ?? obj.rate ?? null;
+    const candidate =
+      obj.value ?? obj.mrp ?? obj.amount ?? obj.price ?? obj.rate ?? null;
 
     if (candidate !== null && candidate !== undefined) {
       return toNumericMrp(candidate);
@@ -18,7 +127,8 @@ export const toNumericMrp = (value: unknown): number | null => {
     return null;
   }
 
-  const numericValue = typeof value === "number" ? value : parseFloat(String(value));
+  const numericValue =
+    typeof value === "number" ? value : parseFloat(String(value));
   if (Number.isNaN(numericValue)) {
     return null;
   }
@@ -33,7 +143,9 @@ export const formatMrpValue = (value: unknown) => {
   return numericValue.toString();
 };
 
-export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null => {
+export const normalizeMrpVariant = (
+  input: unknown,
+): NormalizedMrpVariant | null => {
   const numericValue = toNumericMrp(input);
   if (numericValue === null) {
     return null;
@@ -64,7 +176,8 @@ export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null
           : typeof obj.mrp_source === "string"
             ? obj.mrp_source
             : undefined,
-      item_condition: typeof obj.item_condition === "string" ? obj.item_condition : undefined,
+      item_condition:
+        typeof obj.item_condition === "string" ? obj.item_condition : undefined,
     };
   }
 
@@ -73,7 +186,9 @@ export const normalizeMrpVariant = (input: unknown): NormalizedMrpVariant | null
   };
 };
 
-export const getNormalizedMrpVariants = (item: Item | null | undefined): NormalizedMrpVariant[] => {
+export const getNormalizedMrpVariants = (
+  item: Item | null | undefined,
+): NormalizedMrpVariant[] => {
   if (!item) {
     return [];
   }

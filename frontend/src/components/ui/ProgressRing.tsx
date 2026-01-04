@@ -11,7 +11,12 @@
 
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from "react-native-svg";
+import Svg, {
+  Circle,
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+} from "react-native-svg";
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -53,7 +58,8 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   }, [animatedProgress, progress]);
 
   const animatedProps = useAnimatedProps(() => {
-    const strokeDashoffset = circumference - (circumference * animatedProgress.value) / 100;
+    const strokeDashoffset =
+      circumference - (circumference * animatedProgress.value) / 100;
     return {
       strokeDashoffset,
     };
@@ -63,7 +69,13 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size}>
         <Defs>
-          <SvgLinearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <SvgLinearGradient
+            id="progressGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <Stop offset="0%" stopColor={colors[0]} stopOpacity="1" />
             <Stop offset="100%" stopColor={colors[1]} stopOpacity="1" />
           </SvgLinearGradient>

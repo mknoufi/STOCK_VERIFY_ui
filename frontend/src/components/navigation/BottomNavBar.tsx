@@ -6,7 +6,13 @@
  */
 
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors as unifiedColors, radius, spacing } from "@/theme/unified";
 import { useThemeContext } from "@/context/ThemeContext";
@@ -29,7 +35,11 @@ interface BottomNavBarProps {
   onTabChange?: (tabId: NavTabId) => void;
 }
 
-export const BottomNavBar: React.FC<BottomNavBarProps> = ({ tabs, activeTabId, onTabChange }) => {
+export const BottomNavBar: React.FC<BottomNavBarProps> = ({
+  tabs,
+  activeTabId,
+  onTabChange,
+}) => {
   const { themeLegacy: appTheme, isDark } = useThemeContext();
   const { colors } = appTheme;
 
@@ -45,7 +55,9 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ tabs, activeTabId, o
       style={[
         styles.bottomNavigation,
         {
-          backgroundColor: isDark ? unifiedColors.neutral[900] : unifiedColors.white,
+          backgroundColor: isDark
+            ? unifiedColors.neutral[900]
+            : unifiedColors.white,
           borderTopColor: colors.border,
         },
       ]}
@@ -77,7 +89,10 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ tabs, activeTabId, o
               />
             </View>
             <Text
-              style={[styles.bottomNavLabel, { color: isActive ? activeColor : inactiveColor }]}
+              style={[
+                styles.bottomNavLabel,
+                { color: isActive ? activeColor : inactiveColor },
+              ]}
             >
               {tab.label}
             </Text>
@@ -94,7 +109,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ tabs, activeTabId, o
 export const getDefaultInventoryTabs = (
   router: { push: (path: string) => void },
   sessionId: string | null,
-  onFinish: () => void
+  onFinish: () => void,
 ): NavTab[] => [
   {
     id: "home",

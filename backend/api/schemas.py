@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Any, Generic, Optional, TypeVar, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -106,6 +107,8 @@ class UserInfo(BaseModel):
     full_name: str
     role: str
     email: Optional[str] = None
+    employee_id: Optional[str] = None
+    phone: Optional[str] = None
     is_active: bool = True
     permissions: list[str] = Field(default_factory=list)
 
@@ -122,7 +125,9 @@ class UserRegister(BaseModel):
     username: str
     password: str
     full_name: str
-    role: str
+    role: str = "staff"
+    employee_id: Optional[str] = None
+    phone: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -154,6 +159,26 @@ class CorrectionMetadata(BaseModel):
     approved_at: Optional[datetime] = None
 
 
+class DateFormatType(str, Enum):
+    """Date format type for manufacturing and expiry dates"""
+
+    FULL = "full"  # DD/MM/YYYY
+    MONTH_YEAR = "month_year"  # MM/YYYY
+    YEAR_ONLY = "year_only"  # YYYY
+    NONE = "none"  # No date
+
+
+class SerialEntry(BaseModel):
+    """Enhanced serial entry with per-serial attributes"""
+
+    serial_number: str
+    mrp: Optional[float] = None
+    manufacturing_date: Optional[str] = None
+    mfg_date_format: Optional[DateFormatType] = None
+    expiry_date: Optional[str] = None
+    expiry_date_format: Optional[DateFormatType] = None
+
+
 class CountLineCreate(BaseModel):
     session_id: str
     item_code: str
@@ -167,7 +192,9 @@ class CountLineCreate(BaseModel):
     mark_location: Optional[str] = None
     sr_no: Optional[str] = None
     manufacturing_date: Optional[str] = None
+    mfg_date_format: Optional[DateFormatType] = None
     expiry_date: Optional[str] = None
+    expiry_date_format: Optional[DateFormatType] = None
     variance_reason: Optional[str] = None
     variance_note: Optional[str] = None
     remark: Optional[str] = None
@@ -175,6 +202,7 @@ class CountLineCreate(BaseModel):
     mrp_counted: Optional[float] = None
     split_section: Optional[str] = None
     serial_numbers: Optional[list[str]] = None
+    serial_entries: Optional[list[SerialEntry]] = None
     correction_reason: Optional[CorrectionReason] = None
     photo_proofs: Optional[list[PhotoProof]] = None
     correction_metadata: Optional[CorrectionMetadata] = None

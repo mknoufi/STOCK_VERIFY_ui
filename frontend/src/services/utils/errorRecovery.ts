@@ -32,7 +32,7 @@ export interface RetryStrategy {
  */
 export const retryWithBackoff = async <T>(
   operation: () => Promise<T>,
-  options: ErrorRecoveryOptions = {}
+  options: ErrorRecoveryOptions = {},
 ): Promise<T> => {
   const { maxRetries = 3, retryDelay = 1000, onSuccess, onFailure } = options;
 
@@ -77,12 +77,13 @@ export const retryWithBackoff = async <T>(
 export const recoverFromError = async <T>(
   primaryOperation: () => Promise<T>,
   fallbackOperations: (() => Promise<T>)[] = [],
-  _options: ErrorRecoveryOptions = {}
+  _options: ErrorRecoveryOptions = {},
 ): Promise<T> => {
   try {
     return await primaryOperation();
   } catch (error: unknown) {
-    __DEV__ && console.error("Primary operation failed, trying fallbacks...", error);
+    __DEV__ &&
+      console.error("Primary operation failed, trying fallbacks...", error);
 
     for (const fallbackOperation of fallbackOperations) {
       try {
@@ -106,7 +107,7 @@ export const recoverFromError = async <T>(
 export const safeExecute = async <T>(
   operation: () => Promise<T>,
   onError?: (error: unknown) => void,
-  defaultValue?: T
+  defaultValue?: T,
 ): Promise<T | undefined> => {
   try {
     return await operation();
@@ -190,7 +191,7 @@ class ErrorReporter {
         acc[type] = (acc[type] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     );
 
     return {
@@ -214,9 +215,15 @@ export const handleErrorWithRecovery = async <T>(
     fallback?: () => Promise<T>;
     showAlert?: boolean;
     onError?: (error: any) => void;
-  } = {}
+  } = {},
 ): Promise<T> => {
-  const { context = "Operation", recovery, fallback, showAlert = true, onError } = options;
+  const {
+    context = "Operation",
+    recovery,
+    fallback,
+    showAlert = true,
+    onError,
+  } = options;
 
   try {
     if (recovery) {
@@ -257,7 +264,7 @@ export const handleNetworkError = async <T>(
   options: {
     maxRetries?: number;
     showAlert?: boolean;
-  } = {}
+  } = {},
 ): Promise<T> => {
   const { maxRetries = 3, showAlert = true } = options;
 
@@ -276,7 +283,7 @@ export const handleNetworkError = async <T>(
         Alert.alert(
           "Network Error",
           "Unable to connect to server. Please check your internet connection and try again.",
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
       }
     },
@@ -291,7 +298,7 @@ export const handleDatabaseError = async <T>(
   options: {
     fallback?: () => Promise<T>;
     showAlert?: boolean;
-  } = {}
+  } = {},
 ): Promise<T> => {
   const { fallback, showAlert = true } = options;
 
@@ -308,7 +315,7 @@ export const handleDatabaseError = async <T>(
         Alert.alert(
           "Database Error",
           "Unable to save data. Your changes have been queued and will be synced when connection is restored.",
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
       }
     },

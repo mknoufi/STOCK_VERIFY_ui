@@ -8,7 +8,10 @@ import { PaginatedResponse } from "../../types/api";
 
 export class EnhancedApiService {
   private static loadingStates: Map<string, boolean> = new Map();
-  private static cache: Map<string, { data: unknown; timestamp: number; ttl: number }> = new Map();
+  private static cache: Map<
+    string,
+    { data: unknown; timestamp: number; ttl: number }
+  > = new Map();
 
   /**
    * Get loading state for a specific operation
@@ -23,7 +26,7 @@ export class EnhancedApiService {
   static async withLoading<T>(
     operation: string,
     apiCall: () => Promise<T>,
-    options: { cache?: boolean; cacheTtl?: number } = {}
+    options: { cache?: boolean; cacheTtl?: number } = {},
   ): Promise<T> {
     this.loadingStates.set(operation, true);
 
@@ -62,10 +65,12 @@ export class EnhancedApiService {
     return this.withLoading<Item>(
       `barcode-${barcode}`,
       async () => {
-        const response = await api.get(`/api/erp/items/barcode/${encodeURIComponent(barcode)}`);
+        const response = await api.get(
+          `/api/erp/items/barcode/${encodeURIComponent(barcode)}`,
+        );
         return response.data;
       },
-      { cache: true, cacheTtl: 600000 } // Cache for 10 minutes
+      { cache: true, cacheTtl: 600000 }, // Cache for 10 minutes
     );
   }
 
@@ -74,15 +79,17 @@ export class EnhancedApiService {
    */
   static async getSessions(
     page: number = 1,
-    pageSize: number = 20
+    pageSize: number = 20,
   ): Promise<PaginatedResponse<Session>> {
     return this.withLoading<PaginatedResponse<Session>>(
       `sessions-${page}`,
       async () => {
-        const response = await api.get(`/api/sessions?page=${page}&page_size=${pageSize}`);
+        const response = await api.get(
+          `/api/sessions?page=${page}&page_size=${pageSize}`,
+        );
         return response.data;
       },
-      { cache: false } // Don't cache session data (changes frequently)
+      { cache: false }, // Don't cache session data (changes frequently)
     );
   }
 

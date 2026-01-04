@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Alert,
+} from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,7 +30,8 @@ export default function HistoryScreen() {
   const params = useLocalSearchParams();
   const sessionId = params.sessionId as string | undefined;
   const initialApproved =
-    flags.enableDeepLinks && (params.approved === "1" || params.approved === "true");
+    flags.enableDeepLinks &&
+    (params.approved === "1" || params.approved === "true");
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
@@ -44,18 +52,22 @@ export default function HistoryScreen() {
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
-  const [showApprovedOnly, setShowApprovedOnly] = React.useState<boolean>(!!initialApproved);
+  const [showApprovedOnly, setShowApprovedOnly] =
+    React.useState<boolean>(!!initialApproved);
 
   // Pin Entry Modal State
   const [pinModalVisible, setPinModalVisible] = React.useState(false);
-  const [selectedLineForDelete, setSelectedLineForDelete] = React.useState<CountLine | null>(null);
+  const [selectedLineForDelete, setSelectedLineForDelete] =
+    React.useState<CountLine | null>(null);
 
   const loadCountLines = React.useCallback(async () => {
     try {
       const data = await getCountLines(sessionId as string);
       const safeData = Array.isArray(data) ? data : [];
       setCountLines(
-        showApprovedOnly ? safeData.filter((d: any) => d.status === "approved") : safeData
+        showApprovedOnly
+          ? safeData.filter((d: any) => d.status === "approved")
+          : safeData,
       );
       if (safeData.length && flags.enableHaptics) {
         haptics.success();
@@ -120,16 +132,27 @@ export default function HistoryScreen() {
       loadCountLines(); // Refresh list
     } catch (error: any) {
       console.error("Delete error:", error);
-      Alert.alert("Error", error.response?.data?.detail || "Failed to delete count line");
+      Alert.alert(
+        "Error",
+        error.response?.data?.detail || "Failed to delete count line",
+      );
       if (flags.enableHaptics) haptics.error();
     } finally {
       setSelectedLineForDelete(null);
     }
   };
 
-  const renderCountLine = ({ item, index }: { item: CountLine; index: number }) => {
+  const renderCountLine = ({
+    item,
+    index,
+  }: {
+    item: CountLine;
+    index: number;
+  }) => {
     const varianceColor =
-      item.variance === 0 ? unifiedColors.success[500] : unifiedColors.error[500];
+      item.variance === 0
+        ? unifiedColors.success[500]
+        : unifiedColors.error[500];
     const statusColor =
       item.status === "approved"
         ? unifiedColors.success[500]
@@ -140,9 +163,13 @@ export default function HistoryScreen() {
     const CardContent = (
       <GlassCard variant="medium" style={styles.countCard}>
         <View style={styles.cardHeader}>
-          <Text style={styles.itemName}>{item.item_name || "Unknown Item"}</Text>
+          <Text style={styles.itemName}>
+            {item.item_name || "Unknown Item"}
+          </Text>
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <Text style={styles.statusText}>{(item.status || "pending").toUpperCase()}</Text>
+            <Text style={styles.statusText}>
+              {(item.status || "pending").toUpperCase()}
+            </Text>
           </View>
         </View>
 
@@ -166,7 +193,9 @@ export default function HistoryScreen() {
           </View>
           <View style={styles.qtyItem}>
             <Text style={styles.qtyLabel}>Variance</Text>
-            <Text style={[styles.qtyValue, { color: varianceColor }]}>{item.variance ?? 0}</Text>
+            <Text style={[styles.qtyValue, { color: varianceColor }]}>
+              {item.variance ?? 0}
+            </Text>
           </View>
         </View>
 
@@ -177,9 +206,13 @@ export default function HistoryScreen() {
           </View>
         )}
 
-        {item.remark && <Text style={styles.remark}>Remark: {item.remark}</Text>}
+        {item.remark && (
+          <Text style={styles.remark}>Remark: {item.remark}</Text>
+        )}
 
-        <Text style={styles.timestamp}>{new Date(item.counted_at).toLocaleString()}</Text>
+        <Text style={styles.timestamp}>
+          {new Date(item.counted_at).toLocaleString()}
+        </Text>
       </GlassCard>
     );
 
@@ -252,18 +285,31 @@ export default function HistoryScreen() {
             contentContainerStyle={styles.list}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Ionicons name="file-tray-outline" size={64} color={theme.colors.text.tertiary} />
-                <Text style={styles.emptyText}>{loading ? "Loading..." : "No counts yet"}</Text>
+                <Ionicons
+                  name="file-tray-outline"
+                  size={64}
+                  color={theme.colors.text.tertiary}
+                />
+                <Text style={styles.emptyText}>
+                  {loading ? "Loading..." : "No counts yet"}
+                </Text>
               </View>
             }
           />
         </PullToRefresh>
       )}
 
-      <BottomSheet visible={filtersOpen} onClose={() => setFiltersOpen(false)} height={260}>
+      <BottomSheet
+        visible={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        height={260}
+      >
         <Text style={styles.filterTitle}>Filters</Text>
         <TouchableOpacity
-          style={[styles.filterChip, showApprovedOnly && styles.filterChipActive]}
+          style={[
+            styles.filterChip,
+            showApprovedOnly && styles.filterChipActive,
+          ]}
           onPress={() => {
             const next = !showApprovedOnly;
             setShowApprovedOnly(next);
@@ -280,9 +326,18 @@ export default function HistoryScreen() {
           <Ionicons
             name="checkmark-done-outline"
             size={18}
-            color={showApprovedOnly ? unifiedColors.neutral[950] : theme.colors.text.tertiary}
+            color={
+              showApprovedOnly
+                ? unifiedColors.neutral[950]
+                : theme.colors.text.tertiary
+            }
           />
-          <Text style={[styles.filterChipText, showApprovedOnly && styles.filterChipTextActive]}>
+          <Text
+            style={[
+              styles.filterChipText,
+              showApprovedOnly && styles.filterChipTextActive,
+            ]}
+          >
             Approved Only
           </Text>
         </TouchableOpacity>

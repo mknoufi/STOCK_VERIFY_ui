@@ -5,7 +5,14 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, RefreshControl, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+  Platform,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
@@ -14,7 +21,11 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { getSessions } from "../../src/services/api/api";
-import { GlassCard, AnimatedPressable, ScreenContainer } from "../../src/components/ui";
+import {
+  GlassCard,
+  AnimatedPressable,
+  ScreenContainer,
+} from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 import { useToast } from "../../src/components/feedback/ToastProvider";
 
@@ -53,7 +64,7 @@ export default function SessionsList() {
         setLoadingMore(false);
       }
     },
-    [show]
+    [show],
   );
 
   useEffect(() => {
@@ -61,7 +72,8 @@ export default function SessionsList() {
   }, [loadSessions]);
 
   const handleRefresh = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     setPage(1);
     loadSessions(1, true);
@@ -109,12 +121,22 @@ export default function SessionsList() {
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
                 <View style={styles.titleRow}>
-                  <Ionicons name="business-outline" size={20} color={theme.colors.primary[500]} />
+                  <Ionicons
+                    name="business-outline"
+                    size={20}
+                    color={theme.colors.primary[500]}
+                  />
                   <Text style={styles.warehouseName}>{item.warehouse}</Text>
                 </View>
                 <View style={styles.staffContainer}>
-                  <Ionicons name="person-outline" size={14} color={theme.colors.text.secondary} />
-                  <Text style={styles.staffName}>{item.staff_name || "Unknown Staff"}</Text>
+                  <Ionicons
+                    name="person-outline"
+                    size={14}
+                    color={theme.colors.text.secondary}
+                  />
+                  <Text style={styles.staffName}>
+                    {item.staff_name || "Unknown Staff"}
+                  </Text>
                 </View>
               </View>
               <View
@@ -126,13 +148,19 @@ export default function SessionsList() {
                   },
                 ]}
               >
-                <Text style={[styles.statusText, { color: statusColor }]}>{item.status}</Text>
+                <Text style={[styles.statusText, { color: statusColor }]}>
+                  {item.status}
+                </Text>
               </View>
             </View>
 
             <View style={styles.cardBody}>
               <View style={styles.statItem}>
-                <Ionicons name="cube-outline" size={16} color={theme.colors.text.secondary} />
+                <Ionicons
+                  name="cube-outline"
+                  size={16}
+                  color={theme.colors.text.secondary}
+                />
                 <Text style={styles.statText}>{item.total_items} Items</Text>
               </View>
 
@@ -140,7 +168,11 @@ export default function SessionsList() {
                 <Ionicons
                   name="analytics-outline"
                   size={16}
-                  color={hasVariance ? theme.colors.error.main : theme.colors.text.secondary}
+                  color={
+                    hasVariance
+                      ? theme.colors.error.main
+                      : theme.colors.text.secondary
+                  }
                 />
                 <Text
                   style={[
@@ -199,18 +231,37 @@ export default function SessionsList() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>All Sessions</Text>
-              <Text style={styles.pageSubtitle}>Stock Verification History</Text>
+              <Text style={styles.pageSubtitle}>
+                Stock Verification History
+              </Text>
             </View>
           </View>
-          <AnimatedPressable onPress={handleRefresh} style={styles.refreshButton}>
-            <Ionicons name="refresh" size={24} color={theme.colors.primary[500]} />
+          <AnimatedPressable
+            onPress={handleRefresh}
+            style={styles.refreshButton}
+          >
+            <Ionicons
+              name="refresh"
+              size={24}
+              color={theme.colors.primary[500]}
+            />
           </AnimatedPressable>
         </Animated.View>
 

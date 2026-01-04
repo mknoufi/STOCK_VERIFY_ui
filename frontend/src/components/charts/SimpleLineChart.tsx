@@ -5,7 +5,11 @@
 
 import React from "react";
 import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
-import { modernColors, modernTypography, modernSpacing } from "../../styles/modernDesignSystem";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "../../styles/modernDesignSystem";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CHART_WIDTH = SCREEN_WIDTH - modernSpacing.lg * 2 - 80;
@@ -49,9 +53,13 @@ export const SimpleLineChart: React.FC<
   if (!data || data.length === 0) {
     return (
       <View style={styles.container}>
-        {title && <Text style={[styles.title, { color: textColor }]}>{title}</Text>}
+        {title && (
+          <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+        )}
         <View style={styles.emptyState}>
-          <Text style={[styles.emptyText, { color: textColor }]}>No data available</Text>
+          <Text style={[styles.emptyText, { color: textColor }]}>
+            No data available
+          </Text>
         </View>
       </View>
     );
@@ -86,7 +94,9 @@ export const SimpleLineChart: React.FC<
 
   // Generate x-axis labels
   const xLabels = data
-    .filter((_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1)
+    .filter(
+      (_, i) => i % Math.ceil(data.length / 5) === 0 || i === data.length - 1,
+    )
     .map((point) => ({
       x: data.indexOf(point) * scaleX,
       label: String(point.x),
@@ -94,14 +104,22 @@ export const SimpleLineChart: React.FC<
 
   return (
     <View style={styles.container}>
-      {title && <Text style={[styles.title, { color: textColor }]}>{title}</Text>}
-      {yAxisLabel && <Text style={[styles.yAxisLabel, { color: textColor }]}>{yAxisLabel}</Text>}
+      {title && (
+        <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+      )}
+      {yAxisLabel && (
+        <Text style={[styles.yAxisLabel, { color: textColor }]}>
+          {yAxisLabel}
+        </Text>
+      )}
       <View style={styles.chartContainer}>
         {/* Y-axis labels */}
         <View style={styles.yAxis}>
           {gridLines.map((line, i) => (
             <View key={i} style={[styles.yAxisLabelContainer, { top: line.y }]}>
-              <Text style={[styles.yAxisText, { color: textColor }]}>{Math.round(line.value)}</Text>
+              <Text style={[styles.yAxisText, { color: textColor }]}>
+                {Math.round(line.value)}
+              </Text>
             </View>
           ))}
         </View>
@@ -203,14 +221,18 @@ export const SimpleLineChart: React.FC<
           <View style={styles.xAxis}>
             {xLabels.map((label, i) => (
               <View key={i} style={[styles.xAxisLabel, { left: label.x }]}>
-                <Text style={[styles.xAxisText, { color: textColor }]}>{label.label}</Text>
+                <Text style={[styles.xAxisText, { color: textColor }]}>
+                  {label.label}
+                </Text>
               </View>
             ))}
           </View>
         </View>
       </View>
       {xAxisLabel && (
-        <Text style={[styles.xAxisLabelText, { color: textColor }]}>{xAxisLabel}</Text>
+        <Text style={[styles.xAxisLabelText, { color: textColor }]}>
+          {xAxisLabel}
+        </Text>
       )}
     </View>
   );

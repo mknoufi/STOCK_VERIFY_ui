@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, ActivityIndicator, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Platform,
+} from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
@@ -33,7 +39,9 @@ export default function SessionDetail() {
   const [toVerifyLines, setToVerifyLines] = React.useState<any[]>([]);
   const [verifiedLines, setVerifiedLines] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [activeTab, setActiveTab] = React.useState<"toVerify" | "verified">("toVerify");
+  const [activeTab, setActiveTab] = React.useState<"toVerify" | "verified">(
+    "toVerify",
+  );
   const [verifying, setVerifying] = React.useState<string | null>(null);
 
   const loadData = React.useCallback(async () => {
@@ -50,7 +58,8 @@ export default function SessionDetail() {
       setVerifiedLines(verifiedData?.items || []);
     } catch {
       show("Failed to load session data", "error");
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setLoading(false);
     }
@@ -62,38 +71,44 @@ export default function SessionDetail() {
 
   const handleApproveLine = async (lineId: string) => {
     try {
-      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (Platform.OS !== "web")
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await approveCountLine(lineId);
       await loadData();
       show("Count line approved", "success");
     } catch {
       show("Failed to approve", "error");
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
   const handleRejectLine = async (lineId: string) => {
     try {
-      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (Platform.OS !== "web")
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await rejectCountLine(lineId);
       await loadData();
       show("Count line rejected", "success");
     } catch {
       show("Failed to reject", "error");
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
   const handleVerifyStock = async (lineId: string) => {
     try {
-      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      if (Platform.OS !== "web")
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       setVerifying(lineId);
       await verifyStock(lineId);
       await loadData();
       show("Stock verified", "success");
     } catch {
       show("Failed to verify stock", "error");
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setVerifying(null);
     }
@@ -101,14 +116,16 @@ export default function SessionDetail() {
 
   const handleUnverifyStock = async (lineId: string) => {
     try {
-      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (Platform.OS !== "web")
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setVerifying(lineId);
       await unverifyStock(lineId);
       await loadData();
       show("Verification removed", "success");
     } catch {
       show("Failed to remove verification", "error");
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setVerifying(null);
     }
@@ -123,7 +140,8 @@ export default function SessionDetail() {
       show(`Session status updated to ${newStatus} `, "success");
     } catch {
       show("Failed to update status", "error");
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web")
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
@@ -138,14 +156,24 @@ export default function SessionDetail() {
       <AuroraBackground>
         <StatusBar style="light" />
         <View style={styles.header}>
-          <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+          <AnimatedPressable
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={auroraTheme.colors.text.primary}
+            />
           </AnimatedPressable>
           <Text style={styles.headerTitle}>Session Details</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={auroraTheme.colors.primary[500]} />
+          <ActivityIndicator
+            size="large"
+            color={auroraTheme.colors.primary[500]}
+          />
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </AuroraBackground>
@@ -158,7 +186,11 @@ export default function SessionDetail() {
   const ListHeader = () => (
     <View>
       <Animated.View entering={FadeInDown.delay(100).springify()}>
-        <GlassCard variant="medium" withGradientBorder style={styles.sessionInfo}>
+        <GlassCard
+          variant="medium"
+          withGradientBorder
+          style={styles.sessionInfo}
+        >
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Warehouse:</Text>
             <Text style={styles.infoValue}>{session.warehouse}</Text>
@@ -169,7 +201,9 @@ export default function SessionDetail() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Status:</Text>
-            <Text style={[styles.infoValue, styles.statusValue]}>{session.status}</Text>
+            <Text style={[styles.infoValue, styles.statusValue]}>
+              {session.status}
+            </Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Items:</Text>
@@ -177,7 +211,12 @@ export default function SessionDetail() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Total Variance:</Text>
-            <Text style={[styles.infoValue, session.total_variance !== 0 && styles.varianceValue]}>
+            <Text
+              style={[
+                styles.infoValue,
+                session.total_variance !== 0 && styles.varianceValue,
+              ]}
+            >
               {session.total_variance.toFixed(2)}
             </Text>
           </View>
@@ -185,7 +224,10 @@ export default function SessionDetail() {
       </Animated.View>
 
       {session.status === "OPEN" && (
-        <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.actionButtons}>
+        <Animated.View
+          entering={FadeInDown.delay(200).springify()}
+          style={styles.actionButtons}
+        >
           <AnimatedPressable
             style={styles.reconcileButton}
             onPress={() => handleUpdateStatus("RECONCILE")}
@@ -196,7 +238,10 @@ export default function SessionDetail() {
       )}
 
       {session.status === "RECONCILE" && (
-        <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.actionButtons}>
+        <Animated.View
+          entering={FadeInDown.delay(200).springify()}
+          style={styles.actionButtons}
+        >
           <AnimatedPressable
             style={styles.closeButton}
             onPress={() => handleUpdateStatus("CLOSED")}
@@ -207,7 +252,10 @@ export default function SessionDetail() {
       )}
 
       {/* Tab Selection */}
-      <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.tabContainer}>
+      <Animated.View
+        entering={FadeInDown.delay(300).springify()}
+        style={styles.tabContainer}
+      >
         <AnimatedPressable
           style={[styles.tab, activeTab === "toVerify" && styles.tabActive]}
           onPress={() => switchTab("toVerify")}
@@ -221,7 +269,12 @@ export default function SessionDetail() {
                 : auroraTheme.colors.text.secondary
             }
           />
-          <Text style={[styles.tabText, activeTab === "toVerify" && styles.tabTextActive]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "toVerify" && styles.tabTextActive,
+            ]}
+          >
             To Verify ({toVerifyLines.length})
           </Text>
         </AnimatedPressable>
@@ -238,7 +291,12 @@ export default function SessionDetail() {
                 : auroraTheme.colors.text.secondary
             }
           />
-          <Text style={[styles.tabText, activeTab === "verified" && styles.tabTextActive]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "verified" && styles.tabTextActive,
+            ]}
+          >
             Verified ({verifiedLines.length})
           </Text>
         </AnimatedPressable>
@@ -251,7 +309,9 @@ export default function SessionDetail() {
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const varianceColor =
-      item.variance === 0 ? auroraTheme.colors.success[500] : auroraTheme.colors.error[500];
+      item.variance === 0
+        ? auroraTheme.colors.success[500]
+        : auroraTheme.colors.error[500];
     const statusColor =
       item.status === "approved"
         ? auroraTheme.colors.success[500]
@@ -261,7 +321,9 @@ export default function SessionDetail() {
 
     // Only animate first N items to prevent performance issues on large lists
     const shouldAnimate = index < MAX_ANIMATED_ITEMS;
-    const _animationDelay = shouldAnimate ? Math.min(index * 50 + 400, 1000) : 0;
+    const _animationDelay = shouldAnimate
+      ? Math.min(index * 50 + 400, 1000)
+      : 0;
 
     const content = (
       <GlassCard style={styles.lineCard}>
@@ -282,13 +344,25 @@ export default function SessionDetail() {
                   size={12}
                   color={auroraTheme.colors.success[500]}
                 />
-                <Text style={[styles.badgeText, { color: auroraTheme.colors.success[500] }]}>
+                <Text
+                  style={[
+                    styles.badgeText,
+                    { color: auroraTheme.colors.success[500] },
+                  ]}
+                >
                   Verified
                 </Text>
               </View>
             )}
-            <View style={[styles.lineBadge, { backgroundColor: statusColor + "30" }]}>
-              <Text style={[styles.badgeText, { color: statusColor }]}>{item.status}</Text>
+            <View
+              style={[
+                styles.lineBadge,
+                { backgroundColor: statusColor + "30" },
+              ]}
+            >
+              <Text style={[styles.badgeText, { color: statusColor }]}>
+                {item.status}
+              </Text>
             </View>
           </View>
         </View>
@@ -306,24 +380,37 @@ export default function SessionDetail() {
           </View>
           <View style={styles.qtyItem}>
             <Text style={styles.qtyLabel}>Variance</Text>
-            <Text style={[styles.qtyValue, { color: varianceColor }]}>{item.variance}</Text>
+            <Text style={[styles.qtyValue, { color: varianceColor }]}>
+              {item.variance}
+            </Text>
           </View>
         </View>
 
         {item.variance_reason && (
           <View style={styles.reasonBox}>
-            <Text style={styles.reasonLabel}>Reason: {item.variance_reason}</Text>
-            {item.variance_note && <Text style={styles.reasonNote}>{item.variance_note}</Text>}
+            <Text style={styles.reasonLabel}>
+              Reason: {item.variance_reason}
+            </Text>
+            {item.variance_note && (
+              <Text style={styles.reasonNote}>{item.variance_note}</Text>
+            )}
           </View>
         )}
 
-        {item.remark && <Text style={styles.remark}>Remark: {item.remark}</Text>}
+        {item.remark && (
+          <Text style={styles.remark}>Remark: {item.remark}</Text>
+        )}
 
         {item.verified && item.verified_by && (
           <View style={styles.verifiedInfo}>
-            <Ionicons name="checkmark-circle" size={16} color={auroraTheme.colors.success[500]} />
+            <Ionicons
+              name="checkmark-circle"
+              size={16}
+              color={auroraTheme.colors.success[500]}
+            />
             <Text style={styles.verifiedInfoText}>
-              Verified by {item.verified_by} on {new Date(item.verified_at).toLocaleString()}
+              Verified by {item.verified_by} on{" "}
+              {new Date(item.verified_at).toLocaleString()}
             </Text>
           </View>
         )}
@@ -335,14 +422,22 @@ export default function SessionDetail() {
                 style={styles.approveButton}
                 onPress={() => handleApproveLine(item.id)}
               >
-                <Ionicons name="checkmark" size={20} color={auroraTheme.colors.text.primary} />
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={auroraTheme.colors.text.primary}
+                />
                 <Text style={styles.actionButtonText}>Approve</Text>
               </AnimatedPressable>
               <AnimatedPressable
                 style={styles.rejectButton}
                 onPress={() => handleRejectLine(item.id)}
               >
-                <Ionicons name="close" size={20} color={auroraTheme.colors.text.primary} />
+                <Ionicons
+                  name="close"
+                  size={20}
+                  color={auroraTheme.colors.text.primary}
+                />
                 <Text style={styles.actionButtonText}>Reject</Text>
               </AnimatedPressable>
             </>
@@ -350,12 +445,18 @@ export default function SessionDetail() {
 
           {activeTab === "toVerify" && !item.verified && (
             <AnimatedPressable
-              style={[styles.verifyButton, verifying === item.id && styles.buttonDisabled]}
+              style={[
+                styles.verifyButton,
+                verifying === item.id && styles.buttonDisabled,
+              ]}
               onPress={() => handleVerifyStock(item.id)}
               disabled={verifying === item.id}
             >
               {verifying === item.id ? (
-                <ActivityIndicator size="small" color={auroraTheme.colors.text.primary} />
+                <ActivityIndicator
+                  size="small"
+                  color={auroraTheme.colors.text.primary}
+                />
               ) : (
                 <>
                   <Ionicons
@@ -371,12 +472,18 @@ export default function SessionDetail() {
 
           {activeTab === "verified" && item.verified && (
             <AnimatedPressable
-              style={[styles.unverifyButton, verifying === item.id && styles.buttonDisabled]}
+              style={[
+                styles.unverifyButton,
+                verifying === item.id && styles.buttonDisabled,
+              ]}
               onPress={() => handleUnverifyStock(item.id)}
               disabled={verifying === item.id}
             >
               {verifying === item.id ? (
-                <ActivityIndicator size="small" color={auroraTheme.colors.text.primary} />
+                <ActivityIndicator
+                  size="small"
+                  color={auroraTheme.colors.text.primary}
+                />
               ) : (
                 <>
                   <Ionicons
@@ -412,9 +519,19 @@ export default function SessionDetail() {
   return (
     <AuroraBackground>
       <StatusBar style="light" />
-      <Animated.View entering={FadeInDown.delay(50).springify()} style={styles.header}>
-        <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={auroraTheme.colors.text.primary} />
+      <Animated.View
+        entering={FadeInDown.delay(50).springify()}
+        style={styles.header}
+      >
+        <AnimatedPressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={auroraTheme.colors.text.primary}
+          />
         </AnimatedPressable>
         <Text style={styles.headerTitle}>Session Details</Text>
         <View style={{ width: 40 }} />

@@ -49,7 +49,11 @@ import {
   zIndex as _zIndex,
 } from "./index";
 
-import { TouchableFeedback, TouchableScale, UnifiedAnimatedCard } from "../../components/ui";
+import {
+  TouchableFeedback,
+  TouchableScale,
+  UnifiedAnimatedCard,
+} from "../../components/ui";
 
 import { useStaggeredEntry } from "../../hooks";
 
@@ -190,7 +194,9 @@ const NewListItem: React.FC<ListItemProps> = ({ item, index }) => {
       staggerIndex={index}
       onPress={() => console.log("Pressed", item.id)}
     >
-      <Text style={{ ...textStyles.body, color: semanticColors.text.primary }}>{item.title}</Text>
+      <Text style={{ ...textStyles.body, color: semanticColors.text.primary }}>
+        {item.title}
+      </Text>
     </UnifiedAnimatedCard>
   );
 };
@@ -212,7 +218,9 @@ const NewButton: React.FC = () => (
     onPress={() => console.log("Pressed!")}
     style={[staticStyles.button, { borderRadius: componentRadius.button }]}
   >
-    <Text style={{ ...textStyles.button, color: semanticColors.text.inverse }}>Press Me</Text>
+    <Text style={{ ...textStyles.button, color: semanticColors.text.inverse }}>
+      Press Me
+    </Text>
   </TouchableScale>
 );
 
@@ -235,7 +243,9 @@ const CompleteDashboard: React.FC<{ stats: StatsData[] }> = ({ stats }) => {
         numColumns={2}
         contentContainerStyle={{ padding: layout.screenPadding }}
         columnWrapperStyle={{ gap: layout.itemGap }}
-        ItemSeparatorComponent={() => <View style={{ height: layout.itemGap }} />}
+        ItemSeparatorComponent={() => (
+          <View style={{ height: layout.itemGap }} />
+        )}
         renderItem={({ item, index }) => (
           <UnifiedAnimatedCard
             variant="elevated"
@@ -249,7 +259,10 @@ const CompleteDashboard: React.FC<{ stats: StatsData[] }> = ({ stats }) => {
               style={[
                 staticStyles.statsTrend,
                 {
-                  color: item.trend === "up" ? colors.success[500] : colors.error[500],
+                  color:
+                    item.trend === "up"
+                      ? colors.success[500]
+                      : colors.error[500],
                 },
               ]}
             >

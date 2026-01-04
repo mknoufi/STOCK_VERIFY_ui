@@ -225,14 +225,25 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
     return (
       <Animated.View entering={FadeIn.delay(100)} style={styles.userSection}>
-        <View style={[styles.avatarContainer, { backgroundColor: `${theme.colors.accent}20` }]}>
+        <View
+          style={[
+            styles.avatarContainer,
+            { backgroundColor: `${theme.colors.accent}20` },
+          ]}
+        >
           <Ionicons name="person" size={16} color={theme.colors.accent} />
         </View>
         <View style={styles.userTextContainer}>
-          <Text style={[styles.welcomeText, { color: colors.textSecondary }]} numberOfLines={1}>
+          <Text
+            style={[styles.welcomeText, { color: colors.textSecondary }]}
+            numberOfLines={1}
+          >
             Welcome back
           </Text>
-          <Text style={[styles.usernameText, { color: colors.text }]} numberOfLines={1}>
+          <Text
+            style={[styles.usernameText, { color: colors.text }]}
+            numberOfLines={1}
+          >
             {user.full_name || user.username}
           </Text>
         </View>
@@ -246,11 +257,17 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
     return (
       <Animated.View entering={FadeIn.delay(50)} style={styles.titleSection}>
-        <Text style={[styles.titleText, { color: colors.text }]} numberOfLines={1}>
+        <Text
+          style={[styles.titleText, { color: colors.text }]}
+          numberOfLines={1}
+        >
           {title}
         </Text>
         {subtitle && (
-          <Text style={[styles.subtitleText, { color: colors.textSecondary }]} numberOfLines={1}>
+          <Text
+            style={[styles.subtitleText, { color: colors.textSecondary }]}
+            numberOfLines={1}
+          >
             {subtitle}
           </Text>
         )}

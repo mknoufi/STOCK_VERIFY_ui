@@ -51,7 +51,12 @@ export const SkeletonList: React.FC<SkeletonListProps> = ({
 
     if (animated) {
       return (
-        <FadeIn key={index} delay={index * staggerDelay} duration={300} direction="up">
+        <FadeIn
+          key={index}
+          delay={index * staggerDelay}
+          duration={300}
+          direction="up"
+        >
           {content}
         </FadeIn>
       );
@@ -90,7 +95,11 @@ export const SkeletonGrid: React.FC<SkeletonGridProps> = ({
       {Array.from({ length: rows }).map((_, rowIndex) => (
         <View key={rowIndex} style={[styles.gridRow, { gap }]}>
           {Array.from({ length: columns }).map((_, colIndex) => (
-            <FadeIn key={colIndex} delay={(rowIndex * columns + colIndex) * 50} duration={300}>
+            <FadeIn
+              key={colIndex}
+              delay={(rowIndex * columns + colIndex) * 50}
+              duration={300}
+            >
               <Skeleton width={itemSize} height={itemSize} borderRadius={12} />
             </FadeIn>
           ))}
@@ -121,7 +130,12 @@ export const SkeletonScreen: React.FC<SkeletonScreenProps> = ({
           <View style={styles.header}>
             <Skeleton width={40} height={40} variant="circular" />
             <Skeleton width="60%" height={24} style={{ marginLeft: 12 }} />
-            <Skeleton width={40} height={40} variant="circular" style={{ marginLeft: "auto" }} />
+            <Skeleton
+              width={40}
+              height={40}
+              variant="circular"
+              style={{ marginLeft: "auto" }}
+            />
           </View>
         </FadeIn>
       )}
@@ -142,7 +156,12 @@ export const SkeletonScreen: React.FC<SkeletonScreenProps> = ({
         </FadeIn>
       )}
 
-      <SkeletonList count={listCount} variant="list" animated staggerDelay={75} />
+      <SkeletonList
+        count={listCount}
+        variant="list"
+        animated
+        staggerDelay={75}
+      />
     </View>
   );
 };

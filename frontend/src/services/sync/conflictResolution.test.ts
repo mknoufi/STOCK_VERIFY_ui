@@ -11,28 +11,44 @@ describe("Conflict Resolution Strategies", () => {
 
   describe("serverWinsStrategy", () => {
     it("should return server data", () => {
-      const result = resolveConflict(clientData, serverData, serverWinsStrategy);
+      const result = resolveConflict(
+        clientData,
+        serverData,
+        serverWinsStrategy,
+      );
       expect(result).toEqual(serverData);
     });
   });
 
   describe("clientWinsStrategy", () => {
     it("should return client data", () => {
-      const result = resolveConflict(clientData, serverData, clientWinsStrategy);
+      const result = resolveConflict(
+        clientData,
+        serverData,
+        clientWinsStrategy,
+      );
       expect(result).toEqual(clientData);
     });
   });
 
   describe("mergeQuantityStrategy", () => {
     it("should sum quantities if both have numeric quantity", () => {
-      const result = resolveConflict(clientData, serverData, mergeQuantityStrategy);
+      const result = resolveConflict(
+        clientData,
+        serverData,
+        mergeQuantityStrategy,
+      );
       expect(result).toEqual({ ...serverData, quantity: 30 });
     });
 
     it("should fallback to server wins if quantity is missing", () => {
       const badClient = { id: 1, name: "Item A" };
       const badServer = { id: 1, name: "Item A" };
-      const result = resolveConflict(badClient, badServer, mergeQuantityStrategy);
+      const result = resolveConflict(
+        badClient,
+        badServer,
+        mergeQuantityStrategy,
+      );
       expect(result).toEqual(badServer);
     });
   });

@@ -6,7 +6,11 @@
 import React from "react";
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { modernColors, modernShadows, modernBorderRadius } from "@/styles/modernDesignSystem";
+import {
+  modernColors,
+  modernShadows,
+  modernBorderRadius,
+} from "@/styles/modernDesignSystem";
 
 interface SystemStatus {
   api_health: string;
@@ -60,7 +64,11 @@ function StatusIndicator({ label, status }: { label: string; status: string }) {
 
   return (
     <View style={styles.statusRow}>
-      <MaterialCommunityIcons name={config.icon} size={18} color={config.color} />
+      <MaterialCommunityIcons
+        name={config.icon}
+        size={18}
+        color={config.color}
+      />
       <Text style={styles.statusLabel}>{label}</Text>
       <Text style={[styles.statusValue, { color: config.color }]}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -91,12 +99,19 @@ function MetricRow({
   );
 }
 
-export function SystemStatusPanel({ status, loading = false }: SystemStatusPanelProps) {
+export function SystemStatusPanel({
+  status,
+  loading = false,
+}: SystemStatusPanelProps) {
   if (loading) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <MaterialCommunityIcons name="server" size={20} color={modernColors.primary[500]} />
+          <MaterialCommunityIcons
+            name="server"
+            size={20}
+            color={modernColors.primary[500]}
+          />
           <Text style={styles.title}>System Status</Text>
         </View>
         <View style={styles.loadingContainer}>
@@ -110,11 +125,19 @@ export function SystemStatusPanel({ status, loading = false }: SystemStatusPanel
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <MaterialCommunityIcons name="server" size={20} color={modernColors.primary[500]} />
+          <MaterialCommunityIcons
+            name="server"
+            size={20}
+            color={modernColors.primary[500]}
+          />
           <Text style={styles.title}>System Status</Text>
         </View>
         <View style={styles.errorContainer}>
-          <MaterialCommunityIcons name="alert-circle" size={24} color={modernColors.error.main} />
+          <MaterialCommunityIcons
+            name="alert-circle"
+            size={24}
+            color={modernColors.error.main}
+          />
           <Text style={styles.errorText}>Unable to load system status</Text>
         </View>
       </View>
@@ -129,10 +152,16 @@ export function SystemStatusPanel({ status, loading = false }: SystemStatusPanel
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <MaterialCommunityIcons name="server" size={20} color={modernColors.primary[500]} />
+        <MaterialCommunityIcons
+          name="server"
+          size={20}
+          color={modernColors.primary[500]}
+        />
         <Text style={styles.title}>System Status</Text>
         <View style={styles.uptimeBadge}>
-          <Text style={styles.uptimeText}>Uptime: {formatUptime(status.uptime_seconds)}</Text>
+          <Text style={styles.uptimeText}>
+            Uptime: {formatUptime(status.uptime_seconds)}
+          </Text>
         </View>
       </View>
 
@@ -181,8 +210,14 @@ export function SystemStatusPanel({ status, loading = false }: SystemStatusPanel
 
       {(isHighLatency || isHighErrorRate || isHighMemory || isHighCPU) && (
         <View style={styles.warningBanner}>
-          <MaterialCommunityIcons name="alert" size={16} color={modernColors.warning.main} />
-          <Text style={styles.warningText}>Performance degradation detected</Text>
+          <MaterialCommunityIcons
+            name="alert"
+            size={16}
+            color={modernColors.warning.main}
+          />
+          <Text style={styles.warningText}>
+            Performance degradation detected
+          </Text>
         </View>
       )}
     </View>

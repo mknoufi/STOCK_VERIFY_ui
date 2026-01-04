@@ -12,6 +12,7 @@ import {
   cacheItem,
   searchItemsInCache,
   cacheSession,
+  removeSessionFromCache,
   getSessionsCache,
   getSessionFromCache,
   getItemFromCache,
@@ -41,7 +42,12 @@ export interface ApiResponseWithSource<T> {
 
 // Check if online - uses three-state network model for better reliability
 export const isOnline = () => {
-  const { status, isOnline: rawOnline, isInternetReachable, connectionType } = getNetworkStatus();
+  const {
+    status,
+    isOnline: rawOnline,
+    isInternetReachable,
+    connectionType,
+  } = getNetworkStatus();
 
   // Debug logging
   log.debug("Network Status Check", {
@@ -56,7 +62,9 @@ export const isOnline = () => {
 };
 
 // Create session (with offline support)
-export const createSession = async (params: string | { warehouse: string; type?: string }) => {
+export const createSession = async (
+  params: string | { warehouse: string; type?: string },
+) => {
   const warehouse = typeof params === "string" ? params : params.warehouse;
   const sessionType = typeof params !== "string" ? params.type : undefined;
   const networkStatus = getNetworkStatus();
@@ -107,7 +115,23 @@ export const createSession = async (params: string | { warehouse: string; type?:
       status: response.data?.status,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: unknown) {
+    // Check if this is a business logic error (e.g., session limit reached)
+    // These should be re-thrown so the UI can display the error message
+    const axiosError = error as {
+      response?: { status?: number; data?: { detail?: string } };
+      code?: string;
+    };
+
+    if (axiosError?.response?.status === 400) {
+      // Re-throw business logic errors (like session limit)
+      const errorMessage =
+        axiosError.response.data?.detail || "Session creation failed";
+      log.warn("Session creation rejected by server", { error: errorMessage });
+      throw new Error(errorMessage);
+    }
+
+    // For network errors or other issues, fall back to offline mode
     log.warn("Error creating session, switching to offline mode", {
       error: error instanceof Error ? error.message : String(error),
     });
@@ -156,7 +180,10 @@ export const getSessions = async (page: number = 1, pageSize: number = 20) => {
 
     // Ensure page and pageSize are valid numbers (convert to integers explicitly)
     const validPage = Math.max(1, Math.floor(Number(page)) || 1);
-    const validPageSize = Math.max(1, Math.min(100, Math.floor(Number(pageSize)) || 20));
+    const validPageSize = Math.max(
+      1,
+      Math.min(100, Math.floor(Number(pageSize)) || 20),
+    );
 
     const response = await api.get("/api/sessions", {
       params: {
@@ -198,15 +225,22 @@ export const getSessions = async (page: number = 1, pageSize: number = 20) => {
       const isSupervisor = user?.role === "supervisor";
       const visibleCached = isSupervisor
         ? cachedSessions
-        : cachedSessions.filter((session) => session.staff_user === user?.username);
+        : cachedSessions.filter(
+            (session) => session.staff_user === user?.username,
+          );
 
       if (visibleCached.length > 0) {
         const seenIds = new Set(
           sessions
-            .map((session: any) => session?.id || session?.session_id || session?._id)
-            .filter(Boolean)
+            .map(
+              (session: any) =>
+                session?.id || session?.session_id || session?._id,
+            )
+            .filter(Boolean),
         );
-        const missingCached = visibleCached.filter((session) => !seenIds.has(session.id));
+        const missingCached = visibleCached.filter(
+          (session) => !seenIds.has(session.id),
+        );
         if (missingCached.length > 0) {
           mergedSessions = [...sessions, ...missingCached];
         }
@@ -260,10 +294,14 @@ export const getSession = async (sessionId: string) => {
     const response = await api.get(`/api/sessions/${sessionId}`);
     await cacheSession(response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     __DEV__ && console.error("Error getting session:", error);
 
-    // Fallback to cache
+    if (error?.response?.status === 404) {
+      await removeSessionFromCache(sessionId);
+      return null;
+    }
+
     // Fallback to cache
     return await getSessionFromCache(sessionId);
   }
@@ -287,7 +325,9 @@ export interface SessionStatsResponse {
  * Get session statistics from the API
  * Returns verified/pending/scanned counts for progress tracking
  */
-export const getSessionStats = async (sessionId: string): Promise<SessionStatsResponse | null> => {
+export const getSessionStats = async (
+  sessionId: string,
+): Promise<SessionStatsResponse | null> => {
   try {
     if (!isOnline()) {
       log.debug("Offline - cannot fetch session stats from API");
@@ -308,8 +348,13 @@ export const getSessionStats = async (sessionId: string): Promise<SessionStatsRe
       durationSeconds: data.duration_seconds ?? 0,
       itemsPerMinute: data.items_per_minute ?? 0,
     };
-  } catch (error) {
-    log.warn("Error fetching session stats:", error as any);
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      log.warn(`Session ${sessionId} not found on server, removing from cache`);
+      await removeSessionFromCache(sessionId);
+    } else {
+      log.warn("Error fetching session stats:", error);
+    }
     return null;
   }
 };
@@ -325,7 +370,8 @@ export const getRackProgress = async (sessionId: string) => {
       if (cachedLines.length === 0) {
         return {
           data: [],
-          message: "Offline mode - no cached count data available for this session",
+          message:
+            "Offline mode - no cached count data available for this session",
           offline: true,
         };
       }
@@ -398,9 +444,17 @@ export const getRackProgress = async (sessionId: string) => {
         .sort((a, b) => a.rack.localeCompare(b.rack));
 
       // Provide detailed offline status information
-      const totalItems = rackProgress.reduce((sum, rack) => sum + rack.counted, 0);
-      const totalQuantity = rackProgress.reduce((sum, rack) => sum + rack.counted_quantity, 0);
-      const racksWithDiscrepancies = rackProgress.filter((r) => r.has_discrepancies).length;
+      const totalItems = rackProgress.reduce(
+        (sum, rack) => sum + rack.counted,
+        0,
+      );
+      const totalQuantity = rackProgress.reduce(
+        (sum, rack) => sum + rack.counted_quantity,
+        0,
+      );
+      const racksWithDiscrepancies = rackProgress.filter(
+        (r) => r.has_discrepancies,
+      ).length;
 
       return {
         data: rackProgress,
@@ -416,7 +470,9 @@ export const getRackProgress = async (sessionId: string) => {
       };
     }
     // Note: The backend response wrapper puts the actual array in data.data
-    const response = await api.get(`/api/v2/sessions/${sessionId}/rack-progress`);
+    const response = await api.get(
+      `/api/v2/sessions/${sessionId}/rack-progress`,
+    );
     // Return just the data part which is the array of racks
     return response.data;
   } catch (error) {
@@ -448,7 +504,10 @@ export const bulkReconcileSessions = async (sessionIds: string[]) => {
 };
 
 // Bulk export sessions
-export const bulkExportSessions = async (sessionIds: string[], format: string = "excel") => {
+export const bulkExportSessions = async (
+  sessionIds: string[],
+  format: string = "excel",
+) => {
   try {
     const response = await api.post("/api/sessions/bulk/export", sessionIds, {
       params: { format },
@@ -482,8 +541,10 @@ export const getSessionsAnalytics = async () => {
  */
 export const getItemByBarcode = async (
   barcode: string,
-  retryCount: number = 3
-): Promise<Item & { _source?: DataSource; _cachedAt?: string; _stale?: boolean }> => {
+  retryCount: number = 3,
+): Promise<
+  Item & { _source?: DataSource; _cachedAt?: string; _stale?: boolean }
+> => {
   // Validate and normalize barcode before making API call
   const validation = validateBarcode(barcode);
   if (!validation.valid || !validation.value) {
@@ -503,7 +564,7 @@ export const getItemByBarcode = async (
 
   // Helper to return cached item with source metadata
   const returnCachedItem = (
-    cached: any
+    cached: any,
   ): Item & { _source: DataSource; _cachedAt: string; _stale: boolean } => {
     const stale = isCacheStale(cached.cached_at);
     const stockValue = cached.current_stock ?? cached.stock_qty ?? 0;
@@ -521,6 +582,8 @@ export const getItemByBarcode = async (
       sales_price: cached.sales_price,
       category: cached.category,
       subcategory: cached.subcategory,
+      // Serialized item flag
+      is_serialized: cached.is_serialized ?? false,
       // Source metadata
       _source: "cache",
       _cachedAt: cached.cached_at,
@@ -540,7 +603,8 @@ export const getItemByBarcode = async (
       code: "ITEM_CACHE_MISS",
       severity: "USER",
       message: `Item not found in offline cache: ${trimmedBarcode}`,
-      userMessage: "Item not found in offline cache. Connect to internet to search.",
+      userMessage:
+        "Item not found in offline cache. Connect to internet to search.",
       context: { barcode: trimmedBarcode },
     });
   }
@@ -551,7 +615,10 @@ export const getItemByBarcode = async (
 
     // Direct API call with retry (only retries transient errors)
     const response = await retryWithBackoff(
-      () => api.get(`/api/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`),
+      () =>
+        api.get(
+          `/api/v2/erp/items/barcode/${encodeURIComponent(trimmedBarcode)}/enhanced`,
+        ),
       {
         retries: retryCount,
         backoffMs: 1000,
@@ -565,7 +632,7 @@ export const getItemByBarcode = async (
           // Retry network errors and 5xx server errors
           return true;
         },
-      }
+      },
     );
 
     // Handle v2 response format { item: ..., metadata: ... }
@@ -583,7 +650,8 @@ export const getItemByBarcode = async (
     }
 
     // Normalize backend fields to the canonical frontend Item interface.
-    const displayName = itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
+    const displayName =
+      itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
 
     // Fix: Use proper fallback chain without redundancy
     const stockQty = itemData.stock_qty ?? itemData.current_stock ?? 0;
@@ -596,7 +664,8 @@ export const getItemByBarcode = async (
       item_name: itemData.item_name || displayName,
       uom_name: itemData.uom_name ?? itemData.uom ?? itemData.uom_code,
       uom: itemData.uom_name ?? itemData.uom ?? itemData.uom_code,
-      sales_price: itemData.sales_price ?? itemData.sale_price ?? itemData.standard_rate,
+      sales_price:
+        itemData.sales_price ?? itemData.sale_price ?? itemData.standard_rate,
       sale_price: itemData.sale_price ?? itemData.sales_price,
       mrp: itemData.mrp,
       category: itemData.category,
@@ -608,6 +677,11 @@ export const getItemByBarcode = async (
       manual_barcode: itemData.manual_barcode,
       unit2_barcode: itemData.unit2_barcode,
       unit_m_barcode: itemData.unit_m_barcode,
+      manufacturing_date: itemData.manufacturing_date || itemData.mfg_date,
+      expiry_date: itemData.expiry_date,
+      mrp_variants: itemData.mrp_variants,
+      // Serialized item flag - when true, serial number capture is required
+      is_serialized: itemData.is_serialized ?? false,
       // Source metadata
       _source: "api",
     };
@@ -620,9 +694,15 @@ export const getItemByBarcode = async (
         item_code: normalizedItem.item_code,
         barcode: normalizedItem.barcode,
         item_name:
-          normalizedItem.item_name || normalizedItem.name || normalizedItem.item_code || "",
+          normalizedItem.item_name ||
+          normalizedItem.name ||
+          normalizedItem.item_code ||
+          "",
         description: (normalizedItem as any).description,
-        uom: normalizedItem.uom ?? normalizedItem.uom_code ?? normalizedItem.uom_name,
+        uom:
+          normalizedItem.uom ??
+          normalizedItem.uom_code ??
+          normalizedItem.uom_name,
         uom_name: normalizedItem.uom_name,
         mrp: normalizedItem.mrp,
         sales_price: normalizedItem.sales_price,
@@ -635,20 +715,24 @@ export const getItemByBarcode = async (
         unit_m_barcode: normalizedItem.unit_m_barcode,
         batch_id: normalizedItem.batch_id,
         current_stock: normalizedItem.current_stock || normalizedItem.stock_qty,
+        is_serialized: normalizedItem.is_serialized,
       });
     } catch (cacheError) {
       log.warn("Failed to cache item", {
-        error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+        error:
+          cacheError instanceof Error ? cacheError.message : String(cacheError),
       });
       // Don't fail the whole operation for cache errors
     }
 
     return normalizedItem;
   } catch (apiError: any) {
-    const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
+    const errorMessage =
+      apiError instanceof Error ? apiError.message : String(apiError);
 
     // Check for 404 status (Item not found) - log as info/warn instead of error
-    const isNotFound = apiError?.response?.status === 404 || errorMessage.includes("404");
+    const isNotFound =
+      apiError?.response?.status === 404 || errorMessage.includes("404");
 
     if (isNotFound) {
       log.info("Item not found via API", { barcode: trimmedBarcode });
@@ -699,11 +783,13 @@ export const getItemByBarcode = async (
  * Search items by query with offline fallback.
  * Returns items with source metadata.
  */
-export const searchItems = async (query: string): Promise<(Item & { _source?: DataSource })[]> => {
+export const searchItems = async (
+  query: string,
+): Promise<(Item & { _source?: DataSource })[]> => {
   // Helper to map cached items to frontend Item interface
   const mapCachedItems = (
     items: any[],
-    source: DataSource = "cache"
+    source: DataSource = "cache",
   ): (Item & { _source: DataSource })[] => {
     return items.map((item) => ({
       id: item.item_code,
@@ -746,7 +832,7 @@ export const searchItems = async (query: string): Promise<(Item & { _source?: Da
           ({
             ...item,
             _degraded: true, // API failed
-          }) as any
+          }) as any,
       );
     }
 
@@ -772,7 +858,7 @@ export const searchItems = async (query: string): Promise<(Item & { _source?: Da
         }
         mapped._source = "api";
         return mapped;
-      }
+      },
     );
 
     log.debug("Found items via API", { count: mappedItems.length });
@@ -810,7 +896,7 @@ export const searchItems = async (query: string): Promise<(Item & { _source?: Da
           ({
             ...item,
             _degraded: true,
-          }) as any
+          }) as any,
       );
     } catch (fallbackError: any) {
       log.error("Cache fallback error", { error: fallbackError.message });
@@ -832,7 +918,7 @@ export interface OptimizedSearchResult {
 export const searchItemsOptimized = async (
   query: string,
   page: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
 ): Promise<OptimizedSearchResult> => {
   try {
     if (!isOnline()) {
@@ -884,7 +970,10 @@ export const searchItemsOptimized = async (
 
     // Map backend fields to frontend Item interface with relevance info
     const mappedItems: Item[] = items.map((item: Record<string, unknown>) => ({
-      id: (item.id as string) || (item._id as string) || (item.item_code as string),
+      id:
+        (item.id as string) ||
+        (item._id as string) ||
+        (item.item_code as string),
       item_code: item.item_code as string,
       barcode: item.barcode as string,
       name: item.item_name as string,
@@ -892,7 +981,8 @@ export const searchItemsOptimized = async (
       description: item.description as string,
       uom: (item.uom_name as string) || (item.uom as string),
       uom_name: (item.uom_name as string) || (item.uom as string),
-      stock_qty: (item.stock_qty as number) ?? (item.current_stock as number) ?? 0,
+      stock_qty:
+        (item.stock_qty as number) ?? (item.current_stock as number) ?? 0,
       mrp: item.mrp as number,
       sale_price: item.sale_price as number,
       sales_price: (item.sale_price as number) || (item.sales_price as number),
@@ -987,7 +1077,10 @@ export const searchItemsOptimized = async (
 };
 
 // Get search suggestions for autocomplete
-export const getSearchSuggestions = async (query: string, limit: number = 5): Promise<string[]> => {
+export const getSearchSuggestions = async (
+  query: string,
+  limit: number = 5,
+): Promise<string[]> => {
   try {
     if (!isOnline() || query.length < 2) {
       return [];
@@ -1028,7 +1121,10 @@ export const getSearchFilters = async (): Promise<{
 };
 
 // Semantic Search (AI-Powered)
-export const searchItemsSemantic = async (query: string, limit: number = 20): Promise<Item[]> => {
+export const searchItemsSemantic = async (
+  query: string,
+  limit: number = 20,
+): Promise<Item[]> => {
   try {
     if (!isOnline()) {
       return []; // Semantic search requires server-side model
@@ -1051,7 +1147,10 @@ export const searchItemsSemantic = async (query: string, limit: number = 20): Pr
 };
 
 // AI Variance Risk Predictions
-export const getRiskPredictions = async (sessionId: string, limit: number = 10) => {
+export const getRiskPredictions = async (
+  sessionId: string,
+  limit: number = 10,
+) => {
   try {
     if (!isOnline()) return [];
 
@@ -1118,19 +1217,24 @@ export interface ItemScanStatus {
 
 export const checkItemScanStatus = async (
   sessionId: string,
-  itemCode: string
+  itemCode: string,
 ): Promise<ItemScanStatus> => {
   try {
     if (!isOnline()) {
       // Offline fallback: check local cache
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
-      const itemLines = cachedLines.filter((line) => line.item_code === itemCode);
+      const itemLines = cachedLines.filter(
+        (line) => line.item_code === itemCode,
+      );
 
       if (itemLines.length === 0) {
         return { scanned: false, total_qty: 0, locations: [] };
       }
 
-      const totalQty = itemLines.reduce((sum, line) => sum + (line.counted_qty || 0), 0);
+      const totalQty = itemLines.reduce(
+        (sum, line) => sum + (line.counted_qty || 0),
+        0,
+      );
       const locations = itemLines.map((line) => ({
         floor_no: (line.floor_no as string) || null,
         rack_no: (line.rack_no as string) || null,
@@ -1142,7 +1246,9 @@ export const checkItemScanStatus = async (
       return { scanned: true, total_qty: totalQty, locations };
     }
 
-    const response = await api.get(`/api/sessions/${sessionId}/items/${itemCode}/scan-status`);
+    const response = await api.get(
+      `/api/sessions/${sessionId}/items/${itemCode}/scan-status`,
+    );
     return response.data;
   } catch (error) {
     console.error("Error checking item scan status:", error);
@@ -1156,7 +1262,7 @@ export const checkItemScanStatus = async (
  * Uses createOfflineCountLine helper for consistent offline object creation.
  */
 export const createCountLine = async (
-  countData: CreateCountLinePayload
+  countData: CreateCountLinePayload,
 ): Promise<any & { _source?: DataSource; _offline?: boolean }> => {
   // Helper to resolve item name from cache
   const resolveItemName = async (): Promise<string> => {
@@ -1252,7 +1358,7 @@ export const getCountLines = async (
   sessionId: string,
   page: number = 1,
   pageSize: number = 50,
-  verified?: boolean
+  verified?: boolean,
 ): Promise<{
   items: any[];
   pagination: any;
@@ -1266,7 +1372,7 @@ export const getCountLines = async (
     requestedPage: number,
     requestedPageSize: number,
     source: DataSource = "cache",
-    stale: boolean = false
+    stale: boolean = false,
   ) => {
     const total = items.length;
     const totalPages = Math.ceil(total / requestedPageSize);
@@ -1355,11 +1461,15 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
     if (!isOnline()) {
       // Check in cached count lines
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
-      const itemLines = cachedLines.filter((line) => line.item_code === itemCode);
+      const itemLines = cachedLines.filter(
+        (line) => line.item_code === itemCode,
+      );
       return { already_counted: itemLines.length > 0, count_lines: itemLines };
     }
 
-    const response = await api.get(`/api/count-lines/check/${sessionId}/${itemCode}`);
+    const response = await api.get(
+      `/api/count-lines/check/${sessionId}/${itemCode}`,
+    );
     return response.data;
   } catch (error) {
     __DEV__ && console.error("Error checking item counted:", error);
@@ -1375,7 +1485,7 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
 export const addQuantityToCountLine = async (
   lineId: string,
   additionalQty: number,
-  batches?: any[]
+  batches?: any[],
 ) => {
   try {
     const payload: any = { additional_qty: additionalQty };
@@ -1384,7 +1494,10 @@ export const addQuantityToCountLine = async (
     }
 
     // Use PATCH with body for batches, or just query params if simple
-    const response = await api.patch(`/api/count-lines/${lineId}/add-quantity`, payload);
+    const response = await api.patch(
+      `/api/count-lines/${lineId}/add-quantity`,
+      payload,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Error adding quantity to count line:", error);
@@ -1396,7 +1509,11 @@ export const addQuantityToCountLine = async (
 export const getVarianceReasons = async () => {
   const response = await api.get("/api/variance-reasons");
   // Handle wrapped response format
-  if (response.data && response.data.reasons && Array.isArray(response.data.reasons)) {
+  if (
+    response.data &&
+    response.data.reasons &&
+    Array.isArray(response.data.reasons)
+  ) {
     return response.data.reasons.map((r: Record<string, unknown>) => ({
       ...r,
       code: r.id || r.code,
@@ -1419,7 +1536,10 @@ export const rejectCountLine = async (lineId: string) => {
 };
 
 // Update session status
-export const updateSessionStatus = async (sessionId: string, status: string) => {
+export const updateSessionStatus = async (
+  sessionId: string,
+  status: string,
+) => {
   // Use the specific complete endpoint for closing sessions to ensure locks are released
   if (status === "CLOSED") {
     const response = await api.post(`/api/sessions/${sessionId}/complete`);
@@ -1427,7 +1547,9 @@ export const updateSessionStatus = async (sessionId: string, status: string) => 
   }
 
   // For other statuses (like RECONCILE), use the generic status endpoint
-  const response = await api.put(`/api/sessions/${sessionId}/status?status=${status}`);
+  const response = await api.put(
+    `/api/sessions/${sessionId}/status?status=${status}`,
+  );
   return response.data;
 };
 
@@ -1466,7 +1588,7 @@ export const refreshItemStock = async (itemCode: string) => {
     const response = await api.post(
       `/api/erp/items/${encodeURIComponent(itemCode)}/refresh-stock`,
       {},
-      { timeout: 30000 } // 30s timeout for slow ERP operations
+      { timeout: 30000 }, // 30s timeout for slow ERP operations
     );
     return response.data;
   } catch (error: unknown) {
@@ -1482,7 +1604,7 @@ export const getAvailableTables = async (
   database: string,
   user?: string,
   password?: string,
-  schema: string = "dbo"
+  schema: string = "dbo",
 ) => {
   try {
     const params = new URLSearchParams({
@@ -1509,7 +1631,7 @@ export const getTableColumns = async (
   tableName: string,
   user?: string,
   password?: string,
-  schema: string = "dbo"
+  schema: string = "dbo",
 ) => {
   try {
     const params = new URLSearchParams({
@@ -1546,7 +1668,7 @@ export const testMapping = async (
   port: number,
   database: string,
   user?: string,
-  password?: string
+  password?: string,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -1557,7 +1679,10 @@ export const testMapping = async (
     if (user) params.append("user", user);
     if (password) params.append("password", password);
 
-    const response = await api.post(`/api/mapping/test?${params.toString()}`, config);
+    const response = await api.post(
+      `/api/mapping/test?${params.toString()}`,
+      config,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Test mapping error:", error);
@@ -1590,7 +1715,7 @@ export const getActivityLogs = async (
   action?: string,
   status?: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -1662,7 +1787,10 @@ export const deleteCountLine = async (lineId: string) => {
   }
 };
 
-export const getActivityStats = async (startDate?: string, endDate?: string) => {
+export const getActivityStats = async (
+  startDate?: string,
+  endDate?: string,
+) => {
   try {
     const params = new URLSearchParams();
     if (startDate) params.append("start_date", startDate);
@@ -1674,7 +1802,9 @@ export const getActivityStats = async (startDate?: string, endDate?: string) => 
         url: `/api/activity-logs/stats?${params.toString()}`,
       });
 
-    const response = await api.get(`/api/activity-logs/stats?${params.toString()}`);
+    const response = await api.get(
+      `/api/activity-logs/stats?${params.toString()}`,
+    );
 
     __DEV__ &&
       console.log("✅ [Activity Stats] Success:", {
@@ -1708,7 +1838,7 @@ export const getErrorLogs = async (
   endpoint?: string,
   resolved?: boolean,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -1782,7 +1912,9 @@ export const getErrorStats = async (startDate?: string, endDate?: string) => {
         url: `/api/error-logs/stats?${params.toString()}`,
       });
 
-    const response = await api.get(`/api/error-logs/stats?${params.toString()}`);
+    const response = await api.get(
+      `/api/error-logs/stats?${params.toString()}`,
+    );
 
     __DEV__ &&
       console.log("✅ [Error Stats] Success:", {
@@ -1809,7 +1941,8 @@ export const getErrorStats = async (startDate?: string, endDate?: string) => {
 
 export const getErrorDetail = async (errorId: string) => {
   try {
-    __DEV__ && console.log("🔍 [Error Detail] Fetching error details:", { errorId });
+    __DEV__ &&
+      console.log("🔍 [Error Detail] Fetching error details:", { errorId });
 
     const response = await api.get(`/api/error-logs/${errorId}`);
 
@@ -1836,7 +1969,10 @@ export const getErrorDetail = async (errorId: string) => {
   }
 };
 
-export const resolveError = async (errorId: string, resolutionNote?: string) => {
+export const resolveError = async (
+  errorId: string,
+  resolutionNote?: string,
+) => {
   try {
     const response = await api.put(`/api/error-logs/${errorId}/resolve`, {
       resolution_note: resolutionNote,
@@ -1907,7 +2043,9 @@ export const getServicesStatus = async () => {
 
 export const startService = async (service: string) => {
   try {
-    const response = await api.post(`/api/admin/control/services/${service}/start`);
+    const response = await api.post(
+      `/api/admin/control/services/${service}/start`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Start service error:", error);
@@ -1917,7 +2055,9 @@ export const startService = async (service: string) => {
 
 export const stopService = async (service: string) => {
   try {
-    const response = await api.post(`/api/admin/control/services/${service}/stop`);
+    const response = await api.post(
+      `/api/admin/control/services/${service}/stop`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Stop service error:", error);
@@ -1968,14 +2108,20 @@ export const getLoginDevices = async () => {
 };
 
 // Log Management
-export const getServiceLogs = async (service: string, lines: number = 100, level?: string) => {
+export const getServiceLogs = async (
+  service: string,
+  lines: number = 100,
+  level?: string,
+) => {
   try {
     const params = new URLSearchParams({
       lines: lines.toString(),
     });
     if (level) params.append("level", level);
 
-    const response = await api.get(`/api/admin/control/logs/${service}?${params.toString()}`);
+    const response = await api.get(
+      `/api/admin/control/logs/${service}?${params.toString()}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get service logs error:", error);
@@ -2013,7 +2159,10 @@ export const getUserPermissions = async (username: string) => {
   }
 };
 
-export const addUserPermissions = async (username: string, permissions: string[]) => {
+export const addUserPermissions = async (
+  username: string,
+  permissions: string[],
+) => {
   try {
     const response = await api.post(`/api/permissions/users/${username}/add`, {
       permissions,
@@ -2025,9 +2174,15 @@ export const addUserPermissions = async (username: string, permissions: string[]
   }
 };
 
-export const removeUserPermissions = async (username: string, permissions: string[]) => {
+export const removeUserPermissions = async (
+  username: string,
+  permissions: string[],
+) => {
   try {
-    const response = await api.post(`/api/permissions/users/${username}/remove`, { permissions });
+    const response = await api.post(
+      `/api/permissions/users/${username}/remove`,
+      { permissions },
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Remove user permissions error:", error);
@@ -2044,7 +2199,9 @@ export const getExportSchedules = async (enabled?: boolean) => {
     const params = new URLSearchParams();
     if (enabled !== undefined) params.append("enabled", enabled.toString());
 
-    const response = await api.get(`/api/exports/schedules?${params.toString()}`);
+    const response = await api.get(
+      `/api/exports/schedules?${params.toString()}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get export schedules error:", error);
@@ -2062,7 +2219,9 @@ export const getExportSchedule = async (scheduleId: string) => {
   }
 };
 
-export const createExportSchedule = async (scheduleData: Record<string, unknown>) => {
+export const createExportSchedule = async (
+  scheduleData: Record<string, unknown>,
+) => {
   try {
     const response = await api.post("/api/exports/schedules", scheduleData);
     return response.data;
@@ -2074,10 +2233,13 @@ export const createExportSchedule = async (scheduleData: Record<string, unknown>
 
 export const updateExportSchedule = async (
   scheduleId: string,
-  scheduleData: Record<string, unknown>
+  scheduleData: Record<string, unknown>,
 ) => {
   try {
-    const response = await api.put(`/api/exports/schedules/${scheduleId}`, scheduleData);
+    const response = await api.put(
+      `/api/exports/schedules/${scheduleId}`,
+      scheduleData,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Update export schedule error:", error);
@@ -2097,7 +2259,9 @@ export const deleteExportSchedule = async (scheduleId: string) => {
 
 export const triggerExportSchedule = async (scheduleId: string) => {
   try {
-    const response = await api.post(`/api/exports/schedules/${scheduleId}/trigger`);
+    const response = await api.post(
+      `/api/exports/schedules/${scheduleId}/trigger`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Trigger export schedule error:", error);
@@ -2109,7 +2273,7 @@ export const getExportResults = async (
   scheduleId?: string,
   status?: string,
   page: number = 1,
-  pageSize: number = 50
+  pageSize: number = 50,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -2129,9 +2293,12 @@ export const getExportResults = async (
 
 export const downloadExportResult = async (resultId: string) => {
   try {
-    const response = await api.get(`/api/exports/results/${resultId}/download`, {
-      responseType: "blob",
-    });
+    const response = await api.get(
+      `/api/exports/results/${resultId}/download`,
+      {
+        responseType: "blob",
+      },
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Download export result error:", error);
@@ -2147,7 +2314,7 @@ export const getSyncConflicts = async (
   status?: string,
   sessionId?: string,
   page: number = 1,
-  pageSize: number = 50
+  pageSize: number = 50,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -2178,13 +2345,16 @@ export const getSyncConflictDetail = async (conflictId: string) => {
 export const resolveSyncConflict = async (
   conflictId: string,
   resolution: string,
-  resolutionNote?: string
+  resolutionNote?: string,
 ) => {
   try {
-    const response = await api.post(`/api/sync/conflicts/${conflictId}/resolve`, {
-      resolution,
-      resolution_note: resolutionNote,
-    });
+    const response = await api.post(
+      `/api/sync/conflicts/${conflictId}/resolve`,
+      {
+        resolution,
+        resolution_note: resolutionNote,
+      },
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Resolve sync conflict error:", error);
@@ -2195,7 +2365,7 @@ export const resolveSyncConflict = async (
 export const batchResolveSyncConflicts = async (
   conflictIds: string[],
   resolution: string,
-  resolutionNote?: string
+  resolutionNote?: string,
 ) => {
   try {
     const response = await api.post("/api/sync/conflicts/batch-resolve", {
@@ -2310,7 +2480,7 @@ export const generateReport = async (
   reportId: string,
   format: string = "json",
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ) => {
   try {
     const response = await api.post("/api/admin/control/reports/generate", {
@@ -2336,9 +2506,14 @@ export const getSqlServerConfig = async () => {
   }
 };
 
-export const updateSqlServerConfig = async (config: Record<string, unknown>) => {
+export const updateSqlServerConfig = async (
+  config: Record<string, unknown>,
+) => {
   try {
-    const response = await api.post("/api/admin/control/sql-server/config", config);
+    const response = await api.post(
+      "/api/admin/control/sql-server/config",
+      config,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Update SQL Server config error:", error);
@@ -2346,9 +2521,14 @@ export const updateSqlServerConfig = async (config: Record<string, unknown>) => 
   }
 };
 
-export const testSqlServerConnection = async (config?: Record<string, unknown>) => {
+export const testSqlServerConnection = async (
+  config?: Record<string, unknown>,
+) => {
   try {
-    const response = await api.post("/api/admin/control/sql-server/test", config || {});
+    const response = await api.post(
+      "/api/admin/control/sql-server/test",
+      config || {},
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Test SQL Server connection error:", error);
@@ -2371,7 +2551,7 @@ export const getFailedLogins = async (
   limit: number = 100,
   hours: number = 24,
   username?: string,
-  ipAddress?: string
+  ipAddress?: string,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -2380,7 +2560,9 @@ export const getFailedLogins = async (
     });
     if (username) params.append("username", username);
     if (ipAddress) params.append("ip_address", ipAddress);
-    const response = await api.get(`/api/admin/security/failed-logins?${params.toString()}`);
+    const response = await api.get(
+      `/api/admin/security/failed-logins?${params.toString()}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get failed logins error:", error);
@@ -2390,7 +2572,9 @@ export const getFailedLogins = async (
 
 export const getSuspiciousActivity = async (hours: number = 24) => {
   try {
-    const response = await api.get(`/api/admin/security/suspicious-activity?hours=${hours}`);
+    const response = await api.get(
+      `/api/admin/security/suspicious-activity?hours=${hours}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get suspicious activity error:", error);
@@ -2398,10 +2582,13 @@ export const getSuspiciousActivity = async (hours: number = 24) => {
   }
 };
 
-export const getSecuritySessions = async (limit: number = 100, activeOnly: boolean = false) => {
+export const getSecuritySessions = async (
+  limit: number = 100,
+  activeOnly: boolean = false,
+) => {
   try {
     const response = await api.get(
-      `/api/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`
+      `/api/admin/security/sessions?limit=${limit}&active_only=${activeOnly}`,
     );
     return response.data;
   } catch (error: unknown) {
@@ -2414,7 +2601,7 @@ export const getSecurityAuditLog = async (
   limit: number = 100,
   hours: number = 24,
   action?: string,
-  user?: string
+  user?: string,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -2423,7 +2610,9 @@ export const getSecurityAuditLog = async (
     });
     if (action) params.append("action", action);
     if (user) params.append("user", user);
-    const response = await api.get(`/api/admin/security/audit-log?${params.toString()}`);
+    const response = await api.get(
+      `/api/admin/security/audit-log?${params.toString()}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get security audit log error:", error);
@@ -2433,7 +2622,9 @@ export const getSecurityAuditLog = async (
 
 export const getIpTracking = async (hours: number = 24) => {
   try {
-    const response = await api.get(`/api/admin/security/ip-tracking?hours=${hours}`);
+    const response = await api.get(
+      `/api/admin/security/ip-tracking?hours=${hours}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get IP tracking error:", error);
@@ -2474,7 +2665,9 @@ export const testSQLConnection = async (config: Record<string, unknown>) => {
   }
 };
 
-export const configureSQLConnection = async (config: Record<string, unknown>) => {
+export const configureSQLConnection = async (
+  config: Record<string, unknown>,
+) => {
   try {
     const response = await api.post("/api/admin/sql/configure", config);
     return response.data;
@@ -2505,9 +2698,14 @@ export const getSystemParameters = async () => {
   }
 };
 
-export const updateSystemParameters = async (parameters: Record<string, unknown>) => {
+export const updateSystemParameters = async (
+  parameters: Record<string, unknown>,
+) => {
   try {
-    const response = await api.put("/api/admin/settings/parameters", parameters);
+    const response = await api.put(
+      "/api/admin/settings/parameters",
+      parameters,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Update system parameters error:", error);
@@ -2549,7 +2747,9 @@ export const getSystemSettings = async () => {
   }
 };
 
-export const updateSystemSettings = async (settings: Record<string, unknown>) => {
+export const updateSystemSettings = async (
+  settings: Record<string, unknown>,
+) => {
   try {
     const response = await api.put("/api/admin/settings/parameters", settings);
     return response.data;
@@ -2687,7 +2887,9 @@ export const getVarianceTrend = async (days: number = 30) => {
 
 export const getStaffPerformance = async (days: number = 30) => {
   try {
-    const response = await api.get(`/api/metrics/staff-performance?days=${days}`);
+    const response = await api.get(
+      `/api/metrics/staff-performance?days=${days}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get staff performance error:", error);
@@ -2701,14 +2903,16 @@ export const getStaffPerformance = async (days: number = 30) => {
 
 export const getFieldDefinitions = async (
   enabledOnly: boolean = true,
-  visibleOnly: boolean = false
+  visibleOnly: boolean = false,
 ) => {
   try {
     const params = new URLSearchParams({
       enabled_only: enabledOnly.toString(),
       visible_only: visibleOnly.toString(),
     });
-    const response = await api.get(`/api/dynamic-fields/definitions?${params.toString()}`);
+    const response = await api.get(
+      `/api/dynamic-fields/definitions?${params.toString()}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get field definitions error:", error);
@@ -2716,9 +2920,14 @@ export const getFieldDefinitions = async (
   }
 };
 
-export const createFieldDefinition = async (fieldData: Record<string, unknown>) => {
+export const createFieldDefinition = async (
+  fieldData: Record<string, unknown>,
+) => {
   try {
-    const response = await api.post("/api/dynamic-fields/definitions", fieldData);
+    const response = await api.post(
+      "/api/dynamic-fields/definitions",
+      fieldData,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Create field definition error:", error);
@@ -2726,9 +2935,15 @@ export const createFieldDefinition = async (fieldData: Record<string, unknown>) 
   }
 };
 
-export const updateFieldDefinition = async (fieldId: string, updates: Record<string, unknown>) => {
+export const updateFieldDefinition = async (
+  fieldId: string,
+  updates: Record<string, unknown>,
+) => {
   try {
-    const response = await api.put(`/api/dynamic-fields/definitions/${fieldId}`, updates);
+    const response = await api.put(
+      `/api/dynamic-fields/definitions/${fieldId}`,
+      updates,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Update field definition error:", error);
@@ -2738,7 +2953,9 @@ export const updateFieldDefinition = async (fieldId: string, updates: Record<str
 
 export const deleteFieldDefinition = async (fieldId: string) => {
   try {
-    const response = await api.delete(`/api/dynamic-fields/definitions/${fieldId}`);
+    const response = await api.delete(
+      `/api/dynamic-fields/definitions/${fieldId}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Delete field definition error:", error);
@@ -2746,7 +2963,11 @@ export const deleteFieldDefinition = async (fieldId: string) => {
   }
 };
 
-export const setFieldValue = async (itemCode: string, fieldName: string, value: unknown) => {
+export const setFieldValue = async (
+  itemCode: string,
+  fieldName: string,
+  value: unknown,
+) => {
   try {
     const response = await api.post("/api/dynamic-fields/values", {
       item_code: itemCode,
@@ -2762,7 +2983,7 @@ export const setFieldValue = async (itemCode: string, fieldName: string, value: 
 
 export const setBulkFieldValues = async (
   itemCodes: string[],
-  fieldValues: Record<string, unknown>
+  fieldValues: Record<string, unknown>,
 ) => {
   try {
     const response = await api.post("/api/dynamic-fields/values/bulk", {
@@ -2790,7 +3011,7 @@ export const getItemsWithFields = async (
   fieldName?: string,
   fieldValue?: string,
   limit: number = 100,
-  skip: number = 0
+  skip: number = 0,
 ) => {
   try {
     const params = new URLSearchParams({
@@ -2800,7 +3021,9 @@ export const getItemsWithFields = async (
     if (fieldName) params.append("field_name", fieldName);
     if (fieldValue) params.append("field_value", fieldValue);
 
-    const response = await api.get(`/api/dynamic-fields/items?${params.toString()}`);
+    const response = await api.get(
+      `/api/dynamic-fields/items?${params.toString()}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get items with fields error:", error);
@@ -2810,7 +3033,9 @@ export const getItemsWithFields = async (
 
 export const getFieldStatistics = async (fieldName: string) => {
   try {
-    const response = await api.get(`/api/dynamic-fields/statistics/${fieldName}`);
+    const response = await api.get(
+      `/api/dynamic-fields/statistics/${fieldName}`,
+    );
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Get field statistics error:", error);

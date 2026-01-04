@@ -210,7 +210,11 @@ export const gradients = {
   success: [colors.success[500], colors.success[600]],
   sunset: [colors.warning[500], colors.error[500]],
   aurora: ["#0F766E", "#0891B2", "#2563EB"] as const, // Darker teal-cyan-blue gradient
-  auroraLight: [colors.primary[400], colors.secondary[400], colors.success[400]],
+  auroraLight: [
+    colors.primary[400],
+    colors.secondary[400],
+    colors.success[400],
+  ],
   glass: ["rgba(255, 255, 255, 0.15)", "rgba(255, 255, 255, 0.08)"],
 } as const;
 

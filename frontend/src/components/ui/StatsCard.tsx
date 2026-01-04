@@ -79,7 +79,8 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   suffix = "",
 }) => {
   const { gradient } = variantColors[variant];
-  const numericValue = typeof value === "number" ? value : parseFloat(value) || 0;
+  const numericValue =
+    typeof value === "number" ? value : parseFloat(value) || 0;
 
   const content = (
     <View style={styles.content}>
@@ -90,7 +91,11 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         end={{ x: 1, y: 1 }}
         style={styles.iconContainer}
       >
-        <Ionicons name={icon} size={28} color={auroraTheme.colors.text.primary} />
+        <Ionicons
+          name={icon}
+          size={28}
+          color={auroraTheme.colors.text.primary}
+        />
       </LinearGradient>
 
       {/* Stats */}
@@ -160,7 +165,9 @@ export const StatsCard: React.FC<StatsCardProps> = ({
               name={trend.isPositive ? "trending-up" : "trending-down"}
               size={14}
               color={
-                trend.isPositive ? auroraTheme.colors.success[500] : auroraTheme.colors.error[500]
+                trend.isPositive
+                  ? auroraTheme.colors.success[500]
+                  : auroraTheme.colors.error[500]
               }
             />
             <Text

@@ -38,7 +38,7 @@ export default function LogsScreen() {
       const response = await getServiceLogs(
         service,
         200,
-        filterLevel === "ALL" ? undefined : filterLevel
+        filterLevel === "ALL" ? undefined : filterLevel,
       );
       if (response.success && response.data) {
         setLogs(response.data.logs || []);
@@ -83,7 +83,11 @@ export default function LogsScreen() {
         showBackButton: true,
         customRightContent: (
           <AnimatedPressable style={styles.refreshButton} onPress={loadLogs}>
-            <Ionicons name="refresh" size={24} color={auroraTheme.colors.text.primary} />
+            <Ionicons
+              name="refresh"
+              size={24}
+              color={auroraTheme.colors.text.primary}
+            />
           </AnimatedPressable>
         ),
       }}
@@ -114,10 +118,18 @@ export default function LogsScreen() {
             return (
               <AnimatedPressable
                 key={level}
-                style={[styles.levelFilter, isActive && styles.levelFilterActive]}
+                style={[
+                  styles.levelFilter,
+                  isActive && styles.levelFilterActive,
+                ]}
                 onPress={() => setFilterLevel(level)}
               >
-                <Text style={[styles.levelFilterText, isActive && styles.levelFilterTextActive]}>
+                <Text
+                  style={[
+                    styles.levelFilterText,
+                    isActive && styles.levelFilterTextActive,
+                  ]}
+                >
                   {level}
                 </Text>
               </AnimatedPressable>
@@ -136,21 +148,32 @@ export default function LogsScreen() {
             />
             <Text style={styles.emptyText}>No logs found</Text>
             <Text style={styles.emptySubtext}>
-              {searchQuery ? "Try a different search term" : "Logs will appear here when available"}
+              {searchQuery
+                ? "Try a different search term"
+                : "Logs will appear here when available"}
             </Text>
           </View>
         ) : (
           filteredLogs.map((log, index) => (
             <View key={index} style={styles.logEntry}>
               <View style={styles.logHeader}>
-                <View style={[styles.logLevelBadge, { backgroundColor: getLevelColor(log.level) }]}>
+                <View
+                  style={[
+                    styles.logLevelBadge,
+                    { backgroundColor: getLevelColor(log.level) },
+                  ]}
+                >
                   <Text style={styles.logLevelText}>{log.level || "INFO"}</Text>
                 </View>
                 <Text style={styles.logTimestamp}>
-                  {log.timestamp ? new Date(log.timestamp).toLocaleString() : "N/A"}
+                  {log.timestamp
+                    ? new Date(log.timestamp).toLocaleString()
+                    : "N/A"}
                 </Text>
               </View>
-              <Text style={styles.logMessage}>{log.message || "No message"}</Text>
+              <Text style={styles.logMessage}>
+                {log.message || "No message"}
+              </Text>
             </View>
           ))
         )}

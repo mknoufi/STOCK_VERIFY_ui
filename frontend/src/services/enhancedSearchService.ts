@@ -38,7 +38,7 @@ export const EnhancedSearchService = {
   searchItems: async (
     filters: SearchFilters,
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
   ): Promise<{
     items: SearchResult[];
     total: number;
@@ -74,7 +74,9 @@ export const EnhancedSearchService = {
         item_group: item.item_group,
         warehouse: item.warehouse,
         location: item.location,
-        matchType: item.match_type || (item.relevance_score >= 500 ? "exact" : "partial"),
+        matchType:
+          item.match_type ||
+          (item.relevance_score >= 500 ? "exact" : "partial"),
         floor: item.floor,
         rack: item.rack,
         relevance_score: item.relevance_score,

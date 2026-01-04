@@ -86,24 +86,27 @@ export interface FilterActions {
   setSort: (config: SortConfig) => void;
 
   // Generic filter setter
-  setFilter: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void;
+  setFilter: <K extends keyof FilterState>(
+    key: K,
+    value: FilterState[K],
+  ) => void;
 
   // Session-specific filters
   setSessionFilter: <K extends keyof FilterState["sessionFilters"]>(
     key: K,
-    value: FilterState["sessionFilters"][K]
+    value: FilterState["sessionFilters"][K],
   ) => void;
 
   // Item-specific filters
   setItemFilter: <K extends keyof FilterState["itemFilters"]>(
     key: K,
-    value: FilterState["itemFilters"][K]
+    value: FilterState["itemFilters"][K],
   ) => void;
 
   // User-specific filters
   setUserFilter: <K extends keyof FilterState["userFilters"]>(
     key: K,
-    value: FilterState["userFilters"][K]
+    value: FilterState["userFilters"][K],
   ) => void;
 
   // Bulk operations
@@ -194,7 +197,8 @@ export const useFilterStore = create<FilterState & FilterActions>()(
           activePresetId: null,
         }),
 
-      resetSessionFilters: () => set({ sessionFilters: {}, activePresetId: null }),
+      resetSessionFilters: () =>
+        set({ sessionFilters: {}, activePresetId: null }),
 
       resetItemFilters: () => set({ itemFilters: {}, activePresetId: null }),
 
@@ -237,7 +241,8 @@ export const useFilterStore = create<FilterState & FilterActions>()(
       deletePreset: (presetId) =>
         set((state) => ({
           presets: state.presets.filter((p) => p.id !== presetId),
-          activePresetId: state.activePresetId === presetId ? null : state.activePresetId,
+          activePresetId:
+            state.activePresetId === presetId ? null : state.activePresetId,
         })),
 
       setDefaultPreset: (presetId) =>
@@ -281,8 +286,8 @@ export const useFilterStore = create<FilterState & FilterActions>()(
         presets: state.presets,
         // Don't persist active filters, only presets
       }),
-    }
-  )
+    },
+  ),
 );
 
 /**
@@ -303,6 +308,7 @@ export const useFilters = () =>
 /**
  * Hook to get active filter count
  */
-export const useActiveFilterCount = () => useFilterStore((state) => state.getActiveFilterCount());
+export const useActiveFilterCount = () =>
+  useFilterStore((state) => state.getActiveFilterCount());
 
 export default useFilterStore;

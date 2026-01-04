@@ -4,9 +4,21 @@
  */
 
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, spacing, radius, textStyles, semanticColors } from "../../theme/unified";
+import {
+  colors,
+  spacing,
+  radius,
+  textStyles,
+  semanticColors,
+} from "../../theme/unified";
 
 // Role configurations with icons and colors
 const ROLE_CONFIG: Record<
@@ -76,13 +88,24 @@ export function RoleSelector({
                 style={[
                   styles.cardIcon,
                   {
-                    backgroundColor: isSelected ? config.color : semanticColors.background.tertiary,
+                    backgroundColor: isSelected
+                      ? config.color
+                      : semanticColors.background.tertiary,
                   },
                 ]}
               >
-                <Ionicons name={config.icon} size={24} color={isSelected ? "#fff" : config.color} />
+                <Ionicons
+                  name={config.icon}
+                  size={24}
+                  color={isSelected ? "#fff" : config.color}
+                />
               </View>
-              <Text style={[styles.cardTitle, isSelected && styles.cardTitleSelected]}>
+              <Text
+                style={[
+                  styles.cardTitle,
+                  isSelected && styles.cardTitleSelected,
+                ]}
+              >
                 {role.charAt(0).toUpperCase() + role.slice(1)}
               </Text>
               {showDescriptions && config.description && (
@@ -90,7 +113,11 @@ export function RoleSelector({
               )}
               {isSelected && (
                 <View style={styles.checkmark}>
-                  <Ionicons name="checkmark-circle" size={20} color={colors.success[500]} />
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.success[500]}
+                  />
                 </View>
               )}
             </TouchableOpacity>
@@ -116,7 +143,10 @@ export function RoleSelector({
             key={role}
             style={[
               styles.chip,
-              isSelected && [styles.chipSelected, { borderColor: config.color }],
+              isSelected && [
+                styles.chipSelected,
+                { borderColor: config.color },
+              ],
               disabled && styles.chipDisabled,
             ]}
             onPress={() => !disabled && onChange(role)}
@@ -131,7 +161,10 @@ export function RoleSelector({
             <Text
               style={[
                 styles.chipText,
-                isSelected && [styles.chipTextSelected, { color: config.color }],
+                isSelected && [
+                  styles.chipTextSelected,
+                  { color: config.color },
+                ],
               ]}
             >
               {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -151,7 +184,12 @@ interface RoleBadgeProps {
   style?: ViewStyle;
 }
 
-export function RoleBadge({ role, size = "medium", showIcon = true, style }: RoleBadgeProps) {
+export function RoleBadge({
+  role,
+  size = "medium",
+  showIcon = true,
+  style,
+}: RoleBadgeProps) {
   const config = ROLE_CONFIG[role] || {
     icon: "person",
     color: colors.neutral[500],
@@ -193,8 +231,15 @@ export function RoleBadge({ role, size = "medium", showIcon = true, style }: Rol
         style,
       ]}
     >
-      {showIcon && <Ionicons name={config.icon} size={s.iconSize} color={config.color} />}
-      <Text style={[styles.badgeText, { color: config.color, fontSize: s.fontSize }]}>
+      {showIcon && (
+        <Ionicons name={config.icon} size={s.iconSize} color={config.color} />
+      )}
+      <Text
+        style={[
+          styles.badgeText,
+          { color: config.color, fontSize: s.fontSize },
+        ]}
+      >
         {role.charAt(0).toUpperCase() + role.slice(1)}
       </Text>
     </View>
@@ -250,7 +295,11 @@ export function RolePermissions({ role, style }: RolePermissionsProps) {
       <View style={styles.permissionsList}>
         {permissions.map((permission, index) => (
           <View key={index} style={styles.permissionItem}>
-            <Ionicons name="checkmark-circle" size={16} color={colors.success[500]} />
+            <Ionicons
+              name="checkmark-circle"
+              size={16}
+              color={colors.success[500]}
+            />
             <Text style={styles.permissionText}>{permission}</Text>
           </View>
         ))}

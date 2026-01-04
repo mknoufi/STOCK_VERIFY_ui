@@ -9,7 +9,9 @@ jest.mock("../httpClient", () => ({
 
 jest.mock("../../utils/network", () => ({
   isOnline: jest.fn().mockReturnValue(true),
-  getNetworkStatus: jest.fn().mockReturnValue({ status: "ONLINE", isOnline: true }),
+  getNetworkStatus: jest
+    .fn()
+    .mockReturnValue({ status: "ONLINE", isOnline: true }),
 }));
 
 jest.mock("../offline/offlineStorage", () => ({
@@ -28,7 +30,9 @@ describe("API Service", () => {
 
       await getWarehouses(mockZone);
 
-      expect(api.get).toHaveBeenCalledWith(expect.stringContaining("zone=Showroom%20Space"));
+      expect(api.get).toHaveBeenCalledWith(
+        expect.stringContaining("zone=Showroom%20Space"),
+      );
     });
 
     it("should handle empty zone parameter", async () => {

@@ -26,13 +26,19 @@ export const NotesAPI = {
     return { notes: [] };
   },
 
-  addNote: async (sessionId: string, note: Omit<Note, "id">): Promise<ApiResult> => {
+  addNote: async (
+    sessionId: string,
+    note: Omit<Note, "id">,
+  ): Promise<ApiResult> => {
     // Stub implementation
     console.log("Adding note to session:", sessionId, note);
     return { success: true };
   },
 
-  updateNote: async (noteId: string, note: Partial<Note>): Promise<ApiResult> => {
+  updateNote: async (
+    noteId: string,
+    note: Partial<Note>,
+  ): Promise<ApiResult> => {
     // Stub implementation
     console.log("Updating note:", noteId, note);
     return { success: true };

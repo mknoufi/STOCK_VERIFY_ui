@@ -33,15 +33,23 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
           duration: 1000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, [fadeAnim]);
 
   return (
     <View style={[styles.container, style]}>
-      <ActivityIndicator size={size} color={colors.accent} style={styles.loader} />
+      <ActivityIndicator
+        size={size}
+        color={colors.accent}
+        style={styles.loader}
+      />
       <Animated.Text
-        style={[styles.message, { color: colors.textSecondary }, { opacity: fadeAnim }]}
+        style={[
+          styles.message,
+          { color: colors.textSecondary },
+          { opacity: fadeAnim },
+        ]}
       >
         {message}
       </Animated.Text>

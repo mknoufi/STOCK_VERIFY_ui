@@ -7,7 +7,13 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colorPalette, spacing, typography, borderRadius, shadows } from "@/theme/designTokens";
+import {
+  colorPalette,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from "@/theme/designTokens";
 import type { AnalyticsMetric } from "@/services/analyticsService";
 
 interface MetricCardProps {
@@ -15,7 +21,10 @@ interface MetricCardProps {
   compact?: boolean;
 }
 
-export const MetricCard: React.FC<MetricCardProps> = ({ metric, compact = false }) => {
+export const MetricCard: React.FC<MetricCardProps> = ({
+  metric,
+  compact = false,
+}) => {
   const formatValue = (value: number, format?: string): string => {
     switch (format) {
       case "currency":
@@ -72,7 +81,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({ metric, compact = false 
               size={compact ? 12 : 14}
               color={getTrendColor(metric.trend)}
             />
-            <Text style={[styles.changeText, { color: getTrendColor(metric.trend) }]}>
+            <Text
+              style={[
+                styles.changeText,
+                { color: getTrendColor(metric.trend) },
+              ]}
+            >
               {Math.abs(metric.change).toFixed(1)}%
             </Text>
           </View>

@@ -38,7 +38,10 @@ export const detectFrontendPort = async (): Promise<number | null> => {
       if (!isNaN(portNum) && portNum > 0) {
         cachedPort = portNum;
         if (__DEV__) {
-          __DEV__ && console.log(`📡 Detected frontend port from window.location: ${cachedPort}`);
+          __DEV__ &&
+            console.log(
+              `📡 Detected frontend port from window.location: ${cachedPort}`,
+            );
         }
         return cachedPort;
       }
@@ -54,7 +57,10 @@ export const detectFrontendPort = async (): Promise<number | null> => {
       if (!isNaN(port)) {
         cachedPort = port;
         if (__DEV__) {
-          __DEV__ && console.log(`📡 Detected frontend port from Expo Constants: ${cachedPort}`);
+          __DEV__ &&
+            console.log(
+              `📡 Detected frontend port from Expo Constants: ${cachedPort}`,
+            );
         }
         return cachedPort;
       }

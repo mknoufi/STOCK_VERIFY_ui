@@ -4,7 +4,15 @@
  */
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Alert, Switch, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  Switch,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -13,9 +21,16 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { useSettingsStore } from "../../src/store/settingsStore";
-import { ScreenContainer, GlassCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  ScreenContainer,
+  GlassCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
-import { ChangePinModal, ChangePasswordModal } from "../../src/components/settings";
+import {
+  ChangePinModal,
+  ChangePasswordModal,
+} from "../../src/components/settings";
 
 // Reusable Setting Row Component
 const SettingRow = ({
@@ -69,7 +84,8 @@ const SettingRow = ({
           <Switch
             value={value}
             onValueChange={(val) => {
-              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              if (Platform.OS !== "web")
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onValueChange(val);
             }}
             disabled={disabled}
@@ -85,9 +101,14 @@ const SettingRow = ({
         {type === "select" && (
           <View style={styles.selectContainer}>
             <Text style={styles.selectValue}>
-              {options.find((opt) => opt.value === value)?.label || String(value)}
+              {options.find((opt) => opt.value === value)?.label ||
+                String(value)}
             </Text>
-            <Ionicons name="chevron-forward" size={16} color={theme.colors.text.tertiary} />
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={theme.colors.text.tertiary}
+            />
           </View>
         )}
 
@@ -106,18 +127,23 @@ export default function SettingsScreen() {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   const handleReset = () => {
-    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    Alert.alert("Reset Settings", "Are you sure you want to reset all settings to default?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Reset",
-        style: "destructive",
-        onPress: async () => {
-          await resetSettings();
-          Alert.alert("Success", "Settings reset to default");
+    if (Platform.OS !== "web")
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    Alert.alert(
+      "Reset Settings",
+      "Are you sure you want to reset all settings to default?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: async () => {
+            await resetSettings();
+            Alert.alert("Success", "Settings reset to default");
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   return (
@@ -129,14 +155,26 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Settings</Text>
-              <Text style={styles.pageSubtitle}>Preferences & Configuration</Text>
+              <Text style={styles.pageSubtitle}>
+                Preferences & Configuration
+              </Text>
             </View>
           </View>
         </Animated.View>
@@ -145,7 +183,11 @@ export default function SettingsScreen() {
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <Text style={styles.sectionTitle}>Appearance</Text>
           <View style={styles.card}>
-            <AppearanceSettings showTitle={false} scrollable={false} compact={true} />
+            <AppearanceSettings
+              showTitle={false}
+              scrollable={false}
+              compact={true}
+            />
           </View>
         </Animated.View>
 
@@ -223,11 +265,19 @@ export default function SettingsScreen() {
             >
               <View style={styles.settingLeft}>
                 <View style={styles.iconContainer}>
-                  <Ionicons name="keypad-outline" size={18} color={theme.colors.text.primary} />
+                  <Ionicons
+                    name="keypad-outline"
+                    size={18}
+                    color={theme.colors.text.primary}
+                  />
                 </View>
                 <Text style={styles.settingLabel}>Change PIN</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color={theme.colors.text.tertiary} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.text.tertiary}
+              />
             </AnimatedPressable>
 
             <View style={styles.divider} />
@@ -249,7 +299,11 @@ export default function SettingsScreen() {
                 </View>
                 <Text style={styles.settingLabel}>Change Password</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color={theme.colors.text.tertiary} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.text.tertiary}
+              />
             </AnimatedPressable>
           </GlassCard>
         </Animated.View>
@@ -264,11 +318,19 @@ export default function SettingsScreen() {
             >
               <View style={styles.settingLeft}>
                 <View style={styles.iconContainer}>
-                  <Ionicons name="options-outline" size={18} color={theme.colors.text.primary} />
+                  <Ionicons
+                    name="options-outline"
+                    size={18}
+                    color={theme.colors.text.primary}
+                  />
                 </View>
                 <Text style={styles.settingLabel}>Database Mapping</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color={theme.colors.text.tertiary} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.text.tertiary}
+              />
             </AnimatedPressable>
 
             <View style={styles.divider} />
@@ -287,15 +349,26 @@ export default function SettingsScreen() {
                 </View>
                 <Text style={styles.settingLabel}>Help & Support</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color={theme.colors.text.tertiary} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.text.tertiary}
+              />
             </AnimatedPressable>
           </GlassCard>
         </Animated.View>
 
         {/* Reset Button */}
-        <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.resetContainer}>
+        <Animated.View
+          entering={FadeInDown.delay(600).springify()}
+          style={styles.resetContainer}
+        >
           <AnimatedPressable style={styles.resetButton} onPress={handleReset}>
-            <Ionicons name="refresh" size={18} color={theme.colors.error.main} />
+            <Ionicons
+              name="refresh"
+              size={18}
+              color={theme.colors.error.main}
+            />
             <Text style={styles.resetText}>Reset to Defaults</Text>
           </AnimatedPressable>
         </Animated.View>

@@ -24,7 +24,8 @@ export const useOfflineStore = create<OfflineState>((set) => ({
   syncStatus: "synced",
   setOffline: (status) => set({ isOffline: status }),
   setSyncStatus: (status) => set({ syncStatus: status }),
-  addToQueue: (item) => set((state) => ({ syncQueue: [...state.syncQueue, item] })),
+  addToQueue: (item) =>
+    set((state) => ({ syncQueue: [...state.syncQueue, item] })),
   removeFromQueue: (id) =>
     set((state) => ({ syncQueue: state.syncQueue.filter((i) => i.id !== id) })),
   clearQueue: () => set({ syncQueue: [] }),

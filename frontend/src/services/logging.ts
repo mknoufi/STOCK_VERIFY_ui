@@ -18,7 +18,10 @@ interface LogEntry {
 type LogSink = (entry: LogEntry) => void;
 
 // Check if we're in development mode
-const isDev = typeof __DEV__ !== "undefined" ? __DEV__ : process.env.NODE_ENV === "development";
+const isDev =
+  typeof __DEV__ !== "undefined"
+    ? __DEV__
+    : process.env.NODE_ENV === "development";
 
 // Console sink for development
 const consoleSink: LogSink = (entry) => {
@@ -62,7 +65,7 @@ function log(
   level: LogLevel,
   message: string,
   context?: Record<string, unknown>,
-  module?: string
+  module?: string,
 ): void {
   const entry: LogEntry = {
     level,
@@ -93,10 +96,14 @@ function log(
  * ```
  */
 export const logger = {
-  debug: (message: string, context?: Record<string, unknown>) => log("debug", message, context),
-  info: (message: string, context?: Record<string, unknown>) => log("info", message, context),
-  warn: (message: string, context?: Record<string, unknown>) => log("warn", message, context),
-  error: (message: string, context?: Record<string, unknown>) => log("error", message, context),
+  debug: (message: string, context?: Record<string, unknown>) =>
+    log("debug", message, context),
+  info: (message: string, context?: Record<string, unknown>) =>
+    log("info", message, context),
+  warn: (message: string, context?: Record<string, unknown>) =>
+    log("warn", message, context),
+  error: (message: string, context?: Record<string, unknown>) =>
+    log("error", message, context),
 };
 
 /**

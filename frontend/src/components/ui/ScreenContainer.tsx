@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeContext } from "../../context/ThemeContext";
@@ -78,7 +80,9 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 }) => {
   const { themeLegacy: theme } = useThemeContext();
   const resolvedBackground = backgroundType || (gradient ? "aurora" : "solid");
-  const resolvedScrollable = contentMode ? contentMode === "scroll" : scrollable;
+  const resolvedScrollable = contentMode
+    ? contentMode === "scroll"
+    : scrollable;
   const resolvedStatusBarStyle =
     statusBarStyle === "light"
       ? "light-content"
@@ -104,6 +108,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
             progressBackgroundColor={theme.colors.surfaceElevated}
           />
         ) : undefined,
+        keyboardShouldPersistTaps: "handled",
       }
     : {
         style: [styles.content, style],
@@ -124,7 +129,9 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
             headerTransparent: gradient,
             headerTintColor: theme.colors.text,
             headerStyle: {
-              backgroundColor: gradient ? "transparent" : theme.colors.background,
+              backgroundColor: gradient
+                ? "transparent"
+                : theme.colors.background,
             },
           }}
         />
@@ -137,15 +144,24 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
           ) : (
             <>
               <ActivityIndicator size="large" color={theme.colors.accent} />
-              {loadingText ? <Text style={styles.loadingText}>{loadingText}</Text> : null}
+              {loadingText ? (
+                <Text style={styles.loadingText}>{loadingText}</Text>
+              ) : null}
             </>
           )}
         </View>
-      ) : (
+      ) : resolvedScrollable ? (
         // @ts-ignore
         <Container style={[styles.flex, style]} {...containerProps}>
           {children}
         </Container>
+      ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          {/* @ts-ignore */}
+          <Container style={[styles.flex, style]} {...containerProps}>
+            {children}
+          </Container>
+        </TouchableWithoutFeedback>
       )}
       {overlay ? (
         <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
@@ -181,7 +197,11 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   if (resolvedBackground === "pattern") {
     return (
       <View
-        style={[styles.container, { backgroundColor: theme.colors.background }, containerStyle]}
+        style={[
+          styles.container,
+          { backgroundColor: theme.colors.background },
+          containerStyle,
+        ]}
       >
         <PatternBackground />
         {baseContent}
@@ -190,7 +210,13 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }, containerStyle]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.colors.background },
+        containerStyle,
+      ]}
+    >
       {baseContent}
     </View>
   );

@@ -18,6 +18,8 @@ export const useNetworkStore = create<NetworkState>((set) => ({
   isRestrictedMode: false,
   setIsOnline: (isOnline: boolean) => set({ isOnline }),
   setConnectionType: (type: string) => set({ connectionType: type }),
-  setIsInternetReachable: (reachable: boolean | null) => set({ isInternetReachable: reachable }),
-  setRestrictedMode: (restricted: boolean) => set({ isRestrictedMode: restricted }),
+  setIsInternetReachable: (reachable: boolean | null) =>
+    set({ isInternetReachable: reachable }),
+  setRestrictedMode: (restricted: boolean) =>
+    set({ isRestrictedMode: restricted }),
 }));

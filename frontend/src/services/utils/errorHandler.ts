@@ -63,7 +63,8 @@ export class ErrorHandler {
             category = category || "authentication";
             break;
           case 403:
-            message = message || "You don't have permission to perform this action.";
+            message =
+              message || "You don't have permission to perform this action.";
             code = code || "AUTHZ_001";
             category = category || "authorization";
             break;
@@ -83,7 +84,9 @@ export class ErrorHandler {
             category = category || "validation";
             break;
           case 429:
-            message = message || "Too many requests. Please wait a moment and try again.";
+            message =
+              message ||
+              "Too many requests. Please wait a moment and try again.";
             code = code || "SRV_002";
             category = category || "server";
             break;
@@ -93,7 +96,8 @@ export class ErrorHandler {
             category = category || "server";
             break;
           case 503:
-            message = message || "Service temporarily unavailable. Please try again.";
+            message =
+              message || "Service temporarily unavailable. Please try again.";
             code = code || "DB_001";
             category = category || "database";
             break;
@@ -104,12 +108,15 @@ export class ErrorHandler {
     } else if (error.request) {
       // Request made but no response
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        message = "Connection timeout. Please check your internet connection and try again.";
+        message =
+          "Connection timeout. Please check your internet connection and try again.";
         code = "NET_001";
         category = "network";
-        detail = "The request took too long to complete. Your connection may be slow or unstable.";
+        detail =
+          "The request took too long to complete. Your connection may be slow or unstable.";
       } else if (error.code === "ECONNREFUSED" || !error.response) {
-        message = "Cannot connect to server. Please check if the server is running.";
+        message =
+          "Cannot connect to server. Please check if the server is running.";
         code = "NET_002";
         category = "network";
         detail = "The server is not responding. It may be down or unreachable.";
@@ -117,7 +124,8 @@ export class ErrorHandler {
         message = "Network error. Please check your internet connection.";
         code = "NET_001";
         category = "network";
-        detail = "Unable to reach the server. Please check your network connection.";
+        detail =
+          "Unable to reach the server. Please check your network connection.";
       }
       statusCode = 0;
     } else {
@@ -166,7 +174,7 @@ export class ErrorHandler {
     message: string,
     onConfirm: () => void,
     onCancel?: () => void,
-    title = "Confirm"
+    title = "Confirm",
   ) {
     Alert.alert(
       title,
@@ -183,7 +191,7 @@ export class ErrorHandler {
           onPress: onConfirm,
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   }
 
@@ -192,7 +200,7 @@ export class ErrorHandler {
    */
   static validateRequired(
     fields: Record<string, any>,
-    fieldNames: Record<string, string>
+    fieldNames: Record<string, string>,
   ): string | null {
     for (const [key, label] of Object.entries(fieldNames)) {
       if (!fields[key] || fields[key].toString().trim() === "") {
@@ -251,9 +259,11 @@ export class NetworkMonitor {
   }
 
   static showNoConnection() {
-    Alert.alert("No Internet Connection", "Please check your internet connection and try again.", [
-      { text: "OK" },
-    ]);
+    Alert.alert(
+      "No Internet Connection",
+      "Please check your internet connection and try again.",
+      [{ text: "OK" }],
+    );
   }
 }
 
@@ -266,7 +276,7 @@ export class RetryHandler {
   static async retry<T>(
     operation: () => Promise<T>,
     maxRetries: number = 3,
-    delayMs: number = 1000
+    delayMs: number = 1000,
   ): Promise<T> {
     let lastError: any;
 

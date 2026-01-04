@@ -23,13 +23,22 @@ import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
 import { ItemVerificationAPI } from "../../src/domains/inventory/services/itemVerificationApi";
-import { ItemFilters, FilterValues } from "../../src/domains/inventory/components/ItemFilters";
+import {
+  ItemFilters,
+  FilterValues,
+} from "../../src/domains/inventory/components/ItemFilters";
 import { exportItemsToCSV, downloadCSV } from "../../src/utils/csvExport";
-import { ScreenContainer, GlassCard, StatsCard, AnimatedPressable } from "../../src/components/ui";
+import {
+  ScreenContainer,
+  GlassCard,
+  StatsCard,
+  AnimatedPressable,
+} from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 
 const getLocalFileUri = (filename: string) => {
-  const baseDir = FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
+  const baseDir =
+    FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
   return `${baseDir}${filename}`;
 };
 
@@ -81,7 +90,7 @@ export default function ItemsScreen() {
         setRefreshing(false);
       }
     },
-    [filters, pagination.limit, pagination.skip]
+    [filters, pagination.limit, pagination.skip],
   );
 
   useEffect(() => {
@@ -89,7 +98,8 @@ export default function ItemsScreen() {
   }, [loadItems]);
 
   const handleRefresh = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     loadItems(true);
   };
@@ -156,7 +166,11 @@ export default function ItemsScreen() {
         }}
         style={{ marginBottom: theme.spacing.sm }}
       >
-        <GlassCard intensity={15} padding={theme.spacing.md} borderRadius={theme.borderRadius.lg}>
+        <GlassCard
+          intensity={15}
+          padding={theme.spacing.md}
+          borderRadius={theme.borderRadius.lg}
+        >
           <View style={styles.itemHeader}>
             <View style={styles.itemHeaderLeft}>
               <Text style={styles.itemName}>{item.item_name}</Text>
@@ -164,7 +178,11 @@ export default function ItemsScreen() {
             </View>
             {item.verified && (
               <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={14} color={theme.colors.success.main} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={14}
+                  color={theme.colors.success.main}
+                />
               </View>
             )}
           </View>
@@ -178,13 +196,19 @@ export default function ItemsScreen() {
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>MRP</Text>
-              <Text style={styles.detailValue}>₹{item.mrp?.toFixed(2) || "0.00"}</Text>
+              <Text style={styles.detailValue}>
+                ₹{item.mrp?.toFixed(2) || "0.00"}
+              </Text>
             </View>
           </View>
 
           {(item.floor || item.rack) && (
             <View style={styles.locationRow}>
-              <Ionicons name="location-outline" size={14} color={theme.colors.text.tertiary} />
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color={theme.colors.text.tertiary}
+              />
               <Text style={styles.locationText}>
                 {[item.floor, item.rack].filter(Boolean).join(" / ")}
               </Text>
@@ -202,10 +226,15 @@ export default function ItemsScreen() {
 
           {item.verified && item.verified_by && (
             <View style={styles.verificationInfo}>
-              <Ionicons name="person-outline" size={12} color={theme.colors.text.tertiary} />
+              <Ionicons
+                name="person-outline"
+                size={12}
+                color={theme.colors.text.tertiary}
+              />
               <Text style={styles.verificationInfoText}>
                 Verified by {item.verified_by}
-                {item.verified_at && ` • ${new Date(item.verified_at).toLocaleDateString()}`}
+                {item.verified_at &&
+                  ` • ${new Date(item.verified_at).toLocaleDateString()}`}
               </Text>
             </View>
           )}
@@ -219,30 +248,56 @@ export default function ItemsScreen() {
       <StatusBar style="light" />
       <View style={styles.container}>
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Animated.View
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
-            <AnimatedPressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            <AnimatedPressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.text.primary}
+              />
             </AnimatedPressable>
             <View>
               <Text style={styles.pageTitle}>Items</Text>
-              <Text style={styles.pageSubtitle}>{pagination.total} items listed</Text>
+              <Text style={styles.pageSubtitle}>
+                {pagination.total} items listed
+              </Text>
             </View>
           </View>
 
           <AnimatedPressable
-            style={[styles.exportButton, items.length === 0 && { opacity: 0.5 }]}
+            style={[
+              styles.exportButton,
+              items.length === 0 && { opacity: 0.5 },
+            ]}
             onPress={handleExportCSV}
             disabled={items.length === 0}
           >
-            <GlassCard intensity={20} padding={8} borderRadius={theme.borderRadius.full}>
-              <Ionicons name="download-outline" size={20} color={theme.colors.text.primary} />
+            <GlassCard
+              intensity={20}
+              padding={8}
+              borderRadius={theme.borderRadius.full}
+            >
+              <Ionicons
+                name="download-outline"
+                size={20}
+                color={theme.colors.text.primary}
+              />
             </GlassCard>
           </AnimatedPressable>
         </Animated.View>
 
         {/* Statistics Cards */}
-        <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
+        <Animated.View
+          entering={FadeInDown.delay(200).springify()}
+          style={styles.statsContainer}
+        >
           <StatsCard
             title="Total Items"
             value={statistics.total_items.toString()}
@@ -273,13 +328,21 @@ export default function ItemsScreen() {
             padding={theme.spacing.sm}
             style={{ marginBottom: theme.spacing.md }}
           >
-            <ItemFilters onFilterChange={setFilters} showVerifiedFilter={true} showSearch={true} />
+            <ItemFilters
+              onFilterChange={setFilters}
+              showVerifiedFilter={true}
+              showSearch={true}
+            />
           </GlassCard>
         </Animated.View>
 
         {items.length === 0 && !loading ? (
           <View style={styles.centered}>
-            <Ionicons name="cube-outline" size={64} color={theme.colors.text.tertiary} />
+            <Ionicons
+              name="cube-outline"
+              size={64}
+              color={theme.colors.text.tertiary}
+            />
             <Text style={styles.emptyText}>No items found</Text>
             <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
           </View>
@@ -305,7 +368,10 @@ export default function ItemsScreen() {
               ListFooterComponent={
                 loading && items.length > 0 ? (
                   <View style={{ paddingVertical: 20 }}>
-                    <ActivityIndicator size="small" color={theme.colors.primary[500]} />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary[500]}
+                    />
                   </View>
                 ) : (
                   <View style={{ height: 20 }} />

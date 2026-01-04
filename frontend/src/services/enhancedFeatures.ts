@@ -39,7 +39,9 @@ export const RecentItemsService = {
       const existingItems = await RecentItemsService.getRecent();
 
       // Remove duplicate if exists
-      const filtered = existingItems.filter((i) => (i.item_code || i.barcode) !== itemCode);
+      const filtered = existingItems.filter(
+        (i) => (i.item_code || i.barcode) !== itemCode,
+      );
 
       // Add new item to beginning
       const newItem: RecentItem = {

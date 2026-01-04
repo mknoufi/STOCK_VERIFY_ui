@@ -469,9 +469,9 @@ async def get_dashboard_summary(current_user: dict = Depends(require_admin)):
     )
 
     return {
-        "kpis": kpis.dict(),
-        "system_status": system_status.dict(),
-        "active_users": [u.dict() for u in active_users[:10]],
+        "kpis": kpis.model_dump(),
+        "system_status": system_status.model_dump(),
+        "active_users": [u.model_dump() for u in active_users[:10]],
         "recent_errors_1h": recent_errors,
         "timestamp": datetime.utcnow().isoformat(),
     }

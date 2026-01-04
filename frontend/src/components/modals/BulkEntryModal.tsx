@@ -1,9 +1,20 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Modal } from "../ui/Modal";
 import { PremiumButton } from "../premium/PremiumButton";
-import { modernColors, modernTypography, modernSpacing } from "@/styles/modernDesignSystem";
+import {
+  modernColors,
+  modernTypography,
+  modernSpacing,
+} from "@/styles/modernDesignSystem";
 
 interface BulkEntryModalProps {
   visible: boolean;
@@ -11,7 +22,11 @@ interface BulkEntryModalProps {
   onSubmit: (barcodes: string[]) => void;
 }
 
-export const BulkEntryModal: React.FC<BulkEntryModalProps> = ({ visible, onClose, onSubmit }) => {
+export const BulkEntryModal: React.FC<BulkEntryModalProps> = ({
+  visible,
+  onClose,
+  onSubmit,
+}) => {
   const [inputText, setInputText] = useState("");
   const [step, setStep] = useState<"input" | "preview">("input");
   const [parsedItems, setParsedItems] = useState<string[]>([]);
@@ -81,21 +96,30 @@ export const BulkEntryModal: React.FC<BulkEntryModalProps> = ({ visible, onClose
                 onPress={resetAndClose}
                 style={styles.button}
               />
-              <PremiumButton title="Preview" onPress={handleParse} style={styles.button} />
+              <PremiumButton
+                title="Preview"
+                onPress={handleParse}
+                style={styles.button}
+              />
             </View>
           </>
         ) : (
           <>
             <View style={styles.summaryContainer}>
               <Text style={styles.summaryText}>
-                Found <Text style={styles.highlight}>{parsedItems.length}</Text> unique items.
+                Found <Text style={styles.highlight}>{parsedItems.length}</Text>{" "}
+                unique items.
               </Text>
             </View>
 
             <ScrollView style={styles.listContainer}>
               {parsedItems.map((item, index) => (
                 <View key={index} style={styles.listItem}>
-                  <Ionicons name="barcode-outline" size={20} color={modernColors.primary[500]} />
+                  <Ionicons
+                    name="barcode-outline"
+                    size={20}
+                    color={modernColors.primary[500]}
+                  />
                   <Text style={styles.itemText}>{item}</Text>
                 </View>
               ))}

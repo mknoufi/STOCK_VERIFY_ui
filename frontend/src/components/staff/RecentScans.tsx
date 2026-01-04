@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeContext } from "../../context/ThemeContext";
@@ -11,7 +18,10 @@ interface RecentScansProps {
   onRefresh?: () => void;
 }
 
-export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }) => {
+export const RecentScans: React.FC<RecentScansProps> = ({
+  sessionId,
+  onRefresh,
+}) => {
   const { themeLegacy: theme } = useThemeContext();
   const { colors } = theme;
   const router = useRouter();
@@ -50,7 +60,13 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
     // Could show item details or quick actions
   };
 
-  const RenderItem = React.memo(function RenderItem({ item, index }: { item: any; index: number }) {
+  const RenderItem = React.memo(function RenderItem({
+    item,
+    index,
+  }: {
+    item: any;
+    index: number;
+  }) {
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -90,7 +106,9 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
     };
 
     return (
-      <Animated.View style={{ opacity: opacityAnim, transform: [{ scale: scaleAnim }] }}>
+      <Animated.View
+        style={{ opacity: opacityAnim, transform: [{ scale: scaleAnim }] }}
+      >
         <TouchableOpacity
           style={[
             styles.itemContainer,
@@ -112,19 +130,34 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
           accessibilityRole="button"
           accessibilityHint="Tap to view item details"
         >
-          <View style={[styles.iconContainer, { backgroundColor: `${colors.accent}20` }]}>
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: `${colors.accent}20` },
+            ]}
+          >
             <Ionicons name="cube-outline" size={24} color={colors.accent} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={1}>
+            <Text
+              style={[styles.itemName, { color: colors.text }]}
+              numberOfLines={1}
+            >
               {item.item_name || "Unknown Item"}
             </Text>
-            <Text style={[styles.itemCode, { color: colors.textSecondary }]} numberOfLines={1}>
+            <Text
+              style={[styles.itemCode, { color: colors.textSecondary }]}
+              numberOfLines={1}
+            >
               {item.item_code}
             </Text>
           </View>
           <Animated.View style={{ transform: [{ rotate: "0deg" }] }}>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textSecondary}
+            />
           </Animated.View>
         </TouchableOpacity>
       </Animated.View>
@@ -145,7 +178,9 @@ export const RecentScans: React.FC<RecentScansProps> = ({ sessionId, onRefresh }
         <Text style={[styles.title, { color: colors.text }]}>Recent Scans</Text>
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading...</Text>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Loading...
+            </Text>
           </View>
         )}
       </View>

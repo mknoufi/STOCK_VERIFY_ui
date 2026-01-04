@@ -69,19 +69,20 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
       const percentage = parseFloat(point) / 100;
       return screenHeight * percentage;
     },
-    [screenHeight]
+    [screenHeight],
   );
 
   const parsedSnapPoints = useMemo(
     () => snapPoints.map(parseSnapPoint).sort((a, b) => a - b),
-    [snapPoints, parseSnapPoint]
+    [snapPoints, parseSnapPoint],
   );
 
   const translateY = useSharedValue(screenHeight);
   const contextY = useSharedValue(0);
   const activeIndex = useSharedValue(initialSnapIndex);
 
-  const maxTranslateY = screenHeight - (parsedSnapPoints[parsedSnapPoints.length - 1] ?? 0);
+  const maxTranslateY =
+    screenHeight - (parsedSnapPoints[parsedSnapPoints.length - 1] ?? 0);
   const minTranslateY = screenHeight - (parsedSnapPoints[0] ?? 0);
 
   const triggerHaptic = useCallback(() => {
@@ -102,11 +103,20 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
     } else {
       translateY.value = withTiming(screenHeight, { duration: 300 });
     }
-  }, [isOpen, initialSnapIndex, parsedSnapPoints, translateY, activeIndex, screenHeight]);
+  }, [
+    isOpen,
+    initialSnapIndex,
+    parsedSnapPoints,
+    translateY,
+    activeIndex,
+    screenHeight,
+  ]);
 
   const findNearestSnapPoint = (currentY: number): number => {
     let nearestIndex = 0;
-    let minDistance = Math.abs(screenHeight - (parsedSnapPoints[0] ?? 0) - currentY);
+    let minDistance = Math.abs(
+      screenHeight - (parsedSnapPoints[0] ?? 0) - currentY,
+    );
 
     parsedSnapPoints.forEach((point, index) => {
       const targetY = screenHeight - point;
@@ -168,7 +178,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
       translateY.value,
       [screenHeight, minTranslateY],
       [0, backdropOpacity],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     ),
   }));
 
@@ -177,7 +187,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
       translateY.value,
       [maxTranslateY, minTranslateY],
       [60, 40],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     ),
   }));
 
@@ -194,7 +204,9 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
 
       {/* Sheet */}
       <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.sheet, { height: screenHeight }, sheetStyle]}>
+        <Animated.View
+          style={[styles.sheet, { height: screenHeight }, sheetStyle]}
+        >
           <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
             {/* Handle */}
             {showHandle && (

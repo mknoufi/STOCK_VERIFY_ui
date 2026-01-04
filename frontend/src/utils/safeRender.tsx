@@ -9,7 +9,10 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 /**
  * Safely render a component with error boundary
  */
-export function safeRender(component: () => ReactNode, fallback?: ReactNode): ReactNode {
+export function safeRender(
+  component: () => ReactNode,
+  fallback?: ReactNode,
+): ReactNode {
   try {
     return component();
   } catch (error) {
@@ -23,11 +26,13 @@ export function safeRender(component: () => ReactNode, fallback?: ReactNode): Re
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  fallback?: (error: Error) => ReactNode
+  fallback?: (error: Error) => ReactNode,
 ) {
   return function WrappedComponent(props: P) {
     return (
-      <ErrorBoundary fallback={fallback ? (error) => fallback(error) : undefined}>
+      <ErrorBoundary
+        fallback={fallback ? (error) => fallback(error) : undefined}
+      >
         <Component {...props} />
       </ErrorBoundary>
     );
@@ -40,7 +45,7 @@ export function withErrorBoundary<P extends object>(
 export async function safeAsync<T>(
   operation: () => Promise<T>,
   fallback?: T,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): Promise<T | undefined> {
   try {
     return await operation();

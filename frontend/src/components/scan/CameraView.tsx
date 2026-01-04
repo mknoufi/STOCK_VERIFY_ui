@@ -26,7 +26,7 @@ export const CameraView = forwardRef<ExpoCameraView, CameraViewProps>(
         {children}
       </ExpoCameraView>
     );
-  }
+  },
 );
 
 CameraView.displayName = "CameraView";

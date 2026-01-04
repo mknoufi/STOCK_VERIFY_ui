@@ -151,9 +151,12 @@ export const CustomRenderers: Story = {
         sortable: true,
         render: (value, _row) => {
           const qty = Number(value);
-          const color = qty > 100 ? "#4CAF50" : qty > 50 ? "#FF9800" : "#F44336";
+          const color =
+            qty > 100 ? "#4CAF50" : qty > 50 ? "#FF9800" : "#F44336";
           return (
-            <View style={[styles.stockBadge, { backgroundColor: color + "20" }]}>
+            <View
+              style={[styles.stockBadge, { backgroundColor: color + "20" }]}
+            >
               <View style={[styles.stockDot, { backgroundColor: color }]} />
               <Text style={[styles.stockText, { color }]}>{qty}</Text>
             </View>
@@ -164,7 +167,9 @@ export const CustomRenderers: Story = {
         key: "mrp",
         label: "MRP",
         sortable: true,
-        render: (value) => <Text style={styles.mrpText}>₹{Number(value).toFixed(2)}</Text>,
+        render: (value) => (
+          <Text style={styles.mrpText}>₹{Number(value).toFixed(2)}</Text>
+        ),
       },
     ],
     data: sampleData,

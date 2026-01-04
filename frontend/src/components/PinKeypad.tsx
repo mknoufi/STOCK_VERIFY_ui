@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Vibration } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Vibration,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface PinKeypadProps {
@@ -45,12 +51,24 @@ const KeypadButton: React.FC<KeypadButtonProps> = ({
       disabled={disabled}
       style={[styles.button, theme === "dark" && styles.darkButton]}
     >
-      <Text style={[styles.buttonText, theme === "dark" && styles.darkButtonText]}>{value}</Text>
+      <Text
+        style={[styles.buttonText, theme === "dark" && styles.darkButtonText]}
+      >
+        {value}
+      </Text>
       {isDelete && (
-        <Ionicons name="backspace" size={24} color={theme === "dark" ? "white" : "black"} />
+        <Ionicons
+          name="backspace"
+          size={24}
+          color={theme === "dark" ? "white" : "black"}
+        />
       )}
       {isSubmit && (
-        <Ionicons name="checkmark" size={24} color={theme === "dark" ? "white" : "black"} />
+        <Ionicons
+          name="checkmark"
+          size={24}
+          color={theme === "dark" ? "white" : "black"}
+        />
       )}
     </TouchableOpacity>
   );
@@ -88,12 +106,25 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
 
   return (
     <View style={styles.container}>
-      {title && <Text style={[styles.title, theme === "dark" && styles.darkTitle]}>{title}</Text>}
+      {title && (
+        <Text style={[styles.title, theme === "dark" && styles.darkTitle]}>
+          {title}
+        </Text>
+      )}
       {subtitle && (
-        <Text style={[styles.subtitle, theme === "dark" && styles.darkSubtitle]}>{subtitle}</Text>
+        <Text
+          style={[styles.subtitle, theme === "dark" && styles.darkSubtitle]}
+        >
+          {subtitle}
+        </Text>
       )}
       {errorMessage && (
-        <Text style={[styles.errorMessage, theme === "dark" && styles.darkErrorMessage]}>
+        <Text
+          style={[
+            styles.errorMessage,
+            theme === "dark" && styles.darkErrorMessage,
+          ]}
+        >
           {errorMessage}
         </Text>
       )}
@@ -103,7 +134,11 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
             key={item.toString()}
             value={item}
             onPress={
-              item === "delete" ? handleDelete : item === "submit" ? handleSubmit : handleKeyPress
+              item === "delete"
+                ? handleDelete
+                : item === "submit"
+                  ? handleSubmit
+                  : handleKeyPress
             }
             disabled={disabled}
             isDelete={item === "delete"}

@@ -35,7 +35,8 @@ export class NotificationService {
 
     try {
       // Request permissions
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
       if (existingStatus !== "granted") {
@@ -92,7 +93,7 @@ export class NotificationService {
    */
   static async scheduleNotification(
     options: NotificationOptions,
-    trigger: Date | { seconds: number }
+    trigger: Date | { seconds: number },
   ) {
     try {
       await this.initialize();

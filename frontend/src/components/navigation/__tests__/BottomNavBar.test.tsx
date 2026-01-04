@@ -76,7 +76,9 @@ describe("BottomNavBar Component", () => {
       };
 
       reviewTab.onPress();
-      expect(mockPush).toHaveBeenCalledWith("/staff/review?sessionId=session-123");
+      expect(mockPush).toHaveBeenCalledWith(
+        "/staff/review?sessionId=session-123",
+      );
     });
 
     it("should create inventory tab with no-op onPress", () => {

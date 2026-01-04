@@ -69,8 +69,10 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       const newValue = contextX.value + event.translationX;
 
       // Limit swipe distance
-      const maxSwipe = rightActions.length > 0 ? SWIPE_THRESHOLD * rightActions.length : 0;
-      const minSwipe = leftActions.length > 0 ? -SWIPE_THRESHOLD * leftActions.length : 0;
+      const maxSwipe =
+        rightActions.length > 0 ? SWIPE_THRESHOLD * rightActions.length : 0;
+      const minSwipe =
+        leftActions.length > 0 ? -SWIPE_THRESHOLD * leftActions.length : 0;
 
       translateX.value = Math.max(minSwipe, Math.min(maxSwipe, newValue));
     })
@@ -79,7 +81,10 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       if (translateX.value > SWIPE_THRESHOLD / 2 && leftActions.length > 0) {
         translateX.value = withSpring(SWIPE_THRESHOLD);
         runOnJS(triggerHaptic)();
-      } else if (translateX.value < -SWIPE_THRESHOLD / 2 && rightActions.length > 0) {
+      } else if (
+        translateX.value < -SWIPE_THRESHOLD / 2 &&
+        rightActions.length > 0
+      ) {
         translateX.value = withSpring(-SWIPE_THRESHOLD);
         runOnJS(triggerHaptic)();
       } else {
@@ -96,11 +101,16 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       translateX.value,
       [0, SWIPE_THRESHOLD / 2, SWIPE_THRESHOLD],
       [0, 0.5, 1],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     ),
     transform: [
       {
-        scale: interpolate(translateX.value, [0, SWIPE_THRESHOLD], [0.8, 1], Extrapolation.CLAMP),
+        scale: interpolate(
+          translateX.value,
+          [0, SWIPE_THRESHOLD],
+          [0.8, 1],
+          Extrapolation.CLAMP,
+        ),
       },
     ],
   }));
@@ -110,11 +120,16 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
       translateX.value,
       [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD / 2, 0],
       [1, 0.5, 0],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     ),
     transform: [
       {
-        scale: interpolate(translateX.value, [-SWIPE_THRESHOLD, 0], [1, 0.8], Extrapolation.CLAMP),
+        scale: interpolate(
+          translateX.value,
+          [-SWIPE_THRESHOLD, 0],
+          [1, 0.8],
+          Extrapolation.CLAMP,
+        ),
       },
     ],
   }));
@@ -162,7 +177,10 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
           {leftActions.map((action, index) => (
             <Animated.View
               key={index}
-              style={[actionButtonStyle, { backgroundColor: action.backgroundColor }]}
+              style={[
+                actionButtonStyle,
+                { backgroundColor: action.backgroundColor },
+              ]}
             >
               <Ionicons
                 name={action.icon}
@@ -171,7 +189,9 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
                 onPress={() => handleActionPress(action)}
               />
               {action.label && (
-                <Text style={[actionLabelStyle, { color: action.color }]}>{action.label}</Text>
+                <Text style={[actionLabelStyle, { color: action.color }]}>
+                  {action.label}
+                </Text>
               )}
             </Animated.View>
           ))}
@@ -190,7 +210,10 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
           {rightActions.map((action, index) => (
             <Animated.View
               key={index}
-              style={[actionButtonStyle, { backgroundColor: action.backgroundColor }]}
+              style={[
+                actionButtonStyle,
+                { backgroundColor: action.backgroundColor },
+              ]}
             >
               <Ionicons
                 name={action.icon}
@@ -199,7 +222,9 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
                 onPress={() => handleActionPress(action)}
               />
               {action.label && (
-                <Text style={[actionLabelStyle, { color: action.color }]}>{action.label}</Text>
+                <Text style={[actionLabelStyle, { color: action.color }]}>
+                  {action.label}
+                </Text>
               )}
             </Animated.View>
           ))}

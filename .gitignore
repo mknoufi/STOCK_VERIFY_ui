@@ -311,3 +311,8 @@ node_modules/
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
 backend/bandit_report.json
+
+# Debug/temp JSON files
+session_response.json
+session_response_2.json
+sessions_list.json

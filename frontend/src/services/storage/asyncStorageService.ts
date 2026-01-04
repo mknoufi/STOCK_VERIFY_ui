@@ -70,6 +70,33 @@ export class AsyncStorageService {
   }
 
   /**
+   * Summarize large objects for logging to prevent console lag
+   */
+  private summarizeForLog(value: unknown): unknown {
+    if (value === null) return "null";
+    if (value === undefined) return "undefined";
+
+    if (Array.isArray(value)) {
+      return `Array(${value.length})`;
+    }
+
+    if (typeof value === "object") {
+      const keys = Object.keys(value as Record<string, unknown>);
+      return {
+        type: "object",
+        keyCount: keys.length,
+        keys: keys.slice(0, 5),
+      };
+    }
+
+    if (typeof value === "string" && value.length > 100) {
+      return `${value.substring(0, 100)}... (${value.length} chars)`;
+    }
+
+    return value;
+  }
+
+  /**
    * Set item with enhanced error handling and options
    */
   async setItem<T>(
@@ -89,7 +116,11 @@ export class AsyncStorageService {
       await AsyncStorage.setItem(key, serialized);
 
       if (this.debugMode && !options.silent) {
-        __DEV__ && console.log(`✅ AsyncStorage: Set '${key}'`, value);
+        __DEV__ &&
+          console.log(
+            `✅ AsyncStorage: Set '${key}'`,
+            this.summarizeForLog(value),
+          );
       }
 
       return true;
@@ -153,7 +184,11 @@ export class AsyncStorageService {
       }
 
       if (this.debugMode && !options.silent) {
-        __DEV__ && console.log(`📦 AsyncStorage: Got '${key}'`, item.value);
+        __DEV__ &&
+          console.log(
+            `📦 AsyncStorage: Got '${key}'`,
+            this.summarizeForLog(item.value),
+          );
       }
 
       return item.value;

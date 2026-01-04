@@ -1120,7 +1120,9 @@ export default function ItemDetailScreen() {
                 style={styles.section}
               >
                 {/* Barcode Display */}
-                <View style={{ alignItems: "center", marginBottom: spacing.md }}>
+                <View
+                  style={{ alignItems: "center", marginBottom: spacing.md }}
+                >
                   <Text
                     style={{
                       fontSize: fontSize.sm,
@@ -1206,7 +1208,9 @@ export default function ItemDetailScreen() {
                           setQuantity("0");
                         }
                       }}
-                      keyboardType={isWeightBasedUOM ? "decimal-pad" : "number-pad"}
+                      keyboardType={
+                        isWeightBasedUOM ? "decimal-pad" : "number-pad"
+                      }
                       selectTextOnFocus
                       placeholder="0"
                       placeholderTextColor={semanticColors.text.disabled}
@@ -1334,8 +1338,15 @@ export default function ItemDetailScreen() {
                 entering={FadeInDown.delay(200).duration(500)}
                 style={styles.section}
               >
-                <Text style={[styles.sectionTitle, { color: semanticColors.text.primary }]}>Dates</Text>
-                <ModernCard style={{padding: spacing.sm}}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: semanticColors.text.primary },
+                  ]}
+                >
+                  Dates
+                </Text>
+                <ModernCard style={{ padding: spacing.sm }}>
                   {/* Has Manufacturing Date Toggle */}
                   <View style={styles.toggleRow}>
                     <View style={styles.toggleLabelContainer}>
@@ -1365,7 +1376,9 @@ export default function ItemDetailScreen() {
                         false: colors.neutral[200],
                         true: colors.primary[600],
                       }}
-                      thumbColor={hasMfgDate ? colors.white : colors.neutral[50]}
+                      thumbColor={
+                        hasMfgDate ? colors.white : colors.neutral[50]
+                      }
                     />
                   </View>
 
@@ -1373,7 +1386,9 @@ export default function ItemDetailScreen() {
                   {hasMfgDate && (
                     <View style={styles.itemDateSection}>
                       <View style={styles.dateLabelRow}>
-                        <Text style={styles.itemDateLabel}>Manufacturing Date</Text>
+                        <Text style={styles.itemDateLabel}>
+                          Manufacturing Date
+                        </Text>
                         <View style={styles.dateFormatPicker}>
                           {DATE_FORMAT_OPTIONS.map((opt) => (
                             <TouchableOpacity
@@ -1537,7 +1552,9 @@ export default function ItemDetailScreen() {
                         false: colors.neutral[200],
                         true: colors.warning[600],
                       }}
-                      thumbColor={hasExpiryDate ? colors.white : colors.neutral[50]}
+                      thumbColor={
+                        hasExpiryDate ? colors.white : colors.neutral[50]
+                      }
                     />
                   </View>
 
@@ -1579,7 +1596,10 @@ export default function ItemDetailScreen() {
                           {
                             borderColor:
                               itemExpiryDate &&
-                              !validateDateInput(itemExpiryDate, itemExpiryDateFormat)
+                              !validateDateInput(
+                                itemExpiryDate,
+                                itemExpiryDateFormat,
+                              )
                                 ? colors.error[500]
                                 : colors.neutral[300],
                             backgroundColor: semanticColors.background.paper,
@@ -1682,7 +1702,11 @@ export default function ItemDetailScreen() {
                 </ModernCard>
 
                 {/* Global Selection Modal */}
-                <Modal visible={selectVisible} transparent animationType="slide">
+                <Modal
+                  visible={selectVisible}
+                  transparent
+                  animationType="slide"
+                >
                   <View style={styles.modalBackdrop}>
                     <View style={styles.modalContent}>
                       <Text style={styles.modalTitle}>{selectTitle}</Text>
@@ -2056,7 +2080,10 @@ export default function ItemDetailScreen() {
               <Text
                 style={[
                   styles.detailLabel,
-                  { color: semanticColors.text.secondary, marginBottom: spacing.sm },
+                  {
+                    color: semanticColors.text.secondary,
+                    marginBottom: spacing.sm,
+                  },
                 ]}
               >
                 Condition
@@ -2104,7 +2131,11 @@ export default function ItemDetailScreen() {
               <Text
                 style={[
                   styles.sectionTitle,
-                  { color: semanticColors.status.error, fontSize: fontSize.sm, marginBottom: 0 },
+                  {
+                    color: semanticColors.status.error,
+                    fontSize: fontSize.sm,
+                    marginBottom: 0,
+                  },
                 ]}
               >
                 Report Damage

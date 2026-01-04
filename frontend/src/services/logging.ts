@@ -23,24 +23,45 @@ const isDev =
     ? __DEV__
     : process.env.NODE_ENV === "development";
 
+const summarizeContext = (context?: Record<string, unknown>): unknown => {
+  if (!context) return "";
+
+  try {
+    // Check if context is too large
+    const keys = Object.keys(context);
+    if (keys.length > 50) {
+      return {
+        type: "object",
+        keyCount: keys.length,
+        keys: keys.slice(0, 10),
+        note: "Context summarized for performance",
+      };
+    }
+    return context;
+  } catch {
+    return context;
+  }
+};
+
 // Console sink for development
 const consoleSink: LogSink = (entry) => {
   const prefix = `[${entry.timestamp.slice(11, 23)}]`;
   const moduleTag = entry.module ? `[${entry.module}]` : "";
   const fullMessage = `${prefix}${moduleTag} ${entry.message}`;
+  const context = summarizeContext(entry.context);
 
   switch (entry.level) {
     case "debug":
-      console.log(`🔍 ${fullMessage}`, entry.context ?? "");
+      console.log(`🔍 ${fullMessage}`, context);
       break;
     case "info":
-      console.info(`ℹ️ ${fullMessage}`, entry.context ?? "");
+      console.info(`ℹ️ ${fullMessage}`, context);
       break;
     case "warn":
-      console.warn(`⚠️ ${fullMessage}`, entry.context ?? "");
+      console.warn(`⚠️ ${fullMessage}`, context);
       break;
     case "error":
-      console.error(`❌ ${fullMessage}`, entry.context ?? "");
+      console.error(`❌ ${fullMessage}`, context);
       break;
   }
 };

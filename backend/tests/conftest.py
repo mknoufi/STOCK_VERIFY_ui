@@ -31,9 +31,6 @@ os.environ.update(
     }
 )
 
-from backend.services.cache_service import CacheService
-from backend.tests.utils.in_memory_db import InMemoryDatabase, setup_server_with_in_memory_db
-
 # Ensure backend package root is importable when running tests from project root
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = BACKEND_DIR.parent
@@ -41,6 +38,9 @@ PROJECT_ROOT = BACKEND_DIR.parent
 for path in (str(BACKEND_DIR), str(PROJECT_ROOT)):
     if path not in sys.path:
         sys.path.insert(0, path)
+
+from backend.services.cache_service import CacheService
+from backend.tests.utils.in_memory_db import InMemoryDatabase, setup_server_with_in_memory_db
 
 
 # Import test utilities and mocks

@@ -42,7 +42,6 @@ import {
   normalizeSerialValue,
   validateSerialNumber,
   validateSerialNumbers,
-  validateScannedSerial,
 } from "../../src/utils/scanUtils";
 import { SerialScannerModal } from "../../src/components/modals/SerialScannerModal";
 
@@ -95,7 +94,6 @@ export default function ItemDetailScreen() {
     string[]
   >([]);
   const [showSerialScanner, setShowSerialScanner] = useState(false);
-  const [activeSerialIndex, setActiveSerialIndex] = useState(0);
 
   // Legacy array for backward compatibility
   const serialNumbers = useMemo(

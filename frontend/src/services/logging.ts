@@ -23,24 +23,34 @@ const isDev =
     ? __DEV__
     : process.env.NODE_ENV === "development";
 
+const summarizeValue = (value: unknown, depth = 0): unknown => {
+  if (depth > 2) return "...";
+
+  if (Array.isArray(value)) {
+    if (value.length > 10) {
+      return `Array(${value.length})`;
+    }
+    return value.map((v) => summarizeValue(v, depth + 1));
+  }
+
+  if (typeof value === "object" && value !== null) {
+    const keys = Object.keys(value);
+    if (keys.length > 20) {
+      return `Object(keys=${keys.length})`;
+    }
+    const summarized: Record<string, unknown> = {};
+    for (const key of keys) {
+      summarized[key] = summarizeValue((value as any)[key], depth + 1);
+    }
+    return summarized;
+  }
+
+  return value;
+};
+
 const summarizeContext = (context?: Record<string, unknown>): unknown => {
   if (!context) return "";
-
-  try {
-    // Check if context is too large
-    const keys = Object.keys(context);
-    if (keys.length > 50) {
-      return {
-        type: "object",
-        keyCount: keys.length,
-        keys: keys.slice(0, 10),
-        note: "Context summarized for performance",
-      };
-    }
-    return context;
-  } catch {
-    return context;
-  }
+  return summarizeValue(context);
 };
 
 // Console sink for development

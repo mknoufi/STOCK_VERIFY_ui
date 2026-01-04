@@ -10,6 +10,7 @@ import { CreateCountLinePayload, Item } from "../../types/scan";
 import {
   addToOfflineQueue,
   cacheItem,
+  cacheItems,
   searchItemsInCache,
   cacheSession,
   removeSessionFromCache,
@@ -864,8 +865,8 @@ export const searchItems = async (
     log.debug("Found items via API", { count: mappedItems.length });
 
     // Cache the items
-    for (const item of mappedItems) {
-      await cacheItem({
+    await cacheItems(
+      mappedItems.map((item) => ({
         item_code: item.item_code!,
         barcode: item.barcode,
         item_name: item.item_name || item.name,
@@ -881,8 +882,8 @@ export const searchItems = async (
         unit2_barcode: item.unit2_barcode,
         unit_m_barcode: item.unit_m_barcode,
         batch_id: item.batch_id,
-      });
-    }
+      })),
+    );
 
     return mappedItems;
   } catch (error: any) {
@@ -999,8 +1000,8 @@ export const searchItemsOptimized = async (
     }));
 
     // Cache top items for offline access
-    for (const item of mappedItems.slice(0, 10)) {
-      await cacheItem({
+    await cacheItems(
+      mappedItems.slice(0, 10).map((item) => ({
         item_code: item.item_code!,
         barcode: item.barcode,
         item_name: item.item_name || item.name,
@@ -1017,8 +1018,8 @@ export const searchItemsOptimized = async (
         unit2_barcode: item.unit2_barcode,
         unit_m_barcode: item.unit_m_barcode,
         batch_id: item.batch_id,
-      });
-    }
+      })),
+    );
 
     return {
       items: mappedItems,

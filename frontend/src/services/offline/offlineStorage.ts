@@ -203,6 +203,52 @@ export const cacheItem = async (item: Omit<CachedItem, "cached_at">) => {
   }
 };
 
+export const cacheItems = async (items: Omit<CachedItem, "cached_at">[]) => {
+  try {
+    const validItems: CachedItem[] = [];
+    const errors: string[] = [];
+
+    // Validate all items first
+    for (const item of items) {
+      const validation = assertValidCachedItem(item);
+      if (validation.valid) {
+        validItems.push({
+          ...item,
+          cached_at: new Date().toISOString(),
+        });
+      } else {
+        errors.push(
+          `Invalid item ${item.item_code}: ${validation.errors.join(", ")}`,
+        );
+      }
+    }
+
+    if (errors.length > 0) {
+      log.warn("Some items failed validation during bulk cache", {
+        count: errors.length,
+        firstError: errors[0],
+      });
+    }
+
+    if (validItems.length === 0) return;
+
+    const existingCache = await getItemsCache();
+    const updatedCache = { ...existingCache };
+
+    for (const item of validItems) {
+      updatedCache[item.item_code] = item;
+    }
+
+    await storage.set(STORAGE_KEYS.ITEMS_CACHE, updatedCache);
+    log.info("Bulk cached items", { count: validItems.length });
+  } catch (error) {
+    log.error("Error bulk caching items", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+};
+
 export const getItemsCache = async (): Promise<Record<string, CachedItem>> => {
   const cache = await storage.get<Record<string, CachedItem>>(
     STORAGE_KEYS.ITEMS_CACHE,

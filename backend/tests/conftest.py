@@ -39,9 +39,11 @@ for path in (str(BACKEND_DIR), str(PROJECT_ROOT)):
     if path not in sys.path:
         sys.path.insert(0, path)
 
-from backend.services.cache_service import CacheService
-from backend.tests.utils.in_memory_db import InMemoryDatabase, setup_server_with_in_memory_db
-
+from backend.services.cache_service import CacheService  # noqa: E402
+from backend.tests.utils.in_memory_db import (  # noqa: E402
+    InMemoryDatabase,
+    setup_server_with_in_memory_db,
+)
 
 # Import test utilities and mocks
 

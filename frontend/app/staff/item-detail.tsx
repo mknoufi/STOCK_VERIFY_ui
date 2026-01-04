@@ -1066,646 +1066,9 @@ export default function ItemDetailScreen() {
             </ModernCard>
           </Animated.View>
 
-          {/* Quantity Input - PRIMARY SECTION */}
+          {/* Is Serialized Toggle - MOVED UP */}
           <Animated.View
             entering={FadeInDown.delay(50).duration(500)}
-            style={styles.section}
-          >
-            {/* Barcode Display */}
-            <View style={{ alignItems: "center", marginBottom: spacing.md }}>
-              <Text
-                style={{
-                  fontSize: fontSize.sm,
-                  color: semanticColors.text.secondary,
-                  marginBottom: 4,
-                }}
-              >
-                Barcode
-              </Text>
-              <Text
-                style={{
-                  fontSize: fontSize.xl,
-                  fontWeight: fontWeight.bold,
-                  color: semanticColors.text.primary,
-                  letterSpacing: 1,
-                }}
-              >
-                {item.item_code || barcode}
-              </Text>
-            </View>
-
-            <View style={styles.sectionHeader}>
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  { color: semanticColors.text.primary },
-                ]}
-              >
-                Counted Quantity{" "}
-                {isWeightBasedUOM && (
-                  <Text style={styles.uomHint}>({item?.uom || "kg"})</Text>
-                )}
-              </Text>
-            </View>
-            <View style={styles.quantityContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.qtyButton,
-                  { backgroundColor: colors.neutral[200] },
-                ]}
-                onPress={() => {
-                  const val = parseFloat(quantity) || 0;
-                  const step = getQuantityStep();
-                  if (val > step) {
-                    const newVal = val - step;
-                    setQuantity(formatQuantity(String(newVal)));
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  } else if (val > 0) {
-                    setQuantity("0");
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="remove"
-                  size={28}
-                  color={semanticColors.text.primary}
-                />
-              </TouchableOpacity>
-
-              <View
-                style={[
-                  styles.qtyDisplay,
-                  {
-                    backgroundColor: semanticColors.background.paper,
-                    borderColor: colors.primary[200],
-                  },
-                ]}
-              >
-                <TextInput
-                  style={[
-                    styles.qtyText,
-                    { color: semanticColors.text.primary },
-                  ]}
-                  value={quantity}
-                  onChangeText={handleQuantityChange}
-                  onBlur={() => {
-                    // Format on blur
-                    if (quantity && quantity !== "." && quantity !== "0.") {
-                      setQuantity(formatQuantity(quantity));
-                    } else {
-                      setQuantity("0");
-                    }
-                  }}
-                  keyboardType={isWeightBasedUOM ? "decimal-pad" : "number-pad"}
-                  selectTextOnFocus
-                  placeholder="0"
-                  placeholderTextColor={semanticColors.text.disabled}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[
-                  styles.qtyButton,
-                  { backgroundColor: colors.primary[600] },
-                ]}
-                onPress={() => {
-                  const val = parseFloat(quantity) || 0;
-                  const step = getQuantityStep();
-                  const newVal = val + step;
-                  setQuantity(formatQuantity(String(newVal)));
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="add" size={28} color={colors.white} />
-              </TouchableOpacity>
-            </View>
-            {isWeightBasedUOM && (
-              <Text
-                style={[
-                  styles.quantityHint,
-                  { color: semanticColors.text.secondary },
-                ]}
-              >
-                +/- {getQuantityStep()} per tap • Max 2 decimal places
-              </Text>
-            )}
-          </Animated.View>
-
-          {/* Batch History List */}
-          {sameNameVariants.length > 0 && (
-            <Animated.View
-              entering={FadeInDown.delay(60).duration(500)}
-              style={styles.section}
-            >
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  { color: semanticColors.text.primary },
-                ]}
-              >
-                Batch History
-              </Text>
-              <View style={{ gap: spacing.sm }}>
-                {sameNameVariants.map((variant) => (
-                  <ModernCard
-                    key={variant.item_code}
-                    style={{ padding: spacing.sm }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: fontSize.md,
-                          fontWeight: fontWeight.bold,
-                          color: semanticColors.text.primary,
-                        }}
-                      >
-                        {variant.batch_no || variant.item_code}
-                      </Text>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <Ionicons
-                          name="cube-outline"
-                          size={14}
-                          color={semanticColors.text.secondary}
-                        />
-                        <Text
-                          style={{
-                            fontSize: fontSize.sm,
-                            fontWeight: fontWeight.medium,
-                            color: semanticColors.text.primary,
-                          }}
-                        >
-                          {variant.stock_qty || 0}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
-                        }}
-                      >
-                        Exp:{" "}
-                        {variant.expiry_date
-                          ? new Date(variant.expiry_date).toLocaleDateString()
-                          : "N/A"}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
-                        }}
-                      >
-                        Mfg:{" "}
-                        {variant.manufacturing_date
-                          ? new Date(
-                              variant.manufacturing_date,
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        borderTopWidth: 1,
-                        borderTopColor: semanticColors.border.default,
-                        paddingTop: 4,
-                        marginTop: 4,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
-                        }}
-                      >
-                        MRP: ₹{variant.mrp || 0}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
-                        }}
-                      >
-                        Barcode: {variant.barcode || variant.item_code}
-                      </Text>
-                    </View>
-                  </ModernCard>
-                ))}
-              </View>
-            </Animated.View>
-          )}
-
-          {/* Manufacturing & Expiry Date Toggle Section */}
-          <Animated.View
-            entering={FadeInDown.delay(75).duration(500)}
-            style={styles.section}
-          >
-            {/* Has Manufacturing Date Toggle */}
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleLabelContainer}>
-                <Ionicons
-                  name="calendar-outline"
-                  size={20}
-                  color={colors.primary[600]}
-                />
-                <Text
-                  style={[
-                    styles.toggleLabel,
-                    { color: semanticColors.text.primary },
-                  ]}
-                >
-                  Has Manufacturing Date
-                </Text>
-              </View>
-              <Switch
-                value={hasMfgDate}
-                onValueChange={(val) => {
-                  setHasMfgDate(val);
-                  if (!val) {
-                    setItemMfgDate("");
-                  }
-                }}
-                trackColor={{
-                  false: colors.neutral[200],
-                  true: colors.primary[600],
-                }}
-                thumbColor={hasMfgDate ? colors.white : colors.neutral[50]}
-              />
-            </View>
-
-            {/* Manufacturing Date Input */}
-            {hasMfgDate && (
-              <View style={styles.itemDateSection}>
-                <View style={styles.dateLabelRow}>
-                  <Text style={styles.itemDateLabel}>Manufacturing Date</Text>
-                  <View style={styles.dateFormatPicker}>
-                    {DATE_FORMAT_OPTIONS.map((opt) => (
-                      <TouchableOpacity
-                        key={opt.value}
-                        style={[
-                          styles.dateFormatOption,
-                          itemMfgDateFormat === opt.value &&
-                            styles.dateFormatOptionActive,
-                        ]}
-                        onPress={() => {
-                          setItemMfgDateFormat(opt.value);
-                          setItemMfgDate("");
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.dateFormatOptionText,
-                            itemMfgDateFormat === opt.value &&
-                              styles.dateFormatOptionTextActive,
-                          ]}
-                        >
-                          {opt.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-                <View
-                  style={[
-                    styles.itemDateInput,
-                    {
-                      borderColor:
-                        itemMfgDate &&
-                        !validateDateInput(itemMfgDate, itemMfgDateFormat)
-                          ? colors.error[500]
-                          : colors.neutral[300],
-                      backgroundColor: semanticColors.background.paper,
-                    },
-                  ]}
-                >
-                  {isMfgFull && (
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("day")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !mfgDay && styles.placeholderText,
-                          ]}
-                        >
-                          {mfgDay || "DD"}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("month")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !mfgMonth && styles.placeholderText,
-                          ]}
-                        >
-                          {mfgMonth || "MM"}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("year")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !mfgYear && styles.placeholderText,
-                          ]}
-                        >
-                          {mfgYear || "YYYY"}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-
-                  {isMfgMonthYear && (
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("month")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !mfgMonth && styles.placeholderText,
-                          ]}
-                        >
-                          {mfgMonth || "MM"}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("year")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !mfgYear && styles.placeholderText,
-                          ]}
-                        >
-                          {mfgYear || "YYYY"}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-
-                  {isMfgYearOnly && (
-                    <TouchableOpacity
-                      style={styles.smallPickerFull}
-                      onPress={() => openSelect("year")}
-                    >
-                      <Text
-                        style={[
-                          styles.smallPickerText,
-                          !mfgYear && styles.placeholderText,
-                        ]}
-                      >
-                        {mfgYear || "YYYY"}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Selection handled globally below */}
-                </View>
-              </View>
-            )}
-
-            {/* Has Expiry Date Toggle */}
-            <View style={[styles.toggleRow, { marginTop: spacing.md }]}>
-              <View style={styles.toggleLabelContainer}>
-                <Ionicons
-                  name="time-outline"
-                  size={20}
-                  color={colors.warning[600]}
-                />
-                <Text
-                  style={[
-                    styles.toggleLabel,
-                    { color: semanticColors.text.primary },
-                  ]}
-                >
-                  Has Expiry Date
-                </Text>
-              </View>
-              <Switch
-                value={hasExpiryDate}
-                onValueChange={(val) => {
-                  setHasExpiryDate(val);
-                  if (!val) {
-                    setItemExpiryDate("");
-                  }
-                }}
-                trackColor={{
-                  false: colors.neutral[200],
-                  true: colors.warning[600],
-                }}
-                thumbColor={hasExpiryDate ? colors.white : colors.neutral[50]}
-              />
-            </View>
-
-            {/* Expiry Date Input */}
-            {hasExpiryDate && (
-              <View style={styles.itemDateSection}>
-                <View style={styles.dateLabelRow}>
-                  <Text style={styles.itemDateLabel}>Expiry Date</Text>
-                  <View style={styles.dateFormatPicker}>
-                    {DATE_FORMAT_OPTIONS.map((opt) => (
-                      <TouchableOpacity
-                        key={opt.value}
-                        style={[
-                          styles.dateFormatOption,
-                          itemExpiryDateFormat === opt.value &&
-                            styles.dateFormatOptionActive,
-                        ]}
-                        onPress={() => {
-                          setItemExpiryDateFormat(opt.value);
-                          setItemExpiryDate("");
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.dateFormatOptionText,
-                            itemExpiryDateFormat === opt.value &&
-                              styles.dateFormatOptionTextActive,
-                          ]}
-                        >
-                          {opt.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-                <View
-                  style={[
-                    styles.itemDateInput,
-                    {
-                      borderColor:
-                        itemExpiryDate &&
-                        !validateDateInput(itemExpiryDate, itemExpiryDateFormat)
-                          ? colors.error[500]
-                          : colors.neutral[300],
-                      backgroundColor: semanticColors.background.paper,
-                    },
-                  ]}
-                >
-                  {isExpiryFull && (
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("day", "exp")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !expiryDay && styles.placeholderText,
-                          ]}
-                        >
-                          {expiryDay || "DD"}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("month", "exp")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !expiryMonth && styles.placeholderText,
-                          ]}
-                        >
-                          {expiryMonth || "MM"}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("year", "exp")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !expiryYear && styles.placeholderText,
-                          ]}
-                        >
-                          {expiryYear || "YYYY"}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-
-                  {isExpiryMonthYear && (
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("month", "exp")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !expiryMonth && styles.placeholderText,
-                          ]}
-                        >
-                          {expiryMonth || "MM"}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.smallPicker}
-                        onPress={() => openSelect("year", "exp")}
-                      >
-                        <Text
-                          style={[
-                            styles.smallPickerText,
-                            !expiryYear && styles.placeholderText,
-                          ]}
-                        >
-                          {expiryYear || "YYYY"}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-
-                  {isExpiryYearOnly && (
-                    <TouchableOpacity
-                      style={styles.smallPickerFull}
-                      onPress={() => openSelect("year", "exp")}
-                    >
-                      <Text
-                        style={[
-                          styles.smallPickerText,
-                          !expiryYear && styles.placeholderText,
-                        ]}
-                      >
-                        {expiryYear || "YYYY"}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            )}
-
-            {/* Global Selection Modal */}
-            <Modal visible={selectVisible} transparent animationType="slide">
-              <View style={styles.modalBackdrop}>
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>{selectTitle}</Text>
-                  <FlatList
-                    data={selectOptions}
-                    keyExtractor={(i) => i}
-                    renderItem={({ item: opt }) => (
-                      <Pressable
-                        onPress={() => onSelectOption(opt)}
-                        style={({ pressed }) => [
-                          styles.modalOption,
-                          pressed && { opacity: 0.6 },
-                        ]}
-                      >
-                        <Text style={styles.modalOptionText}>{opt}</Text>
-                      </Pressable>
-                    )}
-                  />
-                  <TouchableOpacity
-                    style={styles.modalClose}
-                    onPress={() => setSelectVisible(false)}
-                  >
-                    <Text style={styles.modalCloseText}>Close</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal>
-          </Animated.View>
-
-          {/* Is Serialized Toggle */}
-          <Animated.View
-            entering={FadeInDown.delay(75).duration(500)}
             style={styles.section}
           >
             <View style={styles.toggleRow}>
@@ -1748,7 +1111,610 @@ export default function ItemDetailScreen() {
             </Text>
           </Animated.View>
 
-          {/* Serial Number Input - Only visible when Is Serialized is enabled */}
+          {/* STANDARD COUNT MODE */}
+          {!isSerializedItem && (
+            <>
+              {/* Quantity Input */}
+              <Animated.View
+                entering={FadeInDown.delay(100).duration(500)}
+                style={styles.section}
+              >
+                {/* Barcode Display */}
+                <View style={{ alignItems: "center", marginBottom: spacing.md }}>
+                  <Text
+                    style={{
+                      fontSize: fontSize.sm,
+                      color: semanticColors.text.secondary,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Barcode
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: fontSize.xl,
+                      fontWeight: fontWeight.bold,
+                      color: semanticColors.text.primary,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {item.item_code || barcode}
+                  </Text>
+                </View>
+
+                <View style={styles.sectionHeader}>
+                  <Text
+                    style={[
+                      styles.sectionTitle,
+                      { color: semanticColors.text.primary },
+                    ]}
+                  >
+                    Counted Quantity{" "}
+                    {isWeightBasedUOM && (
+                      <Text style={styles.uomHint}>({item?.uom || "kg"})</Text>
+                    )}
+                  </Text>
+                </View>
+                <View style={styles.quantityContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.qtyButton,
+                      { backgroundColor: colors.neutral[200] },
+                    ]}
+                    onPress={() => {
+                      const val = parseFloat(quantity) || 0;
+                      const step = getQuantityStep();
+                      if (val > step) {
+                        const newVal = val - step;
+                        setQuantity(formatQuantity(String(newVal)));
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      } else if (val > 0) {
+                        setQuantity("0");
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name="remove"
+                      size={28}
+                      color={semanticColors.text.primary}
+                    />
+                  </TouchableOpacity>
+
+                  <View
+                    style={[
+                      styles.qtyDisplay,
+                      {
+                        backgroundColor: semanticColors.background.paper,
+                        borderColor: colors.primary[200],
+                      },
+                    ]}
+                  >
+                    <TextInput
+                      style={[
+                        styles.qtyText,
+                        { color: semanticColors.text.primary },
+                      ]}
+                      value={quantity}
+                      onChangeText={handleQuantityChange}
+                      onBlur={() => {
+                        // Format on blur
+                        if (quantity && quantity !== "." && quantity !== "0.") {
+                          setQuantity(formatQuantity(quantity));
+                        } else {
+                          setQuantity("0");
+                        }
+                      }}
+                      keyboardType={isWeightBasedUOM ? "decimal-pad" : "number-pad"}
+                      selectTextOnFocus
+                      placeholder="0"
+                      placeholderTextColor={semanticColors.text.disabled}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.qtyButton,
+                      { backgroundColor: colors.primary[600] },
+                    ]}
+                    onPress={() => {
+                      const val = parseFloat(quantity) || 0;
+                      const step = getQuantityStep();
+                      const newVal = val + step;
+                      setQuantity(formatQuantity(String(newVal)));
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="add" size={28} color={colors.white} />
+                  </TouchableOpacity>
+                </View>
+                {isWeightBasedUOM && (
+                  <Text
+                    style={[
+                      styles.quantityHint,
+                      { color: semanticColors.text.secondary },
+                    ]}
+                  >
+                    +/- {getQuantityStep()} per tap • Max 2 decimal places
+                  </Text>
+                )}
+              </Animated.View>
+
+              {/* MRP Selection / Override - MOVED UP */}
+              <Animated.View
+                entering={FadeInDown.delay(150).duration(500)}
+                style={styles.section}
+              >
+                <View style={styles.sectionHeader}>
+                  <Text
+                    style={[
+                      styles.sectionTitle,
+                      { color: semanticColors.text.primary },
+                    ]}
+                  >
+                    MRP
+                  </Text>
+                  {mrpVariants.length === 0 && (
+                    <Switch
+                      value={mrpEditable}
+                      onValueChange={setMrpEditable}
+                      trackColor={{
+                        false: colors.neutral[200],
+                        true: colors.primary[600],
+                      }}
+                    />
+                  )}
+                </View>
+
+                {mrpVariants.length > 0 ? (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.chipsScroll}
+                  >
+                    {mrpVariants.map((variant: any, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.chip,
+                          {
+                            backgroundColor: semanticColors.background.paper,
+                            borderColor: semanticColors.border.default,
+                          },
+                          selectedMrpVariant?.value === variant.value && {
+                            backgroundColor: colors.primary[50],
+                            borderColor: colors.primary[600],
+                          },
+                        ]}
+                        onPress={() => {
+                          setSelectedMrpVariant(variant);
+                          setMrp(String(variant.value));
+                        }}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            { color: semanticColors.text.secondary },
+                            selectedMrpVariant?.value === variant.value && {
+                              color: colors.primary[700],
+                              fontWeight: fontWeight.medium,
+                            },
+                          ]}
+                        >
+                          ₹{variant.value}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : mrpEditable ? (
+                  <ModernInput
+                    value={mrp}
+                    onChangeText={setMrp}
+                    keyboardType="numeric"
+                    placeholder="Enter new MRP"
+                    icon="pricetag"
+                  />
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: "bold",
+                      color: semanticColors.text.primary,
+                    }}
+                  >
+                    ₹{mrp || item.mrp || 0}
+                  </Text>
+                )}
+              </Animated.View>
+
+              {/* Manufacturing & Expiry Date Toggle Section - MOVED UP */}
+              <Animated.View
+                entering={FadeInDown.delay(200).duration(500)}
+                style={styles.section}
+              >
+                <Text style={[styles.sectionTitle, { color: semanticColors.text.primary }]}>Dates</Text>
+                <ModernCard style={{padding: spacing.sm}}>
+                  {/* Has Manufacturing Date Toggle */}
+                  <View style={styles.toggleRow}>
+                    <View style={styles.toggleLabelContainer}>
+                      <Ionicons
+                        name="calendar-outline"
+                        size={20}
+                        color={colors.primary[600]}
+                      />
+                      <Text
+                        style={[
+                          styles.toggleLabel,
+                          { color: semanticColors.text.primary },
+                        ]}
+                      >
+                        Has Manufacturing Date
+                      </Text>
+                    </View>
+                    <Switch
+                      value={hasMfgDate}
+                      onValueChange={(val) => {
+                        setHasMfgDate(val);
+                        if (!val) {
+                          setItemMfgDate("");
+                        }
+                      }}
+                      trackColor={{
+                        false: colors.neutral[200],
+                        true: colors.primary[600],
+                      }}
+                      thumbColor={hasMfgDate ? colors.white : colors.neutral[50]}
+                    />
+                  </View>
+
+                  {/* Manufacturing Date Input */}
+                  {hasMfgDate && (
+                    <View style={styles.itemDateSection}>
+                      <View style={styles.dateLabelRow}>
+                        <Text style={styles.itemDateLabel}>Manufacturing Date</Text>
+                        <View style={styles.dateFormatPicker}>
+                          {DATE_FORMAT_OPTIONS.map((opt) => (
+                            <TouchableOpacity
+                              key={opt.value}
+                              style={[
+                                styles.dateFormatOption,
+                                itemMfgDateFormat === opt.value &&
+                                  styles.dateFormatOptionActive,
+                              ]}
+                              onPress={() => {
+                                setItemMfgDateFormat(opt.value);
+                                setItemMfgDate("");
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.dateFormatOptionText,
+                                  itemMfgDateFormat === opt.value &&
+                                    styles.dateFormatOptionTextActive,
+                                ]}
+                              >
+                                {opt.label}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                      <View
+                        style={[
+                          styles.itemDateInput,
+                          {
+                            borderColor:
+                              itemMfgDate &&
+                              !validateDateInput(itemMfgDate, itemMfgDateFormat)
+                                ? colors.error[500]
+                                : colors.neutral[300],
+                            backgroundColor: semanticColors.background.paper,
+                          },
+                        ]}
+                      >
+                        {isMfgFull && (
+                          <View style={{ flexDirection: "row", gap: 8 }}>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("day")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !mfgDay && styles.placeholderText,
+                                ]}
+                              >
+                                {mfgDay || "DD"}
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("month")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !mfgMonth && styles.placeholderText,
+                                ]}
+                              >
+                                {mfgMonth || "MM"}
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("year")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !mfgYear && styles.placeholderText,
+                                ]}
+                              >
+                                {mfgYear || "YYYY"}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+
+                        {isMfgMonthYear && (
+                          <View style={{ flexDirection: "row", gap: 8 }}>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("month")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !mfgMonth && styles.placeholderText,
+                                ]}
+                              >
+                                {mfgMonth || "MM"}
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("year")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !mfgYear && styles.placeholderText,
+                                ]}
+                              >
+                                {mfgYear || "YYYY"}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+
+                        {isMfgYearOnly && (
+                          <TouchableOpacity
+                            style={styles.smallPickerFull}
+                            onPress={() => openSelect("year")}
+                          >
+                            <Text
+                              style={[
+                                styles.smallPickerText,
+                                !mfgYear && styles.placeholderText,
+                              ]}
+                            >
+                              {mfgYear || "YYYY"}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Has Expiry Date Toggle */}
+                  <View style={[styles.toggleRow, { marginTop: spacing.md }]}>
+                    <View style={styles.toggleLabelContainer}>
+                      <Ionicons
+                        name="time-outline"
+                        size={20}
+                        color={colors.warning[600]}
+                      />
+                      <Text
+                        style={[
+                          styles.toggleLabel,
+                          { color: semanticColors.text.primary },
+                        ]}
+                      >
+                        Has Expiry Date
+                      </Text>
+                    </View>
+                    <Switch
+                      value={hasExpiryDate}
+                      onValueChange={(val) => {
+                        setHasExpiryDate(val);
+                        if (!val) {
+                          setItemExpiryDate("");
+                        }
+                      }}
+                      trackColor={{
+                        false: colors.neutral[200],
+                        true: colors.warning[600],
+                      }}
+                      thumbColor={hasExpiryDate ? colors.white : colors.neutral[50]}
+                    />
+                  </View>
+
+                  {/* Expiry Date Input */}
+                  {hasExpiryDate && (
+                    <View style={styles.itemDateSection}>
+                      <View style={styles.dateLabelRow}>
+                        <Text style={styles.itemDateLabel}>Expiry Date</Text>
+                        <View style={styles.dateFormatPicker}>
+                          {DATE_FORMAT_OPTIONS.map((opt) => (
+                            <TouchableOpacity
+                              key={opt.value}
+                              style={[
+                                styles.dateFormatOption,
+                                itemExpiryDateFormat === opt.value &&
+                                  styles.dateFormatOptionActive,
+                              ]}
+                              onPress={() => {
+                                setItemExpiryDateFormat(opt.value);
+                                setItemExpiryDate("");
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.dateFormatOptionText,
+                                  itemExpiryDateFormat === opt.value &&
+                                    styles.dateFormatOptionTextActive,
+                                ]}
+                              >
+                                {opt.label}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                      <View
+                        style={[
+                          styles.itemDateInput,
+                          {
+                            borderColor:
+                              itemExpiryDate &&
+                              !validateDateInput(itemExpiryDate, itemExpiryDateFormat)
+                                ? colors.error[500]
+                                : colors.neutral[300],
+                            backgroundColor: semanticColors.background.paper,
+                          },
+                        ]}
+                      >
+                        {isExpiryFull && (
+                          <View style={{ flexDirection: "row", gap: 8 }}>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("day", "exp")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !expiryDay && styles.placeholderText,
+                                ]}
+                              >
+                                {expiryDay || "DD"}
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("month", "exp")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !expiryMonth && styles.placeholderText,
+                                ]}
+                              >
+                                {expiryMonth || "MM"}
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("year", "exp")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !expiryYear && styles.placeholderText,
+                                ]}
+                              >
+                                {expiryYear || "YYYY"}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+
+                        {isExpiryMonthYear && (
+                          <View style={{ flexDirection: "row", gap: 8 }}>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("month", "exp")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !expiryMonth && styles.placeholderText,
+                                ]}
+                              >
+                                {expiryMonth || "MM"}
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.smallPicker}
+                              onPress={() => openSelect("year", "exp")}
+                            >
+                              <Text
+                                style={[
+                                  styles.smallPickerText,
+                                  !expiryYear && styles.placeholderText,
+                                ]}
+                              >
+                                {expiryYear || "YYYY"}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+
+                        {isExpiryYearOnly && (
+                          <TouchableOpacity
+                            style={styles.smallPickerFull}
+                            onPress={() => openSelect("year", "exp")}
+                          >
+                            <Text
+                              style={[
+                                styles.smallPickerText,
+                                !expiryYear && styles.placeholderText,
+                              ]}
+                            >
+                              {expiryYear || "YYYY"}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  )}
+                </ModernCard>
+
+                {/* Global Selection Modal */}
+                <Modal visible={selectVisible} transparent animationType="slide">
+                  <View style={styles.modalBackdrop}>
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>{selectTitle}</Text>
+                      <FlatList
+                        data={selectOptions}
+                        keyExtractor={(i) => i}
+                        renderItem={({ item: opt }) => (
+                          <Pressable
+                            onPress={() => onSelectOption(opt)}
+                            style={({ pressed }) => [
+                              styles.modalOption,
+                              pressed && { opacity: 0.6 },
+                            ]}
+                          >
+                            <Text style={styles.modalOptionText}>{opt}</Text>
+                          </Pressable>
+                        )}
+                      />
+                      <TouchableOpacity
+                        style={styles.modalClose}
+                        onPress={() => setSelectVisible(false)}
+                      >
+                        <Text style={styles.modalCloseText}>Close</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Modal>
+              </Animated.View>
+            </>
+          )}
+
+          {/* SERIALIZED MODE: Serial Number Input */}
           {isSerializedItem && (
             <Animated.View
               entering={FadeInDown.delay(100).duration(500)}
@@ -2071,94 +2037,7 @@ export default function ItemDetailScreen() {
             </Animated.View>
           )}
 
-          {/* MRP Selection / Override */}
-          <Animated.View
-            entering={FadeInDown.delay(200).duration(500)}
-            style={styles.section}
-          >
-            <View style={styles.sectionHeader}>
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  { color: semanticColors.text.primary },
-                ]}
-              >
-                MRP
-              </Text>
-              {mrpVariants.length === 0 && (
-                <Switch
-                  value={mrpEditable}
-                  onValueChange={setMrpEditable}
-                  trackColor={{
-                    false: colors.neutral[200],
-                    true: colors.primary[600],
-                  }}
-                />
-              )}
-            </View>
-
-            {mrpVariants.length > 0 ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.chipsScroll}
-              >
-                {mrpVariants.map((variant: any, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.chip,
-                      {
-                        backgroundColor: semanticColors.background.paper,
-                        borderColor: semanticColors.border.default,
-                      },
-                      selectedMrpVariant?.value === variant.value && {
-                        backgroundColor: colors.primary[50],
-                        borderColor: colors.primary[600],
-                      },
-                    ]}
-                    onPress={() => {
-                      setSelectedMrpVariant(variant);
-                      setMrp(String(variant.value));
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        { color: semanticColors.text.secondary },
-                        selectedMrpVariant?.value === variant.value && {
-                          color: colors.primary[700],
-                          fontWeight: fontWeight.medium,
-                        },
-                      ]}
-                    >
-                      ₹{variant.value}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : mrpEditable ? (
-              <ModernInput
-                value={mrp}
-                onChangeText={setMrp}
-                keyboardType="numeric"
-                placeholder="Enter new MRP"
-                icon="pricetag"
-              />
-            ) : (
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  color: semanticColors.text.primary,
-                }}
-              >
-                ₹{mrp || item.mrp || 0}
-              </Text>
-            )}
-          </Animated.View>
-
-          {/* Condition */}
+          {/* Quality & Status Section - Grouped */}
           <Animated.View
             entering={FadeInDown.delay(300).duration(500)}
             style={styles.section}
@@ -2169,56 +2048,63 @@ export default function ItemDetailScreen() {
                 { color: semanticColors.text.primary },
               ]}
             >
-              Condition
+              Quality & Status
             </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.chipsScroll}
-            >
-              {CONDITION_OPTIONS.map((opt) => (
-                <TouchableOpacity
-                  key={opt}
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: semanticColors.background.paper,
-                      borderColor: semanticColors.border.default,
-                    },
-                    condition === opt && {
-                      backgroundColor: colors.primary[50],
-                      borderColor: colors.primary[600],
-                    },
-                  ]}
-                  onPress={() => setCondition(opt)}
-                >
-                  <Text
+
+            {/* Condition */}
+            <View style={{ marginBottom: spacing.md }}>
+              <Text
+                style={[
+                  styles.detailLabel,
+                  { color: semanticColors.text.secondary, marginBottom: spacing.sm },
+                ]}
+              >
+                Condition
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.chipsScroll}
+              >
+                {CONDITION_OPTIONS.map((opt) => (
+                  <TouchableOpacity
+                    key={opt}
                     style={[
-                      styles.chipText,
-                      { color: semanticColors.text.secondary },
+                      styles.chip,
+                      {
+                        backgroundColor: semanticColors.background.paper,
+                        borderColor: semanticColors.border.default,
+                      },
                       condition === opt && {
-                        color: colors.primary[700],
-                        fontWeight: fontWeight.medium,
+                        backgroundColor: colors.primary[50],
+                        borderColor: colors.primary[600],
                       },
                     ]}
+                    onPress={() => setCondition(opt)}
                   >
-                    {opt}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Animated.View>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        { color: semanticColors.text.secondary },
+                        condition === opt && {
+                          color: colors.primary[700],
+                          fontWeight: fontWeight.medium,
+                        },
+                      ]}
+                    >
+                      {opt}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
 
-          {/* Damage Toggle */}
-          <Animated.View
-            entering={FadeInDown.delay(400).duration(500)}
-            style={styles.section}
-          >
+            {/* Damage Toggle */}
             <View style={styles.sectionHeader}>
               <Text
                 style={[
                   styles.sectionTitle,
-                  { color: semanticColors.status.error },
+                  { color: semanticColors.status.error, fontSize: fontSize.sm, marginBottom: 0 },
                 ]}
               >
                 Report Damage
@@ -2306,24 +2192,22 @@ export default function ItemDetailScreen() {
             )}
           </Animated.View>
 
-          {/* Variance Remark */}
+          {/* Remarks Section */}
           <Animated.View
-            entering={FadeInDown.delay(450).duration(500)}
+            entering={FadeInDown.delay(400).duration(500)}
             style={styles.section}
           >
-            <ModernInput
-              value={varianceRemark}
-              onChangeText={setVarianceRemark}
-              placeholder="Variance reason (if any)"
-              label="Variance Remark"
-            />
-          </Animated.View>
+            {/* Variance Remark */}
+            <View style={{ marginBottom: spacing.md }}>
+              <ModernInput
+                value={varianceRemark}
+                onChangeText={setVarianceRemark}
+                placeholder="Variance reason (if any)"
+                label="Variance Remark"
+              />
+            </View>
 
-          {/* Remarks */}
-          <Animated.View
-            entering={FadeInDown.delay(500).duration(500)}
-            style={styles.section}
-          >
+            {/* General Remarks */}
             <ModernInput
               value={remark}
               onChangeText={setRemark}
@@ -2333,6 +2217,133 @@ export default function ItemDetailScreen() {
               numberOfLines={3}
             />
           </Animated.View>
+
+          {/* Batch History List - MOVED TO BOTTOM */}
+          {sameNameVariants.length > 0 && (
+            <Animated.View
+              entering={FadeInDown.delay(500).duration(500)}
+              style={styles.section}
+            >
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: semanticColors.text.primary },
+                ]}
+              >
+                Batch History
+              </Text>
+              <View style={{ gap: spacing.sm }}>
+                {sameNameVariants.map((variant) => (
+                  <ModernCard
+                    key={variant.item_code}
+                    style={{ padding: spacing.sm }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: fontSize.md,
+                          fontWeight: fontWeight.bold,
+                          color: semanticColors.text.primary,
+                        }}
+                      >
+                        {variant.batch_no || variant.item_code}
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        <Ionicons
+                          name="cube-outline"
+                          size={14}
+                          color={semanticColors.text.secondary}
+                        />
+                        <Text
+                          style={{
+                            fontSize: fontSize.sm,
+                            fontWeight: fontWeight.medium,
+                            color: semanticColors.text.primary,
+                          }}
+                        >
+                          {variant.stock_qty || 0}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: fontSize.xs,
+                          color: semanticColors.text.secondary,
+                        }}
+                      >
+                        Exp:{" "}
+                        {variant.expiry_date
+                          ? new Date(variant.expiry_date).toLocaleDateString()
+                          : "N/A"}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: fontSize.xs,
+                          color: semanticColors.text.secondary,
+                        }}
+                      >
+                        Mfg:{" "}
+                        {variant.manufacturing_date
+                          ? new Date(
+                              variant.manufacturing_date,
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        borderTopWidth: 1,
+                        borderTopColor: semanticColors.border.default,
+                        paddingTop: 4,
+                        marginTop: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: fontSize.xs,
+                          color: semanticColors.text.secondary,
+                        }}
+                      >
+                        MRP: ₹{variant.mrp || 0}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: fontSize.xs,
+                          color: semanticColors.text.secondary,
+                        }}
+                      >
+                        Barcode: {variant.barcode || variant.item_code}
+                      </Text>
+                    </View>
+                  </ModernCard>
+                ))}
+              </View>
+            </Animated.View>
+          )}
 
           <View style={styles.footerSpacer} />
         </ScrollView>

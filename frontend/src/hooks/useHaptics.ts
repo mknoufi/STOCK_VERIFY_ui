@@ -39,7 +39,7 @@ export function useHaptics(options: UseHapticsOptions = {}) {
   // Get haptics enabled setting from store
   // Default to true if setting doesn't exist
   const hapticsEnabled = useSettingsStore(
-    (state) => state.hapticFeedback ?? true
+    (state) => state.settings.hapticFeedback ?? true,
   );
 
   const isEnabled = forceEnabled ?? hapticsEnabled;
@@ -53,7 +53,7 @@ export function useHaptics(options: UseHapticsOptions = {}) {
         }
       };
     },
-    [isEnabled]
+    [isEnabled],
   );
 
   // Memoized wrapped haptics
@@ -69,7 +69,7 @@ export function useHaptics(options: UseHapticsOptions = {}) {
       rigid: createWrappedHaptic(haptics.rigid),
       soft: createWrappedHaptic(haptics.soft),
     }),
-    [createWrappedHaptic]
+    [createWrappedHaptic],
   );
 
   // Memoized wrapped app-specific haptics
@@ -122,7 +122,7 @@ export function useHaptics(options: UseHapticsOptions = {}) {
       swipe: createWrappedHaptic(appHaptics.swipe),
       delete: createWrappedHaptic(appHaptics.delete),
     }),
-    [createWrappedHaptic]
+    [createWrappedHaptic],
   );
 
   return {

@@ -205,9 +205,7 @@ async def get_active_sessions(
     result = []
     for session in sessions:
         # Count items in session
-        item_count = await db.count_lines.count_documents(
-            {"session_id": session["id"]}
-        )
+        item_count = await db.count_lines.count_documents({"session_id": session["id"]})
 
         verified_count = await db.count_lines.count_documents(
             {"session_id": session["id"], "status": "finalized"}
@@ -359,13 +357,13 @@ async def session_heartbeat(
     lock_manager = get_lock_manager(redis_service)
 
     # Get session
-    session = await db.verification_sessions.find_one({"session_id": session_id})
+    session = await db.sessions.find_one({"id": session_id})
 
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Verify ownership
-    if session["user_id"] != user_id:
+    if session["staff_user"] != user_id:
         raise HTTPException(status_code=403, detail="Not your session")
 
     # Update user heartbeat
@@ -383,9 +381,7 @@ async def session_heartbeat(
             lock_ttl_remaining = await lock_manager.get_rack_lock_ttl(rack_id)
 
     # Update session last_heartbeat
-    await db.sessions.update_one(
-        {"id": session_id}, {"$set": {"last_heartbeat": time.time()}}
-    )
+    await db.sessions.update_one({"id": session_id}, {"$set": {"last_heartbeat": time.time()}})
 
     logger.debug(
         f"Heartbeat: session={session_id}, user={user_id}, rack_renewed={rack_lock_renewed}"
@@ -424,9 +420,7 @@ async def update_session_status(
         raise HTTPException(status_code=403, detail="Not your session")
 
     # Update status
-    await db.sessions.update_one(
-        {"id": session_id}, {"$set": {"status": status}}
-    )
+    await db.sessions.update_one({"id": session_id}, {"$set": {"status": status}})
 
     return {"success": True, "id": session_id, "status": status}
 
@@ -445,13 +439,13 @@ async def complete_session(
     lock_manager = get_lock_manager(redis_service)
 
     # Get session
-    session = await db.verification_sessions.find_one({"session_id": session_id})
+    session = await db.sessions.find_one({"id": session_id})
 
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Verify ownership
-    if session["user_id"] != user_id:
+    if session["staff_user"] != user_id:
         raise HTTPException(status_code=403, detail="Not your session")
 
     # Release rack lock if exists
@@ -512,9 +506,7 @@ async def get_user_session_history(
 
     result = []
     for session in sessions:
-        item_count = await db.count_lines.count_documents(
-            {"session_id": session["id"]}
-        )
+        item_count = await db.count_lines.count_documents({"session_id": session["id"]})
 
         verified_count = await db.count_lines.count_documents(
             {"session_id": session["id"], "status": "finalized"}
@@ -522,14 +514,14 @@ async def get_user_session_history(
 
         result.append(
             SessionDetail(
-                id=session["session_id"],
-                user_id=session["user_id"],
+                id=session["id"],
+                user_id=session["staff_user"],
                 rack_id=session.get("rack_id"),
                 floor=session.get("floor"),
                 status=session["status"],
                 started_at=session["started_at"],
                 last_heartbeat=session["last_heartbeat"],
-                completed_at=session.get("completed_at"),
+                completed_at=session.get("closed_at"),
                 item_count=item_count,
                 verified_count=verified_count,
             )

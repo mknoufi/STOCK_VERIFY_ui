@@ -134,9 +134,7 @@ async def calculate_completion_percentage(db) -> float:
 async def count_active_sessions(db) -> int:
     """Count currently active verification sessions."""
     try:
-        return await db.sessions.count_documents(
-            {"status": {"$in": ["active", "in_progress"]}}
-        )
+        return await db.sessions.count_documents({"status": {"$in": ["active", "in_progress"]}})
     except Exception as e:
         logger.error(f"Error counting sessions: {e}")
         return 0

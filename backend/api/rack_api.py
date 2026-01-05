@@ -389,9 +389,7 @@ async def pause_rack(
 
     # Update session
     if rack["session_id"]:
-        await db.sessions.update_one(
-            {"id": rack["session_id"]}, {"$set": {"status": "paused"}}
-        )
+        await db.sessions.update_one({"id": rack["session_id"]}, {"$set": {"status": "paused"}})
 
     # Broadcast update
     await pubsub_service.publish_rack_update(rack_id, "paused", {"user_id": user_id})

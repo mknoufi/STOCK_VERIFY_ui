@@ -1232,15 +1232,22 @@ export const checkItemScanStatus = async (
       // or are waiting to sync (source of truth for recent offline scans)
       const offlineQueue = await getOfflineQueue();
       const queuedCountLines = offlineQueue
-        .filter(q => q.type === 'count_line' && q.data.session_id === sessionId && q.data.item_code === itemCode)
-        .map(q => q.data as CachedCountLine);
+        .filter(
+          (q) =>
+            q.type === "count_line" &&
+            q.data.session_id === sessionId &&
+            q.data.item_code === itemCode,
+        )
+        .map((q) => q.data as CachedCountLine);
 
       // Merge cached lines and queued lines, deduplicating by ID if necessary
       // (though usually queue items are newer)
       const allLines = [...cachedLines, ...queuedCountLines];
 
       // Remove duplicates based on ID (prefer queued/newer ones)
-      const uniqueLines = Array.from(new Map(allLines.map(item => [item._id || item.id, item])).values());
+      const uniqueLines = Array.from(
+        new Map(allLines.map((item) => [item._id || item.id, item])).values(),
+      );
 
       const itemLines = uniqueLines.filter(
         (line) => line.item_code === itemCode,
@@ -1484,13 +1491,20 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
       // Check in offline queue
       const offlineQueue = await getOfflineQueue();
       const queuedCountLines = offlineQueue
-        .filter(q => q.type === 'count_line' && q.data.session_id === sessionId && q.data.item_code === itemCode)
-        .map(q => q.data as CachedCountLine);
+        .filter(
+          (q) =>
+            q.type === "count_line" &&
+            q.data.session_id === sessionId &&
+            q.data.item_code === itemCode,
+        )
+        .map((q) => q.data as CachedCountLine);
 
       const allLines = [...cachedLines, ...queuedCountLines];
 
       // Deduplicate
-      const uniqueLines = Array.from(new Map(allLines.map(item => [item._id || item.id, item])).values());
+      const uniqueLines = Array.from(
+        new Map(allLines.map((item) => [item._id || item.id, item])).values(),
+      );
 
       const itemLines = uniqueLines.filter(
         (line) => line.item_code === itemCode,
@@ -1573,7 +1587,7 @@ export const updateSessionStatus = async (
 ) => {
   // Normalize status to uppercase for consistency
   const normalizedStatus = status.toUpperCase();
-  
+
   // Use the specific complete endpoint for closing sessions to ensure locks are released
   if (normalizedStatus === "CLOSED") {
     const response = await api.post(`/api/sessions/${sessionId}/complete`);

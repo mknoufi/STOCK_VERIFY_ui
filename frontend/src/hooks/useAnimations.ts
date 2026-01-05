@@ -11,11 +11,8 @@
  */
 
 import { useRef, useEffect, useCallback, useMemo } from "react";
-import { Animated, Easing, AccessibilityInfo } from "react-native";
-import {
-  useReducedMotion,
-  ReduceMotion,
-} from "react-native-reanimated";
+import { Animated, Easing } from "react-native";
+import { useReducedMotion, ReduceMotion } from "react-native-reanimated";
 import { duration, easing, animationPresets } from "../theme/unified";
 
 // ==========================================
@@ -27,19 +24,24 @@ import { duration, easing, animationPresets } from "../theme/unified";
  */
 export function useAccessibleAnimations() {
   const shouldReduceMotion = useReducedMotion();
-  
+
   // Memoize animation config based on reduce motion preference
-  const animationConfig = useMemo(() => ({
-    /** Skip animations entirely when reduce motion is enabled */
-    shouldAnimate: !shouldReduceMotion,
-    /** Duration multiplier (0 for no animation, 1 for full) */
-    durationMultiplier: shouldReduceMotion ? 0 : 1,
-    /** Get accessible duration */
-    getDuration: (baseDuration: number) => 
-      shouldReduceMotion ? 0 : baseDuration,
-    /** ReduceMotion config for Reanimated animations */
-    reduceMotion: shouldReduceMotion ? ReduceMotion.Always : ReduceMotion.Never,
-  }), [shouldReduceMotion]);
+  const animationConfig = useMemo(
+    () => ({
+      /** Skip animations entirely when reduce motion is enabled */
+      shouldAnimate: !shouldReduceMotion,
+      /** Duration multiplier (0 for no animation, 1 for full) */
+      durationMultiplier: shouldReduceMotion ? 0 : 1,
+      /** Get accessible duration */
+      getDuration: (baseDuration: number) =>
+        shouldReduceMotion ? 0 : baseDuration,
+      /** ReduceMotion config for Reanimated animations */
+      reduceMotion: shouldReduceMotion
+        ? ReduceMotion.Always
+        : ReduceMotion.Never,
+    }),
+    [shouldReduceMotion],
+  );
 
   return animationConfig;
 }

@@ -280,6 +280,7 @@ export function ActiveUsersPanel({
           // @ts-ignore - estimatedItemSize required by FlashList
           estimatedItemSize={70}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={scrollEnabled}
         />
       )}
     </View>

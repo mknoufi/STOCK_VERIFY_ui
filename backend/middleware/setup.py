@@ -62,6 +62,7 @@ def _setup_trusted_hosts(app: FastAPI) -> None:
         if _env == "development":
             try:
                 import socket
+
                 hostname = socket.gethostname()
                 local_ip = socket.gethostbyname(hostname)
                 if local_ip not in allowed_hosts:

@@ -269,7 +269,7 @@ export default function RootLayout() {
             syncService.cleanup();
             try {
               stopOfflineQueue();
-            } catch { }
+            } catch {}
           });
         }
 

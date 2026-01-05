@@ -162,7 +162,7 @@ export const timing = (duration: number = DURATION.NORMAL) => ({
 export const getStaggerDelay = (
   index: number,
   stagger: number = STAGGER.FAST,
-  maxDelay: number = 200
+  maxDelay: number = 200,
 ): number => {
   return Math.min(index * stagger, maxDelay);
 };

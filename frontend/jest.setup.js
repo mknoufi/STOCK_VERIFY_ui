@@ -5,8 +5,8 @@ if (!process.env.EXPO_OS) {
   process.env.EXPO_OS = "ios";
 }
 
-// Testing Library matchers for React Native
-require("@testing-library/jest-native/extend-expect");
+// Testing Library matchers for React Native (built into @testing-library/react-native v12.4+)
+// No longer need separate jest-native package
 
 // Mock react-native-safe-area-context
 jest.mock("react-native-safe-area-context", () => {
@@ -73,7 +73,7 @@ jest.mock("expo-haptics", () => ({
 jest.mock("react-native-reanimated", () => {
   const React = require("react");
   const { View, Text, Image, ScrollView } = require("react-native");
-  
+
   // Create animated component wrapper
   const createAnimatedComponent = (Component) => {
     const AnimatedComponent = React.forwardRef((props, ref) => {
@@ -81,10 +81,10 @@ jest.mock("react-native-reanimated", () => {
       const { entering, exiting, layout, animatedProps, ...rest } = props;
       return React.createElement(Component, { ...rest, ref });
     });
-    AnimatedComponent.displayName = `Animated(${Component.displayName || Component.name || 'Component'})`;
+    AnimatedComponent.displayName = `Animated(${Component.displayName || Component.name || "Component"})`;
     return AnimatedComponent;
   };
-  
+
   const Animated = {
     View: createAnimatedComponent(View),
     Text: createAnimatedComponent(Text),
@@ -95,19 +95,19 @@ jest.mock("react-native-reanimated", () => {
     addWhitelistedNativeProps: () => {},
     addWhitelistedUIProps: () => {},
   };
-  
+
   return {
     __esModule: true,
     default: Animated,
     useSharedValue: (init) => ({ value: init }),
     useAnimatedStyle: () => ({}),
-    useDerivedValue: (fn) => ({ value: typeof fn === 'function' ? fn() : fn }),
+    useDerivedValue: (fn) => ({ value: typeof fn === "function" ? fn() : fn }),
     useAnimatedProps: () => ({}),
     useAnimatedRef: () => ({ current: null }),
     useAnimatedReaction: () => {},
     useAnimatedScrollHandler: () => ({}),
     useReducedMotion: () => false,
-    ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
+    ReduceMotion: { System: "system", Always: "always", Never: "never" },
     withTiming: (val) => val,
     withSpring: (val) => val,
     withDecay: (val) => val,
@@ -131,7 +131,10 @@ jest.mock("react-native-reanimated", () => {
     },
     FadeIn: { duration: () => ({ delay: () => ({}) }) },
     FadeOut: { duration: () => ({ delay: () => ({}) }) },
-    FadeInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    FadeInDown: {
+      duration: () => ({ delay: () => ({}) }),
+      delay: () => ({ duration: () => ({}) }),
+    },
     FadeInUp: { duration: () => ({ delay: () => ({}) }) },
     SlideInRight: { duration: () => ({}) },
     SlideOutRight: { duration: () => ({}) },

@@ -23,13 +23,17 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { colors, spacing } from "@/theme/unified";
-import { adminApi } from "@/services/api";
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
 const isTablet = width > 768;
 
-type SecurityEventType = "login" | "logout" | "failed_login" | "permission_change" | "data_access" | "api_error";
+type SecurityEventType =
+  | "login"
+  | "logout"
+  | "failed_login"
+  | "permission_change"
+  | "data_access"
+  | "api_error";
 type SecurityLevel = "info" | "warning" | "critical";
 
 interface SecurityMetric {
@@ -146,9 +150,13 @@ export default function SecurityDashboard() {
       setRecentEvents(mockEvents);
 
       // Calculate overall threat level
-      const criticalCount = mockMetrics.filter(m => m.level === "critical").length;
-      const warningCount = mockMetrics.filter(m => m.level === "warning").length;
-      
+      const criticalCount = mockMetrics.filter(
+        (m) => m.level === "critical",
+      ).length;
+      const warningCount = mockMetrics.filter(
+        (m) => m.level === "warning",
+      ).length;
+
       if (criticalCount > 0) {
         setThreatLevel("critical");
       } else if (warningCount > 1) {
@@ -167,7 +175,7 @@ export default function SecurityDashboard() {
 
   useEffect(() => {
     loadSecurityData();
-    
+
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => loadSecurityData(true), 30000);
     return () => clearInterval(interval);
@@ -272,18 +280,29 @@ export default function SecurityDashboard() {
         <Animated.View entering={FadeInDown.delay(100).duration(600)}>
           <GlassCard
             variant="strong"
-            style={[styles.threatCard, { borderLeftColor: threatDisplay.color }]}
+            style={[
+              styles.threatCard,
+              { borderLeftColor: threatDisplay.color },
+            ]}
           >
             <View style={styles.threatHeader}>
-              <Ionicons name={threatDisplay.icon as any} size={32} color={threatDisplay.color} />
+              <Ionicons
+                name={threatDisplay.icon as any}
+                size={32}
+                color={threatDisplay.color}
+              />
               <View style={styles.threatInfo}>
                 <Text style={styles.threatLabel}>Threat Level</Text>
-                <Text style={[styles.threatLevel, { color: threatDisplay.color }]}>
+                <Text
+                  style={[styles.threatLevel, { color: threatDisplay.color }]}
+                >
                   {threatDisplay.label}
                 </Text>
               </View>
             </View>
-            <Text style={styles.threatDescription}>{threatDisplay.description}</Text>
+            <Text style={styles.threatDescription}>
+              {threatDisplay.description}
+            </Text>
           </GlassCard>
         </Animated.View>
 
@@ -296,8 +315,17 @@ export default function SecurityDashboard() {
               style={styles.metricCardWrapper}
             >
               <GlassCard variant="medium" style={styles.metricCard}>
-                <View style={[styles.metricIcon, { backgroundColor: metric.color + "20" }]}>
-                  <Ionicons name={metric.icon as any} size={24} color={metric.color} />
+                <View
+                  style={[
+                    styles.metricIcon,
+                    { backgroundColor: metric.color + "20" },
+                  ]}
+                >
+                  <Ionicons
+                    name={metric.icon as any}
+                    size={24}
+                    color={metric.color}
+                  />
                 </View>
                 <Text style={styles.metricTitle}>{metric.title}</Text>
                 <View style={styles.metricValueRow}>
@@ -306,18 +334,32 @@ export default function SecurityDashboard() {
                     <View
                       style={[
                         styles.metricChange,
-                        { backgroundColor: metric.change > 0 ? colors.error[900] : colors.success[900] },
+                        {
+                          backgroundColor:
+                            metric.change > 0
+                              ? colors.error[900]
+                              : colors.success[900],
+                        },
                       ]}
                     >
                       <Ionicons
                         name={metric.change > 0 ? "arrow-up" : "arrow-down"}
                         size={12}
-                        color={metric.change > 0 ? colors.error[400] : colors.success[400]}
+                        color={
+                          metric.change > 0
+                            ? colors.error[400]
+                            : colors.success[400]
+                        }
                       />
                       <Text
                         style={[
                           styles.metricChangeText,
-                          { color: metric.change > 0 ? colors.error[400] : colors.success[400] },
+                          {
+                            color:
+                              metric.change > 0
+                                ? colors.error[400]
+                                : colors.success[400],
+                          },
                         ]}
                       >
                         {Math.abs(metric.change)}%
@@ -331,18 +373,28 @@ export default function SecurityDashboard() {
         </View>
 
         {/* Recent Security Events */}
-        <Animated.View entering={FadeInDown.delay(800).duration(600)} style={styles.section}>
+        <Animated.View
+          entering={FadeInDown.delay(800).duration(600)}
+          style={styles.section}
+        >
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Events</Text>
-            <AnimatedPressable onPress={() => router.push("/admin/security-logs")}>
+            <AnimatedPressable
+              onPress={() => router.push("/admin/security-logs")}
+            >
               <Text style={styles.viewAllLink}>View All</Text>
             </AnimatedPressable>
           </View>
 
           <GlassCard variant="medium" style={styles.eventsCard}>
-            {recentEvents.map((event, index) => (
+            {recentEvents.map((event) => (
               <View key={event.id} style={styles.eventRow}>
-                <View style={[styles.eventIconContainer, { backgroundColor: getEventColor(event.level) + "20" }]}>
+                <View
+                  style={[
+                    styles.eventIconContainer,
+                    { backgroundColor: getEventColor(event.level) + "20" },
+                  ]}
+                >
                   <Ionicons
                     name={getEventIcon(event.type) as any}
                     size={20}
@@ -350,7 +402,9 @@ export default function SecurityDashboard() {
                   />
                 </View>
                 <View style={styles.eventContent}>
-                  <Text style={styles.eventDescription}>{event.description}</Text>
+                  <Text style={styles.eventDescription}>
+                    {event.description}
+                  </Text>
                   <View style={styles.eventMeta}>
                     <Text style={styles.eventUser}>{event.user}</Text>
                     {event.ipAddress && (
@@ -365,8 +419,18 @@ export default function SecurityDashboard() {
                     </Text>
                   </View>
                 </View>
-                <View style={[styles.eventLevelBadge, { backgroundColor: getEventColor(event.level) + "30" }]}>
-                  <Text style={[styles.eventLevelText, { color: getEventColor(event.level) }]}>
+                <View
+                  style={[
+                    styles.eventLevelBadge,
+                    { backgroundColor: getEventColor(event.level) + "30" },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.eventLevelText,
+                      { color: getEventColor(event.level) },
+                    ]}
+                  >
                     {event.level}
                   </Text>
                 </View>
@@ -376,7 +440,10 @@ export default function SecurityDashboard() {
         </Animated.View>
 
         {/* Quick Actions */}
-        <Animated.View entering={FadeInDown.delay(1000).duration(600)} style={styles.section}>
+        <Animated.View
+          entering={FadeInDown.delay(1000).duration(600)}
+          style={styles.section}
+        >
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionsGrid}>
             <AnimatedPressable
@@ -386,7 +453,9 @@ export default function SecurityDashboard() {
               <GlassCard variant="medium" style={styles.actionCardContent}>
                 <Ionicons name="key" size={32} color={colors.primary[400]} />
                 <Text style={styles.actionCardTitle}>Permissions</Text>
-                <Text style={styles.actionCardDescription}>Manage user access</Text>
+                <Text style={styles.actionCardDescription}>
+                  Manage user access
+                </Text>
               </GlassCard>
             </AnimatedPressable>
 
@@ -395,20 +464,30 @@ export default function SecurityDashboard() {
               onPress={() => router.push("/admin/audit-logs")}
             >
               <GlassCard variant="medium" style={styles.actionCardContent}>
-                <Ionicons name="document-text" size={32} color={colors.secondary[400]} />
+                <Ionicons
+                  name="document-text"
+                  size={32}
+                  color={colors.secondary[400]}
+                />
                 <Text style={styles.actionCardTitle}>Audit Logs</Text>
-                <Text style={styles.actionCardDescription}>Review all activities</Text>
+                <Text style={styles.actionCardDescription}>
+                  Review all activities
+                </Text>
               </GlassCard>
             </AnimatedPressable>
 
             <AnimatedPressable
               style={styles.actionCard}
-              onPress={() => Alert.alert("Security Scan", "Starting security scan...")}
+              onPress={() =>
+                Alert.alert("Security Scan", "Starting security scan...")
+              }
             >
               <GlassCard variant="medium" style={styles.actionCardContent}>
                 <Ionicons name="scan" size={32} color={colors.warning[400]} />
                 <Text style={styles.actionCardTitle}>Security Scan</Text>
-                <Text style={styles.actionCardDescription}>Run vulnerability check</Text>
+                <Text style={styles.actionCardDescription}>
+                  Run vulnerability check
+                </Text>
               </GlassCard>
             </AnimatedPressable>
 
@@ -417,7 +496,11 @@ export default function SecurityDashboard() {
               onPress={() => router.push("/admin/backup")}
             >
               <GlassCard variant="medium" style={styles.actionCardContent}>
-                <Ionicons name="cloud-upload" size={32} color={colors.success[400]} />
+                <Ionicons
+                  name="cloud-upload"
+                  size={32}
+                  color={colors.success[400]}
+                />
                 <Text style={styles.actionCardTitle}>Backup</Text>
                 <Text style={styles.actionCardDescription}>Manage backups</Text>
               </GlassCard>
@@ -595,7 +678,11 @@ const styles = StyleSheet.create({
   eventIp: {
     fontSize: 12,
     color: colors.neutral[500],
-    fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),
+    fontFamily: Platform.select({
+      ios: "Menlo",
+      android: "monospace",
+      default: "monospace",
+    }),
   },
   eventTime: {
     fontSize: 12,

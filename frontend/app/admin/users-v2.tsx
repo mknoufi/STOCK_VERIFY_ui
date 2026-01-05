@@ -11,8 +11,6 @@ import {
   ScrollView,
   TextInput,
   RefreshControl,
-  Platform,
-  Dimensions,
   TouchableOpacity,
   Alert,
 } from "react-native";
@@ -26,10 +24,6 @@ import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { colors, spacing } from "@/theme/unified";
 import { adminApi } from "@/services/api";
-
-const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const isTablet = width > 768;
 
 type UserRole = "admin" | "supervisor" | "staff";
 type UserStatus = "active" | "inactive";
@@ -66,7 +60,7 @@ export default function ModernUsersManagement() {
       }
 
       const response = await adminApi.getActiveUsers();
-      
+
       if (response) {
         // Transform active users data to full user format
         const formattedUsers: User[] = response.map((u: any) => ({
@@ -74,7 +68,10 @@ export default function ModernUsersManagement() {
           username: u.username,
           email: `${u.username}@example.com`,
           role: u.role as UserRole,
-          status: u.status === "online" || u.status === "idle" ? "active" : "inactive",
+          status:
+            u.status === "online" || u.status === "idle"
+              ? "active"
+              : "inactive",
           lastActive: u.last_activity,
           sessionsCount: 0,
           accuracy: 100,
@@ -109,7 +106,7 @@ export default function ModernUsersManagement() {
       filtered = filtered.filter(
         (u) =>
           u.username.toLowerCase().includes(query) ||
-          u.email?.toLowerCase().includes(query)
+          u.email?.toLowerCase().includes(query),
       );
     }
 
@@ -147,8 +144,13 @@ export default function ModernUsersManagement() {
     }
 
     const count = selectedUsers.size;
-    const actionText = action === "activate" ? "activate" : action === "deactivate" ? "deactivate" : "delete";
-    
+    const actionText =
+      action === "activate"
+        ? "activate"
+        : action === "deactivate"
+          ? "deactivate"
+          : "delete";
+
     Alert.alert(
       `${action.charAt(0).toUpperCase() + action.slice(1)} Users`,
       `Are you sure you want to ${actionText} ${count} user(s)?`,
@@ -163,7 +165,7 @@ export default function ModernUsersManagement() {
             setSelectedUsers(new Set());
           },
         },
-      ]
+      ],
     );
   };
 
@@ -235,7 +237,11 @@ export default function ModernUsersManagement() {
           />
           {searchQuery.length > 0 && (
             <AnimatedPressable onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={20} color={colors.neutral[400]} />
+              <Ionicons
+                name="close-circle"
+                size={20}
+                color={colors.neutral[400]}
+              />
             </AnimatedPressable>
           )}
         </GlassCard>
@@ -245,16 +251,17 @@ export default function ModernUsersManagement() {
           {tabOptions.map((tab) => (
             <AnimatedPressable
               key={tab.value}
-              style={[
-                styles.tab,
-                activeTab === tab.value && styles.tabActive,
-              ]}
+              style={[styles.tab, activeTab === tab.value && styles.tabActive]}
               onPress={() => setActiveTab(tab.value)}
             >
               <Ionicons
                 name={tab.icon as any}
                 size={18}
-                color={activeTab === tab.value ? colors.neutral[50] : colors.neutral[400]}
+                color={
+                  activeTab === tab.value
+                    ? colors.neutral[50]
+                    : colors.neutral[400]
+                }
               />
               <Text
                 style={[
@@ -270,7 +277,10 @@ export default function ModernUsersManagement() {
 
         {/* Bulk Actions */}
         {selectedUsers.size > 0 && (
-          <Animated.View entering={FadeInDown.duration(300)} style={styles.bulkActionsBar}>
+          <Animated.View
+            entering={FadeInDown.duration(300)}
+            style={styles.bulkActionsBar}
+          >
             <Text style={styles.bulkActionsText}>
               {selectedUsers.size} selected
             </Text>
@@ -279,13 +289,21 @@ export default function ModernUsersManagement() {
                 style={styles.bulkActionButton}
                 onPress={() => handleBulkAction("activate")}
               >
-                <Ionicons name="checkmark-circle" size={18} color={colors.success[400]} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={18}
+                  color={colors.success[400]}
+                />
               </AnimatedPressable>
               <AnimatedPressable
                 style={styles.bulkActionButton}
                 onPress={() => handleBulkAction("deactivate")}
               >
-                <Ionicons name="pause-circle" size={18} color={colors.warning[400]} />
+                <Ionicons
+                  name="pause-circle"
+                  size={18}
+                  color={colors.warning[400]}
+                />
               </AnimatedPressable>
               <AnimatedPressable
                 style={styles.bulkActionButton}
@@ -346,14 +364,27 @@ export default function ModernUsersManagement() {
                     onPress={() => toggleUserSelection(user.id)}
                   >
                     {selectedUsers.has(user.id) ? (
-                      <Ionicons name="checkbox" size={24} color={colors.primary[400]} />
+                      <Ionicons
+                        name="checkbox"
+                        size={24}
+                        color={colors.primary[400]}
+                      />
                     ) : (
-                      <Ionicons name="square-outline" size={24} color={colors.neutral[500]} />
+                      <Ionicons
+                        name="square-outline"
+                        size={24}
+                        color={colors.neutral[500]}
+                      />
                     )}
                   </TouchableOpacity>
 
                   {/* Avatar */}
-                  <View style={[styles.avatar, { backgroundColor: getRoleColor(user.role) }]}>
+                  <View
+                    style={[
+                      styles.avatar,
+                      { backgroundColor: getRoleColor(user.role) },
+                    ]}
+                  >
                     <Text style={styles.avatarText}>
                       {user.username.charAt(0).toUpperCase()}
                     </Text>
@@ -369,10 +400,22 @@ export default function ModernUsersManagement() {
                         </View>
                       )}
                     </View>
-                    {user.email && <Text style={styles.email}>{user.email}</Text>}
+                    {user.email && (
+                      <Text style={styles.email}>{user.email}</Text>
+                    )}
                     <View style={styles.userMeta}>
-                      <View style={[styles.roleBadge, { backgroundColor: getRoleColor(user.role) + "30" }]}>
-                        <Text style={[styles.roleBadgeText, { color: getRoleColor(user.role) }]}>
+                      <View
+                        style={[
+                          styles.roleBadge,
+                          { backgroundColor: getRoleColor(user.role) + "30" },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.roleBadgeText,
+                            { color: getRoleColor(user.role) },
+                          ]}
+                        >
                           {user.role}
                         </Text>
                       </View>
@@ -392,7 +435,11 @@ export default function ModernUsersManagement() {
                     style={styles.userActionButton}
                     onPress={() => console.log("Edit user", user.id)}
                   >
-                    <Ionicons name="ellipsis-vertical" size={20} color={colors.neutral[400]} />
+                    <Ionicons
+                      name="ellipsis-vertical"
+                      size={20}
+                      color={colors.neutral[400]}
+                    />
                   </AnimatedPressable>
                 </AnimatedPressable>
               </GlassCard>
@@ -402,7 +449,11 @@ export default function ModernUsersManagement() {
 
         {filteredUsers.length === 0 && (
           <GlassCard variant="medium" style={styles.emptyCard}>
-            <Ionicons name="people-outline" size={48} color={colors.neutral[600]} />
+            <Ionicons
+              name="people-outline"
+              size={48}
+              color={colors.neutral[600]}
+            />
             <Text style={styles.emptyTitle}>No users found</Text>
             <Text style={styles.emptySubtitle}>
               {searchQuery

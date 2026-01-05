@@ -55,6 +55,9 @@ export interface Settings {
   imageCache: boolean;
   lazyLoading: boolean;
   debounceDelay: number;
+
+  // Haptics
+  hapticFeedback: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -89,6 +92,7 @@ const DEFAULT_SETTINGS: Settings = {
   imageCache: true,
   lazyLoading: true,
   debounceDelay: 300,
+  hapticFeedback: true,
 };
 
 interface SettingsState {

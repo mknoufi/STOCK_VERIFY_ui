@@ -10,12 +10,8 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  Platform,
-  Dimensions,
-  TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
@@ -25,13 +21,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { SimpleLineChart } from "@/components/charts/SimpleLineChart";
 import { SimpleBarChart } from "@/components/charts/SimpleBarChart";
 import { SimplePieChart } from "@/components/charts/SimplePieChart";
-import { auroraTheme } from "@/theme/auroraTheme";
 import { colors, spacing } from "@/theme/unified";
 import { analyticsApi } from "@/services/api";
-
-const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const isTablet = width > 768;
 
 type TimeRange = "7d" | "30d" | "90d" | "1y";
 
@@ -44,43 +35,45 @@ interface AnalyticsData {
 }
 
 export default function AdvancedAnalytics() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [data, setData] = useState<AnalyticsData | null>(null);
 
-  const loadAnalytics = useCallback(async (isRefresh = false) => {
-    try {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+  const loadAnalytics = useCallback(
+    async (isRefresh = false) => {
+      try {
+        if (isRefresh) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
 
-      const response = await analyticsApi.getAdvancedAnalytics(timeRange);
-      
-      if (response.data) {
-        // Transform API data to chart-friendly format
-        setData({
-          sessionsOverTime: response.data.sessionsOverTime || [],
-          accuracyTrend: response.data.accuracyTrend || [],
-          topPerformers: response.data.topPerformers || [],
-          itemsByCategory: response.data.itemsByCategory || [],
-          discrepancyTypes: response.data.discrepancyTypes || [
-            { type: "Missing", count: 12, color: colors.error[500] },
-            { type: "Extra", count: 8, color: colors.warning[500] },
-            { type: "Damaged", count: 5, color: colors.info[500] },
-          ],
-        });
+        const response = await analyticsApi.getAdvancedAnalytics(timeRange);
+
+        if (response.data) {
+          // Transform API data to chart-friendly format
+          setData({
+            sessionsOverTime: response.data.sessionsOverTime || [],
+            accuracyTrend: response.data.accuracyTrend || [],
+            topPerformers: response.data.topPerformers || [],
+            itemsByCategory: response.data.itemsByCategory || [],
+            discrepancyTypes: response.data.discrepancyTypes || [
+              { type: "Missing", count: 12, color: colors.error[500] },
+              { type: "Extra", count: 8, color: colors.warning[500] },
+              { type: "Damaged", count: 5, color: colors.info[500] },
+            ],
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load analytics:", error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch (error) {
-      console.error("Failed to load analytics:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [timeRange]);
+    },
+    [timeRange],
+  );
 
   useEffect(() => {
     loadAnalytics();
@@ -124,14 +117,18 @@ export default function AdvancedAnalytics() {
             style={styles.exportButton}
             onPress={() => console.log("Export analytics")}
           >
-            <Ionicons name="download-outline" size={20} color={colors.neutral[100]} />
+            <Ionicons
+              name="download-outline"
+              size={20}
+              color={colors.neutral[100]}
+            />
             <Text style={styles.exportButtonText}>Export</Text>
           </AnimatedPressable>
         </View>
 
         {/* Time Range Selector */}
         <View style={styles.timeRangeContainer}>
-          {timeRangeOptions.map((option, index) => (
+          {timeRangeOptions.map((option) => (
             <AnimatedPressable
               key={option.value}
               style={[
@@ -155,11 +152,17 @@ export default function AdvancedAnalytics() {
         {data && (
           <>
             {/* Sessions Over Time */}
-            <Animated.View entering={FadeInDown.delay(200).duration(600)} style={styles.section}>
+            <Animated.View
+              entering={FadeInDown.delay(200).duration(600)}
+              style={styles.section}
+            >
               <Text style={styles.sectionTitle}>Session Trends</Text>
               <GlassCard variant="strong" style={styles.chartCard}>
                 <SimpleLineChart
-                  data={data.sessionsOverTime.map((d) => ({ x: d.date, y: d.count }))}
+                  data={data.sessionsOverTime.map((d) => ({
+                    x: d.date,
+                    y: d.count,
+                  }))}
                   color={colors.primary[400]}
                   showGrid={true}
                   showPoints={true}
@@ -168,11 +171,17 @@ export default function AdvancedAnalytics() {
             </Animated.View>
 
             {/* Accuracy Trend */}
-            <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.section}>
+            <Animated.View
+              entering={FadeInDown.delay(400).duration(600)}
+              style={styles.section}
+            >
               <Text style={styles.sectionTitle}>Accuracy Trend</Text>
               <GlassCard variant="strong" style={styles.chartCard}>
                 <SimpleLineChart
-                  data={data.accuracyTrend.map((d) => ({ x: d.date, y: d.accuracy }))}
+                  data={data.accuracyTrend.map((d) => ({
+                    x: d.date,
+                    y: d.accuracy,
+                  }))}
                   color={colors.success[400]}
                   showGrid={true}
                   showPoints={true}
@@ -181,28 +190,46 @@ export default function AdvancedAnalytics() {
             </Animated.View>
 
             {/* Top Performers */}
-            <Animated.View entering={FadeInDown.delay(600).duration(600)} style={styles.section}>
+            <Animated.View
+              entering={FadeInDown.delay(600).duration(600)}
+              style={styles.section}
+            >
               <Text style={styles.sectionTitle}>Top Performers</Text>
               <GlassCard variant="strong" style={styles.chartCard}>
                 <SimpleBarChart
-                  data={data.topPerformers.map((p) => ({ label: p.name, value: p.score }))}
+                  data={data.topPerformers.map((p) => ({
+                    label: p.name,
+                    value: p.score,
+                  }))}
                   showValues={true}
                 />
               </GlassCard>
             </Animated.View>
 
             {/* Discrepancy Types */}
-            <Animated.View entering={FadeInDown.delay(800).duration(600)} style={styles.section}>
+            <Animated.View
+              entering={FadeInDown.delay(800).duration(600)}
+              style={styles.section}
+            >
               <Text style={styles.sectionTitle}>Discrepancy Distribution</Text>
               <GlassCard variant="strong" style={styles.chartCard}>
                 <SimplePieChart
-                  data={data.discrepancyTypes.map((item) => ({ label: item.type, value: item.count, color: item.color }))}
+                  data={data.discrepancyTypes.map((item) => ({
+                    label: item.type,
+                    value: item.count,
+                    color: item.color,
+                  }))}
                   showLegend={false}
                 />
                 <View style={styles.legendContainer}>
                   {data.discrepancyTypes.map((item, index) => (
                     <View key={index} style={styles.legendItem}>
-                      <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                      <View
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: item.color },
+                        ]}
+                      />
                       <Text style={styles.legendLabel}>{item.type}</Text>
                       <Text style={styles.legendValue}>{item.count}</Text>
                     </View>
@@ -213,12 +240,17 @@ export default function AdvancedAnalytics() {
 
             {/* Items by Category */}
             {data.itemsByCategory.length > 0 && (
-              <Animated.View entering={FadeInDown.delay(1000).duration(600)} style={styles.section}>
+              <Animated.View
+                entering={FadeInDown.delay(1000).duration(600)}
+                style={styles.section}
+              >
                 <Text style={styles.sectionTitle}>Items by Category</Text>
                 <GlassCard variant="strong" style={styles.categoryCard}>
                   {data.itemsByCategory.map((category, index) => (
                     <View key={index} style={styles.categoryRow}>
-                      <Text style={styles.categoryName}>{category.category}</Text>
+                      <Text style={styles.categoryName}>
+                        {category.category}
+                      </Text>
                       <View style={styles.categoryRight}>
                         <View style={styles.progressBar}>
                           <View
@@ -228,7 +260,9 @@ export default function AdvancedAnalytics() {
                             ]}
                           />
                         </View>
-                        <Text style={styles.categoryCount}>{category.count}</Text>
+                        <Text style={styles.categoryCount}>
+                          {category.count}
+                        </Text>
                       </View>
                     </View>
                   ))}
@@ -237,7 +271,10 @@ export default function AdvancedAnalytics() {
             )}
 
             {/* Insights */}
-            <Animated.View entering={FadeInDown.delay(1200).duration(600)} style={styles.section}>
+            <Animated.View
+              entering={FadeInDown.delay(1200).duration(600)}
+              style={styles.section}
+            >
               <Text style={styles.sectionTitle}>AI-Powered Insights</Text>
               <GlassCard variant="medium" style={styles.insightCard}>
                 <View style={styles.insightHeader}>

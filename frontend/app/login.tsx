@@ -190,14 +190,14 @@ export default function LoginScreen() {
               entering={FadeInUp.duration(300).springify()}
               style={styles.welcomeSection}
             >
-              <Text 
+              <Text
                 style={styles.welcomeTitle}
                 accessibilityRole="header"
                 accessibilityLabel="Welcome Back"
               >
                 Welcome Back
               </Text>
-              <Text 
+              <Text
                 style={styles.welcomeSubtitle}
                 accessibilityLabel="Sign in to access your inventory management system"
               >
@@ -275,13 +275,10 @@ export default function LoginScreen() {
                 {/* PIN Entry Mode */}
                 {loginMode === "pin" && (
                   <>
-                    <Text 
-                      style={styles.formTitle}
-                      accessibilityRole="header"
-                    >
+                    <Text style={styles.formTitle} accessibilityRole="header">
                       Enter Your PIN
                     </Text>
-                    <Text 
+                    <Text
                       style={styles.formSubtitle}
                       accessibilityLabel="Enter your 4-digit security code"
                     >
@@ -334,7 +331,7 @@ export default function LoginScreen() {
                     </TouchableOpacity>
 
                     {errors.pin && (
-                      <Text 
+                      <Text
                         style={styles.errorText}
                         accessibilityRole="alert"
                         accessibilityLiveRegion="polite"
@@ -347,7 +344,9 @@ export default function LoginScreen() {
                     <View style={styles.pinActions}>
                       <TouchableOpacity
                         onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                          Haptics.impactAsync(
+                            Haptics.ImpactFeedbackStyle.Medium,
+                          );
                           handleBiometricAuth();
                         }}
                         style={styles.biometricButton}
@@ -364,9 +363,11 @@ export default function LoginScreen() {
                         <Text style={styles.biometricText}>Use Biometrics</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          Haptics.impactAsync(
+                            Haptics.ImpactFeedbackStyle.Light,
+                          );
                           handleForgotPin();
                         }}
                         accessibilityLabel="Forgot PIN"

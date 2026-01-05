@@ -142,6 +142,7 @@ export const AnimatedListItem: React.FC<AnimatedListItemProps> = ({
     duration,
     progress,
     onAnimationComplete,
+    shouldReduceMotion,
   ]);
 
   const animatedStyle = useAnimatedStyle(() => {

@@ -2,7 +2,7 @@
  * Item Filters Component
  * Reusable filter UI for filtering items by category, subcategory, floor, rack, UOM, etc.
  */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,

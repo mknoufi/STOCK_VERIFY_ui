@@ -55,11 +55,14 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
   }, [options, searchQuery]);
 
   // Handle option selection
-  const handleSelect = useCallback((option: string) => {
-    onSelect(option);
-    setSearchQuery("");
-    onClose();
-  }, [onSelect, onClose]);
+  const handleSelect = useCallback(
+    (option: string) => {
+      onSelect(option);
+      setSearchQuery("");
+      onClose();
+    },
+    [onSelect, onClose],
+  );
 
   // Handle close
   const handleClose = useCallback(() => {
@@ -67,20 +70,23 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
     onClose();
   }, [onClose]);
 
-  const renderOption = useCallback(({ item }: { item: string }) => (
-    <TouchableOpacity
-      style={styles.optionItem}
-      onPress={() => handleSelect(item)}
-      testID={`${testID}-option-${item}`}
-    >
-      <Text style={styles.optionText}>{item}</Text>
-      <Ionicons
-        name="chevron-forward"
-        size={20}
-        color={modernColors.text.tertiary}
-      />
-    </TouchableOpacity>
-  ), [handleSelect, testID]);
+  const renderOption = useCallback(
+    ({ item }: { item: string }) => (
+      <TouchableOpacity
+        style={styles.optionItem}
+        onPress={() => handleSelect(item)}
+        testID={`${testID}-option-${item}`}
+      >
+        <Text style={styles.optionText}>{item}</Text>
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color={modernColors.text.tertiary}
+        />
+      </TouchableOpacity>
+    ),
+    [handleSelect, testID],
+  );
 
   return (
     <Modal

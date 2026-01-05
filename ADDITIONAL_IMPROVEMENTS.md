@@ -8,7 +8,7 @@
 **Components Created:**
 - `SkeletonLoader` - Generic shimmer loading bar
 - `StatsCardSkeleton` - For dashboard stats
-- `ListItemSkeleton` - For list items  
+- `ListItemSkeleton` - For list items
 - `SessionCardSkeleton` - For session cards
 - `DashboardSkeleton` - Full dashboard loader
 
@@ -188,7 +188,7 @@ src/services/api/
 
 ### Quick Wins (< 1 hour)
 1. ✅ Skeleton Loaders - DONE
-2. ✅ StatsCard Memoization - DONE  
+2. ✅ StatsCard Memoization - DONE
 3. useCallback for handlers (30min)
 
 ### Medium Priority (1-2 hours)

@@ -82,7 +82,7 @@ export interface PerformanceMetrics {
   accuracy_rate: number;
 }
 
-export interface DashboardSummary {
+export interface AnalyticsDashboardSummary {
   sessions: {
     today: number;
     this_week: number;
@@ -284,7 +284,7 @@ export const analyticsApi = {
    * This aggregates multiple analytics endpoints for the main dashboard
    * @returns Comprehensive dashboard summary
    */
-  async getDashboardSummary(): Promise<DashboardSummary> {
+  async getDashboardSummary(): Promise<AnalyticsDashboardSummary> {
     log.debug("Fetching dashboard summary");
 
     if (!(await isOnline())) {
@@ -307,7 +307,7 @@ export const analyticsApi = {
       const sessionsToday = sessionAnalytics?.data.sessions_by_date[today] ?? 0;
 
       // Build summary (using available data, with fallbacks)
-      const summary: DashboardSummary = {
+      const summary: AnalyticsDashboardSummary = {
         sessions: {
           today: sessionsToday,
           this_week: Object.values(

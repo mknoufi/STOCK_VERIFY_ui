@@ -181,8 +181,6 @@ export default function ScanScreen() {
     }, [loadSessionStats]),
   );
 
-
-
   const performSearch = async (query: string) => {
     try {
       const results = await searchItems(query);
@@ -532,12 +530,12 @@ export default function ScanScreen() {
               </View>
             </ModernCard>
           ) : (
-            <ModernCard 
+            <ModernCard
               style={styles.statsCard}
               accessibilityLabel={`Session stats: ${sessionStats.scannedItems} scanned, ${sessionStats.verifiedItems} verified, ${sessionStats.pendingItems} pending`}
             >
               <View style={styles.statsRow}>
-                <View 
+                <View
                   style={styles.statItem}
                   accessibilityLabel={`${sessionStats.scannedItems} items scanned`}
                 >
@@ -547,7 +545,7 @@ export default function ScanScreen() {
                   <Text style={styles.statLabel}>Scanned</Text>
                 </View>
                 <View style={styles.statDivider} />
-                <View 
+                <View
                   style={styles.statItem}
                   accessibilityLabel={`${sessionStats.verifiedItems} items verified`}
                 >
@@ -559,7 +557,7 @@ export default function ScanScreen() {
                   <Text style={styles.statLabel}>Verified</Text>
                 </View>
                 <View style={styles.statDivider} />
-                <View 
+                <View
                   style={styles.statItem}
                   accessibilityLabel={`${sessionStats.pendingItems} items pending`}
                 >
@@ -616,8 +614,14 @@ export default function ScanScreen() {
               }}
               disabled={loading}
               activeOpacity={0.7}
-              accessibilityLabel={searchQuery.trim() ? "Search for item" : "Open barcode scanner"}
-              accessibilityHint={searchQuery.trim() ? "Search for the entered barcode or item code" : "Opens camera to scan barcode"}
+              accessibilityLabel={
+                searchQuery.trim() ? "Search for item" : "Open barcode scanner"
+              }
+              accessibilityHint={
+                searchQuery.trim()
+                  ? "Search for the entered barcode or item code"
+                  : "Opens camera to scan barcode"
+              }
               accessibilityRole="button"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >

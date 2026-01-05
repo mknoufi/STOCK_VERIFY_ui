@@ -1,14 +1,17 @@
-from locust import HttpUser, between, task, events
 import logging
+
+from locust import HttpUser, between, task
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class StockVerifyUser(HttpUser):
     """
     Simulates a standard staff user using PIN login.
     """
+
     wait_time = between(1, 3)
     weight = 20  # Higher weight to simulate more staff users
 
@@ -42,10 +45,12 @@ class StockVerifyUser(HttpUser):
         # Using /api/erp/items/barcode/{barcode}
         self.client.get("/api/erp/items/barcode/510001")
 
+
 class AdminUser(HttpUser):
     """
     Simulates an admin user using username/password login.
     """
+
     wait_time = between(2, 5)
     weight = 1  # Lower weight for fewer admins
 
@@ -53,7 +58,9 @@ class AdminUser(HttpUser):
         self.login()
 
     def login(self):
-        response = self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"})
+        response = self.client.post(
+            "/api/auth/login", json={"username": "admin", "password": "admin123"}
+        )
         if response.status_code == 200:
             token = response.json().get("data", {}).get("access_token")
             if token:

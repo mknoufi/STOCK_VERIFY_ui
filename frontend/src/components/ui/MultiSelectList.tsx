@@ -25,7 +25,7 @@ import {
   TouchableOpacity,
   Platform as _Platform,
 } from "react-native";
-import { FlashList, FlashListProps } from "@shopify/flash-list";
+import { FlashList } from "@shopify/flash-list";
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -92,7 +92,6 @@ export function MultiSelectList<T extends SelectableItem>({
   EmptyComponent,
   selectionMode = true,
   onSelectionModeChange: _onSelectionModeChange,
-  ...flatListProps
 }: MultiSelectListProps<T>) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(initialSelection),
@@ -266,7 +265,9 @@ export function MultiSelectList<T extends SelectableItem>({
         renderItem={renderItemWrapper}
         keyExtractor={keyExtractor}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={items.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={
+          items.length === 0 ? styles.emptyList : undefined
+        }
         showsVerticalScrollIndicator={false}
         // @ts-ignore - estimatedItemSize required by FlashList
         estimatedItemSize={70}

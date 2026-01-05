@@ -71,6 +71,24 @@ export const hapticHeavy = () => {
   }
 };
 
+/**
+ * Trigger rigid impact haptic feedback
+ */
+export const hapticRigid = () => {
+  if (isHapticsSupported) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+  }
+};
+
+/**
+ * Trigger soft impact haptic feedback
+ */
+export const hapticSoft = () => {
+  if (isHapticsSupported) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+  }
+};
+
 export default {
   success: hapticSuccess,
   warning: hapticWarning,
@@ -79,6 +97,8 @@ export default {
   light: hapticLight,
   medium: hapticMedium,
   heavy: hapticHeavy,
+  rigid: hapticRigid,
+  soft: hapticSoft,
 };
 
 /**

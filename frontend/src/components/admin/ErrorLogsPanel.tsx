@@ -6,7 +6,7 @@
  * // cSpell:ignore nums
  */
 
-import React, { useState, memo, useCallback } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -527,6 +527,7 @@ export function ErrorLogsPanel({
           estimatedItemSize={80}
           contentContainerStyle={{ paddingBottom: 8 }}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={scrollEnabled}
         />
       )}
 

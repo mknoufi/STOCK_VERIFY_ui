@@ -525,7 +525,7 @@ export default function StaffHome() {
                       style={[
                         styles.chip,
                         selectedFloor === wh.warehouse_name &&
-                        styles.chipActive,
+                          styles.chipActive,
                       ]}
                       onPress={() => setSelectedFloor(wh.warehouse_name)}
                     >
@@ -533,7 +533,7 @@ export default function StaffHome() {
                         style={[
                           styles.chipText,
                           selectedFloor === wh.warehouse_name &&
-                          styles.chipTextActive,
+                            styles.chipTextActive,
                         ]}
                       >
                         {wh.warehouse_name}

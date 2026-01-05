@@ -18,12 +18,11 @@ import {
   Modal,
   FlatList,
   Pressable,
-  ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeInDown, FadeIn, Easing } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 
 import { useScanSessionStore } from "../../src/store/scanSessionStore";
 import { useThemeContext } from "../../src/context/ThemeContext";
@@ -77,7 +76,7 @@ export default function ItemDetailScreen() {
   const params = useLocalSearchParams<{ barcode: string; sessionId: string }>();
   const { barcode, sessionId } = params;
   const { currentFloor, currentRack } = useScanSessionStore();
-  
+
   // Theme
   const { themeLegacy } = useThemeContext();
   const isDark = themeLegacy.isDark;
@@ -395,10 +394,10 @@ export default function ItemDetailScreen() {
     label: string;
     placeholder: string;
   }[] = [
-      { value: "full", label: "Full Date", placeholder: "DD/MM/YYYY" },
-      { value: "month_year", label: "Month & Year", placeholder: "MM/YYYY" },
-      { value: "year_only", label: "Year Only", placeholder: "YYYY" },
-    ];
+    { value: "full", label: "Full Date", placeholder: "DD/MM/YYYY" },
+    { value: "month_year", label: "Month & Year", placeholder: "MM/YYYY" },
+    { value: "year_only", label: "Year Only", placeholder: "YYYY" },
+  ];
 
   // Local pieces for picker-based date selection
   const [mfgDay, setMfgDay] = useState<string>("");
@@ -780,7 +779,7 @@ export default function ItemDetailScreen() {
       Alert.alert(
         "Serial Number Error",
         "Please enter valid serial numbers. " +
-        serialValidationErrors.join(", "),
+          serialValidationErrors.join(", "),
       );
       return;
     }
@@ -801,8 +800,8 @@ export default function ItemDetailScreen() {
       // Collect valid serial numbers from either serialized item array or legacy field
       const validSerials = isSerializedItem
         ? serialNumbers
-          .filter((s) => s.trim().length > 0)
-          .map(normalizeSerialValue)
+            .filter((s) => s.trim().length > 0)
+            .map(normalizeSerialValue)
         : serialNumber
           ? [normalizeSerialValue(serialNumber)]
           : [];
@@ -810,15 +809,15 @@ export default function ItemDetailScreen() {
       // Prepare serial entries data with full details (for serialized items)
       const serialEntriesData = isSerializedItem
         ? serialEntries
-          .filter((e) => e.serial_number.trim().length > 0)
-          .map((e) => ({
-            serial_number: normalizeSerialValue(e.serial_number),
-            mrp: e.mrp,
-            manufacturing_date: e.manufacturing_date,
-            mfg_date_format: e.mfg_date_format,
-            expiry_date: e.expiry_date,
-            expiry_date_format: e.expiry_date_format,
-          }))
+            .filter((e) => e.serial_number.trim().length > 0)
+            .map((e) => ({
+              serial_number: normalizeSerialValue(e.serial_number),
+              mrp: e.mrp,
+              manufacturing_date: e.manufacturing_date,
+              mfg_date_format: e.mfg_date_format,
+              expiry_date: e.expiry_date,
+              expiry_date_format: e.expiry_date_format,
+            }))
         : [];
 
       // Determine manufacturing date - from item-level input or existing item data
@@ -873,12 +872,12 @@ export default function ItemDetailScreen() {
 
   // Memoized Skeleton Loader Component for enterprise loading state
   const SkeletonLoader = memo(({ style }: { style?: any }) => (
-    <Animated.View 
+    <Animated.View
       entering={FadeIn.duration(300)}
-      style={[styles.skeleton, styles.skeletonAnimated, style]} 
+      style={[styles.skeleton, styles.skeletonAnimated, style]}
     />
   ));
-  SkeletonLoader.displayName = 'SkeletonLoader';
+  SkeletonLoader.displayName = "SkeletonLoader";
 
   // Loading Skeleton Screen
   const LoadingSkeleton = memo(() => (
@@ -963,7 +962,7 @@ export default function ItemDetailScreen() {
       </ScrollView>
     </ThemedScreen>
   ));
-  LoadingSkeleton.displayName = 'LoadingSkeleton';
+  LoadingSkeleton.displayName = "LoadingSkeleton";
 
   if (loading) {
     return <LoadingSkeleton />;
@@ -1125,10 +1124,7 @@ export default function ItemDetailScreen() {
               />
             </View>
             <Text
-              style={[
-                styles.toggleHint,
-                { color: themeColors.text.secondary },
-              ]}
+              style={[styles.toggleHint, { color: themeColors.text.secondary }]}
             >
               {isSerializedItem
                 ? "Enable to capture individual serial numbers for each unit"
@@ -1193,18 +1189,22 @@ export default function ItemDetailScreen() {
                         key={val}
                         style={[
                           styles.quickQtyButton,
-                          quantity === String(val) && styles.quickQtyButtonActive,
+                          quantity === String(val) &&
+                            styles.quickQtyButtonActive,
                         ]}
                         onPress={() => {
                           setQuantity(String(val));
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          Haptics.impactAsync(
+                            Haptics.ImpactFeedbackStyle.Light,
+                          );
                         }}
                         accessibilityLabel={`Set quantity to ${val}`}
                       >
                         <Text
                           style={[
                             styles.quickQtyText,
-                            quantity === String(val) && styles.quickQtyTextActive,
+                            quantity === String(val) &&
+                              styles.quickQtyTextActive,
                           ]}
                         >
                           {val}
@@ -1473,7 +1473,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 itemMfgDateFormat === opt.value &&
-                                styles.dateFormatOptionActive,
+                                  styles.dateFormatOptionActive,
                               ]}
                               onPress={() => {
                                 setItemMfgDateFormat(opt.value);
@@ -1484,7 +1484,7 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   itemMfgDateFormat === opt.value &&
-                                  styles.dateFormatOptionTextActive,
+                                    styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -1499,7 +1499,7 @@ export default function ItemDetailScreen() {
                           {
                             borderColor:
                               itemMfgDate &&
-                                !validateDateInput(itemMfgDate, itemMfgDateFormat)
+                              !validateDateInput(itemMfgDate, itemMfgDateFormat)
                                 ? colors.error[500]
                                 : colors.neutral[300],
                             backgroundColor: themeColors.background.paper,
@@ -1647,7 +1647,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 itemExpiryDateFormat === opt.value &&
-                                styles.dateFormatOptionActive,
+                                  styles.dateFormatOptionActive,
                               ]}
                               onPress={() => {
                                 setItemExpiryDateFormat(opt.value);
@@ -1658,7 +1658,7 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   itemExpiryDateFormat === opt.value &&
-                                  styles.dateFormatOptionTextActive,
+                                    styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -1673,10 +1673,10 @@ export default function ItemDetailScreen() {
                           {
                             borderColor:
                               itemExpiryDate &&
-                                !validateDateInput(
-                                  itemExpiryDate,
-                                  itemExpiryDateFormat,
-                                )
+                              !validateDateInput(
+                                itemExpiryDate,
+                                itemExpiryDateFormat,
+                              )
                                 ? colors.error[500]
                                 : colors.neutral[300],
                             backgroundColor: themeColors.background.paper,
@@ -1980,7 +1980,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 (entry.mfg_date_format || "full") ===
-                                opt.value && styles.dateFormatOptionActive,
+                                  opt.value && styles.dateFormatOptionActive,
                               ]}
                               onPress={() =>
                                 handleSerialDateFormatChange(
@@ -1994,8 +1994,8 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   (entry.mfg_date_format || "full") ===
-                                  opt.value &&
-                                  styles.dateFormatOptionTextActive,
+                                    opt.value &&
+                                    styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -2012,10 +2012,10 @@ export default function ItemDetailScreen() {
                             backgroundColor: themeColors.background.paper,
                             borderColor:
                               entry.manufacturing_date &&
-                                !validateDateInput(
-                                  entry.manufacturing_date,
-                                  entry.mfg_date_format || "full",
-                                )
+                              !validateDateInput(
+                                entry.manufacturing_date,
+                                entry.mfg_date_format || "full",
+                              )
                                 ? colors.error[500]
                                 : colors.neutral[300],
                           },
@@ -2060,7 +2060,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 (entry.expiry_date_format || "full") ===
-                                opt.value && styles.dateFormatOptionActive,
+                                  opt.value && styles.dateFormatOptionActive,
                               ]}
                               onPress={() =>
                                 handleSerialDateFormatChange(
@@ -2074,8 +2074,8 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   (entry.expiry_date_format || "full") ===
-                                  opt.value &&
-                                  styles.dateFormatOptionTextActive,
+                                    opt.value &&
+                                    styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -2092,10 +2092,10 @@ export default function ItemDetailScreen() {
                             backgroundColor: themeColors.background.paper,
                             borderColor:
                               entry.expiry_date &&
-                                !validateDateInput(
-                                  entry.expiry_date,
-                                  entry.expiry_date_format || "full",
-                                )
+                              !validateDateInput(
+                                entry.expiry_date,
+                                entry.expiry_date_format || "full",
+                              )
                                 ? colors.error[500]
                                 : colors.neutral[300],
                           },
@@ -2153,10 +2153,7 @@ export default function ItemDetailScreen() {
             style={styles.section}
           >
             <Text
-              style={[
-                styles.sectionTitle,
-                { color: themeColors.text.primary },
-              ]}
+              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
             >
               Quality & Status
             </Text>
@@ -2444,8 +2441,8 @@ export default function ItemDetailScreen() {
                         Mfg:{" "}
                         {variant.manufacturing_date
                           ? new Date(
-                            variant.manufacturing_date,
-                          ).toLocaleDateString()
+                              variant.manufacturing_date,
+                            ).toLocaleDateString()
                           : "N/A"}
                       </Text>
                     </View>

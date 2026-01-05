@@ -3,7 +3,7 @@
  * Provides loading placeholders for better perceived performance
  */
 import React, { useEffect } from "react";
-import { View, StyleSheet, ViewStyle } from "react-native";
+import { View, StyleSheet, ViewStyle, DimensionValue } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -14,8 +14,8 @@ import Animated, {
 import { modernColors } from "../../styles/modernDesignSystem";
 
 interface SkeletonLoaderProps {
-  width?: number | string;
-  height?: number | string;
+  width?: DimensionValue;
+  height?: DimensionValue;
   borderRadius?: number;
   style?: ViewStyle;
 }
@@ -35,12 +35,12 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     opacity.value = withRepeat(
       withSequence(
         withTiming(0.7, { duration: 800 }),
-        withTiming(0.3, { duration: 800 })
+        withTiming(0.3, { duration: 800 }),
       ),
       -1,
-      false
+      false,
     );
-  }, []);
+  }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

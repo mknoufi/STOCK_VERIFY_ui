@@ -10,9 +10,6 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  Platform,
-  Dimensions,
-  TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -22,17 +19,12 @@ import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { auroraTheme } from "@/theme/auroraTheme";
 import { colors, spacing } from "@/theme/unified";
 import {
   getMetricsStats,
   getMetricsHealth,
   getSyncStatus,
 } from "@/services/api";
-
-const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const isTablet = width > 768;
 
 interface SystemMetrics {
   totalSessions: number;
@@ -152,12 +144,19 @@ export default function SystemOverview() {
             style={styles.settingsButton}
             onPress={() => router.push("/admin/settings")}
           >
-            <Ionicons name="settings-outline" size={24} color={colors.neutral[100]} />
+            <Ionicons
+              name="settings-outline"
+              size={24}
+              color={colors.neutral[100]}
+            />
           </AnimatedPressable>
         </Animated.View>
 
         {/* Health Status Cards */}
-        <Animated.View entering={FadeInDown.delay(200).duration(600)} style={styles.section}>
+        <Animated.View
+          entering={FadeInDown.delay(200).duration(600)}
+          style={styles.section}
+        >
           <Text style={styles.sectionTitle}>System Health</Text>
           <View style={styles.healthGrid}>
             {health && (
@@ -169,7 +168,12 @@ export default function SystemOverview() {
                     color={getHealthColor(health.database)}
                   />
                   <Text style={styles.healthLabel}>Database</Text>
-                  <Text style={[styles.healthStatus, { color: getHealthColor(health.database) }]}>
+                  <Text
+                    style={[
+                      styles.healthStatus,
+                      { color: getHealthColor(health.database) },
+                    ]}
+                  >
                     {health.database}
                   </Text>
                 </GlassCard>
@@ -181,7 +185,12 @@ export default function SystemOverview() {
                     color={getHealthColor(health.api)}
                   />
                   <Text style={styles.healthLabel}>API</Text>
-                  <Text style={[styles.healthStatus, { color: getHealthColor(health.api) }]}>
+                  <Text
+                    style={[
+                      styles.healthStatus,
+                      { color: getHealthColor(health.api) },
+                    ]}
+                  >
                     {health.api}
                   </Text>
                 </GlassCard>
@@ -193,7 +202,12 @@ export default function SystemOverview() {
                     color={getHealthColor(health.cache)}
                   />
                   <Text style={styles.healthLabel}>Cache</Text>
-                  <Text style={[styles.healthStatus, { color: getHealthColor(health.cache) }]}>
+                  <Text
+                    style={[
+                      styles.healthStatus,
+                      { color: getHealthColor(health.cache) },
+                    ]}
+                  >
                     {health.cache}
                   </Text>
                 </GlassCard>
@@ -205,7 +219,12 @@ export default function SystemOverview() {
                     color={getHealthColor(health.overall)}
                   />
                   <Text style={styles.healthLabel}>Overall</Text>
-                  <Text style={[styles.healthStatus, { color: getHealthColor(health.overall) }]}>
+                  <Text
+                    style={[
+                      styles.healthStatus,
+                      { color: getHealthColor(health.overall) },
+                    ]}
+                  >
                     {health.overall}
                   </Text>
                 </GlassCard>
@@ -216,35 +235,58 @@ export default function SystemOverview() {
 
         {/* Key Metrics */}
         {metrics && (
-          <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.section}>
+          <Animated.View
+            entering={FadeInDown.delay(400).duration(600)}
+            style={styles.section}
+          >
             <Text style={styles.sectionTitle}>Key Metrics</Text>
             <View style={styles.metricsGrid}>
               <GlassCard variant="medium" style={styles.metricCard}>
-                <Ionicons name="analytics" size={28} color={colors.primary[400]} />
-                <Text style={styles.metricValue}>{metrics.totalSessions?.toLocaleString() || 0}</Text>
+                <Ionicons
+                  name="analytics"
+                  size={28}
+                  color={colors.primary[400]}
+                />
+                <Text style={styles.metricValue}>
+                  {metrics.totalSessions?.toLocaleString() || 0}
+                </Text>
                 <Text style={styles.metricLabel}>Total Sessions</Text>
               </GlassCard>
 
               <GlassCard variant="medium" style={styles.metricCard}>
                 <Ionicons name="pulse" size={28} color={colors.success[400]} />
-                <Text style={styles.metricValue}>{metrics.activeSessions?.toLocaleString() || 0}</Text>
+                <Text style={styles.metricValue}>
+                  {metrics.activeSessions?.toLocaleString() || 0}
+                </Text>
                 <Text style={styles.metricLabel}>Active Now</Text>
               </GlassCard>
 
               <GlassCard variant="medium" style={styles.metricCard}>
                 <Ionicons name="cube" size={28} color={colors.info[400]} />
-                <Text style={styles.metricValue}>{metrics.totalItems?.toLocaleString() || 0}</Text>
+                <Text style={styles.metricValue}>
+                  {metrics.totalItems?.toLocaleString() || 0}
+                </Text>
                 <Text style={styles.metricLabel}>Total Items</Text>
               </GlassCard>
 
               <GlassCard variant="medium" style={styles.metricCard}>
-                <Ionicons name="warning" size={28} color={colors.warning[400]} />
-                <Text style={styles.metricValue}>{metrics.totalDiscrepancies?.toLocaleString() || 0}</Text>
+                <Ionicons
+                  name="warning"
+                  size={28}
+                  color={colors.warning[400]}
+                />
+                <Text style={styles.metricValue}>
+                  {metrics.totalDiscrepancies?.toLocaleString() || 0}
+                </Text>
                 <Text style={styles.metricLabel}>Discrepancies</Text>
               </GlassCard>
 
               <GlassCard variant="medium" style={styles.metricCard}>
-                <Ionicons name="speedometer" size={28} color={colors.secondary[400]} />
+                <Ionicons
+                  name="speedometer"
+                  size={28}
+                  color={colors.secondary[400]}
+                />
                 <Text style={styles.metricValue}>
                   {metrics.averageAccuracy?.toFixed(1) || 0}%
                 </Text>
@@ -263,7 +305,10 @@ export default function SystemOverview() {
         )}
 
         {/* Quick Actions */}
-        <Animated.View entering={FadeInDown.delay(600).duration(600)} style={styles.section}>
+        <Animated.View
+          entering={FadeInDown.delay(600).duration(600)}
+          style={styles.section}
+        >
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionsGrid}>
             <AnimatedPressable
@@ -281,7 +326,11 @@ export default function SystemOverview() {
               onPress={() => router.push("/admin/security")}
             >
               <GlassCard variant="medium" style={styles.actionCardInner}>
-                <Ionicons name="shield-checkmark" size={32} color={colors.success[400]} />
+                <Ionicons
+                  name="shield-checkmark"
+                  size={32}
+                  color={colors.success[400]}
+                />
                 <Text style={styles.actionLabel}>Security</Text>
               </GlassCard>
             </AnimatedPressable>
@@ -291,7 +340,11 @@ export default function SystemOverview() {
               onPress={() => router.push("/admin/logs")}
             >
               <GlassCard variant="medium" style={styles.actionCardInner}>
-                <Ionicons name="document-text" size={32} color={colors.info[400]} />
+                <Ionicons
+                  name="document-text"
+                  size={32}
+                  color={colors.info[400]}
+                />
                 <Text style={styles.actionLabel}>View Logs</Text>
               </GlassCard>
             </AnimatedPressable>
@@ -310,7 +363,10 @@ export default function SystemOverview() {
 
         {/* Sync Status */}
         {syncStatus && (
-          <Animated.View entering={FadeInDown.delay(800).duration(600)} style={styles.section}>
+          <Animated.View
+            entering={FadeInDown.delay(800).duration(600)}
+            style={styles.section}
+          >
             <Text style={styles.sectionTitle}>Data Sync</Text>
             <GlassCard variant="strong" style={styles.syncCard}>
               <View style={styles.syncRow}>
@@ -323,14 +379,20 @@ export default function SystemOverview() {
               </View>
               <View style={styles.syncRow}>
                 <Text style={styles.syncLabel}>Items Synced:</Text>
-                <Text style={styles.syncValue}>{syncStatus.itemsSynced || 0}</Text>
+                <Text style={styles.syncValue}>
+                  {syncStatus.itemsSynced || 0}
+                </Text>
               </View>
               <View style={styles.syncRow}>
                 <Text style={styles.syncLabel}>Status:</Text>
                 <Text
                   style={[
                     styles.syncValue,
-                    { color: syncStatus.isHealthy ? colors.success[400] : colors.warning[400] },
+                    {
+                      color: syncStatus.isHealthy
+                        ? colors.success[400]
+                        : colors.warning[400],
+                    },
                   ]}
                 >
                   {syncStatus.isHealthy ? "Healthy" : "Needs Attention"}
@@ -391,7 +453,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   healthCard: {
-    width: isWeb && isTablet ? "25%" : "50%",
+    width: "50%",
     padding: spacing.lg,
     alignItems: "center",
   },
@@ -412,7 +474,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   metricCard: {
-    width: isWeb && isTablet ? "33.33%" : "50%",
+    width: "50%",
     padding: spacing.lg,
     alignItems: "center",
   },
@@ -434,7 +496,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   actionCard: {
-    width: isWeb && isTablet ? "25%" : "50%",
+    width: "50%",
   },
   actionCardInner: {
     padding: spacing.lg,

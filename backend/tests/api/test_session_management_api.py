@@ -44,8 +44,8 @@ def sample_session_data():
 def sample_verification_session():
     """Create sample verification session data"""
     return {
-        "session_id": "sess_123",
-        "user_id": "staff1",
+        "id": "sess_123",
+        "staff_user": "staff1",
         "status": "ACTIVE",
         "started_at": time.time(),
         "last_heartbeat": time.time(),
@@ -84,8 +84,8 @@ class TestCreateSessionEndpoint:
         mock_db.sessions = MagicMock()
         mock_db.sessions.count_documents = AsyncMock(return_value=0)
         mock_db.sessions.insert_one = AsyncMock(return_value=MagicMock())
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.insert_one = AsyncMock(return_value=MagicMock())
+        # mock_db.sessions = MagicMock()  # Removed duplicate reset
+        mock_db.sessions.insert_one = AsyncMock(return_value=MagicMock())
 
         async def override_get_db():
             return mock_db
@@ -321,10 +321,10 @@ class TestGetSessionDetailEndpoint:
     async def test_get_session_detail_success(self, mock_user_staff, sample_verification_session):
         """Test getting session details"""
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=sample_verification_session)
-        mock_db.verification_records = MagicMock()
-        mock_db.verification_records.count_documents = AsyncMock(return_value=10)
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=sample_verification_session)
+        mock_db.count_lines = MagicMock()
+        mock_db.count_lines.count_documents = AsyncMock(return_value=10)
 
         async def override_get_db():
             return mock_db
@@ -354,8 +354,8 @@ class TestGetSessionDetailEndpoint:
     async def test_get_session_not_found(self, mock_user_staff):
         """Test getting non-existent session"""
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=None)
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=None)
 
         async def override_get_db():
             return mock_db
@@ -384,16 +384,16 @@ class TestGetSessionDetailEndpoint:
     async def test_get_session_access_denied(self, mock_user_staff):
         """Test staff cannot view other user's session"""
         other_session = {
-            "session_id": "sess_other",
-            "user_id": "other_user",
+            "id": "sess_other",
+            "staff_user": "other_user",
             "status": "ACTIVE",
             "started_at": time.time(),
             "last_heartbeat": time.time(),
         }
 
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=other_session)
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=other_session)
 
         async def override_get_db():
             return mock_db
@@ -513,12 +513,11 @@ class TestCompleteSessionEndpoint:
     async def test_complete_session_success(self, mock_user_staff, sample_verification_session):
         """Test successful session completion"""
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=sample_verification_session)
-        mock_db.verification_sessions.update_one = AsyncMock(
-            return_value=MagicMock(modified_count=1)
-        )
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=sample_verification_session)
+        mock_db.sessions.update_one = AsyncMock(return_value=MagicMock(modified_count=1))
         mock_db.rack_registry = MagicMock()
+        mock_db.rack_registry.find_one = AsyncMock(return_value=None)
 
         mock_redis = MagicMock()
         mock_lock_manager = MagicMock()
@@ -565,16 +564,16 @@ class TestCompleteSessionEndpoint:
     async def test_complete_session_not_owner(self, mock_user_staff):
         """Test completing another user's session fails"""
         other_session = {
-            "session_id": "sess_other",
-            "user_id": "other_user",
+            "id": "sess_other",
+            "staff_user": "other_user",
             "status": "ACTIVE",
             "started_at": time.time(),
             "last_heartbeat": time.time(),
         }
 
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=other_session)
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=other_session)
 
         mock_redis = MagicMock()
 
@@ -614,11 +613,9 @@ class TestUpdateSessionStatusEndpoint:
     async def test_update_status_success(self, mock_user_staff, sample_verification_session):
         """Test updating session status"""
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=sample_verification_session)
-        mock_db.verification_sessions.update_one = AsyncMock(
-            return_value=MagicMock(modified_count=1)
-        )
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=sample_verification_session)
+        mock_db.sessions.update_one = AsyncMock(return_value=MagicMock(modified_count=1))
 
         async def override_get_db():
             return mock_db
@@ -649,19 +646,17 @@ class TestUpdateSessionStatusEndpoint:
     async def test_update_status_supervisor_can_modify_others(self, mock_user_supervisor):
         """Test supervisor can update any session"""
         session = {
-            "session_id": "sess_123",
-            "user_id": "staff1",
+            "id": "sess_123",
+            "staff_user": "staff1",
             "status": "ACTIVE",
             "started_at": time.time(),
             "last_heartbeat": time.time(),
         }
 
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=session)
-        mock_db.verification_sessions.update_one = AsyncMock(
-            return_value=MagicMock(modified_count=1)
-        )
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=session)
+        mock_db.sessions.update_one = AsyncMock(return_value=MagicMock(modified_count=1))
 
         async def override_get_db():
             return mock_db
@@ -694,8 +689,8 @@ class TestActiveSessionsEndpoint:
         """Test getting active sessions"""
         active_sessions = [
             {
-                "session_id": "sess_1",
-                "user_id": "staff1",
+                "id": "sess_1",
+                "staff_user": "staff1",
                 "status": "ACTIVE",
                 "started_at": time.time(),
                 "last_heartbeat": time.time(),
@@ -705,15 +700,15 @@ class TestActiveSessionsEndpoint:
         ]
 
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
+        mock_db.sessions = MagicMock()
 
         cursor = MagicMock()
         cursor.sort = MagicMock(return_value=cursor)
         cursor.to_list = AsyncMock(return_value=active_sessions)
-        mock_db.verification_sessions.find = MagicMock(return_value=cursor)
+        mock_db.sessions.find = MagicMock(return_value=cursor)
 
-        mock_db.verification_records = MagicMock()
-        mock_db.verification_records.count_documents = AsyncMock(return_value=10)
+        mock_db.count_lines = MagicMock()
+        mock_db.count_lines.count_documents = AsyncMock(return_value=10)
 
         async def override_get_db():
             return mock_db
@@ -748,8 +743,8 @@ class TestUserSessionHistoryEndpoint:
         """Test getting user's session history"""
         history = [
             {
-                "session_id": "sess_old",
-                "user_id": "staff1",
+                "id": "sess_old",
+                "staff_user": "staff1",
                 "status": "CLOSED",
                 "started_at": time.time() - 3600,
                 "last_heartbeat": time.time() - 3500,
@@ -758,16 +753,16 @@ class TestUserSessionHistoryEndpoint:
         ]
 
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
+        mock_db.sessions = MagicMock()
 
         cursor = MagicMock()
         cursor.sort = MagicMock(return_value=cursor)
         cursor.limit = MagicMock(return_value=cursor)
         cursor.to_list = AsyncMock(return_value=history)
-        mock_db.verification_sessions.find = MagicMock(return_value=cursor)
+        mock_db.sessions.find = MagicMock(return_value=cursor)
 
-        mock_db.verification_records = MagicMock()
-        mock_db.verification_records.count_documents = AsyncMock(return_value=25)
+        mock_db.count_lines = MagicMock()
+        mock_db.count_lines.count_documents = AsyncMock(return_value=25)
 
         async def override_get_db():
             return mock_db

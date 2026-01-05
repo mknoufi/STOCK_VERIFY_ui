@@ -344,7 +344,6 @@ export const addToOfflineQueue = async (
 
 export const getOfflineQueue = async (): Promise<OfflineQueueItem[]> => {
   try {
-
     const queue = await storage.get<OfflineQueueItem[]>(
       STORAGE_KEYS.OFFLINE_QUEUE,
       {

@@ -38,7 +38,9 @@ jest.mock("../offline/offlineStorage", () => ({
   getCountLinesBySessionFromCache: jest.fn(() => Promise.resolve([])),
   removeManyFromOfflineQueue: jest.fn(),
   updateQueueItemRetries: jest.fn(),
-  getCacheStats: jest.fn(() => Promise.resolve({ queuedOperations: 0, lastSync: null, cacheSizeKB: 0 })),
+  getCacheStats: jest.fn(() =>
+    Promise.resolve({ queuedOperations: 0, lastSync: null, cacheSizeKB: 0 }),
+  ),
 }));
 
 describe("API Service - Network Detection", () => {

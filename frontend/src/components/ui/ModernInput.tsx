@@ -48,6 +48,7 @@ interface ModernInputProps {
   inputStyle?: TextStyle;
   labelStyle?: TextStyle;
   containerStyle?: ViewStyle;
+  placeholderTextColor?: string;
 }
 
 export const ModernInput: React.FC<ModernInputProps> = ({

@@ -13,6 +13,7 @@ project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+import asyncio
 import io  # noqa: E402
 import logging  # noqa: E402
 from collections.abc import Callable, Iterable
@@ -168,16 +169,16 @@ async def _get_mongodb_status() -> ServiceStatus:
     }
 
 
-def _test_sql_connection() -> Optional[bool]:
+async def _test_sql_connection() -> Optional[bool]:
     try:
-        return sql_connector.test_connection()
+        return await asyncio.to_thread(sql_connector.test_connection)
     except Exception as e:
         logger.error(f"SQL connection test failed: {e}")
         return False
 
 
-def _get_sql_server_status() -> ServiceStatus:
-    is_connected = _test_sql_connection()
+async def _get_sql_server_status() -> ServiceStatus:
+    is_connected = await _test_sql_connection()
     config = sql_connector.config or {}
 
     return {
@@ -238,7 +239,7 @@ def _format_issue(
     }
 
 
-def _collect_system_issues() -> list[dict[str, Any]]:
+async def _collect_system_issues() -> list[dict[str, Any]]:
     issues: list[dict[str, Any]] = []
     mongo_status = PortDetector.get_mongo_status()
     if not mongo_status["is_running"]:
@@ -247,7 +248,7 @@ def _collect_system_issues() -> list[dict[str, Any]]:
         issues.append(_format_issue("backend", "Backend server is not running"))
 
     # Add SQL Server check
-    if not _test_sql_connection():
+    if not await _test_sql_connection():
         issues.append(_format_issue("sql_server", "SQL Server is not connected", severity="medium"))
 
     return issues
@@ -259,7 +260,7 @@ async def _gather_all_services_status() -> ServicesStatusMap:
         "backend": _get_backend_status(),
         "frontend": _get_frontend_status(),
         "mongodb": await _get_mongodb_status(),
-        "sql_server": _get_sql_server_status(),
+        "sql_server": await _get_sql_server_status(),
     }
 
 
@@ -489,7 +490,7 @@ def _format_issues_response(issues: list[dict[str, Any]]) -> dict[str, Any]:
 async def get_system_issues(current_user: dict = Depends(require_admin)):
     """Get system issues and errors"""
     try:
-        issues = _collect_system_issues()
+        issues = await _collect_system_issues()
         return _format_issues_response(issues)
     except Exception as e:
         logger.error(f"Error getting system issues: {e}")

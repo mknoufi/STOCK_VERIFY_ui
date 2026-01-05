@@ -341,7 +341,7 @@ async def sync_batch(
     )
 
     # Initialize Sync Service
-    sync_service = SyncConflictsService(db) if db else None
+    sync_service = SyncConflictsService(db) if db is not None else None
 
     # Check circuit breaker
     if not await circuit_breaker.acquire():

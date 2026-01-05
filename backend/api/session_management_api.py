@@ -64,6 +64,19 @@ class HeartbeatResponse(BaseModel):
     message: str
 
 
+class SessionAnalytics(BaseModel):
+    """Session analytics overview"""
+
+    active_sessions: int
+    completed_today: int
+    total_items_verified_today: int
+    average_session_duration_minutes: float
+    total_items: int = 0
+    total_sessions: int = 0
+    avg_variance: float = 0.0
+    sessions_by_date: dict[str, int] = {}
+
+
 # Endpoints
 
 
@@ -227,6 +240,100 @@ async def get_active_sessions(
         )
 
     return result
+
+
+@router.get("/analytics", response_model=SessionAnalytics)
+async def get_session_analytics(
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> SessionAnalytics:
+    """Get session analytics overview"""
+    from datetime import datetime, timedelta
+
+    # 1. Active sessions count
+    active_count = await db.sessions.count_documents(
+        {"status": {"$in": ["OPEN", "ACTIVE", "PAUSED"]}}
+    )
+
+    # 2. Completed sessions today
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    completed_today = await db.sessions.count_documents(
+        {"status": "CLOSED", "closed_at": {"$gte": today_start.timestamp()}}
+    )
+
+    # 3. Total items verified today (across all sessions)
+    verified_today = await db.count_lines.count_documents(
+        {"status": "finalized", "updated_at": {"$gte": today_start.timestamp()}}
+    )
+
+    # 4. Average session duration (for sessions completed today)
+    cursor = db.sessions.find({"status": "CLOSED", "closed_at": {"$gte": today_start.timestamp()}})
+    closed_sessions = await cursor.to_list(length=1000)
+
+    total_duration = 0
+    count = 0
+
+    for s in closed_sessions:
+        start = s.get("started_at")
+        end = s.get("closed_at")  # float
+
+        if start and end:
+            start_ts = start.timestamp() if hasattr(start, "timestamp") else start
+            # Ensure both are floats
+            try:
+                dur = float(end) - float(start_ts)
+                if dur > 0:
+                    total_duration += dur
+                    count += 1
+            except (ValueError, TypeError):
+                pass
+
+    avg_duration_minutes = (total_duration / 60 / count) if count > 0 else 0.0
+
+    # 5. Total sessions
+    total_sessions = await db.sessions.count_documents({})
+
+    # 6. Total items (all time)
+    total_items = await db.count_lines.count_documents({})
+
+    # 7. Sessions by date (last 7 days)
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    # Try to match both date and timestamp formats
+    recent_sessions_cursor = db.sessions.find(
+        {
+            "$or": [
+                {"started_at": {"$gte": seven_days_ago}},
+                {"started_at": {"$gte": seven_days_ago.timestamp()}},
+            ]
+        }
+    )
+    recent_sessions = await recent_sessions_cursor.to_list(length=1000)
+
+    sessions_by_date = {}
+    for s in recent_sessions:
+        start = s.get("started_at")
+        if start:
+            if hasattr(start, "timestamp"):
+                d = start.strftime("%Y-%m-%d")
+            else:
+                # Assume timestamp
+                try:
+                    d = datetime.fromtimestamp(float(start)).strftime("%Y-%m-%d")
+                except (ValueError, TypeError):
+                    continue
+
+            sessions_by_date[d] = sessions_by_date.get(d, 0) + 1
+
+    return SessionAnalytics(
+        active_sessions=active_count,
+        completed_today=completed_today,
+        total_items_verified_today=verified_today,
+        average_session_duration_minutes=round(avg_duration_minutes, 1),
+        total_items=total_items,
+        total_sessions=total_sessions,
+        avg_variance=0.0,  # Placeholder
+        sessions_by_date=sessions_by_date,
+    )
 
 
 @router.get("/{session_id}", response_model=SessionDetail)

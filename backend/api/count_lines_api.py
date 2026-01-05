@@ -25,7 +25,7 @@ def init_count_lines_api(activity_log_service: ActivityLogService):
 
 def _get_db_client(db_override=None):
     """Resolve the active database client, raising if not initialized."""
-    if db_override:
+    if db_override is not None:
         return db_override
     try:
         return get_db()

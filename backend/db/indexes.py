@@ -10,8 +10,8 @@ Optimized indexes for 20 concurrent users and fast queries
 from typing import Union
 
 INDEXES: dict[str, list[tuple[list[tuple[str, Union[int, str]]], dict]]] = {
-    # Verification Records Collection
-    "verification_records": [
+    # Count Lines Collection (was verification_records)
+    "count_lines": [
         # Unique client record ID
         (
             [("client_record_id", 1)],
@@ -39,12 +39,12 @@ INDEXES: dict[str, list[tuple[list[tuple[str, Union[int, str]]], dict]]] = {
         # Status and timestamp
         ([("status", 1), ("created_at", -1)], {"name": "idx_status_time"}),
     ],
-    # Verification Sessions Collection
-    "verification_sessions": [
+    # Sessions Collection (was verification_sessions)
+    "sessions": [
         # Unique session ID
-        ([("session_id", 1)], {"unique": True, "name": "idx_session_id"}),
+        ([("id", 1)], {"unique": True, "name": "idx_session_id"}),
         # User sessions
-        ([("user_id", 1), ("status", 1)], {"name": "idx_user_sessions"}),
+        ([("staff_user", 1), ("status", 1)], {"name": "idx_user_sessions"}),
         # Rack sessions
         ([("rack_id", 1), ("status", 1)], {"name": "idx_rack_sessions"}),
         # Active sessions

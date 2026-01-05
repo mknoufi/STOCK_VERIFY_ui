@@ -34,9 +34,8 @@ try:
     REDIS_AVAILABLE = True
 except ImportError:
     try:
-        from redis.exceptions import RedisError
-
         import redis
+        from redis.exceptions import RedisError
 
         REDIS_AVAILABLE = True
     except ImportError:

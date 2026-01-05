@@ -19,6 +19,9 @@ export const SUPPORTED_1D_BARCODES = [
   "code93", // Code 93 (Similar to Code 39)
   "itf14", // ITF-14 (Shipping cartons)
   "codabar", // Codabar (Libraries, FedEx)
+  "qr", // QR Code (Keep support but optimized for 1D)
+  "pdf417", // PDF417 (Boarding passes, IDs)
+  "aztec", // Aztec (Tickets)
 ] as const;
 
 export type Supported1DBarcode = (typeof SUPPORTED_1D_BARCODES)[number];

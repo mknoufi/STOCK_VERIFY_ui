@@ -245,7 +245,7 @@ async def claim_rack(
             "completed_at": None,
         }
 
-        await db.verification_sessions.insert_one(session_doc)
+        await db.sessions.insert_one(session_doc)
 
         # Create session lock in Redis
         await lock_manager.create_session_lock(session_id, user_id, rack_id, ttl=3600)
@@ -335,8 +335,8 @@ async def release_rack(
 
     # Update session status
     if rack["session_id"]:
-        await db.verification_sessions.update_one(
-            {"session_id": rack["session_id"]},
+        await db.sessions.update_one(
+            {"id": rack["session_id"]},
             {
                 "$set": {
                     "status": "completed",
@@ -389,8 +389,8 @@ async def pause_rack(
 
     # Update session
     if rack["session_id"]:
-        await db.verification_sessions.update_one(
-            {"session_id": rack["session_id"]}, {"$set": {"status": "paused"}}
+        await db.sessions.update_one(
+            {"id": rack["session_id"]}, {"$set": {"status": "paused"}}
         )
 
     # Broadcast update
@@ -442,8 +442,8 @@ async def resume_rack(
 
     # Update session
     if rack["session_id"]:
-        await db.verification_sessions.update_one(
-            {"session_id": rack["session_id"]},
+        await db.sessions.update_one(
+            {"id": rack["session_id"]},
             {
                 "$set": {
                     "status": "active",

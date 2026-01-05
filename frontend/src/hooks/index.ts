@@ -14,6 +14,7 @@ export * from "../domains/inventory/hooks/useSearchItemsQuery";
 
 // Animation Hooks (Unified Design System v3.0)
 export {
+  useAccessibleAnimations,
   useEntryAnimation,
   useStaggeredEntry,
   useFadeIn,

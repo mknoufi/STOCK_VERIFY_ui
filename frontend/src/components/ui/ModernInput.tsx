@@ -46,6 +46,7 @@ interface ModernInputProps {
   required?: boolean;
   style?: ViewStyle;
   inputStyle?: TextStyle;
+  labelStyle?: TextStyle;
   containerStyle?: ViewStyle;
 }
 
@@ -71,6 +72,7 @@ export const ModernInput: React.FC<ModernInputProps> = ({
   required = false,
   style,
   inputStyle,
+  labelStyle,
   containerStyle,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -138,7 +140,7 @@ export const ModernInput: React.FC<ModernInputProps> = ({
   return (
     <View style={[styles.container, containerStyle]}>
       {label && (
-        <Text style={getLabelStyles()}>
+        <Text style={[getLabelStyles(), labelStyle]}>
           {label}
           {required && <Text style={styles.required}> *</Text>}
         </Text>

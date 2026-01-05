@@ -476,6 +476,48 @@ export const analyticsApi = {
       );
     }
   },
+
+  // --------------------------------------------------------------------------
+  // Advanced Analytics (Time-Series)
+  // --------------------------------------------------------------------------
+
+  /**
+   * Get advanced analytics with time-series data
+   * @param timeRange - Time range: "7d", "30d", "90d", "1y"
+   * @returns Advanced analytics data
+   */
+  async getAdvancedAnalytics(timeRange: string = "30d"): Promise<any> {
+    log.debug("Fetching advanced analytics", { timeRange });
+
+    if (!(await isOnline())) {
+      throw new AnalyticsApiError(
+        "ANALYTICS_OFFLINE",
+        "Analytics require network connection",
+        "Please connect to the network to view analytics.",
+      );
+    }
+
+    try {
+      const response = await api.get<any>(
+        `/api/sessions/analytics/advanced?time_range=${timeRange}`,
+      );
+
+      log.info("Advanced analytics fetched", {
+        timeRange,
+        dataPoints: response.data?.data?.sessionsOverTime?.length || 0,
+      });
+
+      return response.data;
+    } catch (error) {
+      log.error("Failed to fetch advanced analytics", { error });
+      throw new AnalyticsApiError(
+        "ANALYTICS_FETCH_FAILED",
+        "Failed to fetch advanced analytics",
+        "Could not load analytics data. Please try again.",
+        { error },
+      );
+    }
+  },
 };
 
 // Default export

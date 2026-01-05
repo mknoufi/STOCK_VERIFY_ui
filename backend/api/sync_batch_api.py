@@ -241,7 +241,7 @@ async def sync_single_record(record: SyncRecord, db, user_id: str) -> tuple[bool
         }
 
         # Upsert record
-        await db.verification_records.update_one(
+        await db.count_lines.update_one(
             {"client_record_id": record.client_record_id}, {"$set": doc}, upsert=True
         )
 

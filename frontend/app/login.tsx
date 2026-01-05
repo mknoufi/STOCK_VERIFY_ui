@@ -187,18 +187,27 @@ export default function LoginScreen() {
           <View style={styles.contentContainer}>
             {/* Welcome Section */}
             <SafeAnimatedView
-              entering={FadeInUp.duration(800).springify()}
+              entering={FadeInUp.duration(300).springify()}
               style={styles.welcomeSection}
             >
-              <Text style={styles.welcomeTitle}>Welcome Back</Text>
-              <Text style={styles.welcomeSubtitle}>
+              <Text 
+                style={styles.welcomeTitle}
+                accessibilityRole="header"
+                accessibilityLabel="Welcome Back"
+              >
+                Welcome Back
+              </Text>
+              <Text 
+                style={styles.welcomeSubtitle}
+                accessibilityLabel="Sign in to access your inventory management system"
+              >
                 Sign in to access your inventory management system
               </Text>
             </SafeAnimatedView>
 
             {/* Login Form Card */}
             <SafeAnimatedView
-              entering={FadeInDown.duration(800).springify()}
+              entering={FadeInDown.duration(300).springify()}
               style={styles.formContainer}
             >
               <ModernCard style={styles.loginCard} padding={spacing.lg}>
@@ -266,8 +275,16 @@ export default function LoginScreen() {
                 {/* PIN Entry Mode */}
                 {loginMode === "pin" && (
                   <>
-                    <Text style={styles.formTitle}>Enter Your PIN</Text>
-                    <Text style={styles.formSubtitle}>
+                    <Text 
+                      style={styles.formTitle}
+                      accessibilityRole="header"
+                    >
+                      Enter Your PIN
+                    </Text>
+                    <Text 
+                      style={styles.formSubtitle}
+                      accessibilityLabel="Enter your 4-digit security code"
+                    >
                       4-digit security code
                     </Text>
 
@@ -281,18 +298,26 @@ export default function LoginScreen() {
                       style={styles.hiddenInput}
                       autoFocus
                       caretHidden
+                      accessibilityLabel="PIN input"
+                      accessibilityHint="Enter your 4-digit PIN"
                     />
 
                     {/* PIN Display - Clickable to focus */}
                     <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => pinInputRef.current?.focus()}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        pinInputRef.current?.focus();
+                      }}
                       style={styles.pinDisplay}
+                      accessibilityLabel={`PIN entry, ${pin.length} of 4 digits entered`}
+                      accessibilityHint="Tap to enter your PIN"
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                     >
                       {[0, 1, 2, 3].map((index) => (
                         <SafeAnimatedView
                           key={index}
-                          entering={FadeInDown.delay(index * 50).duration(300)}
+                          entering={FadeInDown.delay(index * 20).duration(150)}
                           style={[
                             styles.pinDot,
                             pin.length > index
@@ -309,14 +334,27 @@ export default function LoginScreen() {
                     </TouchableOpacity>
 
                     {errors.pin && (
-                      <Text style={styles.errorText}>{errors.pin}</Text>
+                      <Text 
+                        style={styles.errorText}
+                        accessibilityRole="alert"
+                        accessibilityLiveRegion="polite"
+                      >
+                        {errors.pin}
+                      </Text>
                     )}
 
                     {/* Biometric & Forgot Options */}
                     <View style={styles.pinActions}>
                       <TouchableOpacity
-                        onPress={handleBiometricAuth}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                          handleBiometricAuth();
+                        }}
                         style={styles.biometricButton}
+                        accessibilityLabel="Use biometric authentication"
+                        accessibilityHint="Authenticate using Face ID or fingerprint"
+                        activeOpacity={0.7}
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                       >
                         <Ionicons
                           name="finger-print"
@@ -326,7 +364,16 @@ export default function LoginScreen() {
                         <Text style={styles.biometricText}>Use Biometrics</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={handleForgotPin}>
+                      <TouchableOpacity 
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          handleForgotPin();
+                        }}
+                        accessibilityLabel="Forgot PIN"
+                        accessibilityHint="Reset your PIN code"
+                        activeOpacity={0.7}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
                         <Text style={styles.forgotLink}>Forgot PIN?</Text>
                       </TouchableOpacity>
                     </View>
@@ -368,7 +415,6 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                   </>
                 )}
-
                 {/* Login Button */}
                 {loginMode === "credentials" && (
                   <ModernButton
@@ -386,7 +432,7 @@ export default function LoginScreen() {
 
             {/* Footer */}
             <Animated.View
-              entering={FadeInDown.delay(200).duration(800).springify()}
+              entering={FadeInDown.delay(50).duration(300).springify()}
               style={styles.footer}
             >
               <Text style={styles.versionText}>Version 3.0.0</Text>

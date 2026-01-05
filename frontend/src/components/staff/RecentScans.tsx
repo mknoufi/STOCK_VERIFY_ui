@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, memo } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   Animated,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeContext } from "../../context/ThemeContext";
@@ -184,16 +184,15 @@ export const RecentScans: React.FC<RecentScansProps> = ({
           </View>
         )}
       </View>
-      <FlatList
+      <FlashList
         data={items}
         renderItem={renderItem}
         keyExtractor={(item) => item.item_code}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        snapToInterval={220}
-        decelerationRate="fast"
-        pagingEnabled={false}
+        // @ts-ignore - estimatedItemSize required by FlashList
+        estimatedItemSize={220}
       />
     </View>
   );

@@ -3,17 +3,17 @@
  * Enhanced search with dropdown suggestions after 4 characters
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Keyboard,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
 import {
@@ -46,7 +46,8 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<TextInput>(null);
-  const listRef = useRef<FlatList>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const listRef = useRef<any>(null);
 
   // Search function
   const performSearch = React.useCallback(
@@ -103,22 +104,22 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
     }
   };
 
-  const handleSelectItem = (item: SearchResult) => {
+  const handleSelectItem = useCallback((item: SearchResult) => {
     onSelectItem(item);
     setQuery("");
     setResults([]);
     setShowDropdown(false);
     Keyboard.dismiss();
-  };
+  }, [onSelectItem]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setQuery("");
     setResults([]);
     setShowDropdown(false);
     inputRef.current?.focus();
-  };
+  }, []);
 
-  const renderResultItem = ({
+  const renderResultItem = useCallback(({
     item,
     index,
   }: {
@@ -306,7 +307,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
         />
       </TouchableOpacity>
     );
-  };
+  }, [selectedIndex, theme.colors, handleSelectItem]);
 
   return (
     <View style={styles.container}>
@@ -406,15 +407,14 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                   {results.length === 1 ? "ITEM" : "ITEMS"}
                 </Text>
               </View>
-              <FlatList
+              <FlashList
                 ref={listRef}
                 data={results}
                 renderItem={renderResultItem}
                 keyExtractor={(item, index) => `${item.item_code}-${index}`}
-                style={styles.resultsList}
+                // @ts-ignore - estimatedItemSize required by FlashList
+                estimatedItemSize={70}
                 keyboardShouldPersistTaps="handled"
-                maxToRenderPerBatch={10}
-                windowSize={5}
                 showsVerticalScrollIndicator={true}
               />
             </>

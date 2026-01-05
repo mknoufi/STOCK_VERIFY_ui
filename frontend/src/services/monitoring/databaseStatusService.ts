@@ -4,7 +4,7 @@
  */
 
 import api from "../api/api";
-import { getSyncStatus } from "../syncService";
+import { getSyncStatus } from "../syncManager";
 
 export interface DatabaseStatus {
   configured: boolean;

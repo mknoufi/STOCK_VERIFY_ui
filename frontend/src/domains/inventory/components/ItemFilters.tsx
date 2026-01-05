@@ -2,7 +2,7 @@
  * Item Filters Component
  * Reusable filter UI for filtering items by category, subcategory, floor, rack, UOM, etc.
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,9 +12,9 @@ import {
   StyleSheet,
   Platform,
   Modal,
-  FlatList,
   ActivityIndicator,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
 import { ItemVerificationAPI } from "@/domains/inventory/services/itemVerificationApi";
@@ -169,11 +169,13 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
                 style={{ margin: 20 }}
               />
             ) : (
-              <FlatList
+              <FlashList
                 data={data}
                 keyExtractor={(item) =>
                   typeof item === "string" ? item : item.rack
                 }
+                // @ts-ignore - estimatedItemSize required by FlashList
+                estimatedItemSize={60}
                 renderItem={({ item }) => {
                   if (isRack && typeof item !== "string") {
                     // Render Rack Progress Card

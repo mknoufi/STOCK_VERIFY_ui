@@ -488,7 +488,7 @@ export default function SupervisorDashboard() {
           </View>
 
           {/* Completion Progress */}
-          <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <Animated.View entering={FadeInDown.delay(60).springify()}>
             <GlassCard
               variant="medium"
               intensity={25}
@@ -539,7 +539,7 @@ export default function SupervisorDashboard() {
 
           {/* Activity Feed */}
           <Animated.View
-            entering={FadeInDown.delay(350).springify()}
+            entering={FadeInDown.delay(80).springify()}
             style={styles.section}
           >
             <View style={styles.sectionHeader}>
@@ -621,7 +621,7 @@ export default function SupervisorDashboard() {
 
           {/* Recent Sessions */}
           <Animated.View
-            entering={FadeInDown.delay(400).springify()}
+            entering={FadeInDown.delay(100).springify()}
             style={styles.section}
           >
             <View style={styles.sectionHeader}>
@@ -657,7 +657,7 @@ export default function SupervisorDashboard() {
             {sessions.slice(0, 3).map((session, index) => (
               <Animated.View
                 key={session.id}
-                entering={FadeInDown.delay(450 + index * 50).springify()}
+                entering={FadeInDown.delay(120 + index * 20).springify()}
               >
                 <AnimatedPressable
                   onPress={() =>

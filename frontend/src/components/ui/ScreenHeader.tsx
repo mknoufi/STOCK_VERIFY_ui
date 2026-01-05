@@ -172,7 +172,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
     }
     if (onBackPress) {
       onBackPress();
-    } else {
+    } else if (router.canGoBack()) {
       router.back();
     }
   }, [onBackPress, router]);

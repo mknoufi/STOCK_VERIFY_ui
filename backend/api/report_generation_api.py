@@ -32,7 +32,7 @@ REPORT_TYPES = {
     "variance_report": {
         "name": "Variance Report",
         "description": "Items with discrepancies between expected and counted quantities",
-        "collection": "verification_records",
+        "collection": "count_lines",
     },
     "user_activity": {
         "name": "User Activity Report",
@@ -42,7 +42,7 @@ REPORT_TYPES = {
     "session_history": {
         "name": "Session History Report",
         "description": "Verification session details and outcomes",
-        "collection": "verification_sessions",
+        "collection": "sessions",
     },
     "audit_trail": {
         "name": "Audit Trail Report",
@@ -148,7 +148,7 @@ async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
         {"$match": query},
         {
             "$lookup": {
-                "from": "verification_records",
+                "from": "count_lines",
                 "localField": "item_code",
                 "foreignField": "item_code",
                 "as": "verifications",
@@ -236,7 +236,7 @@ async def generate_variance_report(db, filters: ReportFilter) -> list[dict]:
         {"$limit": 10000},
     ]
 
-    return await db.verification_records.aggregate(pipeline).to_list(10000)
+    return await db.count_lines.aggregate(pipeline).to_list(10000)
 
 
 async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]:
@@ -363,7 +363,7 @@ async def generate_session_history_report(db, filters: ReportFilter) -> list[dic
         {"$limit": 5000},
     ]
 
-    return await db.verification_sessions.aggregate(pipeline).to_list(5000)
+    return await db.sessions.aggregate(pipeline).to_list(5000)
 
 
 async def generate_audit_trail_report(db, filters: ReportFilter) -> list[dict]:
@@ -602,7 +602,7 @@ async def get_report_filter_options(
         warehouses = await db.erp_items.distinct("warehouse")
         floors = await db.erp_items.distinct("floor")
         categories = await db.erp_items.distinct("category")
-        statuses = await db.verification_records.distinct("status")
+        statuses = await db.count_lines.distinct("status")
 
         # Get user list for admin/supervisor
         users = []

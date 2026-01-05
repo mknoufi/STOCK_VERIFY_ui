@@ -425,9 +425,9 @@ class TestSessionStatsEndpoint:
     async def test_get_session_stats(self, mock_user_staff, sample_verification_session):
         """Test getting session statistics"""
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=sample_verification_session)
-        mock_db.verification_records = MagicMock()
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=sample_verification_session)
+        mock_db.count_lines = MagicMock()
 
         agg_cursor = MagicMock()
         agg_cursor.to_list = AsyncMock(
@@ -439,7 +439,7 @@ class TestSessionStatsEndpoint:
                 }
             ]
         )
-        mock_db.verification_records.aggregate = MagicMock(return_value=agg_cursor)
+        mock_db.count_lines.aggregate = MagicMock(return_value=agg_cursor)
 
         async def override_get_db():
             return mock_db
@@ -472,13 +472,13 @@ class TestSessionStatsEndpoint:
     async def test_get_session_stats_empty(self, mock_user_staff, sample_verification_session):
         """Test session stats when no items counted"""
         mock_db = MagicMock()
-        mock_db.verification_sessions = MagicMock()
-        mock_db.verification_sessions.find_one = AsyncMock(return_value=sample_verification_session)
-        mock_db.verification_records = MagicMock()
+        mock_db.sessions = MagicMock()
+        mock_db.sessions.find_one = AsyncMock(return_value=sample_verification_session)
+        mock_db.count_lines = MagicMock()
 
         agg_cursor = MagicMock()
         agg_cursor.to_list = AsyncMock(return_value=[])  # No records
-        mock_db.verification_records.aggregate = MagicMock(return_value=agg_cursor)
+        mock_db.count_lines.aggregate = MagicMock(return_value=agg_cursor)
 
         async def override_get_db():
             return mock_db

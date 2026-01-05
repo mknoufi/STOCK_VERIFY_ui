@@ -17,7 +17,7 @@ import {
   KeyboardAvoidingView,
   BackHandler,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,7 +34,6 @@ import {
 } from "../../src/services/api/api";
 import { SESSION_PAGE_SIZE } from "../../src/constants/config";
 import { toastService } from "../../src/services/utils/toastService";
-import { SessionType } from "../../src/types";
 
 import ModernHeader from "../../src/components/ui/ModernHeader";
 import ModernCard from "../../src/components/ui/ModernCard";
@@ -45,7 +44,6 @@ import {
   spacing,
   typography,
   borderRadius,
-  shadows,
 } from "../../src/theme/modernDesign";
 
 interface Zone {
@@ -97,14 +95,14 @@ export default function StaffHome() {
   const [isCreating, setIsCreating] = useState(false);
   const [zones, setZones] = useState<Zone[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [isLoadingZones, setIsLoadingZones] = useState(false);
+  const [_isLoadingZones, _setIsLoadingZones] = useState(false);
 
   const { setActiveSession, setFloor, setRack } = useScanSessionStore();
 
   // Queries
   const {
     data: sessionsData,
-    isLoading: isLoadingSessions,
+    isLoading: _isLoadingSessions,
     refetch,
   } = useSessionsQuery({
     page: 1,
@@ -152,15 +150,12 @@ export default function StaffHome() {
       setZones(fallbackZones);
 
       try {
-        setIsLoadingZones(true);
         const data = await getZones();
         if (Array.isArray(data) && data.length > 0) {
           setZones(data);
         }
-      } catch (error) {
+      } catch (_error) {
         // Silent fail, use fallback
-      } finally {
-        setIsLoadingZones(false);
       }
     };
     fetchZones();
@@ -193,19 +188,26 @@ export default function StaffHome() {
         if (Array.isArray(data) && data.length > 0) {
           setWarehouses(data);
         }
-      } catch (error) {
+      } catch (_error) {
         // Silent fail, use fallback
       }
     };
     fetchWarehouses();
   }, [locationType]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsRefreshing(true);
     await refetch();
     setIsRefreshing(false);
-  };
+  }, [refetch]);
+
+  // Refresh session list when screen gains focus (user navigates back from scan)
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const handleStartSession = async () => {
     if (!locationType || !selectedFloor || !rackName.trim()) {
@@ -292,13 +294,17 @@ export default function StaffHome() {
       style={styles.sessionCard}
       padding={spacing.md}
       onPress={() => handleResumeSession(session)}
+      accessibilityLabel={`Session at ${session.warehouse}, ${session.item_count || 0} items, ${session.discrepancy_count || 0} issues, status ${session.status}`}
+      accessibilityHint="Tap to resume this scanning session"
     >
       <View style={styles.sessionHeader}>
         <View style={styles.sessionIcon}>
           <Ionicons name="cube-outline" size={24} color={colors.primary[600]} />
         </View>
         <View style={styles.sessionInfo}>
-          <Text style={styles.warehouseText}>{session.warehouse}</Text>
+          <Text style={styles.warehouseText} numberOfLines={1}>
+            {session.warehouse}
+          </Text>
           <Text style={styles.dateText}>
             {new Date(session.created_at).toLocaleDateString()} •{" "}
             {new Date(session.created_at).toLocaleTimeString([], {
@@ -346,12 +352,14 @@ export default function StaffHome() {
   const renderContent = () => {
     if (activeTab === "active") {
       return (
-        <Animated.View entering={FadeInDown.duration(500)}>
+        <Animated.View entering={FadeInDown.duration(200)}>
           <ModernButton
             title="Start New Session"
             icon="add-circle-outline"
             onPress={() => setShowCreateModal(true)}
             style={styles.createButton}
+            accessibilityLabel="Start a new scanning session"
+            accessibilityHint="Creates a new session for counting inventory"
           />
 
           {activeSessions.length === 0 ? (
@@ -375,7 +383,7 @@ export default function StaffHome() {
 
     if (activeTab === "history") {
       return (
-        <Animated.View entering={FadeInDown.duration(500)}>
+        <Animated.View entering={FadeInDown.duration(200)}>
           {finishedSessions.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons
@@ -411,10 +419,16 @@ export default function StaffHome() {
         }}
       />
 
-      <View style={styles.tabs}>
+      <View style={styles.tabs} accessibilityRole="tablist">
         <TouchableOpacity
           style={[styles.tab, activeTab === "active" && styles.activeTab]}
-          onPress={() => setActiveTab("active")}
+          onPress={() => {
+            Haptics.selectionAsync();
+            setActiveTab("active");
+          }}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === "active" }}
+          accessibilityLabel={`Active sessions tab, ${activeSessions.length} sessions`}
         >
           <Text
             style={[
@@ -427,7 +441,13 @@ export default function StaffHome() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === "history" && styles.activeTab]}
-          onPress={() => setActiveTab("history")}
+          onPress={() => {
+            Haptics.selectionAsync();
+            setActiveTab("history");
+          }}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === "history" }}
+          accessibilityLabel="History tab, view completed sessions"
         >
           <Text
             style={[
@@ -505,7 +525,7 @@ export default function StaffHome() {
                       style={[
                         styles.chip,
                         selectedFloor === wh.warehouse_name &&
-                          styles.chipActive,
+                        styles.chipActive,
                       ]}
                       onPress={() => setSelectedFloor(wh.warehouse_name)}
                     >
@@ -513,7 +533,7 @@ export default function StaffHome() {
                         style={[
                           styles.chipText,
                           selectedFloor === wh.warehouse_name &&
-                            styles.chipTextActive,
+                          styles.chipTextActive,
                         ]}
                       >
                         {wh.warehouse_name}

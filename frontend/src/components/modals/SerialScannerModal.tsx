@@ -8,7 +8,10 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { ScanThrottleManager } from "../../config/scannerConfig";
+import {
+  SCANNER_CONFIG,
+  ScanThrottleManager,
+} from "../../config/scannerConfig";
 import {
   validateScannedSerial,
   normalizeSerialValue,
@@ -26,6 +29,7 @@ interface SerialScannerModalProps {
   existingSerials: string[];
   itemName?: string;
   defaultMrp?: number;
+  closeOnScan?: boolean;
   onSerialScanned: (data: {
     serial_number: string;
     mrp?: number;
@@ -39,6 +43,7 @@ export const SerialScannerModal: React.FC<SerialScannerModalProps> = ({
   existingSerials,
   itemName,
   defaultMrp,
+  closeOnScan = false,
   onSerialScanned,
   onClose,
 }) => {
@@ -57,6 +62,7 @@ export const SerialScannerModal: React.FC<SerialScannerModalProps> = ({
     if (visible) {
       setLastScanned(null);
       setScanFeedback(null);
+      throttleManagerRef.current.reset();
     }
   }, [visible]);
 
@@ -90,15 +96,26 @@ export const SerialScannerModal: React.FC<SerialScannerModalProps> = ({
         return;
       }
 
-      // Valid serial - success feedback
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Valid serial - check for warnings
       const normalizedSerial = normalizeSerialValue(scannedValue);
 
+      // Record scan to prevent duplicates
+      throttleManagerRef.current.recordScan(scannedValue);
       setLastScanned(normalizedSerial);
-      setScanFeedback({
-        type: "success",
-        message: `Serial added: ${normalizedSerial}`,
-      });
+
+      if (validation.warning) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        setScanFeedback({
+          type: "warning",
+          message: `Added: "${normalizedSerial}". ${validation.warning}`,
+        });
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setScanFeedback({
+          type: "success",
+          message: `Serial added: ${normalizedSerial}`,
+        });
+      }
 
       // Pass to parent with default values
       onSerialScanned({
@@ -106,8 +123,15 @@ export const SerialScannerModal: React.FC<SerialScannerModalProps> = ({
         mrp: defaultMrp,
         manufacturing_date: undefined,
       });
+
+      // Close if requested (one-by-one mode)
+      if (closeOnScan) {
+        setTimeout(() => {
+          onClose();
+        }, 500); // Small delay to show success feedback
+      }
     },
-    [existingSerials, defaultMrp, onSerialScanned],
+    [existingSerials, defaultMrp, onSerialScanned, closeOnScan, onClose],
   );
 
   const getFeedbackStyle = () => {
@@ -131,17 +155,7 @@ export const SerialScannerModal: React.FC<SerialScannerModalProps> = ({
           style={StyleSheet.absoluteFillObject}
           facing="back"
           barcodeScannerSettings={{
-            barcodeTypes: [
-              "qr",
-              "code128",
-              "code39",
-              "code93",
-              "datamatrix",
-              "ean13",
-              "ean8",
-              "upc_a",
-              "upc_e",
-            ],
+            barcodeTypes: SCANNER_CONFIG.barcodeTypes as any,
           }}
           onBarcodeScanned={handleBarcodeScanned}
         />

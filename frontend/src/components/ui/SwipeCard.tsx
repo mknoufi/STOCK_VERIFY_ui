@@ -22,6 +22,7 @@ import Animated, {
   runOnJS,
   interpolate,
   Extrapolation,
+  useReducedMotion,
 } from "react-native-reanimated";
 import { useThemeContext } from "../../context/ThemeContext";
 import { GlassCard } from "./GlassCard";
@@ -54,10 +55,21 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
   const { themeLegacy: theme, getFontSize } = useThemeContext();
   const translateX = useSharedValue(0);
   const contextX = useSharedValue(0);
+  // Reanimated 4.2+: Respect user's reduce motion preference
+  const shouldReduceMotion = useReducedMotion();
 
   const triggerHaptic = () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  // Use instant transitions when reduce motion is enabled
+  const animateValue = (toValue: number) => {
+    if (shouldReduceMotion) {
+      translateX.value = toValue;
+    } else {
+      translateX.value = withSpring(toValue);
     }
   };
 
@@ -79,16 +91,16 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
     .onEnd((_event) => {
       // Determine if we should snap to action position
       if (translateX.value > SWIPE_THRESHOLD / 2 && leftActions.length > 0) {
-        translateX.value = withSpring(SWIPE_THRESHOLD);
+        animateValue(SWIPE_THRESHOLD);
         runOnJS(triggerHaptic)();
       } else if (
         translateX.value < -SWIPE_THRESHOLD / 2 &&
         rightActions.length > 0
       ) {
-        translateX.value = withSpring(-SWIPE_THRESHOLD);
+        animateValue(-SWIPE_THRESHOLD);
         runOnJS(triggerHaptic)();
       } else {
-        translateX.value = withSpring(0);
+        animateValue(0);
       }
     });
 

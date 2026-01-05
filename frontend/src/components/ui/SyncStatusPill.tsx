@@ -12,7 +12,7 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { getSyncStatus, forceSync } from "../../services/syncService";
+import { getSyncStatus, forceSync } from "../../services/syncManager";
 import { useNetworkStore } from "../../store/networkStore";
 import {
   modernColors,

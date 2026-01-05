@@ -311,6 +311,16 @@ class Settings(PydanticBaseSettings):
             "Defaults include localhost variants."
         ),
     )
+    # SECURITY: Trusted hosts - prevents host header attacks (CWE-644)
+    # In production, set via ALLOWED_HOSTS env var (comma-separated)
+    # Example: ALLOWED_HOSTS=stock-verify.example.com,api.example.com
+    ALLOWED_HOSTS: Optional[str] = Field(
+        None,
+        description=(
+            "Comma-separated list of allowed host headers. "
+            "If not set, defaults to localhost and LAN IPs in development."
+        ),
+    )
     # nosec: B104 - Binding to all interfaces is required for Docker and LAN access (React Native)
     HOST: str = "0.0.0.0"
     PORT: int = Field(8001, ge=1, le=65535)

@@ -10,11 +10,11 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   ViewStyle,
   TextStyle,
   TouchableOpacity,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   modernColors,
@@ -271,19 +271,15 @@ export function ActiveUsersPanel({
           <Text style={styles.emptyText}>No active personnel</Text>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={users}
           keyExtractor={(item) => item.user_id}
           renderItem={({ item }) => (
             <UserRow user={item} onPress={onUserPress} />
           )}
-          style={styles.list}
+          // @ts-ignore - estimatedItemSize required by FlashList
+          estimatedItemSize={70}
           showsVerticalScrollIndicator={false}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          removeClippedSubviews={true}
-          scrollEnabled={scrollEnabled}
         />
       )}
     </View>

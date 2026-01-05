@@ -138,6 +138,9 @@ export const addPendingVerification = async (
 /**
  * Get all pending verifications (only those with status 'pending').
  */
+/**
+ * @deprecated logic moved to offlineStorage.ts / api.ts using AsyncStorage.
+ */
 export const getPendingVerifications = async (): Promise<
   PendingVerification[]
 > => {
@@ -208,6 +211,18 @@ export const localDb = {
     return mapLocalItemToAppItem(row);
   },
 
+  /**
+   * @deprecated logic moved to offlineStorage.ts / api.ts.
+   */
+  async deletePendingVerification(id: number): Promise<void> {
+    const db = await getDb();
+    await db.runAsync("DELETE FROM pending_verifications WHERE id = ?", [id]);
+  },
+
+  /**
+   * @deprecated logic moved to offlineStorage.ts / api.ts using AsyncStorage.
+   * This function does not participate in the active sync queue.
+   */
   async savePendingVerification(
     payload: CreateCountLinePayload,
   ): Promise<void> {

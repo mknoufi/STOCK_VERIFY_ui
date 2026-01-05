@@ -12,7 +12,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getSyncStatus, forceSync, SyncResult } from "../services/syncService";
+import {
+  getSyncStatus,
+  forceSync,
+  SyncResult,
+} from "../services/syncManager";
 import { useNetworkStore } from "../store/networkStore";
 
 interface SyncStatus {

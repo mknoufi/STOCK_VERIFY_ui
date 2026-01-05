@@ -9,10 +9,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import { SearchResult } from "../../services/enhancedSearchService";
 import { Skeleton } from "../ui/Skeleton";
@@ -261,21 +261,19 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
               {totalResults > searchResults.length ? ` of ${totalResults}` : ""}
             </Text>
           </View>
-          <FlatList
+          <FlashList
             data={searchResults}
             renderItem={renderSearchResultItem}
             keyExtractor={(item, index) =>
               `search-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`
             }
-            style={styles.searchResultsFlatList}
-            nestedScrollEnabled={true}
+            // @ts-ignore - estimatedItemSize required by FlashList
+            estimatedItemSize={70}
+            contentContainerStyle={styles.searchResultsFlatList}
             showsVerticalScrollIndicator={true}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.3}
             ListFooterComponent={renderFooter}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={5}
           />
         </View>
       )}

@@ -80,3 +80,56 @@ export default {
   medium: hapticMedium,
   heavy: hapticHeavy,
 };
+
+/**
+ * Semantic haptic patterns for common app actions
+ * Use these for consistent UX across the app
+ */
+export const appHaptics = {
+  // Navigation
+  navigate: hapticLight,
+  goBack: hapticLight,
+  openModal: hapticMedium,
+  closeModal: hapticLight,
+
+  // Buttons
+  buttonPress: hapticMedium,
+  primaryAction: hapticMedium,
+  secondaryAction: hapticLight,
+  dangerAction: hapticWarning,
+
+  // Forms
+  inputFocus: hapticSelection,
+  formSubmit: hapticMedium,
+  formSuccess: hapticSuccess,
+  formError: hapticError,
+  validationError: hapticWarning,
+
+  // Lists & Selection
+  itemSelect: hapticSelection,
+  tabSwitch: hapticSelection,
+  toggleSwitch: hapticLight,
+  checkboxToggle: hapticLight,
+
+  // Scanning
+  scanStart: hapticMedium,
+  scanSuccess: hapticSuccess,
+  scanError: hapticError,
+  barcodeDetected: hapticMedium,
+
+  // Sessions
+  sessionCreate: hapticSuccess,
+  sessionClose: hapticMedium,
+  sessionResume: hapticLight,
+
+  // Sync
+  syncStart: hapticLight,
+  syncComplete: hapticSuccess,
+  syncError: hapticError,
+
+  // Misc
+  refresh: hapticLight,
+  longPress: hapticHeavy,
+  swipe: hapticLight,
+  delete: hapticWarning,
+};

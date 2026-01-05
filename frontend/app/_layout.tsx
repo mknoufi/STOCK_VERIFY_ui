@@ -11,8 +11,8 @@ import "react-native-reanimated";
 import { StatusBar } from "expo-status-bar";
 import { useAuthStore } from "../src/store/authStore";
 import { initializeNetworkListener } from "../src/services/networkService";
-import { initializeSyncService } from "../src/services/syncService";
-import { registerBackgroundSync } from "../src/services/backgroundSync";
+import { initializeSyncService } from "../src/services/syncManager";
+
 import { ErrorBoundary } from "../src/components/ErrorBoundary";
 import { ThemeService } from "../src/services/themeService";
 import { useSettingsStore } from "../src/store/settingsStore";
@@ -121,7 +121,7 @@ export default function RootLayout() {
       setTimeout(async () => {
         try {
           await SplashScreen.hideAsync();
-        } catch (e) {
+        } catch {
           // Ignore error
         }
       }, 2000);
@@ -233,22 +233,6 @@ export default function RootLayout() {
           // Continue anyway - will use defaults
         }
 
-        // Register background sync task (with timeout)
-        try {
-          const syncPromise = registerBackgroundSync();
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Background sync timeout")),
-              1000,
-            ),
-          );
-          await Promise.race([syncPromise, timeoutPromise]);
-        } catch (syncError) {
-          if (__DEV__) {
-            console.warn("⚠️ Background sync registration failed:", syncError);
-          }
-        }
-
         // Initialize theme (with timeout)
         try {
           const themePromise = ThemeService.initialize();
@@ -285,7 +269,7 @@ export default function RootLayout() {
             syncService.cleanup();
             try {
               stopOfflineQueue();
-            } catch {}
+            } catch { }
           });
         }
 

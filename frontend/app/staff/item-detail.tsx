@@ -3,7 +3,7 @@
  * Clean, efficient item verification interface
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import {
   View,
   Text,
@@ -18,13 +18,15 @@ import {
   Modal,
   FlatList,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeIn, Easing } from "react-native-reanimated";
 
 import { useScanSessionStore } from "../../src/store/scanSessionStore";
+import { useThemeContext } from "../../src/context/ThemeContext";
 import {
   getItemByBarcode,
   createCountLine,
@@ -53,6 +55,7 @@ import { ThemedScreen } from "../../src/components/ui/ThemedScreen";
 import {
   colors,
   semanticColors,
+  darkColors,
   spacing,
   fontSize,
   fontWeight,
@@ -74,6 +77,11 @@ export default function ItemDetailScreen() {
   const params = useLocalSearchParams<{ barcode: string; sessionId: string }>();
   const { barcode, sessionId } = params;
   const { currentFloor, currentRack } = useScanSessionStore();
+  
+  // Theme
+  const { themeLegacy } = useThemeContext();
+  const isDark = themeLegacy.isDark;
+  const themeColors = isDark ? darkColors : semanticColors;
 
   // State
   const [loading, setLoading] = useState(false);
@@ -102,14 +110,14 @@ export default function ItemDetailScreen() {
   );
 
   // Legacy single serial (for backward compatibility)
-  const [serialNumber, setSerialNumber] = useState("");
+  const [serialNumber, _setSerialNumber] = useState("");
   const [varianceRemark, setVarianceRemark] = useState("");
   const [mrpVariants, setMrpVariants] = useState<any[]>([]);
   const [selectedMrpVariant, setSelectedMrpVariant] = useState<any>(null);
 
   // Variants with same name
   const [sameNameVariants, setSameNameVariants] = useState<any[]>([]);
-  const [loadingVariants, setLoadingVariants] = useState(false);
+  const [_loadingVariants, setLoadingVariants] = useState(false);
 
   // Damage State
   const [isDamageEnabled, setIsDamageEnabled] = useState(false);
@@ -225,7 +233,7 @@ export default function ItemDetailScreen() {
     if (item) {
       loadVariants();
     }
-  }, [item?.item_name, item?.item_code, item?.barcode]);
+  }, [item?.item_name, item?.item_code, item?.barcode, item]);
 
   // Check if item uses weight-based UOM (kg) - allows fractional quantities
   const isWeightBasedUOM = useMemo(() => {
@@ -338,7 +346,13 @@ export default function ItemDetailScreen() {
         is_valid: true,
       };
 
-      setSerialEntries((prev) => [...prev, newEntry]);
+      setSerialEntries((prev) => {
+        // Prevent duplicates (safety check)
+        if (prev.some((e) => e.serial_number === data.serial_number)) {
+          return prev;
+        }
+        return [...prev, newEntry];
+      });
       // Quantity auto-increments via useEffect above
     },
     [mrp, item],
@@ -381,10 +395,10 @@ export default function ItemDetailScreen() {
     label: string;
     placeholder: string;
   }[] = [
-    { value: "full", label: "Full Date", placeholder: "DD/MM/YYYY" },
-    { value: "month_year", label: "Month & Year", placeholder: "MM/YYYY" },
-    { value: "year_only", label: "Year Only", placeholder: "YYYY" },
-  ];
+      { value: "full", label: "Full Date", placeholder: "DD/MM/YYYY" },
+      { value: "month_year", label: "Month & Year", placeholder: "MM/YYYY" },
+      { value: "year_only", label: "Year Only", placeholder: "YYYY" },
+    ];
 
   // Local pieces for picker-based date selection
   const [mfgDay, setMfgDay] = useState<string>("");
@@ -672,7 +686,7 @@ export default function ItemDetailScreen() {
   );
 
   // Handle date input change with auto-formatting
-  const handleDateInputChange = useCallback(
+  const _handleDateInputChange = useCallback(
     (value: string, format: DateFormatType, setter: (val: string) => void) => {
       const formatted = parseDateInput(value, format);
       setter(formatted);
@@ -766,7 +780,7 @@ export default function ItemDetailScreen() {
       Alert.alert(
         "Serial Number Error",
         "Please enter valid serial numbers. " +
-          serialValidationErrors.join(", "),
+        serialValidationErrors.join(", "),
       );
       return;
     }
@@ -787,8 +801,8 @@ export default function ItemDetailScreen() {
       // Collect valid serial numbers from either serialized item array or legacy field
       const validSerials = isSerializedItem
         ? serialNumbers
-            .filter((s) => s.trim().length > 0)
-            .map(normalizeSerialValue)
+          .filter((s) => s.trim().length > 0)
+          .map(normalizeSerialValue)
         : serialNumber
           ? [normalizeSerialValue(serialNumber)]
           : [];
@@ -796,15 +810,15 @@ export default function ItemDetailScreen() {
       // Prepare serial entries data with full details (for serialized items)
       const serialEntriesData = isSerializedItem
         ? serialEntries
-            .filter((e) => e.serial_number.trim().length > 0)
-            .map((e) => ({
-              serial_number: normalizeSerialValue(e.serial_number),
-              mrp: e.mrp,
-              manufacturing_date: e.manufacturing_date,
-              mfg_date_format: e.mfg_date_format,
-              expiry_date: e.expiry_date,
-              expiry_date_format: e.expiry_date_format,
-            }))
+          .filter((e) => e.serial_number.trim().length > 0)
+          .map((e) => ({
+            serial_number: normalizeSerialValue(e.serial_number),
+            mrp: e.mrp,
+            manufacturing_date: e.manufacturing_date,
+            mfg_date_format: e.mfg_date_format,
+            expiry_date: e.expiry_date,
+            expiry_date_format: e.expiry_date_format,
+          }))
         : [];
 
       // Determine manufacturing date - from item-level input or existing item data
@@ -857,13 +871,17 @@ export default function ItemDetailScreen() {
     }
   };
 
-  // Skeleton Loader Component for enterprise loading state
-  const SkeletonLoader = ({ style }: { style?: any }) => (
-    <View style={[styles.skeleton, style]} />
-  );
+  // Memoized Skeleton Loader Component for enterprise loading state
+  const SkeletonLoader = memo(({ style }: { style?: any }) => (
+    <Animated.View 
+      entering={FadeIn.duration(300)}
+      style={[styles.skeleton, styles.skeletonAnimated, style]} 
+    />
+  ));
+  SkeletonLoader.displayName = 'SkeletonLoader';
 
   // Loading Skeleton Screen
-  const LoadingSkeleton = () => (
+  const LoadingSkeleton = memo(() => (
     <ThemedScreen>
       <ModernHeader
         title="Verify Item"
@@ -944,7 +962,8 @@ export default function ItemDetailScreen() {
         </ModernCard>
       </ScrollView>
     </ThemedScreen>
-  );
+  ));
+  LoadingSkeleton.displayName = 'LoadingSkeleton';
 
   if (loading) {
     return <LoadingSkeleton />;
@@ -961,16 +980,24 @@ export default function ItemDetailScreen() {
       />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <ScrollView
+          style={{ flex: 1 }}
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="always"
-          keyboardDismissMode="none"
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+          overScrollMode="always"
+          nestedScrollEnabled={true}
+          scrollEventThrottle={16}
+          scrollIndicatorInsets={{ right: 1 }}
         >
           {/* Item Header Card */}
-          <Animated.View entering={FadeInDown.duration(500)}>
+          <Animated.View entering={FadeInDown.duration(200)}>
             <ModernCard style={styles.itemCard}>
               <View style={styles.itemHeader}>
                 <View
@@ -985,7 +1012,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.itemName,
-                      { color: semanticColors.text.primary },
+                      { color: themeColors.text.primary },
                     ]}
                   >
                     {item.item_name || item.name}
@@ -993,7 +1020,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.itemCode,
-                      { color: semanticColors.text.secondary },
+                      { color: themeColors.text.secondary },
                     ]}
                   >
                     {item.category || "-"} • {item.subcategory || "-"}
@@ -1006,7 +1033,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.detailLabel,
-                      { color: semanticColors.text.secondary },
+                      { color: themeColors.text.secondary },
                     ]}
                   >
                     Stock
@@ -1014,7 +1041,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.detailValue,
-                      { color: semanticColors.text.primary },
+                      { color: themeColors.text.primary },
                     ]}
                   >
                     {(() => {
@@ -1028,7 +1055,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.detailLabel,
-                      { color: semanticColors.text.secondary },
+                      { color: themeColors.text.secondary },
                     ]}
                   >
                     MRP
@@ -1036,7 +1063,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.detailValue,
-                      { color: semanticColors.text.primary },
+                      { color: themeColors.text.primary },
                     ]}
                   >
                     ₹{item.mrp || 0}
@@ -1046,7 +1073,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.detailLabel,
-                      { color: semanticColors.text.secondary },
+                      { color: themeColors.text.secondary },
                     ]}
                   >
                     Price
@@ -1054,7 +1081,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.detailValue,
-                      { color: semanticColors.text.primary },
+                      { color: themeColors.text.primary },
                     ]}
                   >
                     ₹{item.sale_price || item.sales_price || 0}
@@ -1066,7 +1093,7 @@ export default function ItemDetailScreen() {
 
           {/* Is Serialized Toggle - MOVED UP */}
           <Animated.View
-            entering={FadeInDown.delay(50).duration(500)}
+            entering={FadeInDown.delay(20).duration(200)}
             style={styles.section}
           >
             <View style={styles.toggleRow}>
@@ -1079,7 +1106,7 @@ export default function ItemDetailScreen() {
                 <Text
                   style={[
                     styles.toggleLabel,
-                    { color: semanticColors.text.primary },
+                    { color: themeColors.text.primary },
                   ]}
                 >
                   Is Serialized Item
@@ -1100,7 +1127,7 @@ export default function ItemDetailScreen() {
             <Text
               style={[
                 styles.toggleHint,
-                { color: semanticColors.text.secondary },
+                { color: themeColors.text.secondary },
               ]}
             >
               {isSerializedItem
@@ -1114,7 +1141,7 @@ export default function ItemDetailScreen() {
             <>
               {/* Quantity Input */}
               <Animated.View
-                entering={FadeInDown.delay(100).duration(500)}
+                entering={FadeInDown.delay(40).duration(200)}
                 style={styles.section}
               >
                 {/* Barcode Display */}
@@ -1124,7 +1151,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={{
                       fontSize: fontSize.sm,
-                      color: semanticColors.text.secondary,
+                      color: themeColors.text.secondary,
                       marginBottom: 4,
                     }}
                   >
@@ -1134,9 +1161,11 @@ export default function ItemDetailScreen() {
                     style={{
                       fontSize: fontSize.xl,
                       fontWeight: fontWeight.bold,
-                      color: semanticColors.text.primary,
+                      color: themeColors.text.primary,
                       letterSpacing: 1,
                     }}
+                    selectable={true}
+                    accessibilityLabel={`Barcode: ${item.item_code || barcode}`}
                   >
                     {item.item_code || barcode}
                   </Text>
@@ -1146,7 +1175,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.sectionTitle,
-                      { color: semanticColors.text.primary },
+                      { color: themeColors.text.primary },
                     ]}
                   >
                     Counted Quantity{" "}
@@ -1155,6 +1184,36 @@ export default function ItemDetailScreen() {
                     )}
                   </Text>
                 </View>
+
+                {/* Quick Quantity Buttons */}
+                {!isWeightBasedUOM && (
+                  <View style={styles.quickQtyContainer}>
+                    {[1, 5, 10, 25].map((val) => (
+                      <TouchableOpacity
+                        key={val}
+                        style={[
+                          styles.quickQtyButton,
+                          quantity === String(val) && styles.quickQtyButtonActive,
+                        ]}
+                        onPress={() => {
+                          setQuantity(String(val));
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        }}
+                        accessibilityLabel={`Set quantity to ${val}`}
+                      >
+                        <Text
+                          style={[
+                            styles.quickQtyText,
+                            quantity === String(val) && styles.quickQtyTextActive,
+                          ]}
+                        >
+                          {val}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
                 <View style={styles.quantityContainer}>
                   <TouchableOpacity
                     style={[
@@ -1174,11 +1233,15 @@ export default function ItemDetailScreen() {
                       }
                     }}
                     activeOpacity={0.7}
+                    accessibilityLabel="Decrease quantity"
+                    accessibilityRole="button"
+                    accessibilityHint={`Decreases quantity by ${getQuantityStep()}`}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Ionicons
                       name="remove"
                       size={28}
-                      color={semanticColors.text.primary}
+                      color={themeColors.text.primary}
                     />
                   </TouchableOpacity>
 
@@ -1186,15 +1249,16 @@ export default function ItemDetailScreen() {
                     style={[
                       styles.qtyDisplay,
                       {
-                        backgroundColor: semanticColors.background.paper,
+                        backgroundColor: themeColors.background.paper,
                         borderColor: colors.primary[200],
                       },
                     ]}
+                    accessibilityLabel={`Current quantity: ${quantity}`}
                   >
                     <TextInput
                       style={[
                         styles.qtyText,
-                        { color: semanticColors.text.primary },
+                        { color: themeColors.text.primary },
                       ]}
                       value={quantity}
                       onChangeText={handleQuantityChange}
@@ -1211,7 +1275,11 @@ export default function ItemDetailScreen() {
                       }
                       selectTextOnFocus
                       placeholder="0"
-                      placeholderTextColor={semanticColors.text.disabled}
+                      placeholderTextColor={themeColors.text.disabled}
+                      accessibilityLabel="Quantity input"
+                      accessibilityHint="Enter the counted quantity"
+                      returnKeyType="done"
+                      blurOnSubmit={true}
                     />
                   </View>
 
@@ -1228,6 +1296,10 @@ export default function ItemDetailScreen() {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     }}
                     activeOpacity={0.7}
+                    accessibilityLabel="Increase quantity"
+                    accessibilityRole="button"
+                    accessibilityHint={`Increases quantity by ${getQuantityStep()}`}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Ionicons name="add" size={28} color={colors.white} />
                   </TouchableOpacity>
@@ -1236,7 +1308,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.quantityHint,
-                      { color: semanticColors.text.secondary },
+                      { color: themeColors.text.secondary },
                     ]}
                   >
                     +/- {getQuantityStep()} per tap • Max 2 decimal places
@@ -1246,14 +1318,14 @@ export default function ItemDetailScreen() {
 
               {/* MRP Selection / Override - MOVED UP */}
               <Animated.View
-                entering={FadeInDown.delay(150).duration(500)}
+                entering={FadeInDown.delay(60).duration(200)}
                 style={styles.section}
               >
                 <View style={styles.sectionHeader}>
                   <Text
                     style={[
                       styles.sectionTitle,
-                      { color: semanticColors.text.primary },
+                      { color: themeColors.text.primary },
                     ]}
                   >
                     MRP
@@ -1282,8 +1354,8 @@ export default function ItemDetailScreen() {
                         style={[
                           styles.chip,
                           {
-                            backgroundColor: semanticColors.background.paper,
-                            borderColor: semanticColors.border.default,
+                            backgroundColor: themeColors.background.paper,
+                            borderColor: themeColors.border.default,
                           },
                           selectedMrpVariant?.value === variant.value && {
                             backgroundColor: colors.primary[50],
@@ -1298,7 +1370,7 @@ export default function ItemDetailScreen() {
                         <Text
                           style={[
                             styles.chipText,
-                            { color: semanticColors.text.secondary },
+                            { color: themeColors.text.secondary },
                             selectedMrpVariant?.value === variant.value && {
                               color: colors.primary[700],
                               fontWeight: fontWeight.medium,
@@ -1317,13 +1389,20 @@ export default function ItemDetailScreen() {
                     keyboardType="numeric"
                     placeholder="Enter new MRP"
                     icon="pricetag"
+                    labelStyle={{ color: themeColors.text.secondary }}
+                    style={{
+                      backgroundColor: themeColors.background.paper,
+                      borderColor: themeColors.border.default,
+                    }}
+                    inputStyle={{ color: themeColors.text.primary }}
+                    placeholderTextColor={themeColors.text.disabled}
                   />
                 ) : (
                   <Text
                     style={{
                       fontSize: 18,
                       fontWeight: "bold",
-                      color: semanticColors.text.primary,
+                      color: themeColors.text.primary,
                     }}
                   >
                     ₹{mrp || item.mrp || 0}
@@ -1333,13 +1412,13 @@ export default function ItemDetailScreen() {
 
               {/* Manufacturing & Expiry Date Toggle Section - MOVED UP */}
               <Animated.View
-                entering={FadeInDown.delay(200).duration(500)}
+                entering={FadeInDown.delay(80).duration(200)}
                 style={styles.section}
               >
                 <Text
                   style={[
                     styles.sectionTitle,
-                    { color: semanticColors.text.primary },
+                    { color: themeColors.text.primary },
                   ]}
                 >
                   Dates
@@ -1356,7 +1435,7 @@ export default function ItemDetailScreen() {
                       <Text
                         style={[
                           styles.toggleLabel,
-                          { color: semanticColors.text.primary },
+                          { color: themeColors.text.primary },
                         ]}
                       >
                         Has Manufacturing Date
@@ -1394,7 +1473,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 itemMfgDateFormat === opt.value &&
-                                  styles.dateFormatOptionActive,
+                                styles.dateFormatOptionActive,
                               ]}
                               onPress={() => {
                                 setItemMfgDateFormat(opt.value);
@@ -1405,7 +1484,7 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   itemMfgDateFormat === opt.value &&
-                                    styles.dateFormatOptionTextActive,
+                                  styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -1420,10 +1499,10 @@ export default function ItemDetailScreen() {
                           {
                             borderColor:
                               itemMfgDate &&
-                              !validateDateInput(itemMfgDate, itemMfgDateFormat)
+                                !validateDateInput(itemMfgDate, itemMfgDateFormat)
                                 ? colors.error[500]
                                 : colors.neutral[300],
-                            backgroundColor: semanticColors.background.paper,
+                            backgroundColor: themeColors.background.paper,
                           },
                         ]}
                       >
@@ -1532,7 +1611,7 @@ export default function ItemDetailScreen() {
                       <Text
                         style={[
                           styles.toggleLabel,
-                          { color: semanticColors.text.primary },
+                          { color: themeColors.text.primary },
                         ]}
                       >
                         Has Expiry Date
@@ -1568,7 +1647,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 itemExpiryDateFormat === opt.value &&
-                                  styles.dateFormatOptionActive,
+                                styles.dateFormatOptionActive,
                               ]}
                               onPress={() => {
                                 setItemExpiryDateFormat(opt.value);
@@ -1579,7 +1658,7 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   itemExpiryDateFormat === opt.value &&
-                                    styles.dateFormatOptionTextActive,
+                                  styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -1594,13 +1673,13 @@ export default function ItemDetailScreen() {
                           {
                             borderColor:
                               itemExpiryDate &&
-                              !validateDateInput(
-                                itemExpiryDate,
-                                itemExpiryDateFormat,
-                              )
+                                !validateDateInput(
+                                  itemExpiryDate,
+                                  itemExpiryDateFormat,
+                                )
                                 ? colors.error[500]
                                 : colors.neutral[300],
-                            backgroundColor: semanticColors.background.paper,
+                            backgroundColor: themeColors.background.paper,
                           },
                         ]}
                       >
@@ -1739,7 +1818,7 @@ export default function ItemDetailScreen() {
           {/* SERIALIZED MODE: Serial Number Input */}
           {isSerializedItem && (
             <Animated.View
-              entering={FadeInDown.delay(100).duration(500)}
+              entering={FadeInDown.delay(40).duration(200)}
               style={styles.section}
             >
               {/* Multiple serial inputs for serialized items with per-serial MRP/mfg date */}
@@ -1755,7 +1834,7 @@ export default function ItemDetailScreen() {
                       style={[
                         styles.sectionTitle,
                         {
-                          color: semanticColors.text.primary,
+                          color: themeColors.text.primary,
                           marginLeft: spacing.xs,
                         },
                       ]}
@@ -1766,7 +1845,7 @@ export default function ItemDetailScreen() {
                   <Text
                     style={[
                       styles.serialHelperText,
-                      { color: semanticColors.text.secondary },
+                      { color: themeColors.text.secondary },
                     ]}
                   >
                     Scan or type serial numbers - quantity auto-updates (
@@ -1798,12 +1877,21 @@ export default function ItemDetailScreen() {
 
                 {/* Serial Entries with per-item MRP and Manufacturing Date */}
                 {serialEntries.map((entry, index) => (
-                  <View key={entry.id} style={styles.serialEntryCard}>
+                  <View
+                    key={entry.id}
+                    style={[
+                      styles.serialEntryCard,
+                      {
+                        backgroundColor: themeColors.background.paper,
+                        borderColor: themeColors.border.default,
+                      },
+                    ]}
+                  >
                     <View style={styles.serialEntryHeader}>
                       <Text
                         style={[
                           styles.serialLabel,
-                          { color: semanticColors.text.secondary },
+                          { color: themeColors.text.secondary },
                         ]}
                       >
                         Unit #{index + 1}
@@ -1826,8 +1914,8 @@ export default function ItemDetailScreen() {
                         style={[
                           styles.serialTextInput,
                           {
-                            color: semanticColors.text.primary,
-                            backgroundColor: semanticColors.background.paper,
+                            color: themeColors.text.primary,
+                            backgroundColor: themeColors.background.paper,
                             borderColor: entry.serial_number.trim()
                               ? validateSerialNumber(entry.serial_number)
                                 ? colors.error[500]
@@ -1840,7 +1928,7 @@ export default function ItemDetailScreen() {
                           handleSerialChange(index, "serial_number", text)
                         }
                         placeholder="Serial number"
-                        placeholderTextColor={semanticColors.text.disabled}
+                        placeholderTextColor={themeColors.text.disabled}
                         autoCapitalize="characters"
                         autoCorrect={false}
                       />
@@ -1860,8 +1948,8 @@ export default function ItemDetailScreen() {
                           style={[
                             styles.serialDetailInput,
                             {
-                              color: semanticColors.text.primary,
-                              backgroundColor: semanticColors.background.paper,
+                              color: themeColors.text.primary,
+                              backgroundColor: themeColors.background.paper,
                             },
                           ]}
                           value={entry.mrp ? String(entry.mrp) : ""}
@@ -1873,7 +1961,7 @@ export default function ItemDetailScreen() {
                             )
                           }
                           placeholder="MRP"
-                          placeholderTextColor={semanticColors.text.disabled}
+                          placeholderTextColor={themeColors.text.disabled}
                           keyboardType="numeric"
                         />
                       </View>
@@ -1892,7 +1980,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 (entry.mfg_date_format || "full") ===
-                                  opt.value && styles.dateFormatOptionActive,
+                                opt.value && styles.dateFormatOptionActive,
                               ]}
                               onPress={() =>
                                 handleSerialDateFormatChange(
@@ -1906,8 +1994,8 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   (entry.mfg_date_format || "full") ===
-                                    opt.value &&
-                                    styles.dateFormatOptionTextActive,
+                                  opt.value &&
+                                  styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -1920,14 +2008,14 @@ export default function ItemDetailScreen() {
                         style={[
                           styles.serialDetailInput,
                           {
-                            color: semanticColors.text.primary,
-                            backgroundColor: semanticColors.background.paper,
+                            color: themeColors.text.primary,
+                            backgroundColor: themeColors.background.paper,
                             borderColor:
                               entry.manufacturing_date &&
-                              !validateDateInput(
-                                entry.manufacturing_date,
-                                entry.mfg_date_format || "full",
-                              )
+                                !validateDateInput(
+                                  entry.manufacturing_date,
+                                  entry.mfg_date_format || "full",
+                                )
                                 ? colors.error[500]
                                 : colors.neutral[300],
                           },
@@ -1947,7 +2035,7 @@ export default function ItemDetailScreen() {
                               o.value === (entry.mfg_date_format || "full"),
                           )?.placeholder || "DD/MM/YYYY"
                         }
-                        placeholderTextColor={semanticColors.text.disabled}
+                        placeholderTextColor={themeColors.text.disabled}
                         keyboardType="number-pad"
                         maxLength={
                           entry.mfg_date_format === "year_only"
@@ -1972,7 +2060,7 @@ export default function ItemDetailScreen() {
                               style={[
                                 styles.dateFormatOption,
                                 (entry.expiry_date_format || "full") ===
-                                  opt.value && styles.dateFormatOptionActive,
+                                opt.value && styles.dateFormatOptionActive,
                               ]}
                               onPress={() =>
                                 handleSerialDateFormatChange(
@@ -1986,8 +2074,8 @@ export default function ItemDetailScreen() {
                                 style={[
                                   styles.dateFormatOptionText,
                                   (entry.expiry_date_format || "full") ===
-                                    opt.value &&
-                                    styles.dateFormatOptionTextActive,
+                                  opt.value &&
+                                  styles.dateFormatOptionTextActive,
                                 ]}
                               >
                                 {opt.label}
@@ -2000,14 +2088,14 @@ export default function ItemDetailScreen() {
                         style={[
                           styles.serialDetailInput,
                           {
-                            color: semanticColors.text.primary,
-                            backgroundColor: semanticColors.background.paper,
+                            color: themeColors.text.primary,
+                            backgroundColor: themeColors.background.paper,
                             borderColor:
                               entry.expiry_date &&
-                              !validateDateInput(
-                                entry.expiry_date,
-                                entry.expiry_date_format || "full",
-                              )
+                                !validateDateInput(
+                                  entry.expiry_date,
+                                  entry.expiry_date_format || "full",
+                                )
                                 ? colors.error[500]
                                 : colors.neutral[300],
                           },
@@ -2027,7 +2115,7 @@ export default function ItemDetailScreen() {
                               o.value === (entry.expiry_date_format || "full"),
                           )?.placeholder || "DD/MM/YYYY"
                         }
-                        placeholderTextColor={semanticColors.text.disabled}
+                        placeholderTextColor={themeColors.text.disabled}
                         keyboardType="number-pad"
                         maxLength={
                           entry.expiry_date_format === "year_only"
@@ -2061,13 +2149,13 @@ export default function ItemDetailScreen() {
 
           {/* Quality & Status Section - Grouped */}
           <Animated.View
-            entering={FadeInDown.delay(300).duration(500)}
+            entering={FadeInDown.delay(100).duration(200)}
             style={styles.section}
           >
             <Text
               style={[
                 styles.sectionTitle,
-                { color: semanticColors.text.primary },
+                { color: themeColors.text.primary },
               ]}
             >
               Quality & Status
@@ -2079,7 +2167,7 @@ export default function ItemDetailScreen() {
                 style={[
                   styles.detailLabel,
                   {
-                    color: semanticColors.text.secondary,
+                    color: themeColors.text.secondary,
                     marginBottom: spacing.sm,
                   },
                 ]}
@@ -2097,8 +2185,8 @@ export default function ItemDetailScreen() {
                     style={[
                       styles.chip,
                       {
-                        backgroundColor: semanticColors.background.paper,
-                        borderColor: semanticColors.border.default,
+                        backgroundColor: themeColors.background.paper,
+                        borderColor: themeColors.border.default,
                       },
                       condition === opt && {
                         backgroundColor: colors.primary[50],
@@ -2110,7 +2198,7 @@ export default function ItemDetailScreen() {
                     <Text
                       style={[
                         styles.chipText,
-                        { color: semanticColors.text.secondary },
+                        { color: themeColors.text.secondary },
                         condition === opt && {
                           color: colors.primary[700],
                           fontWeight: fontWeight.medium,
@@ -2130,7 +2218,7 @@ export default function ItemDetailScreen() {
                 style={[
                   styles.sectionTitle,
                   {
-                    color: semanticColors.status.error,
+                    color: themeColors.status.error,
                     fontSize: fontSize.sm,
                     marginBottom: 0,
                   },
@@ -2143,7 +2231,7 @@ export default function ItemDetailScreen() {
                 onValueChange={setIsDamageEnabled}
                 trackColor={{
                   false: colors.neutral[200],
-                  true: semanticColors.status.error,
+                  true: themeColors.status.error,
                 }}
               />
             </View>
@@ -2164,6 +2252,13 @@ export default function ItemDetailScreen() {
                   keyboardType="numeric"
                   placeholder="Damaged Quantity"
                   label="Quantity"
+                  labelStyle={{ color: themeColors.text.secondary }}
+                  style={{
+                    backgroundColor: themeColors.background.paper,
+                    borderColor: themeColors.border.default,
+                  }}
+                  inputStyle={{ color: themeColors.text.primary }}
+                  placeholderTextColor={themeColors.text.disabled}
                 />
 
                 <View style={styles.damageTypeContainer}>
@@ -2223,7 +2318,7 @@ export default function ItemDetailScreen() {
 
           {/* Remarks Section */}
           <Animated.View
-            entering={FadeInDown.delay(400).duration(500)}
+            entering={FadeInDown.delay(120).duration(200)}
             style={styles.section}
           >
             {/* Variance Remark */}
@@ -2233,6 +2328,13 @@ export default function ItemDetailScreen() {
                 onChangeText={setVarianceRemark}
                 placeholder="Variance reason (if any)"
                 label="Variance Remark"
+                labelStyle={{ color: themeColors.text.secondary }}
+                style={{
+                  backgroundColor: themeColors.background.paper,
+                  borderColor: themeColors.border.default,
+                }}
+                inputStyle={{ color: themeColors.text.primary }}
+                placeholderTextColor={themeColors.text.disabled}
               />
             </View>
 
@@ -2244,19 +2346,26 @@ export default function ItemDetailScreen() {
               label="Remarks"
               multiline
               numberOfLines={3}
+              labelStyle={{ color: themeColors.text.secondary }}
+              style={{
+                backgroundColor: themeColors.background.paper,
+                borderColor: themeColors.border.default,
+              }}
+              inputStyle={{ color: themeColors.text.primary }}
+              placeholderTextColor={themeColors.text.disabled}
             />
           </Animated.View>
 
           {/* Batch History List - MOVED TO BOTTOM */}
           {sameNameVariants.length > 0 && (
             <Animated.View
-              entering={FadeInDown.delay(500).duration(500)}
+              entering={FadeInDown.delay(140).duration(200)}
               style={styles.section}
             >
               <Text
                 style={[
                   styles.sectionTitle,
-                  { color: semanticColors.text.primary },
+                  { color: themeColors.text.primary },
                 ]}
               >
                 Batch History
@@ -2279,7 +2388,7 @@ export default function ItemDetailScreen() {
                         style={{
                           fontSize: fontSize.md,
                           fontWeight: fontWeight.bold,
-                          color: semanticColors.text.primary,
+                          color: themeColors.text.primary,
                         }}
                       >
                         {variant.batch_no || variant.item_code}
@@ -2294,13 +2403,13 @@ export default function ItemDetailScreen() {
                         <Ionicons
                           name="cube-outline"
                           size={14}
-                          color={semanticColors.text.secondary}
+                          color={themeColors.text.secondary}
                         />
                         <Text
                           style={{
                             fontSize: fontSize.sm,
                             fontWeight: fontWeight.medium,
-                            color: semanticColors.text.primary,
+                            color: themeColors.text.primary,
                           }}
                         >
                           {variant.stock_qty || 0}
@@ -2318,7 +2427,7 @@ export default function ItemDetailScreen() {
                       <Text
                         style={{
                           fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
+                          color: themeColors.text.secondary,
                         }}
                       >
                         Exp:{" "}
@@ -2329,14 +2438,14 @@ export default function ItemDetailScreen() {
                       <Text
                         style={{
                           fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
+                          color: themeColors.text.secondary,
                         }}
                       >
                         Mfg:{" "}
                         {variant.manufacturing_date
                           ? new Date(
-                              variant.manufacturing_date,
-                            ).toLocaleDateString()
+                            variant.manufacturing_date,
+                          ).toLocaleDateString()
                           : "N/A"}
                       </Text>
                     </View>
@@ -2346,7 +2455,7 @@ export default function ItemDetailScreen() {
                         flexDirection: "row",
                         justifyContent: "space-between",
                         borderTopWidth: 1,
-                        borderTopColor: semanticColors.border.default,
+                        borderTopColor: themeColors.border.default,
                         paddingTop: 4,
                         marginTop: 4,
                       }}
@@ -2354,7 +2463,7 @@ export default function ItemDetailScreen() {
                       <Text
                         style={{
                           fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
+                          color: themeColors.text.secondary,
                         }}
                       >
                         MRP: ₹{variant.mrp || 0}
@@ -2362,7 +2471,7 @@ export default function ItemDetailScreen() {
                       <Text
                         style={{
                           fontSize: fontSize.xs,
-                          color: semanticColors.text.secondary,
+                          color: themeColors.text.secondary,
                         }}
                       >
                         Barcode: {variant.barcode || variant.item_code}
@@ -2383,8 +2492,8 @@ export default function ItemDetailScreen() {
         style={[
           styles.bottomContainer,
           {
-            backgroundColor: semanticColors.background.paper,
-            borderTopColor: semanticColors.border.default,
+            backgroundColor: themeColors.background.paper,
+            borderTopColor: themeColors.border.default,
           },
         ]}
       >
@@ -2406,6 +2515,7 @@ export default function ItemDetailScreen() {
         defaultMrp={parseFloat(mrp) || item?.mrp}
         onSerialScanned={handleSerialScanned}
         onClose={() => setShowSerialScanner(false)}
+        closeOnScan={true}
       />
     </ThemedScreen>
   );
@@ -2423,6 +2533,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing.md,
+    paddingBottom: 100, // Extra padding for bottom button
+    flexGrow: 1,
   },
   itemCard: {
     marginBottom: spacing.lg,
@@ -2489,6 +2601,36 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semiBold,
     color: colors.neutral[900],
     marginBottom: spacing.sm,
+  },
+  // Quick quantity preset buttons
+  quickQtyContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  quickQtyButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.neutral[100],
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    minWidth: 48,
+    alignItems: "center",
+  },
+  quickQtyButtonActive: {
+    backgroundColor: colors.primary[100],
+    borderColor: colors.primary[500],
+  },
+  quickQtyText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    color: colors.neutral[600],
+  },
+  quickQtyTextActive: {
+    color: colors.primary[700],
+    fontWeight: fontWeight.bold,
   },
   quantityContainer: {
     flexDirection: "row",
@@ -2583,7 +2725,7 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
   footerSpacer: {
-    height: 80,
+    height: 20, // Reduced since we have paddingBottom in scrollContent
   },
   bottomContainer: {
     position: "absolute",
@@ -2594,11 +2736,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.neutral[200],
+    ...shadows.lg,
   },
   // Skeleton Styles
   skeleton: {
     backgroundColor: colors.neutral[200],
     overflow: "hidden",
+  },
+  skeletonAnimated: {
+    opacity: 0.7,
   },
   // Serial Number Styles for Serialized Items
   serialHeader: {

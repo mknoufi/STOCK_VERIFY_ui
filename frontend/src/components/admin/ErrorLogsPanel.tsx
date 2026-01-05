@@ -6,18 +6,18 @@
  * // cSpell:ignore nums
  */
 
-import React, { useState } from "react";
+import React, { useState, memo, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   Modal,
   ScrollView,
   ViewStyle,
   TextStyle,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   modernColors,
@@ -513,7 +513,7 @@ export function ErrorLogsPanel({
           <Text style={styles.emptyText}>System Healthy</Text>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={logs}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -523,10 +523,10 @@ export function ErrorLogsPanel({
               onAcknowledge={onAcknowledge}
             />
           )}
-          style={styles.list}
+          // @ts-ignore - estimatedItemSize required by FlashList
+          estimatedItemSize={80}
           contentContainerStyle={{ paddingBottom: 8 }}
           showsVerticalScrollIndicator={false}
-          scrollEnabled={scrollEnabled}
         />
       )}
 

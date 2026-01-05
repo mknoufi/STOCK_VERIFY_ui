@@ -344,6 +344,7 @@ export const addToOfflineQueue = async (
 
 export const getOfflineQueue = async (): Promise<OfflineQueueItem[]> => {
   try {
+
     const queue = await storage.get<OfflineQueueItem[]>(
       STORAGE_KEYS.OFFLINE_QUEUE,
       {
@@ -460,7 +461,7 @@ export const removeSessionFromCache = async (sessionId: string) => {
   try {
     const cache = await getSessionsCache();
     if (cache[sessionId]) {
-      const { [sessionId]: removed, ...rest } = cache;
+      const { [sessionId]: _removed, ...rest } = cache;
       await storage.set(STORAGE_KEYS.SESSIONS_CACHE, rest);
       log.debug("Removed session from cache", { sessionId });
     }

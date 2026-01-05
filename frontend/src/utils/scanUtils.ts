@@ -86,13 +86,62 @@ export const isSerialNumberFormat = (code: string): boolean => {
  * Validate a scanned value as a serial number
  * Returns { valid: true } or { valid: false, error: string }
  */
+
+/**
+ * Check if the new serial number matches the pattern of existing ones
+ * Returns a warning message if there's a significant deviation
+ */
+export const checkSerialPattern = (
+  newSerial: string,
+  existingSerials: string[],
+): string | null => {
+  if (existingSerials.length === 0) return null;
+
+  // Compare with the most recently added serial
+  const lastEntry = existingSerials[existingSerials.length - 1];
+  if (!lastEntry) return null;
+
+  const lastSerial = normalizeSerialValue(lastEntry);
+  const current = normalizeSerialValue(newSerial);
+
+  if (!lastSerial || !current) return null;
+
+  // Check 1: Length deviation
+  if (current.length !== lastSerial.length) {
+    return `Length differs from previous serial (${current.length} vs ${lastSerial.length})`;
+  }
+
+  // Check 2: Format consistency (Numeric vs Alphanumeric)
+  const isLastNumeric = /^\d+$/.test(lastSerial);
+  const isCurrentNumeric = /^\d+$/.test(current);
+
+  if (isLastNumeric !== isCurrentNumeric) {
+    return "Format differs from previous serial (Numeric/Alphanumeric mismatch)";
+  }
+
+  // Check 3: Prefix consistency (first 2 chars)
+  if (current.length >= 4 && lastSerial.length >= 4) {
+    const lastPrefix = lastSerial.substring(0, 2);
+    const currentPrefix = current.substring(0, 2);
+    if (lastPrefix !== currentPrefix) {
+      return `Prefix "${currentPrefix}" differs from previous "${lastPrefix}"`;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Validate a scanned value as a serial number
+ * Returns { valid: true, warning?: string } or { valid: false, error: string }
+ */
 export const validateScannedSerial = (
   code: string,
   existingSerials: string[],
-): { valid: boolean; error?: string } => {
+): { valid: boolean; error?: string; warning?: string } => {
   const normalized = normalizeSerialValue(code);
 
-  // Check if it looks like a barcode instead
+  // Check if it appears to be a product barcode
   if (!isSerialNumberFormat(code)) {
     return {
       valid: false,
@@ -107,8 +156,19 @@ export const validateScannedSerial = (
   }
 
   // Check for duplicates
-  if (existingSerials.map(normalizeSerialValue).includes(normalized)) {
+  // We check against the normalized version of existing serials
+  const isDuplicate = existingSerials
+    .map((s) => normalizeSerialValue(s))
+    .includes(normalized);
+
+  if (isDuplicate) {
     return { valid: false, error: "This serial number has already been added" };
+  }
+
+  // Check pattern against existing serials
+  const patternWarning = checkSerialPattern(code, existingSerials);
+  if (patternWarning) {
+    return { valid: true, warning: patternWarning };
   }
 
   return { valid: true };

@@ -10,33 +10,27 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
-  Keyboard,
   Platform,
   Alert,
   Modal,
-  Dimensions,
   RefreshControl,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import Animated, {
   FadeInDown,
-  FadeInUp,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
-  withTiming,
   withSequence,
+  withTiming,
   Easing,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDebounce } from "use-debounce";
-
-import { useAuthStore } from "../../src/store/authStore";
 import { useScanSessionStore } from "../../src/store/scanSessionStore";
 import {
   getItemByBarcode,
@@ -46,10 +40,10 @@ import {
   getSessionStats,
 } from "../../src/services/api/api";
 import { RecentItemsService } from "../../src/services/enhancedFeatures";
-import { scanDeduplicationService } from "../../src/domains/inventory/services/scanDeduplicationService";
 import { toastService } from "../../src/services/utils/toastService";
 import { localDb } from "../../src/db/localDb";
 import { validateBarcode } from "../../src/utils/validation";
+import { SCANNER_CONFIG } from "../../src/config/scannerConfig";
 
 import ModernHeader from "../../src/components/ui/ModernHeader";
 import ModernCard from "../../src/components/ui/ModernCard";
@@ -64,7 +58,6 @@ import {
 } from "../../src/theme/modernDesign";
 
 const SCAN_BUFFER_TIMEOUT = 2000; // 2 seconds
-const SCAN_BUFFER_MAX_SIZE = 10;
 const SCAN_CONFIDENCE_THRESHOLD = 2;
 
 export default function ScanScreen() {
@@ -82,9 +75,54 @@ export default function ScanScreen() {
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const loadSessionStats = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const stats = await getSessionStats(sessionId);
+      if (stats) {
+        setSessionStats(stats);
+      }
+    } catch (error) {
+      console.error("Failed to load stats", error);
+    }
+  }, [sessionId]);
+
+  const loadRecentItems = useCallback(async () => {
+    try {
+      const items = await RecentItemsService.getRecentItems();
+      setRecentItems(items);
+    } catch (error) {
+      console.error("Failed to load recent items", error);
+    }
+  }, []);
+
+  const loadInitialData = useCallback(async () => {
+    setInitialLoading(true);
+    await Promise.all([loadRecentItems(), loadSessionStats()]);
+    setInitialLoading(false);
+  }, [loadRecentItems, loadSessionStats]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadInitialData();
+    setRefreshing(false);
+  }, [loadInitialData]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
+  // Search effect
+  useEffect(() => {
+    const runSearch = async () => {
+      if (debouncedSearchQuery.trim().length > 2) {
+        await performSearch(debouncedSearchQuery);
+      } else {
+        setSearchResults([]);
+      }
+    };
+    runSearch();
+  }, [debouncedSearchQuery]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [recentItems, setRecentItems] = useState<any[]>([]);
   const [sessionStats, setSessionStats] = useState({
@@ -121,7 +159,7 @@ export default function ScanScreen() {
         false,
       );
     }
-  }, [isScanning]);
+  }, [isScanning, scanLinePosition, cornerOpacity]);
 
   const animatedScanLine = useAnimatedStyle(() => ({
     transform: [{ translateY: scanLinePosition.value * 200 }],
@@ -131,63 +169,19 @@ export default function ScanScreen() {
     opacity: cornerOpacity.value,
   }));
 
-  // Load initial data
+  // Load initial data on mount
   useEffect(() => {
     loadInitialData();
-  }, [sessionId]);
+  }, [sessionId, loadInitialData]);
 
-  const loadInitialData = async () => {
-    setInitialLoading(true);
-    await Promise.all([loadRecentItems(), loadSessionStats()]);
-    setInitialLoading(false);
-  };
+  // Reload stats when screen gains focus (user navigates back from item-detail)
+  useFocusEffect(
+    useCallback(() => {
+      loadSessionStats();
+    }, [loadSessionStats]),
+  );
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await Promise.all([loadRecentItems(), loadSessionStats()]);
-    setRefreshing(false);
-  };
 
-  // Load initial data (legacy - kept for compatibility)
-  useEffect(() => {
-    loadRecentItems();
-    loadSessionStats();
-
-    // Poll stats every 30s
-    const interval = setInterval(loadSessionStats, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Search effect
-  useEffect(() => {
-    if (debouncedSearchQuery.trim().length > 2) {
-      performSearch(debouncedSearchQuery);
-    } else {
-      setSearchResults([]);
-    }
-  }, [debouncedSearchQuery]);
-
-  const loadRecentItems = async () => {
-    try {
-      const items = await RecentItemsService.getRecentItems();
-      setRecentItems(items);
-    } catch (error) {
-      console.error("Failed to load recent items", error);
-    }
-  };
-
-  const loadSessionStats = async () => {
-    if (!sessionId) return;
-    try {
-      const stats = await getSessionStats(sessionId);
-      if (stats) {
-        setSessionStats(stats);
-      }
-    } catch (error) {
-      console.error("Failed to load stats", error);
-    }
-  };
 
   const performSearch = async (query: string) => {
     try {
@@ -310,7 +304,7 @@ export default function ScanScreen() {
               );
             }
           }
-        } catch (e) {
+        } catch {
           // Ignore check status error
         }
 
@@ -338,7 +332,7 @@ export default function ScanScreen() {
     if (!sessionId) return;
     setIsFinishing(true);
     try {
-      await updateSessionStatus(sessionId, "closed");
+      await updateSessionStatus(sessionId, "CLOSED");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace("/staff/home");
     } catch (error: any) {
@@ -378,15 +372,7 @@ export default function ScanScreen() {
           style={StyleSheet.absoluteFill}
           onBarcodeScanned={scanned ? undefined : handleBarcodeScan}
           barcodeScannerSettings={{
-            barcodeTypes: [
-              "ean13",
-              "ean8",
-              "upc_a",
-              "upc_e",
-              "code128",
-              "code39",
-              "qr",
-            ],
+            barcodeTypes: SCANNER_CONFIG.barcodeTypes as any,
           }}
         >
           <SafeAreaView style={styles.cameraOverlay}>
@@ -498,7 +484,7 @@ export default function ScanScreen() {
         }
       >
         {/* Stats Card */}
-        <Animated.View entering={FadeInDown.duration(500)}>
+        <Animated.View entering={FadeInDown.duration(200)}>
           {initialLoading ? (
             <ModernCard style={styles.statsCard}>
               <View style={styles.statsRow}>
@@ -546,16 +532,25 @@ export default function ScanScreen() {
               </View>
             </ModernCard>
           ) : (
-            <ModernCard style={styles.statsCard}>
+            <ModernCard 
+              style={styles.statsCard}
+              accessibilityLabel={`Session stats: ${sessionStats.scannedItems} scanned, ${sessionStats.verifiedItems} verified, ${sessionStats.pendingItems} pending`}
+            >
               <View style={styles.statsRow}>
-                <View style={styles.statItem}>
+                <View 
+                  style={styles.statItem}
+                  accessibilityLabel={`${sessionStats.scannedItems} items scanned`}
+                >
                   <Text style={styles.statValue}>
                     {sessionStats.scannedItems}
                   </Text>
                   <Text style={styles.statLabel}>Scanned</Text>
                 </View>
                 <View style={styles.statDivider} />
-                <View style={styles.statItem}>
+                <View 
+                  style={styles.statItem}
+                  accessibilityLabel={`${sessionStats.verifiedItems} items verified`}
+                >
                   <Text
                     style={[styles.statValue, { color: colors.success[600] }]}
                   >
@@ -564,7 +559,10 @@ export default function ScanScreen() {
                   <Text style={styles.statLabel}>Verified</Text>
                 </View>
                 <View style={styles.statDivider} />
-                <View style={styles.statItem}>
+                <View 
+                  style={styles.statItem}
+                  accessibilityLabel={`${sessionStats.pendingItems} items pending`}
+                >
                   <Text
                     style={[styles.statValue, { color: colors.warning[600] }]}
                   >
@@ -579,7 +577,7 @@ export default function ScanScreen() {
 
         {/* Search Section */}
         <Animated.View
-          entering={FadeInDown.delay(100).duration(500)}
+          entering={FadeInDown.delay(40).duration(200)}
           style={styles.searchSection}
         >
           <View style={styles.searchRow}>
@@ -612,11 +610,16 @@ export default function ScanScreen() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   handleLookup(searchQuery.trim());
                 } else {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setIsScanning(true);
                 }
               }}
               disabled={loading}
               activeOpacity={0.7}
+              accessibilityLabel={searchQuery.trim() ? "Search for item" : "Open barcode scanner"}
+              accessibilityHint={searchQuery.trim() ? "Search for the entered barcode or item code" : "Opens camera to scan barcode"}
+              accessibilityRole="button"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons
                 name={searchQuery.trim() ? "arrow-forward" : "scan"}
@@ -657,7 +660,7 @@ export default function ScanScreen() {
         {/* Recent Items - Only show when not searching */}
         {searchResults.length === 0 && (
           <Animated.View
-            entering={FadeInDown.delay(300).duration(500)}
+            entering={FadeInDown.delay(80).duration(200)}
             style={styles.recentSection}
           >
             <Text style={styles.sectionTitle}>Recent Items</Text>

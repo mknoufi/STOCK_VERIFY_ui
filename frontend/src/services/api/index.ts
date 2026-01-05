@@ -1,5 +1,6 @@
 export * from "./api";
 export * from "./adminApi";
+export * from "./analyticsApi";
 export * from "./authApi";
 export * from "./reportApi";
 export * from "./enhancedApi";

@@ -28,14 +28,17 @@ jest.mock("../httpClient", () => ({
 }));
 
 jest.mock("../offline/offlineStorage", () => ({
-  addToOfflineQueue: jest.fn(),
+  getOfflineQueue: jest.fn(),
   cacheItem: jest.fn(),
   searchItemsInCache: jest.fn(() => Promise.resolve([])),
   cacheSession: jest.fn(),
   getSessionsCache: jest.fn(() => Promise.resolve([])),
   getSessionFromCache: jest.fn(() => Promise.resolve(null)),
-  cacheCountLine: jest.fn(),
+  CachedCountLine: jest.fn(),
   getCountLinesBySessionFromCache: jest.fn(() => Promise.resolve([])),
+  removeManyFromOfflineQueue: jest.fn(),
+  updateQueueItemRetries: jest.fn(),
+  getCacheStats: jest.fn(() => Promise.resolve({ queuedOperations: 0, lastSync: null, cacheSizeKB: 0 })),
 }));
 
 describe("API Service - Network Detection", () => {
@@ -95,8 +98,6 @@ describe("API Service - Network Detection", () => {
 });
 
 describe("API Service - getSessionStats", () => {
-  const mockHttpClient = require("../httpClient").default;
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Set online state for API calls
@@ -120,7 +121,6 @@ describe("API Service - getSessionStats", () => {
         last_scan_time: "2024-01-15T10:30:00Z",
       },
     };
-    mockHttpClient.get.mockResolvedValue(mockResponse);
 
     // Test the response structure normalization
     const response = mockResponse.data;

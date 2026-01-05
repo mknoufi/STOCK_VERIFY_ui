@@ -20,17 +20,57 @@ def _setup_gzip(app: FastAPI) -> None:
         logger.warning("GZipMiddleware not available")
 
 
+def _get_allowed_hosts() -> list[str]:
+    """Determine allowed hosts based on environment.
+
+    Returns:
+        List of allowed host headers. Uses secure defaults in development,
+        requires explicit configuration in production.
+    """
+    configured_hosts = getattr(settings, "ALLOWED_HOSTS", None)
+    if configured_hosts:
+        return [h.strip() for h in configured_hosts.split(",") if h.strip()]
+
+    _env = getattr(settings, "ENVIRONMENT", "development").lower()
+    if _env == "development":
+        # SECURITY: Only allow localhost and common LAN patterns in development
+        return [
+            "localhost",
+            "127.0.0.1",
+            "0.0.0.0",  # Required for Docker
+            "testserver",  # Required for pytest
+        ]
+
+    # SECURITY: In production, require explicit ALLOWED_HOSTS configuration
+    # Log warning but default to restrictive list rather than wildcard
+    logger.warning(
+        "ALLOWED_HOSTS not configured for non-development environment. "
+        "Defaulting to localhost only. Set ALLOWED_HOSTS env var for production."
+    )
+    return ["localhost", "127.0.0.1"]
+
+
 def _setup_trusted_hosts(app: FastAPI) -> None:
-    """Add trusted host middleware."""
+    """Add trusted host middleware with secure defaults."""
     try:
         from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-        allowed_hosts = getattr(settings, "ALLOWED_HOSTS", None) or ["*"]
-        if isinstance(allowed_hosts, str):
-            allowed_hosts = [h.strip() for h in allowed_hosts.split(",")]
+        allowed_hosts = _get_allowed_hosts()
+
+        # SECURITY: Add dynamic LAN detection for development only
+        _env = getattr(settings, "ENVIRONMENT", "development").lower()
+        if _env == "development":
+            try:
+                import socket
+                hostname = socket.gethostname()
+                local_ip = socket.gethostbyname(hostname)
+                if local_ip not in allowed_hosts:
+                    allowed_hosts.append(local_ip)
+            except Exception:  # pragma: no cover
+                pass  # Silently continue if IP detection fails
 
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
-        logger.info(f"✓ TrustedHost middleware enabled (hosts: {allowed_hosts})")
+        logger.info(f"✓ TrustedHost middleware enabled (hosts: {len(allowed_hosts)} configured)")
     except ImportError:
         logger.warning("TrustedHostMiddleware not available")
 

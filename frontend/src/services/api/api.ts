@@ -7,6 +7,7 @@ import api from "../httpClient";
 import { retryWithBackoff } from "../../utils/retry";
 import { validateBarcode } from "../../utils/validation";
 import { CreateCountLinePayload, Item } from "../../types/scan";
+import { SyncRecord } from "../../types/sync";
 import {
   addToOfflineQueue,
   cacheItem,
@@ -20,6 +21,8 @@ import {
   cacheCountLine,
   getCountLinesBySessionFromCache,
   isCacheStale,
+  CachedCountLine,
+  getOfflineQueue,
   type DataSource,
 } from "../offline/offlineStorage";
 import { createOfflineCountLine } from "../offline/offlineCountLine";
@@ -1222,9 +1225,24 @@ export const checkItemScanStatus = async (
 ): Promise<ItemScanStatus> => {
   try {
     if (!isOnline()) {
-      // Offline fallback: check local cache
+      // Offline fallback: check local cache AND offline queue
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
-      const itemLines = cachedLines.filter(
+
+      // Also check the offline queue for items that haven't been processed into cache yet
+      // or are waiting to sync (source of truth for recent offline scans)
+      const offlineQueue = await getOfflineQueue();
+      const queuedCountLines = offlineQueue
+        .filter(q => q.type === 'count_line' && q.data.session_id === sessionId && q.data.item_code === itemCode)
+        .map(q => q.data as CachedCountLine);
+
+      // Merge cached lines and queued lines, deduplicating by ID if necessary
+      // (though usually queue items are newer)
+      const allLines = [...cachedLines, ...queuedCountLines];
+
+      // Remove duplicates based on ID (prefer queued/newer ones)
+      const uniqueLines = Array.from(new Map(allLines.map(item => [item._id || item.id, item])).values());
+
+      const itemLines = uniqueLines.filter(
         (line) => line.item_code === itemCode,
       );
 
@@ -1462,7 +1480,19 @@ export const checkItemCounted = async (sessionId: string, itemCode: string) => {
     if (!isOnline()) {
       // Check in cached count lines
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
-      const itemLines = cachedLines.filter(
+
+      // Check in offline queue
+      const offlineQueue = await getOfflineQueue();
+      const queuedCountLines = offlineQueue
+        .filter(q => q.type === 'count_line' && q.data.session_id === sessionId && q.data.item_code === itemCode)
+        .map(q => q.data as CachedCountLine);
+
+      const allLines = [...cachedLines, ...queuedCountLines];
+
+      // Deduplicate
+      const uniqueLines = Array.from(new Map(allLines.map(item => [item._id || item.id, item])).values());
+
+      const itemLines = uniqueLines.filter(
         (line) => line.item_code === itemCode,
       );
       return { already_counted: itemLines.length > 0, count_lines: itemLines };
@@ -1541,15 +1571,18 @@ export const updateSessionStatus = async (
   sessionId: string,
   status: string,
 ) => {
+  // Normalize status to uppercase for consistency
+  const normalizedStatus = status.toUpperCase();
+  
   // Use the specific complete endpoint for closing sessions to ensure locks are released
-  if (status === "CLOSED") {
+  if (normalizedStatus === "CLOSED") {
     const response = await api.post(`/api/sessions/${sessionId}/complete`);
     return response.data;
   }
 
   // For other statuses (like RECONCILE), use the generic status endpoint
   const response = await api.put(
-    `/api/sessions/${sessionId}/status?status=${status}`,
+    `/api/sessions/${sessionId}/status?status=${normalizedStatus}`,
   );
   return response.data;
 };
@@ -1701,11 +1734,11 @@ export const saveMapping = async (config: Record<string, unknown>) => {
   }
 };
 
-// Sync offline queue (enhanced version in syncService.ts)
+// Sync offline queue (enhanced version in syncManager.ts)
 export const syncOfflineQueue = async (options?: Record<string, unknown>) => {
-  // Import sync service dynamically
-  const syncService = await import("../syncService");
-  return await syncService.syncOfflineQueue(options);
+  // Sync offline queue (enhanced version in syncManager.ts)
+  const syncManager = await import("../syncManager");
+  return await syncManager.syncOfflineQueue(options);
 };
 
 // Activity Log API
@@ -3096,9 +3129,13 @@ export const diagnoseError = async (errorInfo: {
 export default api;
 
 // Batch sync offline queue
-export const syncBatch = async (operations: Record<string, unknown>[]) => {
+// Batch sync offline queue
+export const syncBatch = async (
+  records: SyncRecord[] = [],
+  operations: Record<string, unknown>[] = [],
+) => {
   try {
-    const response = await api.post("/api/sync/batch", { operations });
+    const response = await api.post("/api/sync/batch", { records, operations });
     return response.data;
   } catch (error: unknown) {
     __DEV__ && console.error("Sync batch error:", error);

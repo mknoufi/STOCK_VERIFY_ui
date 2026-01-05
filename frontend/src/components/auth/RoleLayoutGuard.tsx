@@ -15,7 +15,7 @@ interface RoleLayoutGuardProps {
 export function RoleLayoutGuard({
   allowedRoles,
   children,
-  redirectTo = "/login",
+  redirectTo = "/welcome",
   layoutName = "RoleLayout",
 }: RoleLayoutGuardProps) {
   const { user, isInitialized, isLoading } = useAuthStore();

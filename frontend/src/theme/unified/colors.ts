@@ -199,6 +199,22 @@ export const darkColors = {
     strong: colors.neutral[600],
     focus: colors.primary[400],
   },
+
+  // Interactive states
+  interactive: {
+    default: colors.primary[400],
+    hover: colors.primary[500],
+    active: colors.primary[600],
+    disabled: colors.neutral[600],
+  },
+
+  // Status indicators
+  status: {
+    success: colors.success[400],
+    warning: colors.warning[400],
+    error: colors.error[400],
+    info: colors.info[400],
+  },
 } as const;
 
 // ==========================================

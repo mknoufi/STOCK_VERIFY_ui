@@ -50,15 +50,15 @@ class QueryBuilder:
 
     # Available collections for querying
     COLLECTIONS = {
-        "verification_records": "verification_records",
-        "sessions": "verification_sessions",
+        "verification_records": "count_lines",
+        "sessions": "sessions",
         "items": "erp_items",
         "count_lines": "count_lines",
     }
 
     # Available fields per collection
     FIELDS = {
-        "verification_records": [
+        "count_lines": [
             "item_code",
             "verified_qty",
             "damage_qty",
@@ -68,8 +68,10 @@ class QueryBuilder:
             "status",
             "created_at",
             "updated_at",
+            "counted_qty",
+            "verified",
         ],
-        "verification_sessions": [
+        "sessions": [
             "session_id",
             "user_id",
             "rack_id",
@@ -87,13 +89,6 @@ class QueryBuilder:
             "warehouse",
             "floor",
             "rack",
-        ],
-        "count_lines": [
-            "item_code",
-            "session_id",
-            "counted_qty",
-            "verified",
-            "rack_id",
         ],
     }
 
@@ -296,20 +291,20 @@ class QueryBuilder:
 # Example query specifications
 EXAMPLE_QUERIES = {
     "items_by_floor": {
-        "collection": "verification_records",
+        "collection": "count_lines",
         "group_by": ["floor"],
         "aggregations": {"verified_qty": "sum", "damage_qty": "sum"},
         "sort": {"verified_qty_sum": -1},
     },
     "session_performance": {
-        "collection": "verification_sessions",
+        "collection": "sessions",
         "filters": {"status": "completed"},
         "group_by": ["user_id"],
         "aggregations": {"session_id": "count"},
         "sort": {"session_id_count": -1},
     },
     "rack_summary": {
-        "collection": "verification_records",
+        "collection": "count_lines",
         "group_by": ["rack_id", "floor"],
         "aggregations": {
             "verified_qty": "sum",
@@ -318,7 +313,7 @@ EXAMPLE_QUERIES = {
         },
     },
     "daily_verification": {
-        "collection": "verification_records",
+        "collection": "count_lines",
         "filters": {
             "created_at": {"gte": datetime.now().replace(hour=0, minute=0, second=0).timestamp()}
         },

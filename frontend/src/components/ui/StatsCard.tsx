@@ -9,9 +9,10 @@
  * - Smooth entrance animations
  * - Animated counter values
  * - Haptic feedback
+ * - Memoized for performance
  */
 
-import React from "react";
+import React, { memo } from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -64,7 +65,7 @@ const variantColors = {
   },
 };
 
-export const StatsCard: React.FC<StatsCardProps> = ({
+export const StatsCard: React.FC<StatsCardProps> = memo(({
   title,
   value,
   icon,
@@ -215,7 +216,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   }
 
   return cardContent;
-};
+});
 
 const styles = StyleSheet.create({
   content: {

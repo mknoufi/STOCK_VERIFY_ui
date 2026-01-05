@@ -168,18 +168,6 @@ async def create_session(
     # Insert into db.sessions
     await db.sessions.insert_one(session.model_dump())
 
-    # Also create entry in verification_sessions for compatibility with new features
-    verification_session = {
-        "session_id": session.id,
-        "user_id": current_user["username"],
-        "status": "ACTIVE",
-        "started_at": time.time(),
-        "last_heartbeat": time.time(),
-        "rack_id": None,
-        "floor": None,
-    }
-    await db.verification_sessions.insert_one(verification_session)
-
     return session
 
 
@@ -210,31 +198,31 @@ async def get_active_sessions(
         query["rack_id"] = rack_id
 
     # Get sessions
-    sessions_cursor = db.verification_sessions.find(query).sort("started_at", -1)
+    sessions_cursor = db.sessions.find(query).sort("started_at", -1)
     sessions = await sessions_cursor.to_list(length=100)
 
     # Get item counts for each session
     result = []
     for session in sessions:
         # Count items in session
-        item_count = await db.verification_records.count_documents(
-            {"session_id": session["session_id"]}
+        item_count = await db.count_lines.count_documents(
+            {"session_id": session["id"]}
         )
 
-        verified_count = await db.verification_records.count_documents(
-            {"session_id": session["session_id"], "status": "finalized"}
+        verified_count = await db.count_lines.count_documents(
+            {"session_id": session["id"], "status": "finalized"}
         )
 
         result.append(
             SessionDetail(
-                id=session["session_id"],
-                user_id=session["user_id"],
+                id=session["id"],
+                user_id=session["staff_user"],
                 rack_id=session.get("rack_id"),
                 floor=session.get("floor"),
                 status=session["status"],
                 started_at=session["started_at"],
-                last_heartbeat=session["last_heartbeat"],
-                completed_at=session.get("completed_at"),
+                last_heartbeat=session.get("last_heartbeat"),
+                completed_at=session.get("closed_at"),
                 item_count=item_count,
                 verified_count=verified_count,
             )
@@ -250,31 +238,31 @@ async def get_session_detail(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> SessionDetail:
     """Get detailed session information"""
-    session = await db.verification_sessions.find_one({"session_id": session_id})
+    session = await db.sessions.find_one({"id": session_id})
 
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
+    if current_user["role"] != "supervisor" and session["staff_user"] != current_user["username"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get counts
-    item_count = await db.verification_records.count_documents({"session_id": session_id})
+    item_count = await db.count_lines.count_documents({"session_id": session_id})
 
-    verified_count = await db.verification_records.count_documents(
+    verified_count = await db.count_lines.count_documents(
         {"session_id": session_id, "status": "finalized"}
     )
 
     return SessionDetail(
-        id=session["session_id"],
-        user_id=session["user_id"],
+        id=session["id"],
+        user_id=session["staff_user"],
         rack_id=session.get("rack_id"),
         floor=session.get("floor"),
         status=session["status"],
         started_at=session["started_at"],
-        last_heartbeat=session["last_heartbeat"],
-        completed_at=session.get("completed_at"),
+        last_heartbeat=session.get("last_heartbeat"),
+        completed_at=session.get("closed_at"),
         item_count=item_count,
         verified_count=verified_count,
     )
@@ -287,29 +275,35 @@ async def get_session_stats(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> SessionStats:
     """Get session statistics"""
-    session = await db.verification_sessions.find_one({"session_id": session_id})
+    import inspect
+
+    # Use 'sessions' collection (not verification_sessions)
+    result = db.sessions.find_one({"id": session_id})
+    session = await result if inspect.isawaitable(result) else result
 
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
+    is_supervisor = current_user["role"] == "supervisor"
+    is_session_owner = session.get("staff_user") == current_user["username"]
+    if not is_supervisor and not is_session_owner:
         raise HTTPException(status_code=403, detail="Access denied")
 
-    # Get item statistics
+    # Get item statistics from count_lines
     pipeline: list[dict[str, Any]] = [
         {"$match": {"session_id": session_id}},
         {
             "$group": {
                 "_id": None,
                 "total": {"$sum": 1},
-                "verified": {"$sum": {"$cond": [{"$eq": ["$status", "finalized"]}, 1, 0]}},
-                "damage": {"$sum": "$damage_qty"},
+                "verified": {"$sum": {"$cond": [{"$eq": ["$verified", True]}, 1, 0]}},
+                "damage": {"$sum": {"$ifNull": ["$damaged_qty", 0]}},
             }
         },
     ]
 
-    stats_result = await db.verification_records.aggregate(pipeline).to_list(1)
+    stats_result = await db.count_lines.aggregate(pipeline).to_list(1)
 
     if stats_result:
         stats = stats_result[0]
@@ -322,7 +316,15 @@ async def get_session_stats(
     pending_items = total_items - verified_items
 
     # Calculate duration and rate
-    duration = time.time() - session["started_at"]
+    started_at = session.get("started_at")
+    if started_at:
+        # Handle both datetime objects and timestamps
+        if hasattr(started_at, "timestamp"):
+            duration = time.time() - started_at.timestamp()
+        else:
+            duration = time.time() - started_at
+    else:
+        duration = 0
     items_per_minute = (verified_items / duration * 60) if duration > 0 else 0
 
     return SessionStats(
@@ -381,8 +383,8 @@ async def session_heartbeat(
             lock_ttl_remaining = await lock_manager.get_rack_lock_ttl(rack_id)
 
     # Update session last_heartbeat
-    await db.verification_sessions.update_one(
-        {"session_id": session_id}, {"$set": {"last_heartbeat": time.time()}}
+    await db.sessions.update_one(
+        {"id": session_id}, {"$set": {"last_heartbeat": time.time()}}
     )
 
     logger.debug(
@@ -412,18 +414,18 @@ async def update_session_status(
     user_id = current_user["username"]
 
     # Get session
-    session = await db.verification_sessions.find_one({"session_id": session_id})
+    session = await db.sessions.find_one({"id": session_id})
 
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Verify ownership or supervisor
-    if current_user["role"] != "supervisor" and session["user_id"] != user_id:
+    if current_user["role"] != "supervisor" and session["staff_user"] != user_id:
         raise HTTPException(status_code=403, detail="Not your session")
 
     # Update status
-    await db.verification_sessions.update_one(
-        {"session_id": session_id}, {"$set": {"status": status}}
+    await db.sessions.update_one(
+        {"id": session_id}, {"$set": {"status": status}}
     )
 
     return {"success": True, "id": session_id, "status": status}
@@ -468,8 +470,8 @@ async def complete_session(
         )
 
     # Update session
-    await db.verification_sessions.update_one(
-        {"session_id": session_id},
+    await db.sessions.update_one(
+        {"id": session_id},
         {
             "$set": {
                 "status": "CLOSED",
@@ -501,8 +503,8 @@ async def get_user_session_history(
     user_id = current_user["username"]
 
     sessions_cursor = (
-        db.verification_sessions.find({"user_id": user_id, "status": "CLOSED"})
-        .sort("completed_at", -1)
+        db.sessions.find({"staff_user": user_id, "status": "CLOSED"})
+        .sort("closed_at", -1)
         .limit(limit)
     )
 
@@ -510,12 +512,12 @@ async def get_user_session_history(
 
     result = []
     for session in sessions:
-        item_count = await db.verification_records.count_documents(
-            {"session_id": session["session_id"]}
+        item_count = await db.count_lines.count_documents(
+            {"session_id": session["id"]}
         )
 
-        verified_count = await db.verification_records.count_documents(
-            {"session_id": session["session_id"], "status": "finalized"}
+        verified_count = await db.count_lines.count_documents(
+            {"session_id": session["id"], "status": "finalized"}
         )
 
         result.append(

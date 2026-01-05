@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 import { PinEntryModal } from "../../src/components/modals/PinEntryModal";
@@ -83,6 +83,13 @@ export default function HistoryScreen() {
   React.useEffect(() => {
     loadCountLines();
   }, [loadCountLines]);
+
+  // Refresh count lines when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadCountLines();
+    }, [loadCountLines]),
+  );
 
   // Keep state in sync if URL param changes (e.g., deep link navigation)
   React.useEffect(() => {

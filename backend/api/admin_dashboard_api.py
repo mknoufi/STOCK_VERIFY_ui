@@ -110,7 +110,7 @@ async def calculate_verified_value(db) -> float:
                 }
             },
         ]
-        result = await db.verification_records.aggregate(pipeline).to_list(1)
+        result = await db.count_lines.aggregate(pipeline).to_list(1)
         return result[0]["total_value"] if result else 0.0
     except Exception as e:
         logger.error(f"Error calculating verified value: {e}")
@@ -124,7 +124,7 @@ async def calculate_completion_percentage(db) -> float:
         if total_items == 0:
             return 0.0
 
-        verified_items = await db.verification_records.count_documents({"status": "verified"})
+        verified_items = await db.count_lines.count_documents({"status": "verified"})
         return round((verified_items / total_items) * 100, 2)
     except Exception as e:
         logger.error(f"Error calculating completion: {e}")
@@ -134,7 +134,7 @@ async def calculate_completion_percentage(db) -> float:
 async def count_active_sessions(db) -> int:
     """Count currently active verification sessions."""
     try:
-        return await db.verification_sessions.count_documents(
+        return await db.sessions.count_documents(
             {"status": {"$in": ["active", "in_progress"]}}
         )
     except Exception as e:
@@ -155,7 +155,7 @@ async def count_active_users(db) -> int:
 async def count_pending_variances(db) -> int:
     """Count variances pending supervisor review."""
     try:
-        return await db.verification_records.count_documents(
+        return await db.count_lines.count_documents(
             {"status": "pending_review", "variance": {"$ne": 0}}
         )
     except Exception as e:
@@ -167,7 +167,7 @@ async def count_items_verified_today(db) -> int:
     """Count items verified today."""
     try:
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-        return await db.verification_records.count_documents(
+        return await db.count_lines.count_documents(
             {"created_at": {"$gte": today_start}, "status": "verified"}
         )
     except Exception as e:
@@ -310,7 +310,7 @@ async def get_active_users(current_user: dict = Depends(require_admin)):
             user = await db.users.find_one({"_id": record.get("user_id")})
             if user:
                 # Check if user has an active session
-                session = await db.verification_sessions.find_one(
+                session = await db.sessions.find_one(
                     {
                         "user_id": str(user["_id"]),
                         "status": {"$in": ["active", "in_progress"]},

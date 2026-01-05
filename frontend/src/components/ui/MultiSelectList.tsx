@@ -22,11 +22,10 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   Platform as _Platform,
-  FlatListProps,
 } from "react-native";
+import { FlashList, FlashListProps } from "@shopify/flash-list";
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -50,10 +49,7 @@ export interface SelectableItem {
   disabled?: boolean;
 }
 
-export interface MultiSelectListProps<T extends SelectableItem> extends Omit<
-  FlatListProps<T>,
-  "renderItem" | "data"
-> {
+export interface MultiSelectListProps<T extends SelectableItem> {
   /** List of items */
   items: T[];
   /** Render function for each item */
@@ -265,14 +261,15 @@ export function MultiSelectList<T extends SelectableItem>({
       )}
 
       {/* List */}
-      <FlatList
+      <FlashList
         data={items}
         renderItem={renderItemWrapper}
         keyExtractor={keyExtractor}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={items.length === 0 && styles.emptyList}
+        contentContainerStyle={items.length === 0 ? styles.emptyList : undefined}
         showsVerticalScrollIndicator={false}
-        {...flatListProps}
+        // @ts-ignore - estimatedItemSize required by FlashList
+        estimatedItemSize={70}
       />
     </View>
   );

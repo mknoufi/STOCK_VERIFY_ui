@@ -6,6 +6,7 @@
  * - Staggered delay based on index
  * - Spring-based smooth animations
  * - Configurable animation properties
+ * - Accessibility: Respects reduce motion preferences (Reanimated 4.2+)
  *
  * Inspired by React-Native-UI-Templates staggered list patterns
  */
@@ -21,6 +22,7 @@ import Animated, {
   interpolate,
   Easing,
   runOnJS,
+  useReducedMotion,
 } from "react-native-reanimated";
 import {
   AnimationTimings,
@@ -89,9 +91,20 @@ export const AnimatedListItem: React.FC<AnimatedListItemProps> = ({
   animationType = "fadeSlide",
 }) => {
   const progress = useSharedValue(0);
+  // Reanimated 4.2+: Respect user's reduce motion preference
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (!animate) return;
+
+    // Skip animation if reduce motion is enabled
+    if (shouldReduceMotion) {
+      progress.value = 1;
+      if (onAnimationComplete) {
+        onAnimationComplete();
+      }
+      return;
+    }
 
     const delay = index * delayPerItem;
 

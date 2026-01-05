@@ -279,7 +279,7 @@ export default function AdminControlPanelV2() {
 
       {/* Health & Services */}
       <Animated.View
-        entering={FadeInDown.delay(400).springify()}
+        entering={FadeInDown.delay(80).springify()}
         style={styles.section}
       >
         <GlassCard variant="medium" style={styles.servicesCard}>
@@ -331,7 +331,7 @@ export default function AdminControlPanelV2() {
       {/* Critical Issues List */}
       {issues.length > 0 && (
         <Animated.View
-          entering={FadeInDown.delay(500).springify()}
+          entering={FadeInDown.delay(100).springify()}
           style={styles.section}
         >
           <Text style={styles.sectionTitle}>Critical Issues</Text>
@@ -360,7 +360,7 @@ export default function AdminControlPanelV2() {
           {menuItems.map((item, index) => (
             <Animated.View
               key={index}
-              entering={FadeInDown.delay(600 + index * 100)}
+              entering={FadeInDown.delay(120 + index * 30)}
             >
               <AnimatedPressable
                 style={styles.toolCard}

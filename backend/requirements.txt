@@ -38,6 +38,7 @@ copilotkit>=0.1.39
 tenacity>=9.1.2  # Retry logic
 bandit>=1.8.6    # Security scanning
 locust>=2.34.0   # Load testing
+zeroconf>=0.132.0  # mDNS service discovery
 
 # OpenTelemetry tracing
 opentelemetry-api>=1.25.0

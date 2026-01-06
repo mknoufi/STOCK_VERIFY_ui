@@ -79,7 +79,7 @@ jobs:
         if: always() && secrets.CODECOV_TOKEN != ''
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
+          file: ./backend/coverage.xml
           flags: python
           name: python-coverage
           fail_ci_if_error: false

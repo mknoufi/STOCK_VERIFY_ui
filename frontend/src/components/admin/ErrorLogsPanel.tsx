@@ -26,6 +26,9 @@ import {
 } from "../../styles/modernDesignSystem";
 import { copyToClipboard } from "../../utils/clipboard";
 
+const STATUS_ACTIVE = "active";
+const STATUS_RESOLVED = "resolved";
+
 // --- Domain Types ---
 
 export type ErrorSeverity = "error" | "warning" | "critical";
@@ -177,7 +180,7 @@ const LogRow = React.memo(
               {config.label}
             </Text>
             <View style={styles.metaContainer}>
-              {log.status !== "active" && (
+              {log.status !== STATUS_ACTIVE && (
                 <View
                   style={[
                     styles.statusBadge,
@@ -211,7 +214,7 @@ const LogRow = React.memo(
 
         <View style={styles.actions}>
           {/* Quick Action: Acknowledge if active */}
-          {log.status === "active" && onAcknowledge && (
+          {log.status === STATUS_ACTIVE && onAcknowledge && (
             <TouchableOpacity
               style={styles.actionButton}
               onPress={(e) => {
@@ -328,7 +331,7 @@ function ErrorDetailModal({
           </View>
 
           {/* Operational Actions */}
-          {log.status !== "resolved" && onResolve && (
+          {log.status !== STATUS_RESOLVED && onResolve && (
             <TouchableOpacity
               style={styles.resolveButton}
               onPress={() => {

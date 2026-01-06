@@ -84,6 +84,8 @@ export const StatsCard: React.FC<StatsCardProps> = memo(
     const numericValue =
       typeof value === "number" ? value : parseFloat(value) || 0;
 
+    const isAnimatedNumber = animated && typeof value === "number";
+
     const content = (
       <View style={styles.content}>
         {/* Icon with gradient background */}
@@ -102,7 +104,7 @@ export const StatsCard: React.FC<StatsCardProps> = memo(
 
         {/* Stats */}
         <View style={styles.stats}>
-          {animated && typeof value === "number" ? (
+          {isAnimatedNumber ? (
             <AnimatedCounter
               value={numericValue}
               prefix={prefix}

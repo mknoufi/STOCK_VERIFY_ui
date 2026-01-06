@@ -429,7 +429,7 @@ export default function LoginScreen() {
                     style={styles.loginButton}
                     icon="log-in"
                   />
-                ) : null}
+                )}
               </ModernCard>
             </SafeAnimatedView>
 

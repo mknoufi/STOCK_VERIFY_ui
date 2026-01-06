@@ -26,6 +26,7 @@ import { colors, spacing } from "@/theme/unified";
 import { adminApi } from "@/services/api";
 
 const SORT_OPTIONS = ["name", "role", "activity"] as const;
+const STATUS_INACTIVE = "inactive";
 
 type UserRole = "admin" | "supervisor" | "staff";
 type UserStatus = "active" | "inactive";
@@ -396,7 +397,7 @@ export default function ModernUsersManagement() {
                   <View style={styles.userInfo}>
                     <View style={styles.userNameRow}>
                       <Text style={styles.username}>{user.username}</Text>
-                      {user.status === "inactive" && (
+                      {user.status === STATUS_INACTIVE && (
                         <View style={styles.inactiveBadge}>
                           <Text style={styles.inactiveBadgeText}>Inactive</Text>
                         </View>

@@ -7,9 +7,7 @@
 import { StyleSheet, Platform } from "react-native";
 import { themes } from "../theme/themes";
 
-const defaultTheme = (themes.premium ||
-  Object.values(themes)[0] ||
-  themes.dark) as import("../theme/themes").AppTheme;
+const defaultTheme = (themes.premium || Object.values(themes)[0] || themes.dark) as import("../theme/themes").AppTheme;
 
 // Color palette - Enhanced with semantic roles
 export const colors = {

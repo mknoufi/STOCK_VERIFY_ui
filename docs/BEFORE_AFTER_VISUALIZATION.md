@@ -97,7 +97,7 @@ from backend.api.erp_api import (                 # ← Local imports sorted
     get_all_items,
     get_item_by_barcode,
     init_erp_api,
-    refresh_item_stack,
+    refresh_item_stock,
     search_items_compatibility,
 )
 from fastapi import HTTPException                 # ← Third-party last

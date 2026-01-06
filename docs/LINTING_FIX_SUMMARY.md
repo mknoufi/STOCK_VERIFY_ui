@@ -147,7 +147,7 @@ from backend.api.erp_api import (
 
 ### After (test_erp_api.py)
 ```python
-from unittest.mock import AsyncMock, MagicMock  # Sorted, MagicMock kept if needed
+from unittest.mock import AsyncMock, MagicMock  # Sorted, MagicMock kept because it's used in line 19
 
 import pytest
 from backend.api.erp_api import (  # Sorted alphabetically

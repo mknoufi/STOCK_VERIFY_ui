@@ -316,3 +316,6 @@ backend/bandit_report.json
 session_response.json
 session_response_2.json
 sessions_list.json
+
+# Project management tool (external)
+vibe-kanban/

@@ -99,7 +99,7 @@ def _verify_bcrypt_fallback(password_bytes: bytes, hashed_password: str) -> bool
 
 def get_password_hash(password: str) -> str:
     """Hash a password using the configured context.
-    
+
     Bcrypt has a 72-byte limit, so passwords are truncated if necessary.
     """
     # Bcrypt (the fallback hasher) has a 72-byte limit

@@ -1,12 +1,14 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
-from fastapi import HTTPException
 from backend.api.session_api import (
-    init_session_api,
+    SessionCreate,
     create_session,
     get_sessions,
-    SessionCreate
+    init_session_api,
 )
+from fastapi import HTTPException
+
 
 @pytest.fixture(autouse=True)
 def setup_mocks():
@@ -17,6 +19,7 @@ def setup_mocks():
     mock_activity_log_service = AsyncMock()
     init_session_api(mock_db, mock_activity_log_service)
     return mock_db, mock_activity_log_service
+
 
 @pytest.mark.asyncio
 async def test_create_session_success(setup_mocks):
@@ -39,6 +42,7 @@ async def test_create_session_success(setup_mocks):
     mock_db.sessions.insert_one.assert_called_once()
     mock_activity_log_service.log_activity.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_create_session_invalid_warehouse(setup_mocks):
     mock_db, _ = setup_mocks
@@ -54,6 +58,7 @@ async def test_create_session_invalid_warehouse(setup_mocks):
     with pytest.raises(HTTPException) as exc:
         await create_session(request, SessionCreate(warehouse="A"), current_user)
     assert exc.value.status_code == 400
+
 
 @pytest.mark.asyncio
 async def test_get_sessions_supervisor(setup_mocks):
@@ -78,7 +83,7 @@ async def test_get_sessions_supervisor(setup_mocks):
             "staff_name": "n1",
             "type": "STANDARD",
             "status": "ACTIVE",
-            "created_at": "2023-01-01T00:00:00"
+            "created_at": "2023-01-01T00:00:00",
         },
         {
             "id": "2",
@@ -87,8 +92,8 @@ async def test_get_sessions_supervisor(setup_mocks):
             "staff_name": "n2",
             "type": "STANDARD",
             "status": "ACTIVE",
-            "created_at": "2023-01-01T00:00:00"
-        }
+            "created_at": "2023-01-01T00:00:00",
+        },
     ]
     mock_cursor.to_list = AsyncMock(return_value=mock_sessions)
 
@@ -104,6 +109,7 @@ async def test_get_sessions_supervisor(setup_mocks):
     # Verify query: empty filter for supervisor
     mock_db.sessions.count_documents.assert_called_with({})
     mock_db.sessions.find.assert_called()
+
 
 @pytest.mark.asyncio
 async def test_get_sessions_staff(setup_mocks):
@@ -128,7 +134,7 @@ async def test_get_sessions_staff(setup_mocks):
             "staff_name": "Staff One",
             "type": "STANDARD",
             "status": "ACTIVE",
-            "created_at": "2023-01-01T00:00:00"
+            "created_at": "2023-01-01T00:00:00",
         }
     ]
     mock_cursor.to_list = AsyncMock(return_value=mock_sessions)
@@ -145,6 +151,7 @@ async def test_get_sessions_staff(setup_mocks):
     mock_db.sessions.find.assert_called()
     call_args = mock_db.sessions.find.call_args
     assert call_args[0][0] == {"staff_user": "staff1"}
+
 
 @pytest.mark.asyncio
 async def test_bulk_close_sessions_success(setup_mocks):
@@ -168,6 +175,7 @@ async def test_bulk_close_sessions_success(setup_mocks):
 
     assert mock_db.sessions.update_one.call_count == 2
     assert mock_activity_log_service.log_activity.call_count == 2
+
 
 @pytest.mark.asyncio
 async def test_bulk_close_sessions_forbidden(setup_mocks):

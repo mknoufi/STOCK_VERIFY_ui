@@ -1,26 +1,21 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from fastapi import HTTPException
 from backend.api.mapping_api import (
-    get_tables,
+    ColumnMapping,
+    MappingConfig,
     get_columns,
+    get_current_mapping,
+    get_tables,
     preview_mapping,
     save_mapping,
-    get_current_mapping,
-    MappingConfig,
-    ColumnMapping
 )
 
 # Mock data
 MOCK_TABLES = [("Table1",), ("Table2",)]
-MOCK_COLUMNS = [
-    ("col1", "int", "NO", None),
-    ("col2", "varchar", "YES", 50)
-]
-MOCK_SAMPLE_DATA = [
-    (1, "test1"),
-    (2, "test2")
-]
+MOCK_COLUMNS = [("col1", "int", "NO", None), ("col2", "varchar", "YES", 50)]
+MOCK_SAMPLE_DATA = [(1, "test1"), (2, "test2")]
+
 
 @pytest.fixture
 def mock_pyodbc():
@@ -33,10 +28,12 @@ def mock_pyodbc():
 
         yield mock
 
+
 @pytest.fixture
 def mock_db():
     with patch("backend.server.db", new_callable=AsyncMock) as mock:
         yield mock
+
 
 @pytest.mark.asyncio
 async def test_get_tables(mock_pyodbc):
@@ -50,7 +47,7 @@ async def test_get_tables(mock_pyodbc):
         database="testdb",
         user="user",
         password="password",
-        current_user=current_user
+        current_user=current_user,
     )
 
     assert response["count"] == 2
@@ -61,6 +58,7 @@ async def test_get_tables(mock_pyodbc):
     mock_cursor.execute.assert_called_once()
     args, _ = mock_cursor.execute.call_args
     assert "INFORMATION_SCHEMA.TABLES" in args[0]
+
 
 @pytest.mark.asyncio
 async def test_get_columns(mock_pyodbc):
@@ -73,7 +71,7 @@ async def test_get_columns(mock_pyodbc):
         host="localhost",
         database="testdb",
         table_name="Table1",
-        current_user=current_user
+        current_user=current_user,
     )
 
     assert response["count"] == 2
@@ -86,6 +84,7 @@ async def test_get_columns(mock_pyodbc):
     args, _ = mock_cursor.execute.call_args
     assert "INFORMATION_SCHEMA.COLUMNS" in args[0]
 
+
 @pytest.mark.asyncio
 async def test_preview_mapping(mock_pyodbc):
     mock_cursor = mock_pyodbc.connect.return_value.cursor.return_value
@@ -97,16 +96,23 @@ async def test_preview_mapping(mock_pyodbc):
     config = MappingConfig(
         tables={"items": "ItemMaster"},
         columns={
-            "item_code": ColumnMapping(app_field="item_code", erp_column="ItemCode", table_name="ItemMaster", is_required=True),
-            "item_name": ColumnMapping(app_field="item_name", erp_column="ItemName", table_name="ItemMaster", is_required=True)
-        }
+            "item_code": ColumnMapping(
+                app_field="item_code",
+                erp_column="ItemCode",
+                table_name="ItemMaster",
+                is_required=True,
+            ),
+            "item_name": ColumnMapping(
+                app_field="item_name",
+                erp_column="ItemName",
+                table_name="ItemMaster",
+                is_required=True,
+            ),
+        },
     )
 
     response = await preview_mapping(
-        host="localhost",
-        database="testdb",
-        config=config,
-        current_user=current_user
+        host="localhost", database="testdb", config=config, current_user=current_user
     )
 
     assert response["success"] is True
@@ -119,13 +125,14 @@ async def test_preview_mapping(mock_pyodbc):
     assert "SELECT TOP 5" in args[0]
     assert "[ItemMaster]" in args[0]
 
+
 @pytest.mark.asyncio
 async def test_save_mapping(mock_db):
     current_user = {"username": "testuser"}
 
     data = {
         "connection": {"host": "localhost"},
-        "mapping": {"tables": {"items": "ItemMaster"}}
+        "mapping": {"tables": {"items": "ItemMaster"}},
     }
 
     response = await save_mapping(data=data, current_user=current_user)
@@ -139,6 +146,7 @@ async def test_save_mapping(mock_db):
     assert "$set" in args[1]
     assert args[1]["$set"]["updated_by"] == "testuser"
 
+
 @pytest.mark.asyncio
 async def test_get_current_mapping(mock_db):
     current_user = {"username": "testuser"}
@@ -146,7 +154,7 @@ async def test_get_current_mapping(mock_db):
     mock_doc = {
         "_id": "erp_mapping",
         "mapping": {"tables": {"items": "ItemMaster"}},
-        "connection": {"host": "localhost"}
+        "connection": {"host": "localhost"},
     }
     mock_db.config.find_one.return_value = mock_doc
 
@@ -154,6 +162,7 @@ async def test_get_current_mapping(mock_db):
 
     assert response["mapping"]["tables"]["items"] == "ItemMaster"
     assert response["connection"]["host"] == "localhost"
+
 
 @pytest.mark.asyncio
 async def test_get_current_mapping_empty(mock_db):

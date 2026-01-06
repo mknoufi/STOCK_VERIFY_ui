@@ -503,11 +503,13 @@ def _seed_default_users(fake_db, server_module) -> None:
     """Seed default test users."""
 
     def _seed_user(username: str, password: str, full_name: str, role: str):
+        # Explicitly truncate password to 72 chars before hashing to prevent bcrypt ValueError
+        safe_password = password[:72]
         fake_db.users._documents.append(
             {
                 "_id": os.urandom(12).hex(),
                 "username": username,
-                "hashed_password": server_module.get_password_hash(password),
+                "hashed_password": server_module.get_password_hash(safe_password),
                 "full_name": full_name,
                 "role": role,
                 "is_active": True,

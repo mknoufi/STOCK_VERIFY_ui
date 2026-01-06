@@ -136,12 +136,103 @@ Look for issues labeled `good-first-issue` in the issue tracker.
 - Improved error messages in init script
 - Better troubleshooting documentation
 
+## � Type Checking & Code Quality
+
+### Python Type Checking (mypy)
+
+We use mypy for Python type checking. Current status: **47 errors** (target: <50).
+
+**Running mypy:**
+```bash
+make mypy  # Run type checker with project settings
+```
+
+**Common mypy patterns in this codebase:**
+
+1. **MongoDB Aggregate Pipelines:**
+   ```python
+   from typing import Sequence, Mapping, Any
+   
+   pipeline = [{"$match": {"status": "active"}}, {"$group": {...}}]
+   # Motor requires explicit typing:
+   typed_pipeline: Sequence[Mapping[str, Any]] = pipeline
+   result = await collection.aggregate(typed_pipeline).to_list()
+   ```
+
+2. **Dynamic Exception Attributes:**
+   ```python
+   # Use setattr for attributes not in base Exception class:
+   error = ValueError("Custom error")
+   setattr(error, "error_code", "ERR_001")  # Type-safe
+   ```
+
+3. **Datetime Operations:**
+   ```python
+   # Explicit type annotations prevent "object has no __sub__" errors:
+   start_time: datetime = datetime.utcnow()
+   duration = (datetime.utcnow() - start_time).total_seconds()
+   ```
+
+4. **Async Context Managers:**
+   ```python
+   # Must use async def for async context managers:
+   async def lifespan_db() -> AsyncGenerator[None, None]:
+       await connect_db()
+       yield
+       await disconnect_db()
+   ```
+
+**Configuration:**
+- File: `backend/pyproject.toml`
+- Uses `--explicit-package-bases` flag
+- Ignores: tests, migrations, .venv
+
+### TypeScript Type Checking
+
+Frontend uses TypeScript with strict mode. Current status: **0 errors** ✅
+
+**Running TypeScript checks:**
+```bash
+cd frontend
+npm run typecheck  # Zero errors expected
+```
+
+**Common patterns:**
+- Use proper interface definitions for API responses
+- Type useState hooks: `useState<Type>(initialValue)`
+- Define prop types for all components
+
+### Pre-commit Hooks
+
+Set up pre-commit hooks to catch issues early:
+
+```bash
+pip install pre-commit
+pre-commit install
+
+# Run manually:
+pre-commit run --all-files
+```
+
+**Hooks include:**
+- Black (Python formatting)
+- Ruff (Python linting)
+- Prettier (JS/TS formatting)
+- mypy (Type checking)
+- ESLint (TypeScript linting)
+
 ## 🔐 Security
 
 - Never commit secrets or credentials
 - Use environment variables for sensitive data
-- Report security issues privately (see SECURITY.md if exists)
+- Report security issues privately (see SECURITY.md)
 - Review `.gitignore` before committing
+- Run security scans before major releases:
+  ```bash
+  cd backend
+  bandit -r . -f json -o bandit_report.json -x tests
+  pip-audit --format json -o pip_audit_report.json
+  ```
 
 ## 📚 Documentation
 

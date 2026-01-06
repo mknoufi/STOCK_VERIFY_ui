@@ -164,6 +164,8 @@ export default function LoginScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [loginMode]);
 
+  const showCredentialsLogin = loginMode === "credentials";
+
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar style="dark" backgroundColor={colors.white} />
@@ -417,7 +419,7 @@ export default function LoginScreen() {
                   </>
                 )}
                 {/* Login Button */}
-                {loginMode === "credentials" ? (
+                {showCredentialsLogin && (
                   <ModernButton
                     title={isLoading ? "Signing In..." : "Sign In"}
                     onPress={handleLogin}

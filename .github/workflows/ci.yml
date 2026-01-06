@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, verified, develop, final]
+    branches: [main, verified, develop, final, copilot/fix-bug-description-issue]
   pull_request:
     branches: [main, verified, develop]
 

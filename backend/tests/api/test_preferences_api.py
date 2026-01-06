@@ -11,12 +11,14 @@ from backend.api.preferences_api import (
     update_my_preferences,
 )
 from backend.models.preferences import UserPreferencesBase
+from bson import ObjectId
 
 
 @pytest.mark.asyncio
 async def test_get_preferences_defaults():
     mock_db = AsyncMock()
-    mock_user = {"_id": "user123"}
+    user_id = ObjectId()
+    mock_user = {"_id": user_id}
 
     # Mock find_one to return None (no existing prefs)
     mock_db.user_preferences.find_one.return_value = None
@@ -26,17 +28,19 @@ async def test_get_preferences_defaults():
     assert isinstance(response, UserPreferencesBase)
     assert response.theme == "system"
     assert response.font_scale == 1.0
-    mock_db.user_preferences.find_one.assert_called_once_with({"user_id": "user123"})
+    mock_db.user_preferences.find_one.assert_called_once_with({"user_id": user_id})
 
 
 @pytest.mark.asyncio
 async def test_get_preferences_existing():
     mock_db = AsyncMock()
-    mock_user = {"_id": "user123"}
+    user_id = ObjectId()
+    pref_id = ObjectId()
+    mock_user = {"_id": user_id}
 
     existing_prefs = {
-        "_id": "pref123",
-        "user_id": "user123",
+        "_id": pref_id,
+        "user_id": user_id,
         "theme": "dark",
         "font_scale": 1.2,
         "primary_color": "#000000",
@@ -55,15 +59,16 @@ async def test_get_preferences_existing():
 @pytest.mark.asyncio
 async def test_update_preferences_create_new():
     mock_db = AsyncMock()
-    valid_user_id = "507f1f77bcf86cd799439011"
-    mock_user = {"_id": valid_user_id}
+    user_id = ObjectId()
+    new_pref_id = ObjectId()
+    mock_user = {"_id": user_id}
 
     # First find_one returns None (doesn't exist)
     mock_db.user_preferences.find_one.side_effect = [
         None,
         {
-            "_id": "new_id",
-            "user_id": valid_user_id,
+            "_id": new_pref_id,
+            "user_id": user_id,
             "theme": "dark",
             "font_scale": 1.0,
             "primary_color": "#007AFF",
@@ -71,7 +76,7 @@ async def test_update_preferences_create_new():
             "enable_sound_effects": True,
         },
     ]
-    mock_db.user_preferences.insert_one.return_value.inserted_id = "new_id"
+    mock_db.user_preferences.insert_one.return_value.inserted_id = new_pref_id
 
     update_data = UserPreferencesUpdate(theme="dark")
 
@@ -80,7 +85,7 @@ async def test_update_preferences_create_new():
     # Verify insert was called
     mock_db.user_preferences.insert_one.assert_called_once()
     call_args = mock_db.user_preferences.insert_one.call_args[0][0]
-    assert str(call_args["user_id"]) == valid_user_id
+    assert str(call_args["user_id"]) == str(user_id)
     assert call_args["theme"] == "dark"
 
     assert response.theme == "dark"
@@ -89,11 +94,13 @@ async def test_update_preferences_create_new():
 @pytest.mark.asyncio
 async def test_update_preferences_update_existing():
     mock_db = AsyncMock()
-    mock_user = {"_id": "user123"}
+    user_id = ObjectId()
+    pref_id = ObjectId()
+    mock_user = {"_id": user_id}
 
     existing_prefs = {
-        "_id": "pref123",
-        "user_id": "user123",
+        "_id": pref_id,
+        "user_id": user_id,
         "theme": "light",
         "font_scale": 1.0,
     }
@@ -112,7 +119,7 @@ async def test_update_preferences_update_existing():
     # Verify update was called
     mock_db.user_preferences.update_one.assert_called_once()
     call_args = mock_db.user_preferences.update_one.call_args
-    assert call_args[0][0] == {"_id": "pref123"}
+    assert call_args[0][0] == {"_id": pref_id}
     assert call_args[0][1] == {"$set": {"font_scale": 1.5}}
 
     assert response.font_scale == 1.5

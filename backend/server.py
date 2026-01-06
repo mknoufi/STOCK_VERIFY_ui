@@ -790,8 +790,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     # Initialize search service
     try:
-        from backend.db.runtime import get_db
         from backend.services.search_service import init_search_service
+        from backend.db.runtime import get_db
 
         database = get_db()
         init_search_service(database)

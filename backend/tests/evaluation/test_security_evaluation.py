@@ -41,9 +41,9 @@ class TestAuthenticationSecurity:
         rate_limited = 429 in responses
 
         # Either rate limiting should kick in, or all should be unauthorized
-        assert rate_limited or all(r == 401 for r in responses), (
-            "Login should either rate limit or reject all invalid attempts"
-        )
+        assert rate_limited or all(
+            r == 401 for r in responses
+        ), "Login should either rate limit or reject all invalid attempts"
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(IS_MOCKED_AUTH, reason="Mock auth always succeeds")
@@ -126,9 +126,9 @@ class TestInputValidation:
             )
 
             # Should not return 500 (internal server error from SQL error)
-            assert response.status_code != 500, (
-                f"SQL injection should be handled safely: {payload}"
-            )
+            assert (
+                response.status_code != 500
+            ), f"SQL injection should be handled safely: {payload}"
 
     @pytest.mark.asyncio
     async def test_xss_prevention_in_responses(self, async_client, test_db):
@@ -226,9 +226,9 @@ class TestHeaderSecurity:
         # X-Content-Type-Options should be nosniff
         content_type_options = response.headers.get("x-content-type-options")
         if content_type_options:
-            assert content_type_options == "nosniff", (
-                "X-Content-Type-Options should be 'nosniff'"
-            )
+            assert (
+                content_type_options == "nosniff"
+            ), "X-Content-Type-Options should be 'nosniff'"
 
     @pytest.mark.asyncio
     async def test_frame_options(self, async_client, test_db):
@@ -251,9 +251,9 @@ class TestHeaderSecurity:
         # CSP is optional but recommended
         if csp:
             # Should have at least default-src directive
-            assert "default-src" in csp or "script-src" in csp, (
-                "CSP should have restrictive directives"
-            )
+            assert (
+                "default-src" in csp or "script-src" in csp
+            ), "CSP should have restrictive directives"
 
 
 class TestSessionSecurity:
@@ -405,9 +405,9 @@ class TestRateLimiting:
         # Rate limiting is optional but recommended
         if not rate_limited:
             # All requests succeeded, which is okay for low-volume
-            assert all(r == 200 for r in responses), (
-                "API should either rate limit or accept all requests"
-            )
+            assert all(
+                r == 200 for r in responses
+            ), "API should either rate limit or accept all requests"
 
     @pytest.mark.asyncio
     async def test_rate_limit_headers(self, async_client, test_db):
@@ -445,14 +445,14 @@ class TestErrorHandling:
             content = response.text
 
             # Should not contain Python stack traces
-            assert "Traceback (most recent call last)" not in content, (
-                "Stack traces should not be exposed"
-            )
+            assert (
+                "Traceback (most recent call last)" not in content
+            ), "Stack traces should not be exposed"
             assert 'File "' not in content or response.headers.get(
                 "content-type", ""
-            ).startswith("application/json"), (
-                "File paths should not be exposed in errors"
-            )
+            ).startswith(
+                "application/json"
+            ), "File paths should not be exposed in errors"
 
     @pytest.mark.asyncio
     async def test_generic_error_messages(self, async_client, test_db):
@@ -468,6 +468,6 @@ class TestErrorHandling:
             message = str(data.get("detail", "")).lower()
 
             # Should not indicate whether email exists
-            assert "user not found" not in message or "invalid" in message, (
-                "Error should not reveal if user exists"
-            )
+            assert (
+                "user not found" not in message or "invalid" in message
+            ), "Error should not reveal if user exists"

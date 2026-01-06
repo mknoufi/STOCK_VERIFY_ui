@@ -49,9 +49,7 @@ from backend.services.cache_service import CacheService
 from backend.services.database_health import DatabaseHealthService
 from backend.services.database_optimizer import DatabaseOptimizer
 from backend.services.error_log import ErrorLogService
-from backend.services.errors import (
-    DatabaseError,
-)
+from backend.services.errors import DatabaseError
 from backend.services.lock_manager import get_lock_manager
 from backend.services.monitoring_service import MonitoringService
 from backend.services.pubsub_service import get_pubsub_service

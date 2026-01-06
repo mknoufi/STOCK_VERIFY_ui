@@ -355,9 +355,9 @@ class AdvancedERPSyncService:
         # Test MongoDB response time and get count
         try:
             start = time.time()
-            health["mongodb"][
-                "item_count"
-            ] = await self.mongo_db.erp_items.count_documents({})
+            health["mongodb"]["item_count"] = (
+                await self.mongo_db.erp_items.count_documents({})
+            )
             health["mongodb"]["response_time_ms"] = (time.time() - start) * 1000
         except Exception:
             health["mongodb"]["connected"] = False

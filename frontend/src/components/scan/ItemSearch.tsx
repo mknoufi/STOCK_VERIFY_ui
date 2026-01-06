@@ -68,41 +68,43 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
   onLoadMore,
 }) => {
   // Render individual search result item
-  const renderSearchResultItem = useCallback(({ item, index }: { item: SearchResult; index: number }) => (
-    <TouchableOpacity
-      key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
-      style={styles.searchResultItem}
-      onPress={() => onSearchResultSelect(item)}
-    >
-      <View style={styles.searchResultContent}>
-        <View style={styles.resultHeader}>
-          <Text style={styles.searchResultName}>{item.item_name}</Text>
-          {item.relevance_score !== undefined && item.relevance_score >= 500 && (
-            <View style={styles.exactMatchBadge}>
-              <Text style={styles.exactMatchText}>Exact</Text>
-            </View>
+  const renderSearchResultItem = useCallback(
+    ({ item, index }: { item: SearchResult; index: number }) => (
+      <TouchableOpacity
+        key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
+        style={styles.searchResultItem}
+        onPress={() => onSearchResultSelect(item)}
+      >
+        <View style={styles.searchResultContent}>
+          <View style={styles.resultHeader}>
+            <Text style={styles.searchResultName}>{item.item_name}</Text>
+            {item.relevance_score !== undefined &&
+              item.relevance_score >= 500 && (
+                <View style={styles.exactMatchBadge}>
+                  <Text style={styles.exactMatchText}>Exact</Text>
+                </View>
+              )}
+          </View>
+          <Text style={styles.searchResultCode}>Code: {item.item_code}</Text>
+          {item.barcode && (
+            <Text style={styles.searchResultBarcode}>
+              Barcode: {item.barcode}
+            </Text>
           )}
-        </View>
-        <Text style={styles.searchResultCode}>
-          Code: {item.item_code}
-        </Text>
-        {item.barcode && (
-          <Text style={styles.searchResultBarcode}>
-            Barcode: {item.barcode}
+          <Text style={styles.searchResultStock}>
+            Stock: {item.stock_qty || 0}
           </Text>
-        )}
-        <Text style={styles.searchResultStock}>
-          Stock: {item.stock_qty || 0}
-        </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
-    </TouchableOpacity>
-  ), [onSearchResultSelect]);
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+      </TouchableOpacity>
+    ),
+    [onSearchResultSelect],
+  );
 
   // Footer component for infinite scroll
   const renderFooter = useCallback(() => {
     if (!hasNextPage) return null;
-    
+
     if (isLoadingMore) {
       return (
         <View style={styles.loadingMoreContainer}>
@@ -113,10 +115,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
     }
 
     return (
-      <TouchableOpacity
-        style={styles.loadMoreButton}
-        onPress={onLoadMore}
-      >
+      <TouchableOpacity style={styles.loadMoreButton} onPress={onLoadMore}>
         <Text style={styles.loadMoreText}>Load More Results</Text>
         <Ionicons name="chevron-down" size={16} color="#3B82F6" />
       </TouchableOpacity>
@@ -240,18 +239,17 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
       {showSearchResults && searchResults.length > 0 && (
         <View style={styles.searchResultsContainer}>
           <View style={styles.searchResultsHeader}>
-            <Text style={styles.searchResultsTitle}>
-              Search Results
-            </Text>
+            <Text style={styles.searchResultsTitle}>Search Results</Text>
             <Text style={styles.searchResultsCount}>
-              {searchResults.length}{totalResults > searchResults.length ? ` of ${totalResults}` : ''}
+              {searchResults.length}
+              {totalResults > searchResults.length ? ` of ${totalResults}` : ""}
             </Text>
           </View>
           <FlatList
             data={searchResults}
             renderItem={renderSearchResultItem}
-            keyExtractor={(item, index) => 
-              `search-${index}-${item.item_code || 'no-code'}-${item.barcode || 'no-barcode'}`
+            keyExtractor={(item, index) =>
+              `search-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`
             }
             style={styles.searchResultsFlatList}
             nestedScrollEnabled={true}

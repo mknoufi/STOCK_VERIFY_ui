@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from backend.api.response_models import ApiResponse, PaginatedResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.server import db
+from backend.db.runtime import get_db
 from backend.services.ai_search import ai_search_service
 
 # Add project root to path for direct execution (debugging)
@@ -57,6 +57,7 @@ async def get_items_v2(
 
         # 1. Fetch Candidates (Hybrid Strategy)
         query = {}
+        db = get_db()
         if search:
             # Broaden search to get candidates for fuzzy matching
             # We use a loose regex to filter obvious non-matches at DB level
@@ -75,6 +76,7 @@ async def get_items_v2(
         # Strategy:
         # A) If searching: Fetch ALL candidates (limit 100-200), Rank, Slice.
         # B) If NOT searching: Use standard DB pagination.
+        db = get_db()
 
         item_responses = []
         total = 0
@@ -234,6 +236,8 @@ async def get_item_v2(
     try:
         from bson import ObjectId
 
+        db = get_db()
+
         item = await db.erp_items.find_one({"_id": ObjectId(item_id)})
 
         if not item:
@@ -293,6 +297,7 @@ async def identify_item(
 
         # Determine strictness based on filename (Easter egg for manual testing)
         # If filename contains "coke", search for coke.
+        db = get_db()
         filename = file.filename.lower() if file.filename else ""
         mock_query = ""
 

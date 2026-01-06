@@ -220,7 +220,7 @@ class TestCreateCountLine:
     @pytest.mark.asyncio
     async def test_create_count_line_success(self, mock_db, line_data, erp_item):
         """Test successful count line creation"""
-        mock_db.sessions.find_one.return_value = {"id": "session123"}
+        mock_db.sessions.find_one.return_value = {"id": "session123", "status": "OPEN"}
         mock_db.erp_items.find_one.return_value = erp_item
 
         with patch("backend.api.count_lines_api._get_db_client", return_value=mock_db):
@@ -255,7 +255,8 @@ class TestCreateCountLine:
     @pytest.mark.asyncio
     async def test_create_count_line_item_not_found(self, mock_db, line_data):
         """Test count line creation with non-existent item"""
-        mock_db.sessions.find_one.return_value = {"id": "session123"}
+        session_data = {"id": "session123", "status": "OPEN"}
+        mock_db.sessions.find_one.return_value = session_data
         mock_db.erp_items.find_one.return_value = None
 
         with patch("backend.api.count_lines_api._get_db_client", return_value=mock_db):
@@ -275,7 +276,8 @@ class TestCreateCountLine:
         """Test count line creation with variance but no reason"""
         line_data.variance_reason = None
         line_data.correction_reason = None
-        mock_db.sessions.find_one.return_value = {"id": "session123"}
+        session_data = {"id": "session123", "status": "OPEN"}
+        mock_db.sessions.find_one.return_value = session_data
         mock_db.erp_items.find_one.return_value = erp_item
 
         with patch("backend.api.count_lines_api._get_db_client", return_value=mock_db):
@@ -292,11 +294,10 @@ class TestCreateCountLine:
     @pytest.mark.asyncio
     async def test_create_count_line_duplicate(self, mock_db, line_data, erp_item):
         """Test count line creation with duplicate detection"""
-        mock_db.sessions.find_one.return_value = {"id": "session123"}
+        session_data = {"id": "session123", "status": "OPEN"}
+        mock_db.sessions.find_one.return_value = session_data
         mock_db.erp_items.find_one.return_value = erp_item
-        mock_db.count_lines.count_documents = AsyncMock(
-            return_value=1
-        )  # Duplicate exists
+        mock_db.count_lines.count_documents = AsyncMock(return_value=1)
 
         with patch("backend.api.count_lines_api._get_db_client", return_value=mock_db):
             result = await create_count_line(
@@ -315,7 +316,8 @@ class TestCreateCountLine:
         line_data.counted_qty = 200  # Large variance
         erp_item["stock_qty"] = 50
         erp_item["mrp"] = 500  # High value item
-        mock_db.sessions.find_one.return_value = {"id": "session123"}
+        session_data = {"id": "session123", "status": "OPEN"}
+        mock_db.sessions.find_one.return_value = session_data
         mock_db.erp_items.find_one.return_value = erp_item
 
         with patch("backend.api.count_lines_api._get_db_client", return_value=mock_db):
@@ -504,7 +506,7 @@ class TestCountLinesAPIEdgeCases:
     async def test_create_count_line_session_stats_error(self):
         """Test count line creation when session stats update fails"""
         mock_db = Mock()
-        mock_db.sessions.find_one.return_value = {"id": "session123"}
+        mock_db.sessions.find_one.return_value = {"id": "session123", "status": "OPEN"}
         mock_db.erp_items.find_one.return_value = {
             "item_name": "Test Item",
             "barcode": "123456789",

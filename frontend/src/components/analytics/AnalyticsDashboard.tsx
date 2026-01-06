@@ -96,12 +96,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         >
           {data?.overview.map((metric, index) => {
             // Derive intent based on label (simplified logic)
-            const isNegativeGood = metric.label.includes("Variance") || metric.label.includes("Error");
+            const isNegativeGood =
+              metric.label.includes("Variance") ||
+              metric.label.includes("Error");
             let intent: "good" | "bad" | "neutral" = "neutral";
 
             if (metric.change) {
               if (metric.change > 0) intent = isNegativeGood ? "bad" : "good";
-              else if (metric.change < 0) intent = isNegativeGood ? "good" : "bad";
+              else if (metric.change < 0)
+                intent = isNegativeGood ? "good" : "bad";
             }
 
             return (
@@ -119,12 +122,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 trend={metric.change}
                 trendIntent={intent}
                 formatOptions={
-                  metric.format === 'percentage'
-                    ? { style: 'percent', maximumFractionDigits: 1 }
-                    : { style: 'decimal' }
+                  metric.format === "percentage"
+                    ? { style: "percent", maximumFractionDigits: 1 }
+                    : { style: "decimal" }
                 }
                 // Mock onPress for now
-                onPress={() => console.log('Drill-down', metric.label)}
+                onPress={() => console.log("Drill-down", metric.label)}
               />
             );
           })}

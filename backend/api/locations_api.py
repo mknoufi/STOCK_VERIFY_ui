@@ -12,9 +12,7 @@ router = APIRouter(prefix="/api/locations", tags=["Locations"])
 
 
 @router.get("/warehouses", response_model=list[dict[str, Any]])
-def get_warehouses(
-    zone: str = None, current_user: dict = Depends(get_current_user)
-):
+def get_warehouses(zone: str = None, current_user: dict = Depends(get_current_user)):
     """Fetch all warehouses from ERP, optionally filtered by zone"""
     try:
         # Ensure connection is alive
@@ -23,7 +21,9 @@ def get_warehouses(
             # Basic in-memory filtering if SQL query doesn't support it yet
             if zone:
                 z = zone.strip().lower()
-                logger.info(f"Filtering warehouses for zone: {zone}. Total warehouses: {len(warehouses)}")
+                logger.info(
+                    f"Filtering warehouses for zone: {zone}. Total warehouses: {len(warehouses)}"
+                )
 
                 if "showroom" in z:
                     # Showroom usually contains floors

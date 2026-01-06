@@ -9,7 +9,7 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, cast
 
 import jwt
 import uvicorn
@@ -18,7 +18,6 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
-from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
@@ -37,21 +36,6 @@ from backend.api.dynamic_reports_api import dynamic_reports_router  # noqa: E402
 from backend.api.enhanced_item_api import (  # noqa: E402
     enhanced_item_router as items_router,
 )
-from backend.api.schemas import (  # noqa: E402
-    ApiResponse,
-    CorrectionMetadata,
-    CorrectionReason,
-    CountLineCreate,
-    PhotoProof,
-    Session,
-    SessionCreate,
-    TokenResponse,
-    UnknownItem,
-    UnknownItemCreate,
-    UserInfo,
-    UserLogin,
-    UserRegister,
-)
 from backend.api.enhanced_item_api import init_enhanced_api  # noqa: E402
 from backend.api.erp_api import init_erp_api  # noqa: E402
 from backend.api.erp_api import router as erp_router  # noqa: E402
@@ -68,9 +52,17 @@ from backend.api.metrics_api import metrics_router, set_monitoring_service  # no
 
 # New feature API routers
 from backend.api.permissions_api import permissions_router  # noqa: E402
+from backend.api.preferences_api import router as preferences_router  # noqa: E402
 from backend.api.rack_api import router as rack_router  # noqa: E402
 from backend.api.report_generation_api import report_generation_router  # noqa: E402
 from backend.api.reporting_api import router as reporting_router  # noqa: E402
+from backend.api.schemas import (  # noqa: E402
+    ApiResponse,
+    CountLineCreate,
+    Session,
+    SessionCreate,
+    TokenResponse,
+)
 from backend.api.search_api import router as search_router  # noqa: E402
 from backend.api.security_api import security_router  # noqa: E402
 from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
@@ -89,7 +81,6 @@ from backend.api.sync_management_api import (  # noqa: E402
 )
 from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
 from backend.api.user_settings_api import router as user_settings_router  # noqa: E402
-from backend.api.preferences_api import router as preferences_router  # noqa: E402
 from backend.api.variance_api import router as variance_router  # noqa: E402
 from backend.api.websocket_api import router as websocket_router  # noqa: E402
 from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
@@ -137,9 +128,9 @@ from backend.services.sync_conflicts_service import SyncConflictsService  # noqa
 from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
-from backend.utils.api_utils import (  # noqa: E402
+from backend.utils.api_utils import (
     result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402
+    sanitize_for_logging,  # noqa: E402; noqa: E402
 )
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
@@ -252,6 +243,12 @@ client: AsyncIOMotorClient = AsyncIOMotorClient(
 # Use DB_NAME from settings (database name should not be in URL for this setup)
 db = client[settings.DB_NAME]
 
+# Set the active database and client in runtime for other modules to access via get_db()
+from backend.db.runtime import set_client, set_db
+
+set_db(db)
+set_client(client)
+
 # Database optimizer
 if not RUNNING_UNDER_PYTEST:
     db_optimizer = DatabaseOptimizer(
@@ -264,6 +261,9 @@ if not RUNNING_UNDER_PYTEST:
         socket_timeout_ms=20000,
     )
     client = db_optimizer.optimize_client()
+    set_client(client)
+    set_db(client[settings.DB_NAME])
+    db = client[settings.DB_NAME]
 
 # Security - Modern password hashing with Argon2 (OWASP recommended)
 # Fallback to bcrypt-only if argon2 is not available
@@ -799,8 +799,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     # Initialize search service
     try:
-        from backend.services.search_service import init_search_service
         from backend.db.runtime import get_db
+        from backend.services.search_service import init_search_service
 
         database = get_db()
         init_search_service(database)
@@ -2455,7 +2455,7 @@ async def _write_backend_port_file_on_startup() -> None:
     """
     try:
         port = int(os.getenv("PORT") or getattr(settings, "PORT", 8001))
-    except Exception as e:
+    except Exception:
         port = 8001
 
     try:

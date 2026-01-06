@@ -132,9 +132,7 @@ class TestPinAuth:
 
     def test_login_pin_user_not_found(self, client):
         """Test PIN login for non-existent PIN"""
-        login_payload = {
-            "pin": "9999"  # Presumably not set
-        }
+        login_payload = {"pin": "9999"}  # Presumably not set
 
         response = client.post("/api/auth/login-pin", json=login_payload)
 

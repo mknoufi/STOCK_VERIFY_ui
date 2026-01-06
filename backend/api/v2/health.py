@@ -74,6 +74,7 @@ async def health_check_v2() -> ApiResponse[HealthCheckResponse]:
     Returns detailed health status of all services
     """
     try:
+        from backend.db.runtime import get_db
         from backend.server import (
             cache_service,
             connection_pool,
@@ -115,6 +116,7 @@ async def detailed_health_check(
     Returns comprehensive system status including metrics
     """
     try:
+        from backend.db.runtime import get_db
         from backend.server import (
             cache_service,
             connection_pool,

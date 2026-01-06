@@ -20,16 +20,19 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def _normalize_date(value: Any) -> Optional[str]:
-    """Convert date/datetime to ISO string, or None."""
+def _normalize_date(value: Any) -> Optional[datetime]:
+    """Convert date/datetime to datetime object, or None."""
     if value in (None, ""):
         return None
     if isinstance(value, datetime):
-        return value.isoformat()
+        return value
     if isinstance(value, date):
-        return datetime.combine(value, datetime.min.time()).isoformat()
+        return datetime.combine(value, datetime.min.time())
     try:
-        return str(value)
+        # If it's a string, try to parse it
+        if isinstance(value, str):
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return None
     except Exception:
         return None
 
@@ -99,7 +102,7 @@ _NEW_ITEM_FIELDS: list[tuple[str, str, str]] = [
     ("purchase_qty", "purchase_qty", "num"),
     ("purchase_invoice_no", "purchase_invoice_no", "str"),
     ("purchase_reference", "purchase_reference", "str"),
-    ("last_purchase_date", "last_purchase_date", "raw"),
+    ("last_purchase_date", "last_purchase_date", "date"),
     ("last_purchase_cost", "last_purchase_cost", "num"),
     ("purchase_voucher_type", "purchase_voucher_type", "str"),
     ("purchase_type", "purchase_type", "str"),

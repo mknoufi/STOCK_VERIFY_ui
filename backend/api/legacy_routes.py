@@ -7,7 +7,7 @@ import sys
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, cast
 
 import jwt
 from bson import ObjectId
@@ -15,7 +15,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
-from pydantic import BaseModel, Field, field_validator, model_validator
 from starlette.requests import Request
 
 # Add project root to path for direct execution (debugging)
@@ -28,6 +27,13 @@ if str(project_root) not in sys.path:
 # New feature API routers
 # Phase 1-3: New Upgrade APIs
 # New feature services
+from backend.api.schemas import (  # noqa: E402
+    ApiResponse,
+    CountLineCreate,
+    Session,
+    SessionCreate,
+    TokenResponse,
+)
 from backend.config import settings  # noqa: E402
 from backend.error_messages import get_error_message  # noqa: E402
 
@@ -35,21 +41,6 @@ from backend.error_messages import get_error_message  # noqa: E402
 # Production services
 # from backend.services.connection_pool import SQLServerConnectionPool  # Legacy pool removed
 from backend.services.database_optimizer import DatabaseOptimizer  # noqa: E402
-from backend.api.schemas import (  # noqa: E402
-    ApiResponse,
-    CorrectionMetadata,
-    CorrectionReason,
-    CountLineCreate,
-    PhotoProof,
-    Session,
-    SessionCreate,
-    TokenResponse,
-    UnknownItem,
-    UnknownItemCreate,
-    UserInfo,
-    UserLogin,
-    UserRegister,
-)
 from backend.services.errors import (  # noqa: E402
     AuthenticationError,
     AuthorizationError,
@@ -82,9 +73,9 @@ enterprise_security_service: Any = None
 
 # Phase 1-3: New Services
 # Utils
-from backend.utils.api_utils import (  # noqa: E402
+from backend.utils.api_utils import (
     result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402
+    sanitize_for_logging,  # noqa: E402; noqa: E402
 )
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402

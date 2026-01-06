@@ -33,7 +33,10 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { SkeletonScreen } from "./SkeletonList";
 import { useThemeContext } from "../../theme/ThemeContext";
 import { auroraTheme } from "../../theme/auroraTheme";
-import { useScreenStyles, screenLayoutConstants } from "../../styles/screenStyles";
+import {
+  useScreenStyles,
+  screenLayoutConstants,
+} from "../../styles/screenStyles";
 
 // ============================================================================
 // Types
@@ -295,13 +298,13 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
       {customHeader
         ? customHeader
         : header !== false && (
-          <ScreenHeader
-            showBackButton={false}
-            showLogoutButton={true}
-            showUsername={true}
-            {...(header as ScreenHeaderProps)}
-          />
-        )}
+            <ScreenHeader
+              showBackButton={false}
+              showLogoutButton={true}
+              showUsername={true}
+              {...(header as ScreenHeaderProps)}
+            />
+          )}
 
       {/* Content */}
       {renderContent()}

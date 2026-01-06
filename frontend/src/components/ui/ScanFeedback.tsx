@@ -10,7 +10,13 @@
  */
 
 import React, { useCallback, useEffect } from "react";
-import { View, Text, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -202,7 +208,9 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
 
   return (
     <View style={styles.overlay} pointerEvents="none">
-      <Animated.View style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}>
+      <Animated.View
+        style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}
+      >
         <LinearGradient
           colors={config.gradient as readonly [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}

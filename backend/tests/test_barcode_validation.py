@@ -69,9 +69,9 @@ def test_invalid_barcodes(barcode):
         print(
             f"\nEnhanced API Response for {barcode}: {response.status_code} - {response.text}"
         )
-    assert response.status_code == 400, (
-        f"Invalid barcode {barcode} should be rejected by Enhanced API. Got {response.status_code}"
-    )
+    assert (
+        response.status_code == 400
+    ), f"Invalid barcode {barcode} should be rejected by Enhanced API. Got {response.status_code}"
     # Check for specific error message if possible, but status 400 is the main requirement
 
     # ERP API
@@ -80,6 +80,6 @@ def test_invalid_barcodes(barcode):
         print(
             f"\nERP API Response for {barcode}: {response.status_code} - {response.text}"
         )
-    assert response.status_code == 400, (
-        f"Invalid barcode {barcode} should be rejected by ERP API. Got {response.status_code}"
-    )
+    assert (
+        response.status_code == 400
+    ), f"Invalid barcode {barcode} should be rejected by ERP API. Got {response.status_code}"

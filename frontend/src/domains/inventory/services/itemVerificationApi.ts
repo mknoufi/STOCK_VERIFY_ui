@@ -385,7 +385,9 @@ export class ItemVerificationAPI {
       const message =
         typeof detail === "object" && detail !== null
           ? detail.message
-          : (detail as string) || err.message || "Failed to update item details";
+          : (detail as string) ||
+            err.message ||
+            "Failed to update item details";
       throw new Error(message);
     }
   }

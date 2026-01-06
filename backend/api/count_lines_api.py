@@ -129,9 +129,9 @@ async def create_count_line(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # Enforce session status
-    # Allow OPEN or ACTIVE. Reject CLOSED or RECONCILE (if we consider RECONCILE as closed for counting)
-    if session.get("status") not in ["OPEN", "ACTIVE"]:
+    # Allow OPEN or ACTIVE. Default to OPEN if status is missing.
+    status = session.get("status") or "OPEN"
+    if status not in ["OPEN", "ACTIVE"]:
         raise HTTPException(status_code=400, detail="Session is not active")
 
     # Check if session is in reconciliation mode (ACTIVE but reconciled_at is set)

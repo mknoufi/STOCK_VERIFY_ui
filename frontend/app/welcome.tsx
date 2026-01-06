@@ -114,11 +114,16 @@ export default function WelcomeScreen() {
       <View style={styles.decorativeCircle1} />
       <View style={styles.decorativeCircle2} />
 
-      <View style={[styles.content, {
-        maxWidth: isDesktop ? 600 : "100%",
-        paddingTop: Platform.OS === "ios" ? insets.top + 20 : 40,
-        paddingBottom: insets.bottom + 20
-      }]}>
+      <View
+        style={[
+          styles.content,
+          {
+            maxWidth: isDesktop ? 600 : "100%",
+            paddingTop: Platform.OS === "ios" ? insets.top + 20 : 40,
+            paddingBottom: insets.bottom + 20,
+          },
+        ]}
+      >
         {/* Header Section */}
         <Animated.View
           entering={FadeInUp.duration(1000).springify()}
@@ -184,7 +189,11 @@ export default function WelcomeScreen() {
             activeOpacity={0.7}
             style={styles.registerButtonWrapper}
           >
-            <GlassSurface intensity={10} tint="light" style={styles.registerButton}>
+            <GlassSurface
+              intensity={10}
+              tint="light"
+              style={styles.registerButton}
+            >
               <Text style={styles.registerButtonText}>Create Account</Text>
             </GlassSurface>
           </TouchableOpacity>

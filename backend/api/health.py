@@ -207,9 +207,7 @@ def _gather_system_resources() -> dict[str, Any]:
             "status": (
                 "healthy"
                 if disk_percent < 90
-                else "warning"
-                if disk_percent < 95
-                else "critical"
+                else "warning" if disk_percent < 95 else "critical"
             ),
         },
     }

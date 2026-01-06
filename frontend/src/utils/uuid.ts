@@ -13,7 +13,7 @@
  */
 export function generateUUID(): string {
   // Try to use crypto API for better randomness
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
 
@@ -25,8 +25,8 @@ export function generateUUID(): string {
     bytes[8] = (byte8 & 0x3f) | 0x80; // Variant
 
     const hex = Array.from(bytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
 
     return [
       hex.slice(0, 8),
@@ -34,13 +34,13 @@ export function generateUUID(): string {
       hex.slice(12, 16),
       hex.slice(16, 20),
       hex.slice(20, 32),
-    ].join('-');
+    ].join("-");
   }
 
   // Fallback using Math.random (less secure but works everywhere)
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -51,7 +51,7 @@ export function generateUUID(): string {
  */
 export function generateShortId(): string {
   const uuid = generateUUID();
-  return uuid.replace(/-/g, '').slice(0, 8);
+  return uuid.replace(/-/g, "").slice(0, 8);
 }
 
 /**

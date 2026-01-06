@@ -267,10 +267,7 @@ export default function SessionsList() {
 
         {loading && !refreshing ? (
           <View style={styles.centerContainer}>
-            <ActivityIndicator
-              size="large"
-              color={theme.colors.primary[500]}
-            />
+            <ActivityIndicator size="large" color={theme.colors.primary[500]} />
           </View>
         ) : (
           <View style={styles.listContainer}>

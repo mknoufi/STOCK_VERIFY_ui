@@ -18,9 +18,7 @@ try:
 except ImportError:
     HAS_PYDANTIC_V2 = False
     try:
-        from pydantic import (
-            BaseSettings as PydanticBaseSettingsFallback,
-        )
+        from pydantic import BaseSettings as PydanticBaseSettingsFallback
     except (
         ImportError
     ) as exc:  # pragma: no cover - configuration import should succeed in production

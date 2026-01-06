@@ -123,10 +123,10 @@ export const Tabs: React.FC<TabsProps> = ({
   const Container = scrollable ? ScrollView : View;
   const containerProps = scrollable
     ? {
-      horizontal: true,
-      showsHorizontalScrollIndicator: false,
-      contentContainerStyle: styles.scrollContent,
-    }
+        horizontal: true,
+        showsHorizontalScrollIndicator: false,
+        contentContainerStyle: styles.scrollContent,
+      }
     : { style: styles.container };
 
   return (

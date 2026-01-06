@@ -4,7 +4,13 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import Svg, {
   Polyline,
   Circle,

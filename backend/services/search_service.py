@@ -229,9 +229,7 @@ class SearchService:
         query_lower = query.lower()
 
         for item in candidates:
-            score, match_type = self._calculate_score(
-                item, query, query_lower, is_barcode
-            )
+            score, match_type = self._calculate_score(item, query, query_lower, is_barcode)
 
             if score > 0:
                 # Create deduplication key: barcode + item_code + mrp
@@ -256,17 +254,13 @@ class SearchService:
                             else None
                         ),
                         barcode=(
-                            str(item.get("barcode"))
-                            if item.get("barcode") is not None
-                            else None
+                            str(item.get("barcode")) if item.get("barcode") is not None else None
                         ),
                         stock_qty=float(item.get("stock_qty", 0.0)),
                         mrp=item.get("mrp"),
                         sale_price=item.get("sale_price"),
                         category=(
-                            str(item.get("category"))
-                            if item.get("category") is not None
-                            else None
+                            str(item.get("category")) if item.get("category") is not None else None
                         ),
                         subcategory=(
                             str(item.get("subcategory"))
@@ -279,9 +273,7 @@ class SearchService:
                             else None
                         ),
                         uom_name=(
-                            str(item.get("uom_name"))
-                            if item.get("uom_name") is not None
-                            else None
+                            str(item.get("uom_name")) if item.get("uom_name") is not None else None
                         ),
                         manual_barcode=(
                             str(item.get("manual_barcode"))
@@ -299,9 +291,7 @@ class SearchService:
                             else None
                         ),
                         batch_id=(
-                            str(item.get("batch_id"))
-                            if item.get("batch_id") is not None
-                            else None
+                            str(item.get("batch_id")) if item.get("batch_id") is not None else None
                         ),
                         relevance_score=score,
                         match_type=match_type,
@@ -432,9 +422,7 @@ def get_search_service() -> SearchService:
     return _search_service
 
 
-def init_search_service(
-    db: AsyncIOMotorDatabase, cache: Optional[Any] = None
-) -> SearchService:
+def init_search_service(db: AsyncIOMotorDatabase, cache: Optional[Any] = None) -> SearchService:
     """Initialize the search service singleton"""
     global _search_service
     _search_service = SearchService(db, cache)

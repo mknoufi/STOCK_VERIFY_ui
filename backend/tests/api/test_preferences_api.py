@@ -27,9 +27,7 @@ async def test_get_preferences_defaults():
     assert isinstance(response, UserPreferencesBase)
     assert response.theme == "system"
     assert response.font_scale == 1.0
-    mock_db.user_preferences.find_one.assert_called_once_with(
-        {"user_id": valid_user_id}
-    )
+    mock_db.user_preferences.find_one.assert_called_once_with({"user_id": valid_user_id})
 
 
 @pytest.mark.asyncio
@@ -76,9 +74,7 @@ async def test_update_preferences_create_new():
             "enable_sound_effects": True,
         },
     ]
-    mock_db.user_preferences.insert_one.return_value.inserted_id = (
-        "507f1f77bcf86cd799439012"
-    )
+    mock_db.user_preferences.insert_one.return_value.inserted_id = "507f1f77bcf86cd799439012"
 
     update_data = UserPreferencesUpdate(theme="dark")
 

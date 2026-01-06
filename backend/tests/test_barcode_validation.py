@@ -66,9 +66,7 @@ def test_invalid_barcodes(barcode):
     # Enhanced API
     response = client.get(f"/api/v2/erp/items/barcode/{barcode}/enhanced")
     if response.status_code != 400:
-        print(
-            f"\nEnhanced API Response for {barcode}: {response.status_code} - {response.text}"
-        )
+        print(f"\nEnhanced API Response for {barcode}: {response.status_code} - {response.text}")
     assert (
         response.status_code == 400
     ), f"Invalid barcode {barcode} should be rejected by Enhanced API. Got {response.status_code}"
@@ -77,9 +75,7 @@ def test_invalid_barcodes(barcode):
     # ERP API
     response = client.get(f"/api/erp/items/barcode/{barcode}")
     if response.status_code != 400:
-        print(
-            f"\nERP API Response for {barcode}: {response.status_code} - {response.text}"
-        )
+        print(f"\nERP API Response for {barcode}: {response.status_code} - {response.text}")
     assert (
         response.status_code == 400
     ), f"Invalid barcode {barcode} should be rejected by ERP API. Got {response.status_code}"

@@ -59,9 +59,7 @@ async def get_user_settings(
                 message="Settings retrieved successfully",
                 data=UserSettings(
                     theme=settings_doc.get("theme", DEFAULT_SETTINGS["theme"]),
-                    font_size=settings_doc.get(
-                        "font_size", DEFAULT_SETTINGS["font_size"]
-                    ),
+                    font_size=settings_doc.get("font_size", DEFAULT_SETTINGS["font_size"]),
                     primary_color=settings_doc.get(
                         "primary_color", DEFAULT_SETTINGS["primary_color"]
                     ),
@@ -152,9 +150,7 @@ async def update_user_settings(
         # Fetch and return updated settings
         updated_doc = await db.user_settings.find_one({"user_id": user_id})
         if not updated_doc:
-            raise HTTPException(
-                status_code=500, detail="Failed to retrieve updated settings"
-            )
+            raise HTTPException(status_code=500, detail="Failed to retrieve updated settings")
 
         return UserSettingsResponse(
             status="success",
@@ -162,15 +158,11 @@ async def update_user_settings(
             data=UserSettings(
                 theme=updated_doc.get("theme", DEFAULT_SETTINGS["theme"]),
                 font_size=updated_doc.get("font_size", DEFAULT_SETTINGS["font_size"]),
-                primary_color=updated_doc.get(
-                    "primary_color", DEFAULT_SETTINGS["primary_color"]
-                ),
+                primary_color=updated_doc.get("primary_color", DEFAULT_SETTINGS["primary_color"]),
                 haptic_enabled=updated_doc.get(
                     "haptic_enabled", DEFAULT_SETTINGS["haptic_enabled"]
                 ),
-                sound_enabled=updated_doc.get(
-                    "sound_enabled", DEFAULT_SETTINGS["sound_enabled"]
-                ),
+                sound_enabled=updated_doc.get("sound_enabled", DEFAULT_SETTINGS["sound_enabled"]),
                 auto_sync_enabled=updated_doc.get(
                     "auto_sync_enabled", DEFAULT_SETTINGS["auto_sync_enabled"]
                 ),

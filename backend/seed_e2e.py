@@ -22,9 +22,7 @@ async def seed_e2e_item():
     }
 
     # Upsert based on barcode
-    result = await db.erp_items.update_one(
-        {"barcode": "513456"}, {"$set": item}, upsert=True
-    )
+    result = await db.erp_items.update_one({"barcode": "513456"}, {"$set": item}, upsert=True)
     print(
         f"Seeding complete. Match count: {result.matched_count}, Modified: {result.modified_count}, Upserted: {result.upserted_id}"
     )

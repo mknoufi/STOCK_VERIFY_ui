@@ -47,7 +47,9 @@ test.describe("Authentication", () => {
       // Should redirect to home/dashboard
       await expect(
         page.getByText(/new count area/i).or(page.getByText(/dashboard/i)),
-      ).toBeVisible({ timeout: 15000 });
+      ).toBeVisible({
+        timeout: 15000,
+      });
     });
 
     test("should show error for invalid credentials", async ({ page }) => {
@@ -113,7 +115,9 @@ test.describe("Authentication", () => {
 
       await expect(
         page.getByText(/new count area/i).or(page.getByText(/dashboard/i)),
-      ).toBeVisible({ timeout: 15000 });
+      ).toBeVisible({
+        timeout: 15000,
+      });
     });
 
     test("should logout successfully", async ({ page }) => {
@@ -160,7 +164,9 @@ test.describe("Authentication", () => {
 
       await expect(
         page.getByText(/new count area/i).or(page.getByText(/dashboard/i)),
-      ).toBeVisible({ timeout: 15000 });
+      ).toBeVisible({
+        timeout: 15000,
+      });
 
       // Refresh page
       await page.reload();
@@ -168,7 +174,9 @@ test.describe("Authentication", () => {
       // Should still be logged in
       await expect(
         page.getByText(/new count area/i).or(page.getByText(/dashboard/i)),
-      ).toBeVisible({ timeout: 15000 });
+      ).toBeVisible({
+        timeout: 15000,
+      });
 
       // Should NOT see login screen
       await expect(page.getByRole("button", { name: /sign in/i }))
@@ -202,7 +210,9 @@ test.describe("PIN Authentication", () => {
       // Should login successfully
       await expect(
         page.getByText(/new count area/i).or(page.getByText(/dashboard/i)),
-      ).toBeVisible({ timeout: 15000 });
+      ).toBeVisible({
+        timeout: 15000,
+      });
     }
   });
 });

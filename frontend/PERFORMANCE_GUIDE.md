@@ -62,7 +62,7 @@ const StatsCard = memo(({ title, value }: Props) => (
 ));
 
 // ✅ DO: Use useMemo for computed values
-const memoizedStyles = useMemo(() => 
+const memoizedStyles = useMemo(() =>
   StyleSheet.create({ ... }),
   [theme, isDark]
 );
@@ -97,10 +97,10 @@ import { FlashList } from '@shopify/flash-list';
 ### 4. Animation Performance
 ```typescript
 // ✅ DO: Use useSharedValue for animations
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring
 } from 'react-native-reanimated';
 
 const scale = useSharedValue(1);
@@ -109,7 +109,7 @@ const animatedStyle = useAnimatedStyle(() => ({
 }));
 
 // ✅ DO: Use native drivers when possible
-<Animated.View 
+<Animated.View
   style={[animatedStyle]}
   useNativeDriver={true}
 />
@@ -309,14 +309,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const getItem = async (id: string) => {
   // Try memory first
   if (memoryCache.has(id)) return memoryCache.get(id);
-  
+
   // Try AsyncStorage
   const cached = await AsyncStorage.getItem(`item:${id}`);
   if (cached) {
     memoryCache.set(id, JSON.parse(cached));
     return cached;
   }
-  
+
   // Fetch from server
   const data = await api.get(`/items/${id}`);
   memoryCache.set(id, data);
@@ -371,6 +371,6 @@ api.interceptors.request.use((config) => {
 
 ---
 
-**Updated:** 2025-12-23  
-**Framework:** React Native + Expo  
+**Updated:** 2025-12-23
+**Framework:** React Native + Expo
 **Target Performance:** Production-grade

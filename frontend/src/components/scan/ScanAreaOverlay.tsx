@@ -89,7 +89,7 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
       }),
       Animated.timing(flashAnim, {
         toValue: 0,
-        duration: feedbackState === 'success' 
+        duration: feedbackState === 'success'
           ? SCANNER_CONFIG.visualFeedback.successDuration - 150
           : SCANNER_CONFIG.visualFeedback.errorDuration - 150,
         useNativeDriver: true,
@@ -126,7 +126,7 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
       <View style={[styles.overlay, styles.topOverlay, { height: (SCREEN_HEIGHT - areaHeight) / 2 + SCANNER_CONFIG.scanArea.verticalOffset }]} />
       <View style={styles.middleRow}>
         <View style={[styles.overlay, styles.sideOverlay, { width: (SCREEN_WIDTH - areaWidth) / 2 }]} />
-        
+
         {/* Scan Area */}
         <View style={[styles.scanArea, { width: areaWidth, height: areaHeight }]}>
           {/* Flash overlay for feedback */}
@@ -174,8 +174,8 @@ export const ScanAreaOverlay: React.FC<ScanAreaOverlayProps> = ({
       {/* Hint text */}
       <View style={styles.hintContainer}>
         <Text style={[styles.hintText, feedbackState !== 'idle' && styles.hintTextFeedback]}>
-          {feedbackState === 'success' ? '✓ Barcode Scanned!' : 
-           feedbackState === 'error' ? '✗ Invalid Barcode' : 
+          {feedbackState === 'success' ? '✓ Barcode Scanned!' :
+           feedbackState === 'error' ? '✗ Invalid Barcode' :
            hintText}
         </Text>
         <Text style={styles.subHintText}>

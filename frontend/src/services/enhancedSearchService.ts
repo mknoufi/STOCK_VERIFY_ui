@@ -54,7 +54,7 @@ export const EnhancedSearchService = {
 
       // Use new optimized search endpoint
       const result = await searchItemsOptimized(query, page, limit);
-      
+
       // Map to SearchResult interface
       const items: SearchResult[] = result.items.map((item: any) => ({
         id: item.id || item.item_code,

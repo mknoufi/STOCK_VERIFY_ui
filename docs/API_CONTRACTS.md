@@ -5,7 +5,7 @@ This document defines the standardized request/response formats used throughout 
 > **Document Roles**:
 > - **This document** (`API_CONTRACTS.md`): **Normative** — defines the target API contract, response envelopes, and standards. Use for API design decisions and client implementation guidance.
 > - **[APP_LOGIC_OVERVIEW.md](APP_LOGIC_OVERVIEW.md)**: **Descriptive** — describes actual runtime behavior, data flows, and implementation details. Use for debugging, onboarding, and understanding how the system works.
-> 
+>
 > Note: Some endpoints currently return responses that differ from these contracts (see [Response Envelope Reality Check](APP_LOGIC_OVERVIEW.md#response-envelope-reality-check) in APP_LOGIC_OVERVIEW.md for details).
 
 ## Standard Response Format

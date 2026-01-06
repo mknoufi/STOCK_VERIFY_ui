@@ -1,0 +1,1375 @@
+path,kind,bytes,loc
+.agent/SCAN_SCREEN_ANALYSIS.md,.md,6320,221
+.agent/comprehensive_implementation_guide.md,.md,10297,384
+.agent/master_implementation_guide.md,.md,13848,452
+.agent/scan-improvements-implementation.md,.md,4037,158
+.agent/scan-screen-improvements.md,.md,2631,50
+.agent/workflows/design-upgrade.md,.md,1623,42
+.agent/workflows/fix-all-issues.md,.md,10654,385
+.agent/workflows/run_app.md,.md,1525,68
+.agent/workflows/scan-screen-improvements.md,.md,2991,89
+.aider.conf.yml,.yml,1777,77
+.autogpt.yml,.yml,2071,84
+.autopilot.json,.json,460,23
+.continue/config.json,.json,3933,143
+.devcontainer/devcontainer.json,.json,1751,59
+.devon.yml,.yml,2305,98
+.env.production.example,.example,1948,87
+.frontmatter/database/taxonomyDb.json,.json,3,1
+.github/ISSUE_TEMPLATE/bug_report.md,.md,1046,47
+.github/ISSUE_TEMPLATE/feature_request.md,.md,1293,57
+.github/ISSUE_TEMPLATE/template-setup.md,.md,1653,58
+.github/PR_TEMPLATE_004.md,.md,5408,110
+.github/agents/copilot-instructions.md,.md,1931,36
+.github/agents/speckit.analyze.agent.md,.md,7175,184
+.github/agents/speckit.checklist.agent.md,.md,16809,294
+.github/agents/speckit.clarify.agent.md,.md,11334,181
+.github/agents/speckit.constitution.agent.md,.md,5246,82
+.github/agents/speckit.implement.agent.md,.md,7501,135
+.github/agents/speckit.plan.agent.md,.md,3120,89
+.github/agents/speckit.specify.agent.md,.md,12728,258
+.github/agents/speckit.tasks.agent.md,.md,6328,137
+.github/agents/speckit.taskstoissues.agent.md,.md,1089,30
+.github/appmod/appcat/assessment-config.yaml,.yaml,4257,69
+.github/appmod/appcat/assessment-plan.md,.md,896,18
+.github/appmod/appcat/result/settings.json,.json,2650,100
+.github/copilot-instructions.md,.md,2978,53
+.github/dependabot.yml,.yml,391,16
+.github/markdown-link-check-config.json,.json,374,21
+.github/prompts/add-api-endpoint.prompt.md,.md,5278,200
+.github/prompts/code-review.prompt.md,.md,2279,101
+.github/prompts/debug-issue.prompt.md,.md,2651,134
+.github/prompts/generate-docs.prompt.md,.md,3221,147
+.github/prompts/generate-tests.prompt.md,.md,2972,120
+.github/prompts/refactor-code.prompt.md,.md,3734,164
+.github/prompts/security-audit.prompt.md,.md,1704,64
+.github/prompts/speckit.analyze.prompt.md,.md,31,3
+.github/prompts/speckit.checklist.prompt.md,.md,33,3
+.github/prompts/speckit.clarify.prompt.md,.md,31,3
+.github/prompts/speckit.constitution.prompt.md,.md,36,3
+.github/prompts/speckit.implement.prompt.md,.md,33,3
+.github/prompts/speckit.plan.prompt.md,.md,28,3
+.github/prompts/speckit.specify.prompt.md,.md,31,3
+.github/prompts/speckit.tasks.prompt.md,.md,29,3
+.github/prompts/speckit.taskstoissues.prompt.md,.md,37,3
+.github/pull_request_template.md,.md,2194,86
+.github/template.yml,.yml,1317,30
+.github/workflows/ci-cd-debug.yml,.yml,137,11
+.github/workflows/ci-cd.yml,.yml,15443,501
+.github/workflows/ci.yml,.yml,4650,175
+.github/workflows/code-quality.yml,.yml,4676,181
+.github/workflows/deploy.yaml,.yaml,3221,111
+.github/workflows/docker-publish.yml,.yml,2316,85
+.github/workflows/frontend.yml,.yml,1076,47
+.github/workflows/repo-mirror.yml,.yml,3527,101
+.github/workflows/security-scan.yml,.yml,3798,133
+.github/workflows/test.yml,.yml,5876,221
+.husky/_/husky.sh,.sh,160,9
+.interpreter.yml,.yml,2120,76
+.markdownlint.json,.json,104,7
+.pre-commit-config.yaml,.yaml,1425,52
+.specify/memory/constitution.md,.md,1171,23
+.specify/scripts/bash/check-prerequisites.sh,.sh,4967,166
+.specify/scripts/bash/common.sh,.sh,4900,155
+.specify/scripts/bash/create-new-feature.sh,.sh,10110,297
+.specify/scripts/bash/setup-plan.sh,.sh,1619,60
+.specify/scripts/bash/update-agent-context.sh,.sh,25224,798
+.specify/templates/agent-file-template.md,.md,464,28
+.specify/templates/checklist-template.md,.md,1307,40
+.specify/templates/plan-template.md,.md,3657,104
+.specify/templates/spec-template.md,.md,3950,115
+.specify/templates/tasks-template.md,.md,9170,251
+.swe-agent.yml,.yml,2185,93
+.trunk/trunk.yaml,.yaml,438,17
+.vscode/README.md,.md,445,17
+.vscode/extensions.json,.json,461,20
+.vscode/launch.json,.json,637,20
+.vscode/mcp.json,.json,614,31
+.vscode/settings.json,.json,800,31
+.vscode/tasks.json,.json,820,35
+CONTRIBUTING.md,.md,5441,247
+GAP_ANALYSIS_TRACKER.md,.md,2238,61
+GEMINI.md,.md,854,30
+Makefile,Makefile,6828,205
+README.md,.md,2902,87
+SECURITY_REMEDIATION_STEPS.md,.md,169,6
+agents/README.md,.md,4363,178
+agents/__init__.py,.py,1101,32
+agents/awesome_integrations.md,.md,2649,42
+agents/requirements.txt,.txt,881,45
+agents/stock_verify_crew.py,.py,19277,604
+app.json,.json,83,5
+awesome-copilot-resources.md,.md,1509,26
+backend/.env.docker.example,.example,505,12
+backend/.env.example,.example,3883,93
+backend/.github/workflows/dependency-audit.yml,.yml,915,39
+backend/Dockerfile,Dockerfile,593,21
+backend/__init__.py,.py,75,2
+backend/api/__init__.py,.py,53,1
+backend/api/admin_control_api.py,.py,31097,926
+backend/api/admin_dashboard_api.py,.py,15570,477
+backend/api/auth.py,.py,28806,827
+backend/api/copilot_api.py,.py,611,16
+backend/api/count_lines_api.py,.py,20972,597
+backend/api/dynamic_fields_api.py,.py,13396,420
+backend/api/dynamic_reports_api.py,.py,13821,412
+backend/api/enhanced_item_api.py,.py,22288,662
+backend/api/enrichment_api.py,.py,11099,315
+backend/api/enterprise_api.py,.py,21189,624
+backend/api/erp_api.py,.py,11146,316
+backend/api/error_reporting_api.py,.py,13355,420
+backend/api/exports_api.py,.py,10172,314
+backend/api/health.py,.py,17513,528
+backend/api/item_verification_api.py,.py,24146,685
+backend/api/legacy_routes.py,.py,51107,1479
+backend/api/locations_api.py,.py,6369,187
+backend/api/logs_api.py,.py,8289,281
+backend/api/mapping_api.py,.py,12518,371
+backend/api/master_settings_api.py,.py,10276,273
+backend/api/metrics_api.py,.py,4722,165
+backend/api/notes_api.py,.py,4764,145
+backend/api/permissions_api.py,.py,11361,357
+backend/api/pin_auth_api.py,.py,3752,123
+backend/api/preferences_api.py,.py,2160,66
+backend/api/rack_api.py,.py,14151,511
+backend/api/realtime_dashboard_api.py,.py,22051,660
+backend/api/report_generation_api.py,.py,19963,636
+backend/api/reporting_api.py,.py,9613,335
+backend/api/reports_api.py,.py,3071,93
+backend/api/response_models.py,.py,4188,120
+backend/api/schemas.py,.py,7825,251
+backend/api/search_api.py,.py,10077,306
+backend/api/security_api.py,.py,16585,463
+backend/api/security_txt.py,.py,1711,59
+backend/api/self_diagnosis_api.py,.py,6564,184
+backend/api/service_logs_api.py,.py,8384,274
+backend/api/session_api.py,.py,14232,402
+backend/api/session_management_api.py,.py,16386,520
+backend/api/sql_connection_api.py,.py,3315,103
+backend/api/supervisor_pin.py,.py,2365,73
+backend/api/sync.py,.py,4740,141
+backend/api/sync_batch_api.py,.py,20587,599
+backend/api/sync_conflicts_api.py,.py,7870,244
+backend/api/sync_management_api.py,.py,1885,55
+backend/api/sync_status_api.py,.py,2313,72
+backend/api/user_settings_api.py,.py,7505,223
+backend/api/v2/__init__.py,.py,875,22
+backend/api/v2/connection_status.py,.py,3606,111
+backend/api/v2/health.py,.py,4638,140
+backend/api/v2/items.py,.py,12119,335
+backend/api/v2/metrics.py,.py,3118,100
+backend/api/v2/sessions.py,.py,11578,314
+backend/api/v2/supervisor.py,.py,1736,52
+backend/api/variance_api.py,.py,2017,68
+backend/api/websocket_api.py,.py,4135,121
+backend/auth/__init__.py,.py,316,18
+backend/auth/dependencies.py,.py,10796,310
+backend/auth/jwt_provider.py,.py,2014,70
+backend/auth/permissions.py,.py,8193,253
+backend/bandit_report.json,.json,0,0
+backend/config.py,.py,16923,431
+backend/core/__init__.py,.py,102,5
+backend/core/database.py,.py,870,36
+backend/core/globals.py,.py,1069,31
+backend/core/lifespan.py,.py,31855,854
+backend/core/schemas/__init__.py,.py,481,21
+backend/core/schemas/audit_log.py,.py,3301,105
+backend/core/schemas/user_settings.py,.py,3098,88
+backend/core/validators/__init__.py,.py,337,17
+backend/core/validators/pin_validator.py,.py,4970,183
+backend/core/websocket_manager.py,.py,2690,71
+backend/create_readonly_user.sql,.sql,326,10
+backend/data/schema.sql,.sql,5929,221
+backend/data/schema_update_1.sql,.sql,260,11
+backend/db/__init__.py,.py,70,2
+backend/db/indexes.py,.py,9525,271
+backend/db/initialization.py,.py,7227,201
+backend/db/migrations.py,.py,11558,279
+backend/db/runtime.py,.py,1680,61
+backend/db_mapping_config.py,.py,17231,413
+backend/debug_response_model.py,.py,332,14
+backend/error_messages.py,.py,10700,284
+backend/exceptions.py,.py,5237,191
+backend/fix_typing.py,.py,2088,56
+backend/locustfile.py,.py,885,28
+backend/main.py,.py,4480,92
+backend/middleware/__init__.py,.py,78,2
+backend/middleware/compression_middleware.py,.py,3476,109
+backend/middleware/input_sanitization.py,.py,8270,214
+backend/middleware/logging_middleware.py,.py,7512,220
+backend/middleware/performance_middleware.py,.py,3194,109
+backend/middleware/rate_limit_middleware.py,.py,4347,115
+backend/middleware/request_id.py,.py,4084,113
+backend/middleware/request_size_limit.py,.py,2417,68
+backend/middleware/security.py,.py,7410,261
+backend/middleware/security_headers.py,.py,4283,110
+backend/middleware/setup.py,.py,3884,112
+backend/models/__init__.py,.py,0,0
+backend/models/analytics.py,.py,1378,48
+backend/models/preferences.py,.py,998,39
+backend/models/sync.py,.py,694,28
+backend/models/user.py,.py,2240,84
+backend/pyproject.toml,.toml,625,23
+backend/pyrightconfig.json,.json,537,30
+backend/pytest.ini,.ini,753,29
+backend/requirements.txt,.txt,1724,61
+backend/scripts/README.md,.md,412,14
+backend/scripts/add_performance_indexes.py,.py,4052,129
+backend/scripts/add_test_items.py,.py,3222,102
+backend/scripts/backfill_new_fields.py,.py,9231,285
+backend/scripts/barcode_analyzer.py,.py,8782,285
+backend/scripts/batch_condition_manager.py,.py,16540,498
+backend/scripts/check_barcode_continuity.py,.py,3264,103
+backend/scripts/check_barcode_lengths.py,.py,1181,45
+backend/scripts/check_databases.py,.py,6462,199
+backend/scripts/check_mongodb_items.py,.py,1443,49
+backend/scripts/check_other_barcode_columns.py,.py,1543,52
+backend/scripts/check_other_barcodes.py,.py,1465,48
+backend/scripts/check_sql_barcodes.py,.py,3072,87
+backend/scripts/check_sql_barcodes_v2.py,.py,2463,70
+backend/scripts/check_sql_duplicates.py,.py,1496,46
+backend/scripts/check_sql_server_config.py,.py,4986,143
+backend/scripts/check_sql_server_connection.py,.py,10052,269
+backend/scripts/check_sync_optimization.py,.py,2184,65
+backend/scripts/check_users.py,.py,1937,70
+backend/scripts/check_warehouses.py,.py,2142,66
+backend/scripts/codebase_upgrade_checker.py,.py,7755,216
+backend/scripts/create_feature_indexes.py,.py,3392,116
+backend/scripts/create_item_indexes.py,.py,1044,30
+backend/scripts/debug_sql_config.py,.py,1405,47
+backend/scripts/discover_tables.py,.py,8518,284
+backend/scripts/explore_barcodes.py,.py,2991,89
+backend/scripts/generate_api_docs.py,.py,37735,832
+backend/scripts/generate_secrets.py,.py,4168,123
+backend/scripts/inspect_db.py,.py,4604,139
+backend/scripts/list_columns.py,.py,1080,40
+backend/scripts/load_test_search.py,.py,1700,56
+backend/scripts/migrate_user_settings.py,.py,4042,136
+backend/scripts/report_generator.py,.py,13266,377
+backend/scripts/restore_mongodb_backup.py,.py,4754,149
+backend/scripts/set_supervisor_pin.py,.py,1262,44
+backend/scripts/setup_server_localhost.py,.py,3745,115
+backend/scripts/stress_test_concurrent_users.py,.py,17437,518
+backend/scripts/test_db_connection.py,.py,5012,159
+backend/scripts/test_sql_direct.py,.py,1294,39
+backend/scripts/update_config_from_ssms.py,.py,2669,90
+backend/scripts/validate_env.py,.py,1838,67
+backend/seed_e2e.py,.py,949,35
+backend/server.py,.py,87016,2353
+backend/services/__init__.py,.py,76,2
+backend/services/activity_log.py,.py,9137,267
+backend/services/advanced_erp_sync.py,.py,17521,458
+backend/services/advanced_report_service.py,.py,30725,766
+backend/services/ai_search.py,.py,3629,114
+backend/services/ai_variance.py,.py,9604,285
+backend/services/analytics_service.py,.py,4717,126
+backend/services/audit_service.py,.py,8154,293
+backend/services/auto_diagnosis.py,.py,26246,715
+backend/services/auto_error_finder.py,.py,10147,274
+backend/services/auto_recovery.py,.py,10888,321
+backend/services/auto_sync_manager.py,.py,9352,262
+backend/services/batch_operations.py,.py,11103,291
+backend/services/cache/redis_service.py,.py,1764,62
+backend/services/cache_service.py,.py,9198,276
+backend/services/change_detection_sync.py,.py,14762,423
+backend/services/circuit_breaker.py,.py,8717,265
+backend/services/data_governance.py,.py,17710,481
+backend/services/data_validation_service.py,.py,16932,408
+backend/services/database_health.py,.py,11286,308
+backend/services/database_manager.py,.py,19918,519
+backend/services/database_optimizer.py,.py,11393,299
+backend/services/dynamic_fields_service.py,.py,16779,458
+backend/services/dynamic_report_service.py,.py,21162,604
+backend/services/enhanced_connection_pool.py,.py,17575,460
+backend/services/enrichment_service.py,.py,18768,570
+backend/services/enterprise_audit.py,.py,15527,459
+backend/services/enterprise_security.py,.py,18869,544
+backend/services/error_log.py,.py,15195,437
+backend/services/error_notification_service.py,.py,7970,253
+backend/services/errors.py,.py,1190,58
+backend/services/feature_flags.py,.py,9277,298
+backend/services/item_service.py,.py,2472,70
+backend/services/lock_manager.py,.py,9824,305
+backend/services/monitoring_service.py,.py,9834,267
+backend/services/observability.py,.py,12365,386
+backend/services/pin_auth_service.py,.py,6186,177
+backend/services/pubsub_service.py,.py,8883,269
+backend/services/rate_limiter.py,.py,6428,197
+backend/services/redis_service.py,.py,7751,237
+backend/services/refresh_token.py,.py,8449,225
+backend/services/reporting/compare_engine.py,.py,8372,254
+backend/services/reporting/export_engine.py,.py,6162,195
+backend/services/reporting/query_builder.py,.py,9606,328
+backend/services/reporting/snapshot_engine.py,.py,7930,253
+backend/services/runtime.py,.py,885,29
+backend/services/scheduled_export_service.py,.py,14923,420
+backend/services/search_service.py,.py,13166,397
+backend/services/sql_connection_optimizer.py,.py,7615,244
+backend/services/sql_sync_service.py,.py,21900,604
+backend/services/sync_conflicts_service.py,.py,10823,309
+backend/services/system_report_service.py,.py,4200,120
+backend/services/websocket/manager.py,.py,1651,59
+backend/services/websocket_service.py,.py,2845,72
+backend/sql_server_connector.py,.py,27613,772
+backend/tests/__init__.py,.py,24,1
+backend/tests/api/test_auth.py,.py,4626,150
+backend/tests/api/test_auth_api.py,.py,5143,155
+backend/tests/api/test_auth_handler.py,.py,3497,105
+backend/tests/api/test_enhanced_item_api.py,.py,5145,183
+backend/tests/api/test_erp_api.py,.py,5796,198
+backend/tests/api/test_item_verification_api.py,.py,3898,125
+backend/tests/api/test_mapping_api.py,.py,5144,174
+backend/tests/api/test_pin_auth_api.py,.py,6087,181
+backend/tests/api/test_preferences_api.py,.py,3654,123
+backend/tests/api/test_session_api.py,.py,5912,187
+backend/tests/api/test_user_settings_api.py,.py,3594,103
+backend/tests/api/test_websocket_api.py,.py,3875,114
+backend/tests/conftest.py,.py,4546,146
+backend/tests/evaluation/README.md,.md,8180,304
+backend/tests/evaluation/__init__.py,.py,979,33
+backend/tests/evaluation/conftest.py,.py,2689,87
+backend/tests/evaluation/evaluators.py,.py,23812,698
+backend/tests/evaluation/metrics_collector.py,.py,17094,545
+backend/tests/evaluation/reports/evaluation_report_20251208_091628.json,.json,441,23
+backend/tests/evaluation/reports/evaluation_report_20251208_091630.json,.json,446,23
+backend/tests/evaluation/run_evaluation.py,.py,12887,382
+backend/tests/evaluation/test_api_performance.py,.py,12042,368
+backend/tests/evaluation/test_business_logic.py,.py,14534,416
+backend/tests/evaluation/test_data_quality.py,.py,13393,402
+backend/tests/evaluation/test_security_evaluation.py,.py,17115,462
+backend/tests/evaluation/test_workflow.py,.py,14794,476
+backend/tests/test_admin_control_api.py,.py,4916,156
+backend/tests/test_ai_variance.py,.py,1936,61
+backend/tests/test_analytics_api.py,.py,1160,36
+backend/tests/test_analytics_service.py,.py,2846,89
+backend/tests/test_api_warehouses_manual.py,.py,2873,95
+backend/tests/test_architecture.py,.py,3104,101
+backend/tests/test_auth.py,.py,2901,99
+backend/tests/test_auth_path.py,.py,771,23
+backend/tests/test_auth_pin.py,.py,1253,40
+backend/tests/test_auto_diagnosis.py,.py,6501,162
+backend/tests/test_barcode_validation.py,.py,3067,81
+backend/tests/test_basic.py,.py,1164,49
+backend/tests/test_batch_operations.py,.py,13118,380
+backend/tests/test_comprehensive.py,.py,8944,275
+backend/tests/test_count_lines_api.py,.py,20080,529
+backend/tests/test_enhanced_connection_pool.py,.py,7840,212
+backend/tests/test_enhanced_item_search.py,.py,3613,104
+backend/tests/test_erp_mapping.py,.py,1715,52
+backend/tests/test_erp_sync_service.py,.py,12258,351
+backend/tests/test_error_handler_with_diagnosis.py,.py,8802,293
+backend/tests/test_error_logging.py,.py,2305,82
+backend/tests/test_exceptions.py,.py,6652,212
+backend/tests/test_integration.py,.py,8061,225
+backend/tests/test_items.py,.py,5064,151
+backend/tests/test_locations_api.py,.py,1888,57
+backend/tests/test_performance.py,.py,8757,256
+backend/tests/test_pin_auth.py,.py,5002,140
+backend/tests/test_pin_login_manual.py,.py,1920,63
+backend/tests/test_queries.json,.json,687,22
+backend/tests/test_result.py,.py,6966,221
+backend/tests/test_routes_check.py,.py,491,19
+backend/tests/test_search_api.py,.py,2115,71
+backend/tests/test_search_service.py,.py,3255,111
+backend/tests/test_security_headers.py,.py,5556,150
+backend/tests/test_sessions_api.py,.py,1974,59
+backend/tests/test_simple.py,.py,398,12
+backend/tests/test_sql_readonly.py,.py,3140,99
+backend/tests/test_stock_verification.py,.py,6008,180
+backend/tests/test_sync.py,.py,4580,142
+backend/tests/test_sync_service.py,.py,4880,163
+backend/tests/test_verification.py,.py,3235,111
+backend/tests/test_version_check.py,.py,4520,113
+backend/tests/test_websocket_manager.py,.py,1979,74
+backend/tests/test_websocket_service.py,.py,2298,87
+backend/tests/utils/in_memory_db.py,.py,20514,591
+backend/tests/verification_output.txt,.txt,5980,110
+backend/tests/verify_integration_flow.py,.py,2169,73
+backend/tests/verify_operational.py,.py,2812,86
+backend/tests/verify_security_api.py,.py,2672,84
+backend/tests/verify_token_claims.py,.py,879,34
+backend/utils/__init__.py,.py,16,1
+backend/utils/api_utils.py,.py,7122,222
+backend/utils/async_utils.py,.py,10680,325
+backend/utils/auth_utils.py,.py,4669,126
+backend/utils/crypto_utils.py,.py,622,17
+backend/utils/db_connection.py,.py,7167,228
+backend/utils/erp_utils.py,.py,15967,423
+backend/utils/error_handler_with_diagnosis.py,.py,8880,272
+backend/utils/logging_config.py,.py,3086,112
+backend/utils/pagination.py,.py,6937,247
+backend/utils/pdf_generator.py,.py,4849,125
+backend/utils/port_detector.py,.py,8502,229
+backend/utils/result.py,.py,14260,421
+backend/utils/result_types.py,.py,4020,125
+backend/utils/secret_generator.py,.py,2980,92
+backend/utils/service_manager.py,.py,8426,219
+backend/utils/structured_logging.py,.py,5183,173
+backend/utils/tracing.py,.py,5065,148
+backend/utils/validation.py,.py,15842,527
+backend_port.json,.json,132,1
+check_items.py,.py,565,20
+check_mongo_items.py,.py,1200,41
+check_mongo_sample.py,.py,884,29
+check_sessions.py,.py,793,28
+clean_sessions.py,.py,1088,39
+cooking_agent/app.py,.py,3052,89
+cooking_agent/requirements.txt,.txt,52,3
+cooking_agent/test_agent.py,.py,1224,44
+docker-compose.yml,.yml,447,25
+docs/API_CONTRACTS.md,.md,10097,382
+docs/APP_LOGIC_OVERVIEW.md,.md,43122,928
+docs/BACKEND_CONNECTION_PARAMETERS.md,.md,13634,570
+docs/CHANGELOG.md,.md,1266,33
+docs/CODEBASE_PROBLEMS_RESOLUTION.md,.md,8593,256
+docs/COMPLETE_UPGRADE_SUMMARY.md,.md,10533,475
+docs/COMPREHENSIVE_APP_REVIEW.md,.md,12733,301
+docs/CONSISTENCY_FIXES_SUMMARY.md,.md,7921,212
+docs/CONSTITUTION.md,.md,1171,23
+docs/DEPLOYMENT_STATUS.md,.md,1480,29
+docs/DEPLOY_MANUAL.md,.md,1163,43
+docs/DEVELOPER_CHECKLIST.md,.md,4272,110
+docs/ENHANCEMENT_IMPLEMENTATION_PLAN.md,.md,4490,125
+docs/ENTERPRISE_FEATURES_GUIDE.md,.md,13873,536
+docs/ENVIRONMENT_VARIABLES.md,.md,1386,45
+docs/ERP_POLICY.md,.md,2270,92
+docs/FEATURES_SUMMARY.txt,.txt,8923,272
+docs/FEATURE_INTEGRATION_GUIDE.md,.md,11501,490
+docs/FEATURE_ROADMAP.md,.md,19235,829
+docs/FRONTEND_HEALTH_CHECK.md,.md,6545,240
+docs/GOVERNANCE_PLAN.md,.md,4398,116
+docs/IMPLEMENTATION_COMPLETE.md,.md,2581,45
+docs/INTEGRATION_CHECKLIST.md,.md,7878,370
+docs/INTEGRATION_COMPLETE.md,.md,8243,358
+docs/INTEGRATION_GUIDE.md,.md,8014,388
+docs/LAN_DEPLOYMENT_PLAN.md,.md,11985,449
+docs/NEW_COMPONENTS_GUIDE.md,.md,7054,364
+docs/NEW_FEATURES_GUIDE.md,.md,14046,590
+docs/OFFICIAL_REFERENCES_ALL_IN_ONE.md,.md,3839,149
+docs/PENDING_WORK.md,.md,1121,35
+docs/PHASE_1_UPGRADE_GUIDE.md,.md,8352,404
+docs/PHASE_2_IMPLEMENTATION_LOG.md,.md,8928,387
+docs/PHASE_3_IMPLEMENTATION_LOG.md,.md,11624,515
+docs/PRODUCTION_DEPLOYMENT_GUIDE.md,.md,20664,902
+docs/PRODUCTION_DEPLOYMENT_PLAN.md,.md,13599,525
+docs/PRODUCTION_READINESS_CHECKLIST.md,.md,13914,531
+docs/PRODUCTION_STATUS_SUMMARY.md,.md,11191,345
+docs/QUICK_REFERENCE.md,.md,5954,312
+docs/QUICK_START.md,.md,6014,345
+docs/README_SECURITY_FIX.md,.md,4506,145
+docs/RECOMMENDATIONS_IMPLEMENTED.md,.md,4873,177
+docs/REFERENCES.md,.md,3938,158
+docs/SCAN_SCREEN_INTEGRATION_EXAMPLE.md,.md,9140,374
+docs/SECURITY_REMEDIATION_STEPS.md,.md,8099,325
+docs/SQL_SERVER_SETUP_GUIDE.md,.md,7796,365
+docs/SQL_SETUP_INDEX.md,.md,6489,273
+docs/SQL_SETUP_QUICK_REFERENCE.txt,.txt,8283,141
+docs/SRS.md,.md,9803,179
+docs/STARTUP_GUIDE.md,.md,3502,147
+docs/START_HERE.md,.md,10424,418
+docs/STOCK_VERIFY_2.1_cursor_rules.md,.md,2329,90
+docs/STUDY_GUIDE_AGENTS_AND_VSCODE.md,.md,2207,71
+docs/TECHNICAL_SPECIFICATION.md,.md,10541,480
+docs/THEME_SYSTEM_V2.md,.md,7687,313
+docs/UI_MIGRATION_PLAN.md,.md,4863,114
+docs/UPGRADE_IMPLEMENTATION_LOG.md,.md,10148,432
+docs/USER_REQUIREMENTS_REPORT.md,.md,3315,52
+docs/VIBE_CODING_WORKFLOW.md,.md,13077,373
+docs/archive/old_docs/ADDITIONAL_OPTIMIZATIONS.md,.md,4906,214
+docs/archive/old_docs/ADMIN_WEB_UI_GUIDE.txt,.txt,1874,80
+docs/archive/old_docs/ADVANCED_DASHBOARD_FEATURES.md,.md,9469,351
+docs/archive/old_docs/ANALYSIS_REPORT.md,.md,3306,149
+docs/archive/old_docs/API_BACKEND_UPGRADE_SUMMARY.md,.md,6800,266
+docs/archive/old_docs/API_CONTRACTS.md,.md,4975,275
+docs/archive/old_docs/API_REFERENCE.md,.md,18839,822
+docs/archive/old_docs/ARCHITECTURE.md,.md,5102,149
+docs/archive/old_docs/ARCHITECTURE_CORRECTED.md,.md,12538,442
+docs/archive/old_docs/AUTO_COMMIT_GUIDE.md,.md,5521,262
+docs/archive/old_docs/AWESOME_CURSORRULES_EXPLORATION.md,.md,9754,418
+docs/archive/old_docs/CODEBASE_ANALYSIS.md,.md,38802,1250
+docs/archive/old_docs/CODING_STANDARDS.md,.md,10196,454
+docs/archive/old_docs/COMPREHENSIVE_TODO_PLAN.md,.md,45287,1994
+docs/archive/old_docs/CREDENTIALS.md,.md,694,38
+docs/archive/old_docs/DATA_ENRICHMENT_WORKFLOW.md,.md,22663,642
+docs/archive/old_docs/DEPLOYMENT_ARCHITECTURE.md,.md,21637,578
+docs/archive/old_docs/DEPLOYMENT_GUIDE.md,.md,19059,880
+docs/archive/old_docs/DEVELOPMENT_RULES.md,.md,9871,478
+docs/archive/old_docs/DOCKER.md,.md,1508,41
+docs/archive/old_docs/DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md,.md,16068,635
+docs/archive/old_docs/DYNAMIC_SYSTEMS_INTEGRATION_CHECKLIST.md,.md,13801,550
+docs/archive/old_docs/FEATURES_ROADMAP.md,.md,1686,87
+docs/archive/old_docs/FILE_STRUCTURE.md,.md,12099,360
+docs/archive/old_docs/FINAL_SUMMARY.md,.md,3206,126
+docs/archive/old_docs/FRONTEND_DOCUMENTATION.md,.md,5862,227
+docs/archive/old_docs/FRONTEND_FLOWCHART.md,.md,12093,365
+docs/archive/old_docs/FRONTEND_UPGRADE_NOTES.md,.md,2960,94
+docs/archive/old_docs/IMPLEMENTATION_PROGRESS.md,.md,4204,164
+docs/archive/old_docs/IMPLEMENTATION_STATUS.md,.md,3683,135
+docs/archive/old_docs/IMPLEMENTATION_SUMMARY.md,.md,3195,118
+docs/archive/old_docs/INTEGRATION_PROGRESS.md,.md,4352,144
+docs/archive/old_docs/ISSUES_REPORT.md,.md,6204,260
+docs/archive/old_docs/LIBRARIES_INSTALLED.md,.md,1077,44
+docs/archive/old_docs/OPTIMIZATION_SUMMARY.md,.md,2481,103
+docs/archive/old_docs/OTHER_REPOS_ANALYSIS.md,.md,6213,212
+docs/archive/old_docs/OTHER_USEFUL_REPOS.md,.md,8150,344
+docs/archive/old_docs/PENDING_WORK.md,.md,4646,171
+docs/archive/old_docs/PRODUCT_SPECIFICATION.md,.md,12317,386
+docs/archive/old_docs/PRODUCT_SPECIFICATION.txt,.txt,22759,810
+docs/archive/old_docs/QUICK_START.md,.md,2543,115
+docs/archive/old_docs/REFACTORING_SUMMARY.md,.md,5060,216
+docs/archive/old_docs/REPOS_SUMMARY.md,.md,2118,83
+docs/archive/old_docs/REPO_ANALYSIS.md,.md,1399,57
+docs/archive/old_docs/RUN_APP.md,.md,5340,273
+docs/archive/old_docs/STARTUP_GUIDE.md,.md,3896,144
+docs/archive/old_docs/START_SERVICES_GUIDE.md,.md,4512,266
+docs/archive/old_docs/STORYBOOK_SETUP_COMPLETE.md,.md,1236,51
+docs/archive/old_docs/SUGGESTIONS.md,.md,10917,487
+docs/archive/old_docs/TESTING_GUIDE.md,.md,12952,478
+docs/archive/old_docs/TODO_SUMMARY.md,.md,1196,51
+docs/archive/old_docs/TROUBLESHOOTING_GUIDE.md,.md,19276,720
+docs/archive/old_docs/UI_UX_ROADMAP.md,.md,3398,166
+docs/archive/old_docs/USER_MANUAL.md,.md,26351,1055
+docs/archive/old_docs/USE_CASES_DETAILED.md,.md,3212,184
+docs/archive/old_docs/WELCOME_SCREEN_GUIDE.md,.md,4204,157
+docs/archive/old_docs/external-repos-memory.md,.md,3868,70
+docs/codebase_memory_v2.1.md,.md,3193,121
+docs/frontend_migration_report.md,.md,3882,44
+docs/security_research.md,.md,2716,48
+docs/upgrade_prompt_framework.md,.md,1221,65
+docs/verified_coding_policy.md,.md,1379,69
+fix_report.md,.md,2145,41
+frontend/.env.example,.example,1339,27
+frontend/.eslintrc.js,.js,717,28
+frontend/.vscode/settings.json,.json,405,10
+frontend/Dockerfile,Dockerfile,453,23
+frontend/MODERN_UI_UX_UPGRADE.md,.md,6475,268
+frontend/PERFORMANCE_GUIDE.md,.md,8838,388
+frontend/QR_SCAN_DIAGNOSTIC_REPORT.md,.md,5968,256
+frontend/TEST_QR_INTEGRATION.sh,.sh,1321,54
+frontend/TEST_QR_SCAN.sh,.sh,1851,59
+frontend/UI_UX_UPGRADE_SUMMARY.md,.md,9990,425
+frontend/__tests__/components.test.tsx,.tsx,3334,141
+frontend/__tests__/home.test.tsx,.tsx,2426,106
+frontend/__tests__/login.test.tsx,.tsx,2208,91
+frontend/__tests__/staff/home.test.tsx,.tsx,3218,110
+frontend/app.json,.json,185,11
+frontend/app/+not-found.tsx,.tsx,852,39
+frontend/app/_layout.tsx,.tsx,16185,502
+frontend/app/admin/_layout.tsx,.tsx,2401,72
+frontend/app/admin/control-panel-v2.tsx,.tsx,17514,630
+frontend/app/admin/control-panel.tsx,.tsx,28704,1016
+frontend/app/admin/dashboard-web.tsx,.tsx,40274,1360
+frontend/app/admin/index.tsx,.tsx,196,9
+frontend/app/admin/live-view.tsx,.tsx,17291,585
+frontend/app/admin/logs.tsx,.tsx,8405,300
+frontend/app/admin/metrics.tsx,.tsx,29071,952
+frontend/app/admin/permissions.tsx,.tsx,9840,337
+frontend/app/admin/realtime-dashboard.tsx,.tsx,34398,1191
+frontend/app/admin/reports.tsx,.tsx,8225,306
+frontend/app/admin/security.tsx,.tsx,22320,713
+frontend/app/admin/settings.tsx,.tsx,11342,416
+frontend/app/admin/sql-config.tsx,.tsx,10981,420
+frontend/app/debug.tsx,.tsx,676,25
+frontend/app/help.tsx,.tsx,9172,337
+frontend/app/index.tsx,.tsx,4227,144
+frontend/app/login.tsx,.tsx,30131,871
+frontend/app/register.tsx,.tsx,14765,504
+frontend/app/staff/_layout.tsx,.tsx,837,26
+frontend/app/staff/appearance.tsx,.tsx,756,31
+frontend/app/staff/components/SectionLists.tsx,.tsx,16655,541
+frontend/app/staff/history.tsx,.tsx,15046,547
+frontend/app/staff/home.tsx,.tsx,40939,1413
+frontend/app/staff/index.tsx,.tsx,182,9
+frontend/app/staff/item-detail.tsx,.tsx,49038,1587
+frontend/app/staff/scan.tsx,.tsx,57072,1904
+frontend/app/supervisor/_layout.tsx,.tsx,1660,54
+frontend/app/supervisor/activity-logs.tsx,.tsx,14057,480
+frontend/app/supervisor/appearance.tsx,.tsx,706,30
+frontend/app/supervisor/dashboard.tsx,.tsx,23067,767
+frontend/app/supervisor/db-mapping.tsx,.tsx,34482,1068
+frontend/app/supervisor/error-logs.tsx,.tsx,33809,1088
+frontend/app/supervisor/export-results.tsx,.tsx,15878,559
+frontend/app/supervisor/export-schedules.tsx,.tsx,23521,811
+frontend/app/supervisor/export.tsx,.tsx,13192,472
+frontend/app/supervisor/index.tsx,.tsx,207,9
+frontend/app/supervisor/items.tsx,.tsx,14812,524
+frontend/app/supervisor/notes.tsx,.tsx,12056,416
+frontend/app/supervisor/offline-queue.tsx,.tsx,13796,473
+frontend/app/supervisor/session/[id].tsx,.tsx,25205,841
+frontend/app/supervisor/sessions.tsx,.tsx,11672,425
+frontend/app/supervisor/settings.tsx,.tsx,15774,516
+frontend/app/supervisor/sync-conflicts.tsx,.tsx,26179,831
+frontend/app/supervisor/variance-details.tsx,.tsx,15249,503
+frontend/app/supervisor/variances.tsx,.tsx,15555,544
+frontend/app/supervisor/watchtower.tsx,.tsx,18757,620
+frontend/app/welcome.tsx,.tsx,9997,401
+frontend/babel.config.js,.js,846,33
+frontend/e2e/README.md,.md,1087,51
+frontend/e2e/core-flow.spec.ts,.ts,4094,117
+frontend/expo-sqlite.d.ts,.ts,630,24
+frontend/index.js,.js,68,3
+frontend/ios/.xcode.env,.env,482,11
+frontend/ios/Podfile.properties.json,.json,77,4
+frontend/ios/Pods/Local Podspecs/EXApplication.podspec.json,.json,945,32
+frontend/ios/Pods/Local Podspecs/EXConstants.podspec.json,.json,1180,40
+frontend/ios/Pods/Local Podspecs/EXNotifications.podspec.json,.json,1124,40
+frontend/ios/Pods/Local Podspecs/EXTaskManager.podspec.json,.json,755,27
+frontend/ios/Pods/Local Podspecs/Expo.podspec.json,.json,2145,70
+frontend/ios/Pods/Local Podspecs/ExpoAsset.podspec.json,.json,776,28
+frontend/ios/Pods/Local Podspecs/ExpoBackgroundFetch.podspec.json,.json,648,24
+frontend/ios/Pods/Local Podspecs/ExpoBlur.podspec.json,.json,801,21
+frontend/ios/Pods/Local Podspecs/ExpoBrightness.podspec.json,.json,645,24
+frontend/ios/Pods/Local Podspecs/ExpoCamera.podspec.json,.json,1424,27
+frontend/ios/Pods/Local Podspecs/ExpoClipboard.podspec.json,.json,997,37
+frontend/ios/Pods/Local Podspecs/ExpoFileSystem.podspec.json,.json,802,32
+frontend/ios/Pods/Local Podspecs/ExpoFont.podspec.json,.json,707,27
+frontend/ios/Pods/Local Podspecs/ExpoHaptics.podspec.json,.json,822,26
+frontend/ios/Pods/Local Podspecs/ExpoHead.podspec.json,.json,823,28
+frontend/ios/Pods/Local Podspecs/ExpoImage.podspec.json,.json,1197,50
+frontend/ios/Pods/Local Podspecs/ExpoKeepAwake.podspec.json,.json,926,28
+frontend/ios/Pods/Local Podspecs/ExpoLinearGradient.podspec.json,.json,741,27
+frontend/ios/Pods/Local Podspecs/ExpoLinking.podspec.json,.json,666,26
+frontend/ios/Pods/Local Podspecs/ExpoModulesCore.podspec.json,.json,2539,83
+frontend/ios/Pods/Local Podspecs/ExpoSQLite.podspec.json,.json,1515,34
+frontend/ios/Pods/Local Podspecs/ExpoSecureStore.podspec.json,.json,788,27
+frontend/ios/Pods/Local Podspecs/ExpoSharing.podspec.json,.json,742,26
+frontend/ios/Pods/Local Podspecs/ExpoSpeech.podspec.json,.json,563,22
+frontend/ios/Pods/Local Podspecs/ExpoSplashScreen.podspec.json,.json,829,26
+frontend/ios/Pods/Local Podspecs/ExpoSystemUI.podspec.json,.json,742,31
+frontend/ios/Pods/Local Podspecs/ExpoWebBrowser.podspec.json,.json,1644,27
+frontend/ios/Pods/Local Podspecs/FBLazyVector.podspec.json,.json,387,17
+frontend/ios/Pods/Local Podspecs/RCTDeprecation.podspec.json,.json,666,25
+frontend/ios/Pods/Local Podspecs/RCTRequired.podspec.json,.json,385,17
+frontend/ios/Pods/Local Podspecs/RCTTypeSafety.podspec.json,.json,723,33
+frontend/ios/Pods/Local Podspecs/RNCAsyncStorage.podspec.json,.json,1786,52
+frontend/ios/Pods/Local Podspecs/RNDateTimePicker.podspec.json,.json,1536,49
+frontend/ios/Pods/Local Podspecs/RNGestureHandler.podspec.json,.json,1636,55
+frontend/ios/Pods/Local Podspecs/RNReanimated.podspec.json,.json,3619,79
+frontend/ios/Pods/Local Podspecs/RNSVG.podspec.json,.json,2420,95
+frontend/ios/Pods/Local Podspecs/RNScreens.podspec.json,.json,2105,74
+frontend/ios/Pods/Local Podspecs/RNSentry.podspec.json,.json,1622,55
+frontend/ios/Pods/Local Podspecs/RNWorklets.podspec.json,.json,2887,74
+frontend/ios/Pods/Local Podspecs/React-Core-prebuilt.podspec.json,.json,1909,36
+frontend/ios/Pods/Local Podspecs/React-Core.podspec.json,.json,4831,170
+frontend/ios/Pods/Local Podspecs/React-CoreModules.podspec.json,.json,1919,66
+frontend/ios/Pods/Local Podspecs/React-Fabric.podspec.json,.json,6554,200
+frontend/ios/Pods/Local Podspecs/React-FabricComponents.podspec.json,.json,5166,139
+frontend/ios/Pods/Local Podspecs/React-FabricImage.podspec.json,.json,1791,47
+frontend/ios/Pods/Local Podspecs/React-ImageManager.podspec.json,.json,1129,33
+frontend/ios/Pods/Local Podspecs/React-Mapbuffer.podspec.json,.json,836,29
+frontend/ios/Pods/Local Podspecs/React-NativeModulesApple.podspec.json,.json,1372,39
+frontend/ios/Pods/Local Podspecs/React-RCTActionSheet.podspec.json,.json,686,28
+frontend/ios/Pods/Local Podspecs/React-RCTAnimation.podspec.json,.json,1329,43
+frontend/ios/Pods/Local Podspecs/React-RCTAppDelegate.podspec.json,.json,2801,56
+frontend/ios/Pods/Local Podspecs/React-RCTBlob.podspec.json,.json,1412,42
+frontend/ios/Pods/Local Podspecs/React-RCTFBReactNativeSpec.podspec.json,.json,2613,65
+frontend/ios/Pods/Local Podspecs/React-RCTFabric.podspec.json,.json,3560,69
+frontend/ios/Pods/Local Podspecs/React-RCTImage.podspec.json,.json,1444,48
+frontend/ios/Pods/Local Podspecs/React-RCTLinking.podspec.json,.json,1394,44
+frontend/ios/Pods/Local Podspecs/React-RCTNetwork.podspec.json,.json,1514,42
+frontend/ios/Pods/Local Podspecs/React-RCTRuntime.podspec.json,.json,1488,41
+frontend/ios/Pods/Local Podspecs/React-RCTSettings.podspec.json,.json,1377,39
+frontend/ios/Pods/Local Podspecs/React-RCTText.podspec.json,.json,781,35
+frontend/ios/Pods/Local Podspecs/React-RCTVibration.podspec.json,.json,1305,39
+frontend/ios/Pods/Local Podspecs/React-RuntimeApple.podspec.json,.json,1726,48
+frontend/ios/Pods/Local Podspecs/React-RuntimeCore.podspec.json,.json,1379,47
+frontend/ios/Pods/Local Podspecs/React-RuntimeHermes.podspec.json,.json,1345,39
+frontend/ios/Pods/Local Podspecs/React-callinvoker.podspec.json,.json,391,17
+frontend/ios/Pods/Local Podspecs/React-cxxreact.podspec.json,.json,1466,51
+frontend/ios/Pods/Local Podspecs/React-debug.podspec.json,.json,489,21
+frontend/ios/Pods/Local Podspecs/React-defaultsnativemodule.podspec.json,.json,1022,35
+frontend/ios/Pods/Local Podspecs/React-domnativemodule.podspec.json,.json,1285,38
+frontend/ios/Pods/Local Podspecs/React-featureflags.podspec.json,.json,655,26
+frontend/ios/Pods/Local Podspecs/React-featureflagsnativemodule.podspec.json,.json,899,33
+frontend/ios/Pods/Local Podspecs/React-graphics.podspec.json,.json,868,35
+frontend/ios/Pods/Local Podspecs/React-hermes.podspec.json,.json,1354,45
+frontend/ios/Pods/Local Podspecs/React-idlecallbacksnativemodule.podspec.json,.json,1078,34
+frontend/ios/Pods/Local Podspecs/React-jserrorhandler.podspec.json,.json,900,35
+frontend/ios/Pods/Local Podspecs/React-jsi.podspec.json,.json,836,35
+frontend/ios/Pods/Local Podspecs/React-jsiexecutor.podspec.json,.json,1085,39
+frontend/ios/Pods/Local Podspecs/React-jsinspector.podspec.json,.json,1233,37
+frontend/ios/Pods/Local Podspecs/React-jsinspectorcdp.podspec.json,.json,701,26
+frontend/ios/Pods/Local Podspecs/React-jsinspectornetwork.podspec.json,.json,874,30
+frontend/ios/Pods/Local Podspecs/React-jsinspectortracing.podspec.json,.json,742,28
+frontend/ios/Pods/Local Podspecs/React-jsitooling.podspec.json,.json,1050,36
+frontend/ios/Pods/Local Podspecs/React-jsitracing.podspec.json,.json,663,26
+frontend/ios/Pods/Local Podspecs/React-logger.podspec.json,.json,580,26
+frontend/ios/Pods/Local Podspecs/React-microtasksnativemodule.podspec.json,.json,910,32
+frontend/ios/Pods/Local Podspecs/React-oscompat.podspec.json,.json,493,20
+frontend/ios/Pods/Local Podspecs/React-perflogger.podspec.json,.json,661,28
+frontend/ios/Pods/Local Podspecs/React-performancetimeline.podspec.json,.json,832,30
+frontend/ios/Pods/Local Podspecs/React-rendererconsistency.podspec.json,.json,579,22
+frontend/ios/Pods/Local Podspecs/React-renderercss.podspec.json,.json,719,27
+frontend/ios/Pods/Local Podspecs/React-rendererdebug.podspec.json,.json,706,28
+frontend/ios/Pods/Local Podspecs/React-runtimeexecutor.podspec.json,.json,1026,37
+frontend/ios/Pods/Local Podspecs/React-runtimescheduler.podspec.json,.json,1176,39
+frontend/ios/Pods/Local Podspecs/React-timing.podspec.json,.json,626,25
+frontend/ios/Pods/Local Podspecs/React-utils.podspec.json,.json,850,36
+frontend/ios/Pods/Local Podspecs/React.podspec.json,.json,1642,60
+frontend/ios/Pods/Local Podspecs/ReactAppDependencyProvider.podspec.json,.json,646,24
+frontend/ios/Pods/Local Podspecs/ReactCodegen.podspec.json,.json,2614,54
+frontend/ios/Pods/Local Podspecs/ReactCommon.podspec.json,.json,2342,86
+frontend/ios/Pods/Local Podspecs/ReactNativeDependencies.podspec.json,.json,2161,29
+frontend/ios/Pods/Local Podspecs/UMAppLoader.podspec.json,.json,505,18
+frontend/ios/Pods/Local Podspecs/Yoga.podspec.json,.json,2586,88
+frontend/ios/Pods/Local Podspecs/hermes-engine.podspec.json,.json,2519,65
+frontend/ios/Pods/Local Podspecs/lottie-react-native.podspec.json,.json,1650,59
+frontend/ios/Pods/Local Podspecs/react-native-netinfo.podspec.json,.json,582,22
+frontend/ios/Pods/Local Podspecs/react-native-safe-area-context.podspec.json,.json,2106,70
+frontend/ios/Pods/Local Podspecs/react-native-slider.podspec.json,.json,1640,56
+frontend/ios/Pods/SDWebImage/README.md,.md,26796,446
+frontend/ios/Pods/SDWebImageAVIFCoder/README.md,.md,11836,313
+frontend/ios/Pods/SDWebImageSVGCoder/README.md,.md,11013,251
+frontend/ios/Pods/SDWebImageWebPCoder/README.md,.md,10726,318
+frontend/ios/Pods/Sentry/LICENSE.md,.md,1073,21
+frontend/ios/Pods/Sentry/README.md,.md,4341,72
+frontend/ios/Pods/Target Support Files/Pods-frontend/Pods-frontend-frameworks.sh,.sh,8937,190
+frontend/ios/Pods/Target Support Files/Pods-frontend/Pods-frontend-resources.sh,.sh,9319,157
+frontend/ios/Pods/Target Support Files/Pods-frontend/expo-configure-project.sh,.sh,2030,52
+frontend/ios/Pods/Target Support Files/React-Core-prebuilt/React-Core-prebuilt-xcframeworks.sh,.sh,3735,127
+frontend/ios/Pods/Target Support Files/ReactNativeDependencies/ReactNativeDependencies-xcframeworks.sh,.sh,4759,157
+frontend/ios/Pods/Target Support Files/hermes-engine/hermes-engine-xcframeworks.sh,.sh,4330,151
+frontend/ios/Pods/ZXingObjC/README.md,.md,3744,117
+frontend/ios/Pods/libavif/README.md,.md,5013,127
+frontend/ios/Pods/libdav1d/README.md,.md,2461,68
+frontend/ios/Pods/libdav1d/dav1d/.gitlab-ci.yml,.yml,23183,705
+frontend/ios/Pods/libdav1d/dav1d/CONTRIBUTING.md,.md,2094,56
+frontend/ios/Pods/libdav1d/dav1d/README.md,.md,5886,158
+frontend/ios/Pods/libdav1d/dav1d/THANKS.md,.md,1504,34
+frontend/ios/Pods/libdav1d/dav1d/meson_options.txt,.txt,1520,65
+frontend/ios/Pods/libdav1d/dav1d/package/snap/snapcraft.yaml,.yaml,511,24
+frontend/ios/Pods/libwebp/README.md,.md,1662,54
+frontend/ios/Pods/lottie-ios/README.md,.md,8224,125
+frontend/ios/frontend/Images.xcassets/AppIcon.appiconset/Contents.json,.json,216,14
+frontend/ios/frontend/Images.xcassets/Contents.json,.json,59,6
+frontend/ios/frontend/Images.xcassets/SplashScreenBackground.colorset/Contents.json,.json,349,20
+frontend/jest.config.js,.js,766,25
+frontend/jest.polyfills.js,.js,154,7
+frontend/jest.setup.js,.js,609,16
+frontend/metro.config.js,.js,827,24
+frontend/package.json,.json,4959,142
+frontend/playwright.config.ts,.ts,1309,42
+frontend/public/backend_port.json,.json,132,1
+frontend/react-native-text-override.d.ts,.ts,1054,34
+frontend/scripts/update-ip.js,.js,5013,160
+frontend/src/components/AppLogo.tsx,.tsx,2462,113
+frontend/src/components/AppVersion.tsx,.tsx,1152,55
+frontend/src/components/Button.stories.tsx,.tsx,4979,248
+frontend/src/components/Button.tsx,.tsx,7391,283
+frontend/src/components/Card.stories.tsx,.tsx,4149,186
+frontend/src/components/Card.tsx,.tsx,1729,90
+frontend/src/components/DataTable.stories.tsx,.tsx,5153,229
+frontend/src/components/DataTable.tsx,.tsx,7607,305
+frontend/src/components/DatabaseSyncStatus.tsx,.tsx,13050,504
+frontend/src/components/ErrorBoundary.tsx,.tsx,4928,191
+frontend/src/components/Input.stories.tsx,.tsx,4084,188
+frontend/src/components/ItemFilters.tsx,.tsx,339,10
+frontend/src/components/LoadingSkeleton.tsx,.tsx,546,28
+frontend/src/components/LogoutButton.tsx,.tsx,2906,116
+frontend/src/components/LottieAnimation.tsx,.tsx,1729,79
+frontend/src/components/LottieLoading.tsx,.tsx,2177,90
+frontend/src/components/ModernButton.tsx,.tsx,10190,385
+frontend/src/components/ModernCard.tsx,.tsx,9613,368
+frontend/src/components/OnlineStatus.tsx,.tsx,1062,39
+frontend/src/components/Pagination.tsx,.tsx,4811,205
+frontend/src/components/PinKeypad.tsx,.tsx,3945,191
+frontend/src/components/PullToRefresh.tsx,.tsx,654,32
+frontend/src/components/RefreshButton.tsx,.tsx,933,41
+frontend/src/components/SearchAutocomplete.stories.tsx,.tsx,3205,138
+frontend/src/components/SwipeableRow.tsx,.tsx,1704,79
+frontend/src/components/SyncStatusBar.tsx,.tsx,5557,228
+frontend/src/components/ToastProvider.tsx,.tsx,272,13
+frontend/src/components/UpgradeNotification.tsx,.tsx,7704,311
+frontend/src/components/admin/ActiveUsersPanel.tsx,.tsx,11948,449
+frontend/src/components/admin/AnalyticsDashboard.tsx,.tsx,7413,289
+frontend/src/components/admin/ChartsPanel.tsx,.tsx,4031,150
+frontend/src/components/admin/ErrorLogsPanel.tsx,.tsx,21312,837
+frontend/src/components/admin/KPICard.tsx,.tsx,6939,261
+frontend/src/components/admin/PerformanceChart.tsx,.tsx,9517,389
+frontend/src/components/admin/QuickStats.tsx,.tsx,1527,58
+frontend/src/components/admin/RecentIssues.tsx,.tsx,2090,77
+frontend/src/components/admin/ReportExport.tsx,.tsx,2677,107
+frontend/src/components/admin/SystemStatusPanel.tsx,.tsx,9119,342
+frontend/src/components/admin/index.ts,.ts,499,13
+frontend/src/components/analytics/AnalyticsDashboard.tsx,.tsx,8142,274
+frontend/src/components/analytics/MetricCard.tsx,.tsx,3468,141
+frontend/src/components/analytics/VarianceChart.tsx,.tsx,4291,160
+frontend/src/components/analytics/index.ts,.ts,233,8
+frontend/src/components/auth/AuthGuard.tsx,.tsx,2562,80
+frontend/src/components/auth/ConnectionStatus.tsx,.tsx,5160,204
+frontend/src/components/auth/PermissionGate.tsx,.tsx,1513,71
+frontend/src/components/auth/PinKeypad.tsx,.tsx,6399,263
+frontend/src/components/auth/RoleLayoutGuard.tsx,.tsx,1263,47
+frontend/src/components/auth/index.ts,.ts,175,4
+frontend/src/components/camera/CameraControls.tsx,.tsx,4075,168
+frontend/src/components/camera/ScanGuideOverlay.tsx,.tsx,7518,295
+frontend/src/components/camera/index.ts,.ts,182,7
+frontend/src/components/charts/BarChart.tsx,.tsx,5077,185
+frontend/src/components/charts/LineChart.tsx,.tsx,6723,257
+frontend/src/components/charts/PieChart.tsx,.tsx,5033,188
+frontend/src/components/charts/SimpleBarChart.tsx,.tsx,6345,257
+frontend/src/components/charts/SimpleLineChart.tsx,.tsx,9246,359
+frontend/src/components/charts/SimplePieChart.tsx,.tsx,6542,260
+frontend/src/components/charts/index.ts,.ts,174,7
+frontend/src/components/common/AccessibilityEnhancer.tsx,.tsx,2857,104
+frontend/src/components/common/ErrorState.tsx,.tsx,3165,137
+frontend/src/components/common/LoadingState.tsx,.tsx,1645,75
+frontend/src/components/common/OfflineIndicator.tsx,.tsx,1010,40
+frontend/src/components/common/SearchComponent.tsx,.tsx,4951,200
+frontend/src/components/common/ThemeToggle.tsx,.tsx,3000,113
+frontend/src/components/common/VirtualList.tsx,.tsx,895,33
+frontend/src/components/feedback/AdminCrashScreen.tsx,.tsx,5769,235
+frontend/src/components/feedback/EmptyState.tsx,.tsx,1734,94
+frontend/src/components/feedback/ErrorBoundary.tsx,.tsx,3691,169
+frontend/src/components/feedback/ErrorState.tsx,.tsx,6727,255
+frontend/src/components/feedback/LoadingSkeleton.tsx,.tsx,2287,101
+frontend/src/components/feedback/LoadingSpinner.tsx,.tsx,2172,94
+frontend/src/components/feedback/LoadingState.tsx,.tsx,8760,383
+frontend/src/components/feedback/NetworkStatusBanner.tsx,.tsx,3330,138
+frontend/src/components/feedback/StaffCrashScreen.tsx,.tsx,5607,227
+frontend/src/components/feedback/Toast.tsx,.tsx,3479,157
+frontend/src/components/feedback/ToastProvider.tsx,.tsx,2446,101
+frontend/src/components/feedback/index.ts,.ts,305,11
+frontend/src/components/forms/DateRangePicker.tsx,.tsx,4228,163
+frontend/src/components/forms/EnhancedButton.tsx,.tsx,270,10
+frontend/src/components/forms/EnhancedTextInput.tsx,.tsx,368,14
+frontend/src/components/forms/Input.tsx,.tsx,3895,167
+frontend/src/components/forms/SearchAutocomplete.tsx,.tsx,16946,645
+frontend/src/components/forms/index.ts,.ts,169,5
+frontend/src/components/index.ts,.ts,371,10
+frontend/src/components/layout/AdminLayout.tsx,.tsx,4110,161
+frontend/src/components/layout/Container.tsx,.tsx,1504,56
+frontend/src/components/layout/Header.tsx,.tsx,2811,126
+frontend/src/components/layout/ResponsiveLayout.tsx,.tsx,6277,271
+frontend/src/components/layout/Screen.tsx,.tsx,2780,124
+frontend/src/components/layout/Section.tsx,.tsx,3017,128
+frontend/src/components/layout/SettingGroup.tsx,.tsx,1590,79
+frontend/src/components/layout/SettingItem.tsx,.tsx,3970,166
+frontend/src/components/layout/StaffLayout.tsx,.tsx,2556,101
+frontend/src/components/layout/SupervisorLayout.tsx,.tsx,2251,94
+frontend/src/components/layout/index.ts,.ts,465,17
+frontend/src/components/modals/BulkEntryModal.tsx,.tsx,5494,208
+frontend/src/components/modals/ImageViewerModal.tsx,.tsx,2535,106
+frontend/src/components/modals/PhotoCaptureModal.tsx,.tsx,8125,308
+frontend/src/components/modals/PinEntryModal.tsx,.tsx,5728,226
+frontend/src/components/modals/SearchableSelectModal.tsx,.tsx,6481,249
+frontend/src/components/modals/index.ts,.ts,304,9
+frontend/src/components/navigation/AdminSidebar.tsx,.tsx,12443,496
+frontend/src/components/navigation/AppHeader.tsx,.tsx,5601,221
+frontend/src/components/navigation/QuickActions.tsx,.tsx,3034,134
+frontend/src/components/navigation/StaffTabBar.tsx,.tsx,4784,203
+frontend/src/components/navigation/SupervisorSidebar.tsx,.tsx,11521,441
+frontend/src/components/navigation/index.ts,.ts,281,9
+frontend/src/components/premium/PremiumButton.tsx,.tsx,881,32
+frontend/src/components/premium/PremiumCard.tsx,.tsx,880,32
+frontend/src/components/premium/PremiumInput.tsx,.tsx,10266,362
+frontend/src/components/premium/index.ts,.ts,500,21
+frontend/src/components/scan/ActiveSectionHeader.tsx,.tsx,3541,129
+frontend/src/components/scan/BarcodeScanner.tsx,.tsx,9381,344
+frontend/src/components/scan/CameraView.tsx,.tsx,1215,38
+frontend/src/components/scan/ItemDisplay.tsx,.tsx,9044,320
+frontend/src/components/scan/ItemSearch.tsx,.tsx,13451,502
+frontend/src/components/scan/LocationInput.tsx,.tsx,3730,145
+frontend/src/components/scan/LocationVerificationSection.tsx,.tsx,9106,290
+frontend/src/components/scan/MRPVariantSelector.tsx,.tsx,4969,184
+frontend/src/components/scan/PhotoCapture.tsx,.tsx,10302,384
+frontend/src/components/scan/QuantityInputForm.tsx,.tsx,17273,543
+frontend/src/components/scan/RackProgressCard.tsx,.tsx,2990,115
+frontend/src/components/scan/ResultOverlay.tsx,.tsx,1996,83
+frontend/src/components/scan/ScanAreaOverlay.tsx,.tsx,9201,385
+frontend/src/components/scan/ScanFeedback.tsx,.tsx,9353,402
+frontend/src/components/scan/SectionFocusConfig.tsx,.tsx,8804,312
+frontend/src/components/scan/SerialNumberEntry.tsx,.tsx,8657,313
+frontend/src/components/scan/SessionStartModal.tsx,.tsx,3113,143
+frontend/src/components/scan/VarianceReasonModal.tsx,.tsx,3480,150
+frontend/src/components/scan/__tests__/LocationVerificationSection.test.tsx,.tsx,1194,41
+frontend/src/components/scan/index.ts,.ts,799,19
+frontend/src/components/settings/ChangePasswordModal.tsx,.tsx,14066,499
+frontend/src/components/settings/ChangePinModal.tsx,.tsx,9678,359
+frontend/src/components/settings/ColorPicker.tsx,.tsx,6446,242
+frontend/src/components/settings/FontSizeSlider.tsx,.tsx,4406,172
+frontend/src/components/settings/index.ts,.ts,399,11
+frontend/src/components/staff/RecentScans.tsx,.tsx,6658,260
+frontend/src/components/suggestions/SmartSuggestionsPanel.tsx,.tsx,16422,568
+frontend/src/components/sync/ConflictResolutionModal.tsx,.tsx,6951,250
+frontend/src/components/ui/Accordion.tsx,.tsx,4170,190
+frontend/src/components/ui/ActivityFeedItem.tsx,.tsx,5914,236
+frontend/src/components/ui/AdminResponsiveGrid.tsx,.tsx,1246,53
+frontend/src/components/ui/AnimatedCounter.tsx,.tsx,2093,83
+frontend/src/components/ui/AnimatedInput.tsx,.tsx,6151,253
+frontend/src/components/ui/AnimatedPressable.tsx,.tsx,3444,142
+frontend/src/components/ui/AppearanceSettings.tsx,.tsx,7801,287
+frontend/src/components/ui/AuroraBackground.tsx,.tsx,6993,279
+frontend/src/components/ui/Avatar.tsx,.tsx,4024,177
+frontend/src/components/ui/Badge.tsx,.tsx,2834,122
+frontend/src/components/ui/BottomSheet.tsx,.tsx,2474,107
+frontend/src/components/ui/Button.tsx,.tsx,2515,97
+frontend/src/components/ui/Card.tsx,.tsx,2003,87
+frontend/src/components/ui/Checkbox.tsx,.tsx,3280,140
+frontend/src/components/ui/Chip.tsx,.tsx,3764,168
+frontend/src/components/ui/EmptyState.tsx,.tsx,1890,89
+frontend/src/components/ui/EnhancedBottomSheet.tsx,.tsx,7879,302
+frontend/src/components/ui/FadeIn.tsx,.tsx,3055,138
+frontend/src/components/ui/FloatingActionButton.tsx,.tsx,6147,246
+frontend/src/components/ui/FloatingScanButton.tsx,.tsx,5092,208
+frontend/src/components/ui/GlassCard.tsx,.tsx,5036,175
+frontend/src/components/ui/InlineAlert.tsx,.tsx,1879,76
+frontend/src/components/ui/Input.tsx,.tsx,3895,158
+frontend/src/components/ui/LayoutPicker.tsx,.tsx,3820,169
+frontend/src/components/ui/LiveIndicator.tsx,.tsx,3489,153
+frontend/src/components/ui/LoadingSpinner.tsx,.tsx,1050,49
+frontend/src/components/ui/Modal.stories.tsx,.tsx,5219,226
+frontend/src/components/ui/Modal.tsx,.tsx,7014,268
+frontend/src/components/ui/OnlineStatus.tsx,.tsx,1281,56
+frontend/src/components/ui/ParticleField.tsx,.tsx,4584,188
+frontend/src/components/ui/PatternBackground.tsx,.tsx,13190,512
+frontend/src/components/ui/PatternPicker.tsx,.tsx,3839,169
+frontend/src/components/ui/PremiumHeader.tsx,.tsx,8003,319
+frontend/src/components/ui/ProgressBar.tsx,.tsx,3161,135
+frontend/src/components/ui/ProgressRing.tsx,.tsx,4047,166
+frontend/src/components/ui/QuantityStepper.tsx,.tsx,2979,128
+frontend/src/components/ui/QuickStatCard.tsx,.tsx,7414,312
+frontend/src/components/ui/Radio.tsx,.tsx,3634,171
+frontend/src/components/ui/ResponsiveText.tsx,.tsx,3185,124
+frontend/src/components/ui/RippleButton.tsx,.tsx,8961,355
+frontend/src/components/ui/SafeView.tsx,.tsx,1223,58
+frontend/src/components/ui/ScanFeedback.tsx,.tsx,7544,297
+frontend/src/components/ui/ScreenContainer.tsx,.tsx,4075,164
+frontend/src/components/ui/ScreenHeader.tsx,.tsx,11918,456
+frontend/src/components/ui/SessionCard.tsx,.tsx,8979,350
+frontend/src/components/ui/Shimmer.tsx,.tsx,5623,242
+frontend/src/components/ui/Skeleton.tsx,.tsx,5869,234
+frontend/src/components/ui/SkeletonList.tsx,.tsx,4399,194
+frontend/src/components/ui/SpeedDialMenu.tsx,.tsx,8852,344
+frontend/src/components/ui/StatsCard.tsx,.tsx,6615,258
+frontend/src/components/ui/StatusBadge.tsx,.tsx,4431,186
+frontend/src/components/ui/StickyFooter.tsx,.tsx,1381,68
+frontend/src/components/ui/SuccessFeedback.tsx,.tsx,7060,287
+frontend/src/components/ui/SwipeCard.tsx,.tsx,7037,259
+frontend/src/components/ui/Switch.tsx,.tsx,2881,130
+frontend/src/components/ui/SyncStatusPill.tsx,.tsx,3668,140
+frontend/src/components/ui/Tabs.tsx,.tsx,5082,213
+frontend/src/components/ui/ThemePicker.tsx,.tsx,8234,343
+frontend/src/components/ui/ThemedScreen.tsx,.tsx,6316,247
+frontend/src/components/ui/Toast.tsx,.tsx,4786,202
+frontend/src/components/ui/index.ts,.ts,3272,86
+frontend/src/config/index.ts,.ts,199,11
+frontend/src/config/location.ts,.ts,137,8
+frontend/src/config/queryClient.ts,.ts,940,30
+frontend/src/config/scannerConfig.ts,.ts,5286,209
+frontend/src/constants/config.ts,.ts,450,14
+frontend/src/constants/flags.ts,.ts,238,10
+frontend/src/constants/index.ts,.ts,84,3
+frontend/src/constants/permissions.ts,.ts,1135,50
+frontend/src/constants/scanConstants.ts,.ts,1266,38
+frontend/src/context/ThemeContext.tsx,.tsx,10854,351
+frontend/src/context/ThemeProvider.tsx,.tsx,323,9
+frontend/src/db/localDb.ts,.ts,5590,225
+frontend/src/domains/README.md,.md,1384,47
+frontend/src/domains/auth/index.ts,.ts,414,22
+frontend/src/domains/auth/services.ts,.ts,325,10
+frontend/src/domains/auth/types.ts,.ts,1069,53
+frontend/src/domains/inventory/components/ItemFilters.tsx,.tsx,17277,600
+frontend/src/domains/inventory/hooks.ts,.ts,1139,41
+frontend/src/domains/inventory/hooks/scan/index.ts,.ts,272,9
+frontend/src/domains/inventory/hooks/scan/useBatchManagement.ts,.ts,2180,74
+frontend/src/domains/inventory/hooks/scan/useItemDetailLogic.ts,.ts,4345,154
+frontend/src/domains/inventory/hooks/scan/useItemForm.ts,.ts,4736,182
+frontend/src/domains/inventory/hooks/scan/useItemState.ts,.ts,2291,91
+frontend/src/domains/inventory/hooks/scan/useItemSubmission.ts,.ts,5522,176
+frontend/src/domains/inventory/hooks/scan/usePhotoState.ts,.ts,1374,56
+frontend/src/domains/inventory/hooks/scan/useScanState.ts,.ts,1158,48
+frontend/src/domains/inventory/hooks/scan/useWorkflowState.ts,.ts,1835,72
+frontend/src/domains/inventory/hooks/useItemByBarcodeQuery.ts,.ts,912,33
+frontend/src/domains/inventory/hooks/useOptimizedSearch.ts,.ts,6099,262
+frontend/src/domains/inventory/hooks/useSearchItemsQuery.ts,.ts,804,29
+frontend/src/domains/inventory/index.ts,.ts,214,14
+frontend/src/domains/inventory/services.ts,.ts,15095,445
+frontend/src/domains/inventory/services/itemVerificationApi.ts,.ts,12397,442
+frontend/src/domains/inventory/services/recentRacksService.ts,.ts,1889,74
+frontend/src/domains/inventory/services/scanDeduplicationService.ts,.ts,1339,54
+frontend/src/domains/inventory/services/smartSuggestionsService.ts,.ts,15974,524
+frontend/src/domains/inventory/types.ts,.ts,1760,72
+frontend/src/domains/reports/index.ts,.ts,528,31
+frontend/src/domains/reports/services.ts,.ts,430,19
+frontend/src/domains/reports/types.ts,.ts,2011,97
+frontend/src/hooks/index.ts,.ts,504,13
+frontend/src/hooks/scan/index.ts,.ts,303,10
+frontend/src/hooks/useAIBarcode.ts,.ts,2521,104
+frontend/src/hooks/useAppVersion.ts,.ts,898,34
+frontend/src/hooks/useAutoLogout.ts,.ts,2714,96
+frontend/src/hooks/useCameraEnhancement.ts,.ts,3276,114
+frontend/src/hooks/useDebouncedCallback.ts,.ts,808,19
+frontend/src/hooks/useDomainAction.ts,.ts,2577,88
+frontend/src/hooks/useFormValidation.ts,.ts,5198,199
+frontend/src/hooks/useHapticFeedback.ts,.ts,1163,40
+frontend/src/hooks/useKeepAwake.ts,.ts,772,26
+frontend/src/hooks/useKeyboardShortcuts.ts,.ts,1483,54
+frontend/src/hooks/usePermission.ts,.ts,2258,71
+frontend/src/hooks/usePersistentState.ts,.ts,2961,107
+frontend/src/hooks/useResponsive.ts,.ts,7204,265
+frontend/src/hooks/useSafeState.ts,.ts,1482,65
+frontend/src/hooks/useSessionsQuery.ts,.ts,575,22
+frontend/src/hooks/useSystemTheme.ts,.ts,162,6
+frontend/src/hooks/useTheme.ts,.ts,7317,254
+frontend/src/hooks/useVersionCheck.ts,.ts,4375,142
+frontend/src/hooks/useVoiceControl.ts,.ts,2024,84
+frontend/src/hooks/useWebSocket.ts,.ts,2768,92
+frontend/src/index.ts,.ts,929,25
+frontend/src/services/__tests__/api.test.ts,.ts,2452,95
+frontend/src/services/__tests__/storage.test.ts,.ts,8020,275
+frontend/src/services/__tests__/syncBatch.test.ts,.ts,3216,112
+frontend/src/services/aiBarcodeRecognition.ts,.ts,9102,336
+frontend/src/services/analyticsService.ts,.ts,5848,241
+frontend/src/services/animationService.ts,.ts,3794,166
+frontend/src/services/api/adminApi.ts,.ts,3357,142
+frontend/src/services/api/api.test.ts,.ts,1141,44
+frontend/src/services/api/api.ts,.ts,85183,2992
+frontend/src/services/api/authApi.ts,.ts,2923,123
+frontend/src/services/api/enhancedApi.ts,.ts,2963,116
+frontend/src/services/api/enhancedApiClient.ts,.ts,6936,293
+frontend/src/services/api/enhancedDatabaseApi.ts,.ts,7522,260
+frontend/src/services/api/enrichmentApi.ts,.ts,6248,227
+frontend/src/services/api/index.ts,.ts,314,10
+frontend/src/services/api/itemVerificationApi.ts,.ts,348,10
+frontend/src/services/api/models.ts,.ts,2424,108
+frontend/src/services/api/notesApi.ts,.ts,764,34
+frontend/src/services/api/reportApi.ts,.ts,5283,222
+frontend/src/services/asyncStorageService.ts,.ts,951,33
+frontend/src/services/audit/auditLogger.ts,.ts,1565,66
+frontend/src/services/auth.ts,.ts,2416,87
+frontend/src/services/authUnauthorizedHandler.ts,.ts,508,18
+frontend/src/services/backendUrl.ts,.ts,2961,100
+frontend/src/services/backgroundSync.ts,.ts,2094,69
+frontend/src/services/backupService.ts,.ts,6080,251
+frontend/src/services/batchOperationsService.ts,.ts,5199,199
+frontend/src/services/cameraEnhancementService.ts,.ts,3965,181
+frontend/src/services/devtools/reactotron.ts,.ts,195,7
+frontend/src/services/enhancedFeatures.ts,.ts,2619,84
+frontend/src/services/enhancedSearchService.ts,.ts,3184,133
+frontend/src/services/errorRecovery.ts,.ts,573,22
+frontend/src/services/exportService.ts,.ts,11277,403
+frontend/src/services/hapticService.ts,.ts,6117,259
+frontend/src/services/haptics.ts,.ts,625,27
+frontend/src/services/httpClient.ts,.ts,5765,171
+frontend/src/services/index.ts,.ts,882,38
+frontend/src/services/logging.ts,.ts,3966,149
+frontend/src/services/microInteractions.ts,.ts,5208,206
+frontend/src/services/mmkvStorage.ts,.ts,3220,106
+frontend/src/services/monitoring/databaseStatusService.ts,.ts,2375,109
+frontend/src/services/monitoring/index.ts,.ts,79,2
+frontend/src/services/monitoring/performanceService.ts,.ts,4460,215
+frontend/src/services/networkService.ts,.ts,317,9
+frontend/src/services/notesApi.ts,.ts,1158,52
+frontend/src/services/offline/index.ts,.ts,66,2
+frontend/src/services/offline/offlineCountLine.ts,.ts,6326,207
+frontend/src/services/offline/offlineQueue.ts,.ts,8850,280
+frontend/src/services/offline/offlineStorage.ts,.ts,16255,600
+frontend/src/services/offlineQueue.ts,.ts,399,15
+frontend/src/services/pinAuth.tsx,.tsx,11658,490
+frontend/src/services/queryClient.ts,.ts,239,10
+frontend/src/services/scanDeduplicationService.ts,.ts,363,10
+frontend/src/services/selfTestService.tsx,.tsx,16948,645
+frontend/src/services/sentry.ts,.ts,386,16
+frontend/src/services/session/heartbeatService.ts,.ts,5547,224
+frontend/src/services/sessionManager.ts,.ts,9415,357
+frontend/src/services/storage/asyncStorageService.ts,.ts,12292,461
+frontend/src/services/storage/index.ts,.ts,85,2
+frontend/src/services/storage/secureStorage.ts,.ts,2241,78
+frontend/src/services/storage/tokenStore.ts,.ts,1678,74
+frontend/src/services/sync/conflictResolution.test.ts,.ts,1553,46
+frontend/src/services/sync/conflictResolution.ts,.ts,1271,54
+frontend/src/services/sync/enhancedSyncManager.ts,.ts,8749,341
+frontend/src/services/syncQueue.ts,.ts,3164,114
+frontend/src/services/syncService.ts,.ts,4179,157
+frontend/src/services/themeService.ts,.ts,1989,77
+frontend/src/services/toastService.ts,.ts,482,13
+frontend/src/services/utils/autoErrorFinder.ts,.ts,9530,358
+frontend/src/services/utils/autoRecovery.ts,.ts,2331,106
+frontend/src/services/utils/errorHandler.ts,.ts,8519,302
+frontend/src/services/utils/errorRecovery.ts,.ts,7811,323
+frontend/src/services/utils/haptics.ts,.ts,1324,52
+frontend/src/services/utils/index.ts,.ts,330,10
+frontend/src/services/utils/notificationService.ts,.ts,4880,205
+frontend/src/services/utils/queryClient.ts,.ts,719,26
+frontend/src/services/utils/themeService.ts,.ts,6875,283
+frontend/src/services/utils/toastService.ts,.ts,2782,120
+frontend/src/services/utils/validationService.ts,.ts,6969,301
+frontend/src/services/versionService.ts,.ts,1909,77
+frontend/src/services/voiceControlService.ts,.ts,3979,156
+frontend/src/services/websocket.ts,.ts,6358,224
+frontend/src/services/wifiConnectionService.ts,.ts,6864,265
+frontend/src/store/authStore.ts,.ts,7563,251
+frontend/src/store/index.ts,.ts,94,3
+frontend/src/store/networkStore.ts,.ts,675,20
+frontend/src/store/offlineStore.ts,.ts,957,32
+frontend/src/store/scanSessionStore.ts,.ts,2356,78
+frontend/src/store/settingsStore.ts,.ts,6167,214
+frontend/src/styles/README.md,.md,1488,72
+frontend/src/styles/globalStyles.ts,.ts,9354,405
+frontend/src/styles/modernDesignSystem.ts,.ts,20790,980
+frontend/src/styles/scanStyles.ts,.ts,35341,1806
+frontend/src/styles/screenStyles.ts,.ts,15042,580
+frontend/src/styles/screens/StaffHome.styles.ts,.ts,5557,248
+frontend/src/styles/sharedStyles.ts,.ts,11162,525
+frontend/src/theme/auroraTheme.ts,.ts,9712,487
+frontend/src/theme/designSystem.ts,.ts,3061,172
+frontend/src/theme/designTokens.ts,.ts,7062,322
+frontend/src/theme/enhancedColors.ts,.ts,6509,234
+frontend/src/theme/index.ts,.ts,393,20
+frontend/src/theme/themes.ts,.ts,18963,765
+frontend/src/theme/typography.ts,.ts,6080,216
+frontend/src/types/api.ts,.ts,1125,63
+frontend/src/types/enrichment.ts,.ts,4288,221
+frontend/src/types/expo-modules.d.ts,.ts,5676,212
+frontend/src/types/export.ts,.ts,1570,90
+frontend/src/types/index.ts,.ts,319,11
+frontend/src/types/item.ts,.ts,1702,87
+frontend/src/types/react-native-unistyles.d.ts,.ts,307,8
+frontend/src/types/reactotron-react-native.d.ts,.ts,99,4
+frontend/src/types/scan.ts,.ts,4171,187
+frontend/src/types/schemas.ts,.ts,1774,70
+frontend/src/types/session.ts,.ts,1595,73
+frontend/src/types/storage.ts,.ts,1153,62
+frontend/src/types/sync.ts,.ts,1135,54
+frontend/src/types/unistyles.d.ts,.ts,221,10
+frontend/src/types/user.ts,.ts,386,18
+frontend/src/utils/__tests__/validation.test.ts,.ts,3309,120
+frontend/src/utils/algorithms.ts,.ts,3125,119
+frontend/src/utils/backendUrl.ts,.ts,98,5
+frontend/src/utils/clipboard.ts,.ts,1111,47
+frontend/src/utils/csvExport.ts,.ts,3401,129
+frontend/src/utils/deviceInfo.ts,.ts,487,14
+frontend/src/utils/errorHandler.ts,.ts,2702,104
+frontend/src/utils/errors.ts,.ts,6253,255
+frontend/src/utils/eventEmitter.ts,.ts,1397,66
+frontend/src/utils/feedback.ts,.ts,1864,87
+frontend/src/utils/haptics.ts,.ts,1778,82
+frontend/src/utils/index.ts,.ts,172,6
+frontend/src/utils/network.ts,.ts,3550,126
+frontend/src/utils/portDetection.ts,.ts,4955,190
+frontend/src/utils/retry.ts,.ts,995,44
+frontend/src/utils/roleNavigation.ts,.ts,895,30
+frontend/src/utils/safeRender.tsx,.tsx,1593,72
+frontend/src/utils/scanUtils.ts,.ts,4543,169
+frontend/src/utils/search.ts,.ts,4336,185
+frontend/src/utils/testSpritePort.ts,.ts,909,42
+frontend/src/utils/uuid.ts,.ts,1750,63
+frontend/src/utils/validation.ts,.ts,4407,165
+frontend/test-results/.last-run.json,.json,89,4
+frontend/test-results/core-flow-Core-User-Flow-L-6c949-ate-Session---Scan---Verify-chromium/error-context.md,.md,2314,55
+frontend/test_config.js,.js,107,2
+frontend/tests/services/scanDeduplicationService.test.ts,.ts,1911,66
+frontend/tsconfig.json,.json,1084,49
+frontend/typescript-plugin-filter-text-errors.js,.js,1150,42
+frontmatter.json,.json,1147,51
+installed_deps.txt,.txt,7801,395
+ios/.xcode.env,.env,482,11
+ios/Podfile.properties.json,.json,77,4
+ios/Pods/Local Podspecs/EXConstants.podspec.json,.json,1180,40
+ios/Pods/Local Podspecs/Expo.podspec.json,.json,2145,70
+ios/Pods/Local Podspecs/ExpoAsset.podspec.json,.json,776,28
+ios/Pods/Local Podspecs/ExpoFileSystem.podspec.json,.json,802,32
+ios/Pods/Local Podspecs/ExpoFont.podspec.json,.json,707,27
+ios/Pods/Local Podspecs/ExpoKeepAwake.podspec.json,.json,926,28
+ios/Pods/Local Podspecs/ExpoModulesCore.podspec.json,.json,2539,83
+ios/Pods/Local Podspecs/FBLazyVector.podspec.json,.json,387,17
+ios/Pods/Local Podspecs/RCTDeprecation.podspec.json,.json,666,25
+ios/Pods/Local Podspecs/RCTRequired.podspec.json,.json,385,17
+ios/Pods/Local Podspecs/RCTTypeSafety.podspec.json,.json,723,33
+ios/Pods/Local Podspecs/React-Core-prebuilt.podspec.json,.json,1909,36
+ios/Pods/Local Podspecs/React-Core.podspec.json,.json,4831,170
+ios/Pods/Local Podspecs/React-CoreModules.podspec.json,.json,1919,66
+ios/Pods/Local Podspecs/React-Fabric.podspec.json,.json,6554,200
+ios/Pods/Local Podspecs/React-FabricComponents.podspec.json,.json,5166,139
+ios/Pods/Local Podspecs/React-FabricImage.podspec.json,.json,1791,47
+ios/Pods/Local Podspecs/React-ImageManager.podspec.json,.json,1129,33
+ios/Pods/Local Podspecs/React-Mapbuffer.podspec.json,.json,836,29
+ios/Pods/Local Podspecs/React-NativeModulesApple.podspec.json,.json,1372,39
+ios/Pods/Local Podspecs/React-RCTActionSheet.podspec.json,.json,686,28
+ios/Pods/Local Podspecs/React-RCTAnimation.podspec.json,.json,1329,43
+ios/Pods/Local Podspecs/React-RCTAppDelegate.podspec.json,.json,2801,56
+ios/Pods/Local Podspecs/React-RCTBlob.podspec.json,.json,1412,42
+ios/Pods/Local Podspecs/React-RCTFBReactNativeSpec.podspec.json,.json,2613,65
+ios/Pods/Local Podspecs/React-RCTFabric.podspec.json,.json,3560,69
+ios/Pods/Local Podspecs/React-RCTImage.podspec.json,.json,1444,48
+ios/Pods/Local Podspecs/React-RCTLinking.podspec.json,.json,1394,44
+ios/Pods/Local Podspecs/React-RCTNetwork.podspec.json,.json,1514,42
+ios/Pods/Local Podspecs/React-RCTRuntime.podspec.json,.json,1488,41
+ios/Pods/Local Podspecs/React-RCTSettings.podspec.json,.json,1377,39
+ios/Pods/Local Podspecs/React-RCTText.podspec.json,.json,781,35
+ios/Pods/Local Podspecs/React-RCTVibration.podspec.json,.json,1305,39
+ios/Pods/Local Podspecs/React-RuntimeApple.podspec.json,.json,1726,48
+ios/Pods/Local Podspecs/React-RuntimeCore.podspec.json,.json,1379,47
+ios/Pods/Local Podspecs/React-RuntimeHermes.podspec.json,.json,1345,39
+ios/Pods/Local Podspecs/React-callinvoker.podspec.json,.json,391,17
+ios/Pods/Local Podspecs/React-cxxreact.podspec.json,.json,1466,51
+ios/Pods/Local Podspecs/React-debug.podspec.json,.json,489,21
+ios/Pods/Local Podspecs/React-defaultsnativemodule.podspec.json,.json,1022,35
+ios/Pods/Local Podspecs/React-domnativemodule.podspec.json,.json,1285,38
+ios/Pods/Local Podspecs/React-featureflags.podspec.json,.json,655,26
+ios/Pods/Local Podspecs/React-featureflagsnativemodule.podspec.json,.json,899,33
+ios/Pods/Local Podspecs/React-graphics.podspec.json,.json,868,35
+ios/Pods/Local Podspecs/React-hermes.podspec.json,.json,1354,45
+ios/Pods/Local Podspecs/React-idlecallbacksnativemodule.podspec.json,.json,1078,34
+ios/Pods/Local Podspecs/React-jserrorhandler.podspec.json,.json,900,35
+ios/Pods/Local Podspecs/React-jsi.podspec.json,.json,836,35
+ios/Pods/Local Podspecs/React-jsiexecutor.podspec.json,.json,1085,39
+ios/Pods/Local Podspecs/React-jsinspector.podspec.json,.json,1233,37
+ios/Pods/Local Podspecs/React-jsinspectorcdp.podspec.json,.json,701,26
+ios/Pods/Local Podspecs/React-jsinspectornetwork.podspec.json,.json,874,30
+ios/Pods/Local Podspecs/React-jsinspectortracing.podspec.json,.json,742,28
+ios/Pods/Local Podspecs/React-jsitooling.podspec.json,.json,1050,36
+ios/Pods/Local Podspecs/React-jsitracing.podspec.json,.json,663,26
+ios/Pods/Local Podspecs/React-logger.podspec.json,.json,580,26
+ios/Pods/Local Podspecs/React-microtasksnativemodule.podspec.json,.json,910,32
+ios/Pods/Local Podspecs/React-oscompat.podspec.json,.json,493,20
+ios/Pods/Local Podspecs/React-perflogger.podspec.json,.json,661,28
+ios/Pods/Local Podspecs/React-performancetimeline.podspec.json,.json,832,30
+ios/Pods/Local Podspecs/React-rendererconsistency.podspec.json,.json,579,22
+ios/Pods/Local Podspecs/React-renderercss.podspec.json,.json,719,27
+ios/Pods/Local Podspecs/React-rendererdebug.podspec.json,.json,706,28
+ios/Pods/Local Podspecs/React-runtimeexecutor.podspec.json,.json,1026,37
+ios/Pods/Local Podspecs/React-runtimescheduler.podspec.json,.json,1176,39
+ios/Pods/Local Podspecs/React-timing.podspec.json,.json,626,25
+ios/Pods/Local Podspecs/React-utils.podspec.json,.json,850,36
+ios/Pods/Local Podspecs/React.podspec.json,.json,1642,60
+ios/Pods/Local Podspecs/ReactAppDependencyProvider.podspec.json,.json,646,24
+ios/Pods/Local Podspecs/ReactCodegen.podspec.json,.json,2614,54
+ios/Pods/Local Podspecs/ReactCommon.podspec.json,.json,2342,86
+ios/Pods/Local Podspecs/ReactNativeDependencies.podspec.json,.json,2161,29
+ios/Pods/Local Podspecs/Yoga.podspec.json,.json,2586,88
+ios/Pods/Local Podspecs/hermes-engine.podspec.json,.json,2519,65
+ios/STOCKVERIFY2dbmaped/Images.xcassets/AppIcon.appiconset/Contents.json,.json,216,14
+ios/STOCKVERIFY2dbmaped/Images.xcassets/Contents.json,.json,62,6
+ios/STOCKVERIFY2dbmaped/Images.xcassets/SplashScreenBackground.colorset/Contents.json,.json,349,20
+k8s/configmap.yaml,.yaml,149,7
+k8s/deployment.yaml,.yaml,1745,73
+k8s/service.yaml,.yaml,411,25
+list_users.py,.py,466,14
+package.json,.json,955,37
+pyproject.toml,.toml,3753,156
+requirements.production.txt,.txt,1354,55
+reset_admin_password.py,.py,1189,38
+reset_pin.py,.py,1877,68
+scripts/backup.sh,.sh,2369,85
+scripts/check_mongo_state.py,.py,559,20
+scripts/check_sessions.py,.py,1473,47
+scripts/check_system_health.py,.py,1107,37
+scripts/check_users.py,.py,491,19
+scripts/clean_start_ios.sh,.sh,252,11
+scripts/cleanup_codebase.sh,.sh,4518,131
+scripts/deduplicate_all.py,.py,1212,42
+scripts/deploy_manual.sh,.sh,2473,93
+scripts/detect-frontend-port.js,.js,2067,94
+scripts/final_system_validation.sh,.sh,18043,532
+scripts/find_missing_barcodes.py,.py,11537,290
+scripts/fix_default_users_pin.py,.py,1559,52
+scripts/fix_duplicate_db.py,.py,1200,40
+scripts/fix_expo.sh,.sh,796,24
+scripts/format_code.sh,.sh,935,35
+scripts/generate_workspace_code_report.py,.py,11668,395
+scripts/get-frontend-port.sh,.sh,912,31
+scripts/legacy/cleanup_old_docs.py,.py,1768,61
+scripts/legacy/dev_start.sh,.sh,1217,55
+scripts/legacy/fix_whitespace.py,.py,993,39
+scripts/legacy/generate_qr.py,.py,993,43
+scripts/legacy/install_phase_0_dependencies.sh,.sh,2173,73
+scripts/legacy/install_vibe_coding.sh,.sh,4323,145
+scripts/legacy/install_vibe_coding_tools.sh,.sh,2708,94
+scripts/legacy/launch_system.sh,.sh,1829,69
+scripts/legacy/npm-aliases.sh,.sh,2511,53
+scripts/legacy/run_system.sh,.sh,470,9
+scripts/legacy/start-weknora.sh,.sh,949,25
+scripts/legacy/start_admin.sh,.sh,515,16
+scripts/legacy/start_all_complete.sh,.sh,5532,163
+scripts/legacy/start_all_services.sh,.sh,1639,62
+scripts/legacy/start_backend_now.sh,.sh,327,8
+scripts/legacy/start_frontend_expo.sh,.sh,1652,56
+scripts/migrate_batch_id.py,.py,3042,91
+scripts/monitor.sh,.sh,8479,265
+scripts/production_readiness_checklist.sh,.sh,9751,210
+scripts/quick-status.sh,.sh,4032,113
+scripts/repo_cleanup.sh,.sh,1338,42
+scripts/restart_expo_lan.sh,.sh,1311,39
+scripts/restore.sh,.sh,1797,78
+scripts/security_hardening.sh,.sh,6873,270
+scripts/seed_test_item.py,.py,1007,34
+scripts/set_admin_pin.py,.py,594,21
+scripts/setup-recommendations.sh,.sh,3200,87
+scripts/setup_sql_and_sync.sh,.sh,8973,247
+scripts/spec-kit/bash/check-prerequisites.sh,.sh,4957,166
+scripts/spec-kit/bash/common.sh,.sh,4890,155
+scripts/spec-kit/bash/create-new-feature.sh,.sh,9338,260
+scripts/spec-kit/bash/setup-plan.sh,.sh,1609,60
+scripts/spec-kit/bash/update-agent-context.sh,.sh,24531,773
+scripts/start_all.sh,.sh,676,34
+scripts/start_backend.sh,.sh,819,32
+scripts/start_frontend.sh,.sh,1011,36
+scripts/start_local_db.sh,.sh,1177,45
+scripts/start_with_redis.sh,.sh,1323,57
+scripts/stop_all.sh,.sh,541,23
+scripts/sync-cheatsheets.sh,.sh,498,18
+scripts/sync_erp_full.py,.py,8115,188
+scripts/system_health_monitor.sh,.sh,16574,422
+scripts/test_admin_api.py,.py,3196,91
+scripts/test_incremental_sync.py,.py,2577,69
+scripts/test_integration.sh,.sh,5131,195
+scripts/validate-feature.sh,.sh,310,13
+scripts/verify_services.sh,.sh,3365,119
+scripts/verify_setup.py,.py,1513,54
+scripts/verify_sujata_db.py,.py,2348,71
+skills/expo-frontend-upgrade/SKILL.md,.md,2318,31
+skills/expo-frontend-upgrade/references/frontend-stack.md,.md,1970,29
+specs/001-comprehensive-modernization/README.md,.md,1088,36
+specs/001-comprehensive-modernization/plan.md,.md,7648,263
+specs/001-comprehensive-modernization/spec.md,.md,5503,170
+specs/002-system-modernization-and-enhancements/README.md,.md,1993,67
+specs/002-system-modernization-and-enhancements/checklists/dependencies.md,.md,6709,74
+specs/002-system-modernization-and-enhancements/checklists/plan.md,.md,1373,33
+specs/002-system-modernization-and-enhancements/checklists/requirements.md,.md,1544,35
+specs/002-system-modernization-and-enhancements/contracts/analytics.yaml,.yaml,12223,484
+specs/002-system-modernization-and-enhancements/contracts/api.yaml,.yaml,1688,70
+specs/002-system-modernization-and-enhancements/contracts/auth.yaml,.yaml,6299,223
+specs/002-system-modernization-and-enhancements/contracts/offline.yaml,.yaml,8222,324
+specs/002-system-modernization-and-enhancements/contracts/realtime.yaml,.yaml,6923,252
+specs/002-system-modernization-and-enhancements/data-model.md,.md,9178,310
+specs/002-system-modernization-and-enhancements/plan.md,.md,3253,73
+specs/002-system-modernization-and-enhancements/quickstart.md,.md,7516,343
+specs/002-system-modernization-and-enhancements/research.md,.md,12723,360
+specs/002-system-modernization-and-enhancements/spec.md,.md,9510,250
+specs/002-system-modernization-and-enhancements/tasks.md,.md,14200,340
+specs/003-stock-verification-dashboard/plan.md,.md,2106,61
+specs/003-stock-verification-dashboard/spec.md,.md,3494,71
+specs/003-stock-verification-dashboard/tasks.md,.md,1909,42
+specs/004-app-logic-docs/checklists/requirements.md,.md,1331,35
+specs/004-app-logic-docs/contracts/existing-apis.md,.md,3824,120
+specs/004-app-logic-docs/contracts/openapi-excerpt.yaml,.yaml,4605,170
+specs/004-app-logic-docs/data-model.md,.md,4897,120
+specs/004-app-logic-docs/plan.md,.md,12109,255
+specs/004-app-logic-docs/quickstart.md,.md,1812,45
+specs/004-app-logic-docs/research.md,.md,5555,92
+specs/004-app-logic-docs/spec.md,.md,9460,141
+specs/004-app-logic-docs/tasks.md,.md,10845,180
+specs/004-app-logic-docs/validation/incident-scenarios.md,.md,6813,176
+specs/004-app-logic-docs/validation/review-survey-template.md,.md,6610,259
+specs/004-app-logic-docs/validation/standard-questions.md,.md,5875,144
+start_app.sh,.sh,2925,91
+stop.sh,.sh,105,3
+tasks.md,.md,4083,64
+templates/agent-file-template.md,.md,464,28
+templates/checklist-template.md,.md,1307,40
+templates/commands/analyze.md,.md,7253,187
+templates/commands/checklist.md,.md,16870,297
+templates/commands/clarify.md,.md,11285,180
+templates/commands/constitution.md,.md,5011,78
+templates/commands/implement.md,.md,7514,137
+templates/commands/plan.md,.md,3045,87
+templates/commands/specify.md,.md,12424,252
+templates/commands/tasks.md,.md,6136,131
+templates/plan-template.md,.md,3657,104
+templates/spec-template.md,.md,3950,115
+templates/tasks-template.md,.md,9170,251
+templates/vscode-settings.json,.json,350,13
+test_session_model.py,.py,322,12
+windows_deployment_frontend.env.example,.example,444,11

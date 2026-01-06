@@ -27,10 +27,10 @@ def mock_pyodbc():
     with patch("backend.api.mapping_api.pyodbc") as mock:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        
+
         mock.connect.return_value = mock_conn
         mock_conn.cursor.return_value = mock_cursor
-        
+
         yield mock
 
 @pytest.fixture
@@ -42,9 +42,9 @@ def mock_db():
 async def test_get_tables(mock_pyodbc):
     mock_cursor = mock_pyodbc.connect.return_value.cursor.return_value
     mock_cursor.fetchall.return_value = MOCK_TABLES
-    
+
     current_user = {"username": "testuser"}
-    
+
     response = await get_tables(
         host="localhost",
         database="testdb",
@@ -52,11 +52,11 @@ async def test_get_tables(mock_pyodbc):
         password="password",
         current_user=current_user
     )
-    
+
     assert response["count"] == 2
     assert "Table1" in response["tables"]
     assert "Table2" in response["tables"]
-    
+
     # Verify query execution
     mock_cursor.execute.assert_called_once()
     args, _ = mock_cursor.execute.call_args
@@ -66,21 +66,21 @@ async def test_get_tables(mock_pyodbc):
 async def test_get_columns(mock_pyodbc):
     mock_cursor = mock_pyodbc.connect.return_value.cursor.return_value
     mock_cursor.fetchall.return_value = MOCK_COLUMNS
-    
+
     current_user = {"username": "testuser"}
-    
+
     response = await get_columns(
         host="localhost",
         database="testdb",
         table_name="Table1",
         current_user=current_user
     )
-    
+
     assert response["count"] == 2
     assert response["columns"][0]["name"] == "col1"
     assert response["columns"][1]["data_type"] == "varchar"
     assert response["columns"][1]["max_length"] == 50
-    
+
     # Verify query execution
     mock_cursor.execute.assert_called_once()
     args, _ = mock_cursor.execute.call_args
@@ -91,9 +91,9 @@ async def test_preview_mapping(mock_pyodbc):
     mock_cursor = mock_pyodbc.connect.return_value.cursor.return_value
     mock_cursor.description = [("item_code",), ("item_name",)]
     mock_cursor.fetchall.return_value = MOCK_SAMPLE_DATA
-    
+
     current_user = {"username": "testuser"}
-    
+
     config = MappingConfig(
         tables={"items": "ItemMaster"},
         columns={
@@ -101,18 +101,18 @@ async def test_preview_mapping(mock_pyodbc):
             "item_name": ColumnMapping(app_field="item_name", erp_column="ItemName", table_name="ItemMaster", is_required=True)
         }
     )
-    
+
     response = await preview_mapping(
         host="localhost",
         database="testdb",
         config=config,
         current_user=current_user
     )
-    
+
     assert response["success"] is True
     assert len(response["sample_data"]) == 2
     assert response["sample_data"][0]["item_code"] == 1
-    
+
     # Verify query execution
     mock_cursor.execute.assert_called_once()
     args, _ = mock_cursor.execute.call_args
@@ -122,17 +122,17 @@ async def test_preview_mapping(mock_pyodbc):
 @pytest.mark.asyncio
 async def test_save_mapping(mock_db):
     current_user = {"username": "testuser"}
-    
+
     data = {
         "connection": {"host": "localhost"},
         "mapping": {"tables": {"items": "ItemMaster"}}
     }
-    
+
     response = await save_mapping(data=data, current_user=current_user)
-    
+
     assert response["success"] is True
     mock_db.config.update_one.assert_called_once()
-    
+
     # Verify update args
     args, kwargs = mock_db.config.update_one.call_args
     assert args[0] == {"_id": "erp_mapping"}
@@ -142,26 +142,26 @@ async def test_save_mapping(mock_db):
 @pytest.mark.asyncio
 async def test_get_current_mapping(mock_db):
     current_user = {"username": "testuser"}
-    
+
     mock_doc = {
         "_id": "erp_mapping",
         "mapping": {"tables": {"items": "ItemMaster"}},
         "connection": {"host": "localhost"}
     }
     mock_db.config.find_one.return_value = mock_doc
-    
+
     response = await get_current_mapping(current_user=current_user)
-    
+
     assert response["mapping"]["tables"]["items"] == "ItemMaster"
     assert response["connection"]["host"] == "localhost"
 
 @pytest.mark.asyncio
 async def test_get_current_mapping_empty(mock_db):
     current_user = {"username": "testuser"}
-    
+
     mock_db.config.find_one.return_value = None
-    
+
     response = await get_current_mapping(current_user=current_user)
-    
+
     assert response["mapping"] is None
     assert response["connection"] is None

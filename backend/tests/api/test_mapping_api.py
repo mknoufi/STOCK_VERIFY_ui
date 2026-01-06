@@ -1,14 +1,14 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from fastapi import HTTPException
 from backend.api.mapping_api import (
-    get_tables,
+    ColumnMapping,
+    MappingConfig,
     get_columns,
+    get_current_mapping,
+    get_tables,
     preview_mapping,
     save_mapping,
-    get_current_mapping,
-    MappingConfig,
-    ColumnMapping,
 )
 
 # Mock data

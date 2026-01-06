@@ -9,7 +9,7 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, cast
 
 import jwt
 import uvicorn
@@ -18,7 +18,6 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
-from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
@@ -37,21 +36,6 @@ from backend.api.dynamic_reports_api import dynamic_reports_router  # noqa: E402
 from backend.api.enhanced_item_api import (  # noqa: E402
     enhanced_item_router as items_router,
 )
-from backend.api.schemas import (  # noqa: E402
-    ApiResponse,
-    CorrectionMetadata,
-    CorrectionReason,
-    CountLineCreate,
-    PhotoProof,
-    Session,
-    SessionCreate,
-    TokenResponse,
-    UnknownItem,
-    UnknownItemCreate,
-    UserInfo,
-    UserLogin,
-    UserRegister,
-)
 from backend.api.enhanced_item_api import init_enhanced_api  # noqa: E402
 from backend.api.erp_api import init_erp_api  # noqa: E402
 from backend.api.erp_api import router as erp_router  # noqa: E402
@@ -68,9 +52,17 @@ from backend.api.metrics_api import metrics_router, set_monitoring_service  # no
 
 # New feature API routers
 from backend.api.permissions_api import permissions_router  # noqa: E402
+from backend.api.preferences_api import router as preferences_router  # noqa: E402
 from backend.api.rack_api import router as rack_router  # noqa: E402
 from backend.api.report_generation_api import report_generation_router  # noqa: E402
 from backend.api.reporting_api import router as reporting_router  # noqa: E402
+from backend.api.schemas import (  # noqa: E402
+    ApiResponse,
+    CountLineCreate,
+    Session,
+    SessionCreate,
+    TokenResponse,
+)
 from backend.api.search_api import router as search_router  # noqa: E402
 from backend.api.security_api import security_router  # noqa: E402
 from backend.api.self_diagnosis_api import self_diagnosis_router  # noqa: E402
@@ -89,7 +81,6 @@ from backend.api.sync_management_api import (  # noqa: E402
 )
 from backend.api.sync_status_api import set_auto_sync_manager, sync_router  # noqa: E402
 from backend.api.user_settings_api import router as user_settings_router  # noqa: E402
-from backend.api.preferences_api import router as preferences_router  # noqa: E402
 from backend.api.variance_api import router as variance_router  # noqa: E402
 from backend.api.websocket_api import router as websocket_router  # noqa: E402
 from backend.auth.dependencies import init_auth_dependencies  # noqa: E402
@@ -799,8 +790,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     # Initialize search service
     try:
-        from backend.services.search_service import init_search_service
         from backend.db.runtime import get_db
+        from backend.services.search_service import init_search_service
 
         database = get_db()
         init_search_service(database)
@@ -2455,7 +2446,7 @@ async def _write_backend_port_file_on_startup() -> None:
     """
     try:
         port = int(os.getenv("PORT") or getattr(settings, "PORT", 8001))
-    except Exception as e:
+    except Exception:
         port = 8001
 
     try:

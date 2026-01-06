@@ -1,15 +1,14 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-from datetime import datetime, timedelta
 from backend.api.auth import (
+    UserRegister,
     check_rate_limit,
     find_user_by_username,
     generate_auth_tokens,
     register,
-    UserRegister,
 )
-from backend.utils.result import Ok, Fail
-from backend.exceptions import RateLimitError, NotFoundError
+from backend.exceptions import NotFoundError, RateLimitError
 
 
 @pytest.fixture

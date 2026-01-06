@@ -1,15 +1,15 @@
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
-from fastapi import HTTPException
-from datetime import datetime
 from backend.api.item_verification_api import (
-    init_verification_api,
-    update_item_master,
-    verify_item,
     ItemUpdateRequest,
     VerificationRequest,
     build_item_filter_query,
+    init_verification_api,
+    update_item_master,
+    verify_item,
 )
+from fastapi import HTTPException
 
 
 @pytest.fixture(autouse=True)

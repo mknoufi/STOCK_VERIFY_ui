@@ -2,7 +2,7 @@
 User Preferences API
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from backend.auth.dependencies import get_current_user

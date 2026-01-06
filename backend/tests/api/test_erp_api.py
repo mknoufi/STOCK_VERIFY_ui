@@ -1,14 +1,15 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
-from fastapi import HTTPException
 from backend.api.erp_api import (
-    init_erp_api,
-    get_item_by_barcode,
-    refresh_item_stock,
-    get_all_items,
-    search_items_compatibility,
     _normalize_barcode_input,
+    get_all_items,
+    get_item_by_barcode,
+    init_erp_api,
+    refresh_item_stock,
+    search_items_compatibility,
 )
+from fastapi import HTTPException
 
 
 @pytest.fixture(autouse=True)

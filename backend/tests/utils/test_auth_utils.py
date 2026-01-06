@@ -4,10 +4,10 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from backend.utils.auth_utils import (
-    verify_password,
-    get_password_hash,
-    create_access_token,
     _verify_bcrypt_fallback,
+    create_access_token,
+    get_password_hash,
+    verify_password,
 )
 
 

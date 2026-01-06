@@ -153,7 +153,9 @@ class AutoSyncManager:
         logger.info("✅ SQL Server connection restored - triggering sync")
         self._sql_available = True
         self._stats["connection_restored"] += 1
-        self._stats["last_connection_time"] = datetime.utcnow().isoformat()
+        # Stats dict value can be int or str
+        conn_time = datetime.utcnow().isoformat()
+        self._stats["last_connection_time"] = conn_time  # type: ignore[assignment]
 
         await self._trigger_sync()
 

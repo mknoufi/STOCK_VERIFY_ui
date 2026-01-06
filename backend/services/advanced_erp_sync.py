@@ -65,7 +65,7 @@ class AdvancedERPSyncService:
         }
 
         # Performance tracking
-        self._performance_history = []
+        self._performance_history: list[dict[str, Any]] = []
         self._max_history = 50
 
     async def validate_item_data(self, item: dict[str, Any]) -> tuple[bool, list[str]]:

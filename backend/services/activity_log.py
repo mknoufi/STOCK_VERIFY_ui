@@ -207,7 +207,7 @@ class ActivityLogService:
     ) -> dict[str, Any]:
         """Get activity statistics"""
         try:
-            filter_query = {}
+            filter_query: dict[str, Any] = {}
             if start_date or end_date:
                 filter_query["timestamp"] = {}
                 if start_date:
@@ -228,13 +228,15 @@ class ActivityLogService:
             )
 
             # By action (top 10)
+            from typing import Sequence, Mapping
             pipeline = [
                 {"$match": filter_query} if filter_query else {"$match": {}},
                 {"$group": {"_id": "$action", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            top_actions = await self.collection.aggregate(pipeline).to_list(10)
+            typed_pipeline1: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
+            top_actions = await self.collection.aggregate(typed_pipeline1).to_list(10)
 
             # By user (top 10)
             pipeline = [
@@ -243,7 +245,8 @@ class ActivityLogService:
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            top_users = await self.collection.aggregate(pipeline).to_list(10)
+            typed_pipeline2: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
+            top_users = await self.collection.aggregate(typed_pipeline2).to_list(10)
 
             return {
                 "total": total,

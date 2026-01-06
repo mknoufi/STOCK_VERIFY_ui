@@ -269,4 +269,9 @@ class SelfDiagnosingErrorHandler:
 
     def get_diagnoses(self) -> list[dict[str, Any]]:
         """Get all diagnoses from this handler"""
-        return [e["diagnosis"] for e in self.errors if "diagnosis" in e]
+        # Filter for errors with diagnosis, cast to dict for type safety
+        result: list[dict[str, Any]] = []
+        for e in self.errors:
+            if isinstance(e, dict) and "diagnosis" in e:
+                result.append(e["diagnosis"])  # type: ignore[arg-type]
+        return result

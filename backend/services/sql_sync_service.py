@@ -560,14 +560,14 @@ class SQLSyncService:
                         logger.error(f"Error syncing item {sql_item.get('item_code')}: {e}")
                         stats["errors"] += 1
 
-            stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            stats["duration"] = duration  # type: ignore[assignment]
             self._last_nightly_sync = datetime.utcnow()
             # _sync_stats expects string for last_nightly_sync
             if "last_nightly_sync" in self._sync_stats:
-                # Store isoformat string
-                self._sync_stats["last_nightly_sync"] = (
-                    self._last_nightly_sync.isoformat()
-                )  # type: ignore[assignment]
+                # Store isoformat string - dict value can be int or str
+                sync_time = self._last_nightly_sync.isoformat()
+                self._sync_stats["last_nightly_sync"] = sync_time  # type: ignore[assignment]
 
             logger.info(
                 f"🌙 Nightly sync completed: {stats['items_checked']} items verified, "

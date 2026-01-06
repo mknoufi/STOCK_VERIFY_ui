@@ -317,7 +317,10 @@ class DynamicFieldsService:
                     },
                 }
             }
-            pipeline.extend([group_stage, {"$skip": skip}, {"$limit": limit}])
+            # Explicit type for pipeline stages
+            skip_stage: dict[str, Any] = {"$skip": skip}
+            limit_stage: dict[str, Any] = {"$limit": limit}
+            pipeline.extend([group_stage, skip_stage, limit_stage])
 
             cursor = self.field_values.aggregate(pipeline)
             results = await cursor.to_list(length=None)

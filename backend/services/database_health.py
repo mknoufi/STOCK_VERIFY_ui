@@ -240,7 +240,8 @@ class DatabaseHealthService:
 
     def get_status(self) -> dict[str, Any]:
         """Get current health status"""
-        uptime = (datetime.utcnow() - self._health_status["uptime_start"]).total_seconds()
+        start_time: datetime = self._health_status["uptime_start"]  # type: ignore[assignment]
+        uptime = (datetime.utcnow() - start_time).total_seconds()
 
         return {
             **self._health_status,

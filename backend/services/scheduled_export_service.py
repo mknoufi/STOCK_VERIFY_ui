@@ -266,7 +266,12 @@ class ScheduledExportService:
             {"$sort": {"total_variance": -1}},
         ]
 
-        results = await self.db.count_lines.aggregate(pipeline).to_list(length=10000)
+        # Cast pipeline to proper type for motor
+        from typing import Sequence, Mapping
+        typed_pipeline: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
+        results = await self.db.count_lines.aggregate(typed_pipeline).to_list(
+            length=10000
+        )
 
         export_data = []
         for result in results:

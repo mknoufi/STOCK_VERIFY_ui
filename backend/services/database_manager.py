@@ -265,7 +265,9 @@ class DatabaseManager:
             return index_info
         except Exception as e:
             logger.error(f"Index info collection failed: {str(e)}")
-            return {"error": str(e)}
+            # Return dict with explicit type
+            error_dict: dict[str, Any] = {"error": str(e)}
+            return error_dict
 
     async def optimize_database_performance(self) -> dict[str, Any]:
         """Optimize database performance"""
@@ -505,8 +507,9 @@ class DatabaseManager:
                 }
 
             # Determine overall status
+            steps_dict: dict[str, Any] = dict(flow_test["steps"])  # type: ignore[arg-type]
             all_success = all(
-                step.get("status") == "success" for step in flow_test["steps"].values()
+                step.get("status") == "success" for step in steps_dict.values()
             )
 
             flow_test["overall_status"] = "success" if all_success else "partial_failure"

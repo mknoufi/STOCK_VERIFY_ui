@@ -12,7 +12,7 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.11"
-  NODE_VERSION: "20" # Enforce minimum Node 20 for Expo/Metro compatibility
+  NODE_VERSION: "18.18.2" # Enforce minimum Node 18.18 per migration plan
 
 jobs:
   # Python Backend CI

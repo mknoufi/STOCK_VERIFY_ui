@@ -45,7 +45,7 @@ cd .. && make python-lint
 
 ## What Changed
 
-### Files Modified (10 files)
+### Files Modified (11 files total: 10 source code files + 1 test fix file)
 
 #### Test Files (6 files)
 - `backend/tests/api/test_auth.py` - Imports sorted
@@ -159,7 +159,8 @@ See `pyproject.toml` for:
 
 ### Statistics
 - **Errors Fixed:** 45 → 0
-- **Files Reformatted:** 150
+- **Files Reformatted by Black:** 150 (includes all files black touched, not just those with committed changes)
+- **Files with Committed Changes:** 11 (10 source + 1 test fix)
 - **Unused Imports Removed:** 34
 - **Import Blocks Sorted:** 10
 
@@ -187,9 +188,10 @@ See `pyproject.toml` for:
 🎉 **COMPLETE AND VERIFIED**
 
 **Branch:** `copilot/explain-error-reason-fix-solution`  
-**Commits:** 5  
-**Files Changed:** 13 (10 modified, 4 new docs, this file)  
-**Lines Changed:** +835 insertions, -68 deletions
+**Commits:** 7  
+**Files with Committed Changes:** 11 (10 source code modifications + 1 test fix)  
+**Documentation Files Created:** 5 new files  
+**Lines Changed:** See git history for current statistics
 
 **Ready for:** ✅ Code Review → ✅ Merge to Main
 

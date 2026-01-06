@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: always() && secrets.CODECOV_TOKEN != ''
+        if: always()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./backend/coverage.xml

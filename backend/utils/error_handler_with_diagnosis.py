@@ -227,7 +227,7 @@ class SelfDiagnosingErrorHandler:
     def __init__(self, auto_fix: bool = False):
         self.auto_fix = auto_fix
         self.diagnosis_service = get_auto_diagnosis()
-        self.errors = []
+        self.errors: list[str] = []
 
     async def __aenter__(self):
         return self

@@ -37,7 +37,7 @@ class AsyncExecutor:
         self.retry_attempts = retry_attempts
         self.backoff_factor = backoff_factor
         self.semaphore = asyncio.Semaphore(max_concurrent)
-        self._circuit_breaker_state = {}
+        self._circuit_breaker_state: dict[str, dict[str, Any]] = {}
         self._circuit_breaker_threshold = 5
         self._circuit_breaker_timeout = 60  # seconds
 
@@ -202,7 +202,7 @@ async def async_connection_pool(pool_size: int = 10):
     """
     Modern connection pool context manager
     """
-    pool = []
+    pool: list[Any] = []
 
     try:
         # Initialize pool

@@ -130,7 +130,9 @@ class CodebaseUpgradeChecker:
                     )
                 )
 
-    def _check_type_hints(self, node: ast.FunctionDef, file_path: Path, lines: list[str]):
+    def _check_type_hints(
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef, file_path: Path, lines: list[str]
+    ):
         """Check for missing type hints"""
         # Skip private methods and test files
         if node.name.startswith("_") or "test" in str(file_path):
@@ -182,14 +184,14 @@ class CodebaseUpgradeChecker:
 
     def _group_issues_by_type(self) -> dict[str, int]:
         """Group issues by type"""
-        grouped = defaultdict(int)
+        grouped: dict[str, int] = defaultdict(int)
         for issue in self.issues:
             grouped[issue.issue_type] += 1
         return dict(grouped)
 
     def _group_issues_by_severity(self) -> dict[str, int]:
         """Group issues by severity"""
-        grouped = defaultdict(int)
+        grouped: dict[str, int] = defaultdict(int)
         for issue in self.issues:
             grouped[issue.severity] += 1
         return dict(grouped)

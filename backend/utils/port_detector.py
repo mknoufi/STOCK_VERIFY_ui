@@ -112,7 +112,7 @@ class PortDetector:
             try:
                 from pymongo import MongoClient
 
-                client = MongoClient(
+                client: MongoClient = MongoClient(
                     f"mongodb://{host}:{port}",
                     serverSelectionTimeoutMS=800,
                     connectTimeoutMS=800,

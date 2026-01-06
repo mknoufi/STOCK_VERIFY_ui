@@ -86,7 +86,7 @@ def setup_logging(
     console_handler.setLevel(numeric_level)
 
     if log_format == "json":
-        formatter = JSONFormatter()
+        formatter: logging.Formatter = JSONFormatter()
     else:
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s",

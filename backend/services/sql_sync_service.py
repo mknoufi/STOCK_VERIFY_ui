@@ -375,7 +375,7 @@ class SQLSyncService:
                     logger.error(f"Error syncing batch starting at index {i}: {e}")
                     stats["errors"] += 1
 
-            stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
+            stats["duration"] = (datetime.utcnow() - start_time).total_seconds()  # type: ignore[assignment]
             self._finalize_sync_stats(stats)
 
             logger.info(
@@ -446,7 +446,8 @@ class SQLSyncService:
 
             if not new_items:
                 logger.info("No new items found in SQL Server")
-                stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
+                duration = (datetime.utcnow() - start_time).total_seconds()
+                stats["duration"] = duration  # type: ignore[assignment]
                 self._last_new_item_check = datetime.utcnow()
                 return stats
 
@@ -465,7 +466,8 @@ class SQLSyncService:
                     logger.error(f"Error creating item {sql_item.get('item_code')}: {e}")
                     stats["errors"] += 1
 
-            stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            stats["duration"] = duration  # type: ignore[assignment]
             self._last_new_item_check = datetime.utcnow()
             self._sync_stats["new_items_discovered"] += stats["items_discovered"]
 
@@ -560,8 +562,9 @@ class SQLSyncService:
 
             stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
             self._last_nightly_sync = datetime.utcnow()
-            # type: ignore[assignment] - isoformat returns str, dict expects int
-            self._sync_stats["last_nightly_sync"] = self._last_nightly_sync.isoformat()
+            # isoformat returns str, dict expects int
+            last_sync_iso = self._last_nightly_sync.isoformat()
+            self._sync_stats["last_nightly_sync"] = last_sync_iso  # type: ignore[assignment]
 
             logger.info(
                 f"🌙 Nightly sync completed: {stats['items_checked']} items verified, "
@@ -618,7 +621,8 @@ class SQLSyncService:
                         logger.error(f"Error syncing item {sql_item.get('item_code')}: {str(e)}")
                         stats["errors"] += 1
 
-            stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            stats["duration"] = duration  # type: ignore[assignment]
             self._finalize_sync_stats(stats)
 
             logger.info(

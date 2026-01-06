@@ -25,6 +25,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { colors, spacing } from "@/theme/unified";
 import { adminApi } from "@/services/api";
 
+const SORT_OPTIONS = ["name", "role", "activity"] as const;
+
 type UserRole = "admin" | "supervisor" | "staff";
 type UserStatus = "active" | "inactive";
 type FilterTab = "all" | "admin" | "supervisor" | "staff";
@@ -324,7 +326,7 @@ export default function ModernUsersManagement() {
         {/* Sort Options */}
         <View style={styles.sortContainer}>
           <Text style={styles.sortLabel}>Sort by:</Text>
-          {["name", "role", "activity"].map((option) => (
+          {SORT_OPTIONS.map((option) => (
             <AnimatedPressable
               key={option}
               style={[

@@ -417,7 +417,7 @@ export default function LoginScreen() {
                   </>
                 )}
                 {/* Login Button */}
-                {loginMode === "credentials" && (
+                {loginMode === "credentials" ? (
                   <ModernButton
                     title={isLoading ? "Signing In..." : "Sign In"}
                     onPress={handleLogin}
@@ -427,7 +427,7 @@ export default function LoginScreen() {
                     style={styles.loginButton}
                     icon="log-in"
                   />
-                )}
+                ) : null}
               </ModernCard>
             </SafeAnimatedView>
 

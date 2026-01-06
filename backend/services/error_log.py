@@ -344,7 +344,7 @@ class ErrorLogService:
     ) -> dict[str, Any]:
         """Get error statistics"""
         try:
-            filter_query = {}
+            filter_query: dict[str, Any] = {}
             if start_date or end_date:
                 filter_query["timestamp"] = {}
                 if start_date:

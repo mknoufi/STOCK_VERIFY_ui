@@ -32,7 +32,7 @@ class ApiResponse(BaseModel, Generic[T]):
         cls, data: T, message: Optional[str] = None, request_id: Optional[str] = None
     ):
         """Create a successful response"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             success=True,
             data=data,
             message=message,
@@ -48,7 +48,7 @@ class ApiResponse(BaseModel, Generic[T]):
         request_id: Optional[str] = None,
     ):
         """Create an error response"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             success=False,
             error={
                 "code": error_code,

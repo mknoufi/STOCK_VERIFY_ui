@@ -159,7 +159,7 @@ class EnrichmentService:
                 }
 
             # Build update document
-            update_fields = {}
+            update_fields: dict[str, Any] = {}
 
             # Process each enrichment field
             corrections = _process_enrichment_fields(enrichment_data, existing_item, update_fields)

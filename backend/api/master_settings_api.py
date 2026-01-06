@@ -104,7 +104,7 @@ async def get_system_parameters(current_user: dict = Depends(require_admin)):
             }
         else:
             # Return defaults
-            default_params = SystemParameters()
+            default_params = SystemParameters()  # type: ignore[call-arg]
             return {
                 "success": True,
                 "data": default_params.model_dump(),
@@ -112,7 +112,7 @@ async def get_system_parameters(current_user: dict = Depends(require_admin)):
     except Exception as e:
         logger.error(f"Error getting system parameters: {e}")
         # Return defaults on error
-        default_params = SystemParameters()
+        default_params = SystemParameters()  # type: ignore[call-arg]
         return {
             "success": True,
             "data": default_params.model_dump(),
@@ -230,7 +230,7 @@ async def reset_to_defaults(
 
         if category:
             # Reset specific category
-            default_params = SystemParameters()
+            default_params = SystemParameters()  # type: ignore[call-arg]
             params_dict = default_params.model_dump()
 
             # Get current settings
@@ -253,7 +253,7 @@ async def reset_to_defaults(
                 await db.system_settings.insert_one(params_dict)
         else:
             # Reset all to defaults
-            default_params = SystemParameters()
+            default_params = SystemParameters()  # type: ignore[call-arg]
             params_dict = default_params.model_dump()
             params_dict["_id"] = "parameters"
             params_dict["updated_by"] = current_user.get("username", "admin")

@@ -6,7 +6,7 @@ Type-safe error handling without exceptions where possible
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar, cast
 
 T = TypeVar("T")
 E = TypeVar("E", bound=Exception)
@@ -73,7 +73,7 @@ class Result(Generic[T, E]):
             try:
                 return Result.success(fn(self._value))
             except Exception as e:
-                return Result.error(e, str(e))
+                return Result.error(cast(E, e), str(e))
         return Result.error(self._error, self._error_message)
 
     def map_error(self, fn: Callable[[E], Any]) -> "Result[T, Any]":

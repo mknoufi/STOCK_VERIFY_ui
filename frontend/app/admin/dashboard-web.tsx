@@ -53,6 +53,14 @@ import { SimpleBarChart } from "../../src/components/charts/SimpleBarChart";
 import { SimplePieChart } from "../../src/components/charts/SimplePieChart";
 import { DateRangePicker } from "../../src/components/forms/DateRangePicker";
 
+const DASHBOARD_TABS = [
+  "overview",
+  "monitoring",
+  "reports",
+  "analytics",
+  "diagnosis",
+] as const;
+
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 
@@ -718,6 +726,23 @@ export default function DashboardWeb() {
     </Animated.View>
   );
 
+  const renderActiveTabContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return renderOverview();
+      case "monitoring":
+        return renderMonitoring();
+      case "reports":
+        return renderReports();
+      case "analytics":
+        return renderAnalytics();
+      case "diagnosis":
+        return renderDiagnosis();
+      default:
+        return null;
+    }
+  };
+
   return (
     <ScreenContainer
       backgroundType="aurora"
@@ -740,15 +765,7 @@ export default function DashboardWeb() {
       <View style={styles.container}>
         {/* Navigation Tabs */}
         <View style={styles.tabsContainer}>
-          {(
-            [
-              "overview",
-              "monitoring",
-              "reports",
-              "analytics",
-              "diagnosis",
-            ] as DashboardTab[]
-          ).map((tab) => (
+          {DASHBOARD_TABS.map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
@@ -778,11 +795,7 @@ export default function DashboardWeb() {
             />
           }
         >
-          {activeTab === "overview" && renderOverview()}
-          {activeTab === "monitoring" && renderMonitoring()}
-          {activeTab === "reports" && renderReports()}
-          {activeTab === "analytics" && renderAnalytics()}
-          {activeTab === "diagnosis" && renderDiagnosis()}
+          {renderActiveTabContent()}
         </ScrollView>
 
         {/* Report Modal */}

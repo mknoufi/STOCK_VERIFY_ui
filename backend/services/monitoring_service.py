@@ -42,11 +42,12 @@ class MonitoringService:
         self._recent_errors: deque = deque(maxlen=100)
 
         # System health
+        self._start_time = datetime.utcnow()
         self._health_status = {
             "status": "healthy",
             "last_check": datetime.utcnow().isoformat(),
             "uptime": 0,
-            "start_time": datetime.utcnow(),
+            "start_time": self._start_time,
         }
 
         self._lock = threading.Lock()
@@ -114,7 +115,7 @@ class MonitoringService:
     def get_metrics(self) -> dict[str, Any]:
         """Get current metrics"""
         with self._lock:
-            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
+            uptime = (datetime.utcnow() - self._start_time).total_seconds()
             avg_response_time = (
                 self._total_response_time / self._request_count if self._request_count > 0 else 0.0
             )
@@ -160,7 +161,7 @@ class MonitoringService:
     def get_health(self) -> dict[str, Any]:
         """Get health status"""
         with self._lock:
-            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
+            uptime = (datetime.utcnow() - self._start_time).total_seconds()
 
             # Determine health status
             error_rate = (
@@ -177,7 +178,7 @@ class MonitoringService:
             return {
                 "status": status,
                 "uptime": uptime,
-                "start_time": self._health_status["start_time"].isoformat(),
+                "start_time": self._start_time.isoformat(),
                 "last_check": datetime.utcnow().isoformat(),
                 "metrics": {
                     "total_requests": self._request_count,
@@ -248,7 +249,7 @@ class MonitoringService:
             lines.append("")
 
             # Uptime
-            uptime = (datetime.utcnow() - self._health_status["start_time"]).total_seconds()
+            uptime = (datetime.utcnow() - self._start_time).total_seconds()
             lines.append("# HELP app_uptime_seconds Application uptime in seconds")
             lines.append("# TYPE app_uptime_seconds counter")
             lines.append(f"app_uptime_seconds {uptime:.0f}")

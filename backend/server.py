@@ -244,7 +244,6 @@ client: AsyncIOMotorClient = AsyncIOMotorClient(
 db = client[settings.DB_NAME]
 
 # Set the active database and client in runtime for other modules to access via get_db()
-from backend.db.runtime import set_client, set_db
 
 set_db(db)
 set_client(client)

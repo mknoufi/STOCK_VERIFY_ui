@@ -180,6 +180,7 @@ async def search_items_semantic(
 
         # Fetching top 500 items for re-ranking context
         # This is a compromise for "Local AI" without a Vector DB
+        db = get_db()
         items_cursor = db.erp_items.find({}).limit(500)
         candidates = await items_cursor.to_list(length=500)
 

@@ -87,7 +87,7 @@ class SearchItemResponse(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "id": "507f1f77bcf86cd799439011",
+                "id": "507f1f77bcf86cd799439011",  # pragma: allowlist secret
                 "item_name": "Apple iPhone 15 Pro",
                 "item_code": "IPHONE15PRO",
                 "barcode": "5100001234",

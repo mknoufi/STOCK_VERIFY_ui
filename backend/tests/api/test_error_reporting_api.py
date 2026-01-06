@@ -3,10 +3,11 @@ Comprehensive tests for error_reporting_api.py
 Tests error reporting, admin dashboard, error management, and statistics
 """
 
-import os
-import pytest
 from datetime import datetime
+
+import pytest
 from httpx import AsyncClient
+
 from backend.auth.dependencies import get_current_user
 from backend.server import app
 
@@ -74,9 +75,7 @@ class TestErrorReporting:
             "context": {"endpoint": "/api/items", "method": "GET"},
         }
 
-        response = await async_client.post(
-            "/api/admin/errors/report", json=error_data
-        )
+        response = await async_client.post("/api/admin/errors/report", json=error_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -95,16 +94,12 @@ class TestErrorReporting:
             "timestamp": datetime.utcnow().isoformat(),
         }
 
-        response = await async_client.post(
-            "/api/admin/errors/report", json=error_data
-        )
+        response = await async_client.post("/api/admin/errors/report", json=error_data)
 
         assert response.status_code == 200
         assert response.json()["success"] is True
 
-    async def test_report_critical_error(
-        self, async_client: AsyncClient
-    ):
+    async def test_report_critical_error(self, async_client: AsyncClient):
         """Test critical error reporting triggers notification"""
         app.dependency_overrides[get_current_user] = mock_get_current_staff
 
@@ -115,16 +110,12 @@ class TestErrorReporting:
             "context": {"database": "stock_count", "operation": "insert"},
         }
 
-        response = await async_client.post(
-            "/api/admin/errors/report", json=error_data
-        )
+        response = await async_client.post("/api/admin/errors/report", json=error_data)
 
         assert response.status_code == 200
         assert response.json()["success"] is True
 
-    async def test_report_error_without_context(
-        self, async_client: AsyncClient
-    ):
+    async def test_report_error_without_context(self, async_client: AsyncClient):
         """Test error reporting without optional context"""
         app.dependency_overrides[get_current_user] = mock_get_current_staff
 
@@ -134,9 +125,7 @@ class TestErrorReporting:
             "severity": "low",
         }
 
-        response = await async_client.post(
-            "/api/admin/errors/report", json=error_data
-        )
+        response = await async_client.post("/api/admin/errors/report", json=error_data)
 
         assert response.status_code == 200
         assert response.json()["success"] is True
@@ -159,9 +148,7 @@ class TestErrorReporting:
 class TestErrorRetrieval:
     """Test error retrieval and filtering"""
 
-    async def test_get_errors_admin(
-        self, async_client: AsyncClient
-    ):
+    async def test_get_errors_admin(self, async_client: AsyncClient):
         """Test admin can retrieve errors"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
@@ -188,17 +175,13 @@ class TestErrorRetrieval:
         self, async_client: AsyncClient, authenticated_headers: dict
     ):
         """Test non-admin users cannot retrieve errors"""
-        response = await async_client.get(
-            "/api/admin/errors", headers=authenticated_headers
-        )
+        response = await async_client.get("/api/admin/errors", headers=authenticated_headers)
 
         # authenticated_headers is for staff1 (not admin)
         assert response.status_code == 403
         assert "Admin access required" in response.json()["detail"]
 
-    async def test_get_errors_with_severity_filter(
-        self, async_client: AsyncClient
-    ):
+    async def test_get_errors_with_severity_filter(self, async_client: AsyncClient):
         """Test filtering errors by severity"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
@@ -213,17 +196,13 @@ class TestErrorRetrieval:
         )
 
         # Filter by critical severity
-        response = await async_client.get(
-            "/api/admin/errors?severity=critical"
-        )
+        response = await async_client.get("/api/admin/errors?severity=critical")
 
         assert response.status_code == 200
         data = response.json()
         assert all(e["severity"] == "critical" for e in data["errors"])
 
-    async def test_get_errors_with_status_filter(
-        self, async_client: AsyncClient
-    ):
+    async def test_get_errors_with_status_filter(self, async_client: AsyncClient):
         """Test filtering errors by status"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
@@ -240,9 +219,7 @@ class TestErrorRetrieval:
         )
 
         # Filter by status
-        response = await async_client.get(
-            "/api/admin/errors?status=acknowledged"
-        )
+        response = await async_client.get("/api/admin/errors?status=acknowledged")
 
         assert response.status_code == 200
         data = response.json()
@@ -264,9 +241,7 @@ class TestErrorRetrieval:
             )
 
         # Get errors with limit
-        response = await async_client.get(
-            "/api/admin/errors?limit=2"
-        )
+        response = await async_client.get("/api/admin/errors?limit=2")
 
         assert response.status_code == 200
         data = response.json()
@@ -281,9 +256,7 @@ class TestErrorDashboard:
         """Test admin can access error dashboard"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
-        response = await async_client.get(
-            "/api/admin/errors/dashboard"
-        )
+        response = await async_client.get("/api/admin/errors/dashboard")
 
         assert response.status_code == 200
         data = response.json()
@@ -292,9 +265,7 @@ class TestErrorDashboard:
         assert "recent_errors" in data
         assert "error_trends" in data
 
-    async def test_get_error_dashboard_statistics(
-        self, async_client: AsyncClient
-    ):
+    async def test_get_error_dashboard_statistics(self, async_client: AsyncClient):
         """Test dashboard statistics calculation"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
@@ -308,9 +279,7 @@ class TestErrorDashboard:
             json={"type": "Error2", "message": "High", "severity": "high"},
         )
 
-        response = await async_client.get(
-            "/api/admin/errors/dashboard"
-        )
+        response = await async_client.get("/api/admin/errors/dashboard")
 
         assert response.status_code == 200
         data = response.json()
@@ -347,9 +316,7 @@ class TestErrorDetail:
         error_id = report_response.json()["error_id"]
 
         # Get error detail
-        response = await async_client.get(
-            f"/api/admin/errors/{error_id}"
-        )
+        response = await async_client.get(f"/api/admin/errors/{error_id}")
 
         assert response.status_code == 200
         data = response.json()
@@ -361,9 +328,7 @@ class TestErrorDetail:
         """Test retrieving non-existent error"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
-        response = await async_client.get(
-            "/api/admin/errors/nonexistent_id"
-        )
+        response = await async_client.get("/api/admin/errors/nonexistent_id")
 
         assert response.status_code == 404
 
@@ -382,9 +347,7 @@ class TestErrorDetail:
 class TestErrorStatusUpdate:
     """Test error status management"""
 
-    async def test_update_error_status_success(
-        self, async_client: AsyncClient
-    ):
+    async def test_update_error_status_success(self, async_client: AsyncClient):
         """Test updating error status"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
@@ -405,9 +368,7 @@ class TestErrorStatusUpdate:
         assert data["success"] is True
         assert data["error"]["status"] == "acknowledged"
 
-    async def test_update_error_status_to_resolved(
-        self, async_client: AsyncClient
-    ):
+    async def test_update_error_status_to_resolved(self, async_client: AsyncClient):
         """Test updating error status to resolved"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
@@ -425,9 +386,7 @@ class TestErrorStatusUpdate:
         assert response.status_code == 200
         assert response.json()["error"]["status"] == "resolved"
 
-    async def test_update_error_status_not_found(
-        self, async_client: AsyncClient
-    ):
+    async def test_update_error_status_not_found(self, async_client: AsyncClient):
         """Test updating status of non-existent error"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
@@ -465,17 +424,13 @@ class TestErrorDeletion:
         error_id = report_response.json()["error_id"]
 
         # Delete the error
-        response = await async_client.delete(
-            f"/api/admin/errors/{error_id}"
-        )
+        response = await async_client.delete(f"/api/admin/errors/{error_id}")
 
         assert response.status_code == 200
         assert response.json()["success"] is True
 
         # Verify error is deleted
-        get_response = await async_client.get(
-            f"/api/admin/errors/{error_id}"
-        )
+        get_response = await async_client.get(f"/api/admin/errors/{error_id}")
         assert get_response.status_code == 404
 
     async def test_delete_error_non_admin(
@@ -507,9 +462,7 @@ class TestErrorStatistics:
             json={"type": "ValidationError", "message": "Test2", "severity": "high"},
         )
 
-        response = await async_client.get(
-            "/api/admin/errors/stats/summary"
-        )
+        response = await async_client.get("/api/admin/errors/stats/summary")
 
         assert response.status_code == 200
         data = response.json()
@@ -519,15 +472,11 @@ class TestErrorStatistics:
         assert "by_type" in data
         assert data["total_errors"] >= 2
 
-    async def test_get_error_summary_by_severity(
-        self, async_client: AsyncClient
-    ):
+    async def test_get_error_summary_by_severity(self, async_client: AsyncClient):
         """Test error summary breakdown by severity"""
         app.dependency_overrides[get_current_user] = mock_get_current_admin
 
-        response = await async_client.get(
-            "/api/admin/errors/stats/summary"
-        )
+        response = await async_client.get("/api/admin/errors/stats/summary")
 
         assert response.status_code == 200
         data = response.json()
@@ -551,9 +500,7 @@ class TestErrorStatistics:
             json={"type": "NetworkError", "message": "Test2", "severity": "low"},
         )
 
-        response = await async_client.get(
-            "/api/admin/errors/stats/summary"
-        )
+        response = await async_client.get("/api/admin/errors/stats/summary")
 
         assert response.status_code == 200
         data = response.json()

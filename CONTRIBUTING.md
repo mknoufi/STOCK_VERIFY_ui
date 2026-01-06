@@ -152,7 +152,7 @@ make mypy  # Run type checker with project settings
 1. **MongoDB Aggregate Pipelines:**
    ```python
    from typing import Sequence, Mapping, Any
-   
+
    pipeline = [{"$match": {"status": "active"}}, {"$group": {...}}]
    # Motor requires explicit typing:
    typed_pipeline: Sequence[Mapping[str, Any]] = pipeline

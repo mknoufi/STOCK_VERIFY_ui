@@ -267,11 +267,10 @@ class ScheduledExportService:
         ]
 
         # Cast pipeline to proper type for motor
-        from typing import Sequence, Mapping
+        from typing import Mapping, Sequence
+
         typed_pipeline: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
-        results = await self.db.count_lines.aggregate(typed_pipeline).to_list(
-            length=10000
-        )
+        results = await self.db.count_lines.aggregate(typed_pipeline).to_list(length=10000)
 
         export_data = []
         for result in results:

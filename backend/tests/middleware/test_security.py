@@ -6,14 +6,14 @@ Comprehensive tests for input sanitization, filter validation, and rate limiting
 from unittest.mock import Mock
 
 from backend.middleware.security import (
+    ALLOWED_FILTER_KEYS,
+    BatchRateLimiter,
+    LoginRateLimiter,
+    _is_regex_value,
+    get_client_ip,
     sanitize_barcode,
     sanitize_filter_keys,
     sanitize_string_input,
-    LoginRateLimiter,
-    BatchRateLimiter,
-    get_client_ip,
-    ALLOWED_FILTER_KEYS,
-    _is_regex_value,
 )
 
 
@@ -238,6 +238,7 @@ class TestLoginRateLimiter:
 
         # Wait for window to expire
         import time
+
         time.sleep(1.1)
 
         # Should be allowed again

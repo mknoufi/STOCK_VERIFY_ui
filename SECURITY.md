@@ -43,16 +43,16 @@ See [backend/SECURITY_SCAN_RESULTS.md](backend/SECURITY_SCAN_RESULTS.md) for com
 
 1. **aiohttp 3.13.2** → >=3.14.0 (8 CVEs)
    - Zip bomb DoS, HTTP request smuggling
-   
+
 2. **urllib3 1.26.20** → >=2.2.0 (3 CVEs)
    - Cookie injection, request smuggling, header injection
-   
+
 3. **langchain ecosystem** (13 CVEs)
    - SSRF, XXE, directory traversal
-   
+
 4. **python-jose 3.3.0** → >=3.3.1 (2 CVEs)
    - Algorithm confusion, token validation bypass
-   
+
 5. **starlette 0.41.3** → >=0.42.0 (2 CVEs)
    - Path traversal, request parsing issues
 
@@ -269,7 +269,7 @@ This policy is reviewed and updated:
 - When new vulnerabilities are discovered
 - When security standards change
 
-**Last Updated**: January 6, 2026  
+**Last Updated**: January 6, 2026
 **Next Review**: April 6, 2026
 
 ---

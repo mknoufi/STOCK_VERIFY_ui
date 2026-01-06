@@ -1,7 +1,7 @@
 # Security Scan Results
 
-**Date:** 2025-01-27  
-**Scans:** Bandit (SAST) + pip-audit (Dependency Vulnerabilities)  
+**Date:** 2025-01-27
+**Scans:** Bandit (SAST) + pip-audit (Dependency Vulnerabilities)
 **Overall Status:** ✅ **APPLICATION CODE: SECURE** | ⚠️ **DEPENDENCIES: 35 VULNERABILITIES**
 
 ---
@@ -50,11 +50,11 @@ All 119 HIGH severity issues are in `.venv/` directory (third-party libraries):
 1. **B104** - Binding to 0.0.0.0 (3 instances):
    - `config.py:325`, `middleware/setup.py:40`, `server.py:1502,1515`
    - **Status:** ✅ ACCEPTABLE - Required for container/network access
-   
+
 2. **B608** - SQL query construction (2 instances):
    - `sql_server_connector.py:804,857`
    - **Status:** ✅ ACCEPTABLE - Uses parameterized queries (inspected)
-   
+
 3. **B113** - Missing HTTP timeout (3 instances):
    - `tests/test_api_warehouses_manual.py:19,24,62,78`
    - **Status:** ✅ ACCEPTABLE - Test code only
@@ -186,7 +186,7 @@ GHSA-hgf8-39gv-g3f2: Debug mode security issue
    urllib3>=2.2.0
    python-jose>=3.3.1
    starlette>=0.42.0
-   
+
    # Langchain ecosystem (breaking changes - careful!)
    langchain>=0.3.0
    langchain-community>=0.3.0
@@ -350,11 +350,11 @@ make python-test
 
 ## Contact
 
-**Security Issues:** noufi1@example.com  
-**Emergency:** Open GitHub issue with `[SECURITY]` prefix  
+**Security Issues:** noufi1@example.com
+**Emergency:** Open GitHub issue with `[SECURITY]` prefix
 **Response Time:** <24 hours for critical issues
 
 ---
 
-**Generated:** 2025-01-27 by automated security scan  
+**Generated:** 2025-01-27 by automated security scan
 **Next Review:** 2025-02-03 (weekly)

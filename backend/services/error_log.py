@@ -374,7 +374,8 @@ class ErrorLogService:
             )
 
             # By error type (top 10)
-            from typing import Sequence, Mapping
+            from typing import Mapping, Sequence
+
             pipeline = [
                 {"$match": filter_query} if filter_query else {"$match": {}},
                 {"$group": {"_id": "$error_type", "count": {"$sum": 1}}},
@@ -382,9 +383,7 @@ class ErrorLogService:
                 {"$limit": 10},
             ]
             typed_pipeline: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
-            top_error_types = await self.collection.aggregate(
-                typed_pipeline
-            ).to_list(10)
+            top_error_types = await self.collection.aggregate(typed_pipeline).to_list(10)
 
             # By endpoint (top 10)
             pipeline = [
@@ -402,7 +401,8 @@ class ErrorLogService:
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            from typing import Sequence, Mapping
+            from typing import Mapping, Sequence
+
             typed_pipeline: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
             top_endpoints = await self.collection.aggregate(typed_pipeline).to_list(10)
 

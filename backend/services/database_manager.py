@@ -508,9 +508,7 @@ class DatabaseManager:
 
             # Determine overall status
             steps_dict: dict[str, Any] = dict(flow_test["steps"])  # type: ignore[arg-type]
-            all_success = all(
-                step.get("status") == "success" for step in steps_dict.values()
-            )
+            all_success = all(step.get("status") == "success" for step in steps_dict.values())
 
             flow_test["overall_status"] = "success" if all_success else "partial_failure"
 

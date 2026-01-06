@@ -38,6 +38,41 @@ def _require_supervisor(current_user: dict):
         raise HTTPException(status_code=403, detail="Supervisor access required")
 
 
+async def _find_session_by_any_id(db: Any, session_id: str) -> Optional[dict]:
+    """Find a session by legacy id or Mongo _id.
+
+    The frontend may send:
+    - legacy sessions: session.id stored as string field "id"
+    - v2 sessions: session.id is stringified Mongo "_id" (ObjectId)
+    - some legacy/offline shapes: field "session_id"
+    """
+
+    async def _maybe_await(value):
+        return await value if inspect.isawaitable(value) else value
+
+    # 1) Prefer Mongo _id when it looks like an ObjectId
+    try:
+        if ObjectId.is_valid(session_id):
+            result = db.sessions.find_one({"_id": ObjectId(session_id)})
+            session = await _maybe_await(result)
+            if session:
+                return session
+    except Exception:
+        # If ObjectId parsing fails for any reason, fall through to string ids
+        pass
+
+    # 2) Legacy string id field
+    result = db.sessions.find_one({"id": session_id})
+    session = await _maybe_await(result)
+    if session:
+        return session
+
+    # 3) Alternative legacy field sometimes used by v2 helpers
+    result = db.sessions.find_one({"session_id": session_id})
+    session = await _maybe_await(result)
+    return session
+
+
 # Helper function to detect high-risk corrections
 def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
     """Detect high-risk correction patterns"""
@@ -113,14 +148,14 @@ async def create_count_line(
 ):
     db = _get_db_client()
 
-    # Validate session exists (support both async and sync mocks)
-    result = db.sessions.find_one({"id": line_data.session_id})
-    session = await result if inspect.isawaitable(result) else result
+    # Validate session exists (support legacy id + Mongo _id)
+    session = await _find_session_by_any_id(db, line_data.session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
     # Enforce session status
-    # Allow OPEN or ACTIVE. Reject CLOSED or RECONCILE (if we consider RECONCILE as closed for counting)
+    # Allow OPEN or ACTIVE. Reject CLOSED or RECONCILE
+    # (if we consider RECONCILE as closed for counting)
     if session.get("status") not in ["OPEN", "ACTIVE"]:
         raise HTTPException(status_code=400, detail="Session is not active")
 

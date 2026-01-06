@@ -228,7 +228,8 @@ class ActivityLogService:
             )
 
             # By action (top 10)
-            from typing import Sequence, Mapping
+            from typing import Mapping, Sequence
+
             pipeline = [
                 {"$match": filter_query} if filter_query else {"$match": {}},
                 {"$group": {"_id": "$action", "count": {"$sum": 1}}},

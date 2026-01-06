@@ -132,7 +132,15 @@ export default function RootLayout() {
       console.warn(
         "⚠️ Maximum initialization timeout reached - forcing app to render",
       );
+      // Ensure both local state and auth store consider initialization complete
+      useAuthStore.setState({ isInitialized: true });
       setIsInitialized(true);
+      // Also hide the splash screen so the UI becomes visible even if fonts never load
+      SplashScreen.hideAsync().catch((e) => {
+        if (__DEV__) {
+          console.error("SplashScreen hide failed after max timeout:", e);
+        }
+      });
     }, 10000);
 
     // Initialize app with error handling

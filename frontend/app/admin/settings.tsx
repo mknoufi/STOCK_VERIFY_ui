@@ -153,7 +153,7 @@ export default function MasterSettingsScreen() {
             <TouchableOpacity
               onPress={handleSave}
               style={styles.saveButton}
-              disabled={saving}
+              disabled={saving || !settings}
             >
               {saving ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -186,7 +186,7 @@ export default function MasterSettingsScreen() {
           <TouchableOpacity
             onPress={handleSave}
             style={styles.saveButton}
-            disabled={saving}
+            disabled={saving || !settings}
           >
             {saving ? (
               <ActivityIndicator size="small" color="#fff" />

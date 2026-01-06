@@ -275,7 +275,8 @@ export default function DashboardWeb() {
 
     return last7Dates.map((date) => {
       const count = sessionsAnalytics.sessions_by_date[date];
-      const dateObj = new Date(date);
+      const [year, month, day] = date.split("-").map(Number);
+      const dateObj = new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
       const label = dateObj.toLocaleDateString(undefined, { weekday: "short" });
       return {
         x: label,

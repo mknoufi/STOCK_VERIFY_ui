@@ -6,7 +6,7 @@ from datetime import datetime
 from bson import ObjectId
 
 # Add project root to path
-project_root = Path(__file__).parent
+project_root = Path(__file__).parents[2]
 sys.path.insert(0, str(project_root))
 
 from motor.motor_asyncio import AsyncIOMotorClient

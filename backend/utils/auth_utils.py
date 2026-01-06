@@ -60,8 +60,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     password_bytes = plain_password.encode("utf-8")
     if len(password_bytes) > 72:
         logger.warning("Password exceeds 72 bytes, truncating")
-        plain_password = plain_password[:72]
-        password_bytes = plain_password.encode("utf-8")
+        # Truncate at byte level, then decode safely
+        password_bytes = password_bytes[:72]
+        plain_password = password_bytes.decode("utf-8", errors="ignore")
 
     # Strategy 1: Try passlib CryptContext (supports multiple schemes)
     try:
@@ -106,7 +107,9 @@ def get_password_hash(password: str) -> str:
     password_bytes = password.encode("utf-8")
     if len(password_bytes) > 72:
         logger.warning("Password exceeds 72 bytes, truncating for hashing")
-        password = password[:72]
+        # Truncate at byte level, then decode safely to avoid cutting UTF-8 chars
+        password_bytes = password_bytes[:72]
+        password = password_bytes.decode("utf-8", errors="ignore")
     return str(pwd_context.hash(password))
 
 

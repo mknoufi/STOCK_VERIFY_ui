@@ -319,3 +319,4 @@ sessions_list.json
 
 # Project management tool (external)
 vibe-kanban/
+reports/bandit_report_backend.json

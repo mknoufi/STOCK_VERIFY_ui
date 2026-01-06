@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 # Add project root to path
-project_root = Path(__file__).parent
+project_root = Path(__file__).parents[2]
 sys.path.insert(0, str(project_root))
 
 # Mock environment variables if needed for config

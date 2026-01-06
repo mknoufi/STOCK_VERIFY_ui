@@ -74,7 +74,7 @@ python-format:
 
 python-typecheck:
 	@echo "Running Python type checker..."
-	mypy backend --ignore-missing-imports --python-version=3.10 || true
+\tmypy backend --ignore-missing-imports --python-version=3.10 --config-file=backend/pyproject.toml --explicit-package-bases || true
 
 # =============================================================================
 # 📦 NODE.JS FRONTEND

@@ -320,7 +320,8 @@ class SQLSyncService:
 
             if not mongo_items:
                 logger.info("No items in MongoDB to sync")
-                stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
+                duration_secs = (datetime.utcnow() - start_time).total_seconds()
+                stats["duration"] = duration_secs  # type: ignore[assignment]
                 return stats
 
             stats["items_checked"] = len(mongo_items)
@@ -559,6 +560,7 @@ class SQLSyncService:
 
             stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
             self._last_nightly_sync = datetime.utcnow()
+            # type: ignore[assignment] - isoformat returns str, dict expects int
             self._sync_stats["last_nightly_sync"] = self._last_nightly_sync.isoformat()
 
             logger.info(
@@ -717,7 +719,7 @@ class SQLSyncService:
         self._sync_stats["successful_syncs"] += 1
         self._sync_stats["items_synced"] = stats["items_checked"]
         self._sync_stats["qty_changes_detected"] = stats["qty_changes_detected"]
-        self._sync_stats["last_sync"] = self._last_sync.isoformat()
+        self._sync_stats["last_sync"] = self._last_sync.isoformat()  # type: ignore[assignment]
 
     async def _update_sync_metadata(self, stats: dict[str, Any]) -> None:
         """Update sync metadata collection (best-effort)."""

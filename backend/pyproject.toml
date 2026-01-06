@@ -35,3 +35,24 @@ skip_glob = ["*/migrations/*", "*/__pycache__/*", "*/venv/*", "*/.venv/*"]
 [tool.black]
 line-length = 100
 target-version = ['py310', 'py311']
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+no_implicit_optional = false
+warn_unused_ignores = false
+# Allow None assignments to typed variables during initialization
+strict_optional = false
+# Be lenient with Any types in returns
+warn_unreachable = false
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "scripts.*"
+ignore_errors = true

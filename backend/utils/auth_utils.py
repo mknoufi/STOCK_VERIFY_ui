@@ -98,7 +98,15 @@ def _verify_bcrypt_fallback(password_bytes: bytes, hashed_password: str) -> bool
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password using the configured context"""
+    """Hash a password using the configured context.
+    
+    Bcrypt has a 72-byte limit, so passwords are truncated if necessary.
+    """
+    # Bcrypt (the fallback hasher) has a 72-byte limit
+    password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        logger.warning("Password exceeds 72 bytes, truncating for hashing")
+        password = password[:72]
     return str(pwd_context.hash(password))
 
 

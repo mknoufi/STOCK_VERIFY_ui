@@ -234,7 +234,8 @@ export default function ExportSchedulesScreen() {
                         borderColor: theme.colors.success.main,
                       }
                     : {
-                        backgroundColor: theme.colors.text.tertiary + "20",
+                        backgroundColor:
+                          theme.colors.text.tertiary + "20",
                         borderColor: theme.colors.text.tertiary,
                       },
                 ]}
@@ -391,7 +392,10 @@ export default function ExportSchedulesScreen() {
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+            <ActivityIndicator
+              size="large"
+              color={theme.colors.primary[500]}
+            />
             <Text style={styles.loadingText}>Loading schedules...</Text>
           </View>
         ) : (
@@ -428,7 +432,9 @@ export default function ExportSchedulesScreen() {
           transparent={true}
           onRequestClose={() => setModalVisible(false)}
         >
-          <ScreenContainer containerStyle={styles.modalOverlay}>
+          <ScreenContainer
+            containerStyle={styles.modalOverlay}
+          >
             <GlassCard
               intensity={20}
               borderRadius={theme.borderRadius.xl}

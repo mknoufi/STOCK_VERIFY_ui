@@ -3,13 +3,13 @@
  */
 
 export type ReportType =
-  | "stock_summary"
-  | "variance_report"
-  | "user_activity"
-  | "session_history"
-  | "audit_trail";
+  | 'stock_summary'
+  | 'variance_report'
+  | 'user_activity'
+  | 'session_history'
+  | 'audit_trail';
 
-export type ExportFormat = "csv" | "xlsx" | "pdf";
+export type ExportFormat = 'csv' | 'xlsx' | 'pdf';
 
 export interface ReportFilters {
   date_from?: string;
@@ -49,7 +49,7 @@ export interface ScheduleReportParams {
   format: ExportFormat;
   filters?: ReportFilters;
   schedule: {
-    frequency: "daily" | "weekly" | "monthly";
+    frequency: 'daily' | 'weekly' | 'monthly';
     time?: string;
     day_of_week?: number;
     day_of_month?: number;
@@ -63,7 +63,7 @@ export interface ScheduledReport {
   name: string;
   report_type: ReportType;
   format: ExportFormat;
-  schedule: ScheduleReportParams["schedule"];
+  schedule: ScheduleReportParams['schedule'];
   filters?: ReportFilters;
   recipients: string[];
   enabled: boolean;

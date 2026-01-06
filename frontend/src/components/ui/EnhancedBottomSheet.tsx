@@ -204,9 +204,7 @@ export const EnhancedBottomSheet: React.FC<EnhancedBottomSheetProps> = ({
 
       {/* Sheet */}
       <GestureDetector gesture={panGesture}>
-        <Animated.View
-          style={[styles.sheet, { height: screenHeight }, sheetStyle]}
-        >
+        <Animated.View style={[styles.sheet, { height: screenHeight }, sheetStyle]}>
           <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
             {/* Handle */}
             {showHandle && (

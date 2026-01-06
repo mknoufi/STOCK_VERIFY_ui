@@ -1,8 +1,8 @@
-import React from "react";
-import { TouchableOpacity, Text, StyleSheet, Animated } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeContext } from "../../theme/ThemeContext";
-import { useHapticFeedback } from "../../hooks/useHapticFeedback";
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeContext } from '../../theme/ThemeContext';
+import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 
 export const ThemeToggle: React.FC = () => {
   const { theme, themeMode, setThemeMode } = useThemeContext();
@@ -15,7 +15,7 @@ export const ThemeToggle: React.FC = () => {
 
   const handleToggle = () => {
     // Haptic feedback for better UX
-    triggerHaptic("impactLight");
+    triggerHaptic('impactLight');
 
     // Animation
     Animated.sequence([
@@ -41,21 +41,21 @@ export const ThemeToggle: React.FC = () => {
     });
 
     // Update theme
-    if (themeMode === "light") setThemeMode("dark");
-    else if (themeMode === "dark") setThemeMode("system");
-    else setThemeMode("light");
+    if (themeMode === 'light') setThemeMode('dark');
+    else if (themeMode === 'dark') setThemeMode('system');
+    else setThemeMode('light');
   };
 
   const getIconName = () => {
-    if (themeMode === "light") return "sunny";
-    if (themeMode === "dark") return "moon";
-    return "settings";
+    if (themeMode === 'light') return 'sunny';
+    if (themeMode === 'dark') return 'moon';
+    return 'settings';
   };
 
   const getLabel = () => {
-    if (themeMode === "light") return "Light";
-    if (themeMode === "dark") return "Dark";
-    return "System";
+    if (themeMode === 'light') return 'Light';
+    if (themeMode === 'dark') return 'Dark';
+    return 'System';
   };
 
   const getAccessibilityLabel = () => {
@@ -64,15 +64,12 @@ export const ThemeToggle: React.FC = () => {
 
   const rotateInterpolate = rotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
+    outputRange: ['0deg', '360deg'],
   });
 
   return (
     <TouchableOpacity
-      style={[
-        styles.container,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-      ]}
+      style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}
       onPress={handleToggle}
       activeOpacity={0.7}
       accessibilityLabel={getAccessibilityLabel()}
@@ -89,13 +86,13 @@ export const ThemeToggle: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 12,
     borderRadius: 24,
     borderWidth: 1,
-    backgroundColor: "transparent",
-    shadowColor: "#000",
+    backgroundColor: 'transparent',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -107,7 +104,7 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 12,
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
     letterSpacing: 0.5,
   },
 });

@@ -67,15 +67,15 @@ export const Shimmer: React.FC<ShimmerProps> = ({
   const colors: readonly [string, string, string] =
     variant === "dark"
       ? ([
-          auroraTheme.colors.neutral[800],
-          auroraTheme.colors.neutral[700],
-          auroraTheme.colors.neutral[800],
-        ] as const)
+        auroraTheme.colors.neutral[800],
+        auroraTheme.colors.neutral[700],
+        auroraTheme.colors.neutral[800],
+      ] as const)
       : ([
-          auroraTheme.colors.neutral[200],
-          auroraTheme.colors.neutral[100],
-          auroraTheme.colors.neutral[200],
-        ] as const);
+        auroraTheme.colors.neutral[200],
+        auroraTheme.colors.neutral[100],
+        auroraTheme.colors.neutral[200],
+      ] as const);
 
   return (
     <View

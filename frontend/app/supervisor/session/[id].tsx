@@ -321,9 +321,7 @@ export default function SessionDetail() {
 
     // Only animate first N items to prevent performance issues on large lists
     const shouldAnimate = index < MAX_ANIMATED_ITEMS;
-    const _animationDelay = shouldAnimate
-      ? Math.min(index * 50 + 400, 1000)
-      : 0;
+    const _animationDelay = shouldAnimate ? Math.min(index * 50 + 400, 1000) : 0;
 
     const content = (
       <GlassCard style={styles.lineCard}>

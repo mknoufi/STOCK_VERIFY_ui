@@ -5,18 +5,13 @@
  * Addresses code duplication in createCountLine.
  */
 
-import { CreateCountLinePayload } from "../../types/scan";
-import { generateOfflineId } from "../../utils/uuid";
-import { useAuthStore } from "../../store/authStore";
-import {
-  getItemFromCache,
-  cacheCountLine,
-  addToOfflineQueue,
-  CachedCountLine,
-} from "./offlineStorage";
-import { createLogger } from "../logging";
+import { CreateCountLinePayload } from '../../types/scan';
+import { generateOfflineId } from '../../utils/uuid';
+import { useAuthStore } from '../../store/authStore';
+import { getItemFromCache, cacheCountLine, addToOfflineQueue, CachedCountLine } from './offlineStorage';
+import { createLogger } from '../logging';
 
-const log = createLogger("OfflineCountLine");
+const log = createLogger('OfflineCountLine');
 
 /**
  * Device context for audit trail
@@ -38,7 +33,7 @@ export interface OfflineAuditMetadata {
   app_version: string | null;
   created_offline: true;
   offline_created_at: string;
-  sync_status: "pending";
+  sync_status: 'pending';
 }
 
 /**
@@ -57,7 +52,7 @@ let globalDeviceContext: DeviceContext = {};
  */
 export function setDeviceContext(context: DeviceContext): void {
   globalDeviceContext = context;
-  log.info("Device context set", { context });
+  log.info('Device context set', { context });
 }
 
 /**
@@ -85,14 +80,14 @@ export async function createOfflineCountLine(
   const user = useAuthStore.getState().user;
 
   // Try to get item name from cache
-  let itemName = "Unknown Item";
+  let itemName = 'Unknown Item';
   try {
     const cachedItem = await getItemFromCache(countData.item_code);
     if (cachedItem) {
       itemName = cachedItem.item_name;
     }
   } catch (error) {
-    log.warn("Failed to get item from cache for offline count line", {
+    log.warn('Failed to get item from cache for offline count line', {
       itemCode: countData.item_code,
       error: error instanceof Error ? error.message : String(error),
     });
@@ -100,12 +95,12 @@ export async function createOfflineCountLine(
 
   // Create audit metadata
   const audit: OfflineAuditMetadata = {
-    source: context.sourceScreen || "scan_screen",
+    source: context.sourceScreen || 'scan_screen',
     device_id: context.deviceId || null,
     app_version: context.appVersion || null,
     created_offline: true,
     offline_created_at: new Date().toISOString(),
-    sync_status: "pending",
+    sync_status: 'pending',
   };
 
   // Create the offline count line with UUID-based ID
@@ -117,7 +112,7 @@ export async function createOfflineCountLine(
     counted_qty: countData.counted_qty,
     system_qty: undefined,
     variance: undefined,
-    counted_by: user?.username || "offline_user",
+    counted_by: user?.username || 'offline_user',
     counted_at: new Date().toISOString(),
     cached_at: new Date().toISOString(),
     // Optional fields
@@ -131,23 +126,16 @@ export async function createOfflineCountLine(
   // Add extended fields if present (preserving any extra data)
   const extendedData: Record<string, unknown> = {};
   if (countData.floor_no) extendedData.floor_no = countData.floor_no;
-  if (countData.mark_location)
-    extendedData.mark_location = countData.mark_location;
+  if (countData.mark_location) extendedData.mark_location = countData.mark_location;
   if (countData.sr_no) extendedData.sr_no = countData.sr_no;
-  if (countData.manufacturing_date)
-    extendedData.manufacturing_date = countData.manufacturing_date;
-  if (countData.variance_reason)
-    extendedData.variance_reason = countData.variance_reason;
-  if (countData.variance_note)
-    extendedData.variance_note = countData.variance_note;
+  if (countData.manufacturing_date) extendedData.manufacturing_date = countData.manufacturing_date;
+  if (countData.variance_reason) extendedData.variance_reason = countData.variance_reason;
+  if (countData.variance_note) extendedData.variance_note = countData.variance_note;
   if (countData.remark) extendedData.remark = countData.remark;
-  if (countData.damage_included !== undefined)
-    extendedData.damage_included = countData.damage_included;
-  if (countData.damaged_qty !== undefined)
-    extendedData.damaged_qty = countData.damaged_qty;
+  if (countData.damage_included !== undefined) extendedData.damage_included = countData.damage_included;
+  if (countData.damaged_qty !== undefined) extendedData.damaged_qty = countData.damaged_qty;
   if (countData.non_returnable_damaged_qty !== undefined) {
-    extendedData.non_returnable_damaged_qty =
-      countData.non_returnable_damaged_qty;
+    extendedData.non_returnable_damaged_qty = countData.non_returnable_damaged_qty;
   }
   if (countData.batch_id) extendedData.batch_id = countData.batch_id;
 
@@ -157,16 +145,16 @@ export async function createOfflineCountLine(
   // Cache and queue
   try {
     await cacheCountLine(finalCountLine);
-    await addToOfflineQueue("count_line", finalCountLine);
+    await addToOfflineQueue('count_line', finalCountLine);
 
-    log.info("Created offline count line", {
+    log.info('Created offline count line', {
       id: finalCountLine._id,
       itemCode: finalCountLine.item_code,
       sessionId: finalCountLine.session_id,
       source: audit.source,
     });
   } catch (error) {
-    log.error("Failed to persist offline count line", {
+    log.error('Failed to persist offline count line', {
       error: error instanceof Error ? error.message : String(error),
       countLine: finalCountLine._id,
     });
@@ -181,23 +169,22 @@ export async function createOfflineCountLine(
  * Validate that a cached item has required fields for a count line.
  * Returns validation result with any issues.
  */
-export function validateCountLineData(countData: CreateCountLinePayload): {
-  valid: boolean;
-  errors: string[];
-} {
+export function validateCountLineData(
+  countData: CreateCountLinePayload,
+): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (!countData.session_id) {
-    errors.push("session_id is required");
+    errors.push('session_id is required');
   }
   if (!countData.item_code) {
-    errors.push("item_code is required");
+    errors.push('item_code is required');
   }
   if (countData.counted_qty === undefined || countData.counted_qty === null) {
-    errors.push("counted_qty is required");
+    errors.push('counted_qty is required');
   }
-  if (typeof countData.counted_qty !== "number" || countData.counted_qty < 0) {
-    errors.push("counted_qty must be a non-negative number");
+  if (typeof countData.counted_qty !== 'number' || countData.counted_qty < 0) {
+    errors.push('counted_qty must be a non-negative number');
   }
 
   return {

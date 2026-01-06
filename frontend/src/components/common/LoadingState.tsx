@@ -1,17 +1,17 @@
-import React from "react";
-import { View, StyleSheet, ActivityIndicator, Animated } from "react-native";
-import { useThemeContext } from "../../theme/ThemeContext";
+import React from 'react';
+import { View, StyleSheet, ActivityIndicator, Animated } from 'react-native';
+import { useThemeContext } from '../../theme/ThemeContext';
 
 interface LoadingStateProps {
   message?: string;
-  size?: "small" | "large";
+  size?: 'small' | 'large';
   color?: string;
   style?: any;
 }
 
 export const LoadingState: React.FC<LoadingStateProps> = ({
-  message = "Loading...",
-  size = "large",
+  message = 'Loading...',
+  size = 'large',
   style,
 }) => {
   const { theme } = useThemeContext();
@@ -33,7 +33,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
           duration: 1000,
           useNativeDriver: true,
         }),
-      ]),
+      ])
     ).start();
   }, [fadeAnim]);
 
@@ -48,7 +48,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
         style={[
           styles.message,
           { color: colors.textSecondary },
-          { opacity: fadeAnim },
+          { opacity: fadeAnim }
         ]}
       >
         {message}
@@ -60,8 +60,8 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   loader: {
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 16,
-    fontWeight: "500",
-    textAlign: "center",
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

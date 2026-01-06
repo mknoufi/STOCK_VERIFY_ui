@@ -8,16 +8,14 @@ import { handleUnauthorized } from "./authUnauthorizedHandler";
 const getInitialBackendUrl = (): string => {
   const configUrl = Constants.expoConfig?.extra?.backendUrl;
   if (configUrl) return configUrl as string;
-  if (process.env.EXPO_PUBLIC_BACKEND_URL)
-    return process.env.EXPO_PUBLIC_BACKEND_URL;
+  if (process.env.EXPO_PUBLIC_BACKEND_URL) return process.env.EXPO_PUBLIC_BACKEND_URL;
   return "http://localhost:8001";
 };
 
 export const API_BASE_URL: string = getInitialBackendUrl();
 
 const IS_TEST_ENV =
-  process.env.NODE_ENV === "test" ||
-  typeof process.env.JEST_WORKER_ID !== "undefined";
+  process.env.NODE_ENV === "test" || typeof process.env.JEST_WORKER_ID !== "undefined";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

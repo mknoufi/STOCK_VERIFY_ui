@@ -3,30 +3,30 @@
  */
 export enum Permission {
   // Inventory
-  INVENTORY_VIEW = "inventory.view",
-  INVENTORY_EDIT = "inventory.edit",
-  INVENTORY_DELETE = "inventory.delete",
-  INVENTORY_SYNC = "inventory.sync",
+  INVENTORY_VIEW = 'inventory.view',
+  INVENTORY_EDIT = 'inventory.edit',
+  INVENTORY_DELETE = 'inventory.delete',
+  INVENTORY_SYNC = 'inventory.sync',
 
   // Reports
-  REPORTS_VIEW = "reports.view",
-  REPORTS_EXPORT = "reports.export",
-  REPORTS_SCHEDULE = "reports.schedule",
+  REPORTS_VIEW = 'reports.view',
+  REPORTS_EXPORT = 'reports.export',
+  REPORTS_SCHEDULE = 'reports.schedule',
 
   // Auth/Admin
-  USER_VIEW = "user.view",
-  USER_MANAGE = "user.manage",
-  SYSTEM_CONFIG = "system.config",
-  AUDIT_VIEW = "audit.view",
+  USER_VIEW = 'user.view',
+  USER_MANAGE = 'user.manage',
+  SYSTEM_CONFIG = 'system.config',
+  AUDIT_VIEW = 'audit.view',
 }
 
 /**
  * Role constants
  */
 export enum Role {
-  ADMIN = "admin",
-  SUPERVISOR = "supervisor",
-  STAFF = "staff",
+  ADMIN = 'admin',
+  SUPERVISOR = 'supervisor',
+  STAFF = 'staff',
 }
 
 /**

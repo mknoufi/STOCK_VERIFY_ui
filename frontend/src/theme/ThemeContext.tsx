@@ -129,13 +129,13 @@ const LAYOUT_METADATA: {
   name: string;
   icon: string;
 }[] = [
-  { key: "default", name: "Default", icon: "apps-outline" },
-  { key: "compact", name: "Compact", icon: "contract-outline" },
-  { key: "spacious", name: "Spacious", icon: "expand-outline" },
-  { key: "cards", name: "Cards", icon: "albums-outline" },
-  { key: "list", name: "List", icon: "list-outline" },
-  { key: "grid", name: "Grid", icon: "grid-outline" },
-];
+    { key: "default", name: "Default", icon: "apps-outline" },
+    { key: "compact", name: "Compact", icon: "contract-outline" },
+    { key: "spacious", name: "Spacious", icon: "expand-outline" },
+    { key: "cards", name: "Cards", icon: "albums-outline" },
+    { key: "list", name: "List", icon: "list-outline" },
+    { key: "grid", name: "Grid", icon: "grid-outline" },
+  ];
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -215,13 +215,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Listen for system theme changes
   useEffect(() => {
-    const subscription = Appearance.addChangeListener(
-      ({ colorScheme: _colorScheme }) => {
-        if (themeMode === "system") {
-          // Theme will auto-update via effectiveThemeKey computation
-        }
-      },
-    );
+    const subscription = Appearance.addChangeListener(({ colorScheme: _colorScheme }) => {
+      if (themeMode === "system") {
+        // Theme will auto-update via effectiveThemeKey computation
+      }
+    });
 
     return () => subscription.remove();
   }, [themeMode]);

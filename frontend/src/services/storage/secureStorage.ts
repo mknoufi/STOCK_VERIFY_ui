@@ -1,5 +1,5 @@
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 /**
  * Platform-independent secure storage wrapper
@@ -21,7 +21,7 @@ class SecureStorage {
    */
   async setItem(key: string, value: string): Promise<void> {
     try {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         // Fallback for web (NOT SECURE, but functional for dev)
         // In production web, HttpOnly cookies are preferred
         localStorage.setItem(key, value);
@@ -29,7 +29,7 @@ class SecureStorage {
       }
       await SecureStore.setItemAsync(key, value, OPTIONS);
     } catch (error) {
-      console.error("SecureStorage setItem error:", error);
+      console.error('SecureStorage setItem error:', error);
       throw error;
     }
   }
@@ -39,13 +39,13 @@ class SecureStorage {
    */
   async getItem(key: string): Promise<string | null> {
     try {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         return localStorage.getItem(key);
       }
 
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<null>((resolve) =>
-        setTimeout(() => resolve(null), 2000),
+        setTimeout(() => resolve(null), 2000)
       );
 
       const getPromise = SecureStore.getItemAsync(key, OPTIONS);
@@ -53,7 +53,7 @@ class SecureStorage {
 
       return result;
     } catch (error) {
-      console.error("SecureStorage getItem error:", error);
+      console.error('SecureStorage getItem error:', error);
       return null;
     }
   }
@@ -63,13 +63,13 @@ class SecureStorage {
    */
   async removeItem(key: string): Promise<void> {
     try {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         localStorage.removeItem(key);
         return;
       }
       await SecureStore.deleteItemAsync(key, OPTIONS);
     } catch (error) {
-      console.error("SecureStorage removeItem error:", error);
+      console.error('SecureStorage removeItem error:', error);
       // Don't throw on delete failure, just log
     }
   }

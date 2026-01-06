@@ -16,11 +16,7 @@ import * as Haptics from "expo-haptics";
 
 import { useAuthStore } from "../../src/store/authStore";
 import { useScanSessionStore } from "../../src/store/scanSessionStore";
-import {
-  createSession,
-  getZones,
-  getWarehouses,
-} from "../../src/services/api/api";
+import { createSession, getZones, getWarehouses } from "../../src/services/api/api";
 import { useSessionsQuery } from "../../src/hooks/useSessionsQuery";
 import { SESSION_PAGE_SIZE } from "../../src/constants/config";
 import { PremiumInput } from "../../src/components/premium/PremiumInput";
@@ -43,6 +39,8 @@ interface Warehouse {
   id: string;
   warehouse_name: string;
 }
+
+
 
 export default function StaffHome() {
   const router = useRouter();
@@ -77,10 +75,7 @@ export default function StaffHome() {
   });
 
   // Memoize sessions to prevent dependency array issues
-  const sessions = useMemo(
-    () => sessionsData?.items || [],
-    [sessionsData?.items],
-  );
+  const sessions = useMemo(() => sessionsData?.items || [], [sessionsData?.items]);
 
   // Derived State
   const _activeSessions = useMemo(
@@ -199,9 +194,7 @@ export default function StaffHome() {
     if (!locationType) {
       if (Platform.OS !== "web")
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Please select Showroom or Godown", {
-        type: "warning",
-      });
+      toastService.show("Please select Showroom or Godown", { type: "warning" });
       return;
     }
 
@@ -215,9 +208,7 @@ export default function StaffHome() {
     if (!rackName.trim()) {
       if (Platform.OS !== "web")
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Please enter the rack/shelf identifier", {
-        type: "warning",
-      });
+      toastService.show("Please enter the rack/shelf identifier", { type: "warning" });
       return;
     }
 
@@ -226,9 +217,7 @@ export default function StaffHome() {
     if (trimmedRack.length < 1 || trimmedRack.length > 20) {
       if (Platform.OS !== "web")
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Rack name must be between 1-20 characters", {
-        type: "warning",
-      });
+      toastService.show("Rack name must be between 1-20 characters", { type: "warning" });
       return;
     }
 
@@ -236,10 +225,7 @@ export default function StaffHome() {
     if (!/^[a-zA-Z0-9\-_]+$/.test(trimmedRack)) {
       if (Platform.OS !== "web")
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show(
-        "Rack name can only contain letters, numbers, dashes, and underscores",
-        { type: "warning" },
-      );
+      toastService.show("Rack name can only contain letters, numbers, dashes, and underscores", { type: "warning" });
       return;
     }
 
@@ -301,20 +287,14 @@ export default function StaffHome() {
         { zone_name: "Godown", id: "zone_godown" },
       ];
       setZones(fallbackZones);
-      console.log(
-        "🗺️ Set fallback zones:",
-        fallbackZones.map((z) => z.zone_name),
-      );
+      console.log("🗺️ Set fallback zones:", fallbackZones.map(z => z.zone_name));
 
       try {
         setIsLoadingLocations(true);
         const data = await getZones();
         if (Array.isArray(data) && data.length > 0) {
           setZones(data);
-          console.log(
-            "🗺️ Updated zones from API:",
-            data.map((z: any) => z.zone_name),
-          );
+          console.log("🗺️ Updated zones from API:", data.map((z: any) => z.zone_name));
         }
       } catch (error: any) {
         if (error?.response?.status !== 401) {
@@ -352,12 +332,7 @@ export default function StaffHome() {
     try {
       setIsLoadingLocations(true);
       const data = await getWarehouses(type);
-      console.log(
-        "🔍 Warehouse Data for type",
-        type,
-        ":",
-        JSON.stringify(data),
-      );
+      console.log("🔍 Warehouse Data for type", type, ":", JSON.stringify(data));
       const warehouseList = Array.isArray(data) ? data : [];
 
       // Only update if API returned data
@@ -374,12 +349,7 @@ export default function StaffHome() {
 
   const handleOpenFloorPicker = () => {
     if (Platform.OS !== "web") Haptics.selectionAsync();
-    console.log(
-      "🚪 handleOpenFloorPicker called. warehouses:",
-      warehouses.length,
-      "locationType:",
-      locationType,
-    );
+    console.log("🚪 handleOpenFloorPicker called. warehouses:", warehouses.length, "locationType:", locationType);
 
     // Ensure we have floors to show if warehouses is empty
     if (locationType && warehouses.length === 0) {
@@ -394,10 +364,7 @@ export default function StaffHome() {
             { warehouse_name: "Top Godown", id: "wh_top" },
             { warehouse_name: "Damage Area", id: "wh_damage" },
           ];
-      console.log(
-        "🏢 Setting warehouses to fallback:",
-        fallback.map((f) => f.warehouse_name),
-      );
+      console.log("🏢 Setting warehouses to fallback:", fallback.map(f => f.warehouse_name));
       setWarehouses(fallback);
     }
 
@@ -444,10 +411,7 @@ export default function StaffHome() {
             onPress={() => {
               if (activeSectionsList.length > 0) {
                 const latest = activeSectionsList[0];
-                handleResumeSection(
-                  latest.session_id || latest.id,
-                  latest.type,
-                );
+                handleResumeSection(latest.session_id || latest.id, latest.type);
               } else {
                 setShowNewSectionForm(true);
               }
@@ -471,9 +435,7 @@ export default function StaffHome() {
         }}
         onSearchQueryChange={setFinishedSearchQuery}
         onStartNewSection={() => setShowNewSectionForm(true)}
-        onResumeSection={(sessionId, type) =>
-          handleResumeSection(sessionId, type)
-        }
+        onResumeSection={(sessionId, type) => handleResumeSection(sessionId, type)}
       />
 
       {/* Bottom Spacer */}
@@ -485,7 +447,7 @@ export default function StaffHome() {
         isVisible={showNewSectionForm}
         onBackdropPress={() => setShowNewSectionForm(false)}
         onBackButtonPress={() => setShowNewSectionForm(false)}
-        style={{ margin: 0, justifyContent: "flex-end" }}
+        style={{ margin: 0, justifyContent: 'flex-end' }}
         animationIn="slideInUp"
         animationOut="slideOutDown"
         backdropOpacity={0.5}
@@ -494,300 +456,302 @@ export default function StaffHome() {
         useNativeDriver
         hideModalContentWhileAnimating
       >
-        <View
-          style={[
-            styles.newSectionModalContent,
-            {
-              backgroundColor: isDark ? "#0F172A" : "#FFFFFF",
-            },
-          ]}
-        >
-          {/* Drag Handle */}
-          <View style={styles.dragHandle} />
-
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <View style={styles.modalHeaderLeft}>
-              <View
-                style={[
-                  styles.headerIconContainer,
-                  { backgroundColor: "#0EA5E920" },
-                ]}
-              >
-                <Ionicons name="add-circle" size={24} color="#0EA5E9" />
-              </View>
-              <View>
-                <Text
-                  style={[
-                    styles.modalTitle,
-                    { color: isDark ? "#F8FAFC" : "#0F172A" },
-                  ]}
-                >
-                  New Section
-                </Text>
-                <Text
-                  style={[
-                    styles.modalSubtitle,
-                    { color: isDark ? "#94A3B8" : "#64748B" },
-                  ]}
-                >
-                  Set up your counting area
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.closeButton,
-                { backgroundColor: isDark ? "#1E293B" : "#F1F5F9" },
-              ]}
-              onPress={() => setShowNewSectionForm(false)}
-            >
-              <Ionicons
-                name="close"
-                size={20}
-                color={isDark ? "#94A3B8" : "#64748B"}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            style={styles.modalBody}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            nestedScrollEnabled={true}
+          <View
+            style={[
+              styles.newSectionModalContent,
+              {
+                backgroundColor: isDark ? "#0F172A" : "#FFFFFF",
+              },
+            ]}
           >
-            {/* Step 1: Location Type */}
-            <View style={styles.stepContainer}>
-              <View style={styles.stepHeader}>
+            {/* Drag Handle */}
+            <View style={styles.dragHandle} />
+
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderLeft}>
                 <View
-                  style={[styles.stepNumber, { backgroundColor: "#0EA5E9" }]}
-                >
-                  <Text style={styles.stepNumberText}>1</Text>
-                </View>
-                <Text
                   style={[
-                    styles.stepLabel,
-                    { color: isDark ? "#F8FAFC" : "#0F172A" },
+                    styles.headerIconContainer,
+                    { backgroundColor: "#0EA5E920" },
                   ]}
                 >
-                  Choose Location Type
-                </Text>
-              </View>
-              <View style={styles.locationTypeRow}>
-                {isLoadingLocations && zones.length === 0 ? (
-                  <ActivityIndicator color={isDark ? "#F8FAFC" : "#0F172A"} />
-                ) : (
-                  zones.map((zone) => (
-                    <TouchableOpacity
-                      key={zone.id || zone.zone_name}
-                      style={[
-                        styles.locationTypeButton,
-                        {
-                          backgroundColor:
-                            locationType === zone.zone_name
-                              ? "#0EA5E915"
-                              : isDark
-                                ? "#1E293B"
-                                : "#F8FAFC",
-                          borderColor:
-                            locationType === zone.zone_name
-                              ? "#0EA5E9"
-                              : isDark
-                                ? "#334155"
-                                : "#E2E8F0",
-                        },
-                      ]}
-                      onPress={() => handleLocationTypeChange(zone.zone_name)}
-                      activeOpacity={0.7}
-                    >
-                      <View
-                        style={[
-                          styles.locationIcon,
-                          {
-                            backgroundColor:
-                              locationType === zone.zone_name
-                                ? "#0EA5E920"
-                                : isDark
-                                  ? "#334155"
-                                  : "#F1F5F9",
-                          },
-                        ]}
-                      >
-                        <Ionicons
-                          name={
-                            zone.zone_name.toLowerCase().includes("showroom")
-                              ? "storefront"
-                              : "cube"
-                          }
-                          size={24}
-                          color={
-                            locationType === zone.zone_name
-                              ? "#0EA5E9"
-                              : isDark
-                                ? "#94A3B8"
-                                : "#64748B"
-                          }
-                        />
-                      </View>
-                      <Text
-                        style={[
-                          styles.locationTypeText,
-                          {
-                            color:
-                              locationType === zone.zone_name
-                                ? "#0EA5E9"
-                                : isDark
-                                  ? "#F8FAFC"
-                                  : "#0F172A",
-                          },
-                        ]}
-                      >
-                        {zone.zone_name}
-                      </Text>
-                      {locationType === zone.zone_name ? (
-                        <View style={styles.checkBadge}>
-                          <Ionicons
-                            name="checkmark"
-                            size={14}
-                            color="#FFFFFF"
-                          />
-                        </View>
-                      ) : null}
-                    </TouchableOpacity>
-                  ))
-                )}
-              </View>
-            </View>
-
-            {/* Step 2: Floor Selection */}
-            <View style={styles.stepContainer}>
-              <View style={styles.stepHeader}>
-                <View
-                  style={[styles.stepNumber, { backgroundColor: "#0EA5E9" }]}
-                >
-                  <Text style={styles.stepNumberText}>2</Text>
+                  <Ionicons name="add-circle" size={24} color="#0EA5E9" />
                 </View>
-                <Text
-                  style={[
-                    styles.stepLabel,
-                    { color: isDark ? "#F8FAFC" : "#0F172A" },
-                  ]}
-                >
-                  Select Floor / Area
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={[
-                  styles.dropdownButton,
-                  {
-                    backgroundColor: isDark ? "#1E293B" : "#F8FAFC",
-                    borderColor: isDark ? "#334155" : "#E2E8F0",
-                  },
-                ]}
-                onPress={handleOpenFloorPicker}
-                disabled={!locationType}
-                activeOpacity={0.7}
-              >
-                <View style={styles.dropdownContent}>
-                  <Ionicons
-                    name="business"
-                    size={20}
-                    color={locationType ? "#0EA5E9" : "#94A3B8"}
-                  />
+                <View>
                   <Text
                     style={[
-                      styles.dropdownText,
-                      {
-                        color: selectedFloor
-                          ? isDark
-                            ? "#F8FAFC"
-                            : "#0F172A"
-                          : "#94A3B8",
-                      },
+                      styles.modalTitle,
+                      { color: isDark ? "#F8FAFC" : "#0F172A" },
                     ]}
                   >
-                    {selectedFloor || "Choose a floor..."}
+                    New Section
+                  </Text>
+                  <Text
+                    style={[
+                      styles.modalSubtitle,
+                      { color: isDark ? "#94A3B8" : "#64748B" },
+                    ]}
+                  >
+                    Set up your counting area
                   </Text>
                 </View>
-                <View
-                  style={[
-                    styles.dropdownChevron,
-                    { backgroundColor: isDark ? "#334155" : "#F1F5F9" },
-                  ]}
-                >
-                  <Ionicons
-                    name="chevron-down"
-                    size={18}
-                    color={isDark ? "#94A3B8" : "#64748B"}
-                  />
-                </View>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.closeButton,
+                  { backgroundColor: isDark ? "#1E293B" : "#F1F5F9" },
+                ]}
+                onPress={() => setShowNewSectionForm(false)}
+              >
+                <Ionicons
+                  name="close"
+                  size={20}
+                  color={isDark ? "#94A3B8" : "#64748B"}
+                />
               </TouchableOpacity>
             </View>
 
-            {/* Step 3: Rack Name */}
-            <View style={styles.stepContainer}>
-              <View style={styles.stepHeader}>
-                <View
-                  style={[styles.stepNumber, { backgroundColor: "#0EA5E9" }]}
-                >
-                  <Text style={styles.stepNumberText}>3</Text>
+            <ScrollView
+              style={styles.modalBody}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled={true}
+            >
+              {/* Step 1: Location Type */}
+              <View style={styles.stepContainer}>
+                <View style={styles.stepHeader}>
+                  <View
+                    style={[
+                      styles.stepNumber,
+                      { backgroundColor: "#0EA5E9" },
+                    ]}
+                  >
+                    <Text style={styles.stepNumberText}>1</Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.stepLabel,
+                      { color: isDark ? "#F8FAFC" : "#0F172A" },
+                    ]}
+                  >
+                    Choose Location Type
+                  </Text>
                 </View>
-                <Text
-                  style={[
-                    styles.stepLabel,
-                    { color: isDark ? "#F8FAFC" : "#0F172A" },
-                  ]}
-                >
-                  Rack / Shelf Identifier
-                </Text>
+                <View style={styles.locationTypeRow}>
+                  {isLoadingLocations && zones.length === 0 ? (
+                    <ActivityIndicator color={isDark ? "#F8FAFC" : "#0F172A"} />
+                  ) : (
+                    zones.map((zone) => (
+                      <TouchableOpacity
+                        key={zone.id || zone.zone_name}
+                        style={[
+                          styles.locationTypeButton,
+                          {
+                            backgroundColor:
+                              locationType === zone.zone_name
+                                ? "#0EA5E915"
+                                : isDark
+                                  ? "#1E293B"
+                                  : "#F8FAFC",
+                            borderColor:
+                              locationType === zone.zone_name
+                                ? "#0EA5E9"
+                                : isDark
+                                  ? "#334155"
+                                  : "#E2E8F0",
+                          },
+                        ]}
+                        onPress={() => handleLocationTypeChange(zone.zone_name)}
+                        activeOpacity={0.7}
+                      >
+                        <View
+                          style={[
+                            styles.locationIcon,
+                            {
+                              backgroundColor:
+                                locationType === zone.zone_name
+                                  ? "#0EA5E920"
+                                  : isDark
+                                    ? "#334155"
+                                    : "#F1F5F9",
+                            },
+                          ]}
+                        >
+                          <Ionicons
+                            name={
+                              zone.zone_name.toLowerCase().includes("showroom")
+                                ? "storefront"
+                                : "cube"
+                            }
+                            size={24}
+                            color={
+                              locationType === zone.zone_name
+                                ? "#0EA5E9"
+                                : isDark
+                                  ? "#94A3B8"
+                                  : "#64748B"
+                            }
+                          />
+                        </View>
+                        <Text
+                          style={[
+                            styles.locationTypeText,
+                            {
+                              color:
+                                locationType === zone.zone_name
+                                  ? "#0EA5E9"
+                                  : isDark
+                                    ? "#F8FAFC"
+                                    : "#0F172A",
+                            },
+                          ]}
+                        >
+                          {zone.zone_name}
+                        </Text>
+                        {locationType === zone.zone_name ? (
+                          <View style={styles.checkBadge}>
+                            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                          </View>
+                        ) : null}
+                      </TouchableOpacity>
+                    ))
+                  )}
+                </View>
               </View>
 
-              <PremiumInput
-                value={rackName}
-                onChangeText={setRackName}
-                placeholder="e.g. RACK-A1, SHELF-02"
-                leftIcon="grid-outline"
-                autoCapitalize="characters"
-                editable={!!selectedFloor}
-              />
-            </View>
-          </ScrollView>
+              {/* Step 2: Floor Selection */}
+              <View style={styles.stepContainer}>
+                <View style={styles.stepHeader}>
+                  <View
+                    style={[
+                      styles.stepNumber,
+                      { backgroundColor: "#0EA5E9" },
+                    ]}
+                  >
+                    <Text style={styles.stepNumberText}>2</Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.stepLabel,
+                      { color: isDark ? "#F8FAFC" : "#0F172A" },
+                    ]}
+                  >
+                    Select Floor / Area
+                  </Text>
+                </View>
 
-          <View style={styles.modalFooter}>
-            <TouchableOpacity
-              style={[
-                styles.startSectionButton,
-                {
-                  backgroundColor:
-                    locationType && selectedFloor && rackName.trim()
-                      ? "#0EA5E9"
-                      : isDark
-                        ? "#1E293B"
-                        : "#E2E8F0",
-                },
-              ]}
-              onPress={handleStartNewSection}
-              disabled={
-                !locationType ||
-                !selectedFloor ||
-                !rackName.trim() ||
-                isCreatingSession
-              }
-              activeOpacity={0.8}
-            >
-              {isCreatingSession ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Text style={styles.startButtonText}>Start Counting</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-                </>
-              )}
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.dropdownButton,
+                    {
+                      backgroundColor: isDark ? "#1E293B" : "#F8FAFC",
+                      borderColor: isDark ? "#334155" : "#E2E8F0",
+                    },
+                  ]}
+                  onPress={handleOpenFloorPicker}
+                  disabled={!locationType}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.dropdownContent}>
+                    <Ionicons
+                      name="business"
+                      size={20}
+                      color={locationType ? "#0EA5E9" : "#94A3B8"}
+                    />
+                    <Text
+                      style={[
+                        styles.dropdownText,
+                        {
+                          color: selectedFloor
+                            ? isDark
+                              ? "#F8FAFC"
+                              : "#0F172A"
+                            : "#94A3B8",
+                        },
+                      ]}
+                    >
+                      {selectedFloor || "Choose a floor..."}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.dropdownChevron,
+                      { backgroundColor: isDark ? "#334155" : "#F1F5F9" },
+                    ]}
+                  >
+                    <Ionicons
+                      name="chevron-down"
+                      size={18}
+                      color={isDark ? "#94A3B8" : "#64748B"}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+              {/* Step 3: Rack Name */}
+              <View style={styles.stepContainer}>
+                <View style={styles.stepHeader}>
+                  <View
+                    style={[
+                      styles.stepNumber,
+                      { backgroundColor: "#0EA5E9" },
+                    ]}
+                  >
+                    <Text style={styles.stepNumberText}>3</Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.stepLabel,
+                      { color: isDark ? "#F8FAFC" : "#0F172A" },
+                    ]}
+                  >
+                    Rack / Shelf Identifier
+                  </Text>
+                </View>
+
+                <PremiumInput
+                  value={rackName}
+                  onChangeText={setRackName}
+                  placeholder="e.g. RACK-A1, SHELF-02"
+                  leftIcon="grid-outline"
+                  autoCapitalize="characters"
+                  editable={!!selectedFloor}
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[
+                  styles.startSectionButton,
+                  {
+                    backgroundColor:
+                      locationType && selectedFloor && rackName.trim()
+                        ? "#0EA5E9"
+                        : isDark
+                          ? "#1E293B"
+                          : "#E2E8F0",
+                  },
+                ]}
+                onPress={handleStartNewSection}
+                disabled={
+                  !locationType || !selectedFloor || !rackName.trim() || isCreatingSession
+                }
+                activeOpacity={0.8}
+              >
+                {isCreatingSession ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Text style={styles.startButtonText}>Start Counting</Text>
+                    <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
+      </Modal >
 
       {/* Floor Picker Modal */}
       {/* @ts-ignore */}
@@ -795,7 +759,7 @@ export default function StaffHome() {
         isVisible={showFloorPicker}
         onBackdropPress={() => setShowFloorPicker(false)}
         onBackButtonPress={() => setShowFloorPicker(false)}
-        style={{ margin: 0, justifyContent: "flex-end" }}
+        style={{ margin: 0, justifyContent: 'flex-end' }}
         animationIn="slideInUp"
         animationOut="slideOutDown"
         backdropOpacity={0.5}
@@ -805,135 +769,101 @@ export default function StaffHome() {
         hideModalContentWhileAnimating
         statusBarTranslucent
       >
-        <View
-          style={[
-            styles.modalContent,
-            styles.floorPickerContent,
-            { backgroundColor: isDark ? "#0F172A" : "#FFFFFF" },
-          ]}
-        >
-          <View style={styles.dragHandle} />
-          <View style={styles.modalHeader}>
-            <View>
-              <Text
-                style={[
-                  styles.modalTitle,
-                  { color: isDark ? "#F8FAFC" : "#0F172A" },
-                ]}
-              >
-                Select Floor
-              </Text>
-              {locationType && (
+          <View
+            style={[
+              styles.modalContent,
+              styles.floorPickerContent,
+              { backgroundColor: isDark ? "#0F172A" : "#FFFFFF" },
+            ]}
+          >
+            <View style={styles.dragHandle} />
+            <View style={styles.modalHeader}>
+              <View>
                 <Text
-                  style={{
-                    color: isDark ? "#94A3B8" : "#64748B",
-                    fontSize: 12,
-                    marginTop: 2,
-                  }}
+                  style={[
+                    styles.modalTitle,
+                    { color: isDark ? "#F8FAFC" : "#0F172A" },
+                  ]}
                 >
-                  for {locationType}
+                  Select Floor
                 </Text>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => setShowFloorPicker(false)}>
-              <Ionicons
-                name="close"
-                size={24}
-                color={isDark ? "#94A3B8" : "#64748B"}
-              />
-            </TouchableOpacity>
-          </View>
-          <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-            {displayFloors.length === 0 ? (
-              <View style={{ padding: 20, alignItems: "center" }}>
-                <Ionicons
-                  name="folder-open-outline"
-                  size={48}
-                  color={isDark ? "#475569" : "#CBD5E1"}
-                  style={{ marginBottom: 12 }}
-                />
-                <Text
-                  style={{
-                    color: isDark ? "#94A3B8" : "#64748B",
-                    fontSize: 16,
-                    marginBottom: 8,
-                  }}
-                >
-                  Select a zone first
-                </Text>
+                {locationType && (
+                  <Text style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 12, marginTop: 2 }}>
+                    for {locationType}
+                  </Text>
+                )}
               </View>
-            ) : (
-              <>
-                {displayFloors.map((floor) => (
-                  <TouchableOpacity
-                    key={floor.id || floor.warehouse_name}
-                    style={[
-                      styles.modalOption,
-                      {
-                        backgroundColor:
-                          selectedFloor === floor.warehouse_name
-                            ? "#0EA5E910"
-                            : "transparent",
-                      },
-                    ]}
-                    onPress={() => {
-                      setSelectedFloor(floor.warehouse_name);
-                      setShowFloorPicker(false);
-                      if (Platform.OS !== "web") Haptics.selectionAsync();
-                    }}
-                  >
-                    <Text
+              <TouchableOpacity onPress={() => setShowFloorPicker(false)}>
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={isDark ? "#94A3B8" : "#64748B"}
+                />
+              </TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+              {displayFloors.length === 0 ? (
+                <View style={{ padding: 20, alignItems: "center" }}>
+                  <Ionicons name="folder-open-outline" size={48} color={isDark ? "#475569" : "#CBD5E1"} style={{ marginBottom: 12 }} />
+                  <Text style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 16, marginBottom: 8 }}>
+                    Select a zone first
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  {displayFloors.map((floor) => (
+                    <TouchableOpacity
+                      key={floor.id || floor.warehouse_name}
                       style={[
-                        styles.modalOptionText,
+                        styles.modalOption,
                         {
-                          color:
+                          backgroundColor:
                             selectedFloor === floor.warehouse_name
-                              ? "#0EA5E9"
-                              : isDark
-                                ? "#F8FAFC"
-                                : "#0F172A",
-                          fontWeight:
-                            selectedFloor === floor.warehouse_name
-                              ? "700"
-                              : "400",
+                              ? "#0EA5E910"
+                              : "transparent",
                         },
                       ]}
-                    >
-                      {floor.warehouse_name}
-                    </Text>
-                    {selectedFloor === floor.warehouse_name && (
-                      <Ionicons name="checkmark" size={20} color="#0EA5E9" />
-                    )}
-                  </TouchableOpacity>
-                ))}
-                {__DEV__ && (
-                  <View
-                    style={{
-                      padding: 10,
-                      marginTop: 10,
-                      borderTopWidth: 1,
-                      borderColor: isDark ? "#334155" : "#E2E8F0",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: isDark ? "#94A3B8" : "#64748B",
-                        fontFamily:
-                          Platform.OS === "ios" ? "Menlo" : "monospace",
+                      onPress={() => {
+                        setSelectedFloor(floor.warehouse_name);
+                        setShowFloorPicker(false);
+                        if (Platform.OS !== "web") Haptics.selectionAsync();
                       }}
                     >
-                      Debug: {displayFloors.length} floors available
-                      {"\n"}Location: {locationType}
-                      {"\n"}Warehouses: {warehouses.length}
-                    </Text>
-                  </View>
-                )}
-              </>
-            )}
-          </ScrollView>
-        </View>
-      </Modal>
+                      <Text
+                        style={[
+                          styles.modalOptionText,
+                          {
+                            color:
+                              selectedFloor === floor.warehouse_name
+                                ? "#0EA5E9"
+                                : isDark
+                                  ? "#F8FAFC"
+                                  : "#0F172A",
+                            fontWeight: selectedFloor === floor.warehouse_name ? "700" : "400",
+                          },
+                        ]}
+                      >
+                        {floor.warehouse_name}
+                      </Text>
+                      {selectedFloor === floor.warehouse_name && (
+                        <Ionicons name="checkmark" size={20} color="#0EA5E9" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                  {__DEV__ && (
+                    <View style={{ padding: 10, marginTop: 10, borderTopWidth: 1, borderColor: isDark ? "#334155" : "#E2E8F0" }}>
+                      <Text style={{ fontSize: 10, color: isDark ? "#94A3B8" : "#64748B", fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>
+                        Debug: {displayFloors.length} floors available
+                        {"\n"}Location: {locationType}
+                        {"\n"}Warehouses: {warehouses.length}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+            </ScrollView>
+          </View>
+      </Modal >
 
       {/* Logout Confirmation Modal */}
       {/* @ts-ignore */}
@@ -941,7 +871,7 @@ export default function StaffHome() {
         isVisible={showLogoutModal}
         onBackdropPress={() => setShowLogoutModal(false)}
         onBackButtonPress={() => setShowLogoutModal(false)}
-        style={{ margin: 0, justifyContent: "center", padding: 20 }}
+        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
         animationIn="fadeIn"
         animationOut="fadeOut"
         backdropOpacity={0.5}
@@ -1000,8 +930,7 @@ export default function StaffHome() {
               lineHeight: 22,
             }}
           >
-            Are you sure you want to log out?{"\n"}Any unsaved progress will be
-            lost.
+            Are you sure you want to log out?{"\n"}Any unsaved progress will be lost.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
@@ -1052,7 +981,7 @@ export default function StaffHome() {
           </View>
         </View>
       </Modal>
-    </ScreenContainer>
+    </ScreenContainer >
   );
 }
 

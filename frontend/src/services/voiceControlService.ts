@@ -53,10 +53,7 @@ class VoiceControlService {
     // Check if speech is available
     try {
       const isSpeaking = await Speech.isSpeakingAsync();
-      console.log(
-        "Voice control initialized. Speech system active:",
-        !isSpeaking,
-      );
+      console.log("Voice control initialized. Speech system active:", !isSpeaking);
     } catch (error) {
       console.warn("Voice control initialization check failed:", error);
     }

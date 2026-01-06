@@ -13,13 +13,7 @@ import React from "react";
 import { Text, TextProps, useWindowDimensions, Platform } from "react-native";
 import { useThemeContext } from "../../theme/ThemeContext";
 
-export type TextVariant =
-  | "display"
-  | "heading"
-  | "subheading"
-  | "body"
-  | "label"
-  | "caption";
+export type TextVariant = "display" | "heading" | "subheading" | "body" | "label" | "caption";
 
 export interface ResponsiveTextProps extends TextProps {
   variant?: TextVariant;

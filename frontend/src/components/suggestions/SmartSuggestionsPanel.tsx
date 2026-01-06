@@ -232,9 +232,9 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
                         translateY:
                           displayedSuggestions.length > index
                             ? fadeAnimation.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [20, 0],
-                              })
+                              inputRange: [0, 1],
+                              outputRange: [20, 0],
+                            })
                             : 0,
                       },
                     ],

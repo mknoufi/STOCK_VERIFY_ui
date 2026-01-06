@@ -16,10 +16,7 @@ export const getRouteForRole = (role: UserRole): string => {
   }
 };
 
-export const isRouteAllowedForRole = (
-  route: string,
-  role: UserRole,
-): boolean => {
+export const isRouteAllowedForRole = (route: string, role: UserRole): boolean => {
   if (route.startsWith("/admin") || route.startsWith("/supervisor")) {
     return role === "admin" || role === "supervisor";
   }

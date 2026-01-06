@@ -33,9 +33,7 @@ const buildCandidates = (): string[] => {
   }
 
   // 2) Runtime config from app.config.js extra
-  const configUrl = Constants.expoConfig?.extra?.backendUrl as
-    | string
-    | undefined;
+  const configUrl = Constants.expoConfig?.extra?.backendUrl as string | undefined;
   if (configUrl) {
     candidates.push(configUrl);
   }
@@ -65,8 +63,7 @@ const buildCandidates = (): string[] => {
 };
 
 // Best-effort initial URL (sync) used until async probing finishes.
-export const BACKEND_URL =
-  buildCandidates()[0] ?? `http://localhost:${DEFAULT_PORT}`;
+export const BACKEND_URL = buildCandidates()[0] ?? `http://localhost:${DEFAULT_PORT}`;
 
 let resolvedBackendUrl: string | null = null;
 

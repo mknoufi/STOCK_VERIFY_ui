@@ -22,7 +22,7 @@ const STORAGE_PREFIX = "@app_state:";
  */
 export function usePersistentState<T>(
   key: string,
-  defaultValue: T,
+  defaultValue: T
 ): [T, (value: T | ((prev: T) => T)) => void, boolean] {
   const [value, setValue] = useState<T>(defaultValue);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,10 +41,7 @@ export function usePersistentState<T>(
         }
       } catch (error) {
         if (__DEV__) {
-          console.warn(
-            `Failed to load persistent state for key "${key}":`,
-            error,
-          );
+          console.warn(`Failed to load persistent state for key "${key}":`, error);
         }
       } finally {
         if (isMounted) {
@@ -75,13 +72,13 @@ export function usePersistentState<T>(
             if (__DEV__) {
               console.warn(`Failed to persist state for key "${key}":`, error);
             }
-          },
+          }
         );
 
         return resolvedValue;
       });
     },
-    [storageKey, key],
+    [storageKey, key]
   );
 
   return [value, setPersistedValue, isLoading];

@@ -65,10 +65,7 @@ export class PINAuthService {
         this.attemptCount = parseInt(attempts);
       }
     } catch (error) {
-      errorReporter.report(
-        error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.initialize",
-      );
+      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.initialize");
     }
   }
 
@@ -91,10 +88,7 @@ export class PINAuthService {
 
       return true;
     } catch (error) {
-      errorReporter.report(
-        error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.setPIN",
-      );
+      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.setPIN");
       throw error instanceof Error ? error : new Error(String(error));
     }
   }
@@ -107,10 +101,10 @@ export class PINAuthService {
       // Check if locked out
       if (this.isLockedOut()) {
         const remainingSeconds = Math.ceil(
-          (this.lockedUntil! - Date.now()) / 1000,
+          (this.lockedUntil! - Date.now()) / 1000
         );
         throw new Error(
-          `Too many attempts. Try again in ${remainingSeconds} seconds.`,
+          `Too many attempts. Try again in ${remainingSeconds} seconds.`
         );
       }
 
@@ -136,31 +130,25 @@ export class PINAuthService {
 
       // Handle failed attempt
       this.attemptCount++;
-      await SecureStore.setItemAsync(
-        "pin_attempts",
-        this.attemptCount.toString(),
-      );
+      await SecureStore.setItemAsync("pin_attempts", this.attemptCount.toString());
 
       if (this.attemptCount >= this.maxAttempts) {
         this.lockedUntil = Date.now() + this.lockoutDuration * 1000;
         await SecureStore.setItemAsync(
           "pin_lockout_time",
-          this.lockedUntil.toString(),
+          this.lockedUntil.toString()
         );
         throw new Error(
-          `Too many failed attempts. Account locked for ${this.lockoutDuration} seconds.`,
+          `Too many failed attempts. Account locked for ${this.lockoutDuration} seconds.`
         );
       }
 
       const remainingAttempts = this.maxAttempts - this.attemptCount;
       throw new Error(
-        `Incorrect PIN. ${remainingAttempts} attempts remaining.`,
+        `Incorrect PIN. ${remainingAttempts} attempts remaining.`
       );
     } catch (error) {
-      errorReporter.report(
-        error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.verifyPIN",
-      );
+      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.verifyPIN");
       throw error;
     }
   }
@@ -173,10 +161,7 @@ export class PINAuthService {
       const enabled = await SecureStore.getItemAsync("pin_enabled");
       return enabled === "true";
     } catch (error) {
-      errorReporter.report(
-        error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.isPINEnabled",
-      );
+      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.isPINEnabled");
       return false;
     }
   }
@@ -190,10 +175,7 @@ export class PINAuthService {
       await SecureStore.deleteItemAsync("pin_enabled");
       this.attemptCount = 0;
     } catch (error) {
-      errorReporter.report(
-        error instanceof Error ? error : new Error(String(error)),
-        "PINAuthService.disablePIN",
-      );
+      errorReporter.report(error instanceof Error ? error : new Error(String(error)), "PINAuthService.disablePIN");
       throw error;
     }
   }

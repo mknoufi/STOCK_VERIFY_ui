@@ -7,4 +7,4 @@
  * @deprecated Import from '@/domains/inventory/services/scanDeduplicationService' instead
  */
 
-export * from "@/domains/inventory/services/scanDeduplicationService";
+export * from '@/domains/inventory/services/scanDeduplicationService';

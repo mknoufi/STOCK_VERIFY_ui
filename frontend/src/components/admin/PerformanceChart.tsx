@@ -13,11 +13,7 @@ import {
   TextStyle,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  modernColors,
-  modernBorderRadius,
-  modernShadows,
-} from "@/styles/modernDesignSystem";
+import { modernColors, modernBorderRadius, modernShadows } from "@/styles/modernDesignSystem";
 
 interface PerformanceDataPoint {
   timestamp: string;

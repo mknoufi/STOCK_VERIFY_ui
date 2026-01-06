@@ -61,11 +61,7 @@ export const FontSizeSlider: React.FC<FontSizeSliderProps> = ({
           <Ionicons
             name="text-outline"
             size={18}
-            color={
-              disabled
-                ? auroraTheme.colors.text.tertiary
-                : auroraTheme.colors.text.primary
-            }
+            color={disabled ? auroraTheme.colors.text.tertiary : auroraTheme.colors.text.primary}
           />
           <Text style={[styles.label, disabled && styles.disabledLabel]}>
             Font Size

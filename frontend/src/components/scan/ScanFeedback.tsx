@@ -2,7 +2,7 @@
  * ScanFeedback Component
  * Visual feedback indicators for barcode scanning results
  */
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,13 @@ import {
   Animated,
   Dimensions,
   Platform,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { SCANNER_CONFIG } from "../../config/scannerConfig";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SCANNER_CONFIG } from '../../config/scannerConfig';
 
 interface ScanFeedbackProps {
   /** Type of feedback to display */
-  type: "success" | "error" | "none";
+  type: 'success' | 'error' | 'none';
   /** Scanned barcode value */
   barcode?: string;
   /** Item name if found */
@@ -29,7 +29,7 @@ interface ScanFeedbackProps {
   duration?: number;
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
   type,
@@ -43,14 +43,14 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const translateYAnim = useRef(new Animated.Value(50)).current;
 
-  const feedbackDuration =
-    duration ||
-    (type === "success"
+  const feedbackDuration = duration || (
+    type === 'success'
       ? SCANNER_CONFIG.visualFeedback.successDuration
-      : SCANNER_CONFIG.visualFeedback.errorDuration);
+      : SCANNER_CONFIG.visualFeedback.errorDuration
+  );
 
   useEffect(() => {
-    if (type === "none") {
+    if (type === 'none') {
       opacityAnim.setValue(0);
       scaleAnim.setValue(0.5);
       translateYAnim.setValue(50);
@@ -96,20 +96,13 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
     }, feedbackDuration - 200);
 
     return () => clearTimeout(timer);
-  }, [
-    type,
-    feedbackDuration,
-    opacityAnim,
-    scaleAnim,
-    translateYAnim,
-    onComplete,
-  ]);
+  }, [type, feedbackDuration, opacityAnim, scaleAnim, translateYAnim, onComplete]);
 
-  if (type === "none") return null;
+  if (type === 'none') return null;
 
-  const isSuccess = type === "success";
-  const backgroundColor = isSuccess ? "#22C55E" : "#EF4444";
-  const iconName = isSuccess ? "checkmark-circle" : "close-circle";
+  const isSuccess = type === 'success';
+  const backgroundColor = isSuccess ? '#22C55E' : '#EF4444';
+  const iconName = isSuccess ? 'checkmark-circle' : 'close-circle';
 
   return (
     <Animated.View
@@ -117,7 +110,10 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
         styles.container,
         {
           opacity: opacityAnim,
-          transform: [{ scale: scaleAnim }, { translateY: translateYAnim }],
+          transform: [
+            { scale: scaleAnim },
+            { translateY: translateYAnim },
+          ],
         },
       ]}
     >
@@ -127,9 +123,11 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
         </View>
         <View style={styles.contentContainer}>
           <Text style={styles.title}>
-            {isSuccess ? "Scan Successful!" : "Scan Failed"}
+            {isSuccess ? 'Scan Successful!' : 'Scan Failed'}
           </Text>
-          {barcode && <Text style={styles.barcode}>{barcode}</Text>}
+          {barcode && (
+            <Text style={styles.barcode}>{barcode}</Text>
+          )}
           {itemName && (
             <Text style={styles.itemName} numberOfLines={2}>
               {itemName}
@@ -151,7 +149,7 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
  */
 interface ScanToastProps {
   visible: boolean;
-  type: "success" | "error";
+  type: 'success' | 'error';
   message: string;
   onHide?: () => void;
   duration?: number;
@@ -210,8 +208,8 @@ export const ScanToast: React.FC<ScanToastProps> = ({
 
   if (!visible) return null;
 
-  const backgroundColor = type === "success" ? "#22C55E" : "#EF4444";
-  const iconName = type === "success" ? "checkmark-circle" : "close-circle";
+  const backgroundColor = type === 'success' ? '#22C55E' : '#EF4444';
+  const iconName = type === 'success' ? 'checkmark-circle' : 'close-circle';
 
   return (
     <Animated.View
@@ -260,7 +258,7 @@ export const ScanIndicator: React.FC<ScanIndicatorProps> = ({
             duration: 500,
             useNativeDriver: true,
           }),
-        ]),
+        ])
       );
       animation.start();
       return () => animation.stop();
@@ -280,7 +278,7 @@ export const ScanIndicator: React.FC<ScanIndicatorProps> = ({
         ]}
       />
       <Text style={styles.indicatorText}>
-        {isScanning ? "Scanning..." : `${scannedCount} scanned`}
+        {isScanning ? 'Scanning...' : `${scannedCount} scanned`}
       </Text>
     </View>
   );
@@ -288,16 +286,16 @@ export const ScanIndicator: React.FC<ScanIndicatorProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    top: "30%",
+    position: 'absolute',
+    top: '30%',
     left: 0,
     right: 0,
-    alignItems: "center",
+    alignItems: 'center',
     zIndex: 1000,
   },
   card: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 16,
@@ -305,7 +303,7 @@ const styles = StyleSheet.create({
     maxWidth: SCREEN_WIDTH - 40,
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -322,41 +320,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 4,
   },
   barcode: {
-    color: "rgba(255, 255, 255, 0.9)",
+    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: 16,
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     marginBottom: 4,
   },
   itemName: {
-    color: "rgba(255, 255, 255, 0.85)",
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 14,
   },
   errorMessage: {
-    color: "rgba(255, 255, 255, 0.85)",
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 14,
-    fontStyle: "italic",
+    fontStyle: 'italic',
   },
   // Toast styles
   toastContainer: {
-    position: "absolute",
+    position: 'absolute',
     top: 60,
     left: 20,
     right: 20,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
     zIndex: 1001,
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
@@ -367,35 +365,35 @@ const styles = StyleSheet.create({
     }),
   },
   toastMessage: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     marginLeft: 12,
     flex: 1,
   },
   // Indicator styles
   indicatorContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 20,
   },
   indicatorDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#94A3B8",
+    backgroundColor: '#94A3B8',
     marginRight: 8,
   },
   indicatorDotActive: {
-    backgroundColor: "#22C55E",
+    backgroundColor: '#22C55E',
   },
   indicatorText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
 });
 

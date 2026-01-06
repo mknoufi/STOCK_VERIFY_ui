@@ -10,8 +10,7 @@ export const useBatchManagement = () => {
   const [currentBatchQty, setCurrentBatchQty] = useState("");
   const [currentBatchMrp, setCurrentBatchMrp] = useState("");
   const [currentBatchMfgDate, setCurrentBatchMfgDate] = useState("");
-  const [currentBatchCondition, setCurrentBatchCondition] =
-    useState("No Issue");
+  const [currentBatchCondition, setCurrentBatchCondition] = useState("No Issue");
   const [batchConditionDetails, setBatchConditionDetails] = useState("");
 
   const handleAddBatch = () => {
@@ -69,6 +68,6 @@ export const useBatchManagement = () => {
     setBatchConditionDetails,
     handleAddBatch,
     handleRemoveBatch,
-    resetBatches,
+    resetBatches
   };
 };

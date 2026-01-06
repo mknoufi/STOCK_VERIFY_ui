@@ -99,7 +99,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
 }) => {
   // Find the matching color (by hex or id)
   const selectedColor = COLOR_PALETTE.find(
-    (c) => c.color === value || c.id === value,
+    (c) => c.color === value || c.id === value
   );
   const selectedId = selectedColor?.id || "aurora";
 
@@ -114,11 +114,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
           <Ionicons
             name="color-palette-outline"
             size={18}
-            color={
-              disabled
-                ? auroraTheme.colors.text.tertiary
-                : auroraTheme.colors.text.primary
-            }
+            color={disabled ? auroraTheme.colors.text.tertiary : auroraTheme.colors.text.primary}
           />
           <Text style={[styles.label, disabled && styles.disabledLabel]}>
             Primary Color
@@ -128,14 +124,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
           <View
             style={[
               styles.previewDot,
-              {
-                backgroundColor: selectedColor?.color || COLOR_PALETTE[0].color,
-              },
+              { backgroundColor: selectedColor?.color || COLOR_PALETTE[0].color },
             ]}
           />
-          <Text
-            style={[styles.selectedLabel, disabled && styles.disabledLabel]}
-          >
+          <Text style={[styles.selectedLabel, disabled && styles.disabledLabel]}>
             {selectedColor?.label || "Aurora"}
           </Text>
         </View>

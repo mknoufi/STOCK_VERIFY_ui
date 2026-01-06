@@ -154,10 +154,7 @@ export const getItemByBarcode = async (
         barcode: normalizedItem.barcode,
         item_name: normalizedItem.item_name,
         description: normalizedItem.description,
-        uom:
-          normalizedItem.uom ??
-          normalizedItem.uom_code ??
-          normalizedItem.uom_name,
+        uom: normalizedItem.uom ?? normalizedItem.uom_code ?? normalizedItem.uom_name,
         uom_name: normalizedItem.uom_name,
         mrp: normalizedItem.mrp,
         sales_price: normalizedItem.sales_price,
@@ -169,7 +166,8 @@ export const getItemByBarcode = async (
         unit2_barcode: normalizedItem.unit2_barcode,
         unit_m_barcode: normalizedItem.unit_m_barcode,
         batch_id: normalizedItem.batch_id,
-        current_stock: normalizedItem.current_stock || normalizedItem.stock_qty, // Handle field name difference
+        current_stock:
+          normalizedItem.current_stock || normalizedItem.stock_qty, // Handle field name difference
       });
     } catch (cacheError) {
       __DEV__ && console.warn("Failed to cache item:", cacheError);
@@ -178,8 +176,7 @@ export const getItemByBarcode = async (
 
     return normalizedItem;
   } catch (apiError: any) {
-    const errorMessage =
-      apiError instanceof Error ? apiError.message : String(apiError);
+    const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
     __DEV__ && console.error("❌ API call failed:", errorMessage);
 
     // Only fallback to cache if API fails
@@ -191,25 +188,25 @@ export const getItemByBarcode = async (
         __DEV__ &&
           console.log("✅ Found in cache fallback:", cachedItem.item_code);
         return {
-          id: cachedItem.item_code,
-          name: cachedItem.item_name,
-          item_code: cachedItem.item_code,
-          barcode: cachedItem.barcode,
-          item_name: cachedItem.item_name,
-          description: cachedItem.description,
-          stock_qty: cachedItem.current_stock,
-          uom_name: cachedItem.uom_name ?? cachedItem.uom,
-          mrp: cachedItem.mrp,
-          sales_price: cachedItem.sales_price,
-          category: cachedItem.category,
-          subcategory: cachedItem.subcategory,
-          uom: cachedItem.uom,
-          warehouse: cachedItem.warehouse,
-          manual_barcode: cachedItem.manual_barcode,
-          unit2_barcode: cachedItem.unit2_barcode,
-          unit_m_barcode: cachedItem.unit_m_barcode,
-          batch_id: cachedItem.batch_id,
-          sale_price: cachedItem.sale_price,
+            id: cachedItem.item_code,
+            name: cachedItem.item_name,
+            item_code: cachedItem.item_code,
+            barcode: cachedItem.barcode,
+            item_name: cachedItem.item_name,
+            description: cachedItem.description,
+            stock_qty: cachedItem.current_stock,
+            uom_name: cachedItem.uom_name ?? cachedItem.uom,
+            mrp: cachedItem.mrp,
+            sales_price: cachedItem.sales_price,
+            category: cachedItem.category,
+            subcategory: cachedItem.subcategory,
+            uom: cachedItem.uom,
+            warehouse: cachedItem.warehouse,
+            manual_barcode: cachedItem.manual_barcode,
+            unit2_barcode: cachedItem.unit2_barcode,
+            unit_m_barcode: cachedItem.unit_m_barcode,
+            batch_id: cachedItem.batch_id,
+            sale_price: cachedItem.sale_price,
         } as Item;
       }
 
@@ -232,7 +229,7 @@ export const getItemByBarcode = async (
           console.error("❌ API Bad Request Details:", apiError.response?.data);
         throw new Error(
           apiError.response?.data?.detail?.message ||
-            "Invalid request parameters",
+          "Invalid request parameters",
         );
       } else if (
         apiError.code === "ECONNABORTED" ||
@@ -284,8 +281,7 @@ export const createCountLine = async (countData: CreateCountLinePayload) => {
         remark: countData.remark || undefined,
         damage_included: countData.damage_included || undefined,
         damaged_qty: countData.damaged_qty || undefined,
-        non_returnable_damaged_qty:
-          countData.non_returnable_damaged_qty || undefined,
+        non_returnable_damaged_qty: countData.non_returnable_damaged_qty || undefined,
         item_name: itemName,
         counted_by: user?.username || "offline_user",
         counted_at: new Date().toISOString(),
@@ -328,8 +324,7 @@ export const createCountLine = async (countData: CreateCountLinePayload) => {
       remark: countData.remark || undefined,
       damage_included: countData.damage_included || undefined,
       damaged_qty: countData.damaged_qty || undefined,
-      non_returnable_damaged_qty:
-        countData.non_returnable_damaged_qty || undefined,
+      non_returnable_damaged_qty: countData.non_returnable_damaged_qty || undefined,
       item_name: itemName,
       counted_by: user?.username || "offline_user",
       counted_at: new Date().toISOString(),

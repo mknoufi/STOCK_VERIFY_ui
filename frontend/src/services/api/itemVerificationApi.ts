@@ -7,4 +7,4 @@
  * @deprecated Import from '@/domains/inventory/services/itemVerificationApi' instead
  */
 
-export * from "@/domains/inventory/services/itemVerificationApi";
+export * from '@/domains/inventory/services/itemVerificationApi';

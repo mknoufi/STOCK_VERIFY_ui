@@ -25,7 +25,7 @@ export default function AdminLayout() {
   const isLargeScreen = width >= breakpoints.desktop && Platform.OS === "web";
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState(
     "admin_sidebar_collapsed",
-    false,
+    false
   );
 
   return (

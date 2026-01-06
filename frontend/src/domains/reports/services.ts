@@ -5,7 +5,7 @@
  * Types are defined in ./types.ts to avoid conflicts.
  */
 
-export { reportApi } from "../../services/api/reportApi";
+export { reportApi } from '../../services/api/reportApi';
 
 // Activity and error logs (from main api.ts)
 export {
@@ -16,4 +16,4 @@ export {
   getErrorDetail,
   resolveError,
   clearErrorLogs,
-} from "../../services/api/api";
+} from '../../services/api/api';

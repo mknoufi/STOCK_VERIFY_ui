@@ -33,8 +33,7 @@ const ALL_FLOOR_OPTIONS = [
 ];
 
 export const SectionFocusConfig: React.FC = () => {
-  const { setFloor, setRack, startSection, activeSessionId } =
-    useScanSessionStore();
+  const { setFloor, setRack, startSection, activeSessionId } = useScanSessionStore();
   const [selectedFloor, setSelectedFloor] = useState("");
   const [rackInput, setRackInput] = useState("");
   const [showFloorModal, setShowFloorModal] = useState(false);
@@ -49,15 +48,15 @@ export const SectionFocusConfig: React.FC = () => {
           const warehouse = session.warehouse?.toLowerCase() || "";
 
           if (warehouse.includes("showroom")) {
-            setFloorOptions(["Ground Floor", "First Floor", "Second Floor"]);
+             setFloorOptions(["Ground Floor", "First Floor", "Second Floor"]);
           } else if (warehouse.includes("godown")) {
-            setFloorOptions(["Top Godown", "Main Godown", "Damage Area"]);
+             setFloorOptions(["Top Godown", "Main Godown", "Damage Area"]);
           } else {
-            setFloorOptions(ALL_FLOOR_OPTIONS);
+             setFloorOptions(ALL_FLOOR_OPTIONS);
           }
         } catch (e) {
-          console.error("Failed to load session details", e);
-          setFloorOptions(ALL_FLOOR_OPTIONS);
+           console.error("Failed to load session details", e);
+           setFloorOptions(ALL_FLOOR_OPTIONS);
         }
       }
     };
@@ -111,7 +110,7 @@ export const SectionFocusConfig: React.FC = () => {
               <PremiumInput
                 label="Floor"
                 value={selectedFloor}
-                onChangeText={() => {}}
+                onChangeText={() => { }}
                 placeholder="Select Floor"
                 editable={false}
                 leftIcon="layers-outline"

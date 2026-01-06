@@ -47,13 +47,8 @@ export default function Index() {
             </View>
 
             <View style={styles.loadingContainer}>
-              <ActivityIndicator
-                size="large"
-                color={theme.colors.accentLight}
-              />
-              <Text style={styles.loadingText}>
-                Initializing Secure Environment...
-              </Text>
+              <ActivityIndicator size="large" color={theme.colors.accentLight} />
+              <Text style={styles.loadingText}>Initializing Secure Environment...</Text>
             </View>
           </GlassCard>
         </Animated.View>

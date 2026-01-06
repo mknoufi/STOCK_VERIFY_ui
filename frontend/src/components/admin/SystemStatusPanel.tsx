@@ -6,11 +6,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  modernColors,
-  modernShadows,
-  modernBorderRadius,
-} from "@/styles/modernDesignSystem";
+import { modernColors, modernShadows, modernBorderRadius } from "@/styles/modernDesignSystem";
 
 interface SystemStatus {
   api_health: string;

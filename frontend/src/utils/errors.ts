@@ -6,59 +6,59 @@
 /**
  * Error severity levels for categorizing error handling behavior
  */
-export type ErrorSeverity =
-  | "USER" // User-facing errors that can be recovered by user action
-  | "SYSTEM" // System errors that require technical intervention
-  | "NETWORK" // Network-related transient errors that may resolve on retry
-  | "CRITICAL"; // Critical errors that block core functionality
+export type ErrorSeverity = 
+  | 'USER'       // User-facing errors that can be recovered by user action
+  | 'SYSTEM'     // System errors that require technical intervention
+  | 'NETWORK'    // Network-related transient errors that may resolve on retry
+  | 'CRITICAL';  // Critical errors that block core functionality
 
 /**
  * Error codes for domain-specific error classification
  */
 export type AppErrorCode =
   // Barcode & Item errors
-  | "ITEM_NOT_FOUND"
-  | "INVALID_BARCODE"
-  | "BARCODE_LOOKUP_FAILED"
-  | "ITEM_CACHE_MISS"
-  | "ITEM_STALE_DATA"
+  | 'ITEM_NOT_FOUND'
+  | 'INVALID_BARCODE'
+  | 'BARCODE_LOOKUP_FAILED'
+  | 'ITEM_CACHE_MISS'
+  | 'ITEM_STALE_DATA'
   // Network errors
-  | "NETWORK_OFFLINE"
-  | "NETWORK_TIMEOUT"
-  | "NETWORK_UNREACHABLE"
-  | "BACKEND_UNAVAILABLE"
+  | 'NETWORK_OFFLINE'
+  | 'NETWORK_TIMEOUT'
+  | 'NETWORK_UNREACHABLE'
+  | 'BACKEND_UNAVAILABLE'
   // Session & Count Line errors
-  | "SESSION_NOT_FOUND"
-  | "SESSION_CLOSED"
-  | "COUNT_LINE_FAILED"
-  | "COUNT_LINE_DUPLICATE"
+  | 'SESSION_NOT_FOUND'
+  | 'SESSION_CLOSED'
+  | 'COUNT_LINE_FAILED'
+  | 'COUNT_LINE_DUPLICATE'
   // Auth errors
-  | "AUTH_EXPIRED"
-  | "AUTH_INVALID"
-  | "PERMISSION_DENIED"
+  | 'AUTH_EXPIRED'
+  | 'AUTH_INVALID'
+  | 'PERMISSION_DENIED'
   // Cache errors
-  | "CACHE_READ_ERROR"
-  | "CACHE_WRITE_ERROR"
-  | "CACHE_VALIDATION_FAILED"
+  | 'CACHE_READ_ERROR'
+  | 'CACHE_WRITE_ERROR'
+  | 'CACHE_VALIDATION_FAILED'
   // Sync errors
-  | "SYNC_CONFLICT"
-  | "SYNC_FAILED"
+  | 'SYNC_CONFLICT'
+  | 'SYNC_FAILED'
   // Generic
-  | "UNKNOWN_ERROR"
-  | "VALIDATION_ERROR";
+  | 'UNKNOWN_ERROR'
+  | 'VALIDATION_ERROR';
 
 export interface AppErrorOptions {
   code: AppErrorCode;
   severity: ErrorSeverity;
   message: string;
-  userMessage?: string; // Optional user-friendly message
+  userMessage?: string;  // Optional user-friendly message
   originalError?: unknown;
   context?: Record<string, unknown>;
 }
 
 /**
  * AppError - Domain error wrapper for consistent error handling.
- *
+ * 
  * Usage:
  * ```ts
  * throw new AppError({
@@ -79,7 +79,7 @@ export class AppError extends Error {
 
   constructor(options: AppErrorOptions) {
     super(options.message);
-    this.name = "AppError";
+    this.name = 'AppError';
     this.code = options.code;
     this.severity = options.severity;
     this.userMessage = options.userMessage || options.message;
@@ -96,12 +96,8 @@ export class AppError extends Error {
    */
   get isRetryable(): boolean {
     return (
-      this.severity === "NETWORK" ||
-      [
-        "NETWORK_TIMEOUT",
-        "BACKEND_UNAVAILABLE",
-        "NETWORK_UNREACHABLE",
-      ].includes(this.code)
+      this.severity === 'NETWORK' ||
+      ['NETWORK_TIMEOUT', 'BACKEND_UNAVAILABLE', 'NETWORK_UNREACHABLE'].includes(this.code)
     );
   }
 
@@ -109,7 +105,7 @@ export class AppError extends Error {
    * Check if this error should be shown to the user
    */
   get isUserFacing(): boolean {
-    return this.severity === "USER" || this.severity === "NETWORK";
+    return this.severity === 'USER' || this.severity === 'NETWORK';
   }
 
   /**
@@ -131,10 +127,7 @@ export class AppError extends Error {
   /**
    * Create AppError from an unknown error
    */
-  static fromUnknown(
-    error: unknown,
-    fallbackCode: AppErrorCode = "UNKNOWN_ERROR",
-  ): AppError {
+  static fromUnknown(error: unknown, fallbackCode: AppErrorCode = 'UNKNOWN_ERROR'): AppError {
     if (error instanceof AppError) {
       return error;
     }
@@ -142,7 +135,7 @@ export class AppError extends Error {
     if (error instanceof Error) {
       return new AppError({
         code: fallbackCode,
-        severity: "SYSTEM",
+        severity: 'SYSTEM',
         message: error.message,
         originalError: error,
       });
@@ -150,7 +143,7 @@ export class AppError extends Error {
 
     return new AppError({
       code: fallbackCode,
-      severity: "SYSTEM",
+      severity: 'SYSTEM',
       message: String(error),
       originalError: error,
     });
@@ -159,16 +152,10 @@ export class AppError extends Error {
   /**
    * Create AppError from API error response
    */
-  static fromApiError(
-    error: any,
-    context: Record<string, unknown> = {},
-  ): AppError {
+  static fromApiError(error: any, context: Record<string, unknown> = {}): AppError {
     const status = error?.response?.status;
     const detail = error?.response?.data?.detail;
-    const message =
-      typeof detail === "string"
-        ? detail
-        : error?.message || "API request failed";
+    const message = typeof detail === 'string' ? detail : error?.message || 'API request failed';
 
     // Map HTTP status codes to error codes
     let code: AppErrorCode;
@@ -176,51 +163,48 @@ export class AppError extends Error {
 
     if (!error?.response) {
       // No response means network error
-      if (
-        error?.code === "ECONNABORTED" ||
-        error?.message?.includes("timeout")
-      ) {
-        code = "NETWORK_TIMEOUT";
-        severity = "NETWORK";
-      } else if (error?.code === "ECONNREFUSED") {
-        code = "BACKEND_UNAVAILABLE";
-        severity = "NETWORK";
+      if (error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+        code = 'NETWORK_TIMEOUT';
+        severity = 'NETWORK';
+      } else if (error?.code === 'ECONNREFUSED') {
+        code = 'BACKEND_UNAVAILABLE';
+        severity = 'NETWORK';
       } else {
-        code = "NETWORK_UNREACHABLE";
-        severity = "NETWORK";
+        code = 'NETWORK_UNREACHABLE';
+        severity = 'NETWORK';
       }
     } else {
       switch (status) {
         case 400:
-          code = "VALIDATION_ERROR";
-          severity = "USER";
+          code = 'VALIDATION_ERROR';
+          severity = 'USER';
           break;
         case 401:
-          code = "AUTH_EXPIRED";
-          severity = "USER";
+          code = 'AUTH_EXPIRED';
+          severity = 'USER';
           break;
         case 403:
-          code = "PERMISSION_DENIED";
-          severity = "USER";
+          code = 'PERMISSION_DENIED';
+          severity = 'USER';
           break;
         case 404:
-          code = "ITEM_NOT_FOUND";
-          severity = "USER";
+          code = 'ITEM_NOT_FOUND';
+          severity = 'USER';
           break;
         case 409:
-          code = "SYNC_CONFLICT";
-          severity = "SYSTEM";
+          code = 'SYNC_CONFLICT';
+          severity = 'SYSTEM';
           break;
         case 500:
         case 502:
         case 503:
         case 504:
-          code = "BACKEND_UNAVAILABLE";
-          severity = "NETWORK";
+          code = 'BACKEND_UNAVAILABLE';
+          severity = 'NETWORK';
           break;
         default:
-          code = "UNKNOWN_ERROR";
-          severity = "SYSTEM";
+          code = 'UNKNOWN_ERROR';
+          severity = 'SYSTEM';
       }
     }
 

@@ -633,7 +633,8 @@ export default function DatabaseMappingScreen() {
                       style={[
                         styles.tableItem,
                         selectedTable === table.name && {
-                          backgroundColor: theme.colors.primary[500] + "20",
+                          backgroundColor:
+                            theme.colors.primary[500] + "20",
                           borderColor: theme.colors.primary[500],
                         },
                       ]}
@@ -698,7 +699,9 @@ export default function DatabaseMappingScreen() {
                         <Text style={styles.fieldLabel}>
                           {field.label}
                           {field.required && (
-                            <Text style={{ color: theme.colors.error.main }}>
+                            <Text
+                              style={{ color: theme.colors.error.main }}
+                            >
                               {" "}
                               *
                             </Text>
@@ -710,7 +713,8 @@ export default function DatabaseMappingScreen() {
                         style={[
                           styles.columnSelector,
                           mappedColumn && {
-                            backgroundColor: theme.colors.success.main + "10",
+                            backgroundColor:
+                              theme.colors.success.main + "10",
                             borderColor: theme.colors.success.main,
                           },
                         ]}
@@ -721,9 +725,9 @@ export default function DatabaseMappingScreen() {
                             styles.columnSelectorText,
                             mappedColumn
                               ? {
-                                  color: theme.colors.success.main,
-                                  fontWeight: "600",
-                                }
+                                color: theme.colors.success.main,
+                                fontWeight: "600",
+                              }
                               : { color: theme.colors.text.tertiary },
                           ]}
                         >
@@ -796,7 +800,9 @@ export default function DatabaseMappingScreen() {
           animationType="fade"
           onRequestClose={() => setShowColumnModal(false)}
         >
-          <ScreenContainer containerStyle={styles.modalOverlay}>
+          <ScreenContainer
+            containerStyle={styles.modalOverlay}
+          >
             <GlassCard
               intensity={20}
               padding={theme.spacing.lg}

@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { ItemSchema } from "../../types/schemas";
+import { z } from 'zod';
+import { ItemSchema } from '../../types/schemas';
 
 export type Item = z.infer<typeof ItemSchema> & {
   // Add fields missing from ItemSchema but present in legacy Item type

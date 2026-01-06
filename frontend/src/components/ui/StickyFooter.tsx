@@ -11,13 +11,7 @@ interface Props {
   testID?: string;
 }
 
-export function StickyFooter({
-  title,
-  disabled,
-  loading,
-  onPress,
-  testID,
-}: Props) {
+export function StickyFooter({ title, disabled, loading, onPress, testID }: Props) {
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={styles.inner}>

@@ -16,11 +16,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  modernColors,
-  modernBorderRadius,
-  modernShadows,
-} from "../../styles/modernDesignSystem";
+import { modernColors, modernBorderRadius, modernShadows } from "../../styles/modernDesignSystem";
 
 // --- Domain Types ---
 
@@ -51,7 +47,7 @@ interface ActiveUsersPanelProps {
 
 const STATUS_THRESHOLDS = {
   ACTIVE_MS: 2 * 60 * 1000, // 2 minutes
-  IDLE_MS: 10 * 60 * 1000, // 10 minutes
+  IDLE_MS: 10 * 60 * 1000,  // 10 minutes
 };
 
 const STATUS_CONFIG: Record<UserStatus, { color: string; label: string }> = {
@@ -60,10 +56,7 @@ const STATUS_CONFIG: Record<UserStatus, { color: string; label: string }> = {
   offline: { color: modernColors.text.tertiary, label: "Offline" },
 };
 
-const ROLE_ICONS: Record<
-  UserRole | "default",
-  keyof typeof MaterialCommunityIcons.glyphMap
-> = {
+const ROLE_ICONS: Record<UserRole | "default", keyof typeof MaterialCommunityIcons.glyphMap> = {
   admin: "shield-account",
   supervisor: "account-supervisor",
   staff: "account",
@@ -121,77 +114,61 @@ function deriveUserStatus(lastActivityIso: string): UserStatus {
 
 function normalizeRole(role: string): UserRole {
   const r = role.toLowerCase();
-  if (r === "admin" || r === "supervisor" || r === "staff")
-    return r as UserRole;
+  if (r === "admin" || r === "supervisor" || r === "staff") return r as UserRole;
   return "staff"; // Fallback
 }
 
 // --- Components ---
 
-const UserRow = React.memo(
-  ({
-    user,
-    onPress,
-  }: {
-    user: ActiveUser;
-    onPress?: (u: ActiveUser) => void;
-  }) => {
-    const derivedStatus = deriveUserStatus(user.last_activity);
-    const statusConfig = STATUS_CONFIG[derivedStatus];
+const UserRow = React.memo(({ user, onPress }: { user: ActiveUser; onPress?: (u: ActiveUser) => void }) => {
+  const derivedStatus = deriveUserStatus(user.last_activity);
+  const statusConfig = STATUS_CONFIG[derivedStatus];
 
-    const normalizedRole = normalizeRole(user.role);
-    const roleIcon = ROLE_ICONS[normalizedRole] || ROLE_ICONS.default;
+  const normalizedRole = normalizeRole(user.role);
+  const roleIcon = ROLE_ICONS[normalizedRole] || ROLE_ICONS.default;
 
-    const handlePress = () => onPress?.(user);
+  const handlePress = () => onPress?.(user);
 
-    return (
-      <TouchableOpacity
-        style={styles.userRow}
-        onPress={handlePress}
-        activeOpacity={0.7}
-        disabled={!onPress}
-      >
-        <View style={styles.userInfo}>
-          <View style={styles.avatarContainer}>
-            <View
-              style={[styles.avatarStats, { borderColor: statusConfig.color }]}
-            >
-              <MaterialCommunityIcons
-                name={roleIcon}
-                size={20}
-                color={modernColors.primary[500]}
-              />
-            </View>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: statusConfig.color },
-              ]}
+  return (
+    <TouchableOpacity
+      style={styles.userRow}
+      onPress={handlePress}
+      activeOpacity={0.7}
+      disabled={!onPress}
+    >
+      <View style={styles.userInfo}>
+        <View style={styles.avatarContainer}>
+          <View style={[styles.avatarStats, { borderColor: statusConfig.color }]}>
+            <MaterialCommunityIcons
+              name={roleIcon}
+              size={20}
+              color={modernColors.primary[500]}
             />
           </View>
-          <View style={styles.userDetails}>
-            <Text style={styles.username} numberOfLines={1}>
-              {user.username}
-            </Text>
-            <Text style={styles.role}>
-              {normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}
-            </Text>
-          </View>
+          <View
+            style={[styles.statusDot, { backgroundColor: statusConfig.color }]}
+          />
         </View>
-        <View style={styles.activityInfo}>
-          <Text style={styles.lastActivity}>
-            {formatTimeAgo(user.last_activity)}
+        <View style={styles.userDetails}>
+          <Text style={styles.username} numberOfLines={1}>{user.username}</Text>
+          <Text style={styles.role}>
+            {normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}
           </Text>
-          {user.current_session && (
-            <Text style={styles.sessionInfo} numberOfLines={1}>
-              ID: {user.current_session.substring(0, 6)}...
-            </Text>
-          )}
         </View>
-      </TouchableOpacity>
-    );
-  },
-);
+      </View>
+      <View style={styles.activityInfo}>
+        <Text style={styles.lastActivity}>
+          {formatTimeAgo(user.last_activity)}
+        </Text>
+        {user.current_session && (
+          <Text style={styles.sessionInfo} numberOfLines={1}>
+            ID: {user.current_session.substring(0, 6)}...
+          </Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+});
 
 UserRow.displayName = "UserRow";
 
@@ -199,16 +176,17 @@ export function ActiveUsersPanel({
   users,
   loading = false,
   onUserPress,
-  scrollEnabled = true,
+  scrollEnabled = true
 }: ActiveUsersPanelProps) {
+
   // Memoize stats to avoid recalculation on every render
   const stats = useMemo(() => {
     let online = 0;
     let idle = 0;
-    users.forEach((u) => {
+    users.forEach(u => {
       const s = deriveUserStatus(u.last_activity);
-      if (s === "online") online++;
-      else if (s === "idle") idle++;
+      if (s === 'online') online++;
+      else if (s === 'idle') idle++;
     });
     return { online, idle };
   }, [users]);
@@ -249,13 +227,19 @@ export function ActiveUsersPanel({
       <View style={styles.summary}>
         <View style={styles.summaryItem}>
           <View
-            style={[styles.dot, { backgroundColor: modernColors.success.main }]}
+            style={[
+              styles.dot,
+              { backgroundColor: modernColors.success.main },
+            ]}
           />
           <Text style={styles.summaryText}>{stats.online} online</Text>
         </View>
         <View style={styles.summaryItem}>
           <View
-            style={[styles.dot, { backgroundColor: modernColors.warning.main }]}
+            style={[
+              styles.dot,
+              { backgroundColor: modernColors.warning.main },
+            ]}
           />
           <Text style={styles.summaryText}>{stats.idle} idle</Text>
         </View>
@@ -274,9 +258,7 @@ export function ActiveUsersPanel({
         <FlatList
           data={users}
           keyExtractor={(item) => item.user_id}
-          renderItem={({ item }) => (
-            <UserRow user={item} onPress={onUserPress} />
-          )}
+          renderItem={({ item }) => <UserRow user={item} onPress={onUserPress} />}
           style={styles.list}
           showsVerticalScrollIndicator={false}
           initialNumToRender={10}
@@ -369,16 +351,16 @@ const styles = StyleSheet.create({
     position: "relative",
     width: 36,
     height: 36,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   } as ViewStyle,
   avatarStats: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: modernColors.background.paper,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: modernColors.border.light,
   } as ViewStyle,
@@ -394,7 +376,7 @@ const styles = StyleSheet.create({
   } as ViewStyle,
   userDetails: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   } as ViewStyle,
   username: {
     fontSize: 14,
@@ -420,7 +402,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: modernColors.text.tertiary,
     marginTop: 2,
-    fontVariant: ["tabular-nums"],
+    fontVariant: ['tabular-nums'],
   } as TextStyle,
   loadingContainer: {
     flex: 1,
@@ -447,3 +429,4 @@ const styles = StyleSheet.create({
 });
 
 export default ActiveUsersPanel;
+

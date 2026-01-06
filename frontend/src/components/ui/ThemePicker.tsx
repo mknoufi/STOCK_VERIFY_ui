@@ -2,8 +2,8 @@
  * ThemePicker Component
  *
  * Visual theme selection grid with live preview
- * Shows all available themes with color swatches
- *
+  * Shows all available themes with color swatches
+    *
  * // cSpell:ignore springify
  */
 

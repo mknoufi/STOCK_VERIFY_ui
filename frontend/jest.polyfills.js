@@ -1,7 +1,8 @@
-console.log("Polyfills running. Window type:", typeof window);
+console.log('Polyfills running. Window type:', typeof window);
 
 try {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     delete global.window;
   }
-} catch (e) {}
+} catch (e) {
+}

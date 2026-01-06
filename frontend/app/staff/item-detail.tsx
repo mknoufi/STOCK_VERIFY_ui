@@ -16,7 +16,9 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
 import { useScanSessionStore } from "@/store/scanSessionStore";
-import { theme } from "@/styles/modernDesignSystem";
+import {
+  theme,
+} from "@/styles/modernDesignSystem";
 import { useThemeContext } from "@/theme/ThemeContext";
 import { ScreenContainer, GlassCard } from "@/components/ui";
 import { PremiumButton } from "@/components/premium/PremiumButton";
@@ -32,7 +34,9 @@ import { RecentItemsService } from "@/services/enhancedFeatures";
 import { handleErrorWithRecovery } from "@/services/errorRecovery";
 import { CreateCountLinePayload } from "@/types/scan";
 import { scanDeduplicationService } from "@/domains/inventory/services/scanDeduplicationService";
-import { normalizeSerialValue } from "@/utils/scanUtils";
+import {
+  normalizeSerialValue,
+} from "@/utils/scanUtils";
 import { useItemState } from "@/domains/inventory/hooks/scan";
 import { useNetworkStore } from "@/store/networkStore";
 import { localDb } from "@/db/localDb";
@@ -134,15 +138,17 @@ export default function ItemDetailScreen() {
 
           // Add to recent scans
           try {
-            const itemCode = (itemData?.item_code ||
-              itemData?.barcode ||
-              barcode) as string;
+            const itemCode = (itemData?.item_code || itemData?.barcode || barcode) as string;
             await RecentItemsService.addRecent(itemCode, itemData);
           } catch (e) {
             console.warn("Failed to add to recent items", e);
           }
 
-          setMrp(itemData.mrp ? String(itemData.mrp) : "");
+          setMrp(
+            itemData.mrp
+              ? String(itemData.mrp)
+              : "",
+          );
           setCategory(itemData.category || "");
           setSubCategory(itemData.subcategory || "");
           // Location is handled by session store, we can still show it in logs but user requested and approved removal of manual entry and redundant badges
@@ -164,16 +170,7 @@ export default function ItemDetailScreen() {
     } else {
       console.log("Effect triggered but no barcode yet");
     }
-  }, [
-    barcode,
-    router,
-    setLoading,
-    setItem,
-    setMrp,
-    setCategory,
-    setSubCategory,
-    sessionId,
-  ]);
+  }, [barcode, router, setLoading, setItem, setMrp, setCategory, setSubCategory, sessionId]);
 
   // Keep itemCodeRef in sync with item.item_code
   useEffect(() => {
@@ -267,9 +264,7 @@ export default function ItemDetailScreen() {
 
   // Adjust serial number inputs when quantity changes
   useEffect(() => {
-    const validSerials = serialNumbers.filter(
-      (sn) => sn && sn.trim().length > 0,
-    );
+    const validSerials = serialNumbers.filter(sn => sn && sn.trim().length > 0);
     if (validSerials.length > 0) {
       const qty = parseInt(quantity) || 0;
       setSerialNumbers((prev) => {
@@ -331,29 +326,13 @@ export default function ItemDetailScreen() {
     const yearMonthRegex = /^\d{4}-\d{2}$/;
     const fullDateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-    if (
-      mfgDate &&
-      !yearRegex.test(mfgDate) &&
-      !yearMonthRegex.test(mfgDate) &&
-      !fullDateRegex.test(mfgDate)
-    ) {
-      Alert.alert(
-        "Format Issue",
-        "Mfg Date should be YYYY, YYYY-MM, or YYYY-MM-DD",
-      );
+    if (mfgDate && !yearRegex.test(mfgDate) && !yearMonthRegex.test(mfgDate) && !fullDateRegex.test(mfgDate)) {
+      Alert.alert("Format Issue", "Mfg Date should be YYYY, YYYY-MM, or YYYY-MM-DD");
       return false;
     }
 
-    if (
-      expiryDate &&
-      !yearRegex.test(expiryDate) &&
-      !yearMonthRegex.test(expiryDate) &&
-      !fullDateRegex.test(expiryDate)
-    ) {
-      Alert.alert(
-        "Format Issue",
-        "Expiry Date should be YYYY, YYYY-MM, or YYYY-MM-DD",
-      );
+    if (expiryDate && !yearRegex.test(expiryDate) && !yearMonthRegex.test(expiryDate) && !fullDateRegex.test(expiryDate)) {
+      Alert.alert("Format Issue", "Expiry Date should be YYYY, YYYY-MM, or YYYY-MM-DD");
       return false;
     }
 
@@ -443,14 +422,10 @@ export default function ItemDetailScreen() {
         expiry_date: expiryDate || undefined,
         floor_no: useScanSessionStore.getState().currentFloor || undefined,
         rack_no: useScanSessionStore.getState().currentRack || undefined,
-        non_returnable_damaged_qty: isDamageEnabled
-          ? Number(nonReturnableDamageQty)
-          : 0,
+        non_returnable_damaged_qty: isDamageEnabled ? Number(nonReturnableDamageQty) : 0,
       };
 
-      const validSerials = serialNumbers.filter(
-        (sn) => sn && sn.trim().length > 0,
-      );
+      const validSerials = serialNumbers.filter(sn => sn && sn.trim().length > 0);
       if (validSerials.length > 0) {
         payload.serial_numbers = validSerials.map((sn, idx) => ({
           serial_number: normalizeSerialValue(sn),
@@ -493,15 +468,8 @@ export default function ItemDetailScreen() {
 
   if (!item && loading) {
     return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: colors.background },
-        ]}
-      >
-        <Text style={[styles.loadingText, { color: colors.text }]}>
-          Loading Item Details...
-        </Text>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading Item Details...</Text>
       </View>
     );
   }
@@ -535,24 +503,15 @@ export default function ItemDetailScreen() {
               <View style={styles.locationGroup}>
                 <Ionicons name="location" size={18} color={colors.accent} />
                 <Text style={[styles.sessionText, { color: colors.text }]}>
-                  Floor:{" "}
-                  <Text style={styles.bold}>
-                    {useScanSessionStore.getState().currentFloor || "N/A"}
-                  </Text>
+                  Floor: <Text style={styles.bold}>{useScanSessionStore.getState().currentFloor || "N/A"}</Text>
                 </Text>
                 <View style={styles.separator} />
                 <Text style={[styles.sessionText, { color: colors.text }]}>
-                  Rack:{" "}
-                  <Text style={styles.bold}>
-                    {useScanSessionStore.getState().currentRack || "N/A"}
-                  </Text>
+                  Rack: <Text style={styles.bold}>{useScanSessionStore.getState().currentRack || "N/A"}</Text>
                 </Text>
               </View>
               <TouchableOpacity
-                style={[
-                  styles.finishRackBadge,
-                  { backgroundColor: colors.warning + "20" },
-                ]}
+                style={[styles.finishRackBadge, { backgroundColor: colors.warning + '20' }]}
                 onPress={() => {
                   Alert.alert(
                     "Finish Rack?",
@@ -565,17 +524,13 @@ export default function ItemDetailScreen() {
                           useScanSessionStore.getState().setRack("");
                           router.back();
                         },
-                        style: "destructive",
-                      },
-                    ],
+                        style: "destructive"
+                      }
+                    ]
                   );
                 }}
               >
-                <Text
-                  style={[styles.finishRackText, { color: colors.warning }]}
-                >
-                  Finish Rack
-                </Text>
+                <Text style={[styles.finishRackText, { color: colors.warning }]}>Finish Rack</Text>
               </TouchableOpacity>
             </View>
           </GlassCard>
@@ -583,35 +538,15 @@ export default function ItemDetailScreen() {
           {/* Base Info Section */}
           <GlassCard variant="medium" style={styles.infoCard}>
             <View style={styles.itemHeader}>
-              <Text style={[styles.itemName, { color: colors.text }]}>
-                {item.item_name}
-              </Text>
+              <Text style={[styles.itemName, { color: colors.text }]}>{item.item_name}</Text>
               {item.barcode && (
-                <View
-                  style={[
-                    styles.barcodeBadge,
-                    { backgroundColor: colors.surface },
-                  ]}
-                >
-                  <Ionicons
-                    name="barcode-outline"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                  <Text
-                    style={[
-                      styles.itemBarcode,
-                      { color: colors.textSecondary },
-                    ]}
-                  >
-                    {item.barcode}
-                  </Text>
+                <View style={[styles.barcodeBadge, { backgroundColor: colors.surface }]}>
+                  <Ionicons name="barcode-outline" size={16} color={colors.textSecondary} />
+                  <Text style={[styles.itemBarcode, { color: colors.textSecondary }]}>{item.barcode}</Text>
                 </View>
               )}
               {(item.category || item.subcategory) && (
-                <Text
-                  style={[styles.categoryText, { color: colors.textSecondary }]}
-                >
+                <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
                   {item.category}
                   {item.subcategory && ` / ${item.subcategory}`}
                 </Text>
@@ -620,70 +555,24 @@ export default function ItemDetailScreen() {
 
             {/* Additional Identifiers */}
             {/* Additional Identifiers - Removed Batch ID and Unit badges as per user request */}
-            {(item.manual_barcode ||
-              item.unit2_barcode ||
-              item.unit_m_barcode) && (
-              <View
-                style={[
-                  styles.identifiersContainer,
-                  { backgroundColor: colors.surface },
-                ]}
-              >
+            {(item.manual_barcode || item.unit2_barcode || item.unit_m_barcode) && (
+              <View style={[styles.identifiersContainer, { backgroundColor: colors.surface }]}>
                 {item.manual_barcode && (
-                  <View
-                    style={[
-                      styles.identifierBadge,
-                      {
-                        backgroundColor: colors.surfaceElevated,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[styles.identifierLabel, { color: colors.muted }]}
-                    >
-                      Manual:
-                    </Text>
-                    <Text
-                      style={[
-                        styles.identifierValue,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      {item.manual_barcode}
-                    </Text>
+                  <View style={[styles.identifierBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                    <Text style={[styles.identifierLabel, { color: colors.muted }]}>Manual:</Text>
+                    <Text style={[styles.identifierValue, { color: colors.textSecondary }]}>{item.manual_barcode}</Text>
                   </View>
                 )}
                 {item.unit2_barcode && (
-                  <View
-                    style={[
-                      styles.identifierBadge,
-                      {
-                        backgroundColor: colors.surfaceElevated,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                  >
+                  <View style={[styles.identifierBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
                     <Text style={styles.identifierLabel}>Unit 2:</Text>
-                    <Text style={styles.identifierValue}>
-                      {item.unit2_barcode}
-                    </Text>
+                    <Text style={styles.identifierValue}>{item.unit2_barcode}</Text>
                   </View>
                 )}
                 {item.unit_m_barcode && (
-                  <View
-                    style={[
-                      styles.identifierBadge,
-                      {
-                        backgroundColor: colors.surfaceElevated,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                  >
+                  <View style={[styles.identifierBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
                     <Text style={styles.identifierLabel}>Unit M:</Text>
-                    <Text style={styles.identifierValue}>
-                      {item.unit_m_barcode}
-                    </Text>
+                    <Text style={styles.identifierValue}>{item.unit_m_barcode}</Text>
                   </View>
                 )}
               </View>
@@ -692,23 +581,13 @@ export default function ItemDetailScreen() {
             {/* Stock Qty Row with inline Refresh Button */}
             {sessionType !== BLIND_SESSION_TYPE ? (
               <View style={styles.stockRow}>
-                <View
-                  style={[
-                    styles.stockItem,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                >
+                <View style={[styles.stockItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <Text style={styles.stockLabel}>Stock Qty</Text>
                   <View style={styles.stockValueRow}>
                     <Text style={[styles.stockValue, { color: colors.text }]}>
                       {item.current_stock || item.stock_qty || 0}
                     </Text>
-                    <Text
-                      style={[styles.stockUom, { color: colors.textSecondary }]}
-                    >
+                    <Text style={[styles.stockUom, { color: colors.textSecondary }]}>
                       {item.uom_name || "N/A"}
                     </Text>
                     <TouchableOpacity
@@ -720,7 +599,10 @@ export default function ItemDetailScreen() {
                       disabled={refreshingStock}
                     >
                       {refreshingStock ? (
-                        <ActivityIndicator size="small" color={colors.accent} />
+                        <ActivityIndicator
+                          size="small"
+                          color={colors.accent}
+                        />
                       ) : (
                         <Ionicons
                           name="refresh"
@@ -736,72 +618,36 @@ export default function ItemDetailScreen() {
 
             {/* Sale Price & MRP Row */}
             <View style={styles.priceRow}>
-              <View
-                style={[
-                  styles.priceItem,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[styles.priceLabel, { color: colors.textSecondary }]}
-                >
-                  Sale Price
-                </Text>
+              <View style={[styles.priceItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>Sale Price</Text>
                 <Text style={[styles.priceValue, { color: colors.text }]}>
                   ₹{item.sales_price || "0.00"}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.priceItem,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[styles.priceLabel, { color: colors.textSecondary }]}
-                >
-                  MRP
-                </Text>
-                <Text style={[styles.priceValue, { color: colors.text }]}>
-                  ₹{item.mrp || "0.00"}
-                </Text>
+              <View style={[styles.priceItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>MRP</Text>
+                <Text style={[styles.priceValue, { color: colors.text }]}>₹{item.mrp || "0.00"}</Text>
               </View>
             </View>
 
             {sessionType === BLIND_SESSION_TYPE ? (
-              <View
-                style={[
-                  styles.blindModeIndicator,
-                  {
-                    backgroundColor: colors.warning + "20",
-                    borderColor: colors.warning,
-                  },
-                ]}
-              >
-                <Ionicons name="eye-off" size={16} color={colors.warning} />
-                <Text style={[styles.blindModeText, { color: colors.warning }]}>
-                  BLIND MODE
-                </Text>
+              <View style={[styles.blindModeIndicator, { backgroundColor: colors.warning + '20', borderColor: colors.warning }]}>
+                <Ionicons
+                  name="eye-off"
+                  size={16}
+                  color={colors.warning}
+                />
+                <Text style={[styles.blindModeText, { color: colors.warning }]}>BLIND MODE</Text>
               </View>
             ) : null}
 
             <View style={styles.toggleRow}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Edit Details
-              </Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Edit Details</Text>
               <Switch
                 value={categoryEditable}
                 onValueChange={setCategoryEditable}
                 trackColor={{ false: colors.border, true: colors.accent }}
-                thumbColor={
-                  Platform.OS === "android" ? colors.surface : undefined
-                }
+                thumbColor={Platform.OS === "android" ? colors.surface : undefined}
               />
             </View>
 
@@ -821,16 +667,12 @@ export default function ItemDetailScreen() {
             )}
 
             <View style={styles.toggleRow}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                MRP: {mrp}
-              </Text>
+              <Text style={[styles.label, { color: colors.text }]}>MRP: {mrp}</Text>
               <Switch
                 value={mrpEditable}
                 onValueChange={setMrpEditable}
                 trackColor={{ false: colors.border, true: colors.accent }}
-                thumbColor={
-                  Platform.OS === "android" ? colors.surface : undefined
-                }
+                thumbColor={Platform.OS === "android" ? colors.surface : undefined}
               />
             </View>
             {mrpEditable && (
@@ -847,28 +689,16 @@ export default function ItemDetailScreen() {
 
           {/* Count Entry Section - Prominent and easy to use */}
           <GlassCard variant="strong" style={styles.countSection}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                { color: colors.text, marginBottom: 16 },
-              ]}
-            >
-              Count Entry
-            </Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 16 }]}>Count Entry</Text>
             <View style={styles.countRow}>
               <TouchableOpacity
-                style={[
-                  styles.countButton,
-                  { backgroundColor: colors.surfaceElevated },
-                ]}
+                style={[styles.countButton, { backgroundColor: colors.surfaceElevated }]}
                 onPress={() => decrementQty(1)}
                 onLongPress={() => decrementQty(5)}
                 delayLongPress={250}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text style={[styles.countButtonText, { color: colors.text }]}>
-                  −
-                </Text>
+                <Text style={[styles.countButtonText, { color: colors.text }]}>−</Text>
               </TouchableOpacity>
 
               <View style={styles.countInputWrapper}>
@@ -879,38 +709,25 @@ export default function ItemDetailScreen() {
                     const cleaned = t.replace(/[^0-9]/g, "");
                     setQuantity(cleaned);
                   }}
-                  onBlur={() =>
-                    setQuantityFromNumber(parseInt(quantity || "0"))
-                  }
-                  keyboardType={
-                    Platform.OS === "ios" ? "number-pad" : "numeric"
-                  }
+                  onBlur={() => setQuantityFromNumber(parseInt(quantity || "0"))}
+                  keyboardType={Platform.OS === "ios" ? "number-pad" : "numeric"}
                   inputStyle={styles.mainInput}
                 />
               </View>
 
               <TouchableOpacity
-                style={[
-                  styles.countButton,
-                  { backgroundColor: colors.surfaceElevated },
-                ]}
+                style={[styles.countButton, { backgroundColor: colors.surfaceElevated }]}
                 onPress={() => incrementQty(1)}
                 onLongPress={() => incrementQty(5)}
                 delayLongPress={250}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text style={[styles.countButtonText, { color: colors.text }]}>
-                  ＋
-                </Text>
+                <Text style={[styles.countButtonText, { color: colors.text }]}>＋</Text>
               </TouchableOpacity>
             </View>
             {sessionType !== BLIND_SESSION_TYPE && (
-              <Text
-                style={[styles.varianceText, { color: colors.textSecondary }]}
-              >
-                Variance:{" "}
-                {Number(quantity || 0) -
-                  Number(item?.current_stock || item?.stock_qty || 0)}
+              <Text style={[styles.varianceText, { color: colors.textSecondary }]}>
+                Variance: {Number(quantity || 0) - Number(item?.current_stock || item?.stock_qty || 0)}
               </Text>
             )}
           </GlassCard>
@@ -918,23 +735,14 @@ export default function ItemDetailScreen() {
           {/* Quantities & Details Section - Moved Serial, Mfg, Condition here for better visibility */}
           <GlassCard variant="light" style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Verification Details
-              </Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Verification Details</Text>
             </View>
 
             {/* Serial Numbers - Always visible for quick entry */}
             <View style={styles.detailItemRow}>
               <View style={styles.labelContainer}>
-                <Ionicons
-                  name="keypad-outline"
-                  size={20}
-                  color={colors.accent}
-                  style={styles.detailIcon}
-                />
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Serial Numbers
-                </Text>
+                <Ionicons name="keypad-outline" size={20} color={colors.accent} style={styles.detailIcon} />
+                <Text style={[styles.label, { color: colors.text }]}>Serial Numbers</Text>
               </View>
             </View>
             <View style={styles.expandedContent}>
@@ -968,15 +776,8 @@ export default function ItemDetailScreen() {
             {/* Manufacturing & Expiry - Always visible or easier to access */}
             <View style={styles.detailItemRow}>
               <View style={styles.labelContainer}>
-                <Ionicons
-                  name="calendar-outline"
-                  size={20}
-                  color={colors.accent}
-                  style={styles.detailIcon}
-                />
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Dates (Mfg/Exp)
-                </Text>
+                <Ionicons name="calendar-outline" size={20} color={colors.accent} style={styles.detailIcon} />
+                <Text style={[styles.label, { color: colors.text }]}>Dates (Mfg/Exp)</Text>
               </View>
             </View>
             <View style={styles.expandedContent}>
@@ -1005,15 +806,9 @@ export default function ItemDetailScreen() {
 
             {/* Condition */}
             <View style={styles.conditionContainer}>
-              <Text style={[styles.subLabel, { color: colors.textSecondary }]}>
-                Item Condition
-              </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.conditionScroll}
-              >
-                {CONDITION_OPTIONS.map((c) => (
+              <Text style={[styles.subLabel, { color: colors.textSecondary }]}>Item Condition</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.conditionScroll}>
+                {CONDITION_OPTIONS.map(c => (
                   <TouchableOpacity
                     key={c}
                     onPress={() => setCondition(c)}
@@ -1021,26 +816,13 @@ export default function ItemDetailScreen() {
                       paddingHorizontal: 16,
                       paddingVertical: 8,
                       borderRadius: 16,
-                      backgroundColor:
-                        condition === c
-                          ? colors.accent
-                          : colors.surfaceElevated,
+                      backgroundColor: condition === c ? colors.accent : colors.surfaceElevated,
                       marginRight: 8,
                       borderWidth: 1,
-                      borderColor:
-                        condition === c ? colors.accent : colors.border,
+                      borderColor: condition === c ? colors.accent : colors.border,
                     }}
                   >
-                    <Text
-                      style={{
-                        color:
-                          condition === c ? "#FFFFFF" : colors.textSecondary,
-                        fontWeight: "600",
-                        fontSize: 13,
-                      }}
-                    >
-                      {c}
-                    </Text>
+                    <Text style={{ color: condition === c ? "#FFFFFF" : colors.textSecondary, fontWeight: "600", fontSize: 13 }}>{c}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -1057,9 +839,7 @@ export default function ItemDetailScreen() {
           {/* Damage Reporting Section */}
           <View style={styles.section}>
             <View style={styles.rowBetween}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Report Damage?
-              </Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Report Damage?</Text>
               <Switch
                 value={isDamageEnabled}
                 onValueChange={setIsDamageEnabled}
@@ -1069,15 +849,7 @@ export default function ItemDetailScreen() {
             </View>
 
             {isDamageEnabled && (
-              <View
-                style={[
-                  styles.damageBox,
-                  {
-                    backgroundColor: colors.danger + "10",
-                    borderColor: colors.danger + "30",
-                  },
-                ]}
-              >
+              <View style={[styles.damageBox, { backgroundColor: colors.danger + '10', borderColor: colors.danger + '30' }]}>
                 <View style={[styles.row, { gap: 12 }]}>
                   <View style={{ flex: 1 }}>
                     <PremiumInput
@@ -1131,7 +903,7 @@ export default function ItemDetailScreen() {
         onClose={() => setShowPhotoModal(false)}
         onCapture={setItemPhoto}
       />
-    </ScreenContainer>
+    </ScreenContainer >
   );
 }
 
@@ -1199,17 +971,17 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   barcodeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    alignSelf: "flex-start",
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignSelf: 'flex-start',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   categoryText: {
     fontSize: 13,
@@ -1488,26 +1260,26 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   detailItemRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 14,
   },
   detailToggleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.06)",
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   labelContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 14,
   },
   detailIcon: {
     width: 28,
-    textAlign: "center",
+    textAlign: 'center',
   },
   expandedContent: {
     paddingBottom: 10,
@@ -1519,7 +1291,7 @@ const styles = StyleSheet.create({
   subLabel: {
     fontSize: 13,
     marginBottom: 14,
-    fontWeight: "600",
+    fontWeight: '600',
     color: theme.colors.text.secondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -1538,13 +1310,13 @@ const styles = StyleSheet.create({
     borderColor: "rgba(14, 165, 233, 0.12)",
   },
   sessionInfo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   locationGroup: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
   },
   sessionText: {
@@ -1553,13 +1325,13 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
   },
   bold: {
-    fontWeight: "800",
+    fontWeight: '800',
     color: theme.colors.text.primary,
   },
   separator: {
     width: 1,
     height: 16,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: 'rgba(255,255,255,0.15)',
     marginHorizontal: 4,
   },
   finishRackBadge: {
@@ -1572,7 +1344,7 @@ const styles = StyleSheet.create({
   },
   finishRackText: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: '700',
     color: "#22C55E",
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -1580,7 +1352,7 @@ const styles = StyleSheet.create({
   helpText: {
     fontSize: 11,
     marginTop: 6,
-    fontStyle: "italic",
+    fontStyle: 'italic',
     color: theme.colors.text.tertiary,
     lineHeight: 16,
   },

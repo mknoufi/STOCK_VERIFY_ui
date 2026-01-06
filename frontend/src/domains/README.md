@@ -5,9 +5,7 @@ This directory contains the domain logic for the application, organized by bound
 ## Domains
 
 ### 1. Inventory (`/inventory`)
-
 **Responsibility**: Managing items, stock counts, and barcode scanning.
-
 - **Entities**: `Item`, `StockCount`, `BarcodeScan`.
 - **Key Operations**:
   - Fetching item details by barcode.
@@ -16,9 +14,7 @@ This directory contains the domain logic for the application, organized by bound
   - Managing offline sync queue for counts.
 
 ### 2. Auth (`/auth`)
-
 **Responsibility**: Managing user sessions, authentication, and permissions.
-
 - **Entities**: `User`, `Session`, `Permission`.
 - **Key Operations**:
   - Login/Logout.
@@ -27,9 +23,7 @@ This directory contains the domain logic for the application, organized by bound
   - User profile management.
 
 ### 3. Reports (`/reports`)
-
 **Responsibility**: Generating and viewing discrepancies and historical data.
-
 - **Entities**: `DiscrepancyReport`, `CountHistory`.
 - **Key Operations**:
   - Calculating discrepancies between ERP and physical counts.
@@ -37,9 +31,7 @@ This directory contains the domain logic for the application, organized by bound
   - Exporting reports.
 
 ## Structure
-
 Each domain folder should follow this structure:
-
 - `/components`: Domain-specific UI components.
 - `/hooks`: Domain-specific React hooks (data fetching, logic).
 - `/services`: API calls and business logic services.

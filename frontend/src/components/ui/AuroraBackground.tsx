@@ -51,10 +51,9 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   children,
 }) => {
   const { width, height } = useWindowDimensions();
-  const colors =
-    variant === "primary"
-      ? ["#0EA5E9", "#10B981", "#020617"]
-      : auroraTheme.colors.aurora[variant];
+  const colors = variant === "primary"
+    ? ["#0EA5E9", "#10B981", "#020617"]
+    : auroraTheme.colors.aurora[variant];
 
   // Animation values for gradient blobs
   const blob1X = useSharedValue(0);
@@ -182,7 +181,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             left: -width * 0.2,
           },
           blob1Style,
-          { opacity },
+          { opacity }
         ]}
       >
         <LinearGradient
@@ -203,7 +202,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             right: -width * 0.3,
           },
           blob2Style,
-          { opacity },
+          { opacity }
         ]}
       >
         <LinearGradient
@@ -224,7 +223,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             left: width * 0.1,
           },
           blob3Style,
-          { opacity },
+          { opacity }
         ]}
       >
         <LinearGradient

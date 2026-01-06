@@ -124,9 +124,7 @@ export function KPICard({
       style={styles.card}
       onPress={onPress}
       accessibilityRole={onPress ? "button" : "summary"}
-      accessibilityLabel={
-        accessibilityLabel || `${title}: ${formatValue(value)}`
-      }
+      accessibilityLabel={accessibilityLabel || `${title}: ${formatValue(value)}`}
       testID={testID}
       activeOpacity={0.7}
     >
@@ -259,3 +257,5 @@ const styles = StyleSheet.create({
 });
 
 export default KPICard;
+
+

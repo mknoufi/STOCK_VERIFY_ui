@@ -26,10 +26,7 @@ import {
   ItemVerificationAPI,
   VarianceItem,
 } from "../../src/domains/inventory/services/itemVerificationApi";
-import {
-  ItemFilters,
-  FilterValues,
-} from "../../src/domains/inventory/components/ItemFilters";
+import { ItemFilters, FilterValues } from "../../src/domains/inventory/components/ItemFilters";
 import { exportVariancesToCSV, downloadCSV } from "../../src/utils/csvExport";
 import {
   ScreenContainer,
@@ -162,9 +159,7 @@ export default function VariancesScreen() {
   const renderVarianceItem = ({ item }: { item: VarianceItem }) => {
     // Determine status color based on variance
     const isPositive = item.variance > 0;
-    const statusColor = isPositive
-      ? theme.colors.success.main
-      : theme.colors.error.main;
+    const statusColor = isPositive ? theme.colors.success.main : theme.colors.error.main;
 
     const varianceSign = isPositive ? "+" : "";
 

@@ -27,7 +27,7 @@ export class AsyncStorageService {
   private static instance: AsyncStorageService;
   private debugMode: boolean = __DEV__;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): AsyncStorageService {
     if (!AsyncStorageService.instance) {
@@ -39,11 +39,7 @@ export class AsyncStorageService {
   /**
    * Unified error handling for all storage operations
    */
-  private handleStorageError(
-    operation: string,
-    key: string,
-    error: unknown,
-  ): void {
+  private handleStorageError(operation: string, key: string, error: unknown): void {
     const errorMsg = error instanceof Error ? error.message : String(error);
     const errorMessage = `AsyncStorage ${operation} failed for key '${key}': ${errorMsg}`;
 
@@ -205,10 +201,8 @@ export class AsyncStorageService {
   ): Promise<boolean> {
     try {
       // Logic for web environments (safety check mostly)
-      if (typeof window !== "undefined" && options.confirm) {
-        const confirmed = window.confirm(
-          "Are you sure you want to clear all data?",
-        );
+      if (typeof window !== 'undefined' && options.confirm) {
+        const confirmed = window.confirm("Are you sure you want to clear all data?");
         if (!confirmed) return false;
       }
 
@@ -277,9 +271,7 @@ export class AsyncStorageService {
   /**
    * Get multiple items efficiently
    */
-  async getMultiple<T = unknown>(
-    keys: string[],
-  ): Promise<Record<string, T | null>> {
+  async getMultiple<T = unknown>(keys: string[]): Promise<Record<string, T | null>> {
     try {
       const keyValuePairs = await AsyncStorage.multiGet(keys);
       const result: Record<string, T | null> = {};
@@ -444,13 +436,11 @@ export const storage = {
 
   has: (key: string) => asyncStorageService.hasItem(key),
 
-  clear: (options?: { confirm?: boolean }) =>
-    asyncStorageService.clearAll(options),
+  clear: (options?: { confirm?: boolean }) => asyncStorageService.clearAll(options),
 
   keys: (filter?: string) => asyncStorageService.getAllKeys(filter),
 
-  getMultiple: <T = unknown>(keys: string[]) =>
-    asyncStorageService.getMultiple<T>(keys),
+  getMultiple: <T = unknown>(keys: string[]) => asyncStorageService.getMultiple<T>(keys),
 
   setMultiple: <T>(items: [string, T][]) =>
     asyncStorageService.setMultiple<T>(items),

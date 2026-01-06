@@ -1,16 +1,8 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
-import { useTheme } from "../../theme/ThemeContext";
-import apiClient from "../../services/httpClient";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { useTheme } from '../../theme/ThemeContext';
+import apiClient from '../../services/httpClient';
+import { Ionicons } from '@expo/vector-icons';
 
 interface AnalyticsData {
   stats: {
@@ -36,15 +28,13 @@ export const AnalyticsDashboard: React.FC = () => {
   const fetchAnalytics = async (period: number) => {
     setLoading(true);
     try {
-      const response = await apiClient.get(
-        `/api/reports/analytics?days=${period}`,
-      );
+      const response = await apiClient.get(`/api/reports/analytics?days=${period}`);
       if (response.data.success) {
         setData(response.data.data);
       }
     } catch (error) {
-      console.error("Error fetching analytics:", error);
-      Alert.alert("Error", "Failed to load analytics data");
+      console.error('Error fetching analytics:', error);
+      Alert.alert('Error', 'Failed to load analytics data');
     } finally {
       setLoading(false);
     }
@@ -63,13 +53,9 @@ export const AnalyticsDashboard: React.FC = () => {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          Analytics
-        </Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Analytics</Text>
         <View style={styles.periodSelector}>
           {[7, 30, 90].map((p) => (
             <TouchableOpacity
@@ -77,15 +63,10 @@ export const AnalyticsDashboard: React.FC = () => {
               onPress={() => setDays(p)}
               style={[
                 styles.periodButton,
-                {
-                  backgroundColor:
-                    days === p ? theme.colors.accent : theme.colors.surface,
-                },
+                { backgroundColor: days === p ? theme.colors.accent : theme.colors.surface }
               ]}
             >
-              <Text style={{ color: days === p ? "#fff" : theme.colors.text }}>
-                {p}d
-              </Text>
+              <Text style={{ color: days === p ? '#fff' : theme.colors.text }}>{p}d</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -120,45 +101,29 @@ export const AnalyticsDashboard: React.FC = () => {
             />
           </View>
 
-          <View
-            style={[styles.section, { backgroundColor: theme.colors.surface }]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Top Performers
-            </Text>
+          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Top Performers</Text>
             {data.stats.top_users.map((user, index) => (
               <View key={user._id} style={styles.userRow}>
-                <Text style={{ color: theme.colors.text }}>
-                  {index + 1}. {user._id}
-                </Text>
-                <Text
-                  style={[styles.userCount, { color: theme.colors.accent }]}
-                >
-                  {user.count}
-                </Text>
+                <Text style={{ color: theme.colors.text }}>{index + 1}. {user._id}</Text>
+                <Text style={[styles.userCount, { color: theme.colors.accent }]}>{user.count}</Text>
               </View>
             ))}
           </View>
 
-          <View
-            style={[styles.section, { backgroundColor: theme.colors.surface }]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Category Distribution
-            </Text>
+          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Category Distribution</Text>
             {data.category_distribution.map((cat) => (
               <View key={cat._id} style={styles.barContainer}>
-                <Text style={[styles.barLabel, { color: theme.colors.text }]}>
-                  {cat._id}
-                </Text>
+                <Text style={[styles.barLabel, { color: theme.colors.text }]}>{cat._id}</Text>
                 <View style={styles.barWrapper}>
                   <View
                     style={[
                       styles.bar,
                       {
                         width: `${(cat.count / data.stats.total_verifications) * 100}%`,
-                        backgroundColor: theme.colors.accent,
-                      },
+                        backgroundColor: theme.colors.accent
+                      }
                     ]}
                   />
                   <Text style={styles.barValue}>{cat.count}</Text>
@@ -177,12 +142,8 @@ const StatCard = ({ title, value, icon, color }: any) => {
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
       <Ionicons name={icon} size={24} color={color} />
-      <Text style={[styles.cardValue, { color: theme.colors.text }]}>
-        {value}
-      </Text>
-      <Text style={[styles.cardTitle, { color: theme.colors.textSecondary }]}>
-        {title}
-      </Text>
+      <Text style={[styles.cardValue, { color: theme.colors.text }]}>{value}</Text>
+      <Text style={[styles.cardTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
     </View>
   );
 };
@@ -194,21 +155,21 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 24,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   periodSelector: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
   },
   periodButton: {
@@ -217,8 +178,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   statsGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 24,
   },
   card: {
@@ -226,16 +187,16 @@ const styles = StyleSheet.create({
     margin: 4,
     padding: 12,
     borderRadius: 12,
-    alignItems: "center",
+    alignItems: 'center',
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   cardValue: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginTop: 8,
   },
   cardTitle: {
@@ -249,18 +210,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 12,
   },
   userRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.05)",
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   userCount: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   barContainer: {
     marginBottom: 12,
@@ -270,20 +231,20 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   barWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     height: 20,
-    backgroundColor: "rgba(0,0,0,0.05)",
+    backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 10,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   bar: {
-    height: "100%",
+    height: '100%',
   },
   barValue: {
-    position: "absolute",
+    position: 'absolute',
     right: 8,
     fontSize: 10,
-    fontWeight: "bold",
-  },
+    fontWeight: 'bold',
+  }
 });

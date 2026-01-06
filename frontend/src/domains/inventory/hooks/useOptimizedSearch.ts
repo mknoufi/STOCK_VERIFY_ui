@@ -34,14 +34,7 @@ export interface SearchItem {
   warehouse: string | null;
   uom_name: string | null;
   relevance_score: number;
-  match_type:
-    | "exact_barcode"
-    | "partial_barcode"
-    | "exact_code"
-    | "name_prefix"
-    | "name_contains"
-    | "fuzzy"
-    | "none";
+  match_type: "exact_barcode" | "partial_barcode" | "exact_code" | "name_prefix" | "name_contains" | "fuzzy" | "none";
 }
 
 export interface SearchMetadata {

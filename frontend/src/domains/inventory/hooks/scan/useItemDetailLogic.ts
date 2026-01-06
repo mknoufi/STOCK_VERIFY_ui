@@ -35,7 +35,7 @@ export const useItemDetailLogic = () => {
     form,
     item,
     sessionId: sessionId as string,
-    sessionType: sessionType as string,
+    sessionType: sessionType as string
   });
 
   // Load Item Details
@@ -55,14 +55,9 @@ export const useItemDetailLogic = () => {
           setSubCategory(itemData.subcategory || "");
 
           // Auto-detect batches
-          if (
-            (itemData as any).batches &&
-            (itemData as any).batches.length > 0
-          ) {
+          if ((itemData as any).batches && (itemData as any).batches.length > 0) {
             setIsBatchMode(true);
-            const mappedBatches: CountLineBatch[] = (
-              itemData as any
-            ).batches.map((b: any) => ({
+            const mappedBatches: CountLineBatch[] = (itemData as any).batches.map((b: any) => ({
               quantity: b.stock_qty || 0,
               mrp: b.mrp,
               manufacturing_date: b.manufacturing_date,
@@ -87,15 +82,7 @@ export const useItemDetailLogic = () => {
     if (barcode) {
       loadItem();
     }
-  }, [
-    barcode,
-    router,
-    setMrp,
-    setCategory,
-    setSubCategory,
-    setIsBatchMode,
-    setBatches,
-  ]);
+  }, [barcode, router, setMrp, setCategory, setSubCategory, setIsBatchMode, setBatches]);
 
   // Auto-focus quantity input when item loads
   useEffect(() => {
@@ -108,35 +95,32 @@ export const useItemDetailLogic = () => {
     return undefined;
   }, [item, loading, quantityInputRef]);
 
-  const handleRefreshStock = useCallback(
-    async (silent: boolean = false) => {
-      if (!item || !item.item_code) return;
+  const handleRefreshStock = useCallback(async (silent: boolean = false) => {
+    if (!item || !item.item_code) return;
 
-      if (silent && refreshErrorCountRef.current >= MAX_REFRESH_ERRORS) return;
+    if (silent && refreshErrorCountRef.current >= MAX_REFRESH_ERRORS) return;
 
-      setRefreshingStock(true);
-      try {
-        const result = await refreshItemStock(item.item_code);
-        if (result.success && result.item) {
-          setItem(result.item);
-          if (!mrpEditable) {
-            setMrp(result.item.mrp ? String(result.item.mrp) : "");
-          }
-          refreshErrorCountRef.current = 0;
-        } else {
-          throw new Error("Failed to refresh stock");
+    setRefreshingStock(true);
+    try {
+      const result = await refreshItemStock(item.item_code);
+      if (result.success && result.item) {
+        setItem(result.item);
+        if (!mrpEditable) {
+          setMrp(result.item.mrp ? String(result.item.mrp) : "");
         }
-      } catch {
-        refreshErrorCountRef.current += 1;
-        if (!silent) {
-          Alert.alert("Error", "Failed to refresh stock");
-        }
-      } finally {
-        setRefreshingStock(false);
+        refreshErrorCountRef.current = 0;
+      } else {
+        throw new Error("Failed to refresh stock");
       }
-    },
-    [item, mrpEditable, setMrp],
-  );
+    } catch {
+      refreshErrorCountRef.current += 1;
+      if (!silent) {
+        Alert.alert("Error", "Failed to refresh stock");
+      }
+    } finally {
+      setRefreshingStock(false);
+    }
+  }, [item, mrpEditable, setMrp]);
 
   const { loading: submitting, handleSubmit } = submission;
 
@@ -150,6 +134,6 @@ export const useItemDetailLogic = () => {
     sessionId,
     barcode,
     ...form,
-    handleSubmit,
+    handleSubmit
   };
 };

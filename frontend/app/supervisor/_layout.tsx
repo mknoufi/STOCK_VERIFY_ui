@@ -9,7 +9,12 @@
 
 import React, { useState } from "react";
 import { Stack, Slot } from "expo-router";
-import { View, StyleSheet, Platform, useWindowDimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Platform,
+  useWindowDimensions,
+} from "react-native";
 import { auroraTheme } from "@/theme/auroraTheme";
 import { RoleLayoutGuard } from "@/components/auth/RoleLayoutGuard";
 import { SupervisorSidebar } from "@/components/navigation";
@@ -52,3 +57,4 @@ const styles = StyleSheet.create({
     backgroundColor: auroraTheme.colors.background.primary,
   },
 });
+

@@ -1,11 +1,5 @@
-import React, { Component, ReactNode, ErrorInfo } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -19,10 +13,7 @@ interface ErrorBoundaryState {
   errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -44,7 +35,7 @@ export class ErrorBoundary extends Component<
 
     // Log error to console in development
     if (__DEV__) {
-      console.error("ErrorBoundary caught an error:", error, errorInfo);
+      console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
     // Call custom error handler if provided
@@ -81,7 +72,7 @@ export class ErrorBoundary extends Component<
           <View style={styles.content}>
             <Text style={styles.title}>Oops! Something went wrong</Text>
             <Text style={styles.message}>
-              {error.message || "An unexpected error occurred"}
+              {error.message || 'An unexpected error occurred'}
             </Text>
 
             {__DEV__ && (
@@ -106,17 +97,17 @@ export class ErrorBoundary extends Component<
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
     padding: 20,
   },
   content: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 12,
     padding: 24,
-    maxWidth: "90%",
-    shadowColor: "#000",
+    maxWidth: '90%',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -124,46 +115,46 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "600",
-    color: "#FF3B30",
+    fontWeight: '600',
+    color: '#FF3B30',
     marginBottom: 12,
-    textAlign: "center",
+    textAlign: 'center',
   },
   message: {
     fontSize: 16,
-    color: "#666",
+    color: '#666',
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
     lineHeight: 22,
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: '#007AFF',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
   buttonText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   stackContainer: {
     maxHeight: 150,
     marginVertical: 10,
     padding: 10,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: '#F5F5F5',
     borderRadius: 4,
   },
   stackTitle: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "#666",
+    fontWeight: '600',
+    color: '#666',
     marginBottom: 5,
   },
   stack: {
     fontSize: 10,
-    color: "#999",
-    fontFamily: "monospace",
+    color: '#999',
+    fontFamily: 'monospace',
   },
 });

@@ -5,8 +5,8 @@
  * throughout the application.
  */
 
-import { Platform, StyleSheet } from "react-native";
-import { theme } from "./modernDesignSystem";
+import { Platform, StyleSheet } from 'react-native';
+import { theme } from './modernDesignSystem';
 
 // ============================================
 // SPACING & SIZING CONSTANTS
@@ -46,11 +46,11 @@ export const FONT_SIZE = {
 } as const;
 
 export const FONT_WEIGHT = {
-  normal: "400" as const,
-  medium: "500" as const,
-  semibold: "600" as const,
-  bold: "700" as const,
-  extrabold: "800" as const,
+  normal: '400' as const,
+  medium: '500' as const,
+  semibold: '600' as const,
+  bold: '700' as const,
+  extrabold: '800' as const,
 };
 
 // ============================================
@@ -59,36 +59,36 @@ export const FONT_WEIGHT = {
 
 export const COLORS = {
   // Primary accent
-  accent: "#0EA5E9",
-  accentLight: "rgba(14, 165, 233, 0.1)",
-  accentBorder: "rgba(14, 165, 233, 0.2)",
+  accent: '#0EA5E9',
+  accentLight: 'rgba(14, 165, 233, 0.1)',
+  accentBorder: 'rgba(14, 165, 233, 0.2)',
 
   // Surface colors
-  surface: "rgba(15, 23, 42, 0.5)",
-  surfaceElevated: "rgba(255, 255, 255, 0.05)",
-  surfaceLight: "rgba(255, 255, 255, 0.03)",
+  surface: 'rgba(15, 23, 42, 0.5)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.05)',
+  surfaceLight: 'rgba(255, 255, 255, 0.03)',
 
   // Border colors
-  border: "rgba(255, 255, 255, 0.08)",
-  borderLight: "rgba(255, 255, 255, 0.06)",
+  border: 'rgba(255, 255, 255, 0.08)',
+  borderLight: 'rgba(255, 255, 255, 0.06)',
 
   // Status colors
-  success: "#22C55E",
-  successLight: "rgba(34, 197, 94, 0.1)",
-  successBorder: "rgba(34, 197, 94, 0.2)",
+  success: '#22C55E',
+  successLight: 'rgba(34, 197, 94, 0.1)',
+  successBorder: 'rgba(34, 197, 94, 0.2)',
 
-  warning: "#F59E0B",
-  warningLight: "rgba(245, 158, 11, 0.1)",
-  warningBorder: "rgba(245, 158, 11, 0.2)",
+  warning: '#F59E0B',
+  warningLight: 'rgba(245, 158, 11, 0.1)',
+  warningBorder: 'rgba(245, 158, 11, 0.2)',
 
-  danger: "#EF4444",
-  dangerLight: "rgba(239, 68, 68, 0.06)",
-  dangerBorder: "rgba(239, 68, 68, 0.2)",
+  danger: '#EF4444',
+  dangerLight: 'rgba(239, 68, 68, 0.06)',
+  dangerBorder: 'rgba(239, 68, 68, 0.2)',
 
   // Text colors
-  textPrimary: "#F8FAFC",
-  textSecondary: "#94A3B8",
-  textTertiary: "#64748B",
+  textPrimary: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
 } as const;
 
 // ============================================
@@ -114,13 +114,13 @@ export const sharedStyles = StyleSheet.create({
 
   // =========== HEADERS ===========
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: SPACING.xl,
-    paddingTop: Platform.OS === "ios" ? 60 : 40,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: SPACING.lg,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
 
   headerTitle: {
@@ -142,8 +142,8 @@ export const sharedStyles = StyleSheet.create({
     height: 40,
     borderRadius: BORDER_RADIUS.md,
     backgroundColor: COLORS.surfaceElevated,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -153,8 +153,8 @@ export const sharedStyles = StyleSheet.create({
     height: 40,
     borderRadius: BORDER_RADIUS.md,
     backgroundColor: COLORS.surfaceElevated,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -164,12 +164,12 @@ export const sharedStyles = StyleSheet.create({
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
     borderRadius: BORDER_RADIUS.lg,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   primaryButtonText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.bold,
   },
@@ -196,9 +196,9 @@ export const sharedStyles = StyleSheet.create({
   },
 
   cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: SPACING.md,
   },
 
@@ -221,9 +221,9 @@ export const sharedStyles = StyleSheet.create({
   },
 
   sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: SPACING.lg,
   },
 
@@ -232,7 +232,7 @@ export const sharedStyles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.semibold,
     color: COLORS.textSecondary,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: SPACING.xs,
   },
@@ -254,7 +254,7 @@ export const sharedStyles = StyleSheet.create({
   helperText: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textTertiary,
-    fontStyle: "italic",
+    fontStyle: 'italic',
     marginTop: SPACING.xs,
   },
 
@@ -272,7 +272,7 @@ export const sharedStyles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     fontWeight: FONT_WEIGHT.semibold,
     color: COLORS.textSecondary,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
 
@@ -289,7 +289,7 @@ export const sharedStyles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     fontWeight: FONT_WEIGHT.bold,
     color: COLORS.accent,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
 
@@ -306,7 +306,7 @@ export const sharedStyles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     fontWeight: FONT_WEIGHT.bold,
     color: COLORS.success,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
 
@@ -323,7 +323,7 @@ export const sharedStyles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     fontWeight: FONT_WEIGHT.bold,
     color: COLORS.warning,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
 
@@ -335,7 +335,7 @@ export const sharedStyles = StyleSheet.create({
     borderColor: COLORS.border,
     paddingHorizontal: SPACING.lg,
     height: 48,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
 
   inputText: {
@@ -345,24 +345,24 @@ export const sharedStyles = StyleSheet.create({
 
   // =========== ROWS & GRIDS ===========
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   rowBetween: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 
   rowGap: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: SPACING.md,
   },
 
   grid2: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: SPACING.md,
   },
 
@@ -378,8 +378,8 @@ export const sharedStyles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: SPACING.md,
   },
 
@@ -387,8 +387,8 @@ export const sharedStyles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: BORDER_RADIUS.md,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: COLORS.accentLight,
   },
 
@@ -406,8 +406,8 @@ export const sharedStyles = StyleSheet.create({
 
   // =========== LIST ITEMS ===========
   listItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
@@ -419,8 +419,8 @@ export const sharedStyles = StyleSheet.create({
 
   // =========== EMPTY STATE ===========
   emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 64,
   },
 
@@ -433,8 +433,8 @@ export const sharedStyles = StyleSheet.create({
   // =========== MODALS ===========
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    justifyContent: "flex-end",
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'flex-end',
   },
 
   modalContent: {
@@ -444,9 +444,9 @@ export const sharedStyles = StyleSheet.create({
   },
 
   modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: SPACING.xl,
     paddingVertical: SPACING.lg,
   },
@@ -465,8 +465,8 @@ export const sharedStyles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "rgba(148, 163, 184, 0.3)",
-    alignSelf: "center",
+    backgroundColor: 'rgba(148, 163, 184, 0.3)',
+    alignSelf: 'center',
     marginTop: SPACING.sm,
     marginBottom: SPACING.sm,
   },
@@ -479,9 +479,7 @@ export const sharedStyles = StyleSheet.create({
 /**
  * Create consistent card styling with variant
  */
-export const createCardStyle = (
-  variant: "default" | "accent" | "success" | "warning" | "danger" = "default",
-) => {
+export const createCardStyle = (variant: 'default' | 'accent' | 'success' | 'warning' | 'danger' = 'default') => {
   const variants = {
     default: {
       backgroundColor: COLORS.surface,

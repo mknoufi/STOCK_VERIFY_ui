@@ -1,7 +1,4 @@
-import {
-  AnalyticsService,
-  RecentItemsService,
-} from "@/services/enhancedFeatures";
+import { AnalyticsService, RecentItemsService } from "@/services/enhancedFeatures";
 
 export interface SuggestionItem {
   id: string;

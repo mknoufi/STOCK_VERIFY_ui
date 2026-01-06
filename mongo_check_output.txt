@@ -1,5 +1,0 @@
-Checking database: stock_verify
-Collections: ['verification_sessions', 'feature_flags', 'security_lockouts', 'rack_registry', 'sessions', 'warehouses', 'report_snapshots', 'data_retention_policies', 'users', 'enterprise_audit_logs', 'erp_items', 'count_lines', 'report_compare_jobs', 'login_attempts', 'security_events', 'security_ip_lists', 'error_logs', 'security_sessions', 'verification_records', 'item_serials', 'activity_logs', 'data_archive', 'refresh_tokens', 'data_subject_requests']
-No 'items' collection found.
-ERP Items count: 4
-Sample ERP item: {'_id': ObjectId('6956cbc121e0490361f79147'), 'item_code': 'MAN001', 'item_name': 'Manual Test Item', 'barcode': '510001', 'stock_qty': 50.0, 'mrp': 150.0, 'category': 'Test', 'warehouse': 'Showroom', 'description': "A manual test item for searching 'man'"}

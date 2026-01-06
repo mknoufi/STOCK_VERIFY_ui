@@ -27,10 +27,10 @@ from backend.services.sql_sync_service import SQLSyncService
 logger = logging.getLogger(__name__)
 
 # These will be initialized at runtime
-db: AsyncIOMotorDatabase = None
+db: Optional[AsyncIOMotorDatabase] = None
 cache_service = None
-monitoring_service: MonitoringService = None
-sql_sync_service: SQLSyncService = None
+monitoring_service: Optional[MonitoringService] = None
+sql_sync_service: Optional[SQLSyncService] = None
 
 
 def init_enhanced_api(database, cache_svc, monitoring_svc, sql_connector_instance=None):

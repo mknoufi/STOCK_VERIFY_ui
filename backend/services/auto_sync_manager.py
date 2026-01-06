@@ -42,7 +42,7 @@ class AutoSyncManager:
 
         # State tracking
         self._running = False
-        self._monitoring_task: asyncio.Task = None
+        self._monitoring_task: Optional[asyncio.Task] = None
         self._sync_service: SQLSyncService = None
         self._last_connection_check: Optional[datetime] = None
         self._last_sync_attempt: Optional[datetime] = None

@@ -228,7 +228,7 @@ class SQLSyncService:
         self.enabled = enabled
         self.nightly_sync_hour = nightly_sync_hour
         self._running = False
-        self._task: asyncio.Task = None
+        self._task: Optional[asyncio.Task] = None
         self._last_sync: Optional[datetime] = None
         self._last_new_item_check: Optional[datetime] = None
         self._last_nightly_sync: Optional[datetime] = None

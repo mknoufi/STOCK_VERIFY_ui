@@ -48,7 +48,7 @@ class ChangeDetectionSyncService:
         self.enabled = enabled
         self.batch_size = batch_size
         self._running = False
-        self._task: asyncio.Task = None
+        self._task: Optional[asyncio.Task] = None
         self._last_sync: Optional[datetime] = None
 
         # Initialize statistics with proper typing

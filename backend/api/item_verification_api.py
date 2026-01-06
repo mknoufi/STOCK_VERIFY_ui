@@ -20,7 +20,7 @@ from backend.auth.dependencies import get_current_user_async as get_current_user
 logger = logging.getLogger(__name__)
 
 # These will be initialized at runtime
-db: AsyncIOMotorDatabase = None
+db: Optional[AsyncIOMotorDatabase] = None
 cache_service = None
 
 
@@ -34,7 +34,7 @@ def init_verification_api(database, cache_svc=None):
 verification_router = APIRouter(prefix="/api/v2/erp/items", tags=["Item Verification"])
 
 
-def _regex_filter(value: Optional[str]) -> dict[str, Optional[str]]:
+def _regex_filter(value: Optional[str]) -> Optional[dict[str, Optional[str]]]:
     if not value:
         return None
     return {"$regex": value, "$options": "i"}

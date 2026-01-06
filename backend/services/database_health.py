@@ -55,11 +55,11 @@ class DatabaseHealthService:
             "uptime_start": datetime.utcnow(),
         }
         self._running = False
-        self._task: asyncio.Task = None
+        self._task: Optional[asyncio.Task] = None
         self._mongo_uri = mongo_uri
         self._db_name = db_name or getattr(mongo_db, "name", None)
         self._mongo_client_options = mongo_client_options or {}
-        self._dedicated_client: AsyncIOMotorClient = None
+        self._dedicated_client: Optional[AsyncIOMotorClient] = None
 
         if self.mongo_db is None and not self._switch_to_dedicated_client():
             raise RuntimeError("Failed to initialize MongoDB connection for health monitoring")

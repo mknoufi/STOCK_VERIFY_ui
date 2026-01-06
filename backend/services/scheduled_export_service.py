@@ -36,7 +36,7 @@ class ScheduledExportService:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
         self._running = False
-        self._task: asyncio.Task = None
+        self._task: Optional[asyncio.Task] = None
 
     async def create_export_schedule(
         self,

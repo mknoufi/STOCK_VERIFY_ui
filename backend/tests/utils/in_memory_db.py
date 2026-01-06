@@ -173,7 +173,9 @@ class InMemoryCollection:
         # Use 24-char hex string to mimic ObjectId
         document.setdefault("_id", os.urandom(12).hex())
 
-    async def find_one(self, filter: dict[str, Any], *args, **kwargs) -> dict[str, Optional[Any]]:
+    async def find_one(
+        self, filter: dict[str, Any], *args, **kwargs
+    ) -> Optional[dict[str, Optional[Any]]]:
         for doc in self._documents:
             if _match_filter(doc, filter):
                 return copy.deepcopy(doc)
@@ -232,17 +234,19 @@ class InMemoryCollection:
         self._documents = to_keep
         return DeleteResult(deleted_count=deleted)
 
-    async def count_documents(self, filter_query: dict[str, Optional[Any]] = None) -> int:
+    async def count_documents(self, filter_query: Optional[dict[str, Optional[Any]]] = None) -> int:
+        if filter_query is None:
+            return len(self._documents)
         return sum(1 for doc in self._documents if _match_filter(doc, filter_query))
 
     def find(
         self,
-        filter_query: dict[str, Optional[Any]] = None,
-        projection: dict[str, Optional[int]] = None,
+        filter_query: Optional[dict[str, Optional[Any]]] = None,
+        projection: Optional[dict[str, Optional[int]]] = None,
     ):
         results = []
         for doc in self._documents:
-            if _match_filter(doc, filter_query):
+            if filter_query is None or _match_filter(doc, filter_query):
                 if projection:
                     projected = {}
                     include_fields = [k for k, v in projection.items() if v]

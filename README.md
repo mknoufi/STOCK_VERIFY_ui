@@ -66,6 +66,55 @@ The system now automatically detects your IP address to allow mobile devices to 
 2. **Frontend** reads this file to configure the API client.
 3. **Docker/CI**: Set `EXPO_PUBLIC_BACKEND_URL` to override this behavior.
 
+## 📊 Code Quality & Security
+
+### Quality Metrics
+
+**Last verified snapshot:** 2026-01-06
+
+* **Backend tests**: 570 passed, 8 skipped ✅
+* **Backend coverage**: 84.03% (meets 80% minimum) ✅
+* **Frontend**: ESLint + TypeScript typecheck pass ✅
+* **Frontend tests**: 14 suites passed (137 tests) ✅
+* **Type Safety (MyPy)**: 102 errors (currently not a CI gate — see below)
+
+For the reproducible current status (commands + results), see [docs/CODEBASE_CONDITION.md](docs/CODEBASE_CONDITION.md).
+
+### Security Status
+
+**Application Security: EXCELLENT** ✅
+
+* Bandit scan: Zero HIGH/CRITICAL issues in application code
+* All 119 HIGH findings are in dependencies (crypto libraries using SHA1 for non-password purposes)
+* Parameterized SQL queries, proper authentication, secure session handling
+
+**Dependency Security: NEEDS ATTENTION** ⚠️
+
+* 35 known vulnerabilities in 14 packages identified via pip-audit
+* Priority updates: aiohttp, urllib3, langchain*, python-jose, starlette
+* See [backend/SECURITY_SCAN_RESULTS.md](backend/SECURITY_SCAN_RESULTS.md) for detailed report
+
+### Running Quality Checks
+
+```bash
+# Type checking
+make python-typecheck  # Python type checking (currently non-blocking)
+cd frontend && npm run typecheck  # TypeScript checking (0 errors)
+
+# Testing
+make python-test       # Backend tests (currently: 570 passed, 8 skipped)
+make node-test         # Frontend tests (currently non-blocking; see Makefile)
+make ci                # Full CI suite (lint + test + typecheck)
+
+# Security scans
+cd backend
+bandit -r . -f json -o bandit_report.json -x tests
+pip-audit --format json -o pip_audit_report.json
+
+# NOTE: To see the current MyPy error count directly:
+# mypy backend --ignore-missing-imports --python-version=3.10 --config-file=backend/pyproject.toml --explicit-package-bases
+```
+
 ## ⚙️ Configuration
 
 * **Backend Port**: 8001 (Default)

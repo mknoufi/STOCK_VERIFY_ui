@@ -33,18 +33,12 @@ try:
 
     REDIS_AVAILABLE = True
 except ImportError:
-    try:
-        import redis
-        from redis.exceptions import RedisError
+    REDIS_AVAILABLE = False
+    logger.warning("Redis not available, using in-memory cache")
 
-        REDIS_AVAILABLE = True
-    except ImportError:
-        REDIS_AVAILABLE = False
-        logger.warning("Redis not available, using in-memory cache")
-
-        # Define dummy RedisError for type safety when Redis is missing
-        class RedisError(Exception):
-            pass
+    # Define dummy RedisError for type safety when Redis is missing
+    class RedisError(Exception):  # type: ignore[no-redef]
+        pass
 
 
 class CacheService:
@@ -74,9 +68,7 @@ class CacheService:
                 self.use_redis = True
                 logger.info("Redis client created (pending connection verification)")
             except Exception as e:
-                logger.warning(
-                    f"Redis client creation failed, using in-memory cache: {str(e)}"
-                )
+                logger.warning(f"Redis client creation failed, using in-memory cache: {str(e)}")
                 self.use_redis = False
         else:
             self.use_redis = False
@@ -122,9 +114,7 @@ class CacheService:
 
         return None
 
-    async def set(
-        self, prefix: str, key: str, value: Any, ttl: Optional[int] = None
-    ) -> bool:
+    async def set(self, prefix: str, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """Set value in cache"""
         cache_key = self._get_key(prefix, key)
         ttl = ttl or self.default_ttl
@@ -193,14 +183,36 @@ class CacheService:
             except RedisError as e:
                 logger.error(f"Redis clear error: {str(e)}")
         else:
-            keys_to_remove = [
-                k for k in self._memory_cache.keys() if k.startswith(f"{prefix}:")
-            ]
+            keys_to_remove = [k for k in self._memory_cache.keys() if k.startswith(f"{prefix}:")]
             for k in keys_to_remove:
                 del self._memory_cache[k]
             return len(keys_to_remove)
 
         return 0
+
+    async def clear_pattern(self, pattern: str) -> int:
+        """Clear keys matching a glob pattern (Redis SCAN match or in-memory fnmatch)."""
+        if self.use_redis:
+            try:
+                keys: list[str] = []
+                async for key in self.redis_client.scan_iter(match=pattern):
+                    keys.append(key)
+
+                if keys:
+                    count = await self.redis_client.delete(*keys)
+                    return int(count)
+            except RedisError as e:
+                logger.error(f"Redis clear_pattern error: {str(e)}")
+                return 0
+
+            return 0
+
+        import fnmatch
+
+        keys_to_remove = [k for k in self._memory_cache.keys() if fnmatch.fnmatch(k, pattern)]
+        for k in keys_to_remove:
+            del self._memory_cache[k]
+        return len(keys_to_remove)
 
     async def get_or_set(
         self,

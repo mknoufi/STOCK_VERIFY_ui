@@ -53,7 +53,7 @@ class TestAuthenticationWorkflow:
         # Step 1: Register new user
         user_data = {
             "username": f"workflow_user_{random.randint(10000, 99999)}",
-            "password": "WorkflowTest123!",
+            "password": "WorkflowTest123!"[:72],
             "full_name": "Workflow Test User",
             "role": "staff",
         }
@@ -96,9 +96,7 @@ class TestAuthenticationWorkflow:
         collector.record_workflow_completion(
             "registration_login", steps_completed / 4, threshold=0.75
         )
-        collector.record_workflow_duration(
-            "registration_login", duration, threshold=5.0
-        )
+        collector.record_workflow_duration("registration_login", duration, threshold=5.0)
 
         assert steps_completed >= 3, f"Only {steps_completed}/4 steps completed"
 
@@ -155,7 +153,7 @@ class TestSessionWorkflow:
         """Create authenticated user and return headers."""
         user_data = {
             "username": f"session_user_{random.randint(10000, 99999)}",
-            "password": "SessionTest123!",
+            "password": "SessionTest123!"[:72],
             "full_name": "Session Test User",
             "role": "staff",
         }
@@ -239,9 +237,7 @@ class TestSessionWorkflow:
         collector.record_workflow_completion(
             "session_lifecycle", steps_completed / 4, threshold=0.75
         )
-        collector.record_workflow_duration(
-            "session_lifecycle", duration, threshold=10.0
-        )
+        collector.record_workflow_duration("session_lifecycle", duration, threshold=10.0)
 
         assert steps_completed >= 2, f"Only {steps_completed}/4 steps completed"
 
@@ -254,7 +250,7 @@ class TestVerificationWorkflow:
         """Create authenticated user and return headers."""
         user_data = {
             "username": f"verify_user_{random.randint(10000, 99999)}",
-            "password": "VerifyTest123!",
+            "password": "VerifyTest123!"[:72],
             "full_name": "Verify Test User",
             "role": "staff",
         }
@@ -344,9 +340,7 @@ class TestVerificationWorkflow:
         collector.record_workflow_completion(
             "item_verification", steps_completed / 4, threshold=0.50
         )
-        collector.record_workflow_duration(
-            "item_verification", duration, threshold=10.0
-        )
+        collector.record_workflow_duration("item_verification", duration, threshold=10.0)
 
         assert steps_completed >= 2
 
@@ -359,7 +353,7 @@ class TestAdminWorkflow:
         """Create admin user and return headers."""
         user_data = {
             "username": f"admin_user_{random.randint(10000, 99999)}",
-            "password": "AdminTest123!",
+            "password": "AdminTest123!"[:72],
             "full_name": "Admin Test User",
             "role": "admin",
         }
@@ -424,9 +418,7 @@ class TestAdminWorkflow:
 
         duration = time.time() - start_time
 
-        collector.record_workflow_completion(
-            "admin_dashboard", steps_completed / 4, threshold=0.75
-        )
+        collector.record_workflow_completion("admin_dashboard", steps_completed / 4, threshold=0.75)
         collector.record_workflow_duration("admin_dashboard", duration, threshold=5.0)
 
         assert steps_completed >= 2
@@ -447,7 +439,7 @@ class TestFullWorkflowEvaluation:
         # Create auth for workflows
         user_data = {
             "username": f"full_eval_{random.randint(10000, 99999)}",
-            "password": "FullEval123!",
+            "password": "FullEval123!"[:72],
             "full_name": "Full Eval User",
             "role": "admin",
         }
@@ -481,6 +473,4 @@ class TestFullWorkflowEvaluation:
         # Print summary
         report.print_summary()
 
-        assert report.success_rate >= 0.60, (
-            f"Success rate {report.success_rate} is too low"
-        )
+        assert report.success_rate >= 0.60, f"Success rate {report.success_rate} is too low"

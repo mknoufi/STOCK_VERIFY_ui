@@ -81,8 +81,9 @@ export async function flushOfflineQueue(
   if (!flags.enableOfflineQueue) return { processed: 0, remaining: 0 };
   if (flushing) return { processed: 0, remaining: (await loadQueue()).length };
 
-  const { isOnline, isInternetReachable } = useNetworkStore.getState();
-  const online = isOnline && (isInternetReachable ?? true);
+  const { isOnline, isInternetReachable, isRestrictedMode } =
+    useNetworkStore.getState();
+  const online = !isRestrictedMode && isOnline && (isInternetReachable ?? true);
   onlineManager.setOnline(online);
   if (!online) return { processed: 0, remaining: (await loadQueue()).length };
 
@@ -156,13 +157,19 @@ export function startOfflineQueue(client: AxiosInstance): void {
   if (!flags.enableOfflineQueue) return;
 
   // Sync initial online status with React Query
-  const { isOnline, isInternetReachable } = useNetworkStore.getState();
-  onlineManager.setOnline(isOnline && (isInternetReachable ?? true));
+  const { isOnline, isInternetReachable, isRestrictedMode } =
+    useNetworkStore.getState();
+  onlineManager.setOnline(
+    !isRestrictedMode && isOnline && (isInternetReachable ?? true),
+  );
 
   // Subscribe to network changes to auto-flush
   if (!unsubscribeNetwork) {
     unsubscribeNetwork = useNetworkStore.subscribe((state: any, _prev: any) => {
-      const online = state.isOnline && (state.isInternetReachable ?? true);
+      const online =
+        !state.isRestrictedMode &&
+        state.isOnline &&
+        (state.isInternetReachable ?? true);
       onlineManager.setOnline(online);
       if (online && !flushing) {
         flushOfflineQueue(client)
@@ -225,8 +232,35 @@ export function attachOfflineQueueInterceptors(client: AxiosInstance): void {
         return Promise.reject(error);
       }
 
-      const { isOnline, isInternetReachable } = useNetworkStore.getState();
-      const online = isOnline && (isInternetReachable ?? true);
+      // If backend rejects due to LAN policy, treat like offline and queue mutations.
+      const status = error.response?.status;
+      const errorCode = (error.response?.data as { code?: string } | undefined)
+        ?.code;
+      if (status === 403 && errorCode === "NETWORK_NOT_ALLOWED") {
+        try {
+          useNetworkStore.getState().setRestrictedMode(true);
+        } catch {}
+        const item = await enqueueMutation(cfg);
+        if (__DEV__) {
+          __DEV__ &&
+            console.warn("OfflineQueue: queued due to restricted mode", {
+              id: item.id,
+              method: item.method,
+              url: item.url,
+            });
+        }
+        try {
+          toastService.showInfo(
+            "Restricted network. Saved offline for later sync.",
+          );
+        } catch {}
+        return Promise.reject(error);
+      }
+
+      const { isOnline, isInternetReachable, isRestrictedMode } =
+        useNetworkStore.getState();
+      const online =
+        !isRestrictedMode && isOnline && (isInternetReachable ?? true);
 
       // If offline or network error with no response, queue it
       const isNetworkError = !error.response;

@@ -13,7 +13,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ViewStyle, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ModernButton } from "../ModernButton";
+import { ModernButton } from "../ui/ModernButton";
 import {
   modernColors,
   modernTypography,

@@ -12,8 +12,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getSyncStatus, forceSync, SyncResult } from "../services/syncService";
-import { useNetworkStore } from "../services/networkService";
+import { getSyncStatus, forceSync, SyncResult } from "../services/syncManager";
+import { useNetworkStore } from "../store/networkStore";
 
 interface SyncStatus {
   isOnline: boolean;
@@ -27,7 +27,7 @@ export const SyncStatusBar: React.FC = () => {
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
-  const isOnline = useNetworkStore((state) => state.isOnline);
+  const isOnline = useNetworkStore((state: any) => state.isOnline);
 
   const loadSyncStatus = React.useCallback(async () => {
     try {

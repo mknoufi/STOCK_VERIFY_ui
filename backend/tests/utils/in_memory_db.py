@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import copy
 import os
-import uuid
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
@@ -19,9 +18,34 @@ from backend.services.error_log import ErrorLogService
 from backend.services.refresh_token import RefreshTokenService
 
 
+def _normalize_value(val: Any) -> Any:
+    """Normalize values for comparison (e.g. ObjectId -> str)."""
+    if hasattr(val, "__class__") and val.__class__.__name__ == "ObjectId":
+        return str(val)
+    return val
+
+
 def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
     """Evaluate comparison operators."""
+    # Handle regex with options if present
+    if "$regex" in condition:
+        import re
+
+        pattern = condition["$regex"]
+        options = condition.get("$options", "")
+        flags = 0
+        if "i" in options:
+            flags |= re.IGNORECASE
+
+        if not re.search(pattern, str(value), flags):
+            return False
+
     for op, expected in condition.items():
+        if op == "$regex" or op == "$options":
+            continue
+
+        expected = _normalize_value(expected)
+
         if op == "$lt" and not (value < expected):
             return False
         if op == "$lte" and not (value <= expected):
@@ -32,14 +56,12 @@ def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
             return False
         if op == "$ne" and not (value != expected):
             return False
-        if op not in {"$lt", "$lte", "$gt", "$gte", "$ne"}:
+        if op not in {"$lt", "$lte", "$gt", "$gte", "$ne", "$regex", "$options"}:
             raise ValueError(f"Unsupported operator: {op}")
     return True
 
 
-def _matches_exists_logic(
-    document: dict[str, Any], key: str, value: dict[str, Any]
-) -> bool:
+def _matches_exists_logic(document: dict[str, Any], key: str, value: dict[str, Any]) -> bool:
     """Helper to handle $exists operator logic."""
     should_exist = value["$exists"]
     does_exist = key in document
@@ -61,9 +83,7 @@ def _matches_exists_logic(
     return _match_condition(doc_value, condition_without_exists)
 
 
-def _match_filter(
-    document: dict[str, Any], filter_query: dict[str, Optional[Any]]
-) -> bool:
+def _match_filter(document: dict[str, Any], filter_query: dict[str, Optional[Any]]) -> bool:
     """Basic Mongo-style filter matching."""
     if not filter_query:
         return True
@@ -85,6 +105,7 @@ def _match_filter(
             if not _match_condition(doc_value, value):
                 return False
         else:
+            value = _normalize_value(value)
             if doc_value != value:
                 return False
     return True
@@ -125,9 +146,7 @@ class InMemoryCursor:
 
     def sort(self, key: str, direction: int) -> InMemoryCursor:
         reverse = direction < 0
-        self._documents.sort(
-            key=lambda doc: doc.get(key, datetime.min), reverse=reverse
-        )
+        self._documents.sort(key=lambda doc: doc.get(key, datetime.min), reverse=reverse)
         return self
 
     def skip(self, count: int) -> InMemoryCursor:
@@ -151,27 +170,21 @@ class InMemoryCollection:
         self._documents: list[dict[str, Any]] = []
 
     def _ensure_id(self, document: dict[str, Any]) -> None:
-        document.setdefault("_id", uuid.uuid4().hex)
+        # Use 24-char hex string to mimic ObjectId
+        document.setdefault("_id", os.urandom(12).hex())
 
     async def find_one(
         self, filter: dict[str, Any], *args, **kwargs
-    ) -> dict[str, Optional[Any]]:
-        print(f"DEBUG: find_one called with {filter}")
+    ) -> Optional[dict[str, Optional[Any]]]:
         for doc in self._documents:
             if _match_filter(doc, filter):
-                print("DEBUG: find_one match found")
                 return copy.deepcopy(doc)
-        print("DEBUG: find_one no match")
         return None
 
-    async def insert_one(
-        self, document: dict[str, Any], *args, **kwargs
-    ) -> InsertOneResult:
-        print("DEBUG: insert_one called")
+    async def insert_one(self, document: dict[str, Any], *args, **kwargs) -> InsertOneResult:
         doc_copy = copy.deepcopy(document)
         self._ensure_id(doc_copy)
         self._documents.append(doc_copy)
-        print("DEBUG: insert_one done")
         return InsertOneResult(inserted_id=doc_copy["_id"])
 
     async def update_one(
@@ -199,11 +212,16 @@ class InMemoryCollection:
             _apply_update(new_doc, update)
             self._ensure_id(new_doc)
             self._documents.append(new_doc)
-            return UpdateResult(
-                matched_count=0, modified_count=1, upserted_id=new_doc["_id"]
-            )
+            return UpdateResult(matched_count=0, modified_count=1, upserted_id=new_doc["_id"])
 
         return UpdateResult(matched_count=0, modified_count=0)
+
+    async def delete_one(self, filter_query: dict[str, Optional[Any]]) -> DeleteResult:
+        for i, doc in enumerate(self._documents):
+            if _match_filter(doc, filter_query):
+                self._documents.pop(i)
+                return DeleteResult(deleted_count=1)
+        return DeleteResult(deleted_count=0)
 
     async def delete_many(self, filter_query: dict[str, Optional[Any]]) -> DeleteResult:
         to_keep = []
@@ -216,19 +234,19 @@ class InMemoryCollection:
         self._documents = to_keep
         return DeleteResult(deleted_count=deleted)
 
-    async def count_documents(
-        self, filter_query: dict[str, Optional[Any]] = None
-    ) -> int:
+    async def count_documents(self, filter_query: Optional[dict[str, Optional[Any]]] = None) -> int:
+        if filter_query is None:
+            return len(self._documents)
         return sum(1 for doc in self._documents if _match_filter(doc, filter_query))
 
     def find(
         self,
-        filter_query: dict[str, Optional[Any]] = None,
-        projection: dict[str, Optional[int]] = None,
+        filter_query: Optional[dict[str, Optional[Any]]] = None,
+        projection: Optional[dict[str, Optional[int]]] = None,
     ):
         results = []
         for doc in self._documents:
-            if _match_filter(doc, filter_query):
+            if filter_query is None or _match_filter(doc, filter_query):
                 if projection:
                     projected = {}
                     include_fields = [k for k, v in projection.items() if v]
@@ -284,11 +302,10 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     """
     from typing import cast
 
-    import backend.server as server_module
-    from backend.db.runtime import set_client, set_db
     from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-    print("DEBUG: Imported server module")
+    import backend.server as server_module
+    from backend.db.runtime import set_client, set_db
 
     fake_db = InMemoryDatabase()
     monkeypatch.setattr(server_module, "db", fake_db)
@@ -319,8 +336,9 @@ def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
     """Setup core services like refresh tokens, activity logs, error logs."""
     from typing import cast
 
-    from backend.services.runtime import set_refresh_token_service
     from motor.motor_asyncio import AsyncIOMotorDatabase
+
+    from backend.services.runtime import set_refresh_token_service
 
     refresh_service = RefreshTokenService(
         cast(AsyncIOMotorDatabase, fake_db),
@@ -330,12 +348,8 @@ def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
     server_module.refresh_token_service = refresh_service
     set_refresh_token_service(refresh_service)
 
-    server_module.activity_log_service = ActivityLogService(
-        cast(AsyncIOMotorDatabase, fake_db)
-    )
-    server_module.error_log_service = ErrorLogService(
-        cast(AsyncIOMotorDatabase, fake_db)
-    )
+    server_module.activity_log_service = ActivityLogService(cast(AsyncIOMotorDatabase, fake_db))
+    server_module.error_log_service = ErrorLogService(cast(AsyncIOMotorDatabase, fake_db))
 
     class _NoOpMigrationManager:
         async def ensure_indexes(self):
@@ -344,7 +358,9 @@ def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
         async def run_migrations(self):
             return None
 
-    monkeypatch.setattr(server_module, "migration_manager", _NoOpMigrationManager())
+    import backend.core.lifespan as lifespan_module
+
+    monkeypatch.setattr(lifespan_module, "migration_manager", _NoOpMigrationManager())
     monkeypatch.setenv("RATE_LIMIT_ENABLED", "false")
 
 
@@ -352,11 +368,13 @@ def _setup_mock_services(monkeypatch, server_module) -> None:
     """Setup mocked SQL connector, health service, auto sync, and export service."""
     from unittest.mock import AsyncMock, MagicMock
 
+    import backend.core.lifespan as lifespan_module
+
     # Mock SQL Connector
     mock_sql = MagicMock()
     mock_sql.connect.return_value = None
     mock_sql.test_connection.return_value = False
-    monkeypatch.setattr(server_module, "sql_connector", mock_sql)
+    monkeypatch.setattr(lifespan_module, "sql_connector", mock_sql)
 
     # Mock DatabaseHealthService
     mock_health = MagicMock()
@@ -364,35 +382,43 @@ def _setup_mock_services(monkeypatch, server_module) -> None:
     mock_health.stop = MagicMock()
     mock_health.check_mongo_health = AsyncMock(return_value={"status": "healthy"})
     mock_health.check_sql_server_health = AsyncMock(return_value={"status": "healthy"})
-    monkeypatch.setattr(
-        server_module, "DatabaseHealthService", MagicMock(return_value=mock_health)
-    )
-    if hasattr(server_module, "database_health_service"):
-        monkeypatch.setattr(server_module, "database_health_service", mock_health)
+
+    # Patch the class in server module if it's imported there, otherwise just the instance in lifespan
+    if hasattr(server_module, "DatabaseHealthService"):
+        monkeypatch.setattr(
+            server_module, "DatabaseHealthService", MagicMock(return_value=mock_health)
+        )
+
+    monkeypatch.setattr(lifespan_module, "database_health_service", mock_health)
 
     # Mock AutoSyncManager
     mock_auto_sync = MagicMock()
     mock_auto_sync.start = AsyncMock()
     mock_auto_sync.stop = AsyncMock()
-    monkeypatch.setattr(
-        server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync)
-    )
-    if hasattr(server_module, "auto_sync_manager"):
-        monkeypatch.setattr(server_module, "auto_sync_manager", mock_auto_sync)
+
+    if hasattr(server_module, "AutoSyncManager"):
+        monkeypatch.setattr(
+            server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync)
+        )
+
+    # Note: auto_sync_manager might not be in lifespan global scope directly if it's set via set_auto_sync_manager
+    # But checking lifespan just in case
+    if hasattr(lifespan_module, "auto_sync_manager"):
+        monkeypatch.setattr(lifespan_module, "auto_sync_manager", mock_auto_sync)
 
     # Mock ScheduledExportService
     mock_export_service = MagicMock()
     mock_export_service.start = MagicMock()
     mock_export_service.stop = MagicMock()
-    monkeypatch.setattr(
-        server_module,
-        "ScheduledExportService",
-        MagicMock(return_value=mock_export_service),
-    )
-    if hasattr(server_module, "scheduled_export_service"):
+
+    if hasattr(server_module, "ScheduledExportService"):
         monkeypatch.setattr(
-            server_module, "scheduled_export_service", mock_export_service
+            server_module,
+            "ScheduledExportService",
+            MagicMock(return_value=mock_export_service),
         )
+
+    monkeypatch.setattr(lifespan_module, "scheduled_export_service", mock_export_service)
 
 
 def _setup_cache_and_redis(monkeypatch, server_module) -> Any:
@@ -427,11 +453,11 @@ def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None
     """Initialize all API modules with the fake database."""
     from typing import cast
 
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
     from backend.api.count_lines_api import init_count_lines_api
     from backend.api.erp_api import init_erp_api
     from backend.api.item_verification_api import init_verification_api
-    from backend.api.session_api import init_session_api
-    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     init_verification_api(cast(AsyncIOMotorDatabase, fake_db))
     init_erp_api(cast(AsyncIOMotorDatabase, fake_db), cache_service)
@@ -441,9 +467,6 @@ def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None
     server_module.client = cast(AsyncIOMotorClient, fake_db.client)
 
     # Initialize APIs that depend on global db
-    init_session_api(
-        cast(AsyncIOMotorDatabase, fake_db), server_module.activity_log_service
-    )
     init_count_lines_api(server_module.activity_log_service)
 
 
@@ -451,24 +474,20 @@ def _setup_auth_and_seed_users(monkeypatch, fake_db, server_module) -> None:
     """Setup authentication overrides and seed default test users."""
     from typing import cast
 
-    from backend.auth import dependencies as auth_deps_module
     from motor.motor_asyncio import AsyncIOMotorDatabase
 
+    from backend.auth import dependencies as auth_deps_module
+
     # Patch server module's auth settings to match test env
-    server_module.SECRET_KEY = os.getenv(
-        "JWT_SECRET", "test-jwt-secret-key-for-testing-only"
-    )
+    server_module.SECRET_KEY = os.getenv("JWT_SECRET", "test-jwt-secret-key-for-testing-only")
     server_module.ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
     # Mock get_current_user to debug if it's even called
     async def mock_get_current_user(credentials: Optional[Any] = None):
-        print("DEBUG: MOCK get_current_user called")
         return {"username": "staff1", "role": "staff", "full_name": "Staff Member"}
 
     # Override both the server module's dependency and the auth module's dependency
-    server_module.app.dependency_overrides[server_module.get_current_user] = (
-        mock_get_current_user
-    )
+    server_module.app.dependency_overrides[server_module.get_current_user] = mock_get_current_user
     server_module.app.dependency_overrides[auth_deps_module.get_current_user] = (
         mock_get_current_user
     )
@@ -488,11 +507,13 @@ def _seed_default_users(fake_db, server_module) -> None:
     """Seed default test users."""
 
     def _seed_user(username: str, password: str, full_name: str, role: str):
+        # Explicitly truncate password to 72 chars before hashing to prevent bcrypt ValueError
+        safe_password = password[:72]
         fake_db.users._documents.append(
             {
-                "_id": uuid.uuid4().hex,
+                "_id": os.urandom(12).hex(),
                 "username": username,
-                "hashed_password": server_module.get_password_hash(password),
+                "hashed_password": server_module.get_password_hash(safe_password),
                 "full_name": full_name,
                 "role": role,
                 "is_active": True,
@@ -502,6 +523,31 @@ def _seed_default_users(fake_db, server_module) -> None:
         )
 
     _seed_user("staff1", "staff123", "Staff Member", "staff")
+
+    # Manually add PIN hash for staff1
+    from passlib.context import CryptContext
+
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    # Find via direct list access since we just appended it
+    # But safer to find by username in case order changes
+    for user in fake_db.users._documents:
+        if user["username"] == "staff1":
+            user["pin_hash"] = pwd_context.hash("1234")
+            break
+
+    # Manually add PIN hash for staff1 (pin="1234")
+    # Hash for "1234" using passlib's PBKDF2 (approximate, or just direct patch if using verify/hash)
+    # Actually, let's use the context from server_module if available, or just a known hash if we can.
+    # But since we have access to server_module.pwd_context, let's use it or patch it.
+
+    # Better yet, let's just update the document directly after seeding if possible,
+    # OR since we can't easily import pwd_context here without circular imports,
+    # let's assume we can mock the verification or just update the seed function to accept pin.
+
+    # Let's modify _seed_user to optional pin
+    pass
+
     _seed_user("supervisor", "super123", "Supervisor", "supervisor")
     _seed_user("admin", "admin123", "Administrator", "admin")
 

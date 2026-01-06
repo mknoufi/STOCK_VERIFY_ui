@@ -3,16 +3,16 @@
  * Search autocomplete for finding items by name or barcode
  * Enhanced with pagination and infinite scroll
  */
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import { SearchResult } from "../../services/enhancedSearchService";
 import { Skeleton } from "../ui/Skeleton";
@@ -68,41 +68,43 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
   onLoadMore,
 }) => {
   // Render individual search result item
-  const renderSearchResultItem = useCallback(({ item, index }: { item: SearchResult; index: number }) => (
-    <TouchableOpacity
-      key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
-      style={styles.searchResultItem}
-      onPress={() => onSearchResultSelect(item)}
-    >
-      <View style={styles.searchResultContent}>
-        <View style={styles.resultHeader}>
-          <Text style={styles.searchResultName}>{item.item_name}</Text>
-          {item.relevance_score !== undefined && item.relevance_score >= 500 && (
-            <View style={styles.exactMatchBadge}>
-              <Text style={styles.exactMatchText}>Exact</Text>
-            </View>
+  const renderSearchResultItem = useCallback(
+    ({ item, index }: { item: SearchResult; index: number }) => (
+      <TouchableOpacity
+        key={`search-result-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`}
+        style={styles.searchResultItem}
+        onPress={() => onSearchResultSelect(item)}
+      >
+        <View style={styles.searchResultContent}>
+          <View style={styles.resultHeader}>
+            <Text style={styles.searchResultName}>{item.item_name}</Text>
+            {item.relevance_score !== undefined &&
+              item.relevance_score >= 500 && (
+                <View style={styles.exactMatchBadge}>
+                  <Text style={styles.exactMatchText}>Exact</Text>
+                </View>
+              )}
+          </View>
+          <Text style={styles.searchResultCode}>Code: {item.item_code}</Text>
+          {item.barcode && (
+            <Text style={styles.searchResultBarcode}>
+              Barcode: {item.barcode}
+            </Text>
           )}
-        </View>
-        <Text style={styles.searchResultCode}>
-          Code: {item.item_code}
-        </Text>
-        {item.barcode && (
-          <Text style={styles.searchResultBarcode}>
-            Barcode: {item.barcode}
+          <Text style={styles.searchResultStock}>
+            Stock: {item.stock_qty || 0}
           </Text>
-        )}
-        <Text style={styles.searchResultStock}>
-          Stock: {item.stock_qty || 0}
-        </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
-    </TouchableOpacity>
-  ), [onSearchResultSelect]);
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+      </TouchableOpacity>
+    ),
+    [onSearchResultSelect],
+  );
 
   // Footer component for infinite scroll
   const renderFooter = useCallback(() => {
     if (!hasNextPage) return null;
-    
+
     if (isLoadingMore) {
       return (
         <View style={styles.loadingMoreContainer}>
@@ -113,10 +115,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
     }
 
     return (
-      <TouchableOpacity
-        style={styles.loadMoreButton}
-        onPress={onLoadMore}
-      >
+      <TouchableOpacity style={styles.loadMoreButton} onPress={onLoadMore}>
         <Text style={styles.loadMoreText}>Load More Results</Text>
         <Ionicons name="chevron-down" size={16} color="#3B82F6" />
       </TouchableOpacity>
@@ -129,6 +128,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
       onLoadMore();
     }
   }, [hasNextPage, isLoadingMore, onLoadMore]);
+
+  const itemNameSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   return (
     <View style={styles.manualEntryContainer}>
@@ -157,11 +160,10 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onChangeText={(text) => {
               onActivityReset?.();
               onBarcodeChange(text);
-              if (text.length === 6) {
-                onBarcodeSubmit();
-              }
             }}
             keyboardType="numeric"
+            autoCapitalize="none"
+            autoCorrect={false}
             returnKeyType="done"
             onSubmitEditing={onBarcodeSubmit}
           />
@@ -213,11 +215,24 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onChangeText={(text) => {
               onActivityReset?.();
               onItemNameChange(text);
-              if (text.trim().length >= 3) {
-                onSearch(text);
+
+              if (itemNameSearchTimeoutRef.current) {
+                clearTimeout(itemNameSearchTimeoutRef.current);
+                itemNameSearchTimeoutRef.current = null;
+              }
+
+              const trimmed = text.trim();
+              if (trimmed.length >= 3) {
+                itemNameSearchTimeoutRef.current = setTimeout(() => {
+                  onSearch(text);
+                }, 350);
+              } else {
+                onSearch("");
               }
             }}
             returnKeyType="search"
+            autoCapitalize="none"
+            autoCorrect={false}
             onSubmitEditing={onItemNameSubmit}
           />
           <TouchableOpacity
@@ -240,28 +255,25 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
       {showSearchResults && searchResults.length > 0 && (
         <View style={styles.searchResultsContainer}>
           <View style={styles.searchResultsHeader}>
-            <Text style={styles.searchResultsTitle}>
-              Search Results
-            </Text>
+            <Text style={styles.searchResultsTitle}>Search Results</Text>
             <Text style={styles.searchResultsCount}>
-              {searchResults.length}{totalResults > searchResults.length ? ` of ${totalResults}` : ''}
+              {searchResults.length}
+              {totalResults > searchResults.length ? ` of ${totalResults}` : ""}
             </Text>
           </View>
-          <FlatList
+          <FlashList
             data={searchResults}
             renderItem={renderSearchResultItem}
-            keyExtractor={(item, index) => 
-              `search-${index}-${item.item_code || 'no-code'}-${item.barcode || 'no-barcode'}`
+            keyExtractor={(item, index) =>
+              `search-${index}-${item.item_code || "no-code"}-${item.barcode || "no-barcode"}`
             }
-            style={styles.searchResultsFlatList}
-            nestedScrollEnabled={true}
+            // @ts-ignore - estimatedItemSize required by FlashList
+            estimatedItemSize={70}
+            contentContainerStyle={styles.searchResultsFlatList}
             showsVerticalScrollIndicator={true}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.3}
             ListFooterComponent={renderFooter}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={5}
           />
         </View>
       )}

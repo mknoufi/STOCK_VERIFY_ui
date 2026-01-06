@@ -27,6 +27,11 @@ echo "🚀 Starting backend server..."
 export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
 export USE_CONNECTION_POOL=False
 export SQL_SERVER_HOST="" # Unset to skip blocking connection check
+# Force HTTP for local development to avoid SSL issues on mobile devices
+export SSL_KEYFILE=""
+export SSL_CERTFILE=""
+export DISABLE_SSL="true"
+unset DEBUG # Prevent config validation error if set in shell
 cd "$BACKEND_DIR"
 
 python3 server.py 2>&1 | tee backend_startup.log

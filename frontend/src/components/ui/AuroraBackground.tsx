@@ -11,7 +11,14 @@
  */
 
 import React, { useEffect } from "react";
-import { View, StyleSheet, ViewStyle, useWindowDimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -21,7 +28,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 import { ParticleField } from "./ParticleField";
 
 export type AuroraVariant =
@@ -37,7 +44,7 @@ interface AuroraBackgroundProps {
   animated?: boolean;
   withParticles?: boolean;
   particleCount?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }
 
@@ -51,9 +58,15 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   children,
 }) => {
   const { width, height } = useWindowDimensions();
-  const colors = variant === "primary"
-    ? ["#0EA5E9", "#10B981", "#020617"]
-    : auroraTheme.colors.aurora[variant];
+  const { theme } = useThemeContext();
+
+  // Use theme colors for aurora variants with a safe fallback for mocks.
+  const fallbackColor = theme.colors.accent || "#6366F1";
+  const auroraPalette = theme.colors.aurora;
+  const colors =
+    auroraPalette?.[variant] ||
+    auroraPalette?.primary ||
+    ([fallbackColor, fallbackColor, fallbackColor] as const);
 
   // Animation values for gradient blobs
   const blob1X = useSharedValue(0);
@@ -64,7 +77,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   const blob3Y = useSharedValue(0);
 
   useEffect(() => {
-    if (animated) {
+    if (animated && Platform.OS !== "web") {
       // Blob 1 animation
       blob1X.value = withRepeat(
         withSequence(
@@ -162,16 +175,21 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
 
   const opacity = opacityByIntensity[intensity];
 
+  const BlobComponent = Platform.OS === "web" ? View : Animated.View;
+
   return (
     <View style={[styles.container, style]}>
-      {/* Base gradient background */}
+      {/* Base gradient background - verify if theme has specific background gradient or use colors */}
       <LinearGradient
-        colors={["#020617", "#0F172A"]}
+        colors={[
+          theme.colors.background.default,
+          theme.colors.background.paper || theme.colors.background.default,
+        ]}
         style={StyleSheet.absoluteFill}
       />
 
       {/* Animated gradient blobs */}
-      <Animated.View
+      <BlobComponent
         style={[
           styles.blob,
           {
@@ -180,8 +198,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             top: -width * 0.3,
             left: -width * 0.2,
           },
-          blob1Style,
-          { opacity }
+          Platform.OS === "web" ? { opacity } : blob1Style,
+          Platform.OS !== "web" && { opacity },
         ]}
       >
         <LinearGradient
@@ -190,9 +208,9 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           end={{ x: 1, y: 1 }}
           style={styles.blobGradient}
         />
-      </Animated.View>
+      </BlobComponent>
 
-      <Animated.View
+      <BlobComponent
         style={[
           styles.blob,
           {
@@ -201,8 +219,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             bottom: -width * 0.2,
             right: -width * 0.3,
           },
-          blob2Style,
-          { opacity }
+          Platform.OS === "web" ? { opacity } : blob2Style,
+          Platform.OS !== "web" && { opacity },
         ]}
       >
         <LinearGradient
@@ -211,9 +229,9 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           end={{ x: 0, y: 1 }}
           style={styles.blobGradient}
         />
-      </Animated.View>
+      </BlobComponent>
 
-      <Animated.View
+      <BlobComponent
         style={[
           styles.blob,
           {
@@ -222,8 +240,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
             top: height * 0.4,
             left: width * 0.1,
           },
-          blob3Style,
-          { opacity }
+          Platform.OS === "web" ? { opacity } : blob3Style,
+          Platform.OS !== "web" && { opacity },
         ]}
       >
         <LinearGradient
@@ -232,7 +250,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
           end={{ x: 0.5, y: 1 }}
           style={styles.blobGradient}
         />
-      </Animated.View>
+      </BlobComponent>
 
       {/* Optional Particle Field overlay */}
       {withParticles && (

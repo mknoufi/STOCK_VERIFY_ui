@@ -235,8 +235,8 @@ class BatchManager:
     @staticmethod
     def _analyze_batch_condition(batch: dict) -> dict:
         """Analyze batch and recommend actions"""
-        flags = []
-        recommendations = []
+        flags: list[str] = []
+        recommendations: list[str] = []
         priority = "NORMAL"
 
         # Check expiry (may override priority/action)
@@ -268,7 +268,7 @@ class BatchManager:
         total_qty = sum(b.get("quantity", 0) for b in batches)
 
         # Categorize batches by condition
-        by_condition = {}
+        by_condition: dict[str | ItemCondition, list[dict]] = {}
         for batch in batches:
             condition = batch.get("condition", ItemCondition.GOOD)
             if condition not in by_condition:
@@ -276,17 +276,11 @@ class BatchManager:
             by_condition[condition].append(batch)
 
         # Priority batches (need immediate attention)
-        priority_batches = [
-            b for b in batches if b.get("action_priority") in ["URGENT", "HIGH"]
-        ]
+        priority_batches = [b for b in batches if b.get("action_priority") in ["URGENT", "HIGH"]]
 
         # Calculate discount potential
-        total_value = sum(
-            b.get("quantity", 0) * b.get("original_mrp", 0) for b in batches
-        )
-        discounted_value = sum(
-            b.get("quantity", 0) * b.get("current_price", 0) for b in batches
-        )
+        total_value = sum(b.get("quantity", 0) * b.get("original_mrp", 0) for b in batches)
+        discounted_value = sum(b.get("quantity", 0) * b.get("current_price", 0) for b in batches)
         potential_loss = total_value - discounted_value
 
         return {
@@ -418,7 +412,7 @@ class ConditionMarker:
     @staticmethod
     def get_quick_actions(condition: str) -> list[str]:
         """Get quick action suggestions for condition"""
-        actions_map = {
+        actions_map: dict[str, list[str]] = {
             ItemCondition.GOOD: [
                 "Verify location on shelf",
                 "Check for dust/dirt",

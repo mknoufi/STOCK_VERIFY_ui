@@ -37,7 +37,7 @@ class AsyncExecutor:
         self.retry_attempts = retry_attempts
         self.backoff_factor = backoff_factor
         self.semaphore = asyncio.Semaphore(max_concurrent)
-        self._circuit_breaker_state = {}
+        self._circuit_breaker_state: dict[str, dict[str, Any]] = {}
         self._circuit_breaker_threshold = 5
         self._circuit_breaker_timeout = 60  # seconds
 
@@ -66,18 +66,12 @@ class AsyncExecutor:
                 return Result.success(result)
 
             except TimeoutError:
-                last_error = TimeoutError(
-                    f"{operation_name} timed out after {self.timeout}s"
-                )
-                logger.warning(
-                    f"{operation_name} attempt {attempt + 1} failed: timeout"
-                )
+                last_error = Exception(f"{operation_name} timed out after {self.timeout}s")
+                logger.warning(f"{operation_name} attempt {attempt + 1} failed: timeout")
 
             except Exception as e:
                 last_error = e
-                logger.warning(
-                    f"{operation_name} attempt {attempt + 1} failed: {str(e)}"
-                )
+                logger.warning(f"{operation_name} attempt {attempt + 1} failed: {str(e)}")
 
                 # Record failure for circuit breaker
                 self._record_failure(operation_name)
@@ -160,9 +154,7 @@ _async_executor = AsyncExecutor(
 )
 
 
-def with_async_executor(
-    operation_name: Optional[str] = None, timeout: Optional[float] = None
-):
+def with_async_executor(operation_name: Optional[str] = None, timeout: Optional[float] = None):
     """
     Decorator for automatic async execution with retry and error handling
     """
@@ -210,7 +202,7 @@ async def async_connection_pool(pool_size: int = 10):
     """
     Modern connection pool context manager
     """
-    pool = []
+    pool: list[Any] = []
 
     try:
         # Initialize pool
@@ -239,9 +231,9 @@ class AsyncCache:
     def __init__(self, max_size: int = 1000, default_ttl: int = 3600):
         self.max_size = max_size
         self.default_ttl = default_ttl
-        self._cache = {}
-        self._access_times = {}
-        self._expiry_times = {}
+        self._cache: dict[str, Any] = {}
+        self._access_times: dict[str, float] = {}
+        self._expiry_times: dict[str, float] = {}
         self._lock = asyncio.Lock()
 
     async def get(self, key: str) -> Optional[Any]:

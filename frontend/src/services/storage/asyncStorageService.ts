@@ -27,7 +27,7 @@ export class AsyncStorageService {
   private static instance: AsyncStorageService;
   private debugMode: boolean = __DEV__;
 
-  private constructor() { }
+  private constructor() {}
 
   static getInstance(): AsyncStorageService {
     if (!AsyncStorageService.instance) {
@@ -39,7 +39,11 @@ export class AsyncStorageService {
   /**
    * Unified error handling for all storage operations
    */
-  private handleStorageError(operation: string, key: string, error: unknown): void {
+  private handleStorageError(
+    operation: string,
+    key: string,
+    error: unknown,
+  ): void {
     const errorMsg = error instanceof Error ? error.message : String(error);
     const errorMessage = `AsyncStorage ${operation} failed for key '${key}': ${errorMsg}`;
 
@@ -66,6 +70,33 @@ export class AsyncStorageService {
   }
 
   /**
+   * Summarize large objects for logging to prevent console lag
+   */
+  private summarizeForLog(value: unknown): unknown {
+    if (value === null) return "null";
+    if (value === undefined) return "undefined";
+
+    if (Array.isArray(value)) {
+      return `Array(${value.length})`;
+    }
+
+    if (typeof value === "object") {
+      const keys = Object.keys(value as Record<string, unknown>);
+      return {
+        type: "object",
+        keyCount: keys.length,
+        keys: keys.slice(0, 5),
+      };
+    }
+
+    if (typeof value === "string" && value.length > 100) {
+      return `${value.substring(0, 100)}... (${value.length} chars)`;
+    }
+
+    return value;
+  }
+
+  /**
    * Set item with enhanced error handling and options
    */
   async setItem<T>(
@@ -85,7 +116,11 @@ export class AsyncStorageService {
       await AsyncStorage.setItem(key, serialized);
 
       if (this.debugMode && !options.silent) {
-        __DEV__ && console.log(`✅ AsyncStorage: Set '${key}'`, value);
+        __DEV__ &&
+          console.log(
+            `✅ AsyncStorage: Set '${key}'`,
+            this.summarizeForLog(value),
+          );
       }
 
       return true;
@@ -149,7 +184,11 @@ export class AsyncStorageService {
       }
 
       if (this.debugMode && !options.silent) {
-        __DEV__ && console.log(`📦 AsyncStorage: Got '${key}'`, item.value);
+        __DEV__ &&
+          console.log(
+            `📦 AsyncStorage: Got '${key}'`,
+            this.summarizeForLog(item.value),
+          );
       }
 
       return item.value;
@@ -201,8 +240,10 @@ export class AsyncStorageService {
   ): Promise<boolean> {
     try {
       // Logic for web environments (safety check mostly)
-      if (typeof window !== 'undefined' && options.confirm) {
-        const confirmed = window.confirm("Are you sure you want to clear all data?");
+      if (typeof window !== "undefined" && options.confirm) {
+        const confirmed = window.confirm(
+          "Are you sure you want to clear all data?",
+        );
         if (!confirmed) return false;
       }
 
@@ -271,7 +312,9 @@ export class AsyncStorageService {
   /**
    * Get multiple items efficiently
    */
-  async getMultiple<T = unknown>(keys: string[]): Promise<Record<string, T | null>> {
+  async getMultiple<T = unknown>(
+    keys: string[],
+  ): Promise<Record<string, T | null>> {
     try {
       const keyValuePairs = await AsyncStorage.multiGet(keys);
       const result: Record<string, T | null> = {};
@@ -436,11 +479,13 @@ export const storage = {
 
   has: (key: string) => asyncStorageService.hasItem(key),
 
-  clear: (options?: { confirm?: boolean }) => asyncStorageService.clearAll(options),
+  clear: (options?: { confirm?: boolean }) =>
+    asyncStorageService.clearAll(options),
 
   keys: (filter?: string) => asyncStorageService.getAllKeys(filter),
 
-  getMultiple: <T = unknown>(keys: string[]) => asyncStorageService.getMultiple<T>(keys),
+  getMultiple: <T = unknown>(keys: string[]) =>
+    asyncStorageService.getMultiple<T>(keys),
 
   setMultiple: <T>(items: [string, T][]) =>
     asyncStorageService.setMultiple<T>(items),

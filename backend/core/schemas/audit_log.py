@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AuditAction(str, Enum):
@@ -19,7 +19,7 @@ class AuditAction(str, Enum):
     LOGIN_PIN = "LOGIN_PIN"
     LOGOUT = "LOGOUT"
     CHANGE_PIN = "CHANGE_PIN"
-    CHANGE_PASSWORD = "CHANGE_PASSWORD"
+    CHANGE_PASSWORD = "CHANGE_PASSWORD"  # pragma: allowlist secret
 
     # Session actions
     SESSION_START = "SESSION_START"
@@ -62,29 +62,24 @@ class AuditLogCreate(BaseModel):
         default=None,
         description="Type of resource affected (e.g., 'user', 'item', 'session')",
     )
-    resource_id: Optional[str] = Field(
-        default=None, description="ID of the affected resource"
-    )
-    details: Optional[dict[str, Any]] = Field(
-        default=None, description="Additional action details"
-    )
-    ip_address: Optional[str] = Field(
-        default=None, description="IP address of the request"
-    )
+    resource_id: Optional[str] = Field(default=None, description="ID of the affected resource")
+    details: Optional[dict[str, Any]] = Field(default=None, description="Additional action details")
+    ip_address: Optional[str] = Field(default=None, description="IP address of the request")
     user_agent: Optional[str] = Field(default=None, description="User agent string")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
-                "user_id": "507f1f77bcf86cd799439011",
+                "user_id": "000000000000000000000000",
                 "username": "staff_user",
                 "action": "CHANGE_PIN",
                 "resource_type": "user",
-                "resource_id": "507f1f77bcf86cd799439011",
+                "resource_id": "000000000000000000000000",
                 "details": {"old_pin_changed": True},
                 "ip_address": "192.168.1.100",
             }
         }
+    )
 
 
 class AuditLog(AuditLogCreate):
@@ -95,17 +90,18 @@ class AuditLog(AuditLogCreate):
         default_factory=datetime.utcnow, description="Timestamp of the action"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
-                "id": "507f1f77bcf86cd799439012",
-                "user_id": "507f1f77bcf86cd799439011",
+                "id": "000000000000000000000000",
+                "user_id": "000000000000000000000000",
                 "username": "staff_user",
                 "action": "CHANGE_PIN",
                 "resource_type": "user",
-                "resource_id": "507f1f77bcf86cd799439011",
+                "resource_id": "000000000000000000000000",
                 "details": {"old_pin_changed": True},
                 "ip_address": "192.168.1.100",
                 "timestamp": "2025-12-23T10:30:00Z",
             }
         }
+    )

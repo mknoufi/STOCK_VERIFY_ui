@@ -63,6 +63,18 @@ The current STOCK_VERIFY application has:
 - Offline-first architecture with local storage
 - Analytics and data visualization
 - Performance optimizations (code splitting, lazy loading)
+- **Accessibility: WCAG 2.1 AA compliance**
+  - Color contrast ratio: ≥4.5:1 for normal text, ≥3:1 for large text (18pt+)
+  - Touch targets: minimum 44×44pt (iOS) / 48×48dp (Android)
+  - All interactive elements must have accessibilityLabel
+  - Support for screen readers (VoiceOver, TalkBack)
+  - 60fps animations with reduced motion preference support
+  - **accessibilityState**: All stateful components must expose disabled/selected/checked/busy states
+  - **accessibilityHint**: Non-obvious interactions must include hints (e.g., "Double tap to expand")
+  - **Color-blind support**: Never rely on color alone; use icons, patterns, or text labels alongside color
+  - **Reduced motion**: Respect `prefers-reduced-motion` / `accessibilityReduceMotion`; provide static alternatives
+  - **Dynamic Type (iOS)**: Support text scaling up to 200%; test with "Larger Accessibility Sizes" enabled
+  - **Font scaling (Android)**: Support system font size preferences; layouts must not break at 1.5x scale
 
 ### Backend (FastAPI/Python)
 - Performance optimizations (caching, query optimization)
@@ -76,7 +88,12 @@ The current STOCK_VERIFY application has:
 - Backend: Unit tests (80%+ coverage), integration tests, API tests
 - Frontend: Component tests, screen tests, E2E tests (Detox/Playwright)
 - Visual regression testing
-- Accessibility testing
+- **Accessibility testing (required before release):**
+  - WCAG 2.1 Level AA compliance verification
+  - Screen reader testing: VoiceOver (iOS), TalkBack (Android)
+  - Color contrast audit using axe-core or similar tool
+  - Keyboard navigation testing (web platform)
+  - Touch target size verification (44pt minimum)
 
 ### Deployment
 - Docker configurations for development and production

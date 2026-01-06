@@ -6,7 +6,7 @@ Type-safe error handling without exceptions where possible
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar, cast
 
 T = TypeVar("T")
 E = TypeVar("E", bound=Exception)
@@ -39,9 +39,7 @@ class Result(Generic[T, E]):
     @staticmethod
     def error(error: E, message: Optional[str] = None) -> "Result[T, E]":
         """Create error result"""
-        return Result(
-            _type=ResultType.ERROR, _error=error, _error_message=message or str(error)
-        )
+        return Result(_type=ResultType.ERROR, _error=error, _error_message=message or str(error))
 
     @property
     def is_success(self) -> bool:
@@ -75,7 +73,7 @@ class Result(Generic[T, E]):
             try:
                 return Result.success(fn(self._value))
             except Exception as e:
-                return Result.error(e, str(e))
+                return Result.error(cast(E, e), str(e))
         return Result.error(self._error, self._error_message)
 
     def map_error(self, fn: Callable[[E], Any]) -> "Result[T, Any]":
@@ -99,9 +97,7 @@ class Result(Generic[T, E]):
             return fn(self._error)
         return Result.success(self._value)
 
-    def match(
-        self, on_success: Callable[[T], Any], on_error: Callable[[E, str], Any]
-    ) -> Any:
+    def match(self, on_success: Callable[[T], Any], on_error: Callable[[E, str], Any]) -> Any:
         """Pattern matching style handling"""
         if self.is_success:
             return on_success(self._value)

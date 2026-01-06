@@ -7,4 +7,4 @@
  * @deprecated Import from '@/domains/inventory/components/ItemFilters' instead
  */
 
-export * from '@/domains/inventory/components/ItemFilters';
+export * from "@/domains/inventory/components/ItemFilters";

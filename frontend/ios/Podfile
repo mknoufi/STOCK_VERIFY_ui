@@ -7,7 +7,7 @@ podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties
 def ccache_enabled?(podfile_properties)
   # Environment variable takes precedence
   return ENV['USE_CCACHE'] == '1' if ENV['USE_CCACHE']
-  
+
   # Fall back to Podfile properties
   podfile_properties['apple.ccacheEnabled'] == 'true'
 end
@@ -20,7 +20,7 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 
 prepare_react_native_project!
 
-target 'frontend' do
+target 'StockVerify' do
   use_expo_modules!
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
@@ -56,5 +56,29 @@ target 'frontend' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+
+    # Fix CocoaPods/Xcode script phase failing when the workspace path contains spaces.
+    # Error symptom: "bash: /Users/.../cursor: Permission denied" during EXConstants build.
+    begin
+      installer.pods_project.targets.each do |target|
+        next unless target.name == 'EXConstants'
+
+        target.build_phases.each do |phase|
+          next unless phase.respond_to?(:isa) && phase.isa == 'PBXShellScriptBuildPhase'
+          next unless phase.respond_to?(:name) && phase.name == '[CP-User] Generate app.config for prebuilt Constants.manifest'
+
+          script = 'bash -l "$PODS_TARGET_SRCROOT/../scripts/get-app-config-ios.sh"'
+          if phase.respond_to?(:shell_script=)
+            phase.shell_script = script
+          elsif phase.respond_to?(:shellScript=)
+            phase.shellScript = script
+          end
+        end
+      end
+
+      installer.pods_project.save
+    rescue => e
+      Pod::UI.warn("Unable to patch EXConstants script phase: #{e}")
+    end
   end
 end

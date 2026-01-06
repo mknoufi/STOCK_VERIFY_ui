@@ -59,6 +59,8 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
             onChangeText={onFloorChange}
             placeholder="e.g. 1, 2, G"
             placeholderTextColor="#666"
+            autoCapitalize="characters"
+            autoCorrect={false}
           />
 
           <Text style={styles.modalLabel}>Rack Number</Text>
@@ -68,6 +70,8 @@ export const SessionStartModal: React.FC<SessionStartModalProps> = ({
             onChangeText={onRackChange}
             placeholder="e.g. A1, B2"
             placeholderTextColor="#666"
+            autoCapitalize="characters"
+            autoCorrect={false}
           />
 
           <TouchableOpacity

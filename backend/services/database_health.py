@@ -55,16 +55,14 @@ class DatabaseHealthService:
             "uptime_start": datetime.utcnow(),
         }
         self._running = False
-        self._task: asyncio.Task = None
+        self._task: Optional[asyncio.Task] = None
         self._mongo_uri = mongo_uri
         self._db_name = db_name or getattr(mongo_db, "name", None)
         self._mongo_client_options = mongo_client_options or {}
-        self._dedicated_client: AsyncIOMotorClient = None
+        self._dedicated_client: Optional[AsyncIOMotorClient] = None
 
         if self.mongo_db is None and not self._switch_to_dedicated_client():
-            raise RuntimeError(
-                "Failed to initialize MongoDB connection for health monitoring"
-            )
+            raise RuntimeError("Failed to initialize MongoDB connection for health monitoring")
 
     def _switch_to_dedicated_client(self) -> bool:
         """Initialize a dedicated Mongo client if the shared one is unavailable."""
@@ -133,10 +131,7 @@ class DatabaseHealthService:
         """Check SQL Server connection health"""
         start_time = datetime.utcnow()
         try:
-            if (
-                self.sql_connector is None
-                or getattr(self.sql_connector, "config", None) is None
-            ):
+            if self.sql_connector is None or getattr(self.sql_connector, "config", None) is None:
                 logger.debug("SQL Server not configured; skipping health check")
                 self._health_status["sql_server"] = {
                     "status": "skipped",
@@ -193,10 +188,7 @@ class DatabaseHealthService:
         # Determine overall status
         if mongo_result["status"] == "healthy" and sql_result["status"] == "healthy":
             overall_status = "healthy"
-        elif (
-            mongo_result["status"] == "unhealthy"
-            and sql_result["status"] == "unhealthy"
-        ):
+        elif mongo_result["status"] == "unhealthy" and sql_result["status"] == "unhealthy":
             overall_status = "unhealthy"
         else:
             overall_status = "degraded"
@@ -228,9 +220,7 @@ class DatabaseHealthService:
 
         self._running = True
         self._task = asyncio.create_task(self._health_check_loop())
-        logger.info(
-            f"Database health monitoring started (interval: {self.check_interval}s)"
-        )
+        logger.info(f"Database health monitoring started (interval: {self.check_interval}s)")
 
     async def stop(self):
         """Stop background health monitoring"""
@@ -250,9 +240,8 @@ class DatabaseHealthService:
 
     def get_status(self) -> dict[str, Any]:
         """Get current health status"""
-        uptime = (
-            datetime.utcnow() - self._health_status["uptime_start"]
-        ).total_seconds()
+        start_time: datetime = self._health_status["uptime_start"]  # type: ignore[assignment]
+        uptime = (datetime.utcnow() - start_time).total_seconds()
 
         return {
             **self._health_status,

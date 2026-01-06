@@ -12,10 +12,20 @@ async def init_default_users(db):
         # Check for staff1
         staff_exists = await db.users.find_one({"username": "staff1"})
         if not staff_exists:
+            # Generate hashes
+            hashed_pwd = get_password_hash("staff123")
+            pin_hash = get_password_hash("1234")
+
+            from backend.utils.crypto_utils import get_pin_lookup_hash
+
+            pin_lookup_hash = get_pin_lookup_hash("1234")
+
             await db.users.insert_one(
                 {
                     "username": "staff1",
-                    "hashed_password": get_password_hash("staff123"),
+                    "hashed_password": hashed_pwd,
+                    "pin_hash": pin_hash,
+                    "pin_lookup_hash": pin_lookup_hash,
                     "full_name": "Staff Member",
                     "role": "staff",
                     "is_active": True,
@@ -28,10 +38,19 @@ async def init_default_users(db):
         # Check for supervisor
         supervisor_exists = await db.users.find_one({"username": "supervisor"})
         if not supervisor_exists:
+            hashed_pwd = get_password_hash("super123")
+            pin_hash = get_password_hash("1234")
+
+            from backend.utils.crypto_utils import get_pin_lookup_hash
+
+            pin_lookup_hash = get_pin_lookup_hash("1234")
+
             await db.users.insert_one(
                 {
                     "username": "supervisor",
-                    "hashed_password": get_password_hash("super123"),
+                    "hashed_password": hashed_pwd,
+                    "pin_hash": pin_hash,
+                    "pin_lookup_hash": pin_lookup_hash,
                     "full_name": "Supervisor",
                     "role": "supervisor",
                     "is_active": True,
@@ -44,10 +63,19 @@ async def init_default_users(db):
         # Check for admin
         admin_exists = await db.users.find_one({"username": "admin"})
         if not admin_exists:
+            hashed_pwd = get_password_hash("admin123")
+            pin_hash = get_password_hash("1234")
+
+            from backend.utils.crypto_utils import get_pin_lookup_hash
+
+            pin_lookup_hash = get_pin_lookup_hash("1234")
+
             await db.users.insert_one(
                 {
                     "username": "admin",
-                    "hashed_password": get_password_hash("admin123"),
+                    "hashed_password": hashed_pwd,
+                    "pin_hash": pin_hash,
+                    "pin_lookup_hash": pin_lookup_hash,
                     "full_name": "Administrator",
                     "role": "admin",
                     "is_active": True,

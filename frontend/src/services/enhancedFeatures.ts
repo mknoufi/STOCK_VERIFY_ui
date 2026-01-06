@@ -4,8 +4,11 @@ import type { Item } from "../types/scan";
 const RECENT_ITEMS_KEY = "stock_verify_recent_items";
 
 /** Recent item with scan timestamp */
-interface RecentItem extends Item {
+export interface RecentItem extends Item {
   scanned_at: string;
+  floor_no?: string;
+  rack_no?: string;
+  counted_qty?: number;
 }
 
 /** Generic analytics data payload */
@@ -65,7 +68,7 @@ export const RecentItemsService = {
     }
   },
 
-  getRecentItems: async (_itemCode: string): Promise<RecentItem[]> => {
+  getRecentItems: async (_itemCode?: string): Promise<RecentItem[]> => {
     // This seems to be an alias or specific query that mimics getRecent for now
     // Based on usage in scan-v2, it likely just needs the general list
     return RecentItemsService.getRecent();

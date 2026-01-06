@@ -32,7 +32,7 @@ REPORT_TYPES = {
     "variance_report": {
         "name": "Variance Report",
         "description": "Items with discrepancies between expected and counted quantities",
-        "collection": "verification_records",
+        "collection": "count_lines",
     },
     "user_activity": {
         "name": "User Activity Report",
@@ -42,7 +42,7 @@ REPORT_TYPES = {
     "session_history": {
         "name": "Session History Report",
         "description": "Verification session details and outcomes",
-        "collection": "verification_sessions",
+        "collection": "sessions",
     },
     "audit_trail": {
         "name": "Audit Trail Report",
@@ -148,7 +148,7 @@ async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
         {"$match": query},
         {
             "$lookup": {
-                "from": "verification_records",
+                "from": "count_lines",
                 "localField": "item_code",
                 "foreignField": "item_code",
                 "as": "verifications",
@@ -164,9 +164,7 @@ async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
                 "floor": 1,
                 "stock_qty": 1,
                 "price": {"$ifNull": ["$price", 0]},
-                "stock_value": {
-                    "$multiply": ["$stock_qty", {"$ifNull": ["$price", 0]}]
-                },
+                "stock_value": {"$multiply": ["$stock_qty", {"$ifNull": ["$price", 0]}]},
                 "verification_count": {"$size": "$verifications"},
                 "last_verified": {"$max": "$verifications.created_at"},
                 "is_verified": {"$gt": [{"$size": "$verifications"}, 0]},
@@ -238,7 +236,7 @@ async def generate_variance_report(db, filters: ReportFilter) -> list[dict]:
         {"$limit": 10000},
     ]
 
-    return await db.verification_records.aggregate(pipeline).to_list(10000)
+    return await db.count_lines.aggregate(pipeline).to_list(10000)
 
 
 async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]:
@@ -259,12 +257,8 @@ async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]
                 "_id": "$user_id",
                 "total_actions": {"$sum": 1},
                 "scans": {"$sum": {"$cond": [{"$eq": ["$action", "scan"]}, 1, 0]}},
-                "verifications": {
-                    "$sum": {"$cond": [{"$eq": ["$action", "verify"]}, 1, 0]}
-                },
-                "approvals": {
-                    "$sum": {"$cond": [{"$eq": ["$action", "approve"]}, 1, 0]}
-                },
+                "verifications": {"$sum": {"$cond": [{"$eq": ["$action", "verify"]}, 1, 0]}},
+                "approvals": {"$sum": {"$cond": [{"$eq": ["$action", "approve"]}, 1, 0]}},
                 "first_action": {"$min": "$timestamp"},
                 "last_action": {"$max": "$timestamp"},
             }
@@ -369,7 +363,7 @@ async def generate_session_history_report(db, filters: ReportFilter) -> list[dic
         {"$limit": 5000},
     ]
 
-    return await db.verification_sessions.aggregate(pipeline).to_list(5000)
+    return await db.sessions.aggregate(pipeline).to_list(5000)
 
 
 async def generate_audit_trail_report(db, filters: ReportFilter) -> list[dict]:
@@ -467,7 +461,7 @@ async def generate_report(
         )
 
     # Build summary
-    filters_applied = {k: v for k, v in filters.dict().items() if v is not None}
+    filters_applied = {k: v for k, v in filters.model_dump().items() if v is not None}
 
     summary = ReportSummary(
         total_records=len(data),
@@ -489,9 +483,7 @@ async def export_report_csv(
     Export report as CSV file.
     """
     if request.report_type not in REPORT_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type")
 
     db = get_db()
     filters = request.filters or ReportFilter()
@@ -550,9 +542,7 @@ async def export_report_xlsx(
         )
 
     if request.report_type not in REPORT_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type")
 
     db = get_db()
     filters = request.filters or ReportFilter()
@@ -603,9 +593,7 @@ async def get_report_filter_options(
     Returns distinct values for filterable fields.
     """
     if report_type not in REPORT_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type")
 
     db = get_db()
 
@@ -614,7 +602,7 @@ async def get_report_filter_options(
         warehouses = await db.erp_items.distinct("warehouse")
         floors = await db.erp_items.distinct("floor")
         categories = await db.erp_items.distinct("category")
-        statuses = await db.verification_records.distinct("status")
+        statuses = await db.count_lines.distinct("status")
 
         # Get user list for admin/supervisor
         users = []

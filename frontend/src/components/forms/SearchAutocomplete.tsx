@@ -3,17 +3,17 @@
  * Enhanced search with dropdown suggestions after 4 characters
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Keyboard,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
 import {
@@ -46,7 +46,8 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<TextInput>(null);
-  const listRef = useRef<FlatList>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const listRef = useRef<any>(null);
 
   // Search function
   const performSearch = React.useCallback(
@@ -103,210 +104,217 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
     }
   };
 
-  const handleSelectItem = (item: SearchResult) => {
-    onSelectItem(item);
-    setQuery("");
-    setResults([]);
-    setShowDropdown(false);
-    Keyboard.dismiss();
-  };
+  const handleSelectItem = useCallback(
+    (item: SearchResult) => {
+      onSelectItem(item);
+      setQuery("");
+      setResults([]);
+      setShowDropdown(false);
+      Keyboard.dismiss();
+    },
+    [onSelectItem],
+  );
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setQuery("");
     setResults([]);
     setShowDropdown(false);
     inputRef.current?.focus();
-  };
+  }, []);
 
-  const renderResultItem = ({
-    item,
-    index,
-  }: {
-    item: SearchResult;
-    index: number;
-  }) => {
-    const isSelected = index === selectedIndex;
-    const matchType = item.matchType;
+  const renderResultItem = useCallback(
+    ({ item, index }: { item: SearchResult; index: number }) => {
+      const isSelected = index === selectedIndex;
+      const matchType = item.matchType;
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.resultItem,
-          {
-            backgroundColor: isSelected
-              ? theme.colors.primary + "15" // Subtle highlight
-              : theme.colors.surface,
-            borderColor: isSelected ? theme.colors.primary : "transparent",
-          },
-        ]}
-        onPress={() => handleSelectItem(item)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.resultContent}>
-          {/* Header: Name and Badge */}
-          <View style={styles.resultHeader}>
-            <Text
-              style={[styles.resultName, { color: theme.colors.text }]}
-              numberOfLines={1}
-            >
-              {item.item_name}
-            </Text>
-            {matchType === "exact" && (
-              <View
-                style={[
-                  styles.matchBadge,
-                  {
-                    backgroundColor: theme.colors.success + "20",
-                    borderColor: theme.colors.success,
-                  },
-                ]}
+      return (
+        <TouchableOpacity
+          style={[
+            styles.resultItem,
+            {
+              backgroundColor: isSelected
+                ? theme.colors.primary + "15" // Subtle highlight
+                : theme.colors.surface,
+              borderColor: isSelected ? theme.colors.primary : "transparent",
+            },
+          ]}
+          onPress={() => handleSelectItem(item)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.resultContent}>
+            {/* Header: Name and Badge */}
+            <View style={styles.resultHeader}>
+              <Text
+                style={[styles.resultName, { color: theme.colors.text }]}
+                numberOfLines={1}
               >
-                <Text
-                  style={[
-                    styles.matchBadgeText,
-                    { color: theme.colors.success },
-                  ]}
-                >
-                  Exact
-                </Text>
-              </View>
-            )}
-            {matchType === "partial" && (
-              <View
-                style={[
-                  styles.matchBadge,
-                  {
-                    backgroundColor: theme.colors.info + "20",
-                    borderColor: theme.colors.info,
-                  },
-                ]}
-              >
-                <Text
-                  style={[styles.matchBadgeText, { color: theme.colors.info }]}
-                >
-                  Match
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Primary Details: Location and Stock */}
-          <View style={styles.primaryDetailsRow}>
-            {item.floor || item.rack ? (
-              <View style={styles.detailChip}>
-                <Ionicons
-                  name="location-sharp"
-                  size={14}
-                  color={theme.colors.primary}
-                />
-                <Text style={[styles.detailText, { color: theme.colors.text }]}>
-                  {[item.floor, item.rack].filter(Boolean).join(" / ")}
-                </Text>
-              </View>
-            ) : (
-              <View style={[styles.detailChip, { opacity: 0.5 }]}>
-                <Ionicons
-                  name="location-outline"
-                  size={14}
-                  color={theme.colors.textSecondary}
-                />
-                <Text
-                  style={[
-                    styles.detailText,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  No Loc
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.detailChip}>
-              <Ionicons
-                name="cube-outline"
-                size={14}
-                color={theme.colors.secondary}
-              />
-              <Text style={[styles.detailText, { color: theme.colors.text }]}>
-                Qty: {item.stock_qty}
+                {item.item_name}
               </Text>
+              {matchType === "exact" && (
+                <View
+                  style={[
+                    styles.matchBadge,
+                    {
+                      backgroundColor: theme.colors.success + "20",
+                      borderColor: theme.colors.success,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.matchBadgeText,
+                      { color: theme.colors.success },
+                    ]}
+                  >
+                    Exact
+                  </Text>
+                </View>
+              )}
+              {matchType === "partial" && (
+                <View
+                  style={[
+                    styles.matchBadge,
+                    {
+                      backgroundColor: theme.colors.info + "20",
+                      borderColor: theme.colors.info,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.matchBadgeText,
+                      { color: theme.colors.info },
+                    ]}
+                  >
+                    Match
+                  </Text>
+                </View>
+              )}
             </View>
 
-            {(item.mrp ?? 0) > 0 && (
-              <View style={styles.detailChip}>
-                <Ionicons
-                  name="pricetag-outline"
-                  size={14}
-                  color={theme.colors.success}
-                />
-                <Text style={[styles.detailText, { color: theme.colors.text }]}>
-                  ₹{item.mrp}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Secondary Details: Code, Barcode, Category */}
-          <View style={styles.secondaryDetailsRow}>
-            <Text
-              style={[styles.metaText, { color: theme.colors.textSecondary }]}
-            >
-              Code: {item.item_code}
-            </Text>
-            {item.barcode && (
-              <>
-                <Text
-                  style={[styles.metaDivider, { color: theme.colors.border }]}
-                >
-                  |
-                </Text>
-                <View style={styles.metaWithIcon}>
+            {/* Primary Details: Location and Stock */}
+            <View style={styles.primaryDetailsRow}>
+              {item.floor || item.rack ? (
+                <View style={styles.detailChip}>
                   <Ionicons
-                    name="barcode-outline"
-                    size={12}
+                    name="location-sharp"
+                    size={14}
+                    color={theme.colors.primary}
+                  />
+                  <Text
+                    style={[styles.detailText, { color: theme.colors.text }]}
+                  >
+                    {[item.floor, item.rack].filter(Boolean).join(" / ")}
+                  </Text>
+                </View>
+              ) : (
+                <View style={[styles.detailChip, { opacity: 0.5 }]}>
+                  <Ionicons
+                    name="location-outline"
+                    size={14}
                     color={theme.colors.textSecondary}
                   />
+                  <Text
+                    style={[
+                      styles.detailText,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
+                    No Loc
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.detailChip}>
+                <Ionicons
+                  name="cube-outline"
+                  size={14}
+                  color={theme.colors.secondary}
+                />
+                <Text style={[styles.detailText, { color: theme.colors.text }]}>
+                  Qty: {item.stock_qty}
+                </Text>
+              </View>
+
+              {(item.mrp ?? 0) > 0 && (
+                <View style={styles.detailChip}>
+                  <Ionicons
+                    name="pricetag-outline"
+                    size={14}
+                    color={theme.colors.success}
+                  />
+                  <Text
+                    style={[styles.detailText, { color: theme.colors.text }]}
+                  >
+                    ₹{item.mrp}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Secondary Details: Code, Barcode, Category */}
+            <View style={styles.secondaryDetailsRow}>
+              <Text
+                style={[styles.metaText, { color: theme.colors.textSecondary }]}
+              >
+                Code: {item.item_code}
+              </Text>
+              {item.barcode && (
+                <>
+                  <Text
+                    style={[styles.metaDivider, { color: theme.colors.border }]}
+                  >
+                    |
+                  </Text>
+                  <View style={styles.metaWithIcon}>
+                    <Ionicons
+                      name="barcode-outline"
+                      size={12}
+                      color={theme.colors.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.metaText,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
+                      {item.barcode}
+                    </Text>
+                  </View>
+                </>
+              )}
+              {item.category && (
+                <>
+                  <Text
+                    style={[styles.metaDivider, { color: theme.colors.border }]}
+                  >
+                    |
+                  </Text>
                   <Text
                     style={[
                       styles.metaText,
                       { color: theme.colors.textSecondary },
                     ]}
+                    numberOfLines={1}
                   >
-                    {item.barcode}
+                    {item.category}
                   </Text>
-                </View>
-              </>
-            )}
-            {item.category && (
-              <>
-                <Text
-                  style={[styles.metaDivider, { color: theme.colors.border }]}
-                >
-                  |
-                </Text>
-                <Text
-                  style={[
-                    styles.metaText,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {item.category}
-                </Text>
-              </>
-            )}
+                </>
+              )}
+            </View>
           </View>
-        </View>
 
-        <Ionicons
-          name="chevron-forward"
-          size={20}
-          color={theme.colors.placeholder}
-          style={{ opacity: 0.5 }}
-        />
-      </TouchableOpacity>
-    );
-  };
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={theme.colors.placeholder}
+            style={{ opacity: 0.5 }}
+          />
+        </TouchableOpacity>
+      );
+    },
+    [selectedIndex, theme.colors, handleSelectItem],
+  );
 
   return (
     <View style={styles.container}>
@@ -406,15 +414,14 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                   {results.length === 1 ? "ITEM" : "ITEMS"}
                 </Text>
               </View>
-              <FlatList
+              <FlashList
                 ref={listRef}
                 data={results}
                 renderItem={renderResultItem}
                 keyExtractor={(item, index) => `${item.item_code}-${index}`}
-                style={styles.resultsList}
+                // @ts-ignore - estimatedItemSize required by FlashList
+                estimatedItemSize={70}
                 keyboardShouldPersistTaps="handled"
-                maxToRenderPerBatch={10}
-                windowSize={5}
                 showsVerticalScrollIndicator={true}
               />
             </>

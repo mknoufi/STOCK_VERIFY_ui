@@ -9,7 +9,10 @@ export * from "./Skeleton";
 export * from "./GlassCard";
 export { EmptyState } from "./EmptyState";
 export { LoadingSpinner } from "./LoadingSpinner";
-export { ModernCard } from "../ModernCard";
+export { ModernCard } from "./ModernCard";
+export { ModernButton } from "./ModernButton";
+export { ModernInput } from "./ModernInput";
+export { ModernHeader } from "./ModernHeader";
 
 // Premium UI Components
 export { PremiumHeader } from "./PremiumHeader";
@@ -48,6 +51,23 @@ export { StatsCard } from "./StatsCard";
 export { SpeedDialMenu } from "./SpeedDialMenu";
 export type { SpeedDialAction } from "./SpeedDialMenu";
 export { LiveIndicator } from "./LiveIndicator";
+
+// ==========================================
+// Unified Design System Components (v3.0)
+// ==========================================
+export {
+  TouchableFeedback,
+  TouchableScale,
+  TouchableHighlight,
+  type TouchableFeedbackProps,
+} from "./TouchableFeedback";
+
+export {
+  AnimatedCard as UnifiedAnimatedCard,
+  StatsCardPreset,
+  type AnimatedCardProps,
+  type CardVariant,
+} from "./AnimatedCard";
 export { ActivityFeedItem } from "./ActivityFeedItem";
 export type { ActivityType } from "./ActivityFeedItem";
 export { ProgressRing } from "./ProgressRing";
@@ -74,13 +94,42 @@ export { ThemedScreen, ThemedCard, ThemedText } from "./ThemedScreen";
 
 // Unified Screen Layout
 export { ScreenContainer } from "./ScreenContainer";
-export type {
-  ScreenContainerProps,
-  BackgroundType,
-  ContentMode,
-  LoadingType,
-} from "./ScreenContainer";
+export type { ScreenContainerProps } from "./ScreenContainer";
 
 // Responsive Typography
 export { ResponsiveText } from "./ResponsiveText";
 export type { ResponsiveTextProps, TextVariant } from "./ResponsiveText";
+
+// Enhanced UI/UX Components (v3.0 - Best Practices Design Kit)
+export { MyPressable, PressablePresets } from "./MyPressable";
+export type { MyPressableProps } from "./MyPressable";
+export { EnhancedButton } from "./EnhancedButton";
+export type {
+  EnhancedButtonProps,
+  ButtonType,
+  ButtonSize,
+  IconPosition,
+} from "./EnhancedButton";
+export { Separator, SeparatorPresets } from "./Separator";
+export type { SeparatorProps, SeparatorOrientation } from "./Separator";
+export { AnimatedListItem, ListAnimationPresets } from "./AnimatedListItem";
+export type { AnimatedListItemProps } from "./AnimatedListItem";
+export { EnhancedInput } from "./EnhancedInput";
+export type {
+  EnhancedInputProps,
+  InputSize,
+  LabelPosition,
+} from "./EnhancedInput";
+
+// Unified Design System Components (v3.0 - Token-based)
+export { UnifiedText } from "./UnifiedText";
+export type {
+  UnifiedTextProps,
+  TextVariant as UnifiedTextVariant,
+  TextColor as UnifiedTextColor,
+} from "./UnifiedText";
+export { UnifiedView } from "./UnifiedView";
+export type {
+  UnifiedViewProps,
+  BackgroundColor as UnifiedBackgroundColor,
+} from "./UnifiedView";

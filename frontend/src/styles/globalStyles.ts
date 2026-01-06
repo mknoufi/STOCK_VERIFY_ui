@@ -7,7 +7,9 @@
 import { StyleSheet, Platform } from "react-native";
 import { themes } from "../theme/themes";
 
-const defaultTheme = (themes.premium || Object.values(themes)[0] || themes.dark) as import("../theme/themes").AppTheme;
+const defaultTheme = (themes.premium ||
+  Object.values(themes)[0] ||
+  themes.dark) as import("../theme/themes").AppTheme;
 
 // Color palette - Enhanced with semantic roles
 export const colors = {
@@ -19,46 +21,47 @@ export const colors = {
   primaryPressed: defaultTheme.colors.accentDark,
 
   // Secondary colors
-  secondary: defaultTheme.colors.info,
+  secondary: defaultTheme.colors.info?.main || defaultTheme.colors.accent,
   secondaryDark: defaultTheme.colors.accentDark,
-  secondaryLight: defaultTheme.colors.info,
+  secondaryLight:
+    defaultTheme.colors.info?.light || defaultTheme.colors.accentLight,
 
   // Background colors
-  backgroundDark: defaultTheme.colors.background,
+  backgroundDark: defaultTheme.colors.background.default,
   backgroundLight: "#F8FAFC",
-  surfaceDark: defaultTheme.colors.surface,
+  surfaceDark: defaultTheme.colors.background.paper,
   surfaceLight: "#FFFFFF",
-  surfaceElevated: defaultTheme.colors.surfaceElevated,
+  surfaceElevated: defaultTheme.colors.background.elevated,
 
   // Text colors
-  textPrimary: defaultTheme.colors.text,
-  textSecondary: defaultTheme.colors.textSecondary,
-  textTertiary: defaultTheme.colors.muted,
-  textDisabled: defaultTheme.colors.muted,
-  textInverse: defaultTheme.colors.background,
+  textPrimary: defaultTheme.colors.text.primary,
+  textSecondary: defaultTheme.colors.text.secondary,
+  textTertiary: defaultTheme.colors.text.muted,
+  textDisabled: defaultTheme.colors.text.disabled,
+  textInverse: defaultTheme.colors.text.inverse,
 
   // Border colors
-  borderLight: defaultTheme.colors.borderLight,
-  borderMedium: defaultTheme.colors.border,
-  borderDark: defaultTheme.colors.surfaceElevated,
+  borderLight: defaultTheme.colors.border.light,
+  borderMedium: defaultTheme.colors.border.medium,
+  borderDark: defaultTheme.colors.border.strong,
   borderFocus: defaultTheme.colors.accent,
 
   // Status colors with variants
-  success: defaultTheme.colors.success,
-  successLight: defaultTheme.colors.successLight,
-  successDark: defaultTheme.colors.success,
-  error: defaultTheme.colors.danger,
-  errorLight: defaultTheme.colors.dangerLight,
-  errorDark: defaultTheme.colors.danger,
-  warning: defaultTheme.colors.warning,
-  warningLight: defaultTheme.colors.warningLight,
-  warningDark: defaultTheme.colors.warning,
-  info: defaultTheme.colors.info,
-  infoLight: defaultTheme.colors.info,
-  infoDark: defaultTheme.colors.info,
+  success: defaultTheme.colors.success.main,
+  successLight: defaultTheme.colors.success.light,
+  successDark: defaultTheme.colors.success.dark,
+  error: defaultTheme.colors.error.main,
+  errorLight: defaultTheme.colors.error.light,
+  errorDark: defaultTheme.colors.error.dark,
+  warning: defaultTheme.colors.warning.main,
+  warningLight: defaultTheme.colors.warning.light,
+  warningDark: defaultTheme.colors.warning.dark,
+  info: defaultTheme.colors.info.main,
+  infoLight: defaultTheme.colors.info.light,
+  infoDark: defaultTheme.colors.info.light,
 
   // Transparent overlays
-  overlay: defaultTheme.colors.overlay,
+  overlay: defaultTheme.colors.background.overlay,
   overlayLight: "rgba(15, 23, 42, 0.5)",
   overlayDark: "rgba(3, 7, 18, 0.9)",
   overlayPrimary: "rgba(99, 102, 241, 0.1)",

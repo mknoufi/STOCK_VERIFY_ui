@@ -5,7 +5,7 @@ Provides connection pooling, health checks, and utility methods
 
 import asyncio
 import logging
-from typing import Optional, Union
+from typing import Optional, Set, Union
 
 from redis.asyncio import Redis
 from redis.asyncio.connection import ConnectionPool
@@ -190,7 +190,7 @@ class RedisService:
         """Add members to set"""
         return await self.client.sadd(name, *values)  # type: ignore
 
-    async def smembers(self, name: str) -> "set[str]":
+    async def smembers(self, name: str) -> Set[str]:
         """Get all set members"""
         return await self.client.smembers(name)  # type: ignore
 
@@ -202,9 +202,7 @@ class RedisService:
         """Add members to sorted set"""
         return await self.client.zadd(name, mapping, nx=nx)  # type: ignore
 
-    async def zrange(
-        self, name: str, start: int, end: int, withscores: bool = False
-    ) -> list:
+    async def zrange(self, name: str, start: int, end: int, withscores: bool = False) -> list:
         """Get sorted set range"""
         return await self.client.zrange(name, start, end, withscores=withscores)  # type: ignore
 

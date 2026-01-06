@@ -50,15 +50,15 @@ class QueryBuilder:
 
     # Available collections for querying
     COLLECTIONS = {
-        "verification_records": "verification_records",
-        "sessions": "verification_sessions",
+        "verification_records": "count_lines",
+        "sessions": "sessions",
         "items": "erp_items",
         "count_lines": "count_lines",
     }
 
     # Available fields per collection
     FIELDS = {
-        "verification_records": [
+        "count_lines": [
             "item_code",
             "verified_qty",
             "damage_qty",
@@ -68,8 +68,10 @@ class QueryBuilder:
             "status",
             "created_at",
             "updated_at",
+            "counted_qty",
+            "verified",
         ],
-        "verification_sessions": [
+        "sessions": [
             "session_id",
             "user_id",
             "rack_id",
@@ -87,13 +89,6 @@ class QueryBuilder:
             "warehouse",
             "floor",
             "rack",
-        ],
-        "count_lines": [
-            "item_code",
-            "session_id",
-            "counted_qty",
-            "verified",
-            "rack_id",
         ],
     }
 
@@ -208,7 +203,7 @@ class QueryBuilder:
                 logger.warning(f"Rejected invalid filter key: {field}")
                 continue
             if isinstance(condition, dict):
-                mongo_condition = {}
+                mongo_condition: dict[str, Any] = {}
                 for op, value in condition.items():
                     if op == "eq":
                         match_conditions[field] = value
@@ -252,9 +247,7 @@ class QueryBuilder:
                 if func == "count":
                     group_stage["$group"][f"{field}_{func}"] = {"$sum": 1}
                 elif func in _AGG_OPS:
-                    group_stage["$group"][f"{field}_{func}"] = {
-                        _AGG_OPS[func]: f"${field}"
-                    }
+                    group_stage["$group"][f"{field}_{func}"] = {_AGG_OPS[func]: f"${field}"}
 
         return group_stage
 
@@ -280,9 +273,7 @@ class QueryBuilder:
         available_fields = self.FIELDS.get(collection, [])
         for field in fields:
             if field not in available_fields:
-                raise ValueError(
-                    f"Invalid field '{field}' for collection '{collection}'"
-                )
+                raise ValueError(f"Invalid field '{field}' for collection '{collection}'")
 
         # Check aggregations
         if aggregations:
@@ -300,20 +291,20 @@ class QueryBuilder:
 # Example query specifications
 EXAMPLE_QUERIES = {
     "items_by_floor": {
-        "collection": "verification_records",
+        "collection": "count_lines",
         "group_by": ["floor"],
         "aggregations": {"verified_qty": "sum", "damage_qty": "sum"},
         "sort": {"verified_qty_sum": -1},
     },
     "session_performance": {
-        "collection": "verification_sessions",
+        "collection": "sessions",
         "filters": {"status": "completed"},
         "group_by": ["user_id"],
         "aggregations": {"session_id": "count"},
         "sort": {"session_id_count": -1},
     },
     "rack_summary": {
-        "collection": "verification_records",
+        "collection": "count_lines",
         "group_by": ["rack_id", "floor"],
         "aggregations": {
             "verified_qty": "sum",
@@ -322,11 +313,9 @@ EXAMPLE_QUERIES = {
         },
     },
     "daily_verification": {
-        "collection": "verification_records",
+        "collection": "count_lines",
         "filters": {
-            "created_at": {
-                "gte": datetime.now().replace(hour=0, minute=0, second=0).timestamp()
-            }
+            "created_at": {"gte": datetime.now().replace(hour=0, minute=0, second=0).timestamp()}
         },
         "group_by": ["floor"],
         "aggregations": {"verified_qty": "sum"},

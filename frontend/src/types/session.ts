@@ -4,7 +4,12 @@
 
 export type SessionType = "STANDARD" | "BLIND" | "STRICT";
 
-export type SessionStatus = "OPEN" | "CLOSED" | "RECONCILE";
+export type SessionStatus =
+  | "OPEN"
+  | "ACTIVE"
+  | "CLOSED"
+  | "COMPLETED"
+  | "RECONCILE";
 
 export interface Session {
   id: string;

@@ -7,7 +7,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Modal } from "./Modal";
 import { View, Text, StyleSheet } from "react-native";
-import { Button } from "../Button";
+import { ModernButton as Button } from "./ModernButton";
 import { useState } from "react";
 
 const meta: Meta<typeof Modal> = {

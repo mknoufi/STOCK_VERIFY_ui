@@ -56,7 +56,7 @@ export default function ExportReports() {
     try {
       handleExportStart("sessions");
 
-      console.log("📊 [Export] Fetching all sessions for export...");
+      __DEV__ && console.log("📊 [Export] Fetching all sessions for export...");
       const result = await getSessions(1, 10000); // Get all sessions
       const sessions = result.items || [];
 
@@ -65,7 +65,8 @@ export default function ExportReports() {
         return;
       }
 
-      console.log("✅ [Export] Exporting", sessions.length, "sessions");
+      __DEV__ &&
+        console.log("✅ [Export] Exporting", sessions.length, "sessions");
       await ExportService.exportSessions(sessions);
 
       Alert.alert(

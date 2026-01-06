@@ -3,18 +3,17 @@ import logging
 from typing import Any, Optional
 
 import redis.asyncio as redis
+
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 class RedisCacheService:
-    def __init__(self):
+    def __init__(self) -> None:
         self.redis: Optional[redis.Redis] = None
         if settings.REDIS_URL:
-            self.redis = redis.from_url(
-                settings.REDIS_URL, encoding="utf-8", decode_responses=True
-            )
+            self.redis = redis.from_url(settings.REDIS_URL, encoding="utf-8", decode_responses=True)
         else:
             logger.warning("REDIS_URL not set. Caching disabled.")
 

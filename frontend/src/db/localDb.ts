@@ -1,7 +1,7 @@
-import * as SQLite from 'expo-sqlite';
+import * as SQLite from "expo-sqlite";
 import type { CreateCountLinePayload, Item } from "@/types/scan";
 
-const DB_NAME = 'stock_verify.db';
+const DB_NAME = "stock_verify.db";
 
 export interface LocalItem {
   barcode: string;
@@ -62,12 +62,13 @@ const ensureSchema = async (db: SQLite.SQLiteDatabase) => {
 
   // Migration: Add status column if it doesn't exist (for existing installs)
   try {
-    await db.execAsync('ALTER TABLE pending_verifications ADD COLUMN status TEXT DEFAULT "pending"');
+    await db.execAsync(
+      'ALTER TABLE pending_verifications ADD COLUMN status TEXT DEFAULT "pending"',
+    );
   } catch {
     // Column likely exists or other error we can ignore for now
   }
 };
-
 
 /**
  * Initialize the local database and create tables if they don't exist.
@@ -76,7 +77,7 @@ export const initDb = async () => {
   const db = await SQLite.openDatabaseAsync(DB_NAME);
   await ensureSchema(db);
 
-  console.log('Local database initialized');
+  __DEV__ && console.log("Local database initialized");
   return db;
 };
 
@@ -99,8 +100,8 @@ export const saveLocalItems = async (items: LocalItem[]) => {
   await db.withTransactionAsync(async () => {
     for (const item of items) {
       await db.runAsync(
-        'INSERT OR REPLACE INTO items (barcode, name, category, verified, last_sync) VALUES (?, ?, ?, ?, ?)',
-        [item.barcode, item.name, item.category, item.verified, item.last_sync]
+        "INSERT OR REPLACE INTO items (barcode, name, category, verified, last_sync) VALUES (?, ?, ?, ?, ?)",
+        [item.barcode, item.name, item.category, item.verified, item.last_sync],
       );
     }
   });
@@ -111,34 +112,56 @@ export const saveLocalItems = async (items: LocalItem[]) => {
  */
 export const getLocalItems = async (): Promise<LocalItem[]> => {
   const db = await getDb();
-  return await db.getAllAsync<LocalItem>('SELECT * FROM items');
+  return await db.getAllAsync<LocalItem>("SELECT * FROM items");
 };
 
 /**
  * Add a pending verification.
  */
-export const addPendingVerification = async (verification: PendingVerification) => {
+export const addPendingVerification = async (
+  verification: PendingVerification,
+) => {
   const db = await getDb();
   await db.runAsync(
-    'INSERT INTO pending_verifications (barcode, verified, timestamp, username, variance, status) VALUES (?, ?, ?, ?, ?, ?)',
-    [verification.barcode, verification.verified, verification.timestamp, verification.username, verification.variance, verification.status || 'pending']
+    "INSERT INTO pending_verifications (barcode, verified, timestamp, username, variance, status) VALUES (?, ?, ?, ?, ?, ?)",
+    [
+      verification.barcode,
+      verification.verified,
+      verification.timestamp,
+      verification.username,
+      verification.variance,
+      verification.status || "pending",
+    ],
   );
 };
 
 /**
  * Get all pending verifications (only those with status 'pending').
  */
-export const getPendingVerifications = async (): Promise<PendingVerification[]> => {
+/**
+ * @deprecated logic moved to offlineStorage.ts / api.ts using AsyncStorage.
+ */
+export const getPendingVerifications = async (): Promise<
+  PendingVerification[]
+> => {
   const db = await getDb();
-  return await db.getAllAsync<PendingVerification>('SELECT * FROM pending_verifications WHERE status = "pending"');
+  return await db.getAllAsync<PendingVerification>(
+    'SELECT * FROM pending_verifications WHERE status = "pending"',
+  );
 };
 
 /**
  * Update the status of a pending verification.
  */
-export const updatePendingVerificationStatus = async (id: number, status: string) => {
+export const updatePendingVerificationStatus = async (
+  id: number,
+  status: string,
+) => {
   const db = await getDb();
-  await db.runAsync('UPDATE pending_verifications SET status = ? WHERE id = ?', [status, id]);
+  await db.runAsync(
+    "UPDATE pending_verifications SET status = ? WHERE id = ?",
+    [status, id],
+  );
 };
 
 /**
@@ -146,7 +169,7 @@ export const updatePendingVerificationStatus = async (id: number, status: string
  */
 export const deletePendingVerification = async (id: number) => {
   const db = await getDb();
-  await db.runAsync('DELETE FROM pending_verifications WHERE id = ?', [id]);
+  await db.runAsync("DELETE FROM pending_verifications WHERE id = ?", [id]);
 };
 
 /**
@@ -156,8 +179,11 @@ export const clearPendingVerifications = async (ids: number[]) => {
   const db = await getDb();
   if (ids.length === 0) return;
 
-  const placeholders = ids.map(() => '?').join(',');
-  await db.runAsync(`DELETE FROM pending_verifications WHERE id IN (${placeholders})`, ids);
+  const placeholders = ids.map(() => "?").join(",");
+  await db.runAsync(
+    `DELETE FROM pending_verifications WHERE id IN (${placeholders})`,
+    ids,
+  );
 };
 
 const mapLocalItemToAppItem = (row: LocalItem): Partial<Item> => {
@@ -185,7 +211,21 @@ export const localDb = {
     return mapLocalItemToAppItem(row);
   },
 
-  async savePendingVerification(payload: CreateCountLinePayload): Promise<void> {
+  /**
+   * @deprecated logic moved to offlineStorage.ts / api.ts.
+   */
+  async deletePendingVerification(id: number): Promise<void> {
+    const db = await getDb();
+    await db.runAsync("DELETE FROM pending_verifications WHERE id = ?", [id]);
+  },
+
+  /**
+   * @deprecated logic moved to offlineStorage.ts / api.ts using AsyncStorage.
+   * This function does not participate in the active sync queue.
+   */
+  async savePendingVerification(
+    payload: CreateCountLinePayload,
+  ): Promise<void> {
     const db = await getDb();
     await db.runAsync(
       "INSERT INTO pending_count_lines (session_id, item_code, payload_json, created_at) VALUES (?, ?, ?, ?)",
@@ -196,5 +236,46 @@ export const localDb = {
         new Date().toISOString(),
       ],
     );
+  },
+
+  /**
+   * Get session statistics from local database.
+   * Returns counts of scanned, verified, and pending items for a session.
+   */
+  async getSessionStats(sessionId: string): Promise<{
+    totalItems: number;
+    scannedItems: number;
+    verifiedItems: number;
+    pendingItems: number;
+  } | null> {
+    const db = await getDb();
+
+    // Count pending count lines for this session
+    const pendingResult = await db.getFirstAsync<{ count: number }>(
+      "SELECT COUNT(*) as count FROM pending_count_lines WHERE session_id = ?",
+      [sessionId],
+    );
+
+    // Count verified items from local items table
+    const verifiedResult = await db.getFirstAsync<{ count: number }>(
+      "SELECT COUNT(*) as count FROM items WHERE verified = 1",
+    );
+
+    // Count all local items as total (approximation)
+    const totalResult = await db.getFirstAsync<{ count: number }>(
+      "SELECT COUNT(*) as count FROM items",
+    );
+
+    const totalItems = totalResult?.count || 0;
+    const verifiedItems = verifiedResult?.count || 0;
+    const pendingItems = pendingResult?.count || 0;
+    const scannedItems = verifiedItems + pendingItems;
+
+    return {
+      totalItems,
+      scannedItems,
+      verifiedItems,
+      pendingItems,
+    };
   },
 };

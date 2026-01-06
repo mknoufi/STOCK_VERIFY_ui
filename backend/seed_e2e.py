@@ -6,11 +6,15 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from backend.server import client, db  # noqa: E402
+from motor.motor_asyncio import AsyncIOMotorClient  # noqa: E402
+
+from backend.config import settings  # noqa: E402
 
 
 async def seed_e2e_item():
     print("Seeding E2E test item...")
+    client = AsyncIOMotorClient(settings.MONGO_URL)
+    db = client[settings.DB_NAME]
     item = {
         "item_code": "ITEM_TEST_E2E",
         "item_name": "E2E Test Item",
@@ -22,11 +26,10 @@ async def seed_e2e_item():
     }
 
     # Upsert based on barcode
-    result = await db.erp_items.update_one(
-        {"barcode": "513456"}, {"$set": item}, upsert=True
-    )
+    result = await db.erp_items.update_one({"barcode": "513456"}, {"$set": item}, upsert=True)
     print(
-        f"Seeding complete. Match count: {result.matched_count}, Modified: {result.modified_count}, Upserted: {result.upserted_id}"
+        f"Seeding complete. Match count: {result.matched_count}, "
+        f"Modified: {result.modified_count}, Upserted: {result.upserted_id}"
     )
     client.close()
 

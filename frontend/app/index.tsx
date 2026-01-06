@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo } from "react";
-import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  View,
+  Text,
+  Platform,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -7,9 +13,25 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAuthStore } from "../src/store/authStore";
 import { AuroraBackground } from "../src/components/ui/AuroraBackground";
 import { GlassCard } from "../src/components/ui/GlassCard";
-import { useThemeContext } from "../src/theme/ThemeContext";
+import { useThemeContext } from "../src/context/ThemeContext";
 import type { AppTheme } from "../src/theme/themes";
 import { getRouteForRole, UserRole } from "../src/utils/roleNavigation";
+
+// Safe wrapper for Animated.View to prevent web crashes
+const SafeAnimatedView = ({ children, style, entering, ...props }: any) => {
+  if (Platform.OS === "web") {
+    return (
+      <View style={style} {...props}>
+        {children}
+      </View>
+    );
+  }
+  return (
+    <Animated.View style={style} entering={entering} {...props}>
+      {children}
+    </Animated.View>
+  );
+};
 
 export default function Index() {
   const router = useRouter();
@@ -18,6 +40,7 @@ export default function Index() {
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
+    console.log("📱 [Index] Component mounted");
     if (isLoading || !isInitialized) return;
 
     // Explicitly navigate away from the splash once auth check finishes
@@ -29,37 +52,62 @@ export default function Index() {
     }
   }, [isLoading, isInitialized, router, user]);
 
+  const content = (
+    <View style={styles.container}>
+      <SafeAnimatedView
+        entering={
+          Platform.OS === "web" ? undefined : FadeInDown.delay(300).springify()
+        }
+        style={styles.contentContainer}
+      >
+        <GlassCard variant="strong" elevation="lg" style={styles.card}>
+          <View style={styles.logoContainer}>
+            <View style={styles.iconPlaceholder}>
+              <Text style={styles.iconText}>SV</Text>
+            </View>
+            <Text style={styles.title}>Stock Verify</Text>
+            <Text style={styles.subtitle}>Enterprise Audit System</Text>
+          </View>
+
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.accentLight} />
+            <Text style={styles.loadingText}>
+              Initializing Secure Environment...
+            </Text>
+          </View>
+        </GlassCard>
+      </SafeAnimatedView>
+
+      <SafeAnimatedView
+        entering={
+          Platform.OS === "web"
+            ? undefined
+            : FadeInDown.delay(600).duration(1000)
+        }
+      >
+        <Text style={styles.versionText}>v2.0.0 • Aurora Engine</Text>
+      </SafeAnimatedView>
+    </View>
+  );
+
+  if (Platform.OS === "web") {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.background.default,
+        }}
+      >
+        <StatusBar style="light" />
+        {content}
+      </View>
+    );
+  }
+
   return (
     <AuroraBackground variant="primary" intensity="high" animated>
       <StatusBar style="light" />
-      <View style={styles.container}>
-        <Animated.View
-          entering={FadeInDown.delay(300).springify()}
-          style={styles.contentContainer}
-        >
-          <GlassCard variant="strong" elevation="lg" style={styles.card}>
-            <View style={styles.logoContainer}>
-              <View style={styles.iconPlaceholder}>
-                <Text style={styles.iconText}>SV</Text>
-              </View>
-              <Text style={styles.title}>Stock Verify</Text>
-              <Text style={styles.subtitle}>Enterprise Audit System</Text>
-            </View>
-
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.colors.accentLight} />
-              <Text style={styles.loadingText}>Initializing Secure Environment...</Text>
-            </View>
-          </GlassCard>
-        </Animated.View>
-
-        <Animated.Text
-          entering={FadeInDown.delay(600).duration(1000)}
-          style={styles.versionText}
-        >
-          {"v2.0.0 • Aurora Engine"}
-        </Animated.Text>
-      </View>
+      {content}
     </AuroraBackground>
   );
 }
@@ -80,7 +128,7 @@ const createStyles = (theme: AppTheme) =>
     card: {
       width: "100%",
       alignItems: "center",
-      paddingVertical: theme.spacing.xxl,
+      paddingVertical: theme.spacing.xl,
     },
     logoContainer: {
       alignItems: "center",
@@ -108,7 +156,7 @@ const createStyles = (theme: AppTheme) =>
     title: {
       fontSize: 28,
       fontWeight: "600",
-      color: theme.colors.text,
+      color: theme.colors.text.primary,
       textAlign: "center",
       marginBottom: theme.spacing.xs,
       letterSpacing: -0.25,
@@ -116,7 +164,7 @@ const createStyles = (theme: AppTheme) =>
     subtitle: {
       fontSize: 16,
       fontWeight: "400",
-      color: theme.colors.textSecondary,
+      color: theme.colors.text.secondary,
       textAlign: "center",
       letterSpacing: 0.5,
     },
@@ -127,7 +175,7 @@ const createStyles = (theme: AppTheme) =>
     loadingText: {
       fontSize: 14,
       fontWeight: "400",
-      color: theme.colors.muted,
+      color: theme.colors.text.muted,
     },
     versionText: {
       position: "absolute",

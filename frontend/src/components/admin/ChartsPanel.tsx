@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { ModernCard } from "../ModernCard";
+import { ModernCard } from "../ui/ModernCard";
 import {
   modernColors,
   modernTypography,

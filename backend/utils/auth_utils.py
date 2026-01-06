@@ -31,15 +31,13 @@ try:
         bcrypt.checkpw(b"test", test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(
-            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
-        )
+        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-SECRET_KEY = str(settings.JWT_SECRET) if settings.JWT_SECRET else "unsafe-secret-key"
+SECRET_KEY = str(settings.JWT_SECRET)
 ALGORITHM = str(settings.JWT_ALGORITHM) if settings.JWT_ALGORITHM else "HS256"
 
 
@@ -62,16 +60,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     password_bytes = plain_password.encode("utf-8")
     if len(password_bytes) > 72:
         logger.warning("Password exceeds 72 bytes, truncating")
-        plain_password = plain_password[:72]
-        password_bytes = plain_password.encode("utf-8")
+        # Truncate at byte level, then decode safely
+        password_bytes = password_bytes[:72]
+        plain_password = password_bytes.decode("utf-8", errors="ignore")
 
     # Strategy 1: Try passlib CryptContext (supports multiple schemes)
     try:
         result = pwd_context.verify(plain_password, hashed_password)
         if result:
             logger.debug("Password verified using passlib CryptContext")
-            return True
-        # If result is False, we continue to fallback
+        return result
     except Exception as e:
         logger.debug(f"Passlib verification failed: {type(e).__name__}: {str(e)}")
 
@@ -93,9 +91,7 @@ def _verify_bcrypt_fallback(password_bytes: bytes, hashed_password: str) -> bool
             logger.error(f"Password hash is not a string: {type(hashed_password)}")
             return False
     except ImportError:
-        logger.error(
-            "bcrypt module not available - password verification cannot proceed"
-        )
+        logger.error("bcrypt module not available - password verification cannot proceed")
         return False
     except Exception as e:
         logger.error(f"Direct bcrypt verification failed: {type(e).__name__}: {str(e)}")
@@ -103,7 +99,17 @@ def _verify_bcrypt_fallback(password_bytes: bytes, hashed_password: str) -> bool
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password using the configured context"""
+    """Hash a password using the configured context.
+
+    Bcrypt has a 72-byte limit, so passwords are truncated if necessary.
+    """
+    # Bcrypt (the fallback hasher) has a 72-byte limit
+    password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        logger.warning("Password exceeds 72 bytes, truncating for hashing")
+        # Truncate at byte level, then decode safely to avoid cutting UTF-8 chars
+        password_bytes = password_bytes[:72]
+        password = password_bytes.decode("utf-8", errors="ignore")
     return str(pwd_context.hash(password))
 
 

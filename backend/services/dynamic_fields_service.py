@@ -76,9 +76,7 @@ class DynamicFieldsService:
                 "phone",
             ]
             if field_type not in valid_types:
-                raise ValueError(
-                    f"Invalid field type. Must be one of: {', '.join(valid_types)}"
-                )
+                raise ValueError(f"Invalid field type. Must be one of: {', '.join(valid_types)}")
 
             # Check if field name already exists
             existing = await self.field_definitions.find_one({"field_name": field_name})
@@ -193,9 +191,7 @@ class DynamicFieldsService:
         """
         try:
             # Get field definition
-            field_def = await self.field_definitions.find_one(
-                {"field_name": field_name}
-            )
+            field_def = await self.field_definitions.find_one({"field_name": field_name})
             if not field_def:
                 raise ValueError(f"Field definition not found: {field_name}")
 
@@ -309,24 +305,22 @@ class DynamicFieldsService:
                     pipeline.append({"$match": {"$or": match_conditions}})
 
             # Group by item_code
-            pipeline.extend(
-                [
-                    {
-                        "$group": {
-                            "_id": "$item_code",
-                            "fields": {
-                                "$push": {
-                                    "field_name": "$field_name",
-                                    "value": "$value",
-                                    "field_type": "$field_type",
-                                }
-                            },
+            group_stage: dict[str, Any] = {
+                "$group": {
+                    "_id": "$item_code",
+                    "fields": {
+                        "$push": {
+                            "field_name": "$field_name",
+                            "value": "$value",
+                            "field_type": "$field_type",
                         }
                     },
-                    {"$skip": skip},
-                    {"$limit": limit},
-                ]
-            )
+                }
+            }
+            # Explicit type for pipeline stages
+            skip_stage: dict[str, Any] = {"$skip": skip}
+            limit_stage: dict[str, Any] = {"$limit": limit}
+            pipeline.extend([group_stage, skip_stage, limit_stage])
 
             cursor = self.field_values.aggregate(pipeline)
             results = await cursor.to_list(length=None)
@@ -339,8 +333,7 @@ class DynamicFieldsService:
 
                 if item:
                     item["dynamic_fields"] = {
-                        field["field_name"]: field["value"]
-                        for field in result["fields"]
+                        field["field_name"]: field["value"] for field in result["fields"]
                     }
                     items.append(item)
 
@@ -406,9 +399,7 @@ class DynamicFieldsService:
     async def _update_db_mapping(self, item_code: str, db_field: str, value: Any):
         """Update mapped database field in items collection"""
         try:
-            await self.db.items.update_one(
-                {"item_code": item_code}, {"$set": {db_field: value}}
-            )
+            await self.db.items.update_one({"item_code": item_code}, {"$set": {db_field: value}})
             logger.info(f"Updated DB mapping {db_field} for item {item_code}")
         except Exception as e:
             logger.warning(f"Failed to update DB mapping: {str(e)}")
@@ -416,15 +407,11 @@ class DynamicFieldsService:
     async def get_field_statistics(self, field_name: str) -> dict[str, Any]:
         """Get statistics for a specific field"""
         try:
-            field_def = await self.field_definitions.find_one(
-                {"field_name": field_name}
-            )
+            field_def = await self.field_definitions.find_one({"field_name": field_name})
             if not field_def:
                 raise ValueError(f"Field not found: {field_name}")
 
-            total_count = await self.field_values.count_documents(
-                {"field_name": field_name}
-            )
+            total_count = await self.field_values.count_documents({"field_name": field_name})
 
             stats = {
                 "field_name": field_name,

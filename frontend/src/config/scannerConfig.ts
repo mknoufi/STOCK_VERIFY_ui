@@ -3,25 +3,28 @@
  * Optimized for common retail/warehouse 1D barcodes
  */
 
-import { BarcodeScanningResult } from 'expo-camera';
+import { BarcodeScanningResult } from "expo-camera";
 
 /**
  * Supported 1D barcode types for stock verification
  * Focus on the most common formats used in retail/warehouse
  */
 export const SUPPORTED_1D_BARCODES = [
-  'ean13',      // EAN-13 (Most common retail)
-  'ean8',       // EAN-8 (Smaller products)
-  'upc_a',      // UPC-A (Common in North America)
-  'upc_e',      // UPC-E (Compressed UPC)
-  'code128',    // Code 128 (Logistics, shipping)
-  'code39',     // Code 39 (Industrial, automotive)
-  'code93',     // Code 93 (Similar to Code 39)
-  'itf14',      // ITF-14 (Shipping cartons)
-  'codabar',    // Codabar (Libraries, FedEx)
+  "ean13", // EAN-13 (Most common retail)
+  "ean8", // EAN-8 (Smaller products)
+  "upc_a", // UPC-A (Common in North America)
+  "upc_e", // UPC-E (Compressed UPC)
+  "code128", // Code 128 (Logistics, shipping)
+  "code39", // Code 39 (Industrial, automotive)
+  "code93", // Code 93 (Similar to Code 39)
+  "itf14", // ITF-14 (Shipping cartons)
+  "codabar", // Codabar (Libraries, FedEx)
+  "qr", // QR Code (Keep support but optimized for 1D)
+  "pdf417", // PDF417 (Boarding passes, IDs)
+  "aztec", // Aztec (Tickets)
 ] as const;
 
-export type Supported1DBarcode = typeof SUPPORTED_1D_BARCODES[number];
+export type Supported1DBarcode = (typeof SUPPORTED_1D_BARCODES)[number];
 
 /**
  * Scanner configuration for optimal 1D barcode scanning
@@ -51,9 +54,9 @@ export const SCANNER_CONFIG = {
   // Haptic feedback settings
   haptics: {
     // Success scan feedback intensity
-    successIntensity: 'medium' as const,
+    successIntensity: "medium" as const,
     // Error feedback intensity
-    errorIntensity: 'light' as const,
+    errorIntensity: "light" as const,
     // Enable haptics by default
     enabled: true,
   },
@@ -73,11 +76,11 @@ export const SCANNER_CONFIG = {
     // Auto-focus mode
     autoFocus: true,
     // Flash mode (off, on, auto, torch)
-    flashMode: 'off' as const,
+    flashMode: "off" as const,
     // Zoom level (1.0 = no zoom)
     zoom: 0,
     // Ratio for better barcode scanning
-    ratio: '16:9',
+    ratio: "16:9",
   },
 
   // Performance settings
@@ -99,9 +102,9 @@ export const BarcodeValidator = {
    * Check if barcode type is a 1D barcode
    */
   is1DBarcode: (type: string): boolean => {
-    const normalized = type.toLowerCase().replace(/[-_]/g, '');
+    const normalized = type.toLowerCase().replace(/[-_]/g, "");
     return SUPPORTED_1D_BARCODES.some(
-      b => b.toLowerCase().replace(/[-_]/g, '') === normalized
+      (b) => b.toLowerCase().replace(/[-_]/g, "") === normalized,
     );
   },
 
@@ -123,7 +126,7 @@ export const BarcodeValidator = {
     if (!/^\d{6}$/.test(trimmed)) return false;
     // Must start with valid prefix (51, 52, 53)
     const prefix = trimmed.substring(0, 2);
-    return ['51', '52', '53'].includes(prefix);
+    return ["51", "52", "53"].includes(prefix);
   },
 
   /**
@@ -131,7 +134,10 @@ export const BarcodeValidator = {
    */
   normalizeBarcode: (barcode: string): string => {
     // Remove leading zeros, whitespace, and special characters
-    return barcode.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
+    return barcode
+      .trim()
+      .replace(/^0+/, "")
+      .replace(/[^0-9]/g, "");
   },
 
   /**
@@ -147,7 +153,7 @@ export const BarcodeValidator = {
  */
 export class ScanThrottleManager {
   private lastScanTime: number = 0;
-  private lastBarcode: string = '';
+  private lastBarcode: string = "";
   private config = SCANNER_CONFIG.throttle;
 
   /**
@@ -186,7 +192,7 @@ export class ScanThrottleManager {
    */
   reset(): void {
     this.lastScanTime = 0;
-    this.lastBarcode = '';
+    this.lastBarcode = "";
   }
 
   /**

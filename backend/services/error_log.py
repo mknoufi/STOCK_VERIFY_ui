@@ -141,9 +141,7 @@ class ErrorLogService:
             if include_stack_trace:
                 try:
                     stack_trace = "".join(
-                        traceback.format_exception(
-                            type(error), error, error.__traceback__
-                        )
+                        traceback.format_exception(type(error), error, error.__traceback__)
                     )
                 except Exception:
                     stack_trace = traceback.format_exc()
@@ -227,7 +225,8 @@ class ErrorLogService:
 
         # Create error object
         error = Exception(error_message)
-        error.error_code = error_code
+        # Add custom attribute (not part of base Exception)
+        setattr(error, "error_code", error_code)  # type: ignore[attr-defined]
 
         return await self.log_error(
             error=error,
@@ -282,10 +281,7 @@ class ErrorLogService:
             skip = (page - 1) * page_size
 
             cursor = (
-                self.collection.find(filter_query)
-                .sort("timestamp", -1)
-                .skip(skip)
-                .limit(page_size)
+                self.collection.find(filter_query).sort("timestamp", -1).skip(skip).limit(page_size)
             )
             errors = await cursor.to_list(page_size)
 
@@ -349,7 +345,7 @@ class ErrorLogService:
     ) -> dict[str, Any]:
         """Get error statistics"""
         try:
-            filter_query = {}
+            filter_query: dict[str, Any] = {}
             if start_date or end_date:
                 filter_query["timestamp"] = {}
                 if start_date:
@@ -370,9 +366,7 @@ class ErrorLogService:
             warning_count = await self.collection.count_documents(
                 {**filter_query, "severity": "warning"}
             )
-            info_count = await self.collection.count_documents(
-                {**filter_query, "severity": "info"}
-            )
+            info_count = await self.collection.count_documents({**filter_query, "severity": "info"})
 
             # Unresolved errors
             unresolved_count = await self.collection.count_documents(
@@ -380,13 +374,16 @@ class ErrorLogService:
             )
 
             # By error type (top 10)
+            from typing import Mapping, Sequence
+
             pipeline = [
                 {"$match": filter_query} if filter_query else {"$match": {}},
                 {"$group": {"_id": "$error_type", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            top_error_types = await self.collection.aggregate(pipeline).to_list(10)
+            typed_pipeline: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
+            top_error_types = await self.collection.aggregate(typed_pipeline).to_list(10)
 
             # By endpoint (top 10)
             pipeline = [
@@ -404,7 +401,10 @@ class ErrorLogService:
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            top_endpoints = await self.collection.aggregate(pipeline).to_list(10)
+            from typing import Mapping, Sequence
+
+            typed_pipeline: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
+            top_endpoints = await self.collection.aggregate(typed_pipeline).to_list(10)
 
             # Recent errors (last 24 hours)
             last_24h = datetime.utcnow() - timedelta(hours=24)
@@ -426,12 +426,10 @@ class ErrorLogService:
                 "unresolved": unresolved_count,
                 "recent_24h": recent_count,
                 "top_error_types": [
-                    {"type": item["_id"], "count": item["count"]}
-                    for item in top_error_types
+                    {"type": item["_id"], "count": item["count"]} for item in top_error_types
                 ],
                 "top_endpoints": [
-                    {"endpoint": item["_id"], "count": item["count"]}
-                    for item in top_endpoints
+                    {"endpoint": item["_id"], "count": item["count"]} for item in top_endpoints
                 ],
             }
         except Exception as e:

@@ -39,7 +39,7 @@ export SQL_SERVER_HOST="192.168.1.100"
 export SQL_SERVER_PORT="1433"
 export SQL_SERVER_DATABASE="YourDatabase"
 export SQL_SERVER_USER="readonly_user"
-export SQL_SERVER_PASSWORD="YourPassword"
+export SQL_SERVER_PASSWORD="CHANGE_ME" <!-- pragma: allowlist secret -->
 ```
 
 **Windows (PowerShell):**
@@ -48,7 +48,7 @@ $env:SQL_SERVER_HOST="192.168.1.100"
 $env:SQL_SERVER_PORT="1433"
 $env:SQL_SERVER_DATABASE="YourDatabase"
 $env:SQL_SERVER_USER="readonly_user"
-$env:SQL_SERVER_PASSWORD="YourPassword"
+$env:SQL_SERVER_PASSWORD="YourPassword"  # pragma: allowlist secret
 ```
 
 **Windows (CMD):**
@@ -287,7 +287,7 @@ done
 2. **Use read-only user** for SQL Server connection:
    ```sql
    -- SQL Server: Create read-only user
-   CREATE LOGIN readonly_user WITH PASSWORD = 'YourPassword'
+   CREATE LOGIN readonly_user WITH PASSWORD = 'YourPassword' -- pragma: allowlist secret
    USE YourDatabase
    CREATE USER readonly_user FOR LOGIN readonly_user
    ALTER ROLE db_datareader ADD MEMBER readonly_user
@@ -363,4 +363,3 @@ If you encounter issues:
    ```bash
    cat backend/config.py | grep SQL_SERVER
    ```
-

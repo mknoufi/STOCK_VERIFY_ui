@@ -27,8 +27,6 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import {
@@ -46,7 +44,7 @@ import {
   diagnoseError,
 } from "../../src/services/api";
 
-import { AuroraBackground } from "../../src/components/ui/AuroraBackground";
+import { ScreenContainer } from "../../src/components/ui/ScreenContainer";
 import { GlassCard } from "../../src/components/ui/GlassCard";
 import { AnimatedPressable } from "../../src/components/ui/AnimatedPressable";
 import { auroraTheme } from "../../src/theme/auroraTheme";
@@ -54,12 +52,24 @@ import { SimpleLineChart } from "../../src/components/charts/SimpleLineChart";
 import { SimpleBarChart } from "../../src/components/charts/SimpleBarChart";
 import { SimplePieChart } from "../../src/components/charts/SimplePieChart";
 import { DateRangePicker } from "../../src/components/forms/DateRangePicker";
-import { useAuthStore } from "../../src/store/authStore";
+
+const DASHBOARD_TABS = [
+  "overview",
+  "monitoring",
+  "reports",
+  "analytics",
+  "diagnosis",
+] as const;
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 
-type DashboardTab = "overview" | "monitoring" | "reports" | "analytics" | "diagnosis";
+type DashboardTab =
+  | "overview"
+  | "monitoring"
+  | "reports"
+  | "analytics"
+  | "diagnosis";
 
 // Typography helper to map Aurora tokens to styles
 const typography = {
@@ -106,8 +116,6 @@ const typography = {
 };
 
 export default function DashboardWeb() {
-  const router = useRouter();
-  const { logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -250,7 +258,10 @@ export default function DashboardWeb() {
   };
 
   const prepareSessionChartData = () => {
-    if (!sessionsAnalytics?.sessions_by_date || Object.keys(sessionsAnalytics.sessions_by_date).length === 0) {
+    if (
+      !sessionsAnalytics?.sessions_by_date ||
+      Object.keys(sessionsAnalytics.sessions_by_date).length === 0
+    ) {
       const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       return days.map((day) => ({
         x: day,
@@ -264,8 +275,9 @@ export default function DashboardWeb() {
 
     return last7Dates.map((date) => {
       const count = sessionsAnalytics.sessions_by_date[date];
-      const dateObj = new Date(date);
-      const label = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+      const [year, month, day] = date.split("-").map(Number);
+      const dateObj = new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
+      const label = dateObj.toLocaleDateString(undefined, { weekday: "short" });
       return {
         x: label,
         y: count,
@@ -294,7 +306,10 @@ export default function DashboardWeb() {
   const handleAutoFix = async (issueId: string) => {
     try {
       setRefreshing(true);
-      const result = await diagnoseError({ error_type: issueId, error_message: "auto_fix" });
+      const result = await diagnoseError({
+        error_type: issueId,
+        error_message: "auto_fix",
+      });
       if (result.fixed) {
         Alert.alert("Success", "Issue has been automatically resolved.");
         await loadDashboardData(true);
@@ -379,7 +394,9 @@ export default function DashboardWeb() {
                   ]}
                 >
                   <Ionicons
-                    name={issue.severity === "critical" ? "alert-circle" : "warning"}
+                    name={
+                      issue.severity === "critical" ? "alert-circle" : "warning"
+                    }
                     size={20}
                     color={
                       issue.severity === "critical"
@@ -494,7 +511,7 @@ export default function DashboardWeb() {
           <Text style={styles.quickStatValue}>
             {servicesStatus
               ? Object.values(servicesStatus).filter((s: any) => s.running)
-                .length
+                  .length
               : 0}
             /4
           </Text>
@@ -710,199 +727,156 @@ export default function DashboardWeb() {
     </Animated.View>
   );
 
-  if (loading) {
-    return (
-      <AuroraBackground>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator
-            size="large"
-            color={auroraTheme.colors.primary[500]}
-          />
-          <Text style={styles.loadingText}>Loading Dashboard...</Text>
-        </View>
-      </AuroraBackground>
-    );
-  }
+  const renderActiveTabContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return renderOverview();
+      case "monitoring":
+        return renderMonitoring();
+      case "reports":
+        return renderReports();
+      case "analytics":
+        return renderAnalytics();
+      case "diagnosis":
+        return renderDiagnosis();
+      default:
+        return null;
+    }
+  };
 
   return (
-    <>
-      <StatusBar style="light" />
-      <AuroraBackground variant="primary" intensity="medium" animated={true}>
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.headerTitle}>Admin Dashboard</Text>
-              <Text style={styles.headerSubtitle}>
-                System Overview & Controls
+    <ScreenContainer
+      backgroundType="aurora"
+      auroraVariant="primary"
+      auroraIntensity="medium"
+      header={{
+        title: "Admin Dashboard",
+        subtitle: "System Overview & Controls",
+        showLogoutButton: true,
+        showBackButton: false,
+        rightAction: {
+          icon: refreshing ? "sync" : "refresh",
+          onPress: () => loadDashboardData(true),
+        },
+      }}
+      loading={loading}
+      loadingText="Loading Dashboard..."
+      noPadding
+    >
+      <View style={styles.container}>
+        {/* Navigation Tabs */}
+        <View style={styles.tabsContainer}>
+          {DASHBOARD_TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              style={[styles.tab, activeTab === tab && styles.activeTab]}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === tab && styles.activeTabText,
+                ]}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </Text>
-            </View>
-            <View style={styles.headerActions}>
-              <AnimatedPressable
-                onPress={() => loadDashboardData(true)}
-                style={styles.refreshButton}
-              >
-                <Ionicons
-                  name={refreshing ? "sync" : "refresh"}
-                  size={20}
-                  color={auroraTheme.colors.text.primary}
-                />
-              </AnimatedPressable>
-              <AnimatedPressable
-                onPress={() => {
-                  Alert.alert(
-                    "Confirm Logout",
-                    "Are you sure you want to logout?",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      {
-                        text: "Logout",
-                        style: "destructive",
-                        onPress: async () => {
-                          await logout();
-                          router.replace("/login");
-                        },
-                      },
-                    ],
-                  );
-                }}
-                style={styles.logoutButton}
-              >
-                <Ionicons
-                  name="log-out-outline"
-                  size={20}
-                  color={auroraTheme.colors.status.error}
-                />
-              </AnimatedPressable>
-            </View>
-          </View>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-          {/* Navigation Tabs */}
-          <View style={styles.tabsContainer}>
-            {(
-              [
-                "overview",
-                "monitoring",
-                "reports",
-                "analytics",
-                "diagnosis",
-              ] as DashboardTab[]
-            ).map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                style={[styles.tab, activeTab === tab && styles.activeTab]}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === tab && styles.activeTabText,
-                  ]}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {/* Content Area */}
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadDashboardData(true)}
+              tintColor={auroraTheme.colors.primary[500]}
+            />
+          }
+        >
+          {renderActiveTabContent()}
+        </ScrollView>
 
-          {/* Content Area */}
-          <ScrollView
-            style={styles.content}
-            contentContainerStyle={styles.contentContainer}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() => loadDashboardData(true)}
-                tintColor="#fff"
-              />
-            }
-          >
-            {activeTab === "overview" && renderOverview()}
-            {activeTab === "monitoring" && renderMonitoring()}
-            {activeTab === "reports" && renderReports()}
-            {activeTab === "analytics" && renderAnalytics()}
-            {activeTab === "diagnosis" && renderDiagnosis()}
-          </ScrollView>
+        {/* Report Modal */}
+        <RNModal
+          visible={showReportModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowReportModal(false)}
+        >
+          <BlurView intensity={20} style={styles.modalOverlay}>
+            <GlassCard variant="strong" style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Generate Report</Text>
+                <TouchableOpacity onPress={() => setShowReportModal(false)}>
+                  <Ionicons
+                    name="close"
+                    size={24}
+                    color={auroraTheme.colors.text.secondary}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.modalBody}>
+                <Text style={styles.modalLabel}>Date Range</Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <Text style={{ color: auroraTheme.colors.text.secondary }}>
+                    Last 30 Days (Default)
+                  </Text>
+                </View>
 
-          {/* Report Modal */}
-          <RNModal
-            visible={showReportModal}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowReportModal(false)}
-          >
-            <BlurView intensity={20} style={styles.modalOverlay}>
-              <GlassCard variant="strong" style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Generate Report</Text>
-                  <TouchableOpacity onPress={() => setShowReportModal(false)}>
+                <Text style={styles.modalLabel}>Format</Text>
+                <View style={styles.formatOptions}>
+                  <TouchableOpacity
+                    style={[styles.formatOption, styles.formatOptionActive]}
+                  >
+                    <Ionicons name="grid-outline" size={20} color="#FFF" />
+                    <Text style={styles.formatText}>Excel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formatOption}>
                     <Ionicons
-                      name="close"
-                      size={24}
+                      name="document-text-outline"
+                      size={20}
                       color={auroraTheme.colors.text.secondary}
                     />
+                    <Text
+                      style={[
+                        styles.formatText,
+                        { color: auroraTheme.colors.text.secondary },
+                      ]}
+                    >
+                      CSV
+                    </Text>
                   </TouchableOpacity>
                 </View>
-                <View style={styles.modalBody}>
-                  <Text style={styles.modalLabel}>Date Range</Text>
-                  <View style={{ flexDirection: "row", gap: 10 }}>
-                    <Text style={{ color: auroraTheme.colors.text.secondary }}>
-                      Last 30 Days (Default)
-                    </Text>
-                  </View>
-
-                  <Text style={styles.modalLabel}>Format</Text>
-                  <View style={styles.formatOptions}>
-                    <TouchableOpacity
-                      style={[styles.formatOption, styles.formatOptionActive]}
-                    >
-                      <Ionicons name="grid-outline" size={20} color="#FFF" />
-                      <Text style={styles.formatText}>Excel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.formatOption}>
-                      <Ionicons
-                        name="document-text-outline"
-                        size={20}
-                        color={auroraTheme.colors.text.secondary}
-                      />
-                      <Text
-                        style={[
-                          styles.formatText,
-                          { color: auroraTheme.colors.text.secondary },
-                        ]}
-                      >
-                        CSV
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <View style={styles.modalFooter}>
-                  <AnimatedPressable
-                    style={styles.cancelButton}
-                    onPress={() => setShowReportModal(false)}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </AnimatedPressable>
-                  <AnimatedPressable
-                    style={styles.confirmButton}
-                    onPress={() =>
-                      selectedReport && handleGenerateReport(selectedReport)
-                    }
-                    disabled={generating}
-                  >
-                    {generating ? (
-                      <ActivityIndicator size="small" color="#FFF" />
-                    ) : (
-                      <Text style={styles.confirmButtonText}>Download</Text>
-                    )}
-                  </AnimatedPressable>
-                </View>
-              </GlassCard>
-            </BlurView>
-          </RNModal>
-        </View>
-      </AuroraBackground>
-    </>
+              </View>
+              <View style={styles.modalFooter}>
+                <AnimatedPressable
+                  style={styles.cancelButton}
+                  onPress={() => setShowReportModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </AnimatedPressable>
+                <AnimatedPressable
+                  style={styles.confirmButton}
+                  onPress={() =>
+                    selectedReport && handleGenerateReport(selectedReport)
+                  }
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text style={styles.confirmButtonText}>Download</Text>
+                  )}
+                </AnimatedPressable>
+              </View>
+            </GlassCard>
+          </BlurView>
+        </RNModal>
+      </View>
+    </ScreenContainer>
   );
 }
 

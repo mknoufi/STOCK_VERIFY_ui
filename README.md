@@ -66,6 +66,45 @@ The system now automatically detects your IP address to allow mobile devices to 
 2. **Frontend** reads this file to configure the API client.
 3. **Docker/CI**: Set `EXPO_PUBLIC_BACKEND_URL` to override this behavior.
 
+## 📊 Code Quality & Security
+
+### Quality Metrics
+
+* **Type Safety**: 47 mypy errors (39% reduction from 77)
+* **Test Coverage**: 81.99% (501 tests passing)
+* **Frontend**: Zero TypeScript errors ✅
+* **Security**: Application code has zero HIGH/CRITICAL issues ✅
+
+### Security Status
+
+**Application Security: EXCELLENT** ✅
+* Bandit scan: Zero HIGH/CRITICAL issues in application code
+* All 119 HIGH findings are in dependencies (crypto libraries using SHA1 for non-password purposes)
+* Parameterized SQL queries, proper authentication, secure session handling
+
+**Dependency Security: NEEDS ATTENTION** ⚠️
+* 35 known vulnerabilities in 14 packages identified via pip-audit
+* Priority updates: aiohttp, urllib3, langchain*, python-jose, starlette
+* See [backend/SECURITY_SCAN_RESULTS.md](backend/SECURITY_SCAN_RESULTS.md) for detailed report
+
+### Running Quality Checks
+
+```bash
+# Type checking
+make mypy              # Python type checking (target: <50 errors)
+cd frontend && npm run typecheck  # TypeScript checking (0 errors)
+
+# Testing
+make python-test       # Backend tests (501 passing)
+make node-test         # Frontend tests
+make ci                # Full CI suite (lint + test + typecheck)
+
+# Security scans
+cd backend
+bandit -r . -f json -o bandit_report.json -x tests
+pip-audit --format json -o pip_audit_report.json
+```
+
 ## ⚙️ Configuration
 
 * **Backend Port**: 8001 (Default)

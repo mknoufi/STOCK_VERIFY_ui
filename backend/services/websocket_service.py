@@ -16,7 +16,7 @@ class ConnectionManager:
     Supports broadcasting to all users or specific roles (e.g., supervisors).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Store active connections: user_id -> list[WebSocket]
         # A user might be connected from multiple devices/tabs
         self.active_connections: dict[str, list[WebSocket]] = {}

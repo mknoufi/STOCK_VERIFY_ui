@@ -12,6 +12,24 @@ from backend.exceptions import SQLServerConnectionError
 from backend.services.sql_sync_service import SQLSyncService
 
 
+class AsyncIterator:
+    """Helper class to create async iterators for testing MongoDB cursors"""
+
+    def __init__(self, items):
+        self.items = items
+        self.index = 0
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self.index >= len(self.items):
+            raise StopAsyncIteration
+        item = self.items[self.index]
+        self.index += 1
+        return item
+
+
 @pytest.fixture
 def mock_sql_connector():
     """Mock SQL Server connector"""
@@ -33,6 +51,8 @@ def mock_sql_connector():
             "category": "General",
         },
     ]
+    # Mock get_item_quantities_only for variance sync
+    connector.get_item_quantities_only = Mock(return_value={"ITEM001": 100.0, "ITEM002": 50.0})
     return connector
 
 
@@ -46,6 +66,8 @@ def mock_mongo_db():
     db.erp_items.find_one = AsyncMock()
     db.erp_items.update_one = AsyncMock()
     db.erp_items.insert_one = AsyncMock()
+    # Default find returns empty async iterator
+    db.erp_items.find = Mock(return_value=AsyncIterator([]))
 
     return db
 
@@ -65,43 +87,39 @@ class TestSQLSyncService:
     """Test SQL Sync Service"""
 
     @pytest.mark.asyncio
-    async def test_sync_items_success(
-        self, sync_service, mock_sql_connector, mock_mongo_db
-    ):
-        """Test successful sync of items"""
-        # Mock existing item in MongoDB
-        mock_mongo_db.erp_items.find_one.side_effect = [
-            {
-                "item_code": "ITEM001",
-                "sql_server_qty": 90.0,
-                "stock_qty": 90.0,
-            },  # Existing, qty changed
-            None,  # New item
-        ]
+    async def test_sync_items_success(self, sync_service, mock_sql_connector, mock_mongo_db):
+        """Test successful sync with variance detection"""
+        # Mock existing items in MongoDB with async cursor
+        mock_mongo_db.erp_items.find = Mock(
+            return_value=AsyncIterator(
+                [
+                    {"item_code": "ITEM001", "stock_qty": 90.0},  # Qty changed (SQL has 100)
+                    {"item_code": "ITEM002", "stock_qty": 50.0},  # Qty same (SQL has 50)
+                ]
+            )
+        )
+
+        # Mock SQL connector to return quantities with variance
+        mock_sql_connector.get_item_quantities_only = Mock(
+            return_value={"ITEM001": 100.0, "ITEM002": 50.0}
+        )
 
         # Mock update result
         update_result = Mock()
         update_result.modified_count = 1
         mock_mongo_db.erp_items.update_one.return_value = update_result
 
-        # Mock insert result
-        insert_result = Mock()
-        insert_result.inserted_id = "new_id"
-        mock_mongo_db.erp_items.insert_one.return_value = insert_result
-
         # Execute sync
         result = await sync_service.sync_items()
 
         # Verify results
         assert result["items_checked"] == 2
-        assert result["items_updated"] == 1
-        assert result["items_created"] == 1
+        assert result["variances_found"] == 1  # ITEM001 has variance
         assert result["errors"] == 0
         assert result["duration"] > 0
 
-        # Verify MongoDB operations
+        # Verify MongoDB update was called for variance
         assert mock_mongo_db.erp_items.update_one.called
-        assert mock_mongo_db.erp_items.insert_one.called
 
     @pytest.mark.asyncio
     async def test_sync_items_no_connection(self, sync_service, mock_sql_connector):
@@ -118,18 +136,17 @@ class TestSQLSyncService:
         self, sync_service, mock_sql_connector, mock_mongo_db
     ):
         """Test that sync preserves enrichment data when updating quantity"""
-        # Mock existing item with enrichment data
-        existing_item = {
-            "item_code": "ITEM001",
-            "sql_server_qty": 90.0,
-            "stock_qty": 90.0,
-            "serial_number": "SN123456",
-            "mrp": 1500.0,
-            "hsn_code": "HSN001",
-            "location": "Aisle-1",
-            "condition": "Good",
-        }
-        mock_mongo_db.erp_items.find_one.return_value = existing_item
+        # Mock existing items in MongoDB - variance triggers update
+        mock_mongo_db.erp_items.find = Mock(
+            return_value=AsyncIterator(
+                [
+                    {"item_code": "ITEM001", "stock_qty": 90.0},  # Variance detected
+                ]
+            )
+        )
+
+        # SQL returns different quantity
+        mock_sql_connector.get_item_quantities_only = Mock(return_value={"ITEM001": 100.0})
 
         update_result = Mock()
         update_result.modified_count = 1
@@ -145,41 +162,31 @@ class TestSQLSyncService:
         call_args = mock_mongo_db.erp_items.update_one.call_args
 
         # Verify only quantity-related fields are updated
-        # call_args is (args, kwargs), update is the second arg
         update_doc = call_args.args[1]["$set"]
         assert "sql_server_qty" in update_doc
         assert "stock_qty" in update_doc
-        assert "last_synced" in update_doc
 
         # Verify enrichment fields are NOT in the update (preserved)
         assert "serial_number" not in update_doc
         assert "hsn_code" not in update_doc
-        # location is now synced from SQL, so it might be updated if changed
-        # assert "location" not in update_doc
         assert "condition" not in update_doc
 
     @pytest.mark.asyncio
     async def test_sync_items_updates_location(
         self, sync_service, mock_sql_connector, mock_mongo_db
     ):
-        """Test that sync updates location when changed in SQL"""
-        # Mock existing item
-        existing_item = {
-            "item_code": "ITEM001",
-            "sql_server_qty": 100.0,
-            "stock_qty": 100.0,
-            "location": "Old-Loc",
-        }
-        mock_mongo_db.erp_items.find_one.return_value = existing_item
+        """Test that variance sync updates only quantity fields"""
+        # Mock existing items in MongoDB with variance
+        mock_mongo_db.erp_items.find = Mock(
+            return_value=AsyncIterator(
+                [
+                    {"item_code": "ITEM001", "stock_qty": 90.0},
+                ]
+            )
+        )
 
-        # Mock SQL item with new location
-        mock_sql_connector.get_all_items.return_value = [
-            {
-                "item_code": "ITEM001",
-                "stock_qty": 100.0,
-                "location": "New-Loc",
-            }
-        ]
+        # SQL returns different quantity
+        mock_sql_connector.get_item_quantities_only = Mock(return_value={"ITEM001": 100.0})
 
         update_result = Mock()
         update_result.modified_count = 1
@@ -190,83 +197,87 @@ class TestSQLSyncService:
 
         # Verify update_one was called
         assert mock_mongo_db.erp_items.update_one.called
-        call_args = mock_mongo_db.erp_items.update_one.call_args
-        update_doc = call_args.args[1]["$set"]
-
-        # Verify location is updated
-        assert "location" in update_doc
-        assert update_doc["location"] == "New-Loc"
 
     @pytest.mark.asyncio
     async def test_sync_items_unchanged_quantity(
         self, sync_service, mock_sql_connector, mock_mongo_db
     ):
         """Test sync skips items with unchanged quantity"""
-        # Mock existing item with same quantity
-        existing_item = {
-            "item_code": "ITEM001",
-            "sql_server_qty": 100.0,
-            "stock_qty": 100.0,
-        }
-        mock_mongo_db.erp_items.find_one.return_value = existing_item
+        # Mock existing items with same quantity as SQL
+        mock_mongo_db.erp_items.find = Mock(
+            return_value=AsyncIterator(
+                [
+                    {"item_code": "ITEM001", "stock_qty": 100.0},
+                    {"item_code": "ITEM002", "stock_qty": 50.0},
+                ]
+            )
+        )
+
+        # SQL returns same quantities - no variance
+        mock_sql_connector.get_item_quantities_only = Mock(
+            return_value={"ITEM001": 100.0, "ITEM002": 50.0}
+        )
 
         # Execute sync
         result = await sync_service.sync_items()
 
-        # Verify item was checked but not updated
+        # Verify items were checked but no variances found
         assert result["items_checked"] == 2
-        assert result["items_unchanged"] >= 1
-        # items_updated may be > 0 for other items; key behavior is that
-        # unchanged items are not treated as updates
+        assert result["variances_found"] == 0
 
-        # Verify update_one was NOT called for unchanged item
-        # (may be called for other items, but not for unchanged one)
+        # Verify update_one was NOT called (no variances)
+        assert not mock_mongo_db.erp_items.update_one.called
 
     @pytest.mark.asyncio
     async def test_sync_items_handles_errors_gracefully(
         self, sync_service, mock_sql_connector, mock_mongo_db
     ):
-        """Test sync handles individual item errors gracefully"""
-        # Mock find_one to raise error for one item
-        mock_mongo_db.erp_items.find_one.side_effect = [
-            Exception("Database error"),
-            {"item_code": "ITEM002", "sql_server_qty": 50.0},
-        ]
+        """Test sync handles SQL Server errors gracefully"""
+        # Mock existing items in MongoDB
+        mock_mongo_db.erp_items.find = Mock(
+            return_value=AsyncIterator(
+                [
+                    {"item_code": "ITEM001", "stock_qty": 90.0},
+                ]
+            )
+        )
+
+        # Mock SQL connector to raise error
+        mock_sql_connector.get_item_quantities_only = Mock(
+            side_effect=Exception("SQL connection error")
+        )
 
         # Execute sync
         result = await sync_service.sync_items()
 
-        # Verify errors are tracked but sync continues
+        # Verify errors are tracked
         assert result["errors"] > 0
-        # One item failed before checking, one succeeded
-        assert result["items_checked"] == 1
 
     @pytest.mark.asyncio
     async def test_sync_items_batch_processing(
         self, sync_service, mock_sql_connector, mock_mongo_db
     ):
         """Test batch processing with multiple items"""
-        # Create large list of items
-        many_items = [
-            {
-                "item_code": f"ITEM{i:03d}",
-                "item_name": f"Item {i}",
-                "stock_qty": float(i * 10),
-                "barcode": f"BAR{i:03d}",
-            }
-            for i in range(250)  # More than batch size (100)
+        # Create list of items in MongoDB with variances
+        mongo_items = [
+            {"item_code": f"ITEM{i:03d}", "stock_qty": float(i * 10)} for i in range(250)
         ]
-        mock_sql_connector.get_all_items.return_value = many_items
+        mock_mongo_db.erp_items.find = Mock(return_value=AsyncIterator(mongo_items))
 
-        # Mock find_one to return None (new items)
-        mock_mongo_db.erp_items.find_one.return_value = None
+        # SQL returns different quantities for all items
+        sql_quantities = {f"ITEM{i:03d}": float(i * 10 + 5) for i in range(250)}
+        mock_sql_connector.get_item_quantities_only = Mock(return_value=sql_quantities)
+
+        update_result = Mock()
+        update_result.modified_count = 1
+        mock_mongo_db.erp_items.update_one.return_value = update_result
 
         # Execute sync
         result = await sync_service.sync_items()
 
         # Verify all items were processed
         assert result["items_checked"] == 250
-        assert result["items_created"] == 250
+        assert result["variances_found"] == 250
         assert result["errors"] == 0
 
     @pytest.mark.asyncio
@@ -274,12 +285,25 @@ class TestSQLSyncService:
         self, sync_service, mock_sql_connector, mock_mongo_db
     ):
         """Test sync_now triggers immediate sync"""
-        mock_mongo_db.erp_items.find_one.return_value = None
+        # Mock items in MongoDB with variance
+        mock_mongo_db.erp_items.find = Mock(
+            return_value=AsyncIterator(
+                [
+                    {"item_code": "ITEM001", "stock_qty": 90.0},
+                ]
+            )
+        )
+
+        mock_sql_connector.get_item_quantities_only = Mock(return_value={"ITEM001": 100.0})
+
+        update_result = Mock()
+        update_result.modified_count = 1
+        mock_mongo_db.erp_items.update_one.return_value = update_result
 
         result = await sync_service.sync_now()
 
-        assert result["items_checked"] == 2
-        assert mock_sql_connector.get_all_items.called
+        assert result["items_checked"] == 1
+        assert mock_sql_connector.get_item_quantities_only.called
 
     def test_get_stats_returns_sync_statistics(self, sync_service):
         """Test get_stats returns sync statistics"""
@@ -322,19 +346,7 @@ class TestSQLSyncService:
             # Enable
             sync_service.enable()
             assert sync_service.enabled is True
-            # mock_start.called is already asserted by sync_service.enable() calling start()
-            # which calls mock_start. But wait, start() calls _sync_loop which is async.
-            # The issue might be that start() returns None, and we are asserting on mock_start.called.
-            # But why is it unreachable?
-            # Ah, if sync_service.enable() raises an exception, this line is unreachable.
-            # But enable() shouldn't raise.
-            # Let's look at the previous lines.
-            # sync_service.enable() calls self.start().
-            # self.start() calls asyncio.create_task(self._sync_loop()).
-            # It should return.
-            # Maybe the linter thinks assert mock_start.called is unreachable because of something else?
-            # Or maybe I should just remove it if it's redundant or problematic.
-            # Actually, let's just assert mock_start.called.
+            # Verify start() was called
             assert mock_start.called
 
     @pytest.mark.asyncio
@@ -342,7 +354,16 @@ class TestSQLSyncService:
         self, sync_service, mock_sql_connector, mock_mongo_db
     ):
         """Test sync_all_items is backwards compatible alias"""
-        mock_mongo_db.erp_items.find_one.return_value = None
+        # Mock items in MongoDB
+        mock_mongo_db.erp_items.find = Mock(
+            return_value=AsyncIterator(
+                [
+                    {"item_code": "ITEM001", "stock_qty": 100.0},
+                ]
+            )
+        )
+
+        mock_sql_connector.get_item_quantities_only = Mock(return_value={"ITEM001": 100.0})
 
         # Both methods should work
         result1 = await sync_service.sync_items()

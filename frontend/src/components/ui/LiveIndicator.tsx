@@ -6,6 +6,7 @@
  * - Smooth pulse animation
  * - Customizable colors
  * - Optional label
+ * - Theme-aware
  */
 
 import React, { useEffect } from "react";
@@ -18,7 +19,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 
 interface LiveIndicatorProps {
   label?: string;
@@ -35,12 +36,16 @@ const sizeMap = {
 
 export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
   label = "Live",
-  color = auroraTheme.colors.success[500],
+  color,
   size = "medium",
   style,
 }) => {
+  const { themeLegacy: theme, getFontSize } = useThemeContext();
   const pulseScale = useSharedValue(1);
   const pulseOpacity = useSharedValue(1);
+
+  // Default color from theme if not provided
+  const activeColor = color || theme.colors.success;
 
   useEffect(() => {
     pulseScale.value = withRepeat(
@@ -70,7 +75,7 @@ export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
   const dotSize = sizeMap[size];
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, { gap: theme.spacing.sm }, style]}>
       <View
         style={[
           styles.dotContainer,
@@ -86,7 +91,7 @@ export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
               width: dotSize * 2,
               height: dotSize * 2,
               borderRadius: dotSize,
-              backgroundColor: color,
+              backgroundColor: activeColor,
             },
           ]}
         />
@@ -98,7 +103,12 @@ export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
               width: dotSize,
               height: dotSize,
               borderRadius: dotSize / 2,
-              backgroundColor: color,
+              backgroundColor: activeColor,
+              shadowColor: activeColor,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.3,
+              shadowRadius: 2,
+              elevation: 2,
             },
           ]}
         />
@@ -108,9 +118,8 @@ export const LiveIndicator: React.FC<LiveIndicatorProps> = ({
           style={[
             styles.label,
             {
-              fontFamily: auroraTheme.typography.fontFamily.label,
-              fontSize: auroraTheme.typography.fontSize.sm,
-              color: auroraTheme.colors.text.primary,
+              fontSize: getFontSize("sm"),
+              color: theme.colors.text,
             },
           ]}
         >
@@ -125,7 +134,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    gap: auroraTheme.spacing.sm,
   },
   dotContainer: {
     position: "relative",
@@ -137,7 +145,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   dot: {
-    ...auroraTheme.shadows.sm,
+    // shadow styles moved to inline for dynamic color support
   },
   label: {
     fontWeight: "600",

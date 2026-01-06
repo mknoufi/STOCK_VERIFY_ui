@@ -13,6 +13,7 @@ project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+import asyncio
 import io  # noqa: E402
 import logging  # noqa: E402
 from collections.abc import Callable, Iterable
@@ -27,6 +28,7 @@ from fastapi.responses import Response, StreamingResponse  # noqa: E402
 from backend.auth import get_current_user  # noqa: E402
 from backend.auth.dependencies import auth_deps  # noqa: E402
 from backend.config import settings  # noqa: E402
+from backend.db.runtime import get_db  # noqa: E402
 from backend.services.system_report_service import SystemReportService  # noqa: E402
 from backend.sql_server_connector import sql_connector  # noqa: E402
 from backend.utils.port_detector import PortDetector  # noqa: E402
@@ -67,9 +69,7 @@ def _safe_int(value: Any) -> Optional[int]:
 def require_admin(current_user: dict = Depends(get_current_user)):
     """Require admin role"""
     if current_user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return current_user
 
 
@@ -156,9 +156,7 @@ async def _get_mongodb_status() -> ServiceStatus:
                 "status": "connected",
             }
     except Exception as e:
-        logger.warning(
-            f"Direct MongoDB check failed, falling back to PortDetector: {e}"
-        )
+        logger.warning(f"Direct MongoDB check failed, falling back to PortDetector: {e}")
 
     mongo_status = PortDetector.get_mongo_status()
     running_flag = mongo_status.get("is_running")
@@ -171,25 +169,23 @@ async def _get_mongodb_status() -> ServiceStatus:
     }
 
 
-def _test_sql_connection() -> Optional[bool]:
+async def _test_sql_connection() -> Optional[bool]:
     try:
-        return sql_connector.test_connection()
+        return await asyncio.to_thread(sql_connector.test_connection)
     except Exception as e:
         logger.error(f"SQL connection test failed: {e}")
         return False
 
 
-def _get_sql_server_status() -> ServiceStatus:
-    is_connected = _test_sql_connection()
+async def _get_sql_server_status() -> ServiceStatus:
+    is_connected = await _test_sql_connection()
     config = sql_connector.config or {}
 
     return {
         "running": is_connected,
         "port": config.get("port"),
         "status": "connected" if is_connected else "disconnected",
-        "url": (
-            f"{config.get('host')}:{config.get('port')}" if config.get("host") else None
-        ),
+        "url": (f"{config.get('host')}:{config.get('port')}" if config.get("host") else None),
     }
 
 
@@ -243,7 +239,7 @@ def _format_issue(
     }
 
 
-def _collect_system_issues() -> list[dict[str, Any]]:
+async def _collect_system_issues() -> list[dict[str, Any]]:
     issues: list[dict[str, Any]] = []
     mongo_status = PortDetector.get_mongo_status()
     if not mongo_status["is_running"]:
@@ -252,12 +248,8 @@ def _collect_system_issues() -> list[dict[str, Any]]:
         issues.append(_format_issue("backend", "Backend server is not running"))
 
     # Add SQL Server check
-    if not _test_sql_connection():
-        issues.append(
-            _format_issue(
-                "sql_server", "SQL Server is not connected", severity="medium"
-            )
-        )
+    if not await _test_sql_connection():
+        issues.append(_format_issue("sql_server", "SQL Server is not connected", severity="medium"))
 
     return issues
 
@@ -268,7 +260,7 @@ async def _gather_all_services_status() -> ServicesStatusMap:
         "backend": _get_backend_status(),
         "frontend": _get_frontend_status(),
         "mongodb": await _get_mongodb_status(),
-        "sql_server": _get_sql_server_status(),
+        "sql_server": await _get_sql_server_status(),
     }
 
 
@@ -498,7 +490,7 @@ def _format_issues_response(issues: list[dict[str, Any]]) -> dict[str, Any]:
 async def get_system_issues(current_user: dict = Depends(require_admin)):
     """Get system issues and errors"""
     try:
-        issues = _collect_system_issues()
+        issues = await _collect_system_issues()
         return _format_issues_response(issues)
     except Exception as e:
         logger.error(f"Error getting system issues: {e}")
@@ -512,7 +504,7 @@ async def get_system_issues(current_user: dict = Depends(require_admin)):
 async def get_login_devices(current_user: dict = Depends(require_admin)):
     """Get list of devices that have logged in"""
     try:
-        from server import db
+        db = get_db()
 
         # Get recent login sessions
         sessions = (
@@ -617,7 +609,7 @@ async def generate_report(
 ):
     """Generate a report"""
     try:
-        from server import db
+        db = get_db()
 
         service = SystemReportService(db)
 
@@ -674,7 +666,7 @@ def _read_log_file(
     log_path: Path, lines: int, level: Optional[str], service: str
 ) -> list[dict[str, Any]]:
     """Read and parse log file"""
-    logs = []
+    logs: list[dict[str, Any]] = []
     if not log_path.exists():
         return logs
 
@@ -817,9 +809,7 @@ async def update_sql_server_config(
         password = config.get("password")
 
         if not host or not database:
-            raise HTTPException(
-                status_code=400, detail="Host and database are required"
-            )
+            raise HTTPException(status_code=400, detail="Host and database are required")
 
         # Try to connect
         # connect() raises exception on failure
@@ -853,9 +843,7 @@ async def test_sql_server_connection(
             password = config.get("password")
 
             if not host or not database:
-                raise HTTPException(
-                    status_code=400, detail="Host and database are required"
-                )
+                raise HTTPException(status_code=400, detail="Host and database are required")
 
             # Try to connect
             sql_connector.connect(host, int(port), database, user, password)
@@ -865,9 +853,7 @@ async def test_sql_server_connection(
             success = sql_connector.test_connection()
             return {
                 "success": success,
-                "message": (
-                    "Connection is active" if success else "Connection is inactive"
-                ),
+                "message": ("Connection is active" if success else "Connection is inactive"),
             }
     except Exception as e:
         return {"success": False, "message": f"Connection failed: {str(e)}"}
@@ -879,9 +865,7 @@ async def get_system_health_score(current_user: dict = Depends(require_admin)):
     try:
         services_status = await get_services_status(current_user)
         services = services_status["data"]
-        base_score, running_critical, running_optional = _calculate_service_scores(
-            services
-        )
+        base_score, running_critical, running_optional = _calculate_service_scores(services)
 
         issues_data = await get_system_issues(current_user)
         issues_payload = issues_data.get("data", {})
@@ -908,7 +892,7 @@ async def get_system_health_score(current_user: dict = Depends(require_admin)):
 async def get_system_stats(current_user: dict = Depends(require_admin)):
     """Get system statistics summary"""
     try:
-        from server import db
+        db = get_db()
 
         # Get basic stats
         total_users = await db.users.count_documents({})

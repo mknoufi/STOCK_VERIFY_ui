@@ -111,9 +111,9 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
               action.color
                 ? [action.color, action.color]
                 : [
-                  auroraTheme.colors.aurora.secondary[0],
-                  auroraTheme.colors.aurora.secondary[1],
-                ]
+                    auroraTheme.colors.aurora.secondary[0],
+                    auroraTheme.colors.aurora.secondary[1],
+                  ]
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}

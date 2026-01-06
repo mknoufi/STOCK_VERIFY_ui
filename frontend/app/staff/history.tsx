@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 import { PinEntryModal } from "../../src/components/modals/PinEntryModal";
@@ -23,6 +23,7 @@ import { SwipeableRow } from "../../src/components/SwipeableRow";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { GlassCard } from "../../src/components/ui/GlassCard";
 import { theme } from "../../src/styles/modernDesignSystem";
+import { colors as unifiedColors } from "../../src/theme/unified";
 import { ScreenContainer } from "../../src/components/ui";
 
 export default function HistoryScreen() {
@@ -82,6 +83,13 @@ export default function HistoryScreen() {
   React.useEffect(() => {
     loadCountLines();
   }, [loadCountLines]);
+
+  // Refresh count lines when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadCountLines();
+    }, [loadCountLines]),
+  );
 
   // Keep state in sync if URL param changes (e.g., deep link navigation)
   React.useEffect(() => {
@@ -148,13 +156,16 @@ export default function HistoryScreen() {
     item: CountLine;
     index: number;
   }) => {
-    const varianceColor = item.variance === 0 ? "#10B981" : "#EF4444";
+    const varianceColor =
+      item.variance === 0
+        ? unifiedColors.success[500]
+        : unifiedColors.error[500];
     const statusColor =
       item.status === "approved"
-        ? "#10B981"
+        ? unifiedColors.success[500]
         : item.status === "rejected"
-          ? "#EF4444"
-          : "#F59E0B";
+          ? unifiedColors.error[500]
+          : unifiedColors.warning[500];
 
     const CardContent = (
       <GlassCard variant="medium" style={styles.countCard}>
@@ -281,7 +292,11 @@ export default function HistoryScreen() {
             contentContainerStyle={styles.list}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Ionicons name="file-tray-outline" size={64} color={theme.colors.text.tertiary} />
+                <Ionicons
+                  name="file-tray-outline"
+                  size={64}
+                  color={theme.colors.text.tertiary}
+                />
                 <Text style={styles.emptyText}>
                   {loading ? "Loading..." : "No counts yet"}
                 </Text>
@@ -298,7 +313,10 @@ export default function HistoryScreen() {
       >
         <Text style={styles.filterTitle}>Filters</Text>
         <TouchableOpacity
-          style={[styles.filterChip, showApprovedOnly && styles.filterChipActive]}
+          style={[
+            styles.filterChip,
+            showApprovedOnly && styles.filterChipActive,
+          ]}
           onPress={() => {
             const next = !showApprovedOnly;
             setShowApprovedOnly(next);
@@ -315,7 +333,11 @@ export default function HistoryScreen() {
           <Ionicons
             name="checkmark-done-outline"
             size={18}
-            color={showApprovedOnly ? "#020617" : theme.colors.text.tertiary}
+            color={
+              showApprovedOnly
+                ? unifiedColors.neutral[950]
+                : theme.colors.text.tertiary
+            }
           />
           <Text
             style={[
@@ -396,8 +418,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   filterChipActive: {
-    backgroundColor: "#22C55E",
-    borderColor: "#22C55E",
+    backgroundColor: unifiedColors.success[500],
+    borderColor: unifiedColors.success[500],
   },
   filterChipText: {
     color: theme.colors.text.secondary,
@@ -405,7 +427,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   filterChipTextActive: {
-    color: "#FFFFFF",
+    color: unifiedColors.white,
   },
   countCard: {
     marginBottom: 14,
@@ -432,7 +454,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusText: {
-    color: "#FFFFFF",
+    color: unifiedColors.white,
     fontSize: 10,
     fontWeight: "700",
     textTransform: "uppercase",
@@ -460,7 +482,7 @@ const styles = StyleSheet.create({
   batchBadgeText: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#0EA5E9",
+    color: unifiedColors.primary[400],
     textTransform: "uppercase",
     letterSpacing: 0.3,
   },
@@ -510,7 +532,7 @@ const styles = StyleSheet.create({
   },
   reasonText: {
     fontSize: 13,
-    color: "#F59E0B",
+    color: unifiedColors.warning[500],
     fontWeight: "700",
   },
   remark: {

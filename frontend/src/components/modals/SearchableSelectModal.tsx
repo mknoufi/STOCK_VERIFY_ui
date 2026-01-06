@@ -3,18 +3,18 @@
  * Modal with searchable dropdown for selecting options
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
   Modal,
   TextInput,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -55,31 +55,37 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
   }, [options, searchQuery]);
 
   // Handle option selection
-  const handleSelect = (option: string) => {
-    onSelect(option);
-    setSearchQuery("");
-    onClose();
-  };
+  const handleSelect = useCallback(
+    (option: string) => {
+      onSelect(option);
+      setSearchQuery("");
+      onClose();
+    },
+    [onSelect, onClose],
+  );
 
   // Handle close
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setSearchQuery("");
     onClose();
-  };
+  }, [onClose]);
 
-  const renderOption = ({ item }: { item: string }) => (
-    <TouchableOpacity
-      style={styles.optionItem}
-      onPress={() => handleSelect(item)}
-      testID={`${testID}-option-${item}`}
-    >
-      <Text style={styles.optionText}>{item}</Text>
-      <Ionicons
-        name="chevron-forward"
-        size={20}
-        color={modernColors.text.tertiary}
-      />
-    </TouchableOpacity>
+  const renderOption = useCallback(
+    ({ item }: { item: string }) => (
+      <TouchableOpacity
+        style={styles.optionItem}
+        onPress={() => handleSelect(item)}
+        testID={`${testID}-option-${item}`}
+      >
+        <Text style={styles.optionText}>{item}</Text>
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color={modernColors.text.tertiary}
+        />
+      </TouchableOpacity>
+    ),
+    [handleSelect, testID],
   );
 
   return (
@@ -144,11 +150,12 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
           </View>
 
           {/* Options List */}
-          <FlatList
+          <FlashList
             data={filteredOptions}
             keyExtractor={(item, index) => `${item}-${index}`}
             renderItem={renderOption}
-            style={styles.list}
+            // @ts-ignore - estimatedItemSize required by FlashList
+            estimatedItemSize={56}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={

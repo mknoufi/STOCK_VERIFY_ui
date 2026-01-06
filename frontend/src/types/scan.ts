@@ -31,7 +31,14 @@ export interface Item {
   unit2_barcode?: string;
   unit_m_barcode?: string;
   description?: string;
+  manufacturing_date?: string;
+  expiry_date?: string;
   batches?: ItemBatch[];
+  /**
+   * Flag indicating if this item requires serial numbers
+   * When true, serial number capture is mandatory for counting
+   */
+  is_serialized?: boolean;
   /**
    * Metadata flags used throughout API/cache flows
    */
@@ -71,13 +78,25 @@ export interface CreateCountLinePayload {
   variance_note?: string | null;
   remark?: string | null;
   item_condition?: string;
-  serial_numbers?: SerialInput[];
+  condition_details?: string;
+  serial_numbers?: string[];
+  /** Enhanced serial entries with per-serial MRP, mfg date, expiry date */
+  serial_entries?: {
+    serial_number: string;
+    mrp?: number;
+    manufacturing_date?: string;
+    mfg_date_format?: DateFormatType;
+    expiry_date?: string;
+    expiry_date_format?: DateFormatType;
+  }[];
   floor_no?: string | null;
   rack_no?: string | null;
   mark_location?: string | null;
   sr_no?: string | null;
   manufacturing_date?: string | null;
+  mfg_date_format?: DateFormatType;
   expiry_date?: string | null;
+  expiry_date_format?: DateFormatType;
   photo_base64?: string;
   photo_proofs?: PhotoProofDraft[];
   mrp_counted?: number;
@@ -86,6 +105,7 @@ export interface CreateCountLinePayload {
   variant_barcode?: string;
   category_correction?: string;
   subcategory_correction?: string;
+  batches?: CountLineBatch[];
 }
 
 export interface ApiErrorResponse {
@@ -129,6 +149,26 @@ export interface SerialInput {
   value?: string;
   label?: string;
   condition: "good" | "damaged";
+}
+
+/**
+ * Enhanced serial entry for serialized items with per-serial attributes
+ * Each serial can have its own MRP and manufacturing date since
+ * different units of the same item may have different values
+ */
+export type DateFormatType = "full" | "month_year" | "year_only" | "none";
+
+export interface SerialEntryData {
+  id: string;
+  serial_number: string;
+  mrp?: number;
+  manufacturing_date?: string;
+  mfg_date_format?: DateFormatType;
+  expiry_date?: string;
+  expiry_date_format?: DateFormatType;
+  scanned_at?: string;
+  is_valid?: boolean;
+  validation_error?: string;
 }
 
 /**

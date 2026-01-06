@@ -54,7 +54,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 }) => {
   // Scan throttle manager to prevent duplicate scans
   const throttleManagerRef = useRef<ScanThrottleManager>(
-    new ScanThrottleManager()
+    new ScanThrottleManager(),
   );
 
   // Track scan feedback state for visual overlay
@@ -97,7 +97,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       // Call parent handler
       onBarcodeScanned(data);
     },
-    [onBarcodeScanned]
+    [onBarcodeScanned],
   );
 
   if (isWeb) {

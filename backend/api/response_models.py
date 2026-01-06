@@ -24,9 +24,7 @@ class ApiResponse(BaseModel, Generic[T]):
     )
     message: Optional[str] = Field(None, description="Human-readable message")
     payload_version: str = Field("1.0", description="API Payload Version")
-    timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="Response timestamp"
-    )
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Response timestamp")
     request_id: Optional[str] = Field(None, description="Request ID for tracking")
 
     @classmethod
@@ -34,7 +32,7 @@ class ApiResponse(BaseModel, Generic[T]):
         cls, data: T, message: Optional[str] = None, request_id: Optional[str] = None
     ):
         """Create a successful response"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             success=True,
             data=data,
             message=message,
@@ -50,7 +48,7 @@ class ApiResponse(BaseModel, Generic[T]):
         request_id: Optional[str] = None,
     ):
         """Create an error response"""
-        return cls(
+        return cls(  # type: ignore[call-arg]
             success=False,
             error={
                 "code": error_code,
@@ -99,9 +97,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
 class HealthCheckResponse(BaseModel):
     """Health check response"""
 
-    status: str = Field(
-        ..., description="Overall health status: healthy, degraded, unhealthy"
-    )
+    status: str = Field(..., description="Overall health status: healthy, degraded, unhealthy")
     services: dict[str, dict[str, Any]] = Field(
         ..., description="Individual service health statuses"
     )
@@ -121,6 +117,4 @@ class ConnectionPoolStatusResponse(BaseModel):
     checked_out: int = Field(..., description="Number of connections in use")
     utilization: float = Field(..., description="Pool utilization percentage")
     metrics: dict[str, Any] = Field(..., description="Detailed metrics")
-    health_check: dict[str, Optional[Any]] = Field(
-        None, description="Last health check results"
-    )
+    health_check: dict[str, Optional[Any]] = Field(None, description="Last health check results")

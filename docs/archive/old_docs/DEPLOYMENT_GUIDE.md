@@ -169,7 +169,7 @@ grep -r "password\|secret\|key" /opt/stock-verification/.git/ | grep -v ".git/ob
 mongo admin --eval '
   db.createUser({
     user: "admin",
-    pwd: "STRONG_ADMIN_PASSWORD",
+    pwd: "CHANGE_ME", // pragma: allowlist secret
     roles: ["userAdminAnyDatabase", "dbAdminAnyDatabase"]
   })
 '
@@ -178,7 +178,7 @@ mongo admin --eval '
 mongo stock_verification --eval '
   db.createUser({
     user: "stockapp",
-    pwd: "STRONG_APP_PASSWORD",
+    pwd: "CHANGE_ME", // pragma: allowlist secret
     roles: [
       { role: "readWrite", db: "stock_verification" }
     ]
@@ -279,7 +279,7 @@ docker-compose up -d grafana prometheus
 
 # Import pre-configured dashboards
 curl -X POST \
-  http://admin:admin@localhost:3000/api/dashboards/db \
+  http://admin:admin@localhost:3000/api/dashboards/db \ <!-- pragma: allowlist secret -->
   -H 'Content-Type: application/json' \
   -d @dashboards/stock-verification-dashboard.json
 ```

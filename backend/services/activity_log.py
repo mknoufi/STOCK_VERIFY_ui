@@ -164,10 +164,7 @@ class ActivityLogService:
             skip = (page - 1) * page_size
 
             cursor = (
-                self.collection.find(filter_query)
-                .sort("timestamp", -1)
-                .skip(skip)
-                .limit(page_size)
+                self.collection.find(filter_query).sort("timestamp", -1).skip(skip).limit(page_size)
             )
             activities = await cursor.to_list(page_size)
 
@@ -190,16 +187,10 @@ class ActivityLogService:
             logger.error(f"Failed to retrieve activities: {str(e)}")
             raise
 
-    async def get_user_activities(
-        self, username: str, limit: int = 100
-    ) -> list[dict[str, Any]]:
+    async def get_user_activities(self, username: str, limit: int = 100) -> list[dict[str, Any]]:
         """Get recent activities for a specific user"""
         try:
-            cursor = (
-                self.collection.find({"user": username})
-                .sort("timestamp", -1)
-                .limit(limit)
-            )
+            cursor = self.collection.find({"user": username}).sort("timestamp", -1).limit(limit)
             activities = await cursor.to_list(limit)
 
             for activity in activities:
@@ -216,7 +207,7 @@ class ActivityLogService:
     ) -> dict[str, Any]:
         """Get activity statistics"""
         try:
-            filter_query = {}
+            filter_query: dict[str, Any] = {}
             if start_date or end_date:
                 filter_query["timestamp"] = {}
                 if start_date:
@@ -231,21 +222,22 @@ class ActivityLogService:
             success_count = await self.collection.count_documents(
                 {**filter_query, "status": "success"}
             )
-            error_count = await self.collection.count_documents(
-                {**filter_query, "status": "error"}
-            )
+            error_count = await self.collection.count_documents({**filter_query, "status": "error"})
             warning_count = await self.collection.count_documents(
                 {**filter_query, "status": "warning"}
             )
 
             # By action (top 10)
+            from typing import Mapping, Sequence
+
             pipeline = [
                 {"$match": filter_query} if filter_query else {"$match": {}},
                 {"$group": {"_id": "$action", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            top_actions = await self.collection.aggregate(pipeline).to_list(10)
+            typed_pipeline1: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
+            top_actions = await self.collection.aggregate(typed_pipeline1).to_list(10)
 
             # By user (top 10)
             pipeline = [
@@ -254,7 +246,8 @@ class ActivityLogService:
                 {"$sort": {"count": -1}},
                 {"$limit": 10},
             ]
-            top_users = await self.collection.aggregate(pipeline).to_list(10)
+            typed_pipeline2: Sequence[Mapping[str, Any]] = pipeline  # type: ignore[assignment]
+            top_users = await self.collection.aggregate(typed_pipeline2).to_list(10)
 
             return {
                 "total": total,
@@ -264,12 +257,9 @@ class ActivityLogService:
                     "warning": warning_count,
                 },
                 "top_actions": [
-                    {"action": item["_id"], "count": item["count"]}
-                    for item in top_actions
+                    {"action": item["_id"], "count": item["count"]} for item in top_actions
                 ],
-                "top_users": [
-                    {"user": item["_id"], "count": item["count"]} for item in top_users
-                ],
+                "top_users": [{"user": item["_id"], "count": item["count"]} for item in top_users],
             }
         except Exception as e:
             logger.error(f"Failed to get statistics: {str(e)}")

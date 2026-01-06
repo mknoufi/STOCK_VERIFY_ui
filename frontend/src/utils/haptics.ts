@@ -71,6 +71,24 @@ export const hapticHeavy = () => {
   }
 };
 
+/**
+ * Trigger rigid impact haptic feedback
+ */
+export const hapticRigid = () => {
+  if (isHapticsSupported) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+  }
+};
+
+/**
+ * Trigger soft impact haptic feedback
+ */
+export const hapticSoft = () => {
+  if (isHapticsSupported) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+  }
+};
+
 export default {
   success: hapticSuccess,
   warning: hapticWarning,
@@ -79,4 +97,59 @@ export default {
   light: hapticLight,
   medium: hapticMedium,
   heavy: hapticHeavy,
+  rigid: hapticRigid,
+  soft: hapticSoft,
+};
+
+/**
+ * Semantic haptic patterns for common app actions
+ * Use these for consistent UX across the app
+ */
+export const appHaptics = {
+  // Navigation
+  navigate: hapticLight,
+  goBack: hapticLight,
+  openModal: hapticMedium,
+  closeModal: hapticLight,
+
+  // Buttons
+  buttonPress: hapticMedium,
+  primaryAction: hapticMedium,
+  secondaryAction: hapticLight,
+  dangerAction: hapticWarning,
+
+  // Forms
+  inputFocus: hapticSelection,
+  formSubmit: hapticMedium,
+  formSuccess: hapticSuccess,
+  formError: hapticError,
+  validationError: hapticWarning,
+
+  // Lists & Selection
+  itemSelect: hapticSelection,
+  tabSwitch: hapticSelection,
+  toggleSwitch: hapticLight,
+  checkboxToggle: hapticLight,
+
+  // Scanning
+  scanStart: hapticMedium,
+  scanSuccess: hapticSuccess,
+  scanError: hapticError,
+  barcodeDetected: hapticMedium,
+
+  // Sessions
+  sessionCreate: hapticSuccess,
+  sessionClose: hapticMedium,
+  sessionResume: hapticLight,
+
+  // Sync
+  syncStart: hapticLight,
+  syncComplete: hapticSuccess,
+  syncError: hapticError,
+
+  // Misc
+  refresh: hapticLight,
+  longPress: hapticHeavy,
+  swipe: hapticLight,
+  delete: hapticWarning,
 };

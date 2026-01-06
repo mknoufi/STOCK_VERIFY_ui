@@ -6,7 +6,7 @@
 import React from "react";
 import { ViewStyle, StyleProp } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ModernCard, CardVariant, CardElevation } from "../ModernCard";
+import { ModernCard, CardVariant, CardElevation } from "../ui/ModernCard";
 
 interface PremiumCardProps {
   children: React.ReactNode;

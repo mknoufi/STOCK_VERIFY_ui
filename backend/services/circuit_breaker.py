@@ -90,9 +90,7 @@ class CircuitBreaker:
             old_state = self._state
             self._state = new_state
 
-            logger.info(
-                f"Circuit breaker '{self.name}': {old_state.value} -> {new_state.value}"
-            )
+            logger.info(f"Circuit breaker '{self.name}': {old_state.value} -> {new_state.value}")
 
             if self.on_state_change:
                 try:
@@ -183,13 +181,11 @@ class CircuitBreaker:
 class CircuitBreakerRegistry:
     """Registry for managing multiple circuit breakers"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._breakers: dict[str, CircuitBreaker] = {}
         self._lock = asyncio.Lock()
 
-    async def get_or_create(
-        self, name: str, config: CircuitBreakerConfig = None
-    ) -> CircuitBreaker:
+    async def get_or_create(self, name: str, config: CircuitBreakerConfig = None) -> CircuitBreaker:
         """Get existing or create new circuit breaker"""
         async with self._lock:
             if name not in self._breakers:
@@ -266,6 +262,4 @@ async def get_circuit_breaker(
     Returns:
         CircuitBreaker instance
     """
-    return await circuit_breaker_registry.get_or_create(
-        name, config or CircuitBreakerConfig()
-    )
+    return await circuit_breaker_registry.get_or_create(name, config or CircuitBreakerConfig())

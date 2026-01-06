@@ -156,8 +156,9 @@ def get_sample_data(
             logger.warning("Invalid limit value, using default: 3")
             limit = 3
 
-        # Use QUOTENAME for safe identifier quoting
-        query = f"SELECT TOP {limit} * FROM {schema}.{table_name}"
+        # Use brackets for safe identifier quoting (T-SQL style)
+        # Note: Regex validation above already ensures no special characters are present
+        query = f"SELECT TOP {limit} * FROM [{schema}].[{table_name}]"  # nosec
         cursor.execute(query)
         results = cursor.fetchall()
         cursor.close()
@@ -182,9 +183,7 @@ _SEARCH_TERMS = [
 ]
 
 
-def _discover_tables_by_terms(
-    conn: pymssql.Connection, search_terms: list[str]
-) -> dict[str, dict]:
+def _discover_tables_by_terms(conn: pymssql.Connection, search_terms: list[str]) -> dict[str, dict]:
     """Search for tables matching domain-specific terms."""
     discovered_tables: dict[str, dict] = {}
 
@@ -227,9 +226,7 @@ def _analyze_priority_tables(
     return priority_tables
 
 
-def _print_table_analysis(
-    conn: pymssql.Connection, table_name: str, info: dict
-) -> None:
+def _print_table_analysis(conn: pymssql.Connection, table_name: str, info: dict) -> None:
     """Print detailed analysis for a single table."""
     schema = info["schema"]
     print(f"\n\n📊 Table: [{schema}].[{table_name}]")

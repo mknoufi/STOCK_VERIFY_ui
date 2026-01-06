@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,9 +16,25 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { colors, spacing, gradients } from "@/styles/globalStyles";
+import { colors, spacing, radius, gradients } from "@/theme/unified";
 import { useAuthStore } from "@/store/authStore";
 import { getRouteForRole, type UserRole } from "@/utils/roleNavigation";
+
+// Safe Animated View for Web
+const SafeAnimatedView = ({ children, style, entering, ...props }: any) => {
+  if (Platform.OS === "web") {
+    return (
+      <View style={style} {...props}>
+        {children}
+      </View>
+    );
+  }
+  return (
+    <Animated.View style={style} entering={entering} {...props}>
+      {children}
+    </Animated.View>
+  );
+};
 
 const GlassSurface = ({
   children,
@@ -63,17 +80,17 @@ const FeatureCard = ({
   title: string;
   delay: number;
 }) => (
-  <Animated.View
+  <SafeAnimatedView
     entering={FadeInDown.delay(delay).springify()}
     style={styles.featureWrapper}
   >
     <GlassSurface intensity={20} tint="light" style={styles.featureCard}>
       <View style={styles.iconCircle}>
-        <Ionicons name={icon} size={24} color={colors.primary} />
+        <Ionicons name={icon} size={24} color={colors.primary[400]} />
       </View>
       <Text style={styles.featureText}>{title}</Text>
     </GlassSurface>
-  </Animated.View>
+  </SafeAnimatedView>
 );
 
 export default function WelcomeScreen() {
@@ -106,42 +123,63 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={["#020617", "#0F172A", "#020617"]}
+        colors={[colors.neutral[950], colors.neutral[900], colors.neutral[950]]}
         style={StyleSheet.absoluteFill}
       />
 
       {/* Decorative Background Elements */}
-      <View style={styles.decorativeCircle1} />
-      <View style={styles.decorativeCircle2} />
+      <View style={styles.decorativeCircle1} pointerEvents="none" />
+      <View style={styles.decorativeCircle2} pointerEvents="none" />
 
-      <View style={[styles.content, {
-        maxWidth: isDesktop ? 600 : "100%",
-        paddingTop: Platform.OS === "ios" ? insets.top + 20 : 40,
-        paddingBottom: insets.bottom + 20
-      }]}>
+      <View
+        style={[
+          styles.content,
+          {
+            maxWidth: isDesktop ? 600 : "100%",
+            paddingTop: Platform.OS === "ios" ? insets.top + 20 : 40,
+            paddingBottom: insets.bottom + 20,
+          },
+        ]}
+      >
         {/* Header Section */}
-        <Animated.View
+        <SafeAnimatedView
           entering={FadeInUp.duration(1000).springify()}
           style={styles.header}
         >
           <View style={styles.logoContainer}>
             <LinearGradient
               colors={gradients.primary}
-              style={styles.logoBackground}
+              style={[styles.logoBackground, { padding: 3, borderRadius: 999 }]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Ionicons name="cube-outline" size={64} color="#fff" />
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#fff",
+                  borderRadius: 999,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "100%",
+                  height: "100%",
+                }}
+              >
+                <Image
+                  source={require("../assets/images/logo.png")}
+                  style={{ width: 70, height: 70 }}
+                  resizeMode="contain"
+                />
+              </View>
             </LinearGradient>
-            <View style={styles.logoGlow} />
+            <View style={[styles.logoGlow, { borderRadius: 999 }]} />
           </View>
 
-          <Text style={styles.title}>Lavanya E-Mart</Text>
+          <Text style={styles.title}>Lavanya Mart</Text>
           <Text style={styles.subtitle}>Stock Verification System</Text>
           <View style={styles.versionBadge}>
             <Text style={styles.versionText}>v2.5 Enterprise</Text>
           </View>
-        </Animated.View>
+        </SafeAnimatedView>
 
         {/* Features Grid */}
         <View style={styles.featuresContainer}>
@@ -159,7 +197,7 @@ export default function WelcomeScreen() {
         </View>
 
         {/* Action Buttons */}
-        <Animated.View
+        <SafeAnimatedView
           entering={FadeInDown.delay(1000).springify()}
           style={styles.actions}
         >
@@ -184,17 +222,24 @@ export default function WelcomeScreen() {
             activeOpacity={0.7}
             style={styles.registerButtonWrapper}
           >
-            <GlassSurface intensity={10} tint="light" style={styles.registerButton}>
+            <GlassSurface
+              intensity={10}
+              tint="light"
+              style={styles.registerButton}
+            >
               <Text style={styles.registerButtonText}>Create Account</Text>
             </GlassSurface>
           </TouchableOpacity>
-        </Animated.View>
+        </SafeAnimatedView>
 
         {/* Footer */}
-        <Animated.View entering={FadeInDown.delay(1200)} style={styles.footer}>
+        <SafeAnimatedView
+          entering={FadeInDown.delay(1200)}
+          style={styles.footer}
+        >
           <Text style={styles.footerText}>© 2024 Lavanya E-Mart</Text>
           <Text style={styles.footerSubtext}>Powered by Stock Verify</Text>
-        </Animated.View>
+        </SafeAnimatedView>
       </View>
     </View>
   );
@@ -219,8 +264,8 @@ const styles = StyleSheet.create({
     left: -100,
     width: 300,
     height: 300,
-    borderRadius: 150,
-    backgroundColor: "#0EA5E9",
+    borderRadius: radius.full,
+    backgroundColor: colors.primary[400],
     opacity: 0.05,
     transform: [{ scale: 1.5 }],
   },
@@ -230,8 +275,8 @@ const styles = StyleSheet.create({
     right: -50,
     width: 200,
     height: 200,
-    borderRadius: 100,
-    backgroundColor: "#10B981",
+    borderRadius: radius.full,
+    backgroundColor: colors.success[500],
     opacity: 0.05,
     transform: [{ scale: 1.5 }],
   },
@@ -247,10 +292,10 @@ const styles = StyleSheet.create({
   logoBackground: {
     width: 120,
     height: 120,
-    borderRadius: 35,
+    borderRadius: radius.xl,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#0EA5E9",
+    shadowColor: colors.primary[400],
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -261,8 +306,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 120,
     height: 120,
-    borderRadius: 35,
-    backgroundColor: "#0EA5E9",
+    borderRadius: radius.xl,
+    backgroundColor: colors.primary[400],
     opacity: 0.2,
     transform: [{ scale: 1.1 }],
     zIndex: 1,
@@ -277,22 +322,22 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    color: "#94A3B8",
-    marginBottom: 16,
+    color: colors.neutral[400],
+    marginBottom: spacing.lg,
     textAlign: "center",
     fontWeight: "500",
     letterSpacing: 0.5,
   },
   versionBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "rgba(14, 165, 233, 0.15)",
-    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    backgroundColor: `${colors.primary[400]}26`, // 15% opacity
+    borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: "rgba(14, 165, 233, 0.3)",
+    borderColor: `${colors.primary[400]}4D`, // 30% opacity
   },
   versionText: {
-    color: "#0EA5E9",
+    color: colors.primary[400],
     fontSize: 12,
     fontWeight: "700",
     textTransform: "uppercase",
@@ -321,14 +366,14 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 48,
     height: 48,
-    borderRadius: 16,
-    backgroundColor: "rgba(14, 165, 233, 0.1)",
+    borderRadius: radius.lg,
+    backgroundColor: `${colors.primary[400]}1A`, // 10% opacity
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   featureText: {
-    color: "#94A3B8",
+    color: colors.neutral[400],
     fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
@@ -338,7 +383,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   buttonShadow: {
-    shadowColor: colors.primary,
+    shadowColor: colors.primary[500],
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -380,13 +425,13 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    color: "#64748B",
+    color: colors.neutral[500],
     fontSize: 12,
     fontWeight: "600",
   },
   footerSubtext: {
-    color: "#475569",
+    color: colors.neutral[600],
     fontSize: 10,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 });

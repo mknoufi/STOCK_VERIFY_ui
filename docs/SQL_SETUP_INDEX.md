@@ -190,7 +190,7 @@ export SQL_SERVER_HOST="192.168.1.100"      # Required
 export SQL_SERVER_PORT="1433"               # Default: 1433
 export SQL_SERVER_DATABASE="YourDB"         # Required
 export SQL_SERVER_USER="readonly_user"      # Default: readonly_user
-export SQL_SERVER_PASSWORD="YourPassword"   # Required
+export SQL_SERVER_PASSWORD="CHANGE_ME"      <!-- pragma: allowlist secret -->
 ```
 
 ---
@@ -268,6 +268,6 @@ http://localhost:8001/api/redoc
 
 ---
 
-**Created**: 2024-12-23  
+**Created**: 2024-12-23
 **Status**: ✅ Ready for setup
 **Version**: 1.0

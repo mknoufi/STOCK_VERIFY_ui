@@ -7,7 +7,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
-import { Button } from "../Button";
+import { ModernButton } from "./ModernButton";
 
 interface EmptyStateProps {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -44,7 +44,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
       {actionLabel && onAction && (
         <View style={styles.actionContainer}>
-          <Button
+          <ModernButton
             title={actionLabel}
             onPress={onAction}
             variant="primary"

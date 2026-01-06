@@ -1,9 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Animated, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useDebounce } from 'use-debounce';
-import { useThemeContext } from '../../theme/ThemeContext';
-import { useHapticFeedback } from '../../hooks/useHapticFeedback';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Animated,
+  Text,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useDebounce } from "use-debounce";
+import { useThemeContext } from "../../context/ThemeContext";
+import { useHapticFeedback } from "../../hooks/useHapticFeedback";
 
 interface SearchComponentProps {
   onSearch: (query: string) => void;
@@ -16,13 +24,13 @@ interface SearchComponentProps {
 
 export const SearchComponent: React.FC<SearchComponentProps> = ({
   onSearch,
-  placeholder = 'Search items...',
-  initialValue = '',
+  placeholder = "Search items...",
+  initialValue = "",
   loading = false,
   autoFocus = false,
   showResultsCount,
 }) => {
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
   const { colors } = theme;
   const { triggerHaptic } = useHapticFeedback();
   const [query, setQuery] = useState(initialValue);
@@ -39,7 +47,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
 
   const handleFocus = () => {
     setIsFocused(true);
-    triggerHaptic('impactLight');
+    triggerHaptic("impactLight");
     Animated.timing(focusAnim, {
       toValue: 1,
       duration: 200,
@@ -57,13 +65,13 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
   };
 
   const handleClear = () => {
-    setQuery('');
-    onSearch('');
-    triggerHaptic('impactLight');
+    setQuery("");
+    onSearch("");
+    triggerHaptic("impactLight");
   };
 
   const handlePress = () => {
-    triggerHaptic('impactLight');
+    triggerHaptic("impactLight");
   };
 
   const borderColor = focusAnim.interpolate({
@@ -94,10 +102,15 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
               inputRange: [0, 1],
               outputRange: [0, 8],
             }),
-          }
+          },
         ]}
       >
-        <Ionicons name="search" size={22} color={colors.textSecondary} style={styles.icon} />
+        <Ionicons
+          name="search"
+          size={22}
+          color={colors.textSecondary}
+          style={styles.icon}
+        />
         <TextInput
           style={[styles.input, { color: colors.text }]}
           placeholder={placeholder}
@@ -110,14 +123,26 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
           autoCorrect={false}
           autoFocus={autoFocus}
           returnKeyType="search"
-          onSubmitEditing={() => triggerHaptic('impactLight')}
+          onSubmitEditing={() => triggerHaptic("impactLight")}
         />
         {loading ? (
-          <ActivityIndicator size="small" color={colors.accent} style={styles.icon} />
+          <ActivityIndicator
+            size="small"
+            color={colors.accent}
+            style={styles.icon}
+          />
         ) : query.length > 0 ? (
-          <TouchableOpacity onPress={handleClear} style={styles.icon} onPressIn={handlePress}>
+          <TouchableOpacity
+            onPress={handleClear}
+            style={styles.icon}
+            onPressIn={handlePress}
+          >
             <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <Ionicons name="close-circle" size={22} color={colors.textSecondary} />
+              <Ionicons
+                name="close-circle"
+                size={22}
+                color={colors.textSecondary}
+              />
             </Animated.View>
           </TouchableOpacity>
         ) : null}
@@ -126,7 +151,9 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
       {showResultsCount !== undefined && (
         <View style={styles.resultsContainer}>
           <Text style={[styles.resultsText, { color: colors.textSecondary }]}>
-            {showResultsCount === 0 ? 'No results found' : `${showResultsCount} results`}
+            {showResultsCount === 0
+              ? "No results found"
+              : `${showResultsCount} results`}
           </Text>
         </View>
       )}
@@ -139,12 +166,12 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 52,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -168,6 +195,6 @@ const styles = StyleSheet.create({
   },
   resultsText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

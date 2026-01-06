@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   View,
   Text,
@@ -11,11 +17,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
-} from "../../src/components/ui";
+import { LoadingSpinner, ScreenContainer } from "../../src/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import api from "../../src/services/api/api";
 
@@ -129,7 +131,11 @@ const ColumnSettingsModal: React.FC<{
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Column Settings</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -192,7 +198,11 @@ const ItemDetailsModal: React.FC<{
     { label: "ERP Qty", value: item.stock_qty, format: "number" },
     { label: "Counted Qty", value: item.counted_qty, format: "number" },
     { label: "Variance", value: item.variance, format: "number" },
-    { label: "Variance %", value: item.variance_percentage, format: "percentage" },
+    {
+      label: "Variance %",
+      value: item.variance_percentage,
+      format: "percentage",
+    },
     { label: "MRP", value: item.mrp, format: "currency" },
     { label: "Status", value: item.verified ? "Verified" : "Pending" },
     { label: "Verified By", value: item.verified_by },
@@ -215,7 +225,11 @@ const ItemDetailsModal: React.FC<{
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Item Details</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={auroraTheme.colors.text.primary} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -230,7 +244,7 @@ const ItemDetailsModal: React.FC<{
                       {formatValue(row.value, row.format)}
                     </Text>
                   </View>
-                )
+                ),
             )}
           </ScrollView>
 
@@ -252,7 +266,9 @@ const StatsCard: React.FC<{
   format?: string;
 }> = ({ label, value, icon, color, format }) => (
   <View style={[styles.statsCard, { borderLeftColor: color }]}>
-    <View style={[styles.statsIconContainer, { backgroundColor: color + "20" }]}>
+    <View
+      style={[styles.statsIconContainer, { backgroundColor: color + "20" }]}
+    >
       <Ionicons name={icon as any} size={20} color={color} />
     </View>
     <View style={styles.statsTextContainer}>
@@ -264,7 +280,9 @@ const StatsCard: React.FC<{
 
 // Main Dashboard Component
 export default function RealtimeDashboard() {
-  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
 
   // State
   const [loading, setLoading] = useState(true);
@@ -294,7 +312,7 @@ export default function RealtimeDashboard() {
   // Visible columns
   const visibleColumns = useMemo(
     () => columns.filter((col) => col.visible),
-    [columns]
+    [columns],
   );
 
   // Fetch data
@@ -332,7 +350,14 @@ export default function RealtimeDashboard() {
         setError(err.message || "Failed to fetch data");
       }
     },
-    [columns, sortBy, sortOrder, verifiedFilter, pagination.page_size, autoRefresh]
+    [
+      columns,
+      sortBy,
+      sortOrder,
+      verifiedFilter,
+      pagination.page_size,
+      autoRefresh,
+    ],
   );
 
   // Fetch stats
@@ -350,7 +375,9 @@ export default function RealtimeDashboard() {
   // Fetch columns
   const fetchColumns = useCallback(async () => {
     try {
-      const response = await api.get("/api/dashboard/columns?report_type=verified_items");
+      const response = await api.get(
+        "/api/dashboard/columns?report_type=verified_items",
+      );
       if (response.data.success) {
         setColumns(response.data.columns);
       }
@@ -405,8 +432,8 @@ export default function RealtimeDashboard() {
   const handleColumnToggle = (field: string) => {
     setColumns((prev) =>
       prev.map((col) =>
-        col.field === field ? { ...col, visible: !col.visible } : col
-      )
+        col.field === field ? { ...col, visible: !col.visible } : col,
+      ),
     );
   };
 
@@ -468,23 +495,31 @@ export default function RealtimeDashboard() {
   // Render loading state
   if (loading) {
     return (
-      <AuroraBackground>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "Real-Time Dashboard",
+          subtitle: `${summary?.filtered_records || 0} items`,
+          showBackButton: true,
+        }}
+      >
         <View style={styles.centered}>
           <LoadingSpinner size={48} color={auroraTheme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading dashboard...</Text>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="Real-Time Dashboard"
-        subtitle={`${summary?.filtered_records || 0} items`}
-        showBackButton
-      />
-
+    <ScreenContainer
+      gradient
+      header={{
+        title: "Real-Time Dashboard",
+        subtitle: `${summary?.filtered_records || 0} items`,
+        showBackButton: true,
+      }}
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
@@ -612,7 +647,10 @@ export default function RealtimeDashboard() {
               />
             </TouchableOpacity>
             {isWeb && (
-              <TouchableOpacity style={styles.iconButton} onPress={handleExportCSV}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={handleExportCSV}
+              >
                 <Ionicons
                   name="download"
                   size={20}
@@ -648,7 +686,10 @@ export default function RealtimeDashboard() {
                 {visibleColumns.map((col) => (
                   <TouchableOpacity
                     key={col.field}
-                    style={[styles.tableHeaderCell, { width: col.width || 120 }]}
+                    style={[
+                      styles.tableHeaderCell,
+                      { width: col.width || 120 },
+                    ]}
                     onPress={() => col.sortable && handleSort(col.field)}
                     disabled={!col.sortable}
                   >
@@ -694,17 +735,17 @@ export default function RealtimeDashboard() {
                           style={[
                             styles.tableCellText,
                             col.field === "variance" &&
-                            (item[col.field] as number) < 0 &&
-                            styles.negativeValue,
+                              (item[col.field] as number) < 0 &&
+                              styles.negativeValue,
                             col.field === "variance" &&
-                            (item[col.field] as number) > 0 &&
-                            styles.positiveValue,
+                              (item[col.field] as number) > 0 &&
+                              styles.positiveValue,
                           ]}
                           numberOfLines={1}
                         >
                           {formatValue(
                             item[col.field as keyof DashboardItem],
-                            col.format
+                            col.format,
                           )}
                         </Text>
                       </View>
@@ -719,7 +760,10 @@ export default function RealtimeDashboard() {
         {/* Pagination */}
         <View style={styles.pagination}>
           <TouchableOpacity
-            style={[styles.pageButton, !pagination.has_prev && styles.pageButtonDisabled]}
+            style={[
+              styles.pageButton,
+              !pagination.has_prev && styles.pageButtonDisabled,
+            ]}
             onPress={() => handlePageChange(pagination.page - 1)}
             disabled={!pagination.has_prev}
           >
@@ -731,7 +775,10 @@ export default function RealtimeDashboard() {
           </Text>
 
           <TouchableOpacity
-            style={[styles.pageButton, !pagination.has_next && styles.pageButtonDisabled]}
+            style={[
+              styles.pageButton,
+              !pagination.has_next && styles.pageButtonDisabled,
+            ]}
             onPress={() => handlePageChange(pagination.page + 1)}
             disabled={!pagination.has_next}
           >
@@ -740,52 +787,54 @@ export default function RealtimeDashboard() {
         </View>
 
         {/* Aggregations */}
-        {summary?.aggregations && Object.keys(summary.aggregations).length > 0 && (
-          <View style={styles.aggregations}>
-            <Text style={styles.aggregationsTitle}>Summary</Text>
-            <View style={styles.aggregationGrid}>
-              {summary.aggregations.total_items !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text style={styles.aggregationValue}>
-                    {summary.aggregations.total_items.toLocaleString()}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Total Items</Text>
-                </View>
-              )}
-              {summary.aggregations.total_variance !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text
-                    style={[
-                      styles.aggregationValue,
-                      summary.aggregations.total_variance < 0
-                        ? styles.negativeValue
-                        : styles.positiveValue,
-                    ]}
-                  >
-                    {summary.aggregations.total_variance.toLocaleString()}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Total Variance</Text>
-                </View>
-              )}
-              {summary.aggregations.total_value !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text style={styles.aggregationValue}>
-                    ₹{summary.aggregations.total_value.toLocaleString("en-IN")}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Total Value</Text>
-                </View>
-              )}
-              {summary.aggregations.verified_count !== undefined && (
-                <View style={styles.aggregationItem}>
-                  <Text style={styles.aggregationValue}>
-                    {summary.aggregations.verified_count.toLocaleString()}
-                  </Text>
-                  <Text style={styles.aggregationLabel}>Verified Count</Text>
-                </View>
-              )}
+        {summary?.aggregations &&
+          Object.keys(summary.aggregations).length > 0 && (
+            <View style={styles.aggregations}>
+              <Text style={styles.aggregationsTitle}>Summary</Text>
+              <View style={styles.aggregationGrid}>
+                {summary.aggregations.total_items !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text style={styles.aggregationValue}>
+                      {summary.aggregations.total_items.toLocaleString()}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Total Items</Text>
+                  </View>
+                )}
+                {summary.aggregations.total_variance !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text
+                      style={[
+                        styles.aggregationValue,
+                        summary.aggregations.total_variance < 0
+                          ? styles.negativeValue
+                          : styles.positiveValue,
+                      ]}
+                    >
+                      {summary.aggregations.total_variance.toLocaleString()}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Total Variance</Text>
+                  </View>
+                )}
+                {summary.aggregations.total_value !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text style={styles.aggregationValue}>
+                      ₹
+                      {summary.aggregations.total_value.toLocaleString("en-IN")}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Total Value</Text>
+                  </View>
+                )}
+                {summary.aggregations.verified_count !== undefined && (
+                  <View style={styles.aggregationItem}>
+                    <Text style={styles.aggregationValue}>
+                      {summary.aggregations.verified_count.toLocaleString()}
+                    </Text>
+                    <Text style={styles.aggregationLabel}>Verified Count</Text>
+                  </View>
+                )}
+              </View>
             </View>
-          </View>
-        )}
+          )}
       </ScrollView>
 
       {/* Modals */}
@@ -802,7 +851,7 @@ export default function RealtimeDashboard() {
         item={selectedItem}
         onClose={() => setShowItemDetails(false)}
       />
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 

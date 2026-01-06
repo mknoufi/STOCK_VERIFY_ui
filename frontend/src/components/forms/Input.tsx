@@ -67,6 +67,8 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             />
           )}
           <TextInput
+            autoCapitalize="none"
+            autoCorrect={false}
             ref={ref}
             style={[
               styles.input,

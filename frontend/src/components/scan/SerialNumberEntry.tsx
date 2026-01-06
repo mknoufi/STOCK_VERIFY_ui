@@ -136,13 +136,13 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                     </TouchableOpacity>
                     {(requiredSerialCount === 0 ||
                       serialInputs.length > requiredSerialCount) && (
-                        <TouchableOpacity
-                          style={styles.removeSerialButton}
-                          onPress={() => handleRemove(entry.id ?? "")}
-                        >
-                          <Ionicons name="trash" size={18} color="#EF4444" />
-                        </TouchableOpacity>
-                      )}
+                      <TouchableOpacity
+                        style={styles.removeSerialButton}
+                        onPress={() => handleRemove(entry.id ?? "")}
+                      >
+                        <Ionicons name="trash" size={18} color="#EF4444" />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
                 <TextInput
@@ -154,6 +154,7 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                     handleSerialChange(entry.id ?? "", text)
                   }
                   autoCapitalize="characters"
+                  autoCorrect={false}
                 />
               </View>
             );

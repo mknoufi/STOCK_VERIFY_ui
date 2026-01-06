@@ -24,18 +24,30 @@ on:
 
 jobs:
   mirror:
+    # Check if GH_PAT secret exists (use ${{ }} syntax without secrets context in job-level if)
     runs-on: ubuntu-latest
     env:
       # Required: a Personal Access Token with repo scope
       GH_TOKEN: ${{ secrets.GH_PAT }}
     steps:
+      - name: Check if GH_PAT is configured
+        id: check_pat
+        run: |
+          if [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "GH_PAT secret is not configured. Skipping mirror job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout (full history)
+        if: steps.check_pat.outputs.skip != 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Validate inputs
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && steps.check_pat.outputs.skip != 'true' }}
         run: |
           if [ -z "${{ github.event.inputs.target_owner }}" ] || [ -z "${{ github.event.inputs.target_repo }}" ]; then
             echo "Missing required inputs: target_owner and target_repo" >&2
@@ -43,6 +55,7 @@ jobs:
           fi
 
       - name: Set target variables
+        if: steps.check_pat.outputs.skip != 'true'
         id: vars
         run: |
           # Derive defaults for push-trigger runs (mirrors to <owner>/<repo>-mirror)
@@ -59,9 +72,11 @@ jobs:
           echo "visibility=$VISIBILITY_INPUT" >> $GITHUB_OUTPUT
 
       - name: Ensure GitHub CLI available
+        if: steps.check_pat.outputs.skip != 'true'
         run: gh --version
 
       - name: Create repo if missing
+        if: steps.check_pat.outputs.skip != 'true'
         env:
           OWNER: ${{ steps.vars.outputs.owner }}
           REPO: ${{ steps.vars.outputs.repo }}
@@ -81,11 +96,13 @@ jobs:
           fi
 
       - name: Configure git user
+        if: steps.check_pat.outputs.skip != 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
 
       - name: Add mirror remote and push all refs
+        if: steps.check_pat.outputs.skip != 'true'
         env:
           OWNER: ${{ steps.vars.outputs.owner }}
           REPO: ${{ steps.vars.outputs.repo }}

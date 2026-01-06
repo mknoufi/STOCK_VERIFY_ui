@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Ionicons } from "@expo/vector-icons";
-import { auroraTheme } from "@/theme/auroraTheme";
+import { useThemeContext } from "../../context/ThemeContext";
 
 interface Props {
   value: number;
@@ -13,7 +13,16 @@ interface Props {
   testID?: string;
 }
 
-export function QuantityStepper({ value, onChange, min = 0, max, disabled, testID }: Props) {
+export function QuantityStepper({
+  value,
+  onChange,
+  min = 0,
+  max,
+  disabled,
+  testID,
+}: Props) {
+  const { themeLegacy: theme } = useThemeContext();
+
   const clamp = (n: number) => {
     const lower = Math.max(min, isFinite(min) ? min : 0);
     const upper = typeof max === "number" ? max : Number.POSITIVE_INFINITY;
@@ -28,28 +37,55 @@ export function QuantityStepper({ value, onChange, min = 0, max, disabled, testI
     }
   };
 
+  const buttonStyle = {
+    backgroundColor: theme.colors.surfaceElevated,
+    borderColor: theme.colors.border,
+  };
+
   return (
-    <View style={[styles.container, disabled && { opacity: 0.6 }]} testID={testID}>
+    <View
+      style={[styles.container, disabled && { opacity: 0.6 }]}
+      testID={testID}
+    >
       <TouchableOpacity
         onPress={() => handleChange(-1)}
         disabled={disabled || value <= min}
-        style={[styles.button, (disabled || value <= min) && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          buttonStyle,
+          (disabled || value <= min) && styles.buttonDisabled,
+        ]}
         accessibilityLabel="decrement"
       >
-        <Ionicons name="remove" size={20} color={auroraTheme.colors.text.primary} />
+        <Ionicons name="remove" size={20} color={theme.colors.text} />
       </TouchableOpacity>
 
-      <View style={styles.valueBox}>
-        <Text style={styles.valueText}>{value}</Text>
+      <View
+        style={[
+          styles.valueBox,
+          {
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.surface,
+          },
+        ]}
+      >
+        <Text style={[styles.valueText, { color: theme.colors.text }]}>
+          {value}
+        </Text>
       </View>
 
       <TouchableOpacity
         onPress={() => handleChange(1)}
         disabled={disabled || (typeof max === "number" && value >= max)}
-        style={[styles.button, (disabled || (typeof max === "number" && value >= max)) && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          buttonStyle,
+          (disabled || (typeof max === "number" && value >= max)) &&
+            styles.buttonDisabled,
+        ]}
         accessibilityLabel="increment"
       >
-        <Ionicons name="add" size={20} color={auroraTheme.colors.text.primary} />
+        <Ionicons name="add" size={20} color={theme.colors.text} />
       </TouchableOpacity>
     </View>
   );
@@ -64,9 +100,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: auroraTheme.colors.background.secondary,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.medium,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -80,12 +114,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: auroraTheme.colors.border.medium,
-    backgroundColor: auroraTheme.colors.background.primary,
     alignItems: "center",
   },
   valueText: {
-    color: auroraTheme.colors.text.primary,
     fontSize: 18,
     fontWeight: "700",
   },

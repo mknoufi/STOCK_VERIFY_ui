@@ -10,6 +10,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from backend.auth.dependencies import get_current_user
+from backend.db.runtime import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +20,7 @@ security_router = APIRouter(prefix="/api/admin/security", tags=["Security"])
 def require_admin(current_user: dict = Depends(get_current_user)):
     """Require admin role"""
     if current_user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return current_user
 
 
@@ -35,7 +34,7 @@ async def get_failed_logins(
 ):
     """Get failed login attempts"""
     try:
-        from backend.server import db
+        db = get_db()
 
         # Build query
         query = {
@@ -87,12 +86,9 @@ async def get_failed_logins(
                 "statistics": {
                     "total_failed": total_failed,
                     "time_range_hours": hours,
-                    "top_ips": [
-                        {"ip": item["_id"], "count": item["count"]} for item in top_ips
-                    ],
+                    "top_ips": [{"ip": item["_id"], "count": item["count"]} for item in top_ips],
                     "top_users": [
-                        {"username": item["_id"], "count": item["count"]}
-                        for item in top_users
+                        {"username": item["_id"], "count": item["count"]} for item in top_users
                     ],
                 },
             },
@@ -112,7 +108,7 @@ async def get_suspicious_activity(
 ):
     """Get suspicious activity patterns"""
     try:
-        from backend.server import db
+        db = get_db()
 
         cutoff_time = datetime.utcnow() - timedelta(hours=hours)
 
@@ -185,7 +181,7 @@ async def get_security_sessions(
 ):
     """Get all active sessions for security monitoring"""
     try:
-        from backend.server import db
+        db = get_db()
 
         # Get refresh tokens (active sessions)
         query = {"revoked": False}
@@ -262,7 +258,7 @@ async def get_audit_log(
 ):
     """Get security audit log from activity logs"""
     try:
-        from backend.server import db
+        db = get_db()
 
         # Build query
         query = {"timestamp": {"$gte": datetime.utcnow() - timedelta(hours=hours)}}
@@ -327,7 +323,7 @@ async def get_ip_tracking(
 ):
     """Get IP address tracking data"""
     try:
-        from backend.server import db
+        db = get_db()
 
         cutoff_time = datetime.utcnow() - timedelta(hours=hours)
 
@@ -392,7 +388,7 @@ async def get_security_summary(
 ):
     """Get security summary dashboard data"""
     try:
-        from backend.server import db
+        db = get_db()
 
         cutoff_time = datetime.utcnow() - timedelta(hours=hours)
 
@@ -427,9 +423,7 @@ async def get_security_summary(
         recent_events = (
             await db.activity_logs.find(
                 {
-                    "action": {
-                        "$in": ["login", "logout", "register", "password_change"]
-                    },
+                    "action": {"$in": ["login", "logout", "register", "password_change"]},
                     "timestamp": {"$gte": cutoff_time},
                 }
             )

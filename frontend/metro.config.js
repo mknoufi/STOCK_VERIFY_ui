@@ -14,8 +14,6 @@ config.transformer = {
 // Ensure node_modules with import.meta are transpiled for web
 config.resolver = {
   ...config.resolver,
-  // Add web-specific resolution
-  resolverMainFields: ["browser", "main", "module"],
 };
 
 // Add WASM support for expo-sqlite

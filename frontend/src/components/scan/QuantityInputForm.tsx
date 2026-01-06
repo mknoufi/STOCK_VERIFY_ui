@@ -139,6 +139,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                   onChange(text);
                 }}
                 value={value}
+                autoCapitalize="none"
+                autoCorrect={false}
                 keyboardType="numeric"
               />
             )}
@@ -180,6 +182,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                     keyboardType={
                       Platform.OS === "ios" ? "decimal-pad" : "numeric"
                     }
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     returnKeyType="done"
                   />
                 )}
@@ -244,6 +248,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                       handleDamageChange(text, "returnableDamageQty");
                     }}
                     value={value}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     keyboardType="numeric"
                   />
                 )}
@@ -269,6 +275,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                       handleDamageChange(text, "nonReturnableDamageQty");
                     }}
                     value={value}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     keyboardType="numeric"
                   />
                 )}
@@ -405,6 +413,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                 }}
                 placeholder="Specific location marker"
                 placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
 
@@ -419,6 +429,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                 }}
                 placeholder="Add a remark"
                 placeholderTextColor="#94A3B8"
+                autoCapitalize="sentences"
+                autoCorrect={true}
                 multiline
               />
             </View>
@@ -435,7 +447,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
       prevProps.currentItemCondition === nextProps.currentItemCondition &&
       prevProps.mrpVariants.length === nextProps.mrpVariants.length &&
       prevProps.workflowState.serialCaptureEnabled ===
-      nextProps.workflowState.serialCaptureEnabled &&
+        nextProps.workflowState.serialCaptureEnabled &&
       JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
       prevProps.markLocation === nextProps.markLocation &&
       prevProps.manufacturingDate === nextProps.manufacturingDate &&

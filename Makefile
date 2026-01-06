@@ -66,16 +66,15 @@ python-load-test:
 
 python-lint:
 	@echo "Running Python linters..."
-	cd backend && ruff check . && ruff format --check .
+	cd backend && ruff check . && black --check --line-length=100 .
 
 python-format:
 	@echo "Formatting Python code..."
-	cd backend && black --line-length=100 api auth services middleware utils db scripts \
-		config.py server.py api/mapping_api.py db_mapping_config.py sql_server_connector.py exceptions.py error_messages.py && ruff format .
+	cd backend && black --line-length=100 . && ruff check --fix .
 
 python-typecheck:
 	@echo "Running Python type checker..."
-	mypy backend --ignore-missing-imports --python-version=3.10 || true
+\tmypy backend --ignore-missing-imports --python-version=3.10 --config-file=backend/pyproject.toml --explicit-package-bases || true
 
 # =============================================================================
 # 📦 NODE.JS FRONTEND
@@ -203,3 +202,28 @@ eval-performance:
 eval-security:
 	@echo "Running security evaluation..."
 	cd backend && pytest tests/evaluation/test_security_evaluation.py -v
+
+# =============================================================================
+# 🚀 DEPLOYMENT
+# =============================================================================
+.PHONY: deploy deploy-check
+
+deploy-check:
+	@echo "🔍 Checking deployment prerequisites..."
+	@if [ ! -f .env.prod ]; then \
+		echo "❌ Error: .env.prod file not found!"; \
+		echo "   Please copy .env.production.example to .env.prod and configure it."; \
+		exit 1; \
+	fi
+	@if [ ! -f nginx/ssl/fullchain.pem ] || [ ! -f nginx/ssl/privkey.pem ]; then \
+		echo "⚠️  Warning: SSL certificates not found in nginx/ssl/. Nginx might fail to start."; \
+		echo "   For testing, you can run: ./scripts/generate_ssl.sh"; \
+	fi
+
+deploy: deploy-check
+	@echo "📦 Building Frontend (Web)..."
+	cd frontend && npm install && npm run build:web
+	@echo "🚀 Deploying Standard App (Production)..."
+	docker-compose --env-file .env.prod -f docker-compose.prod.yml build --no-cache
+	docker-compose --env-file .env.prod -f docker-compose.prod.yml up -d
+	@echo "✅ Deployment complete! Access the app at https://localhost"

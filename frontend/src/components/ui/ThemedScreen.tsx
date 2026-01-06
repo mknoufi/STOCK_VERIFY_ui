@@ -6,10 +6,19 @@
  */
 
 import React from "react";
-import { View, StyleSheet, ViewStyle, Text, TextStyle } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  Text,
+  TextStyle,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useThemeContext } from "../../theme/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 import { PatternBackground } from "./PatternBackground";
+import { colors as unifiedColors } from "../../theme/unified";
 
 interface ThemedScreenProps {
   children: React.ReactNode;
@@ -28,7 +37,7 @@ export const ThemedScreen: React.FC<ThemedScreenProps> = ({
   useSafeArea = true,
   variant = "default",
 }) => {
-  const { theme, pattern, layout } = useThemeContext();
+  const { themeLegacy: theme, pattern, layout } = useThemeContext();
   const insets = useSafeAreaInsets();
 
   // Get spacing based on layout arrangement
@@ -65,30 +74,32 @@ export const ThemedScreen: React.FC<ThemedScreenProps> = ({
   };
 
   return (
-    <View style={[containerStyle, style]}>
-      {/* Pattern Background */}
-      {showPattern && pattern !== "none" && (
-        <PatternBackground
-          pattern={pattern}
-          color={theme.colors.accent}
-          secondaryColor={theme.colors.textSecondary}
-          opacity={patternOpacity}
-        />
-      )}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={[containerStyle, style]}>
+        {/* Pattern Background */}
+        {showPattern && pattern !== "none" && (
+          <PatternBackground
+            pattern={pattern}
+            color={theme.colors.accent}
+            secondaryColor={theme.colors.textSecondary}
+            opacity={patternOpacity}
+          />
+        )}
 
-      {/* Gradient Overlay for glass variant */}
-      {variant === "glass" && (
-        <View
-          style={[
-            StyleSheet.absoluteFillObject,
-            { backgroundColor: `${theme.colors.background}E6` },
-          ]}
-        />
-      )}
+        {/* Gradient Overlay for glass variant */}
+        {variant === "glass" && (
+          <View
+            style={[
+              StyleSheet.absoluteFillObject,
+              { backgroundColor: `${theme.colors.background}E6` },
+            ]}
+          />
+        )}
 
-      {/* Content */}
-      <View style={contentStyle}>{children}</View>
-    </View>
+        {/* Content */}
+        <View style={contentStyle}>{children}</View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -110,7 +121,7 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
   variant = "default",
   padding = "medium",
 }) => {
-  const { theme, layout, isDark } = useThemeContext();
+  const { themeLegacy: theme, layout, isDark } = useThemeContext();
 
   // Get padding based on layout and padding prop
   const getPadding = () => {
@@ -123,7 +134,7 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
   // Get card styles based on variant
   const getCardStyle = (): ViewStyle => {
     const base: ViewStyle = {
-      borderRadius: theme.radius.lg,
+      borderRadius: theme.borderRadius.lg,
       padding: getPadding(),
       overflow: "hidden",
     };
@@ -140,7 +151,9 @@ export const ThemedCard: React.FC<ThemedCardProps> = ({
         return {
           ...base,
           backgroundColor: theme.colors.surface,
-          shadowColor: isDark ? "#000" : "#64748B",
+          shadowColor: isDark
+            ? unifiedColors.black
+            : unifiedColors.neutral[500],
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: isDark ? 0.3 : 0.1,
           shadowRadius: 12,
@@ -187,7 +200,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   weight = "normal",
   size = "md",
 }) => {
-  const { theme } = useThemeContext();
+  const { themeLegacy: theme } = useThemeContext();
 
   const getColor = () => {
     switch (color) {

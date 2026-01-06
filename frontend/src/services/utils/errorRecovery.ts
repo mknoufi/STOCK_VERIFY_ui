@@ -7,7 +7,7 @@
  */
 
 import { Alert } from "react-native";
-import { ErrorHandler } from "./errorHandler";
+import { ErrorHandler } from "../../utils/errorHandler";
 import { retryWithBackoff as standardRetryWithBackoff } from "../../utils/retry";
 
 export interface ErrorRecoveryOptions {

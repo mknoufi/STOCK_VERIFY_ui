@@ -7,7 +7,7 @@ import os
 import platform
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -35,13 +35,9 @@ def require_admin(current_user: dict = Depends(get_current_user)):
         user_role = getattr(current_user, "role", None)
 
     if user_role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return (
-        current_user
-        if isinstance(current_user, dict)
-        else {"role": "admin", "username": "admin"}
+        current_user if isinstance(current_user, dict) else {"role": "admin", "username": "admin"}
     )
 
 
@@ -63,7 +59,7 @@ def _parse_log_file(
     level: Optional[str] = None,
 ) -> list[dict]:
     """Parse a log file and return structured log entries."""
-    logs = []
+    logs: list[dict[str, Any]] = []
     if not log_file.exists():
         return logs
 

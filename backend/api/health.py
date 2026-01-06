@@ -57,26 +57,27 @@ def get_mongodb_status() -> dict[str, Any]:
 
 
 async def _build_readiness_checks() -> dict[str, Any]:
-    from backend.server import connection_pool
-
     checks: dict[str, Any] = {
         "mongodb": False,
         "sql_server": False,
-        "connection_pool": {"initialized": False},
         "timestamp": datetime.utcnow().isoformat(),
     }
 
     # Run checks
     await _check_mongodb_health(checks)
     await _check_sql_server_health(checks)
-    _check_connection_pool_health(checks, connection_pool)
     _check_system_resources_health(checks)
 
     return checks
 
 
 async def _check_mongodb_health(checks: dict[str, Any]) -> None:
-    from backend.server import database_health_service
+    from backend.core.globals import database_health_service
+
+    if not database_health_service:
+        checks["mongodb"] = False
+        checks["mongodb_error"] = "Health service not initialized"
+        return
 
     try:
         mongo_result = await database_health_service.check_mongo_health()
@@ -89,7 +90,12 @@ async def _check_mongodb_health(checks: dict[str, Any]) -> None:
 
 
 async def _check_sql_server_health(checks: dict[str, Any]) -> None:
-    from backend.server import database_health_service
+    from backend.core.globals import database_health_service
+
+    if not database_health_service:
+        checks["sql_server"] = False
+        checks["sql_server_error"] = "Health service not initialized"
+        return
 
     try:
         sql_result = await database_health_service.check_sql_server_health()
@@ -99,22 +105,6 @@ async def _check_sql_server_health(checks: dict[str, Any]) -> None:
     except Exception as exc:
         logger.error(f"SQL Server health check failed: {exc}")
         checks["sql_server_error"] = str(exc)
-
-
-def _check_connection_pool_health(checks: dict[str, Any], connection_pool: Any) -> None:
-    if connection_pool is not None:
-        try:
-            pool_stats = connection_pool.get_stats()
-            checks["connection_pool"] = {
-                "initialized": True,
-                "pool_size": pool_stats.get("pool_size", 0),
-                "available": pool_stats.get("available", 0),
-                "checked_out": pool_stats.get("checked_out", 0),
-                "utilization_percent": pool_stats.get("utilization_percent", 0),
-            }
-        except Exception as exc:
-            logger.error(f"Connection pool health check failed: {exc}")
-            checks["connection_pool"] = {"initialized": True, "error": str(exc)}
 
 
 def _check_system_resources_health(checks: dict[str, Any]) -> None:
@@ -134,7 +124,7 @@ def _check_system_resources_health(checks: dict[str, Any]) -> None:
 
 
 async def _build_startup_checks() -> dict[str, Any]:
-    from backend.server import database_health_service
+    from backend.core.globals import database_health_service
 
     checks: dict[str, Any] = {
         "mongodb": False,
@@ -142,6 +132,9 @@ async def _build_startup_checks() -> dict[str, Any]:
         "migrations": True,
         "timestamp": datetime.utcnow().isoformat(),
     }
+
+    if not database_health_service:
+        return checks
 
     try:
         mongo_result = await database_health_service.check_mongo_health()
@@ -159,16 +152,10 @@ async def _build_startup_checks() -> dict[str, Any]:
 
 
 def _build_mongo_pool_info() -> dict[str, Any]:
-    try:
-        from backend.server import client
-
-        pool_size = getattr(client, "_max_pool_size", "unknown")
-        return {
-            "max_pool_size": pool_size,
-            "pool_available": "unknown",
-        }
-    except Exception:
-        return {}
+    return {
+        "max_pool_size": "unknown",
+        "pool_available": "unknown",
+    }
 
 
 def _gather_system_resources() -> dict[str, Any]:
@@ -205,11 +192,7 @@ def _gather_system_resources() -> dict[str, Any]:
             "total_gb": round(disk_total_gb, 2),
             "used_percent": round(disk_percent, 2),
             "status": (
-                "healthy"
-                if disk_percent < 90
-                else "warning"
-                if disk_percent < 95
-                else "critical"
+                "healthy" if disk_percent < 90 else "warning" if disk_percent < 95 else "critical"
             ),
         },
     }
@@ -243,13 +226,10 @@ async def get_version() -> dict[str, Any]:
     Usage: Version checking, debugging, monitoring
     """
     try:
-        from backend.server import app
-        from config import settings
+        from backend.config import settings
 
         version_info = {
-            "version": getattr(
-                app, "version", getattr(settings, "APP_VERSION", "1.0.0")
-            ),
+            "version": getattr(settings, "APP_VERSION", "1.0.0"),
             "name": getattr(settings, "APP_NAME", "Stock Count API"),
             "environment": getattr(
                 settings, "ENVIRONMENT", os.getenv("ENVIRONMENT", "development")
@@ -292,7 +272,20 @@ async def health_check() -> dict[str, Any]:
 
     Usage: Monitoring systems, load balancers
     """
-    from backend.server import database_health_service
+    from backend.core.globals import database_health_service
+
+    if not database_health_service:
+        return {
+            "status": "degraded",
+            "timestamp": datetime.utcnow().isoformat(),
+            "service": "stock-verify-api",
+            "mongodb": {
+                "port": int(os.getenv("MONGO_PORT", 27017)),
+                "status": "unknown",
+                "is_running": False,
+                "error": "Health service not initialized",
+            },
+        }
 
     mongo_result = await database_health_service.check_mongo_health()
     mongo_status = mongo_result.get("status", "unknown")
@@ -396,22 +389,25 @@ async def detailed_health_check() -> dict[str, Any]:
 
     Usage: Monitoring dashboards, troubleshooting
     """
-    from backend.server import app, connection_pool, database_health_service
+    from backend.config import settings
+    from backend.core.globals import database_health_service
 
     resources = _gather_system_resources()
     mongo_pool_info = _build_mongo_pool_info()
-    db_health = await database_health_service.get_detailed_health()
+
+    if database_health_service:
+        db_health = await database_health_service.get_detailed_health()
+    else:
+        db_health = {"status": "unknown", "error": "Health service not initialized"}
 
     health_data: dict[str, Any] = {
         **db_health,
         "service": "stock-verify-api",
         "timestamp": datetime.utcnow().isoformat(),
-        "version": getattr(app, "version", "1.0.0"),
+        "version": getattr(settings, "APP_VERSION", "1.0.0"),
         "resources": resources,
         "connection_pools": {"mongodb": mongo_pool_info},
     }
-
-    _augment_sql_pool_stats(connection_pool, health_data["connection_pools"])
 
     return health_data
 
@@ -498,12 +494,9 @@ async def check_version(
     Usage: App startup version check, update prompts
     """
     try:
-        from backend.server import app
         from config import settings
 
-        current_version = getattr(
-            app, "version", getattr(settings, "APP_VERSION", "1.0.0")
-        )
+        current_version = getattr(settings, "APP_VERSION", "1.0.0")
         min_version = getattr(settings, "MIN_CLIENT_VERSION", "1.0.0")
 
         result = _compare_versions(client_version, min_version, current_version)

@@ -1,5 +1,9 @@
 // Enhanced Search Service for advanced item searching
-import { searchItemsOptimized, getSearchSuggestions as getApiSuggestions } from './api/api';
+import {
+  searchItemsOptimized,
+  getSearchSuggestions as getApiSuggestions,
+  getSearchFilters,
+} from "./api/api";
 
 export interface SearchResult {
   id: string;
@@ -42,7 +46,7 @@ export const EnhancedSearchService = {
     totalPages: number;
   }> => {
     try {
-      const query = filters.query || '';
+      const query = filters.query || "";
       if (!query || query.length < 2) {
         return {
           items: [],
@@ -54,7 +58,7 @@ export const EnhancedSearchService = {
 
       // Use new optimized search endpoint
       const result = await searchItemsOptimized(query, page, limit);
-      
+
       // Map to SearchResult interface
       const items: SearchResult[] = result.items.map((item: any) => ({
         id: item.id || item.item_code,
@@ -70,7 +74,9 @@ export const EnhancedSearchService = {
         item_group: item.item_group,
         warehouse: item.warehouse,
         location: item.location,
-        matchType: item.match_type || (item.relevance_score >= 500 ? 'exact' : 'partial'),
+        matchType:
+          item.match_type ||
+          (item.relevance_score >= 500 ? "exact" : "partial"),
         floor: item.floor,
         rack: item.rack,
         relevance_score: item.relevance_score,
@@ -85,7 +91,7 @@ export const EnhancedSearchService = {
         totalPages,
       };
     } catch (error) {
-      __DEV__ && console.error('EnhancedSearchService error:', error);
+      __DEV__ && console.error("EnhancedSearchService error:", error);
       return {
         items: [],
         total: 0,
@@ -99,19 +105,27 @@ export const EnhancedSearchService = {
     try {
       return await getApiSuggestions(query);
     } catch (error) {
-      __DEV__ && console.error('Error getting suggestions:', error);
+      __DEV__ && console.error("Error getting suggestions:", error);
       return [];
     }
   },
 
   getCategories: async (): Promise<string[]> => {
-    // TODO: Add API endpoint for categories
-    return ["Electronics", "Clothing", "Food", "Books"];
+    try {
+      const filters = await getSearchFilters();
+      return filters.categories;
+    } catch {
+      return [];
+    }
   },
 
   getWarehouses: async (): Promise<string[]> => {
-    // TODO: Add API endpoint for warehouses
-    return ["Main Warehouse", "Secondary Warehouse"];
+    try {
+      const filters = await getSearchFilters();
+      return filters.warehouses;
+    } catch {
+      return [];
+    }
   },
 };
 

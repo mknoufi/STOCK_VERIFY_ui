@@ -42,7 +42,7 @@ class AutoSyncManager:
 
         # State tracking
         self._running = False
-        self._monitoring_task: asyncio.Task = None
+        self._monitoring_task: Optional[asyncio.Task] = None
         self._sync_service: SQLSyncService = None
         self._last_connection_check: Optional[datetime] = None
         self._last_sync_attempt: Optional[datetime] = None
@@ -153,7 +153,9 @@ class AutoSyncManager:
         logger.info("✅ SQL Server connection restored - triggering sync")
         self._sql_available = True
         self._stats["connection_restored"] += 1
-        self._stats["last_connection_time"] = datetime.utcnow().isoformat()
+        # Stats dict value can be int or str
+        conn_time = datetime.utcnow().isoformat()
+        self._stats["last_connection_time"] = conn_time  # type: ignore[assignment]
 
         await self._trigger_sync()
 
@@ -186,9 +188,7 @@ class AutoSyncManager:
 
         # Check if enough time has passed since last sync
         if self._last_sync_attempt:
-            time_since_last = (
-                datetime.utcnow() - self._last_sync_attempt
-            ).total_seconds()
+            time_since_last = (datetime.utcnow() - self._last_sync_attempt).total_seconds()
             if time_since_last < self.sync_interval:
                 logger.info(
                     f"Sync skipped - only {time_since_last:.0f}s since last sync (interval: {self.sync_interval}s)"
@@ -248,9 +248,7 @@ class AutoSyncManager:
             "sql_available": self._sql_available,
             "sync_in_progress": self._sync_in_progress,
             "last_connection_check": (
-                self._last_connection_check.isoformat()
-                if self._last_connection_check
-                else None
+                self._last_connection_check.isoformat() if self._last_connection_check else None
             ),
             "last_sync_attempt": (
                 self._last_sync_attempt.isoformat() if self._last_sync_attempt else None

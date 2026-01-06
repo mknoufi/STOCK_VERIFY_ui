@@ -20,17 +20,58 @@ def _setup_gzip(app: FastAPI) -> None:
         logger.warning("GZipMiddleware not available")
 
 
+def _get_allowed_hosts() -> list[str]:
+    """Determine allowed hosts based on environment.
+
+    Returns:
+        List of allowed host headers. Uses secure defaults in development,
+        requires explicit configuration in production.
+    """
+    configured_hosts = getattr(settings, "ALLOWED_HOSTS", None)
+    if configured_hosts:
+        return [h.strip() for h in configured_hosts.split(",") if h.strip()]
+
+    _env = getattr(settings, "ENVIRONMENT", "development").lower()
+    if _env == "development":
+        # SECURITY: Only allow localhost and common LAN patterns in development
+        return [
+            "localhost",
+            "127.0.0.1",
+            "0.0.0.0",  # Required for Docker
+            "testserver",  # Required for pytest
+        ]
+
+    # SECURITY: In production, require explicit ALLOWED_HOSTS configuration
+    # Log warning but default to restrictive list rather than wildcard
+    logger.warning(
+        "ALLOWED_HOSTS not configured for non-development environment. "
+        "Defaulting to localhost only. Set ALLOWED_HOSTS env var for production."
+    )
+    return ["localhost", "127.0.0.1"]
+
+
 def _setup_trusted_hosts(app: FastAPI) -> None:
-    """Add trusted host middleware."""
+    """Add trusted host middleware with secure defaults."""
     try:
         from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-        allowed_hosts = getattr(settings, "ALLOWED_HOSTS", None) or ["*"]
-        if isinstance(allowed_hosts, str):
-            allowed_hosts = [h.strip() for h in allowed_hosts.split(",")]
+        allowed_hosts = _get_allowed_hosts()
+
+        # SECURITY: Add dynamic LAN detection for development only
+        _env = getattr(settings, "ENVIRONMENT", "development").lower()
+        if _env == "development":
+            try:
+                import socket
+
+                hostname = socket.gethostname()
+                local_ip = socket.gethostbyname(hostname)
+                if local_ip not in allowed_hosts:
+                    allowed_hosts.append(local_ip)
+            except Exception:  # pragma: no cover
+                pass  # Silently continue if IP detection fails
 
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
-        logger.info(f"✓ TrustedHost middleware enabled (hosts: {allowed_hosts})")
+        logger.info(f"✓ TrustedHost middleware enabled (hosts: {len(allowed_hosts)} configured)")
     except ImportError:
         logger.warning("TrustedHostMiddleware not available")
 
@@ -38,11 +79,7 @@ def _setup_trusted_hosts(app: FastAPI) -> None:
 def _get_cors_origins() -> list[str]:
     """Determine allowed CORS origins based on environment."""
     if getattr(settings, "CORS_ALLOW_ORIGINS", None):
-        return [
-            o.strip()
-            for o in (settings.CORS_ALLOW_ORIGINS or "").split(",")
-            if o.strip()
-        ]
+        return [o.strip() for o in (settings.CORS_ALLOW_ORIGINS or "").split(",") if o.strip()]
 
     _env = getattr(settings, "ENVIRONMENT", "development").lower()
     if _env == "development":
@@ -55,16 +92,13 @@ def _get_cors_origins() -> list[str]:
         ]
         if getattr(settings, "CORS_DEV_ORIGINS", None):
             dev_origins = [
-                o.strip()
-                for o in (settings.CORS_DEV_ORIGINS or "").split(",")
-                if o.strip()
+                o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()
             ]
             origins.extend(dev_origins)
         return origins
 
     logger.warning(
-        "CORS_ALLOW_ORIGINS not configured for non-development environment; "
-        "requests may be blocked"
+        "CORS_ALLOW_ORIGINS not configured for non-development environment; requests may be blocked"
     )
     return []
 
@@ -111,9 +145,23 @@ def _setup_security_headers(app: FastAPI) -> None:
         logger.warning(f"Failed to add SecurityHeadersMiddleware: {str(e)}")
 
 
+def _setup_lan_enforcement(app: FastAPI) -> None:
+    """Add LAN enforcement middleware."""
+    try:
+        from backend.middleware.lan_enforcement import LANEnforcementMiddleware
+
+        app.add_middleware(LANEnforcementMiddleware)
+        logger.info("✓ LAN enforcement middleware enabled")
+    except ImportError as e:
+        logger.warning(f"LAN enforcement middleware not available: {str(e)}")
+    except Exception as e:
+        logger.warning(f"Failed to add LANEnforcementMiddleware: {str(e)}")
+
+
 def setup_middleware(app: FastAPI) -> None:
     """Configure all middleware for the application."""
     _setup_gzip(app)
     _setup_trusted_hosts(app)
     _setup_cors(app)
     _setup_security_headers(app)
+    _setup_lan_enforcement(app)

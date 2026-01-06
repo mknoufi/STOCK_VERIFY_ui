@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from backend.api.response_models import ApiResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.db.runtime import get_db
 from backend.services.ai_variance import ai_variance_service
 
 router = APIRouter()
@@ -27,7 +28,7 @@ async def get_session_predictions(
     Helps supervisors identify potential variances that need double-checking.
     """
     try:
-        from backend.server import db
+        db = get_db()
 
         # Check if user is supervisor or admin
         user_role = current_user.get("role", "staff")
@@ -35,9 +36,7 @@ async def get_session_predictions(
             # We still allow it for now but in production we would restrict
             pass
 
-        predictions_data = await ai_variance_service.predict_session_risks(
-            db, session_id, limit
-        )
+        predictions_data = await ai_variance_service.predict_session_risks(db, session_id, limit)
 
         predictions = [RiskPrediction(**p) for p in predictions_data]
 

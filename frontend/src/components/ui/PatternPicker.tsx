@@ -20,7 +20,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { useThemeContext, PatternType } from "../../theme/ThemeContext";
+import { useThemeContext, PatternType } from "../../context/ThemeContext";
 
 interface PatternPickerProps {
   compact?: boolean;
@@ -29,7 +29,12 @@ interface PatternPickerProps {
 export const PatternPicker: React.FC<PatternPickerProps> = ({
   compact = false,
 }) => {
-  const { theme, pattern, setPattern, availablePatterns } = useThemeContext();
+  const {
+    themeLegacy: theme,
+    pattern,
+    setPattern,
+    availablePatterns,
+  } = useThemeContext();
 
   const handlePatternSelect = useCallback(
     (key: PatternType) => {

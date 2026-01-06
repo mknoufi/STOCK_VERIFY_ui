@@ -1,10 +1,10 @@
 import React from "react";
-import { Button } from "../Button";
+import { ModernButton } from "../ui/ModernButton";
 
-export type EnhancedButtonProps = React.ComponentProps<typeof Button>;
+export type EnhancedButtonProps = React.ComponentProps<typeof ModernButton>;
 
 const EnhancedButton: React.FC<EnhancedButtonProps> = (props) => {
-  return <Button {...props} />;
+  return <ModernButton {...props} />;
 };
 
 export default EnhancedButton;

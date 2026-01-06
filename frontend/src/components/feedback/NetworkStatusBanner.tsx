@@ -11,7 +11,7 @@ interface NetworkStatusBannerProps {
 export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({
   onSyncPress,
 }) => {
-  const { isOnline, isInternetReachable } = useNetworkStore();
+  const { isOnline, isInternetReachable, isRestrictedMode } = useNetworkStore();
   const [queueCount, setQueueCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
 
@@ -43,6 +43,19 @@ export const NetworkStatusBanner: React.FC<NetworkStatusBannerProps> = ({
       setSyncing(false);
     }
   };
+
+  if (isRestrictedMode) {
+    return (
+      <View style={[styles.banner, styles.bannerRestricted]}>
+        <View style={styles.statusContainer}>
+          <View style={[styles.indicator, styles.indicatorOffline]} />
+          <Text style={styles.statusText}>
+            Restricted Mode: Connect to Wi-Fi
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   if (isOnline && isInternetReachable !== false && queueCount === 0) {
     return null; // Don't show banner when online and no pending items
@@ -95,6 +108,9 @@ const styles = StyleSheet.create({
   },
   bannerOffline: {
     backgroundColor: "#FF6B6B",
+  },
+  bannerRestricted: {
+    backgroundColor: "#D32F2F",
   },
   bannerOnlineWithQueue: {
     backgroundColor: "#FFA500",

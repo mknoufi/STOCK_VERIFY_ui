@@ -88,6 +88,5 @@ All ERP updates (if required) SHALL be:
 
 ## 8. FINAL STATEMENT
 
-> This policy is permanent and irreversible.  
+> This policy is permanent and irreversible.
 > The Stock Verify System will never become an ERP write system.
-

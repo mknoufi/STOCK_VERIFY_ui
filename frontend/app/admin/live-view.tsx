@@ -11,9 +11,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { ScreenContainer } from "@/components/ui";
 import { auroraTheme } from "@/theme/auroraTheme";
 import { ItemVerificationAPI } from "@/domains/inventory/services/itemVerificationApi";
 import api from "@/services/httpClient";
@@ -68,11 +67,12 @@ export default function AdminLiveView() {
     try {
       setError(null);
 
-      const [sessionsRes, usersRes, verificationsRes] = await Promise.allSettled([
-        api.get("/api/sessions/active"),
-        ItemVerificationAPI.getLiveUsers(),
-        ItemVerificationAPI.getLiveVerifications(50),
-      ]);
+      const [sessionsRes, usersRes, verificationsRes] =
+        await Promise.allSettled([
+          api.get("/api/sessions/active"),
+          ItemVerificationAPI.getLiveUsers(),
+          ItemVerificationAPI.getLiveVerifications(50),
+        ]);
 
       if (sessionsRes.status === "fulfilled") {
         const data = sessionsRes.value.data;
@@ -159,17 +159,16 @@ export default function AdminLiveView() {
   }, [liveVerifications, onlyVariance, searchQuery]);
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="Live View"
-        subtitle={
-          lastUpdatedAt
-            ? `Updated ${formatTimeAgo(lastUpdatedAt.toISOString())}`
-            : "Loading…"
-        }
-        showBackButton
-      />
-
+    <ScreenContainer
+      gradient
+      header={{
+        title: "Live View",
+        subtitle: lastUpdatedAt
+          ? `Updated ${formatTimeAgo(lastUpdatedAt.toISOString())}`
+          : "Loading…",
+        showBackButton: true,
+      }}
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -180,7 +179,11 @@ export default function AdminLiveView() {
         <View style={styles.topRow}>
           <GlassCard style={styles.kpiCard} variant="strong" elevation="md">
             <View style={styles.kpiHeader}>
-              <Ionicons name="radio" size={18} color={auroraTheme.colors.primary[400]} />
+              <Ionicons
+                name="radio"
+                size={18}
+                color={auroraTheme.colors.primary[400]}
+              />
               <Text style={styles.kpiLabel}>Active Sessions</Text>
             </View>
             <Text style={styles.kpiValue}>{activeSessions.length}</Text>
@@ -236,7 +239,10 @@ export default function AdminLiveView() {
                 autoCorrect={false}
               />
               {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery("")} style={styles.clearBtn}>
+                <TouchableOpacity
+                  onPress={() => setSearchQuery("")}
+                  style={styles.clearBtn}
+                >
                   <Ionicons
                     name="close-circle"
                     size={16}
@@ -322,8 +328,12 @@ export default function AdminLiveView() {
                     <Text style={styles.userName}>{u.username}</Text>
                   </View>
                   <View style={styles.userRight}>
-                    <Text style={styles.userMeta}>{u.items_verified} items</Text>
-                    <Text style={styles.userMeta}>{formatTimeAgo(u.last_activity)}</Text>
+                    <Text style={styles.userMeta}>
+                      {u.items_verified} items
+                    </Text>
+                    <Text style={styles.userMeta}>
+                      {formatTimeAgo(u.last_activity)}
+                    </Text>
                   </View>
                 </View>
               ))
@@ -339,7 +349,10 @@ export default function AdminLiveView() {
                 const variance = Number(v.variance || 0);
                 const hasVariance = variance !== 0;
                 return (
-                  <View key={`${v.item_code}-${v.verified_at}-${idx}`} style={styles.verRow}>
+                  <View
+                    key={`${v.item_code}-${v.verified_at}-${idx}`}
+                    style={styles.verRow}
+                  >
                     <View style={styles.verMain}>
                       <Text style={styles.verTitle} numberOfLines={1}>
                         {v.item_name || v.item_code}
@@ -369,7 +382,7 @@ export default function AdminLiveView() {
           </GlassCard>
         </View>
       </ScrollView>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 

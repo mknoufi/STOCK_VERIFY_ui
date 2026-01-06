@@ -1,34 +1,50 @@
-import React, { useState, useMemo, useEffect } from "react";
+/**
+ * Modern Staff Home Screen - Lavanya Mart Stock Verify
+ * Dashboard for managing stock verification sessions
+ */
+
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
-  Alert,
   StyleSheet,
-  Platform,
   ScrollView,
-  ActivityIndicator,
+  TouchableOpacity,
+  RefreshControl,
+  Alert,
+  Platform,
+  Modal,
+  KeyboardAvoidingView,
+  BackHandler,
 } from "react-native";
-import Modal from "react-native-modal";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useQueryClient } from "@tanstack/react-query";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuthStore } from "../../src/store/authStore";
 import { useScanSessionStore } from "../../src/store/scanSessionStore";
-import { createSession, getZones, getWarehouses } from "../../src/services/api/api";
 import { useSessionsQuery } from "../../src/hooks/useSessionsQuery";
-import { SESSION_PAGE_SIZE } from "../../src/constants/config";
-import { PremiumInput } from "../../src/components/premium/PremiumInput";
-import { SessionType } from "../../src/types";
-import { useThemeContext } from "../../src/theme/ThemeContext";
 import {
-  FloatingScanButton,
-  SyncStatusPill,
-  ScreenContainer,
-} from "../../src/components/ui";
-import { SectionLists } from "./components/SectionLists";
+  createSession,
+  getZones,
+  getWarehouses,
+} from "../../src/services/api/api";
+import { SESSION_PAGE_SIZE } from "../../src/constants/config";
 import { toastService } from "../../src/services/utils/toastService";
+
+import ModernHeader from "../../src/components/ui/ModernHeader";
+import ModernCard from "../../src/components/ui/ModernCard";
+import ModernButton from "../../src/components/ui/ModernButton";
+import ModernInput from "../../src/components/ui/ModernInput";
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+} from "../../src/theme/modernDesign";
 
 interface Zone {
   id: string;
@@ -40,1345 +56,687 @@ interface Warehouse {
   warehouse_name: string;
 }
 
-
-
 export default function StaffHome() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
-  const { theme, isDark } = useThemeContext();
+
+  // Handle Back Button for Exit Confirmation
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert("Exit App", "Are you sure you want to exit?", [
+        {
+          text: "Cancel",
+          onPress: () => null,
+          style: "cancel",
+        },
+        { text: "YES", onPress: () => BackHandler.exitApp() },
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   // State
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<"active" | "history">("active");
+
+  // Create Session State
   const [locationType, setLocationType] = useState<string | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
   const [rackName, setRackName] = useState("");
-  const [sessionType] = useState<SessionType>("STANDARD");
-  const [currentPage] = useState(1);
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [_lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
-  const [showFloorPicker, setShowFloorPicker] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  // Dynamic Location State
+  const [isCreating, setIsCreating] = useState(false);
   const [zones, setZones] = useState<Zone[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+  const [_isLoadingZones, _setIsLoadingZones] = useState(false);
+
+  const { setActiveSession, setFloor, setRack } = useScanSessionStore();
 
   // Queries
   const {
     data: sessionsData,
-    isLoading: isLoadingSessions,
+    isLoading: _isLoadingSessions,
     refetch,
   } = useSessionsQuery({
-    page: currentPage,
+    page: 1,
     pageSize: SESSION_PAGE_SIZE,
   });
 
-  // Memoize sessions to prevent dependency array issues
-  const sessions = useMemo(() => sessionsData?.items || [], [sessionsData?.items]);
-
-  // Derived State
-  const _activeSessions = useMemo(
-    () => sessions.filter((s: any) => s.status === "active"),
-    [sessions],
+  const sessions = useMemo(
+    () => (Array.isArray(sessionsData?.items) ? sessionsData.items : []),
+    [sessionsData?.items],
   );
 
-  const _totalItemsScanned = useMemo(
-    () =>
-      sessions.reduce((acc: number, s: any) => acc + (s.item_count || 0), 0),
-    [sessions],
-  );
-
-  // Compute display floors for the floor picker modal
-  // This ensures fallback data is always available based on locationType
-  const displayFloors = useMemo(() => {
-    if (warehouses.length > 0) {
-      return warehouses;
-    }
-    if (!locationType) {
-      return [];
-    }
-    // Fallback floors based on location type
-    if (locationType.toLowerCase().includes("showroom")) {
-      return [
-        { warehouse_name: "Ground Floor", id: "fl_ground" },
-        { warehouse_name: "First Floor", id: "fl_first" },
-        { warehouse_name: "Second Floor", id: "fl_second" },
-      ];
-    }
-    return [
-      { warehouse_name: "Main Godown", id: "wh_main" },
-      { warehouse_name: "Top Godown", id: "wh_top" },
-      { warehouse_name: "Damage Area", id: "wh_damage" },
-    ];
-  }, [warehouses, locationType]);
-
-  // Effects
-  useEffect(() => {
-    if (sessionsData && !isLoadingSessions) {
-      setLastSyncTime(new Date());
-    }
-  }, [sessionsData, isLoadingSessions]);
-
-  // Handlers
-  const handleRefresh = async () => {
-    if (Platform.OS !== "web")
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setIsRefreshing(true);
-    try {
-      await refetch();
-      setLastSyncTime(new Date());
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const _handleLogout = async () => {
-    if (Platform.OS !== "web")
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setShowLogoutModal(true);
-  };
-
-  const { setActiveSession } = useScanSessionStore();
-
-  // State for search
-  const [finishedSearchQuery, setFinishedSearchQuery] = useState("");
-  const [showNewSectionForm, setShowNewSectionForm] = useState(false);
-  const [showFinishedSearch, setShowFinishedSearch] = useState(false);
-
-  // Helper function for relative time
-  const _getRelativeTime = (date: Date | string): string => {
-    const now = new Date();
-    const then = new Date(date);
-    const diffMs = now.getTime() - then.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
-    if (diffHours < 24)
-      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return then.toLocaleDateString();
-  };
-
-  // Separate active (unfinished) and closed (finished) sections
-  const activeSectionsList = useMemo(() => {
-    const filtered = sessions.filter(
-      (s: any) => s.status === "active" || s.status === "OPEN",
-    );
-    console.log("📋 Sessions:", sessions.length, "Active:", filtered.length);
-    return filtered;
+  const activeSessions = useMemo(() => {
+    return sessions
+      .filter((s: any) => {
+        const status = String(s.status || "OPEN")
+          .trim()
+          .toUpperCase();
+        return status === "OPEN" || status === "ACTIVE";
+      })
+      .sort((a: any, b: any) => {
+        const aDate = new Date(a.updated_at || a.created_at || 0).getTime();
+        const bDate = new Date(b.updated_at || b.created_at || 0).getTime();
+        return bDate - aDate;
+      });
   }, [sessions]);
 
-  const finishedSections = useMemo(() => {
-    const filtered = sessions.filter(
-      (s: any) =>
-        s.status === "closed" ||
-        s.status === "CLOSED" ||
-        s.status === "completed",
-    );
-    // Apply search filter
-    if (finishedSearchQuery.trim()) {
-      return filtered.filter((s: any) =>
-        s.warehouse?.toLowerCase().includes(finishedSearchQuery.toLowerCase()),
+  const finishedSessions = useMemo(() => {
+    return sessions.filter((s: any) => {
+      const status = String(s.status || "")
+        .trim()
+        .toUpperCase();
+      return (
+        status === "CLOSED" || status === "COMPLETED" || status === "RECONCILE"
       );
-    }
-    return filtered;
-  }, [sessions, finishedSearchQuery]);
+    });
+  }, [sessions]);
 
-  const handleStartNewSection = async () => {
-    // Validate inputs
-    if (!locationType) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Please select Showroom or Godown", { type: "warning" });
-      return;
-    }
-
-    if (!selectedFloor) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Please select a floor/area", { type: "warning" });
-      return;
-    }
-
-    if (!rackName.trim()) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Please enter the rack/shelf identifier", { type: "warning" });
-      return;
-    }
-
-    // Validate rack name length and format
-    const trimmedRack = rackName.trim();
-    if (trimmedRack.length < 1 || trimmedRack.length > 20) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Rack name must be between 1-20 characters", { type: "warning" });
-      return;
-    }
-
-    // Check for invalid characters (only allow alphanumeric, dash, underscore)
-    if (!/^[a-zA-Z0-9\-_]+$/.test(trimmedRack)) {
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      toastService.show("Rack name can only contain letters, numbers, dashes, and underscores", { type: "warning" });
-      return;
-    }
-
-    // Build warehouse name: "Showroom - Ground Floor - A1"
-    const warehouseName = `${locationType} - ${selectedFloor} - ${trimmedRack.toUpperCase()}`;
-
-    try {
-      if (Platform.OS !== "web")
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      setIsCreatingSession(true);
-      const session = await createSession({
-        warehouse: warehouseName,
-        type: sessionType,
-      });
-
-      // Reset form
-      setLocationType(null);
-      setSelectedFloor(null);
-      setRackName("");
-
-      // Sync with store
-      setActiveSession(session.id, sessionType);
-
-      await refetch();
-      router.push({
-        pathname: "/staff/scan",
-        params: { sessionId: session.id },
-      } as any);
-    } catch (error) {
-      console.error("Create section error:", error);
-      if (Platform.OS !== "web")
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toastService.show("Failed to start new section", { type: "error" });
-    } finally {
-      setIsCreatingSession(false);
-    }
-  };
-
-  const handleResumeSection = (
-    sessionId: string,
-    type: SessionType = "STANDARD",
-  ) => {
-    if (Platform.OS !== "web") Haptics.selectionAsync();
-    // Sync with store
-    setActiveSession(sessionId, type);
-
-    router.push({
-      pathname: "/staff/scan",
-      params: { sessionId },
-    } as any);
-  };
-
-  // Fetch Zones on mount
+  // Fetch Zones
   useEffect(() => {
     const fetchZones = async () => {
-      // Set fallback zones immediately so UI is usable
       const fallbackZones = [
         { zone_name: "Showroom", id: "zone_showroom" },
         { zone_name: "Godown", id: "zone_godown" },
       ];
       setZones(fallbackZones);
-      console.log("🗺️ Set fallback zones:", fallbackZones.map(z => z.zone_name));
 
       try {
-        setIsLoadingLocations(true);
         const data = await getZones();
         if (Array.isArray(data) && data.length > 0) {
           setZones(data);
-          console.log("🗺️ Updated zones from API:", data.map((z: any) => z.zone_name));
         }
-      } catch (error: any) {
-        if (error?.response?.status !== 401) {
-          console.error("Failed to fetch zones (using fallback)", error);
-        }
-        // Fallback already set above
-      } finally {
-        setIsLoadingLocations(false);
+      } catch (_error) {
+        // Silent fail, use fallback
       }
     };
     fetchZones();
   }, []);
 
-  const handleLocationTypeChange = async (type: string) => {
-    if (Platform.OS !== "web") Haptics.selectionAsync();
-    setLocationType(type);
-    setSelectedFloor(null); // Reset floor when location type changes
+  // Fetch Warehouses when location type changes
+  useEffect(() => {
+    const fetchWarehouses = async () => {
+      if (!locationType) return;
 
-    // Immediately set fallback data so UI is responsive
-    const fallback = type.toLowerCase().includes("showroom")
-      ? [
+      // Set fallback immediately
+      let fallback: Warehouse[] = [];
+      if (locationType.toLowerCase().includes("showroom")) {
+        fallback = [
           { warehouse_name: "Ground Floor", id: "fl_ground" },
           { warehouse_name: "First Floor", id: "fl_first" },
           { warehouse_name: "Second Floor", id: "fl_second" },
-        ]
-      : [
+        ];
+      } else {
+        fallback = [
           { warehouse_name: "Main Godown", id: "wh_main" },
           { warehouse_name: "Top Godown", id: "wh_top" },
           { warehouse_name: "Damage Area", id: "wh_damage" },
         ];
-    setWarehouses(fallback);
-    console.log("🏢 Set fallback warehouses for", type, ":", fallback.length);
-
-    // Try to fetch from API (will update if successful)
-    try {
-      setIsLoadingLocations(true);
-      const data = await getWarehouses(type);
-      console.log("🔍 Warehouse Data for type", type, ":", JSON.stringify(data));
-      const warehouseList = Array.isArray(data) ? data : [];
-
-      // Only update if API returned data
-      if (warehouseList.length > 0) {
-        setWarehouses(warehouseList);
       }
-    } catch (error: any) {
-      console.error("Failed to fetch warehouses (using fallback)", error);
-      // Fallback already set above
-    } finally {
-      setIsLoadingLocations(false);
-    }
-  };
-
-  const handleOpenFloorPicker = () => {
-    if (Platform.OS !== "web") Haptics.selectionAsync();
-    console.log("🚪 handleOpenFloorPicker called. warehouses:", warehouses.length, "locationType:", locationType);
-
-    // Ensure we have floors to show if warehouses is empty
-    if (locationType && warehouses.length === 0) {
-      const fallback = locationType.toLowerCase().includes("showroom")
-        ? [
-            { warehouse_name: "Ground Floor", id: "fl_ground" },
-            { warehouse_name: "First Floor", id: "fl_first" },
-            { warehouse_name: "Second Floor", id: "fl_second" },
-          ]
-        : [
-            { warehouse_name: "Main Godown", id: "wh_main" },
-            { warehouse_name: "Top Godown", id: "wh_top" },
-            { warehouse_name: "Damage Area", id: "wh_damage" },
-          ];
-      console.log("🏢 Setting warehouses to fallback:", fallback.map(f => f.warehouse_name));
       setWarehouses(fallback);
+
+      try {
+        const data = await getWarehouses(locationType);
+        if (Array.isArray(data) && data.length > 0) {
+          setWarehouses(data);
+        }
+      } catch (_error) {
+        // Silent fail, use fallback
+      }
+    };
+    fetchWarehouses();
+  }, [locationType]);
+
+  const handleRefresh = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  }, [refetch]);
+
+  // Refresh session list when screen gains focus (user navigates back from scan)
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
+
+  const handleStartSession = async () => {
+    if (!locationType || !selectedFloor || !rackName.trim()) {
+      Alert.alert("Missing Information", "Please fill in all fields");
+      return;
     }
 
-    setShowFloorPicker(true);
+    const trimmedRack = rackName.trim();
+    if (!/^[a-zA-Z0-9\-_]+$/.test(trimmedRack)) {
+      Alert.alert(
+        "Invalid Rack Name",
+        "Only letters, numbers, dashes, and underscores allowed",
+      );
+      return;
+    }
+
+    const warehouseName = `${locationType} - ${selectedFloor} - ${trimmedRack.toUpperCase()}`;
+
+    try {
+      setIsCreating(true);
+      const session = await createSession({
+        warehouse: warehouseName,
+        type: "STANDARD",
+      });
+
+      // Optimistic update
+      queryClient.setQueryData(
+        ["sessions", 1, SESSION_PAGE_SIZE],
+        (old: any) => ({
+          ...old,
+          items: [session, ...(old?.items || [])],
+        }),
+      );
+
+      // Reset and navigate
+      setShowCreateModal(false);
+      setLocationType(null);
+      setSelectedFloor(null);
+      setRackName("");
+
+      setFloor(`${locationType} - ${selectedFloor}`);
+      setRack(trimmedRack.toUpperCase());
+      setActiveSession(session.id, "STANDARD");
+
+      router.push({
+        pathname: "/staff/scan",
+        params: { sessionId: session.id },
+      } as any);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create session";
+      toastService.showError(errorMessage);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
-  // Render Helpers
-  const _formatSyncTime = (date: Date | null): string => {
-    if (!date) return "Never";
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
+  const handleResumeSession = (session: any) => {
+    Haptics.selectionAsync();
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return date.toLocaleDateString();
-  };
-
-  return (
-    <ScreenContainer
-      header={{
-        title: "Stock Verify",
-        subtitle: `Welcome, ${user?.username || "Staff"}`,
-        showUsername: true,
-        showLogoutButton: true,
-        rightAction: {
-          icon: "color-palette-outline",
-          onPress: () => router.push("/staff/appearance" as any),
-        },
-        customRightContent: <SyncStatusPill />,
-      }}
-      backgroundType="aurora"
-      auroraVariant="primary"
-      withParticles
-      refreshing={isRefreshing}
-      onRefresh={handleRefresh}
-      loading={isLoadingSessions && sessions.length === 0}
-      loadingType="skeleton"
-      overlay={
-        <View style={styles.fabContainer}>
-          <FloatingScanButton
-            onPress={() => {
-              if (activeSectionsList.length > 0) {
-                const latest = activeSectionsList[0];
-                handleResumeSection(latest.session_id || latest.id, latest.type);
-              } else {
-                setShowNewSectionForm(true);
-              }
-            }}
-            disabled={activeSectionsList.length === 0}
-          />
-        </View>
+    if (session.warehouse) {
+      const parts = session.warehouse.split(" - ");
+      if (parts.length >= 2) {
+        const rack = parts.pop();
+        const floor = parts.join(" - ");
+        setFloor(floor);
+        setRack(rack || "");
+      } else {
+        setFloor(session.warehouse);
+        setRack("");
       }
+    }
+
+    setActiveSession(session.id || session._id, "STANDARD");
+    router.push({
+      pathname: "/staff/scan",
+      params: { sessionId: session.id || session._id },
+    } as any);
+  };
+
+  const renderSessionCard = (session: any) => (
+    <ModernCard
+      key={session.id || session._id}
+      style={styles.sessionCard}
+      padding={spacing.md}
+      onPress={() => handleResumeSession(session)}
+      accessibilityLabel={`Session at ${session.warehouse}, ${session.item_count || 0} items, ${session.discrepancy_count || 0} issues, status ${session.status}`}
+      accessibilityHint="Tap to resume this scanning session"
     >
-      <SectionLists
-        theme={theme}
-        isDark={isDark}
-        activeSections={activeSectionsList}
-        finishedSections={finishedSections}
-        isLoading={isLoadingSessions}
-        showFinishedSearch={showFinishedSearch}
-        finishedSearchQuery={finishedSearchQuery}
-        onToggleSearch={() => {
-          setShowFinishedSearch(!showFinishedSearch);
-          if (showFinishedSearch) setFinishedSearchQuery("");
-        }}
-        onSearchQueryChange={setFinishedSearchQuery}
-        onStartNewSection={() => setShowNewSectionForm(true)}
-        onResumeSection={(sessionId, type) => handleResumeSection(sessionId, type)}
-      />
+      <View style={styles.sessionHeader}>
+        <View style={styles.sessionIcon}>
+          <Ionicons name="cube-outline" size={24} color={colors.primary[600]} />
+        </View>
+        <View style={styles.sessionInfo}>
+          <Text style={styles.warehouseText} numberOfLines={1}>
+            {session.warehouse}
+          </Text>
+          <Text style={styles.dateText}>
+            {new Date(session.created_at).toLocaleDateString()} •{" "}
+            {new Date(session.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </View>
+        <View style={styles.chevron}>
+          <Ionicons name="chevron-forward" size={20} color={colors.gray[400]} />
+        </View>
+      </View>
 
-      {/* Bottom Spacer */}
-      <View style={{ height: 100 }} />
-
-      {/* New Section Modal */}
-      {/* @ts-ignore */}
-      <Modal
-        isVisible={showNewSectionForm}
-        onBackdropPress={() => setShowNewSectionForm(false)}
-        onBackButtonPress={() => setShowNewSectionForm(false)}
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.5}
-        swipeDirection="down"
-        onSwipeComplete={() => setShowNewSectionForm(false)}
-        useNativeDriver
-        hideModalContentWhileAnimating
-      >
-          <View
+      <View style={styles.sessionStats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{session.item_count || 0}</Text>
+          <Text style={styles.statLabel}>Items</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text
             style={[
-              styles.newSectionModalContent,
+              styles.statValue,
               {
-                backgroundColor: isDark ? "#0F172A" : "#FFFFFF",
+                color:
+                  session.discrepancy_count > 0
+                    ? colors.error[500]
+                    : colors.success[600],
               },
             ]}
           >
-            {/* Drag Handle */}
-            <View style={styles.dragHandle} />
+            {session.discrepancy_count || 0}
+          </Text>
+          <Text style={styles.statLabel}>Issues</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{session.status}</Text>
+          <Text style={styles.statLabel}>Status</Text>
+        </View>
+      </View>
+    </ModernCard>
+  );
 
-            {/* Header */}
-            <View style={styles.modalHeader}>
-              <View style={styles.modalHeaderLeft}>
-                <View
-                  style={[
-                    styles.headerIconContainer,
-                    { backgroundColor: "#0EA5E920" },
-                  ]}
-                >
-                  <Ionicons name="add-circle" size={24} color="#0EA5E9" />
-                </View>
-                <View>
-                  <Text
-                    style={[
-                      styles.modalTitle,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
-                    ]}
-                  >
-                    New Section
-                  </Text>
-                  <Text
-                    style={[
-                      styles.modalSubtitle,
-                      { color: isDark ? "#94A3B8" : "#64748B" },
-                    ]}
-                  >
-                    Set up your counting area
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={[
-                  styles.closeButton,
-                  { backgroundColor: isDark ? "#1E293B" : "#F1F5F9" },
-                ]}
-                onPress={() => setShowNewSectionForm(false)}
-              >
-                <Ionicons
-                  name="close"
-                  size={20}
-                  color={isDark ? "#94A3B8" : "#64748B"}
-                />
-              </TouchableOpacity>
+  const renderContent = () => {
+    if (activeTab === "active") {
+      return (
+        <Animated.View entering={FadeInDown.duration(200)}>
+          <ModernButton
+            title="Start New Session"
+            icon="add-circle-outline"
+            onPress={() => setShowCreateModal(true)}
+            style={styles.createButton}
+            accessibilityLabel="Start a new scanning session"
+            accessibilityHint="Creates a new session for counting inventory"
+          />
+
+          {activeSessions.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="clipboard-outline"
+                size={48}
+                color={colors.gray[300]}
+              />
+              <Text style={styles.emptyText}>No active sessions</Text>
+              <Text style={styles.emptySubtext}>
+                Start a new session to begin scanning
+              </Text>
             </View>
+          ) : (
+            activeSessions.map(renderSessionCard)
+          )}
+        </Animated.View>
+      );
+    }
 
-            <ScrollView
-              style={styles.modalBody}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              nestedScrollEnabled={true}
-            >
-              {/* Step 1: Location Type */}
-              <View style={styles.stepContainer}>
-                <View style={styles.stepHeader}>
-                  <View
-                    style={[
-                      styles.stepNumber,
-                      { backgroundColor: "#0EA5E9" },
-                    ]}
-                  >
-                    <Text style={styles.stepNumberText}>1</Text>
-                  </View>
-                  <Text
-                    style={[
-                      styles.stepLabel,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
-                    ]}
-                  >
-                    Choose Location Type
-                  </Text>
-                </View>
-                <View style={styles.locationTypeRow}>
-                  {isLoadingLocations && zones.length === 0 ? (
-                    <ActivityIndicator color={isDark ? "#F8FAFC" : "#0F172A"} />
-                  ) : (
-                    zones.map((zone) => (
-                      <TouchableOpacity
-                        key={zone.id || zone.zone_name}
-                        style={[
-                          styles.locationTypeButton,
-                          {
-                            backgroundColor:
-                              locationType === zone.zone_name
-                                ? "#0EA5E915"
-                                : isDark
-                                  ? "#1E293B"
-                                  : "#F8FAFC",
-                            borderColor:
-                              locationType === zone.zone_name
-                                ? "#0EA5E9"
-                                : isDark
-                                  ? "#334155"
-                                  : "#E2E8F0",
-                          },
-                        ]}
-                        onPress={() => handleLocationTypeChange(zone.zone_name)}
-                        activeOpacity={0.7}
-                      >
-                        <View
-                          style={[
-                            styles.locationIcon,
-                            {
-                              backgroundColor:
-                                locationType === zone.zone_name
-                                  ? "#0EA5E920"
-                                  : isDark
-                                    ? "#334155"
-                                    : "#F1F5F9",
-                            },
-                          ]}
-                        >
-                          <Ionicons
-                            name={
-                              zone.zone_name.toLowerCase().includes("showroom")
-                                ? "storefront"
-                                : "cube"
-                            }
-                            size={24}
-                            color={
-                              locationType === zone.zone_name
-                                ? "#0EA5E9"
-                                : isDark
-                                  ? "#94A3B8"
-                                  : "#64748B"
-                            }
-                          />
-                        </View>
-                        <Text
-                          style={[
-                            styles.locationTypeText,
-                            {
-                              color:
-                                locationType === zone.zone_name
-                                  ? "#0EA5E9"
-                                  : isDark
-                                    ? "#F8FAFC"
-                                    : "#0F172A",
-                            },
-                          ]}
-                        >
-                          {zone.zone_name}
-                        </Text>
-                        {locationType === zone.zone_name ? (
-                          <View style={styles.checkBadge}>
-                            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-                          </View>
-                        ) : null}
-                      </TouchableOpacity>
-                    ))
-                  )}
-                </View>
-              </View>
-
-              {/* Step 2: Floor Selection */}
-              <View style={styles.stepContainer}>
-                <View style={styles.stepHeader}>
-                  <View
-                    style={[
-                      styles.stepNumber,
-                      { backgroundColor: "#0EA5E9" },
-                    ]}
-                  >
-                    <Text style={styles.stepNumberText}>2</Text>
-                  </View>
-                  <Text
-                    style={[
-                      styles.stepLabel,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
-                    ]}
-                  >
-                    Select Floor / Area
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  style={[
-                    styles.dropdownButton,
-                    {
-                      backgroundColor: isDark ? "#1E293B" : "#F8FAFC",
-                      borderColor: isDark ? "#334155" : "#E2E8F0",
-                    },
-                  ]}
-                  onPress={handleOpenFloorPicker}
-                  disabled={!locationType}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.dropdownContent}>
-                    <Ionicons
-                      name="business"
-                      size={20}
-                      color={locationType ? "#0EA5E9" : "#94A3B8"}
-                    />
-                    <Text
-                      style={[
-                        styles.dropdownText,
-                        {
-                          color: selectedFloor
-                            ? isDark
-                              ? "#F8FAFC"
-                              : "#0F172A"
-                            : "#94A3B8",
-                        },
-                      ]}
-                    >
-                      {selectedFloor || "Choose a floor..."}
-                    </Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.dropdownChevron,
-                      { backgroundColor: isDark ? "#334155" : "#F1F5F9" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="chevron-down"
-                      size={18}
-                      color={isDark ? "#94A3B8" : "#64748B"}
-                    />
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              {/* Step 3: Rack Name */}
-              <View style={styles.stepContainer}>
-                <View style={styles.stepHeader}>
-                  <View
-                    style={[
-                      styles.stepNumber,
-                      { backgroundColor: "#0EA5E9" },
-                    ]}
-                  >
-                    <Text style={styles.stepNumberText}>3</Text>
-                  </View>
-                  <Text
-                    style={[
-                      styles.stepLabel,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
-                    ]}
-                  >
-                    Rack / Shelf Identifier
-                  </Text>
-                </View>
-
-                <PremiumInput
-                  value={rackName}
-                  onChangeText={setRackName}
-                  placeholder="e.g. RACK-A1, SHELF-02"
-                  leftIcon="grid-outline"
-                  autoCapitalize="characters"
-                  editable={!!selectedFloor}
-                />
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={[
-                  styles.startSectionButton,
-                  {
-                    backgroundColor:
-                      locationType && selectedFloor && rackName.trim()
-                        ? "#0EA5E9"
-                        : isDark
-                          ? "#1E293B"
-                          : "#E2E8F0",
-                  },
-                ]}
-                onPress={handleStartNewSection}
-                disabled={
-                  !locationType || !selectedFloor || !rackName.trim() || isCreatingSession
-                }
-                activeOpacity={0.8}
-              >
-                {isCreatingSession ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <>
-                    <Text style={styles.startButtonText}>Start Counting</Text>
-                    <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-                  </>
-                )}
-              </TouchableOpacity>
+    if (activeTab === "history") {
+      return (
+        <Animated.View entering={FadeInDown.duration(200)}>
+          {finishedSessions.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="time-outline"
+                size={48}
+                color={colors.gray[300]}
+              />
+              <Text style={styles.emptyText}>No history yet</Text>
             </View>
-          </View>
-      </Modal >
+          ) : (
+            finishedSessions.map(renderSessionCard)
+          )}
+        </Animated.View>
+      );
+    }
 
-      {/* Floor Picker Modal */}
-      {/* @ts-ignore */}
-      <Modal
-        isVisible={showFloorPicker}
-        onBackdropPress={() => setShowFloorPicker(false)}
-        onBackButtonPress={() => setShowFloorPicker(false)}
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.5}
-        swipeDirection="down"
-        onSwipeComplete={() => setShowFloorPicker(false)}
-        useNativeDriver
-        hideModalContentWhileAnimating
-        statusBarTranslucent
-      >
-          <View
+    return null;
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ModernHeader
+        title="Dashboard"
+        subtitle={`Welcome, ${user?.username || "Staff"}`}
+        rightAction={{
+          icon: "log-out-outline",
+          onPress: () => {
+            Alert.alert("Logout", "Are you sure?", [
+              { text: "Cancel", style: "cancel" },
+              { text: "Logout", style: "destructive", onPress: logout },
+            ]);
+          },
+        }}
+      />
+
+      <View style={styles.tabs} accessibilityRole="tablist">
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "active" && styles.activeTab]}
+          onPress={() => {
+            Haptics.selectionAsync();
+            setActiveTab("active");
+          }}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === "active" }}
+          accessibilityLabel={`Active sessions tab, ${activeSessions.length} sessions`}
+        >
+          <Text
             style={[
-              styles.modalContent,
-              styles.floorPickerContent,
-              { backgroundColor: isDark ? "#0F172A" : "#FFFFFF" },
+              styles.tabText,
+              activeTab === "active" && styles.activeTabText,
             ]}
           >
-            <View style={styles.dragHandle} />
-            <View style={styles.modalHeader}>
-              <View>
-                <Text
+            Active ({activeSessions.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "history" && styles.activeTab]}
+          onPress={() => {
+            Haptics.selectionAsync();
+            setActiveTab("history");
+          }}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === "history" }}
+          accessibilityLabel="History tab, view completed sessions"
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "history" && styles.activeTabText,
+            ]}
+          >
+            History
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {renderContent()}
+      </ScrollView>
+
+      {/* Create Session Modal */}
+      <Modal
+        visible={showCreateModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowCreateModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.modalContainer}
+        >
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>New Session</Text>
+            <TouchableOpacity onPress={() => setShowCreateModal(false)}>
+              <Ionicons name="close" size={24} color={colors.gray[500]} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            contentContainerStyle={styles.modalContent}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
+          >
+            <Text style={styles.sectionLabel}>Select Location</Text>
+            <View style={styles.chipContainer}>
+              {zones.map((zone) => (
+                <TouchableOpacity
+                  key={zone.id}
                   style={[
-                    styles.modalTitle,
-                    { color: isDark ? "#F8FAFC" : "#0F172A" },
+                    styles.chip,
+                    locationType === zone.zone_name && styles.chipActive,
                   ]}
+                  onPress={() => setLocationType(zone.zone_name)}
                 >
-                  Select Floor
-                </Text>
-                {locationType && (
-                  <Text style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 12, marginTop: 2 }}>
-                    for {locationType}
+                  <Text
+                    style={[
+                      styles.chipText,
+                      locationType === zone.zone_name && styles.chipTextActive,
+                    ]}
+                  >
+                    {zone.zone_name}
                   </Text>
-                )}
-              </View>
-              <TouchableOpacity onPress={() => setShowFloorPicker(false)}>
-                <Ionicons
-                  name="close"
-                  size={24}
-                  color={isDark ? "#94A3B8" : "#64748B"}
-                />
-              </TouchableOpacity>
+                </TouchableOpacity>
+              ))}
             </View>
-            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-              {displayFloors.length === 0 ? (
-                <View style={{ padding: 20, alignItems: "center" }}>
-                  <Ionicons name="folder-open-outline" size={48} color={isDark ? "#475569" : "#CBD5E1"} style={{ marginBottom: 12 }} />
-                  <Text style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 16, marginBottom: 8 }}>
-                    Select a zone first
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  {displayFloors.map((floor) => (
+
+            {locationType && (
+              <Animated.View entering={FadeInUp}>
+                <Text style={styles.sectionLabel}>Select Floor / Area</Text>
+                <View style={styles.chipContainer}>
+                  {warehouses.map((wh) => (
                     <TouchableOpacity
-                      key={floor.id || floor.warehouse_name}
+                      key={wh.id}
                       style={[
-                        styles.modalOption,
-                        {
-                          backgroundColor:
-                            selectedFloor === floor.warehouse_name
-                              ? "#0EA5E910"
-                              : "transparent",
-                        },
+                        styles.chip,
+                        selectedFloor === wh.warehouse_name &&
+                          styles.chipActive,
                       ]}
-                      onPress={() => {
-                        setSelectedFloor(floor.warehouse_name);
-                        setShowFloorPicker(false);
-                        if (Platform.OS !== "web") Haptics.selectionAsync();
-                      }}
+                      onPress={() => setSelectedFloor(wh.warehouse_name)}
                     >
                       <Text
                         style={[
-                          styles.modalOptionText,
-                          {
-                            color:
-                              selectedFloor === floor.warehouse_name
-                                ? "#0EA5E9"
-                                : isDark
-                                  ? "#F8FAFC"
-                                  : "#0F172A",
-                            fontWeight: selectedFloor === floor.warehouse_name ? "700" : "400",
-                          },
+                          styles.chipText,
+                          selectedFloor === wh.warehouse_name &&
+                            styles.chipTextActive,
                         ]}
                       >
-                        {floor.warehouse_name}
+                        {wh.warehouse_name}
                       </Text>
-                      {selectedFloor === floor.warehouse_name && (
-                        <Ionicons name="checkmark" size={20} color="#0EA5E9" />
-                      )}
                     </TouchableOpacity>
                   ))}
-                  {__DEV__ && (
-                    <View style={{ padding: 10, marginTop: 10, borderTopWidth: 1, borderColor: isDark ? "#334155" : "#E2E8F0" }}>
-                      <Text style={{ fontSize: 10, color: isDark ? "#94A3B8" : "#64748B", fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>
-                        Debug: {displayFloors.length} floors available
-                        {"\n"}Location: {locationType}
-                        {"\n"}Warehouses: {warehouses.length}
-                      </Text>
-                    </View>
-                  )}
-                </>
-              )}
-            </ScrollView>
+                </View>
+              </Animated.View>
+            )}
+
+            {selectedFloor && (
+              <Animated.View entering={FadeInUp}>
+                <ModernInput
+                  label="Rack / Shelf Number"
+                  placeholder="e.g. A-123"
+                  value={rackName}
+                  onChangeText={setRackName}
+                  autoCapitalize="characters"
+                />
+              </Animated.View>
+            )}
+          </ScrollView>
+
+          <View style={styles.modalFooter}>
+            <ModernButton
+              title="Start Session"
+              onPress={handleStartSession}
+              loading={isCreating}
+              disabled={!locationType || !selectedFloor || !rackName.trim()}
+              fullWidth
+            />
           </View>
-      </Modal >
-
-      {/* Logout Confirmation Modal */}
-      {/* @ts-ignore */}
-      <Modal
-        isVisible={showLogoutModal}
-        onBackdropPress={() => setShowLogoutModal(false)}
-        onBackButtonPress={() => setShowLogoutModal(false)}
-        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        backdropOpacity={0.5}
-        useNativeDriver
-        hideModalContentWhileAnimating
-        statusBarTranslucent
-      >
-        <View
-          style={{
-            backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
-            borderRadius: 20,
-            padding: 24,
-            alignItems: "center",
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        >
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 32,
-              backgroundColor: "#EF444420",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 16,
-            }}
-          >
-            <Ionicons name="log-out" size={32} color="#EF4444" />
-          </View>
-
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "700",
-              color: isDark ? "#F8FAFC" : "#0F172A",
-              marginBottom: 8,
-              textAlign: "center",
-            }}
-          >
-            Log Out
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 15,
-              color: isDark ? "#94A3B8" : "#64748B",
-              textAlign: "center",
-              marginBottom: 24,
-              lineHeight: 22,
-            }}
-          >
-            Are you sure you want to log out?{"\n"}Any unsaved progress will be lost.
-          </Text>
-
-          <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                paddingVertical: 14,
-                borderRadius: 12,
-                backgroundColor: isDark ? "#334155" : "#F1F5F9",
-                alignItems: "center",
-              }}
-              onPress={() => setShowLogoutModal(false)}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: "600",
-                  color: isDark ? "#F8FAFC" : "#0F172A",
-                }}
-              >
-                Cancel
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                paddingVertical: 14,
-                borderRadius: 12,
-                backgroundColor: "#EF4444",
-                alignItems: "center",
-              }}
-              onPress={() => {
-                setShowLogoutModal(false);
-                logout();
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: "600",
-                  color: "#FFFFFF",
-                }}
-              >
-                Log Out
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
-    </ScreenContainer >
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.gray[50],
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 60 : 40,
-    paddingBottom: 20,
-  },
-  headerTop: {
+  tabs: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 18,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    gap: spacing.md,
   },
-  userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  tab: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.gray[200],
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: "rgba(14, 165, 233, 0.12)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(14, 165, 233, 0.25)",
+  activeTab: {
+    backgroundColor: colors.primary[600],
   },
-  welcomeText: {
-    fontSize: 13,
-    color: "#94A3B8",
-    marginBottom: 2,
-    fontWeight: "500",
+  tabText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.gray[600],
   },
-  userName: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#F8FAFC",
-    letterSpacing: -0.3,
+  activeTabText: {
+    color: colors.white,
   },
-  headerActions: {
+  scrollContent: {
+    padding: spacing.lg,
+    paddingTop: 0,
+  },
+  createButton: {
+    marginBottom: spacing.lg,
+  },
+  sessionCard: {
+    marginBottom: spacing.md,
+  },
+  sessionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    marginBottom: spacing.sm,
   },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.08)",
-  },
-  statsGrid: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 20,
-  },
-  statCard: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: "rgba(15, 23, 42, 0.6)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.05)",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  iconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#F8FAFC",
-    letterSpacing: -0.3,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: "#94A3B8",
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  section: {
-    marginBottom: 28,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#F8FAFC",
-    letterSpacing: -0.2,
-  },
-  newSectionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#0EA5E9",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  newSectionButtonText: {
-    color: "#FFF",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  createCard: {
-    padding: 18,
-    borderRadius: 18,
-    backgroundColor: "rgba(15, 23, 42, 0.6)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.05)",
-    marginBottom: 20,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 4,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#F8FAFC",
-    letterSpacing: -0.2,
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    color: "#94A3B8",
-    marginBottom: 18,
-  },
-  modeSection: {
-    marginBottom: 18,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#94A3B8",
-    marginBottom: 10,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  modeSelector: {
-    flexDirection: "row",
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 8,
-  },
-  modeButton: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  modeButtonActive: {
-    backgroundColor: "#0EA5E9",
-  },
-  modeText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#94A3B8",
-  },
-  modeTextActive: {
-    color: "#FFF",
-    fontWeight: "700",
-  },
-  modeDescription: {
-    fontSize: 11,
-    color: "#64748B",
-    fontStyle: "italic",
-    textAlign: "center",
-    marginTop: 4,
-  },
-  inputRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 18,
-  },
-  startButton: {
-    marginTop: 8,
-  },
-  fabContainer: {
-    position: "absolute",
-    bottom: 32,
-    right: 0,
-    left: 0,
-    alignItems: "center",
-  },
-  // New styles for section form
-  selectorSection: {
-    marginBottom: 20,
-  },
-  locationTypeRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  locationTypeButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    position: "relative",
-  },
-  locationIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
-  locationTypeText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  checkBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "#0EA5E9",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dropdownButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingLeft: 14,
-    paddingRight: 4,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    minHeight: 52,
-  },
-  dropdownContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    flex: 1,
-  },
-  dropdownText: {
-    fontSize: 14,
-    flex: 1,
-    fontWeight: "500",
-  },
-  dropdownChevron: {
+  sessionIcon: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.primary[50],
     alignItems: "center",
     justifyContent: "center",
+    marginRight: spacing.sm,
   },
-  // Modal styles
-
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "rgba(148, 163, 184, 0.3)",
-    alignSelf: "center",
-    marginTop: 8,
-    marginBottom: 8,
+  sessionInfo: {
+    flex: 1,
   },
-  modalContent: {
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    paddingBottom: 40,
+  warehouseText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.gray[900],
   },
-  floorPickerContent: {
-    maxHeight: "65%",
+  dateText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.gray[500],
+    marginTop: 2,
   },
-  newSectionModalContent: {
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    maxHeight: "85%",
+  chevron: {
+    marginLeft: spacing.sm,
   },
-  modalBody: {
-    paddingHorizontal: 20,
+  sessionStats: {
+    flexDirection: "row",
+    backgroundColor: colors.gray[50],
+    borderRadius: borderRadius.md,
+    padding: spacing.xs,
   },
-  modalFooter: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 34,
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.gray[200],
+  },
+  statValue: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.gray[900],
+  },
+  statLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.gray[500],
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing["3xl"],
+  },
+  emptyText: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.gray[900],
+    marginTop: spacing.md,
+  },
+  emptySubtext: {
+    fontSize: typography.fontSize.sm,
+    color: colors.gray[500],
+    marginTop: spacing.xs,
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
   },
   modalHeader: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-  },
-  modalHeaderLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  headerIconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+    padding: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
   },
   modalTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: -0.2,
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.gray[900],
   },
-  modalSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-    fontWeight: "500",
+  modalContent: {
+    padding: spacing.lg,
   },
-  closeButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+  sectionLabel: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.gray[700],
+    marginBottom: spacing.sm,
+    marginTop: spacing.md,
   },
-  stepContainer: {
-    marginBottom: 18,
-  },
-  stepHeader: {
+  chipContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 12,
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  stepNumber: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
+  chip: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.gray[100],
+    borderWidth: 1,
+    borderColor: colors.gray[200],
   },
-  stepNumberText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "700",
+  chipActive: {
+    backgroundColor: colors.primary[50],
+    borderColor: colors.primary[500],
   },
-  stepLabel: {
-    fontSize: 14,
-    fontWeight: "600",
+  chipText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.gray[700],
   },
-  startSectionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 12,
+  chipTextActive: {
+    color: colors.primary[700],
+    fontWeight: typography.fontWeight.medium,
   },
-  startButtonText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  modalOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-  },
-  modalOptionText: {
-    fontSize: 15,
-    fontWeight: "500",
+  modalFooter: {
+    padding: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[100],
+    paddingBottom: Platform.OS === "ios" ? spacing["2xl"] : spacing.lg,
   },
 });

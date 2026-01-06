@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Any, Generic, Optional, TypeVar, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -29,6 +30,8 @@ class ApiResponse(BaseModel, Generic[T]):
 
 
 class ERPItem(BaseModel):
+    model_config = {"extra": "ignore"}  # Ignore extra fields from MongoDB
+
     item_code: str = ""
     item_name: str = ""
     barcode: str = ""
@@ -92,7 +95,7 @@ class ERPItem(BaseModel):
     last_purchase_cost: Optional[float] = None
     purchase_voucher_type: Optional[str] = None
     purchase_type: Optional[str] = None
-    batch_id: Optional[str] = None
+    batch_id: Optional[Union[int, str]] = None
     batch_no: Optional[str] = None
     manufacturing_date: Optional[str] = None
     expiry_date: Optional[str] = None
@@ -104,6 +107,8 @@ class UserInfo(BaseModel):
     full_name: str
     role: str
     email: Optional[str] = None
+    employee_id: Optional[str] = None
+    phone: Optional[str] = None
     is_active: bool = True
     permissions: list[str] = Field(default_factory=list)
 
@@ -120,7 +125,9 @@ class UserRegister(BaseModel):
     username: str
     password: str
     full_name: str
-    role: str
+    role: str = "staff"
+    employee_id: Optional[str] = None
+    phone: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -152,6 +159,26 @@ class CorrectionMetadata(BaseModel):
     approved_at: Optional[datetime] = None
 
 
+class DateFormatType(str, Enum):
+    """Date format type for manufacturing and expiry dates"""
+
+    FULL = "full"  # DD/MM/YYYY
+    MONTH_YEAR = "month_year"  # MM/YYYY
+    YEAR_ONLY = "year_only"  # YYYY
+    NONE = "none"  # No date
+
+
+class SerialEntry(BaseModel):
+    """Enhanced serial entry with per-serial attributes"""
+
+    serial_number: str
+    mrp: Optional[float] = None
+    manufacturing_date: Optional[str] = None
+    mfg_date_format: Optional[DateFormatType] = None
+    expiry_date: Optional[str] = None
+    expiry_date_format: Optional[DateFormatType] = None
+
+
 class CountLineCreate(BaseModel):
     session_id: str
     item_code: str
@@ -165,7 +192,9 @@ class CountLineCreate(BaseModel):
     mark_location: Optional[str] = None
     sr_no: Optional[str] = None
     manufacturing_date: Optional[str] = None
+    mfg_date_format: Optional[DateFormatType] = None
     expiry_date: Optional[str] = None
+    expiry_date_format: Optional[DateFormatType] = None
     variance_reason: Optional[str] = None
     variance_note: Optional[str] = None
     remark: Optional[str] = None
@@ -173,6 +202,7 @@ class CountLineCreate(BaseModel):
     mrp_counted: Optional[float] = None
     split_section: Optional[str] = None
     serial_numbers: Optional[list[str]] = None
+    serial_entries: Optional[list[SerialEntry]] = None
     correction_reason: Optional[CorrectionReason] = None
     photo_proofs: Optional[list[PhotoProof]] = None
     correction_metadata: Optional[CorrectionMetadata] = None
@@ -199,8 +229,9 @@ class Session(BaseModel):
     def normalize_status(cls, v: Any) -> str:
         if isinstance(v, str):
             v = v.upper()
-            # Map legacy RECONCILE to ACTIVE for now, or allow it if we can't migrate yet.
-            # But the plan says "Normalize session states (OPEN | ACTIVE | CLOSED)".
+            # Map legacy RECONCILE to ACTIVE for now, or allow it if we can't
+            # migrate yet. But the plan says "Normalize session states
+            # (OPEN | ACTIVE | CLOSED)".
             # If we strictly enforce it, we might break existing data.
             # Let's allow RECONCILE but prefer ACTIVE.
             if v == "RECONCILE":
@@ -210,8 +241,9 @@ class Session(BaseModel):
 
     @model_validator(mode="after")
     def compute_legacy_status(self) -> "Session":
-        # If session is ACTIVE but has reconciled_at, present it as RECONCILE to frontend
-        # This maintains backward compatibility while normalizing DB state to ACTIVE
+        # If session is ACTIVE but has reconciled_at, present it as RECONCILE
+        # to frontend. This maintains backward compatibility while normalizing
+        # DB state to ACTIVE.
         if self.status == "ACTIVE" and self.reconciled_at and not self.closed_at:
             self.status = "RECONCILE"
         return self

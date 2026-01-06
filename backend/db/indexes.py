@@ -10,8 +10,8 @@ Optimized indexes for 20 concurrent users and fast queries
 from typing import Union
 
 INDEXES: dict[str, list[tuple[list[tuple[str, Union[int, str]]], dict]]] = {
-    # Verification Records Collection
-    "verification_records": [
+    # Count Lines Collection (was verification_records)
+    "count_lines": [
         # Unique client record ID
         (
             [("client_record_id", 1)],
@@ -39,12 +39,12 @@ INDEXES: dict[str, list[tuple[list[tuple[str, Union[int, str]]], dict]]] = {
         # Status and timestamp
         ([("status", 1), ("created_at", -1)], {"name": "idx_status_time"}),
     ],
-    # Verification Sessions Collection
-    "verification_sessions": [
+    # Sessions Collection (was verification_sessions)
+    "sessions": [
         # Unique session ID
-        ([("session_id", 1)], {"unique": True, "name": "idx_session_id"}),
+        ([("id", 1)], {"unique": True, "name": "idx_session_id"}),
         # User sessions
-        ([("user_id", 1), ("status", 1)], {"name": "idx_user_sessions"}),
+        ([("staff_user", 1), ("status", 1)], {"name": "idx_user_sessions"}),
         # Rack sessions
         ([("rack_id", 1), ("status", 1)], {"name": "idx_rack_sessions"}),
         # Active sessions
@@ -105,28 +105,6 @@ INDEXES: dict[str, list[tuple[list[tuple[str, Union[int, str]]], dict]]] = {
         ([("status", 1), ("created_at", -1)], {"name": "idx_job_status"}),
         # Snapshot references
         ([("snapshot_a_id", 1), ("snapshot_b_id", 1)], {"name": "idx_snapshots"}),
-    ],
-    # Count Lines Collection (existing)
-    "count_lines": [
-        # Session count lines
-        ([("session_id", 1), ("created_at", -1)], {"name": "idx_session_counts"}),
-        # Item lookups
-        ([("item_code", 1), ("session_id", 1)], {"name": "idx_item_session"}),
-        # Verification status
-        ([("verified", 1), ("session_id", 1)], {"name": "idx_verified"}),
-        # Rack count lines
-        ([("rack_id", 1), ("session_id", 1)], {"name": "idx_rack_counts"}),
-    ],
-    # Sessions Collection (existing)
-    "sessions": [
-        # Session ID
-        ([("session_id", 1)], {"unique": True, "name": "idx_session"}),
-        # User sessions
-        ([("created_by", 1), ("created_at", -1)], {"name": "idx_user_time"}),
-        # Status
-        ([("status", 1), ("created_at", -1)], {"name": "idx_status"}),
-        # Warehouse
-        ([("warehouse", 1), ("status", 1)], {"name": "idx_warehouse_status"}),
     ],
     # ERP Items Collection (existing)
     "erp_items": [

@@ -3,17 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Alert,
   Platform,
   Dimensions,
-  RefreshControl,
 } from "react-native";
 import {
   LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
   AnimatedPressable,
+  ScreenContainer,
 } from "@/components/ui";
 import { auroraTheme } from "../../src/theme/auroraTheme";
 import { Ionicons } from "@expo/vector-icons";
@@ -135,22 +132,58 @@ export default function MetricsScreen() {
 
   if (loading && !stats) {
     return (
-      <AuroraBackground>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "System Metrics",
+          subtitle: "Performance & Health",
+          showBackButton: true,
+          customRightContent: (
+            <View style={styles.headerActions}>
+              <AnimatedPressable
+                style={styles.refreshButton}
+                onPress={() => loadMetrics(true)}
+              >
+                <Ionicons
+                  name="refresh"
+                  size={24}
+                  color={auroraTheme.colors.primary[500]}
+                  style={refreshing ? styles.refreshingIcon : undefined}
+                />
+              </AnimatedPressable>
+              <AnimatedPressable
+                style={styles.controlPanelButton}
+                onPress={() => router.push("/admin/control-panel" as any)}
+              >
+                <Ionicons
+                  name="settings"
+                  size={24}
+                  color={auroraTheme.colors.primary[500]}
+                />
+              </AnimatedPressable>
+            </View>
+          ),
+        }}
+      >
         <View style={styles.centered}>
           <LoadingSpinner size={48} color={auroraTheme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading metrics...</Text>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="System Metrics"
-        subtitle="Performance & Health"
-        showBackButton
-        customRightContent={
+    <ScreenContainer
+      gradient
+      scrollable
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      header={{
+        title: "System Metrics",
+        subtitle: "Performance & Health",
+        showBackButton: true,
+        customRightContent: (
           <View style={styles.headerActions}>
             <AnimatedPressable
               style={styles.refreshButton}
@@ -174,376 +207,353 @@ export default function MetricsScreen() {
               />
             </AnimatedPressable>
           </View>
-        }
-      />
-
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={[
-          styles.contentContainer,
-          isWeb && styles.contentContainerWeb,
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={auroraTheme.colors.primary[500]}
-          />
-        }
-        showsVerticalScrollIndicator={isWeb}
-      >
-        {health && (
-          <View style={[styles.section, styles.healthSection]}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="heart" size={24} color="#4CAF50" />
-              <Text style={styles.sectionTitle}>System Health</Text>
+        ),
+      }}
+      contentContainerStyle={
+        isWeb ? styles.contentContainerWeb : styles.contentContainer
+      }
+    >
+      {health && (
+        <View style={[styles.section, styles.healthSection]}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="heart" size={24} color="#4CAF50" />
+            <Text style={styles.sectionTitle}>System Health</Text>
+          </View>
+          <View style={styles.healthCard}>
+            <View style={styles.healthIndicator}>
+              <View
+                style={[
+                  styles.healthDot,
+                  {
+                    backgroundColor:
+                      health.status === "healthy" ? "#4CAF50" : "#f44336",
+                  },
+                ]}
+              />
+              <Text style={styles.healthText}>
+                {health.status === "healthy"
+                  ? "System Healthy"
+                  : "System Issues Detected"}
+              </Text>
             </View>
-            <View style={styles.healthCard}>
-              <View style={styles.healthIndicator}>
-                <View
-                  style={[
-                    styles.healthDot,
-                    {
-                      backgroundColor:
-                        health.status === "healthy" ? "#4CAF50" : "#f44336",
-                    },
-                  ]}
-                />
-                <Text style={styles.healthText}>
-                  {health.status === "healthy"
-                    ? "System Healthy"
-                    : "System Issues Detected"}
+            <View style={styles.healthDetails}>
+              {health.mongodb && (
+                <View style={styles.healthDetailRow}>
+                  <Ionicons
+                    name={
+                      health.mongodb.status === "connected"
+                        ? "checkmark-circle"
+                        : "close-circle"
+                    }
+                    size={18}
+                    color={
+                      health.mongodb.status === "connected"
+                        ? "#4CAF50"
+                        : "#f44336"
+                    }
+                  />
+                  <Text style={styles.healthDetail}>
+                    MongoDB:{" "}
+                    {health.mongodb.status === "connected"
+                      ? "Connected"
+                      : "Disconnected"}
+                  </Text>
+                </View>
+              )}
+              {health.dependencies?.sql_server && (
+                <View style={styles.healthDetailRow}>
+                  <Ionicons
+                    name={
+                      health.dependencies.sql_server.status === "healthy"
+                        ? "checkmark-circle"
+                        : "warning"
+                    }
+                    size={18}
+                    color={
+                      health.dependencies.sql_server.status === "healthy"
+                        ? "#4CAF50"
+                        : "#ff9800"
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.healthDetail,
+                      {
+                        color:
+                          health.dependencies.sql_server.status === "healthy"
+                            ? "#4CAF50"
+                            : "#ff9800",
+                      },
+                    ]}
+                  >
+                    SQL Server:{" "}
+                    {health.dependencies.sql_server.status === "healthy"
+                      ? "Connected"
+                      : "Unavailable"}
+                  </Text>
+                </View>
+              )}
+              {health.uptime && (
+                <View style={styles.healthDetailRow}>
+                  <Ionicons name="time" size={18} color="#007AFF" />
+                  <Text style={styles.healthDetail}>
+                    Uptime: {formatUptime(health.uptime)}
+                  </Text>
+                </View>
+              )}
+            </View>
+            {health.dependencies?.sql_server?.status !== "healthy" && (
+              <View style={styles.notificationBanner}>
+                <Ionicons name="warning" size={20} color="#ff9800" />
+                <Text style={styles.notificationText}>
+                  SQL Server is unavailable. App is running in offline mode. ERP
+                  sync features are disabled.
                 </Text>
               </View>
-              <View style={styles.healthDetails}>
-                {health.mongodb && (
-                  <View style={styles.healthDetailRow}>
-                    <Ionicons
-                      name={
-                        health.mongodb.status === "connected"
-                          ? "checkmark-circle"
-                          : "close-circle"
-                      }
-                      size={18}
-                      color={
-                        health.mongodb.status === "connected"
-                          ? "#4CAF50"
-                          : "#f44336"
-                      }
-                    />
-                    <Text style={styles.healthDetail}>
-                      MongoDB:{" "}
-                      {health.mongodb.status === "connected"
-                        ? "Connected"
-                        : "Disconnected"}
-                    </Text>
-                  </View>
-                )}
-                {health.dependencies?.sql_server && (
-                  <View style={styles.healthDetailRow}>
-                    <Ionicons
-                      name={
-                        health.dependencies.sql_server.status === "healthy"
-                          ? "checkmark-circle"
-                          : "warning"
-                      }
-                      size={18}
-                      color={
-                        health.dependencies.sql_server.status === "healthy"
-                          ? "#4CAF50"
-                          : "#ff9800"
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.healthDetail,
-                        {
-                          color:
-                            health.dependencies.sql_server.status === "healthy"
-                              ? "#4CAF50"
-                              : "#ff9800",
-                        },
-                      ]}
-                    >
-                      SQL Server:{" "}
-                      {health.dependencies.sql_server.status === "healthy"
-                        ? "Connected"
-                        : "Unavailable"}
-                    </Text>
-                  </View>
-                )}
-                {health.uptime && (
-                  <View style={styles.healthDetailRow}>
-                    <Ionicons name="time" size={18} color="#007AFF" />
-                    <Text style={styles.healthDetail}>
-                      Uptime: {formatUptime(health.uptime)}
-                    </Text>
-                  </View>
-                )}
-              </View>
-              {health.dependencies?.sql_server?.status !== "healthy" && (
-                <View style={styles.notificationBanner}>
-                  <Ionicons name="warning" size={20} color="#ff9800" />
-                  <Text style={styles.notificationText}>
-                    SQL Server is unavailable. App is running in offline mode.
-                    ERP sync features are disabled.
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-        )}
-
-        {syncStatus && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="sync" size={24} color="#007AFF" />
-              <Text style={styles.sectionTitle}>Sync Status</Text>
-            </View>
-            <View style={styles.syncStatusCard}>
-              <View style={styles.syncStatusRow}>
-                <View style={styles.syncStatusLabelRow}>
-                  <Ionicons name="server" size={20} color="#aaa" />
-                  <Text style={styles.syncStatusLabel}>
-                    SQL Server Connection
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    {
-                      backgroundColor: syncStatus.sql_available
-                        ? "#4CAF50"
-                        : "#ff9800",
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={syncStatus.sql_available ? "checkmark" : "close"}
-                    size={14}
-                    color="#fff"
-                  />
-                  <Text style={styles.statusBadgeText}>
-                    {syncStatus.sql_available ? "Connected" : "Disconnected"}
-                  </Text>
-                </View>
-              </View>
-              {syncStatus.sync_in_progress && (
-                <View style={styles.syncProgressRow}>
-                  <LoadingSpinner size={20} color="#007AFF" />
-                  <Text style={styles.syncProgressText}>
-                    Sync in progress...
-                  </Text>
-                </View>
-              )}
-              {syncStatus.stats && (
-                <View style={styles.syncStatsRow}>
-                  <View style={styles.syncStatItem}>
-                    <Ionicons name="play-circle" size={16} color="#007AFF" />
-                    <Text style={styles.syncStatsText}>
-                      Triggered: {syncStatus.stats.syncs_triggered || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.syncStatItem}>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={16}
-                      color="#4CAF50"
-                    />
-                    <Text style={styles.syncStatsText}>
-                      Completed: {syncStatus.stats.syncs_completed || 0}
-                    </Text>
-                  </View>
-                  {syncStatus.last_sync_attempt && (
-                    <View style={styles.syncStatItem}>
-                      <Ionicons name="time" size={16} color="#888" />
-                      <Text style={styles.syncStatsText}>
-                        Last:{" "}
-                        {new Date(
-                          syncStatus.last_sync_attempt,
-                        ).toLocaleString()}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              )}
-              {syncStatus.sql_available && !syncStatus.sync_in_progress && (
-                <AnimatedPressable
-                  style={styles.syncButton}
-                  onPress={handleTriggerSync}
-                >
-                  <Ionicons name="sync" size={18} color="#fff" />
-                  <Text style={styles.syncButtonText}>Trigger Manual Sync</Text>
-                </AnimatedPressable>
-              )}
-            </View>
-          </View>
-        )}
-
-        {stats && (
-          <>
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="speedometer" size={24} color="#007AFF" />
-                <Text style={styles.sectionTitle}>API Performance</Text>
-              </View>
-              <View style={styles.metricsGrid}>
-                {renderMetricCard(
-                  "Total Requests",
-                  stats.total_requests?.toLocaleString() || "0",
-                  "#007AFF",
-                  "stats-chart",
-                )}
-                {renderMetricCard(
-                  "Success Rate",
-                  `${((stats.success_rate || 0) * 100).toFixed(1)}%`,
-                  stats.success_rate > 0.95 ? "#4CAF50" : "#FF9800",
-                  stats.success_rate > 0.95 ? "checkmark-circle" : "warning",
-                )}
-                {renderMetricCard(
-                  "Avg Response Time",
-                  `${(stats.avg_response_time || 0).toFixed(0)}ms`,
-                  stats.avg_response_time < 500 ? "#4CAF50" : "#FF9800",
-                  "time",
-                )}
-                {renderMetricCard(
-                  "Error Count",
-                  stats.error_count || "0",
-                  "#f44336",
-                  "alert-circle",
-                )}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="people" size={24} color="#4CAF50" />
-                <Text style={styles.sectionTitle}>User Activity</Text>
-              </View>
-              <View style={styles.metricsGrid}>
-                {renderMetricCard(
-                  "Active Users",
-                  stats.active_users || "0",
-                  "#007AFF",
-                  "people-circle",
-                )}
-                {renderMetricCard(
-                  "Total Sessions",
-                  stats.total_sessions || "0",
-                  "#fff",
-                  "calendar",
-                )}
-                {renderMetricCard(
-                  "Active Sessions",
-                  stats.active_sessions || "0",
-                  "#4CAF50",
-                  "radio-button-on",
-                )}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="server" size={24} color="#FF9800" />
-                <Text style={styles.sectionTitle}>Database Statistics</Text>
-              </View>
-              <View style={styles.metricsGrid}>
-                {renderMetricCard(
-                  "Total Count Lines",
-                  stats.total_count_lines?.toLocaleString() || "0",
-                  "#fff",
-                  "list",
-                )}
-                {renderMetricCard(
-                  "Pending Approvals",
-                  stats.pending_approvals || "0",
-                  "#FF9800",
-                  "time-outline",
-                )}
-                {renderMetricCard(
-                  "Total Items",
-                  stats.total_items?.toLocaleString() || "0",
-                  "#fff",
-                  "cube",
-                )}
-                {renderMetricCard(
-                  "Unknown Items",
-                  stats.unknown_items || "0",
-                  "#f44336",
-                  "help-circle",
-                )}
-              </View>
-            </View>
-
-            {stats.top_endpoints && stats.top_endpoints.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Ionicons name="pulse" size={24} color="#9C27B0" />
-                  <Text style={styles.sectionTitle}>Top Endpoints</Text>
-                </View>
-                <View style={styles.endpointsContainer}>
-                  {stats.top_endpoints.map((endpoint: any, index: number) => (
-                    <View key={index} style={styles.endpointRow}>
-                      <View style={styles.endpointInfo}>
-                        <Ionicons name="link" size={16} color="#007AFF" />
-                        <Text style={styles.endpointPath}>{endpoint.path}</Text>
-                      </View>
-                      <View style={styles.endpointBadge}>
-                        <Text style={styles.endpointCount}>
-                          {endpoint.count}
-                        </Text>
-                        <Text style={styles.endpointLabel}>requests</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
             )}
-
-            {stats.recent_errors && stats.recent_errors.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Ionicons name="warning" size={24} color="#f44336" />
-                  <Text style={styles.sectionTitle}>Recent Errors</Text>
-                </View>
-                <View style={styles.errorsContainer}>
-                  {stats.recent_errors.map((error: any, index: number) => (
-                    <View key={index} style={styles.errorRow}>
-                      <Ionicons name="alert-circle" size={20} color="#f44336" />
-                      <Text style={styles.errorType}>{error.type}</Text>
-                      <View style={styles.errorBadge}>
-                        <Text style={styles.errorCount}>{error.count}x</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-          </>
-        )}
-
-        <View style={styles.footer}>
-          <View style={styles.footerRow}>
-            <Ionicons
-              name="refresh-circle"
-              size={16}
-              color={auroraTheme.colors.text.muted}
-            />
-            <Text style={styles.footerText}>Auto-refresh every 30 seconds</Text>
-          </View>
-          <View style={styles.footerRow}>
-            <Ionicons
-              name="time"
-              size={16}
-              color={auroraTheme.colors.text.muted}
-            />
-            <Text style={styles.footerText}>
-              Last updated: {lastUpdate.toLocaleTimeString()}
-            </Text>
           </View>
         </View>
-      </ScrollView>
-    </AuroraBackground>
+      )}
+
+      {syncStatus && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="sync" size={24} color="#007AFF" />
+            <Text style={styles.sectionTitle}>Sync Status</Text>
+          </View>
+          <View style={styles.syncStatusCard}>
+            <View style={styles.syncStatusRow}>
+              <View style={styles.syncStatusLabelRow}>
+                <Ionicons name="server" size={20} color="#aaa" />
+                <Text style={styles.syncStatusLabel}>
+                  SQL Server Connection
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.statusBadge,
+                  {
+                    backgroundColor: syncStatus.sql_available
+                      ? "#4CAF50"
+                      : "#ff9800",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={syncStatus.sql_available ? "checkmark" : "close"}
+                  size={14}
+                  color="#fff"
+                />
+                <Text style={styles.statusBadgeText}>
+                  {syncStatus.sql_available ? "Connected" : "Disconnected"}
+                </Text>
+              </View>
+            </View>
+            {syncStatus.sync_in_progress && (
+              <View style={styles.syncProgressRow}>
+                <LoadingSpinner size={20} color="#007AFF" />
+                <Text style={styles.syncProgressText}>Sync in progress...</Text>
+              </View>
+            )}
+            {syncStatus.stats && (
+              <View style={styles.syncStatsRow}>
+                <View style={styles.syncStatItem}>
+                  <Ionicons name="play-circle" size={16} color="#007AFF" />
+                  <Text style={styles.syncStatsText}>
+                    Triggered: {syncStatus.stats.syncs_triggered || 0}
+                  </Text>
+                </View>
+                <View style={styles.syncStatItem}>
+                  <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
+                  <Text style={styles.syncStatsText}>
+                    Completed: {syncStatus.stats.syncs_completed || 0}
+                  </Text>
+                </View>
+                {syncStatus.last_sync_attempt && (
+                  <View style={styles.syncStatItem}>
+                    <Ionicons name="time" size={16} color="#888" />
+                    <Text style={styles.syncStatsText}>
+                      Last:{" "}
+                      {new Date(syncStatus.last_sync_attempt).toLocaleString()}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+            {syncStatus.sql_available && !syncStatus.sync_in_progress && (
+              <AnimatedPressable
+                style={styles.syncButton}
+                onPress={handleTriggerSync}
+              >
+                <Ionicons name="sync" size={18} color="#fff" />
+                <Text style={styles.syncButtonText}>Trigger Manual Sync</Text>
+              </AnimatedPressable>
+            )}
+          </View>
+        </View>
+      )}
+
+      {stats && (
+        <>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="speedometer" size={24} color="#007AFF" />
+              <Text style={styles.sectionTitle}>API Performance</Text>
+            </View>
+            <View style={styles.metricsGrid}>
+              {renderMetricCard(
+                "Total Requests",
+                stats.total_requests?.toLocaleString() || "0",
+                "#007AFF",
+                "stats-chart",
+              )}
+              {renderMetricCard(
+                "Success Rate",
+                `${((stats.success_rate || 0) * 100).toFixed(1)}%`,
+                stats.success_rate > 0.95 ? "#4CAF50" : "#FF9800",
+                stats.success_rate > 0.95 ? "checkmark-circle" : "warning",
+              )}
+              {renderMetricCard(
+                "Avg Response Time",
+                `${(stats.avg_response_time || 0).toFixed(0)}ms`,
+                stats.avg_response_time < 500 ? "#4CAF50" : "#FF9800",
+                "time",
+              )}
+              {renderMetricCard(
+                "Error Count",
+                stats.error_count || "0",
+                "#f44336",
+                "alert-circle",
+              )}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="people" size={24} color="#4CAF50" />
+              <Text style={styles.sectionTitle}>User Activity</Text>
+            </View>
+            <View style={styles.metricsGrid}>
+              {renderMetricCard(
+                "Active Users",
+                stats.active_users || "0",
+                "#007AFF",
+                "people-circle",
+              )}
+              {renderMetricCard(
+                "Total Sessions",
+                stats.total_sessions || "0",
+                "#fff",
+                "calendar",
+              )}
+              {renderMetricCard(
+                "Active Sessions",
+                stats.active_sessions || "0",
+                "#4CAF50",
+                "radio-button-on",
+              )}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="server" size={24} color="#FF9800" />
+              <Text style={styles.sectionTitle}>Database Statistics</Text>
+            </View>
+            <View style={styles.metricsGrid}>
+              {renderMetricCard(
+                "Total Count Lines",
+                stats.total_count_lines?.toLocaleString() || "0",
+                "#fff",
+                "list",
+              )}
+              {renderMetricCard(
+                "Pending Approvals",
+                stats.pending_approvals || "0",
+                "#FF9800",
+                "time-outline",
+              )}
+              {renderMetricCard(
+                "Total Items",
+                stats.total_items?.toLocaleString() || "0",
+                "#fff",
+                "cube",
+              )}
+              {renderMetricCard(
+                "Unknown Items",
+                stats.unknown_items || "0",
+                "#f44336",
+                "help-circle",
+              )}
+            </View>
+          </View>
+
+          {stats.top_endpoints && stats.top_endpoints.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="pulse" size={24} color="#9C27B0" />
+                <Text style={styles.sectionTitle}>Top Endpoints</Text>
+              </View>
+              <View style={styles.endpointsContainer}>
+                {stats.top_endpoints.map((endpoint: any, index: number) => (
+                  <View key={index} style={styles.endpointRow}>
+                    <View style={styles.endpointInfo}>
+                      <Ionicons name="link" size={16} color="#007AFF" />
+                      <Text style={styles.endpointPath}>{endpoint.path}</Text>
+                    </View>
+                    <View style={styles.endpointBadge}>
+                      <Text style={styles.endpointCount}>{endpoint.count}</Text>
+                      <Text style={styles.endpointLabel}>requests</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {stats.recent_errors && stats.recent_errors.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="warning" size={24} color="#f44336" />
+                <Text style={styles.sectionTitle}>Recent Errors</Text>
+              </View>
+              <View style={styles.errorsContainer}>
+                {stats.recent_errors.map((error: any, index: number) => (
+                  <View key={index} style={styles.errorRow}>
+                    <Ionicons name="alert-circle" size={20} color="#f44336" />
+                    <Text style={styles.errorType}>{error.type}</Text>
+                    <View style={styles.errorBadge}>
+                      <Text style={styles.errorCount}>{error.count}x</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </>
+      )}
+
+      <View style={styles.footer}>
+        <View style={styles.footerRow}>
+          <Ionicons
+            name="refresh-circle"
+            size={16}
+            color={auroraTheme.colors.text.muted}
+          />
+          <Text style={styles.footerText}>Auto-refresh every 30 seconds</Text>
+        </View>
+        <View style={styles.footerRow}>
+          <Ionicons
+            name="time"
+            size={16}
+            color={auroraTheme.colors.text.muted}
+          />
+          <Text style={styles.footerText}>
+            Last updated: {lastUpdate.toLocaleTimeString()}
+          </Text>
+        </View>
+      </View>
+    </ScreenContainer>
   );
 }
 
@@ -577,15 +587,13 @@ const styles = StyleSheet.create({
   refreshingIcon: {
     opacity: 0.5,
   },
-  content: {
-    flex: 1,
-  },
   contentContainer: {
     padding: auroraTheme.spacing.lg,
     paddingBottom: 32,
   },
   contentContainerWeb: {
-    padding: isWeb ? 32 : auroraTheme.spacing.lg,
+    padding: 32,
+    paddingBottom: 32,
     maxWidth: isWeb ? 1400 : "100%",
     alignSelf: "center",
     width: "100%",

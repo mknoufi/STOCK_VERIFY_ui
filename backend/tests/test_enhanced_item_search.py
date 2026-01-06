@@ -20,7 +20,8 @@ def client(monkeypatch):
     # We can mock monitoring_service
 
     mock_monitoring = MagicMock()
-    init_enhanced_api(db, server_module.cache_service, mock_monitoring)
+    mock_sql_connector = MagicMock()
+    init_enhanced_api(db, server_module.cache_service, mock_monitoring, mock_sql_connector)
 
     return TestClient(app)
 
@@ -68,9 +69,7 @@ def test_search_includes_item_code_and_barcode(client, monkeypatch):
     server_module.db.erp_items.aggregate = mock_aggregate_func
 
     # Perform the search
-    response = client.get(
-        "/api/v2/erp/items/search/advanced", params={"query": "TEST1234"}
-    )
+    response = client.get("/api/v2/erp/items/search/advanced", params={"query": "TEST1234"})
 
     # Clean up dependency override
     app.dependency_overrides = {}

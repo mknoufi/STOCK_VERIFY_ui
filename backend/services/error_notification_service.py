@@ -106,7 +106,7 @@ class ErrorNotificationService:
                 details=details,
             )
 
-            result = await self.collection.insert_one(notification.dict())
+            result = await self.collection.insert_one(notification.model_dump())
             notification_id = str(result.inserted_id)
 
             logger.log(
@@ -130,7 +130,7 @@ class ErrorNotificationService:
     ) -> list[dict[str, Any]]:
         """Get unresolved error notifications"""
         try:
-            query = {"resolved": False}
+            query: dict[str, Any] = {"resolved": False}
             if target:
                 query["target"] = {"$in": [target.value, NotificationTarget.BOTH.value]}
 
@@ -145,9 +145,7 @@ class ErrorNotificationService:
             logger.error(f"Error getting unresolved errors: {e}")
             return []
 
-    async def get_user_errors(
-        self, user_id: str, limit: int = 20
-    ) -> list[dict[str, Any]]:
+    async def get_user_errors(self, user_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Get user-specific errors"""
         try:
             query = {

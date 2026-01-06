@@ -14,9 +14,8 @@ import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
 import {
   LoadingSpinner,
-  ScreenHeader,
-  AuroraBackground,
   AnimatedPressable,
+  ScreenContainer,
 } from "../../src/components/ui";
 import {
   getSecuritySummary,
@@ -375,22 +374,43 @@ export default function SecurityScreen() {
 
   if (loading && !summary) {
     return (
-      <AuroraBackground>
+      <ScreenContainer
+        gradient
+        header={{
+          title: "Security Dashboard",
+          subtitle: "Monitoring & Audit",
+          showBackButton: true,
+          customRightContent: (
+            <AnimatedPressable
+              style={styles.refreshButton}
+              onPress={() => loadData(true)}
+            >
+              <Ionicons
+                name="refresh"
+                size={24}
+                color={auroraTheme.colors.text.primary}
+                style={refreshing ? styles.refreshingIcon : undefined}
+              />
+            </AnimatedPressable>
+          ),
+        }}
+      >
         <View style={styles.centered}>
           <LoadingSpinner size={36} color={auroraTheme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading security data...</Text>
         </View>
-      </AuroraBackground>
+      </ScreenContainer>
     );
   }
 
   return (
-    <AuroraBackground>
-      <ScreenHeader
-        title="Security Dashboard"
-        subtitle="Monitoring & Audit"
-        showBackButton
-        customRightContent={
+    <ScreenContainer
+      gradient
+      header={{
+        title: "Security Dashboard",
+        subtitle: "Monitoring & Audit",
+        showBackButton: true,
+        customRightContent: (
           <AnimatedPressable
             style={styles.refreshButton}
             onPress={() => loadData(true)}
@@ -402,9 +422,9 @@ export default function SecurityScreen() {
               style={refreshing ? styles.refreshingIcon : undefined}
             />
           </AnimatedPressable>
-        }
-      />
-
+        ),
+      }}
+    >
       {/* Tabs */}
       <ScrollView
         horizontal
@@ -489,7 +509,7 @@ export default function SecurityScreen() {
           </View>
         </View>
       </ScrollView>
-    </AuroraBackground>
+    </ScreenContainer>
   );
 }
 

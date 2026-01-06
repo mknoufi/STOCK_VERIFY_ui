@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { mmkvStorage } from "../services/mmkvStorage";
 import { ThemeService, Theme } from "../services/themeService";
 import { authApi, UserSettings } from "../services/api/authApi";
+import { createLogger } from "../services/logging";
+
+const log = createLogger("settingsStore");
 
 export interface Settings {
   // Theme
@@ -52,6 +55,9 @@ export interface Settings {
   imageCache: boolean;
   lazyLoading: boolean;
   debounceDelay: number;
+
+  // Haptics
+  hapticFeedback: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -86,6 +92,7 @@ const DEFAULT_SETTINGS: Settings = {
   imageCache: true,
   lazyLoading: true,
   debounceDelay: 300,
+  hapticFeedback: true,
 };
 
 interface SettingsState {
@@ -134,7 +141,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         ThemeService.setTheme(mergedSettings.theme);
       }
     } catch (error) {
-      console.error("Failed to load settings:", error);
+      log.warn("Failed to load settings", {
+        error: (error as { message?: string } | null)?.message || String(error),
+      });
     }
   },
 
@@ -168,10 +177,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         ThemeService.setTheme(mergedSettings.theme as Theme);
       }
 
-      console.log("[SettingsStore] Synced settings from backend");
+      log.debug("Synced settings from backend");
     } catch (error) {
       // Silently fail - use local settings if backend unavailable
-      console.warn("[SettingsStore] Failed to sync from backend:", error);
+      log.warn("Failed to sync from backend", {
+        error: (error as { message?: string } | null)?.message || String(error),
+      });
     } finally {
       set({ isSyncing: false });
     }
@@ -195,9 +206,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       };
 
       await authApi.updateUserSettings(backendPayload);
-      console.log("[SettingsStore] Synced settings to backend");
+      log.debug("Synced settings to backend");
     } catch (error) {
-      console.warn("[SettingsStore] Failed to sync to backend:", error);
+      log.warn("Failed to sync to backend", {
+        error: (error as { message?: string } | null)?.message || String(error),
+      });
     } finally {
       set({ isSyncing: false });
     }

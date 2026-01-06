@@ -6,18 +6,18 @@ services:
     ports:
       - "8001:8001"
     env_file:
-      - backend/.env
-      - backend/.env.docker
+      - backend/.env.example
+      - backend/.env.docker.example
     depends_on:
       - mongo
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
     command: uvicorn backend.server:app --host 0.0.0.0 --port 8001 --reload
 
   mongo:
     image: mongo:6.0
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
 

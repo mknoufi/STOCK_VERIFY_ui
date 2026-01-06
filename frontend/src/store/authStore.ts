@@ -3,6 +3,7 @@ import { secureStorage } from "../services/storage/secureStorage";
 import apiClient from "../services/httpClient";
 import { useSettingsStore } from "./settingsStore";
 import { setUnauthorizedHandler } from "../services/authUnauthorizedHandler";
+import { createLogger } from "../services/logging";
 
 interface User {
   id: string;
@@ -36,6 +37,8 @@ export interface AuthState {
 const AUTH_STORAGE_KEY = "auth_user";
 const TOKEN_STORAGE_KEY = "auth_token";
 const REFRESH_TOKEN_STORAGE_KEY = "refresh_token";
+
+const log = createLogger("authStore");
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -159,11 +162,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Avoid console.error here: React Native LogBox can surface it as a noisy
       // on-screen overlay, and the UI already shows a user-friendly Alert.
       // Also avoid logging the full Axios error object (may contain request data).
-      __DEV__ &&
-        console.log(
-          "PIN login failed:",
+      log.debug("PIN login failed", {
+        error:
           (error as { message?: string } | null)?.message || "unknown error",
-        );
+      });
       set({ isLoading: false });
 
       let message = "Invalid PIN";
@@ -205,13 +207,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   setLoading: (loading: boolean) => set({ isLoading: loading }),
 
   loadStoredAuth: async () => {
-    console.log('🔐 [AUTH] Loading stored auth...');
+    log.debug("Loading stored auth");
     set({ isLoading: true });
     try {
       const storedUser = await secureStorage.getItem(AUTH_STORAGE_KEY);
-      console.log('🔐 [AUTH] Stored user retrieved:', !!storedUser);
       const storedToken = await secureStorage.getItem(TOKEN_STORAGE_KEY);
-      console.log('🔐 [AUTH] Stored token retrieved:', !!storedToken);
+      log.debug("Stored credentials lookup", {
+        hasUser: Boolean(storedUser),
+        hasToken: Boolean(storedToken),
+      });
 
       if (storedUser && storedToken) {
         const user = JSON.parse(storedUser) as User;
@@ -224,20 +228,20 @@ export const useAuthStore = create<AuthState>((set) => ({
           isInitialized: true,
         });
       } else {
-        console.log('🔐 [AUTH] No stored credentials found');
+        log.debug("No stored credentials found");
         set({
           isLoading: false,
           isInitialized: true,
         });
       }
     } catch (error) {
-      console.error("🔐 [AUTH] Failed to load stored auth:", error);
+      log.warn("Failed to load stored auth", {
+        error: (error as { message?: string } | null)?.message || String(error),
+      });
       set({
         isLoading: false,
         isInitialized: true,
       });
-    } finally {
-      console.log('🔐 [AUTH] loadStoredAuth completed');
     }
   },
 }));

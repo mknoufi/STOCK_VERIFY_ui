@@ -3,6 +3,177 @@ import { Item, NormalizedMrpVariant } from "../types/scan";
 export const normalizeSerialValue = (input: string) =>
   input ? input.trim().toUpperCase() : "";
 
+/**
+ * Validate serial number format
+ * Allows alphanumeric characters and hyphens
+ * Returns error message if invalid, null if valid
+ */
+export const validateSerialNumber = (serial: string): string | null => {
+  const normalized = normalizeSerialValue(serial);
+  if (!normalized) {
+    return "Serial number cannot be empty";
+  }
+  if (normalized.length < 3) {
+    return "Serial number must be at least 3 characters";
+  }
+  if (normalized.length > 50) {
+    return "Serial number cannot exceed 50 characters";
+  }
+  if (!/^[A-Z0-9\-]+$/.test(normalized)) {
+    return "Serial number must contain only letters, numbers, and hyphens";
+  }
+  return null;
+};
+
+/**
+ * Check if serial numbers array is valid for a serialized item
+ */
+export const validateSerialNumbers = (
+  serialNumbers: string[],
+  requiredCount: number,
+): { valid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  const normalizedSerials = serialNumbers
+    .map(normalizeSerialValue)
+    .filter(Boolean);
+
+  // Check count
+  if (normalizedSerials.length < requiredCount) {
+    errors.push(
+      `${requiredCount - normalizedSerials.length} more serial number(s) required`,
+    );
+  }
+
+  // Check for duplicates
+  const uniqueSerials = new Set(normalizedSerials);
+  if (uniqueSerials.size !== normalizedSerials.length) {
+    errors.push("Duplicate serial numbers detected");
+  }
+
+  // Validate each serial
+  normalizedSerials.forEach((serial, index) => {
+    const error = validateSerialNumber(serial);
+    if (error) {
+      errors.push(`Serial #${index + 1}: ${error}`);
+    }
+  });
+
+  return { valid: errors.length === 0, errors };
+};
+
+/**
+ * Check if a scanned code is a valid serial number (not a barcode)
+ * Serial numbers are typically longer and more complex than barcodes
+ * Barcodes in this system are 6-digit numeric with specific prefixes (51, 52, 53)
+ */
+export const isSerialNumberFormat = (code: string): boolean => {
+  const normalized = normalizeSerialValue(code);
+  if (!normalized) return false;
+
+  // Barcode pattern: 6 digits starting with 51, 52, or 53
+  const barcodePattern = /^5[123]\d{4}$/;
+
+  // If it matches barcode pattern, it's NOT a serial number
+  if (barcodePattern.test(normalized)) {
+    return false;
+  }
+
+  // Serial numbers should be at least 3 chars
+  return normalized.length >= 3;
+};
+
+/**
+ * Validate a scanned value as a serial number
+ * Returns { valid: true } or { valid: false, error: string }
+ */
+
+/**
+ * Check if the new serial number matches the pattern of existing ones
+ * Returns a warning message if there's a significant deviation
+ */
+export const checkSerialPattern = (
+  newSerial: string,
+  existingSerials: string[],
+): string | null => {
+  if (existingSerials.length === 0) return null;
+
+  // Compare with the most recently added serial
+  const lastEntry = existingSerials[existingSerials.length - 1];
+  if (!lastEntry) return null;
+
+  const lastSerial = normalizeSerialValue(lastEntry);
+  const current = normalizeSerialValue(newSerial);
+
+  if (!lastSerial || !current) return null;
+
+  // Check 1: Length deviation
+  if (current.length !== lastSerial.length) {
+    return `Length differs from previous serial (${current.length} vs ${lastSerial.length})`;
+  }
+
+  // Check 2: Format consistency (Numeric vs Alphanumeric)
+  const isLastNumeric = /^\d+$/.test(lastSerial);
+  const isCurrentNumeric = /^\d+$/.test(current);
+
+  if (isLastNumeric !== isCurrentNumeric) {
+    return "Format differs from previous serial (Numeric/Alphanumeric mismatch)";
+  }
+
+  // Check 3: Prefix consistency (first 2 chars)
+  if (current.length >= 4 && lastSerial.length >= 4) {
+    const lastPrefix = lastSerial.substring(0, 2);
+    const currentPrefix = current.substring(0, 2);
+    if (lastPrefix !== currentPrefix) {
+      return `Prefix "${currentPrefix}" differs from previous "${lastPrefix}"`;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Validate a scanned value as a serial number
+ * Returns { valid: true, warning?: string } or { valid: false, error: string }
+ */
+export const validateScannedSerial = (
+  code: string,
+  existingSerials: string[],
+): { valid: boolean; error?: string; warning?: string } => {
+  const normalized = normalizeSerialValue(code);
+
+  // Check if it appears to be a product barcode
+  if (!isSerialNumberFormat(code)) {
+    return {
+      valid: false,
+      error: "This appears to be a product barcode, not a serial number",
+    };
+  }
+
+  // Standard validation
+  const validationError = validateSerialNumber(normalized);
+  if (validationError) {
+    return { valid: false, error: validationError };
+  }
+
+  // Check for duplicates
+  // We check against the normalized version of existing serials
+  const isDuplicate = existingSerials
+    .map((s) => normalizeSerialValue(s))
+    .includes(normalized);
+
+  if (isDuplicate) {
+    return { valid: false, error: "This serial number has already been added" };
+  }
+
+  // Check pattern against existing serials
+  const patternWarning = checkSerialPattern(code, existingSerials);
+  if (patternWarning) {
+    return { valid: true, warning: patternWarning };
+  }
+
+  return { valid: true };
+};
+
 export const toNumericMrp = (value: unknown): number | null => {
   if (value === undefined || value === null) {
     return null;

@@ -3,12 +3,46 @@ Port Detection Utility for Backend
 Automatically detect and use available ports
 """
 
+import json
 import logging
 import os
 import socket
+from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+def save_backend_info(port: int, local_ip: str, protocol: str = "http") -> None:
+    """Save backend port info to JSON files."""
+    try:
+        port_data = {
+            "port": port,
+            "ip": local_ip,
+            "url": f"{protocol}://{local_ip}:{port}",
+            "pid": os.getpid(),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+        # Save to backend_port.json in project root
+        # Assuming this file is in backend/utils/port_detector.py
+        # root is ../../
+        root_dir = Path(__file__).parent.parent.parent
+        with open(root_dir / "backend_port.json", "w") as f:
+            json.dump(port_data, f)
+
+        # Save to frontend/public/backend_port.json for Expo Web
+        frontend_public = root_dir / "frontend" / "public"
+        if frontend_public.exists():
+            with open(frontend_public / "backend_port.json", "w") as f:
+                json.dump(port_data, f)
+            logger.info(f"Saved backend port info to {frontend_public / 'backend_port.json'}")
+
+        logger.info(
+            f"Saved backend info (IP: {local_ip}, Port: {port}) to {root_dir / 'backend_port.json'}"
+        )
+    except Exception as e:
+        logger.warning(f"Failed to save backend port info: {e}")
 
 
 class PortDetector:
@@ -39,9 +73,7 @@ class PortDetector:
 
         for port in port_range:
             if PortDetector.is_port_available(port):
-                logger.info(
-                    f"Found available port: {port} (preferred was {preferred_port})"
-                )
+                logger.info(f"Found available port: {port} (preferred was {preferred_port})")
                 return port
 
         raise Exception(f"No available ports found in range {port_range}")
@@ -80,7 +112,7 @@ class PortDetector:
             try:
                 from pymongo import MongoClient
 
-                client = MongoClient(
+                client: MongoClient = MongoClient(
                     f"mongodb://{host}:{port}",
                     serverSelectionTimeoutMS=800,
                     connectTimeoutMS=800,
@@ -96,9 +128,7 @@ class PortDetector:
             return False
 
     @staticmethod
-    def find_mongo_port(
-        start_port: int = 27017, max_attempts: int = 10
-    ) -> tuple[int, bool]:
+    def find_mongo_port(start_port: int = 27017, max_attempts: int = 10) -> tuple[int, bool]:
         """Find MongoDB port and return (port, is_running)"""
         # Check default port first
         if PortDetector.is_mongo_running(start_port):
@@ -118,11 +148,7 @@ class PortDetector:
     def get_mongo_url() -> str:
         """Get MongoDB URL with dynamic port detection"""
         # If explicitly provided, respect it
-        explicit = (
-            os.getenv("MONGO_URL")
-            or os.getenv("MONGODB_URI")
-            or os.getenv("MONGODB_URL")
-        )
+        explicit = os.getenv("MONGO_URL") or os.getenv("MONGODB_URI") or os.getenv("MONGODB_URL")
         if explicit:
             return explicit
 
@@ -134,7 +160,9 @@ class PortDetector:
 
         # If MONGO_PORT is set, use it
         if os.getenv("MONGO_PORT"):
-            mongo_url = f"mongodb://localhost:{int(os.getenv('MONGO_PORT', '27017'))}?directConnection=true"
+            mongo_url = (
+                f"mongodb://localhost:{int(os.getenv('MONGO_PORT', '27017'))}?directConnection=true"
+            )
             logger.info(f"Using MongoDB URL (MONGO_PORT): {mongo_url}")
             return mongo_url
 
@@ -179,7 +207,7 @@ class PortDetector:
                 s.close()
 
             # 2. Sanity check: If we got localhost or something weird, try 192.168 specifically
-            if ip.startswith("127.") or ip == "0.0.0.0":
+            if ip.startswith("127.") or ip == "0.0.0.0":  # nosec
                 # Fallback: iterate interfaces (simple approach often restricted, so we rely on socket)
                 # Re-try with a local router guess
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

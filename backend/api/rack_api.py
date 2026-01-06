@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.db.runtime import get_db
 from backend.services.lock_manager import get_lock_manager
 from backend.services.pubsub_service import get_pubsub_service
 from backend.services.redis_service import get_redis
@@ -129,7 +130,7 @@ async def get_available_racks(
     - floor: Optional floor filter
     - status: Only returns available or paused racks
     """
-    from backend.server import db
+    db = get_db()
 
     # Build query
     query: dict[str, Any] = {"status": {"$in": ["available", "paused"]}}
@@ -166,7 +167,7 @@ async def get_floors(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> list[str]:
     """Get list of all floors with racks"""
-    from backend.server import db
+    db = get_db()
 
     # Get distinct floors from rack registry
     floors = await db.rack_registry.distinct("floor")
@@ -203,7 +204,7 @@ async def claim_rack(
     4. Update rack status
     5. Broadcast update
     """
-    from backend.server import db
+    db = get_db()
 
     user_id = current_user["username"]
     lock_manager = get_lock_manager(redis_service)
@@ -244,7 +245,7 @@ async def claim_rack(
             "completed_at": None,
         }
 
-        await db.verification_sessions.insert_one(session_doc)
+        await db.sessions.insert_one(session_doc)
 
         # Create session lock in Redis
         await lock_manager.create_session_lock(session_id, user_id, rack_id, ttl=3600)
@@ -306,7 +307,7 @@ async def release_rack(
     4. Update session status
     5. Broadcast update
     """
-    from backend.server import db
+    db = get_db()
 
     user_id = current_user["username"]
     lock_manager = get_lock_manager(redis_service)
@@ -334,8 +335,8 @@ async def release_rack(
 
     # Update session status
     if rack["session_id"]:
-        await db.verification_sessions.update_one(
-            {"session_id": rack["session_id"]},
+        await db.sessions.update_one(
+            {"id": rack["session_id"]},
             {
                 "$set": {
                     "status": "completed",
@@ -363,7 +364,7 @@ async def pause_rack(
     """
     Pause work on rack (keep lock)
     """
-    from backend.server import db
+    db = get_db()
 
     user_id = current_user["username"]
 
@@ -374,9 +375,7 @@ async def pause_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(
-            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
-        )
+        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
 
     # Update status
     await update_rack_status(
@@ -390,9 +389,7 @@ async def pause_rack(
 
     # Update session
     if rack["session_id"]:
-        await db.verification_sessions.update_one(
-            {"session_id": rack["session_id"]}, {"$set": {"status": "paused"}}
-        )
+        await db.sessions.update_one({"id": rack["session_id"]}, {"$set": {"status": "paused"}})
 
     # Broadcast update
     await pubsub_service.publish_rack_update(rack_id, "paused", {"user_id": user_id})
@@ -411,7 +408,7 @@ async def resume_rack(
     """
     Resume work on paused rack
     """
-    from backend.server import db
+    db = get_db()
 
     user_id = current_user["username"]
 
@@ -422,9 +419,7 @@ async def resume_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(
-            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
-        )
+        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
 
     # Verify paused
     if rack["status"] != "paused":
@@ -445,8 +440,8 @@ async def resume_rack(
 
     # Update session
     if rack["session_id"]:
-        await db.verification_sessions.update_one(
-            {"session_id": rack["session_id"]},
+        await db.sessions.update_one(
+            {"id": rack["session_id"]},
             {
                 "$set": {
                     "status": "active",
@@ -469,7 +464,7 @@ async def get_rack_status(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> RackStatus:
     """Get current rack status"""
-    from backend.server import db
+    db = get_db()
 
     rack = await db.rack_registry.find_one({"rack_id": rack_id})
     if not rack:
@@ -491,7 +486,7 @@ async def get_user_active_racks(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> list[RackStatus]:
     """Get all racks claimed by current user"""
-    from backend.server import db
+    db = get_db()
 
     user_id = current_user["username"]
 

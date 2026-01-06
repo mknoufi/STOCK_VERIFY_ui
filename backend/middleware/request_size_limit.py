@@ -36,11 +36,11 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Check Content-Length header
-        content_length = request.headers.get("content-length")
+        content_length_str = request.headers.get("content-length")
 
-        if content_length:
+        if content_length_str:
             try:
-                content_length = int(content_length)
+                content_length: int = int(content_length_str)
             except ValueError:
                 return JSONResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,

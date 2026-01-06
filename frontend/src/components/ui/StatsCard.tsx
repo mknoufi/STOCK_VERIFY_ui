@@ -9,9 +9,10 @@
  * - Smooth entrance animations
  * - Animated counter values
  * - Haptic feedback
+ * - Memoized for performance
  */
 
-import React from "react";
+import React, { memo } from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -64,158 +65,162 @@ const variantColors = {
   },
 };
 
-export const StatsCard: React.FC<StatsCardProps> = ({
-  title,
-  value,
-  icon,
-  variant = "primary",
-  subtitle,
-  trend,
-  onPress,
-  style,
-  delay = 0,
-  animated = false,
-  prefix = "",
-  suffix = "",
-}) => {
-  const { gradient } = variantColors[variant];
-  const numericValue =
-    typeof value === "number" ? value : parseFloat(value) || 0;
+export const StatsCard: React.FC<StatsCardProps> = memo(
+  ({
+    title,
+    value,
+    icon,
+    variant = "primary",
+    subtitle,
+    trend,
+    onPress,
+    style,
+    delay = 0,
+    animated = false,
+    prefix = "",
+    suffix = "",
+  }) => {
+    const { gradient } = variantColors[variant];
+    const numericValue =
+      typeof value === "number" ? value : parseFloat(value) || 0;
 
-  const content = (
-    <View style={styles.content}>
-      {/* Icon with gradient background */}
-      <LinearGradient
-        colors={gradient as readonly [string, string, ...string[]]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.iconContainer}
-      >
-        <Ionicons
-          name={icon}
-          size={28}
-          color={auroraTheme.colors.text.primary}
-        />
-      </LinearGradient>
+    const isAnimatedNumber = animated && typeof value === "number";
 
-      {/* Stats */}
-      <View style={styles.stats}>
-        {animated && typeof value === "number" ? (
-          <AnimatedCounter
-            value={numericValue}
-            prefix={prefix}
-            suffix={suffix}
-            style={[
-              styles.value,
-              {
-                fontFamily: auroraTheme.typography.fontFamily.heading,
-                fontSize: auroraTheme.typography.fontSize["3xl"],
-                color: auroraTheme.colors.text.primary,
-              },
-            ]}
-          />
-        ) : (
-          <Text
-            style={[
-              styles.value,
-              {
-                fontFamily: auroraTheme.typography.fontFamily.heading,
-                fontSize: auroraTheme.typography.fontSize["3xl"],
-                color: auroraTheme.colors.text.primary,
-              },
-            ]}
-          >
-            {prefix}
-            {value}
-            {suffix}
-          </Text>
-        )}
-
-        <Text
-          style={[
-            styles.title,
-            {
-              fontFamily: auroraTheme.typography.fontFamily.body,
-              fontSize: auroraTheme.typography.fontSize.sm,
-              color: auroraTheme.colors.text.secondary,
-            },
-          ]}
+    const content = (
+      <View style={styles.content}>
+        {/* Icon with gradient background */}
+        <LinearGradient
+          colors={gradient as readonly [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.iconContainer}
         >
-          {title}
-        </Text>
+          <Ionicons
+            name={icon}
+            size={28}
+            color={auroraTheme.colors.text.primary}
+          />
+        </LinearGradient>
 
-        {subtitle && (
-          <Text
-            style={[
-              styles.subtitle,
-              {
-                fontFamily: auroraTheme.typography.fontFamily.body,
-                fontSize: auroraTheme.typography.fontSize.xs,
-                color: auroraTheme.colors.text.tertiary,
-              },
-            ]}
-          >
-            {subtitle}
-          </Text>
-        )}
-
-        {trend && (
-          <View style={styles.trendContainer}>
-            <Ionicons
-              name={trend.isPositive ? "trending-up" : "trending-down"}
-              size={14}
-              color={
-                trend.isPositive
-                  ? auroraTheme.colors.success[500]
-                  : auroraTheme.colors.error[500]
-              }
+        {/* Stats */}
+        <View style={styles.stats}>
+          {isAnimatedNumber ? (
+            <AnimatedCounter
+              value={numericValue}
+              prefix={prefix}
+              suffix={suffix}
+              style={[
+                styles.value,
+                {
+                  fontFamily: auroraTheme.typography.fontFamily.heading,
+                  fontSize: auroraTheme.typography.fontSize["3xl"],
+                  color: auroraTheme.colors.text.primary,
+                },
+              ]}
             />
+          ) : (
             <Text
               style={[
-                styles.trendText,
+                styles.value,
                 {
-                  color: trend.isPositive
-                    ? auroraTheme.colors.success[500]
-                    : auroraTheme.colors.error[500],
-                  fontFamily: auroraTheme.typography.fontFamily.label,
-                  fontSize: auroraTheme.typography.fontSize.xs,
+                  fontFamily: auroraTheme.typography.fontFamily.heading,
+                  fontSize: auroraTheme.typography.fontSize["3xl"],
+                  color: auroraTheme.colors.text.primary,
                 },
               ]}
             >
-              {Math.abs(trend.value)}%
+              {prefix}
+              {value}
+              {suffix}
             </Text>
-          </View>
-        )}
+          )}
+
+          <Text
+            style={[
+              styles.title,
+              {
+                fontFamily: auroraTheme.typography.fontFamily.body,
+                fontSize: auroraTheme.typography.fontSize.sm,
+                color: auroraTheme.colors.text.secondary,
+              },
+            ]}
+          >
+            {title}
+          </Text>
+
+          {subtitle && (
+            <Text
+              style={[
+                styles.subtitle,
+                {
+                  fontFamily: auroraTheme.typography.fontFamily.body,
+                  fontSize: auroraTheme.typography.fontSize.xs,
+                  color: auroraTheme.colors.text.tertiary,
+                },
+              ]}
+            >
+              {subtitle}
+            </Text>
+          )}
+
+          {trend && (
+            <View style={styles.trendContainer}>
+              <Ionicons
+                name={trend.isPositive ? "trending-up" : "trending-down"}
+                size={14}
+                color={
+                  trend.isPositive
+                    ? auroraTheme.colors.success[500]
+                    : auroraTheme.colors.error[500]
+                }
+              />
+              <Text
+                style={[
+                  styles.trendText,
+                  {
+                    color: trend.isPositive
+                      ? auroraTheme.colors.success[500]
+                      : auroraTheme.colors.error[500],
+                    fontFamily: auroraTheme.typography.fontFamily.label,
+                    fontSize: auroraTheme.typography.fontSize.xs,
+                  },
+                ]}
+              >
+                {Math.abs(trend.value)}%
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
-    </View>
-  );
-
-  const cardContent = (
-    <Animated.View entering={FadeInDown.delay(delay).springify()}>
-      <GlassCard
-        variant="medium"
-        intensity={25}
-        borderRadius={auroraTheme.borderRadius.xl}
-        padding={auroraTheme.spacing.lg}
-        withGradientBorder={true}
-        elevation="lg"
-        style={style}
-      >
-        {content}
-      </GlassCard>
-    </Animated.View>
-  );
-
-  if (onPress) {
-    return (
-      <AnimatedPressable onPress={onPress} hapticFeedback="light">
-        {cardContent}
-      </AnimatedPressable>
     );
-  }
 
-  return cardContent;
-};
+    const cardContent = (
+      <Animated.View entering={FadeInDown.delay(delay).springify()}>
+        <GlassCard
+          variant="medium"
+          intensity={25}
+          borderRadius={auroraTheme.borderRadius.xl}
+          padding={auroraTheme.spacing.lg}
+          withGradientBorder={true}
+          elevation="lg"
+          style={style}
+        >
+          {content}
+        </GlassCard>
+      </Animated.View>
+    );
+
+    if (onPress) {
+      return (
+        <AnimatedPressable onPress={onPress} hapticFeedback="light">
+          {cardContent}
+        </AnimatedPressable>
+      );
+    }
+
+    return cardContent;
+  },
+);
 
 const styles = StyleSheet.create({
   content: {
@@ -256,3 +261,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+StatsCard.displayName = "StatsCard";

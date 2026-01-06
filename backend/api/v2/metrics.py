@@ -20,7 +20,7 @@ async def get_connection_pool_metrics(current_user: dict = Depends(get_current_u
     Requires authentication
     """
     try:
-        from backend.server import connection_pool
+        from backend.core.lifespan import connection_pool
 
         if not connection_pool:
             return ApiResponse.error_response(
@@ -67,7 +67,7 @@ async def get_system_metrics(current_user: dict = Depends(get_current_user)):
     try:
         from datetime import datetime
 
-        from backend.server import (
+        from backend.core.lifespan import (
             cache_service,
             database_health_service,
             monitoring_service,
@@ -79,12 +79,8 @@ async def get_system_metrics(current_user: dict = Depends(get_current_user)):
             "services": {},
         }
 
-        metrics["monitoring"] = _safe_get_metrics(
-            monitoring_service, "get_metrics", "monitoring"
-        )
-        metrics["services"]["cache"] = _safe_get_metrics(
-            cache_service, "get_status", "cache"
-        )
+        metrics["monitoring"] = _safe_get_metrics(monitoring_service, "get_metrics", "monitoring")
+        metrics["services"]["cache"] = _safe_get_metrics(cache_service, "get_status", "cache")
         metrics["services"]["rate_limiter"] = _safe_get_metrics(
             rate_limiter, "get_stats", "rate_limiter"
         )

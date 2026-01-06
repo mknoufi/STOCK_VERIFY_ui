@@ -20,13 +20,21 @@ import {
   RefreshControl,
   Alert,
   Platform,
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
+import ReactNativeModal from "react-native-modal";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAutoLogout } from "../../src/hooks/useAutoLogout";
-import { getSessions } from "../../src/services/api/api";
+import {
+  getSessions,
+  createSession,
+  getZones,
+  getWarehouses,
+} from "../../src/services/api/api";
 import {
   GlassCard,
   StatsCard,
@@ -37,12 +45,14 @@ import {
   AnimatedPressable,
   ScreenContainer,
 } from "../../src/components/ui";
-import {
-  SpeedDialAction,
-  ActivityType,
-} from "../../src/components/ui";
+import { PremiumInput } from "../../src/components/premium/PremiumInput";
+import { useToast } from "../../src/components/feedback/ToastProvider";
+import { SpeedDialAction, ActivityType } from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 import { Session } from "../../src/types";
+import { colors as unifiedColors } from "../../src/theme/unified";
+
+const Modal = ReactNativeModal as unknown as React.ComponentType<any>;
 
 interface DashboardStats {
   totalSessions: number;
@@ -68,11 +78,23 @@ interface ActivityItem {
 
 export default function SupervisorDashboard() {
   const router = useRouter();
+  const { show } = useToast();
   useAutoLogout();
 
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Session Creation State
+  const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
+  const [locationType, setLocationType] = useState<string | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
+  const [rackName, setRackName] = useState("");
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [zones, setZones] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(false);
+
   const [stats, setStats] = useState<DashboardStats>({
     totalSessions: 0,
     openSessions: 0,
@@ -86,6 +108,116 @@ export default function SupervisorDashboard() {
     highRiskSessions: 0,
   });
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+
+  // Fetch Zones on mount
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const data = await getZones();
+        if (Array.isArray(data) && data.length > 0) {
+          setZones(data);
+        } else {
+          // Fallback
+          setZones([
+            { zone_name: "Showroom", id: "zone_showroom" },
+            { zone_name: "Godown", id: "zone_godown" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch zones:", error);
+        setZones([
+          { zone_name: "Showroom", id: "zone_showroom" },
+          { zone_name: "Godown", id: "zone_godown" },
+        ]);
+      }
+    };
+    fetchZones();
+  }, []);
+
+  const handleLocationTypeChange = async (type: string) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
+    setLocationType(type);
+    setSelectedFloor(null);
+
+    try {
+      setIsLoadingWarehouses(true);
+      const data = await getWarehouses(type);
+      if (Array.isArray(data) && data.length > 0) {
+        setWarehouses(data);
+      } else {
+        // Fallback based on type
+        if (type.toLowerCase().includes("showroom")) {
+          setWarehouses([
+            { warehouse_name: "Ground Floor", id: "fl_ground" },
+            { warehouse_name: "First Floor", id: "fl_first" },
+            { warehouse_name: "Second Floor", id: "fl_second" },
+          ]);
+        } else {
+          setWarehouses([
+            { warehouse_name: "Main Godown", id: "wh_main" },
+            { warehouse_name: "Top Godown", id: "wh_top" },
+            { warehouse_name: "Damage Area", id: "wh_damage" },
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch warehouses:", error);
+      // Fallback
+      if (type.toLowerCase().includes("showroom")) {
+        setWarehouses([
+          { warehouse_name: "Ground Floor", id: "fl_ground" },
+          { warehouse_name: "First Floor", id: "fl_first" },
+          { warehouse_name: "Second Floor", id: "fl_second" },
+        ]);
+      } else {
+        setWarehouses([
+          { warehouse_name: "Main Godown", id: "wh_main" },
+          { warehouse_name: "Top Godown", id: "wh_top" },
+          { warehouse_name: "Damage Area", id: "wh_damage" },
+        ]);
+      }
+    } finally {
+      setIsLoadingWarehouses(false);
+    }
+  };
+
+  const handleCreateSession = async () => {
+    if (!locationType || !selectedFloor || !rackName.trim()) {
+      show("Please fill in all fields", "warning");
+      return;
+    }
+
+    try {
+      setIsCreatingSession(true);
+      const warehouseName = `${locationType} - ${selectedFloor} - ${rackName.trim().toUpperCase()}`;
+
+      const session = await createSession({
+        warehouse: warehouseName,
+        type: "STANDARD",
+      });
+
+      show("Session created successfully", "success");
+      setShowCreateSessionModal(false);
+
+      // Reset form
+      setLocationType(null);
+      setSelectedFloor(null);
+      setRackName("");
+
+      // Refresh data
+      loadData();
+
+      // Navigate to session
+      router.push(`/supervisor/session/${session.id}` as any);
+    } catch (error) {
+      console.error("Failed to create session:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create session";
+      show(errorMessage, "error");
+    } finally {
+      setIsCreatingSession(false);
+    }
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -110,7 +242,8 @@ export default function SupervisorDashboard() {
           if ((session.total_variance || 0) < 0)
             acc.negativeVariance += session.total_variance;
 
-          if (Math.abs(session.total_variance ?? 0) > 1000) acc.highRiskSessions++;;
+          if (Math.abs(session.total_variance ?? 0) > 1000)
+            acc.highRiskSessions++;
 
           return acc;
         },
@@ -179,10 +312,15 @@ export default function SupervisorDashboard() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     // Navigate to filtered view or show details
-    console.log("Stat pressed:", statType);
+    __DEV__ && console.log("Stat pressed:", statType);
   };
 
   const speedDialActions: SpeedDialAction[] = [
+    {
+      icon: "add-circle-outline",
+      label: "New Session",
+      onPress: () => setShowCreateSessionModal(true),
+    },
     {
       icon: "eye-outline",
       label: "Watchtower",
@@ -218,8 +356,8 @@ export default function SupervisorDashboard() {
   const completionPercentage =
     stats.totalSessions > 0
       ? ((stats.closedSessions + stats.reconciledSessions) /
-        stats.totalSessions) *
-      100
+          stats.totalSessions) *
+        100
       : 0;
 
   return (
@@ -239,7 +377,9 @@ export default function SupervisorDashboard() {
       noPadding
     >
       {loading && !refreshing ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Ionicons
             name="cube-outline"
             size={48}
@@ -348,7 +488,7 @@ export default function SupervisorDashboard() {
           </View>
 
           {/* Completion Progress */}
-          <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <Animated.View entering={FadeInDown.delay(60).springify()}>
             <GlassCard
               variant="medium"
               intensity={25}
@@ -399,7 +539,7 @@ export default function SupervisorDashboard() {
 
           {/* Activity Feed */}
           <Animated.View
-            entering={FadeInDown.delay(350).springify()}
+            entering={FadeInDown.delay(80).springify()}
             style={styles.section}
           >
             <View style={styles.sectionHeader}>
@@ -470,9 +610,7 @@ export default function SupervisorDashboard() {
                       timestamp={activity.timestamp}
                       status={activity.status}
                       onPress={() =>
-                        router.push(
-                          `/supervisor/session/${activity.id}` as any,
-                        )
+                        router.push(`/supervisor/session/${activity.id}` as any)
                       }
                       delay={index * 50}
                     />
@@ -483,7 +621,7 @@ export default function SupervisorDashboard() {
 
           {/* Recent Sessions */}
           <Animated.View
-            entering={FadeInDown.delay(400).springify()}
+            entering={FadeInDown.delay(100).springify()}
             style={styles.section}
           >
             <View style={styles.sectionHeader}>
@@ -519,7 +657,7 @@ export default function SupervisorDashboard() {
             {sessions.slice(0, 3).map((session, index) => (
               <Animated.View
                 key={session.id}
-                entering={FadeInDown.delay(450 + index * 50).springify()}
+                entering={FadeInDown.delay(120 + index * 20).springify()}
               >
                 <AnimatedPressable
                   onPress={() =>
@@ -642,6 +780,138 @@ export default function SupervisorDashboard() {
         </ScrollView>
       )}
 
+      {/* Create Session Modal */}
+      <Modal
+        isVisible={showCreateSessionModal}
+        onBackdropPress={() => setShowCreateSessionModal(false)}
+        onBackButtonPress={() => setShowCreateSessionModal(false)}
+        style={{ margin: 0, justifyContent: "flex-end" }}
+        avoidKeyboard
+      >
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Create New Session</Text>
+            <TouchableOpacity
+              onPress={() => setShowCreateSessionModal(false)}
+              style={styles.modalCloseButton}
+            >
+              <Ionicons
+                name="close"
+                size={24}
+                color={theme.colors.text.primary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Step 1: Location Type */}
+            <View style={styles.stepContainer}>
+              <Text style={styles.stepLabel}>1. Select Location Type</Text>
+              <View style={styles.optionsGrid}>
+                {zones.map((zone) => (
+                  <TouchableOpacity
+                    key={zone.id}
+                    style={[
+                      styles.optionButton,
+                      locationType === zone.zone_name &&
+                        styles.optionButtonSelected,
+                    ]}
+                    onPress={() => handleLocationTypeChange(zone.zone_name)}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        locationType === zone.zone_name &&
+                          styles.optionTextSelected,
+                      ]}
+                    >
+                      {zone.zone_name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Step 2: Floor/Area */}
+            {locationType && (
+              <View style={styles.stepContainer}>
+                <Text style={styles.stepLabel}>2. Select Floor/Area</Text>
+                {isLoadingWarehouses ? (
+                  <ActivityIndicator color={theme.colors.primary[500]} />
+                ) : (
+                  <View style={styles.optionsGrid}>
+                    {warehouses.map((wh) => (
+                      <TouchableOpacity
+                        key={wh.id}
+                        style={[
+                          styles.optionButton,
+                          selectedFloor === wh.warehouse_name &&
+                            styles.optionButtonSelected,
+                        ]}
+                        onPress={() => {
+                          if (Platform.OS !== "web") Haptics.selectionAsync();
+                          setSelectedFloor(wh.warehouse_name);
+                        }}
+                      >
+                        <Text
+                          style={[
+                            styles.optionText,
+                            selectedFloor === wh.warehouse_name &&
+                              styles.optionTextSelected,
+                          ]}
+                        >
+                          {wh.warehouse_name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Step 3: Rack Name */}
+            {selectedFloor && (
+              <View style={styles.stepContainer}>
+                <Text style={styles.stepLabel}>3. Rack / Shelf Identifier</Text>
+                <PremiumInput
+                  value={rackName}
+                  onChangeText={setRackName}
+                  placeholder="e.g. RACK-A1"
+                  leftIcon="grid-outline"
+                  autoCapitalize="characters"
+                />
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.createButton,
+                (!locationType ||
+                  !selectedFloor ||
+                  !rackName.trim() ||
+                  isCreatingSession) &&
+                  styles.createButtonDisabled,
+              ]}
+              onPress={handleCreateSession}
+              disabled={
+                !locationType ||
+                !selectedFloor ||
+                !rackName.trim() ||
+                isCreatingSession
+              }
+            >
+              {isCreatingSession ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.createButtonText}>Start Session</Text>
+              )}
+            </TouchableOpacity>
+
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </View>
+      </Modal>
+
       {/* Speed Dial Menu */}
       <SpeedDialMenu actions={speedDialActions} position="bottom-right" />
     </ScreenContainer>
@@ -750,7 +1020,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.full,
   },
   statusText: {
-    color: "#FFFFFF",
+    color: unifiedColors.white,
     fontWeight: "700",
   },
   sessionStats: {
@@ -765,5 +1035,76 @@ const styles = StyleSheet.create({
   sessionStatText: {},
   scrollView: {
     flex: 1,
+  },
+  // Modal Styles
+  modalContent: {
+    backgroundColor: theme.colors.background.paper,
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderTopRightRadius: theme.borderRadius.xl,
+    padding: theme.spacing.lg,
+    maxHeight: "80%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: theme.spacing.lg,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
+  },
+  modalCloseButton: {
+    padding: theme.spacing.xs,
+  },
+  stepContainer: {
+    marginBottom: theme.spacing.lg,
+  },
+  stepLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  optionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.sm,
+  },
+  optionButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border.medium,
+    backgroundColor: theme.colors.background.elevated,
+  },
+  optionButtonSelected: {
+    borderColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primary[500] + "15",
+  },
+  optionText: {
+    color: theme.colors.text.primary,
+    fontWeight: "500",
+  },
+  optionTextSelected: {
+    color: theme.colors.primary[500],
+    fontWeight: "700",
+  },
+  createButton: {
+    backgroundColor: theme.colors.primary[500],
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: "center",
+    marginTop: theme.spacing.md,
+  },
+  createButtonDisabled: {
+    opacity: 0.5,
+  },
+  createButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

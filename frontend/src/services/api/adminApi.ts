@@ -55,7 +55,7 @@ export interface PerformanceMetric {
   error_count: number;
 }
 
-export interface DashboardSummary {
+export interface AdminDashboardSummary {
   kpis: KPIResponse;
   system_status: SystemStatusResponse;
   active_users: ActiveUserInfo[];
@@ -131,8 +131,8 @@ export const adminApi = {
   /**
    * Get complete dashboard summary in one call
    */
-  getDashboardSummary: async (): Promise<DashboardSummary> => {
-    const response = await api.get<DashboardSummary>(
+  getDashboardSummary: async (): Promise<AdminDashboardSummary> => {
+    const response = await api.get<AdminDashboardSummary>(
       "/api/admin/dashboard/summary",
     );
     return response.data;

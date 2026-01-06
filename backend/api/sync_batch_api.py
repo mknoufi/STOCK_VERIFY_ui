@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from backend.api.schemas import Session
 from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.db.runtime import get_db
 from backend.middleware.security import batch_rate_limiter
 from backend.services.circuit_breaker import get_circuit_breaker
 from backend.services.lock_manager import LockManager, get_lock_manager
@@ -53,9 +54,7 @@ class SyncRecord(BaseModel):
     item_code: str = Field(..., description="Item code")
     verified_qty: float = Field(..., description="Verified quantity")
     damage_qty: float = Field(0, description="Damage quantity")
-    serial_numbers: list[str] = Field(
-        default_factory=list, description="Serial numbers"
-    )
+    serial_numbers: list[str] = Field(default_factory=list, description="Serial numbers")
     mfg_date: Optional[str] = Field(None, description="Manufacturing date")
     mrp: Optional[float] = Field(None, description="MRP")
     uom: Optional[str] = Field(None, description="Unit of measure")
@@ -113,9 +112,7 @@ class SyncResult(BaseModel):
 class BatchSyncResponse(BaseModel):
     """Batch sync response"""
 
-    ok: list[str] = Field(
-        default_factory=list, description="Successfully synced record IDs"
-    )
+    ok: list[str] = Field(default_factory=list, description="Successfully synced record IDs")
     conflicts: list[SyncConflict] = Field(
         default_factory=list, description="Records with conflicts"
     )
@@ -130,12 +127,8 @@ class BatchSyncResponse(BaseModel):
     processed_count: Optional[int] = Field(
         None, description="Legacy summary: total operations processed"
     )
-    success_count: Optional[int] = Field(
-        None, description="Legacy summary: successful operations"
-    )
-    failed_count: Optional[int] = Field(
-        None, description="Legacy summary: failed operations"
-    )
+    success_count: Optional[int] = Field(None, description="Legacy summary: successful operations")
+    failed_count: Optional[int] = Field(None, description="Legacy summary: failed operations")
 
 
 # Sync Logic
@@ -147,7 +140,7 @@ async def validate_record(
     lock_manager: LockManager,
     sync_service: SyncConflictsService = None,
     user_id: Optional[str] = None,
-) -> SyncConflict:
+) -> Optional[SyncConflict]:
     """
     Validate a single record before syncing
 
@@ -171,7 +164,7 @@ async def validate_record(
                     conflict_id = await sync_service.detect_conflict(
                         entity_type="item_serial",
                         entity_id=str(existing.get("_id")),
-                        local_data=record.dict(),
+                        local_data=record.model_dump(),
                         server_data=server_data,
                         user=user_id,
                         session_id=record.session_id,
@@ -214,9 +207,7 @@ async def validate_record(
     return None
 
 
-async def sync_single_record(
-    record: SyncRecord, db, user_id: str
-) -> tuple[bool, Optional[str]]:
+async def sync_single_record(record: SyncRecord, db, user_id: str) -> tuple[bool, Optional[str]]:
     """
     Sync a single record to database
 
@@ -250,7 +241,7 @@ async def sync_single_record(
         }
 
         # Upsert record
-        await db.verification_records.update_one(
+        await db.count_lines.update_one(
             {"client_record_id": record.client_record_id}, {"$set": doc}, upsert=True
         )
 
@@ -331,7 +322,7 @@ async def sync_batch(
         )
 
     # Get database
-    from backend.server import db
+    db = get_db()
 
     # Get lock manager
     lock_manager = get_lock_manager(redis_service)
@@ -350,7 +341,7 @@ async def sync_batch(
     )
 
     # Initialize Sync Service
-    sync_service = SyncConflictsService(db) if db else None
+    sync_service = SyncConflictsService(db) if db is not None else None
 
     # Check circuit breaker
     if not await circuit_breaker.acquire():
@@ -373,9 +364,7 @@ async def sync_batch(
                 conflicts.append(conflict)
             else:
                 # Sync valid record
-                success, error_msg = await sync_single_record(
-                    record, db, current_user["username"]
-                )
+                success, error_msg = await sync_single_record(record, db, current_user["username"])
 
                 if success:
                     ok_records.append(record.client_record_id)
@@ -406,14 +395,10 @@ async def sync_batch(
     )
 
     # Build per-record results for legacy clients that expect flat success flags
-    results = [
-        SyncResult(id=record_id, success=True, message=None) for record_id in ok_records
-    ]
+    results = [SyncResult(id=record_id, success=True, message=None) for record_id in ok_records]
 
     results.extend(
-        SyncResult(
-            id=conflict.client_record_id, success=False, message=conflict.message
-        )
+        SyncResult(id=conflict.client_record_id, success=False, message=conflict.message)
         for conflict in conflicts
     )
 
@@ -483,9 +468,7 @@ async def _process_session_op(
     staff_name = current_user.get("full_name") or staff_user
 
     raw_type = session_data.get("type")
-    normalized_type = (
-        raw_type.strip().upper() if isinstance(raw_type, str) else "STANDARD"
-    )
+    normalized_type = raw_type.strip().upper() if isinstance(raw_type, str) else "STANDARD"
     if normalized_type not in {"STANDARD", "BLIND", "STRICT"}:
         normalized_type = "STANDARD"
 
@@ -563,8 +546,7 @@ async def _process_legacy_operations(
     start_time: float,
 ) -> BatchSyncResponse:
     """Handle legacy offline queue operations payloads."""
-
-    from backend.server import db
+    db = get_db()
 
     id_mapping: dict[str, str] = {}
     results: list[SyncResult] = []

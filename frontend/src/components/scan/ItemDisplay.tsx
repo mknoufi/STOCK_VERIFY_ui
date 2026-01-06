@@ -16,6 +16,7 @@ import { Item } from "@/types/scan";
 import Animated, { FadeInUp, Layout } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { flags } from "@/constants/flags";
+import { colors as unifiedColors, radius } from "@/theme/unified";
 
 interface ItemDisplayProps {
   item: Item;
@@ -36,7 +37,7 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
     return (
       <Container style={[styles.itemCard, styles.shadow]} {...animatedProps}>
         <LinearGradient
-          colors={["#1E293B", "#0F172A"]}
+          colors={[unifiedColors.neutral[800], unifiedColors.neutral[900]]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFillObject}
@@ -55,7 +56,11 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
           <View style={styles.itemInfoGrid}>
             {item.category && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="pricetag" size={14} color="#94A3B8" />
+                <Ionicons
+                  name="pricetag"
+                  size={14}
+                  color={unifiedColors.neutral[400]}
+                />
                 <Text style={styles.itemInfoText}>
                   {item.category}
                   {item.subcategory && ` • ${item.subcategory}`}
@@ -64,13 +69,21 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
             )}
             {item.item_type && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="layers" size={14} color="#94A3B8" />
+                <Ionicons
+                  name="layers"
+                  size={14}
+                  color={unifiedColors.neutral[400]}
+                />
                 <Text style={styles.itemInfoText}>Type: {item.item_type}</Text>
               </View>
             )}
             {item.item_group && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="albums" size={14} color="#94A3B8" />
+                <Ionicons
+                  name="albums"
+                  size={14}
+                  color={unifiedColors.neutral[400]}
+                />
                 <Text style={styles.itemInfoText}>
                   Group: {item.item_group}
                 </Text>
@@ -81,7 +94,11 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
           {/* Location Display */}
           {(item.location || (item as any).floor || (item as any).rack) && (
             <View style={styles.locationRow}>
-              <Ionicons name="location" size={16} color="#38BDF8" />
+              <Ionicons
+                name="location"
+                size={16}
+                color={unifiedColors.primary[300]}
+              />
               <Text style={styles.locationText}>
                 {[(item as any).floor, (item as any).rack, item.location]
                   .filter(Boolean)
@@ -93,7 +110,11 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
           {/* Verification Badge */}
           {(item as any).verified && (
             <View style={styles.verificationBadge}>
-              <Ionicons name="checkmark-circle" size={16} color="#4ADE80" />
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={unifiedColors.success[400]}
+              />
               <Text style={styles.verificationText}>
                 Verified by {(item as any).verified_by || "Unknown"}
                 {(item as any).verified_at && (
@@ -128,9 +149,16 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
                       disabled={refreshingStock}
                     >
                       {refreshingStock ? (
-                        <ActivityIndicator size="small" color="#38BDF8" />
+                        <ActivityIndicator
+                          size="small"
+                          color={unifiedColors.primary[300]}
+                        />
                       ) : (
-                        <Ionicons name="refresh" size={18} color="#38BDF8" />
+                        <Ionicons
+                          name="refresh"
+                          size={18}
+                          color={unifiedColors.primary[300]}
+                        />
                       )}
                     </TouchableOpacity>
                   )}
@@ -217,12 +245,12 @@ const styles = StyleSheet.create({
   },
   itemCode: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: unifiedColors.neutral[400],
     marginBottom: 4,
   },
   itemBarcode: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: unifiedColors.neutral[400],
     marginBottom: 12,
     fontFamily: "monospace",
   },
@@ -233,8 +261,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   itemInfoItem: {
-    backgroundColor: "#252525",
-    borderRadius: 8,
+    backgroundColor: unifiedColors.neutral[800],
+    borderRadius: radius.sm,
     padding: 12,
     flex: 1,
     minWidth: "45%",
@@ -254,25 +282,25 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   locationText: {
-    color: "#94A3B8",
+    color: unifiedColors.neutral[400],
     fontSize: 14,
   },
   verificationBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#1a3a1a",
-    borderRadius: 8,
+    backgroundColor: `${unifiedColors.success[900]}80`,
+    borderRadius: radius.sm,
     padding: 12,
     marginBottom: 16,
   },
   verificationText: {
-    color: "#3B82F6",
+    color: unifiedColors.primary[500],
     fontSize: 14,
     flex: 1,
   },
   verificationTime: {
-    color: "#94A3B8",
+    color: unifiedColors.neutral[400],
     fontSize: 12,
   },
   qtyRow: {
@@ -281,8 +309,8 @@ const styles = StyleSheet.create({
   },
   qtyBox: {
     flex: 1,
-    backgroundColor: "#252525",
-    borderRadius: 12,
+    backgroundColor: unifiedColors.neutral[800],
+    borderRadius: radius.md,
     padding: 16,
   },
   qtyHeader: {
@@ -293,7 +321,7 @@ const styles = StyleSheet.create({
   },
   qtyLabel: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: unifiedColors.neutral[400],
     fontWeight: "600",
   },
   refreshButton: {
@@ -314,7 +342,7 @@ const styles = StyleSheet.create({
   },
   uomText: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: unifiedColors.neutral[400],
     marginTop: 4,
   },
 });

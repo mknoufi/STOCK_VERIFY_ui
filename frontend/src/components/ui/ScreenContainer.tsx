@@ -1,344 +1,251 @@
-/**
- * ScreenContainer Component - Unified Screen Wrapper v1.0
- *
- * Provides consistent layout across ALL screens in the application.
- * Features:
- * - Aurora/Pattern background (theme-aware)
- * - ScreenHeader with logout, back button, title
- * - Safe area insets
- * - Pull-to-refresh support
- * - Loading state with skeleton/spinner
- * - Keyboard avoiding view
- * - StatusBar configuration
- * - Scroll/Static content modes
- */
-
-import React, { ReactNode } from "react";
+import React from "react";
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
-  RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
+  StatusBar,
   ViewStyle,
+  StyleProp,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AuroraBackground, AuroraVariant } from "./AuroraBackground";
-import { PatternBackground } from "./PatternBackground";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useThemeContext } from "../../context/ThemeContext";
+import { AuroraBackground } from "./AuroraBackground";
+import type { AuroraVariant } from "./AuroraBackground";
+import { Stack } from "expo-router";
 import { ScreenHeader, ScreenHeaderProps } from "./ScreenHeader";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { PatternBackground } from "./PatternBackground";
 import { SkeletonScreen } from "./SkeletonList";
-import { useThemeContext } from "../../theme/ThemeContext";
-import { auroraTheme } from "../../theme/auroraTheme";
-import { useScreenStyles, screenLayoutConstants } from "../../styles/screenStyles";
 
-// ============================================================================
-// Types
-// ============================================================================
-
-export type BackgroundType = "aurora" | "pattern" | "solid" | "gradient";
-export type LoadingType = "spinner" | "skeleton" | "none";
-export type ContentMode = "scroll" | "static" | "keyboard-scroll";
+export type BackgroundType = "solid" | "aurora" | "pattern";
+export type ContentMode = "static" | "scroll";
+export type LoadingType = "spinner" | "skeleton";
 
 export interface ScreenContainerProps {
-  children: ReactNode;
-
-  // Header configuration
-  header?: ScreenHeaderProps | false;
-
-  // Custom header (for screens needing complete control)
-  customHeader?: ReactNode;
-
-  // Background configuration
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+  header?: ScreenHeaderProps;
+  gradient?: boolean;
   backgroundType?: BackgroundType;
   auroraVariant?: AuroraVariant;
-  /** @deprecated Use auroraVariant instead */
-  meshVariant?: AuroraVariant;
   auroraIntensity?: "low" | "medium" | "high";
-  withParticles?: boolean;
-
-  // Content configuration
   contentMode?: ContentMode;
-  contentStyle?: ViewStyle;
-  containerStyle?: ViewStyle;
-
-  // Padding control
-  noPadding?: boolean;
-
-  // Loading state
-  loading?: boolean;
   loadingType?: LoadingType;
   loadingText?: string;
-  skeletonRows?: number;
-
-  // Pull-to-refresh
+  loading?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
-
-  // Safe areas
-  edges?: ("top" | "bottom" | "left" | "right")[];
-  withBottomPadding?: boolean;
-
-  // Status bar
-  statusBarStyle?: "light" | "dark" | "auto";
-
-  // Overlay content (modals, FABs, etc)
-  overlay?: ReactNode;
+  scrollable?: boolean;
+  headerTitle?: string;
+  headerRight?: React.ReactNode;
+  headerLeft?: React.ReactNode;
+  withParticles?: boolean;
+  safeArea?: boolean;
+  noPadding?: boolean;
+  overlay?: React.ReactNode;
+  statusBarStyle?: "light-content" | "dark-content" | "light" | "dark";
 }
-
-// ============================================================================
-// Component
-// ============================================================================
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   children,
-  header,
-  customHeader,
-  backgroundType = "aurora",
-  auroraVariant: auroraVariantProp = "primary",
-  meshVariant,
-  auroraIntensity = "medium",
-  withParticles = false,
-  contentMode = "scroll",
-  contentStyle,
+  style,
   containerStyle,
-  noPadding = false,
-  loading = false,
+  contentContainerStyle,
+  header,
+  gradient = false,
+  backgroundType,
+  auroraVariant = "primary",
+  auroraIntensity = "medium",
+  contentMode,
   loadingType = "spinner",
   loadingText,
-  skeletonRows = 5,
+  loading = false,
   refreshing = false,
   onRefresh,
-  edges = ["top", "bottom"],
-  withBottomPadding = true,
-  statusBarStyle = "light",
+  scrollable = false,
+  headerTitle,
+  headerRight,
+  headerLeft,
+  withParticles = false,
+  safeArea = true,
+  noPadding = false,
   overlay,
+  statusBarStyle = "light-content",
 }) => {
-  const insets = useSafeAreaInsets();
-  const { theme, pattern } = useThemeContext();
-  const _screenStyles = useScreenStyles();
+  const { themeLegacy: theme } = useThemeContext();
+  const resolvedBackground = backgroundType || (gradient ? "aurora" : "solid");
+  const resolvedScrollable = contentMode
+    ? contentMode === "scroll"
+    : scrollable;
+  const resolvedStatusBarStyle =
+    statusBarStyle === "light"
+      ? "light-content"
+      : statusBarStyle === "dark"
+        ? "dark-content"
+        : statusBarStyle;
+  const isSkeletonLoading = loadingType === "skeleton";
 
-  // Support meshVariant as deprecated alias for auroraVariant
-  const auroraVariant = meshVariant || auroraVariantProp;
-
-  // Calculate safe area padding
-  const safeAreaStyle: ViewStyle = {
-    paddingTop: edges.includes("top") && header === false ? insets.top : 0,
-    paddingBottom:
-      edges.includes("bottom") && withBottomPadding ? insets.bottom + 20 : 0,
-    paddingLeft: edges.includes("left") ? insets.left : 0,
-    paddingRight: edges.includes("right") ? insets.right : 0,
-  };
-
-  // Render background based on type
-  const renderBackground = () => {
-    switch (backgroundType) {
-      case "aurora":
-        return (
-          <AuroraBackground
-            variant={auroraVariant}
-            withParticles={withParticles}
-            intensity={auroraIntensity}
-            animated
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
+  const Container = resolvedScrollable ? ScrollView : View;
+  const containerProps = resolvedScrollable
+    ? {
+        contentContainerStyle: [
+          styles.scrollContent,
+          !noPadding && { paddingBottom: theme.layout?.safeArea?.bottom || 34 },
+          contentContainerStyle,
+        ],
+        refreshControl: onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.accent}
+            colors={[theme.colors.accent]} // Android
+            progressBackgroundColor={theme.colors.surfaceElevated}
           />
-        );
-      case "pattern":
-        return (
-          <>
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: theme.colors.background,
-              }}
-            />
-            <PatternBackground
-              pattern={pattern}
-              color={theme.colors.accent}
-              secondaryColor={theme.colors.accentLight}
-              opacity={0.04}
-            />
-          </>
-        );
-      case "solid":
-        return (
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: theme.colors.background,
-            }}
-          />
-        );
-      case "gradient":
-      default:
-        return (
-          <AuroraBackground
-            variant="dark"
-            animated={false}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-          />
-        );
-    }
-  };
+        ) : undefined,
+        keyboardShouldPersistTaps: "handled",
+      }
+    : {
+        style: [styles.content, style],
+      };
 
-  // Render loading state
-  const renderLoading = () => {
-    if (!loading) return null;
-
-    if (loadingType === "skeleton") {
-      return <SkeletonScreen listCount={skeletonRows} />;
-    }
-
-    return (
-      <View style={styles.loadingContainer}>
-        <LoadingSpinner
-          size={48}
-          color={theme.colors.accent || auroraTheme.colors.primary[500]}
+  const renderContent = () => (
+    <>
+      <StatusBar barStyle={resolvedStatusBarStyle} />
+      {header && <ScreenHeader {...header} transparent={gradient} />}
+      {/* Configure Stack Screen if header props provided */}
+      {(headerTitle || headerRight || headerLeft) && (
+        <Stack.Screen
+          options={{
+            headerTitle: headerTitle,
+            headerRight: () => headerRight,
+            headerLeft: () => headerLeft,
+            headerShown: true,
+            headerTransparent: gradient,
+            headerTintColor: theme.colors.text,
+            headerStyle: {
+              backgroundColor: gradient
+                ? "transparent"
+                : theme.colors.background,
+            },
+          }}
         />
-        {loadingText && (
-          <Text
-            style={[styles.loadingText, { color: theme.colors.textSecondary }]}
-          >
-            {loadingText}
-          </Text>
+      )}
+
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          {isSkeletonLoading ? (
+            <SkeletonScreen />
+          ) : (
+            <>
+              <ActivityIndicator size="large" color={theme.colors.accent} />
+              {loadingText ? (
+                <Text style={styles.loadingText}>{loadingText}</Text>
+              ) : null}
+            </>
+          )}
+        </View>
+      ) : resolvedScrollable ? (
+        // @ts-ignore
+        <Container style={[styles.flex, style]} {...containerProps}>
+          {children}
+        </Container>
+      ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          {/* @ts-ignore */}
+          <Container style={[styles.flex, style]} {...containerProps}>
+            {children}
+          </Container>
+        </TouchableWithoutFeedback>
+      )}
+      {overlay ? (
+        <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+          {overlay}
+        </View>
+      ) : null}
+    </>
+  );
+
+  if (resolvedBackground === "aurora") {
+    return (
+      <AuroraBackground
+        variant={auroraVariant}
+        intensity={auroraIntensity}
+        withParticles={withParticles}
+        style={[styles.container, containerStyle]}
+      >
+        {safeArea ? (
+          <SafeAreaView style={styles.safeArea}>{renderContent()}</SafeAreaView>
+        ) : (
+          renderContent()
         )}
+      </AuroraBackground>
+    );
+  }
+
+  const baseContent = safeArea ? (
+    <SafeAreaView style={styles.safeArea}>{renderContent()}</SafeAreaView>
+  ) : (
+    renderContent()
+  );
+
+  if (resolvedBackground === "pattern") {
+    return (
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.colors.background },
+          containerStyle,
+        ]}
+      >
+        <PatternBackground />
+        {baseContent}
       </View>
     );
-  };
-
-  // Render content based on mode
-  const renderContent = () => {
-    if (loading && loadingType !== "none") {
-      return renderLoading();
-    }
-
-    const contentContainerStyle: ViewStyle = {
-      ...safeAreaStyle,
-      paddingHorizontal: noPadding ? 0 : screenLayoutConstants.screenPadding,
-      flexGrow: 1,
-      ...(contentStyle as object),
-    };
-
-    if (contentMode === "static") {
-      return (
-        <View style={[styles.staticContent, contentContainerStyle]}>
-          {children}
-        </View>
-      );
-    }
-
-    const scrollContent = (
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={contentContainerStyle}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={auroraTheme.colors.primary[400]}
-              colors={[auroraTheme.colors.primary[500]]}
-            />
-          ) : undefined
-        }
-      >
-        {children}
-      </ScrollView>
-    );
-
-    if (contentMode === "keyboard-scroll") {
-      return (
-        <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-        >
-          {scrollContent}
-        </KeyboardAvoidingView>
-      );
-    }
-
-    return scrollContent;
-  };
+  }
 
   return (
-    <View style={[styles.container, containerStyle]}>
-      <StatusBar style={statusBarStyle} />
-      {renderBackground()}
-
-      {/* Custom Header or Default ScreenHeader */}
-      {customHeader
-        ? customHeader
-        : header !== false && (
-          <ScreenHeader
-            showBackButton={false}
-            showLogoutButton={true}
-            showUsername={true}
-            {...(header as ScreenHeaderProps)}
-          />
-        )}
-
-      {/* Content */}
-      {renderContent()}
-
-      {/* Overlay content (modals, FABs, speed dials, etc) */}
-      {overlay}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.colors.background },
+        containerStyle,
+      ]}
+    >
+      {baseContent}
     </View>
   );
 };
-
-// ============================================================================
-// Styles
-// ============================================================================
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
+  safeArea: {
     flex: 1,
   },
-  staticContent: {
+  flex: {
     flex: 1,
   },
-  keyboardView: {
+  content: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    gap: 16,
   },
   loadingText: {
+    marginTop: 12,
+    color: "#94A3B8",
     fontSize: 14,
-    marginTop: 8,
   },
 });
-
-export default ScreenContainer;

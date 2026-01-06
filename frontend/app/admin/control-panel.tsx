@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { usePermission } from "../../src/hooks/usePermission";
+import { ScreenContainer } from "../../src/components/ui";
 import {
   getServicesStatus,
   getSystemIssues,
@@ -232,8 +233,8 @@ export default function ControlPanelScreen() {
       Alert.alert(
         "Error",
         error.response?.data?.detail ||
-        error?.message ||
-        `Failed to ${action} ${service}`,
+          error?.message ||
+          `Failed to ${action} ${service}`,
       );
     }
   };
@@ -414,298 +415,302 @@ export default function ControlPanelScreen() {
 
   if (loading && !services && !refreshing) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading control panel...</Text>
-      </View>
+      <ScreenContainer gradient>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Loading control panel...</Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, isWeb && styles.headerWeb]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color="#007AFF" />
-          {!isWeb ? <Text style={styles.backButtonText}>Back</Text> : null}
-        </TouchableOpacity>
-        <View style={styles.titleContainer}>
-          <Ionicons
-            name="settings"
-            size={28}
-            color="#fff"
-            style={styles.titleIcon}
-          />
-          <Text style={styles.title}>Master Control Panel</Text>
+    <ScreenContainer gradient>
+      <View style={styles.container}>
+        <View style={[styles.header, isWeb && styles.headerWeb]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#007AFF" />
+            {!isWeb ? <Text style={styles.backButtonText}>Back</Text> : null}
+          </TouchableOpacity>
+          <View style={styles.titleContainer}>
+            <Ionicons
+              name="settings"
+              size={28}
+              color="#fff"
+              style={styles.titleIcon}
+            />
+            <Text style={styles.title}>Master Control Panel</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={loadData}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="refresh"
+              size={24}
+              color="#007AFF"
+              style={refreshing && styles.refreshingIcon}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.refreshButton}
-          onPress={loadData}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="refresh"
-            size={24}
-            color="#007AFF"
-            style={refreshing && styles.refreshingIcon}
-          />
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={[
-          styles.contentContainer,
-          isWeb && styles.contentContainerWeb,
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={loadData}
-            tintColor="#007AFF"
-          />
-        }
-        showsVerticalScrollIndicator={isWeb}
-      >
-        {systemStats && (
-          <View style={styles.quickStatsSection}>
-            <View style={styles.quickStatCard}>
-              <Ionicons name="server" size={24} color="#007AFF" />
-              <Text style={styles.quickStatValue}>
-                {systemStats.running_services}/{systemStats.total_services}
-              </Text>
-              <Text style={styles.quickStatLabel}>Services</Text>
-            </View>
-            {healthScore !== null && (
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={[
+            styles.contentContainer,
+            isWeb && styles.contentContainerWeb,
+          ]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={loadData}
+              tintColor="#007AFF"
+            />
+          }
+          showsVerticalScrollIndicator={isWeb}
+        >
+          {systemStats && (
+            <View style={styles.quickStatsSection}>
               <View style={styles.quickStatCard}>
-                <Ionicons
-                  name="heart"
-                  size={24}
-                  color={
-                    healthScore >= 80
-                      ? "#4CAF50"
-                      : healthScore >= 50
-                        ? "#FF9800"
-                        : "#f44336"
-                  }
-                />
-                <Text
-                  style={[
-                    styles.quickStatValue,
-                    {
-                      color:
-                        healthScore >= 80
-                          ? "#4CAF50"
-                          : healthScore >= 50
-                            ? "#FF9800"
-                            : "#f44336",
-                    },
-                  ]}
-                >
-                  {healthScore}%
+                <Ionicons name="server" size={24} color="#007AFF" />
+                <Text style={styles.quickStatValue}>
+                  {systemStats.running_services}/{systemStats.total_services}
                 </Text>
-                <Text style={styles.quickStatLabel}>Health</Text>
+                <Text style={styles.quickStatLabel}>Services</Text>
               </View>
-            )}
-            <View style={styles.quickStatCard}>
-              <Ionicons name="people" size={24} color="#4CAF50" />
-              <Text style={styles.quickStatValue}>
-                {systemStats.active_sessions || 0}
-              </Text>
-              <Text style={styles.quickStatLabel}>Active</Text>
-            </View>
-            <View style={styles.quickStatCard}>
-              <Ionicons name="phone-portrait" size={24} color="#9C27B0" />
-              <Text style={styles.quickStatValue}>{devices.length}</Text>
-              <Text style={styles.quickStatLabel}>Devices</Text>
-            </View>
-          </View>
-        )}
-
-        {issues.length > 0 && (
-          <View style={styles.issuesBanner}>
-            <Ionicons name="warning" size={24} color="#ff9800" />
-            <View style={styles.issuesContent}>
-              <Text style={styles.issuesTitle}>
-                {issues.filter((i: any) => i.severity === "critical").length}{" "}
-                Critical Issue(s)
-              </Text>
-              <Text style={styles.issuesText}>
-                {issues[0]?.message || "System issues detected"}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.viewIssuesButton}
-              onPress={() => router.push("/admin/control-panel" as any)}
-            >
-              <Text style={styles.viewIssuesButtonText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {services && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="server" size={24} color="#007AFF" />
-              <Text style={styles.sectionTitle}>Services Management</Text>
-            </View>
-            <View style={styles.servicesGrid}>
-              {renderServiceCard(
-                "Backend Server",
-                services.backend,
-                "backend",
-                "server",
-                "#007AFF",
-              )}
-              {renderServiceCard(
-                "Frontend (Expo)",
-                services.frontend,
-                "frontend",
-                "globe",
-                "#4CAF50",
-              )}
-              {renderServiceCard(
-                "MongoDB",
-                services.mongodb,
-                "mongodb",
-                "cube",
-                "#13AA52",
-              )}
-              {renderServiceCard(
-                "SQL Server",
-                services.sql_server,
-                "sql_server",
-                "server",
-                "#FF9800",
-              )}
-            </View>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="flash" size={24} color="#9C27B0" />
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-          </View>
-          <View style={styles.quickActionsGrid}>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push("/admin/settings" as any)}
-            >
-              <Ionicons name="settings" size={32} color="#007AFF" />
-              <Text style={styles.quickActionText}>Settings</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push("/admin/metrics" as any)}
-            >
-              <Ionicons name="stats-chart" size={32} color="#4CAF50" />
-              <Text style={styles.quickActionText}>Metrics</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push("/admin/permissions" as any)}
-            >
-              <Ionicons name="shield-checkmark" size={32} color="#FF9800" />
-              <Text style={styles.quickActionText}>Permissions</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push("/admin/reports" as any)}
-            >
-              <Ionicons name="document-text" size={32} color="#9C27B0" />
-              <Text style={styles.quickActionText}>Reports</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={handleSqlConfig}
-            >
-              <Ionicons name="server" size={32} color="#FF9800" />
-              <Text style={styles.quickActionText}>SQL Config</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push("/admin/security" as any)}
-            >
-              <Ionicons name="shield-checkmark" size={32} color="#4CAF50" />
-              <Text style={styles.quickActionText}>Security</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push("/help" as any)}
-            >
-              <Ionicons name="help-circle" size={32} color="#007AFF" />
-              <Text style={styles.quickActionText}>Help</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {devices.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="phone-portrait" size={24} color="#4CAF50" />
-              <Text style={styles.sectionTitle}>
-                Active Devices ({devices.length})
-              </Text>
-            </View>
-            <View style={styles.devicesList}>
-              {devices.slice(0, 5).map((device: any, index: number) => (
-                <View key={index} style={styles.deviceCard}>
+              {healthScore !== null && (
+                <View style={styles.quickStatCard}>
                   <Ionicons
-                    name={
-                      device.platform === "web" ? "globe" : "phone-portrait"
+                    name="heart"
+                    size={24}
+                    color={
+                      healthScore >= 80
+                        ? "#4CAF50"
+                        : healthScore >= 50
+                          ? "#FF9800"
+                          : "#f44336"
                     }
-                    size={20}
-                    color="#007AFF"
                   />
-                  <View style={styles.deviceInfo}>
-                    <Text style={styles.deviceUser}>
-                      {device.user || "Unknown"}
-                    </Text>
-                    <Text style={styles.deviceDetails}>
-                      {device.platform} • {device.ip_address}
+                  <Text
+                    style={[
+                      styles.quickStatValue,
+                      {
+                        color:
+                          healthScore >= 80
+                            ? "#4CAF50"
+                            : healthScore >= 50
+                              ? "#FF9800"
+                              : "#f44336",
+                      },
+                    ]}
+                  >
+                    {healthScore}%
+                  </Text>
+                  <Text style={styles.quickStatLabel}>Health</Text>
+                </View>
+              )}
+              <View style={styles.quickStatCard}>
+                <Ionicons name="people" size={24} color="#4CAF50" />
+                <Text style={styles.quickStatValue}>
+                  {systemStats.active_sessions || 0}
+                </Text>
+                <Text style={styles.quickStatLabel}>Active</Text>
+              </View>
+              <View style={styles.quickStatCard}>
+                <Ionicons name="phone-portrait" size={24} color="#9C27B0" />
+                <Text style={styles.quickStatValue}>{devices.length}</Text>
+                <Text style={styles.quickStatLabel}>Devices</Text>
+              </View>
+            </View>
+          )}
+
+          {issues.length > 0 && (
+            <View style={styles.issuesBanner}>
+              <Ionicons name="warning" size={24} color="#ff9800" />
+              <View style={styles.issuesContent}>
+                <Text style={styles.issuesTitle}>
+                  {issues.filter((i: any) => i.severity === "critical").length}{" "}
+                  Critical Issue(s)
+                </Text>
+                <Text style={styles.issuesText}>
+                  {issues[0]?.message || "System issues detected"}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.viewIssuesButton}
+                onPress={() => router.push("/admin/control-panel" as any)}
+              >
+                <Text style={styles.viewIssuesButtonText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {services && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="server" size={24} color="#007AFF" />
+                <Text style={styles.sectionTitle}>Services Management</Text>
+              </View>
+              <View style={styles.servicesGrid}>
+                {renderServiceCard(
+                  "Backend Server",
+                  services.backend,
+                  "backend",
+                  "server",
+                  "#007AFF",
+                )}
+                {renderServiceCard(
+                  "Frontend (Expo)",
+                  services.frontend,
+                  "frontend",
+                  "globe",
+                  "#4CAF50",
+                )}
+                {renderServiceCard(
+                  "MongoDB",
+                  services.mongodb,
+                  "mongodb",
+                  "cube",
+                  "#13AA52",
+                )}
+                {renderServiceCard(
+                  "SQL Server",
+                  services.sql_server,
+                  "sql_server",
+                  "server",
+                  "#FF9800",
+                )}
+              </View>
+            </View>
+          )}
+
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="flash" size={24} color="#9C27B0" />
+              <Text style={styles.sectionTitle}>Quick Actions</Text>
+            </View>
+            <View style={styles.quickActionsGrid}>
+              <TouchableOpacity
+                style={styles.quickActionCard}
+                onPress={() => router.push("/admin/settings" as any)}
+              >
+                <Ionicons name="settings" size={32} color="#007AFF" />
+                <Text style={styles.quickActionText}>Settings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickActionCard}
+                onPress={() => router.push("/admin/metrics" as any)}
+              >
+                <Ionicons name="stats-chart" size={32} color="#4CAF50" />
+                <Text style={styles.quickActionText}>Metrics</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickActionCard}
+                onPress={() => router.push("/admin/permissions" as any)}
+              >
+                <Ionicons name="shield-checkmark" size={32} color="#FF9800" />
+                <Text style={styles.quickActionText}>Permissions</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickActionCard}
+                onPress={() => router.push("/admin/reports" as any)}
+              >
+                <Ionicons name="document-text" size={32} color="#9C27B0" />
+                <Text style={styles.quickActionText}>Reports</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickActionCard}
+                onPress={handleSqlConfig}
+              >
+                <Ionicons name="server" size={32} color="#FF9800" />
+                <Text style={styles.quickActionText}>SQL Config</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickActionCard}
+                onPress={() => router.push("/admin/security" as any)}
+              >
+                <Ionicons name="shield-checkmark" size={32} color="#4CAF50" />
+                <Text style={styles.quickActionText}>Security</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickActionCard}
+                onPress={() => router.push("/help" as any)}
+              >
+                <Ionicons name="help-circle" size={32} color="#007AFF" />
+                <Text style={styles.quickActionText}>Help</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {devices.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="phone-portrait" size={24} color="#4CAF50" />
+                <Text style={styles.sectionTitle}>
+                  Active Devices ({devices.length})
+                </Text>
+              </View>
+              <View style={styles.devicesList}>
+                {devices.slice(0, 5).map((device: any, index: number) => (
+                  <View key={index} style={styles.deviceCard}>
+                    <Ionicons
+                      name={
+                        device.platform === "web" ? "globe" : "phone-portrait"
+                      }
+                      size={20}
+                      color="#007AFF"
+                    />
+                    <View style={styles.deviceInfo}>
+                      <Text style={styles.deviceUser}>
+                        {device.user || "Unknown"}
+                      </Text>
+                      <Text style={styles.deviceDetails}>
+                        {device.platform} • {device.ip_address}
+                      </Text>
+                    </View>
+                    <Text style={styles.deviceTime}>
+                      {device.last_activity
+                        ? new Date(device.last_activity).toLocaleTimeString()
+                        : "N/A"}
                     </Text>
                   </View>
-                  <Text style={styles.deviceTime}>
-                    {device.last_activity
-                      ? new Date(device.last_activity).toLocaleTimeString()
-                      : "N/A"}
-                  </Text>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
-          </View>
-        )}
+          )}
 
-        <View style={styles.footer}>
-          <View style={styles.footerRow}>
-            <Ionicons name="time" size={16} color="#666" />
+          <View style={styles.footer}>
+            <View style={styles.footerRow}>
+              <Ionicons name="time" size={16} color="#666" />
+              <Text style={styles.footerText}>
+                Last updated: {lastUpdate.toLocaleTimeString()}
+              </Text>
+            </View>
             <Text style={styles.footerText}>
-              Last updated: {lastUpdate.toLocaleTimeString()}
+              Auto-refresh every {AUTO_REFRESH_INTERVAL_MS / 1000} seconds
             </Text>
           </View>
-          <Text style={styles.footerText}>
-            Auto-refresh every {AUTO_REFRESH_INTERVAL_MS / 1000} seconds
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "transparent",
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "transparent",
   },
   loadingText: {
     marginTop: 10,
@@ -723,11 +728,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#333",
     ...(Platform.OS === "web"
       ? {
-        position: "sticky" as const,
-        top: 0,
-        zIndex: 100,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-      }
+          position: "sticky" as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        }
       : {}),
   } as any,
   headerWeb: {

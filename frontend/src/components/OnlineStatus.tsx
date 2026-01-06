@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useNetworkStore } from "../services/networkService";
+import { useNetworkStore } from "../store/networkStore";
 
 export const OnlineStatus: React.FC = () => {
   const { isOnline, isInternetReachable } = useNetworkStore();

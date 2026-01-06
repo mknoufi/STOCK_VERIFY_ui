@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 class AuthDependencies:
     """Thread-safe authentication dependencies container"""
 
-    def __init__(self):
-        logger.error("DEBUG: AuthDependencies.__init__ called")
+    def __init__(self) -> None:
         self._db: Optional[AsyncIOMotorDatabase] = None
         self._secret_key: Optional[str] = None
         self._algorithm: Optional[str] = None
@@ -29,9 +28,7 @@ class AuthDependencies:
 
     def initialize(self, db: AsyncIOMotorDatabase, secret_key: str, algorithm: str):
         """Initialize auth dependencies (call once at startup)"""
-        logger.error(
-            f"DEBUG: AuthDependencies.initialize called with secret_key={secret_key[:5]}..."
-        )
+        logger.debug("AuthDependencies.initialize called")
         if self._initialized:
             # In non-dev environments, raise error on double initialization
             import os
@@ -62,27 +59,21 @@ class AuthDependencies:
     def db(self) -> AsyncIOMotorDatabase:
         """Get database connection"""
         if not self._initialized or self._db is None:
-            raise HTTPException(
-                status_code=500, detail="Authentication not initialized"
-            )
+            raise HTTPException(status_code=500, detail="Authentication not initialized")
         return self._db
 
     @property
     def secret_key(self) -> str:
         """Get JWT secret key"""
         if not self._initialized or not self._secret_key:
-            raise HTTPException(
-                status_code=500, detail="Authentication not initialized"
-            )
+            raise HTTPException(status_code=500, detail="Authentication not initialized")
         return self._secret_key
 
     @property
     def algorithm(self) -> str:
         """Get JWT algorithm"""
         if not self._initialized or not self._algorithm:
-            raise HTTPException(
-                status_code=500, detail="Authentication not initialized"
-            )
+            raise HTTPException(status_code=500, detail="Authentication not initialized")
         return self._algorithm
 
     @property
@@ -104,9 +95,7 @@ class JWTValidator:
     """Handles JWT token validation and decoding"""
 
     @staticmethod
-    def extract_token(
-        request: Request, credentials: Optional[HTTPAuthorizationCredentials]
-    ) -> str:
+    def extract_token(request: Request, credentials: Optional[HTTPAuthorizationCredentials]) -> str:
         """Extract JWT token from request credentials or headers"""
         if credentials:
             return credentials.credentials
@@ -132,9 +121,7 @@ class JWTValidator:
     def decode_token(token: str) -> dict:
         """Decode and validate JWT token"""
         try:
-            payload = jwt.decode(
-                token, auth_deps.secret_key, algorithms=[auth_deps.algorithm]
-            )
+            payload = jwt.decode(token, auth_deps.secret_key, algorithms=[auth_deps.algorithm])
             username = payload.get("sub")
             if username is None:
                 from backend.error_messages import get_error_message
@@ -265,9 +252,7 @@ def require_permissions(required_permissions: list[str]):
             return current_user
 
         # Check if user has all required permissions
-        missing_permissions = [
-            p for p in required_permissions if p not in user_permissions
-        ]
+        missing_permissions = [p for p in required_permissions if p not in user_permissions]
 
         if missing_permissions:
             error = get_error_message("AUTH_INSUFFICIENT_PERMISSIONS")

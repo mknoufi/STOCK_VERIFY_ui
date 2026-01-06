@@ -47,9 +47,7 @@ class JSONFormatter(logging.Formatter):
                 "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
                 "message": str(record.exc_info[1]) if record.exc_info[1] else None,
                 "traceback": (
-                    traceback.format_exception(*record.exc_info)
-                    if record.exc_info
-                    else None
+                    traceback.format_exception(*record.exc_info) if record.exc_info else None
                 ),
             }
 
@@ -119,15 +117,13 @@ class StructuredLogger:
         exc_info=None,
     ):
         """Log with additional context"""
-        extra = {}
+        extra: dict[str, Any] = {}
         if extra_fields:
             extra["extra_fields"] = extra_fields
         if request_id:
             extra["request_id"] = request_id
 
-        self.logger.log(
-            level, message, extra=extra if extra else None, exc_info=exc_info
-        )
+        self.logger.log(level, message, extra=extra if extra else None, exc_info=exc_info)
 
     def debug(
         self,
@@ -164,9 +160,7 @@ class StructuredLogger:
         exc_info=None,
     ):
         """Log error message"""
-        self._log_with_context(
-            logging.ERROR, message, extra_fields, request_id, exc_info
-        )
+        self._log_with_context(logging.ERROR, message, extra_fields, request_id, exc_info)
 
     def critical(
         self,
@@ -176,6 +170,4 @@ class StructuredLogger:
         exc_info=None,
     ):
         """Log critical message"""
-        self._log_with_context(
-            logging.CRITICAL, message, extra_fields, request_id, exc_info
-        )
+        self._log_with_context(logging.CRITICAL, message, extra_fields, request_id, exc_info)

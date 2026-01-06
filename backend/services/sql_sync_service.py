@@ -562,9 +562,12 @@ class SQLSyncService:
 
             stats["duration"] = (datetime.utcnow() - start_time).total_seconds()
             self._last_nightly_sync = datetime.utcnow()
-            # isoformat returns str, dict expects int
-            last_sync_iso = self._last_nightly_sync.isoformat()
-            self._sync_stats["last_nightly_sync"] = last_sync_iso  # type: ignore[assignment]
+            # _sync_stats expects string for last_nightly_sync
+            if "last_nightly_sync" in self._sync_stats:
+                # Store isoformat string
+                self._sync_stats["last_nightly_sync"] = (
+                    self._last_nightly_sync.isoformat()
+                )  # type: ignore[assignment]
 
             logger.info(
                 f"🌙 Nightly sync completed: {stats['items_checked']} items verified, "

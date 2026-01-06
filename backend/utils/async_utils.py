@@ -66,7 +66,7 @@ class AsyncExecutor:
                 return Result.success(result)
 
             except TimeoutError:
-                last_error = TimeoutError(f"{operation_name} timed out after {self.timeout}s")
+                last_error = Exception(f"{operation_name} timed out after {self.timeout}s")
                 logger.warning(f"{operation_name} attempt {attempt + 1} failed: timeout")
 
             except Exception as e:
@@ -231,9 +231,9 @@ class AsyncCache:
     def __init__(self, max_size: int = 1000, default_ttl: int = 3600):
         self.max_size = max_size
         self.default_ttl = default_ttl
-        self._cache = {}
-        self._access_times = {}
-        self._expiry_times = {}
+        self._cache: dict[str, Any] = {}
+        self._access_times: dict[str, float] = {}
+        self._expiry_times: dict[str, float] = {}
         self._lock = asyncio.Lock()
 
     async def get(self, key: str) -> Optional[Any]:

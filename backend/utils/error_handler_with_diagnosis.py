@@ -269,4 +269,4 @@ class SelfDiagnosingErrorHandler:
 
     def get_diagnoses(self) -> list[dict[str, Any]]:
         """Get all diagnoses from this handler"""
-        return [e["diagnosis"] for e in self.errors]
+        return [e["diagnosis"] for e in self.errors if "diagnosis" in e]

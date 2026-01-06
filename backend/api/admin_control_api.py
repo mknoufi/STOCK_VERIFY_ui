@@ -666,7 +666,7 @@ def _read_log_file(
     log_path: Path, lines: int, level: Optional[str], service: str
 ) -> list[dict[str, Any]]:
     """Read and parse log file"""
-    logs = []
+    logs: list[dict[str, Any]] = []
     if not log_path.exists():
         return logs
 

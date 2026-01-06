@@ -46,10 +46,10 @@ class SQLServerConnector:
         self.connection = None
         self.config = None
         self.mapping = get_active_mapping()
-        self.connection_methods = []  # Store tested connection methods
-        self.optional_columns_clause = ""
-        self.optional_joins_clause = ""
-        self._dynamic_sql_ready = False
+        self.connection_methods: list[dict[str, Any]] = []  # Store tested connection methods
+        self.optional_columns_clause: str = ""
+        self.optional_joins_clause: str = ""
+        self._dynamic_sql_ready: bool = False
         self._available_tables: dict[str, str] = {}
         self._table_columns: dict[str, dict[str, str]] = {}
         self._enabled_optional_fields: list[str] = []
@@ -57,7 +57,7 @@ class SQLServerConnector:
     def _build_column_list(self) -> str:
         """Build SELECT column list with proper aliases"""
         mapping = self.mapping["items_columns"]
-        columns = []
+        columns: list[str] = []
         for our_field, erp_column in mapping.items():
             columns.append(f"{erp_column} as {our_field}")
         return ", ".join(columns)

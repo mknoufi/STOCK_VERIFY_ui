@@ -33,18 +33,12 @@ try:
 
     REDIS_AVAILABLE = True
 except ImportError:
-    try:
-        import redis
-        from redis.exceptions import RedisError
+    REDIS_AVAILABLE = False
+    logger.warning("Redis not available, using in-memory cache")
 
-        REDIS_AVAILABLE = True
-    except ImportError:
-        REDIS_AVAILABLE = False
-        logger.warning("Redis not available, using in-memory cache")
-
-        # Define dummy RedisError for type safety when Redis is missing
-        class RedisError(Exception):
-            pass
+    # Define dummy RedisError for type safety when Redis is missing
+    class RedisError(Exception):  # type: ignore[no-redef]
+        pass
 
 
 class CacheService:

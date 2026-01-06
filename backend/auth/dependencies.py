@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class AuthDependencies:
     """Thread-safe authentication dependencies container"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._db: Optional[AsyncIOMotorDatabase] = None
         self._secret_key: Optional[str] = None
         self._algorithm: Optional[str] = None

@@ -4,7 +4,7 @@
  */
 
 import { AutoErrorFinder, RecoveryStats } from "./autoErrorFinder";
-import { ErrorHandler } from "./errorHandler";
+import { ErrorHandler } from "../../utils/errorHandler";
 
 export class AutoRecovery {
   /**

@@ -305,24 +305,19 @@ class DynamicFieldsService:
                     pipeline.append({"$match": {"$or": match_conditions}})
 
             # Group by item_code
-            pipeline.extend(
-                [
-                    {
-                        "$group": {
-                            "_id": "$item_code",
-                            "fields": {
-                                "$push": {
-                                    "field_name": "$field_name",
-                                    "value": "$value",
-                                    "field_type": "$field_type",
-                                }
-                            },
+            group_stage: dict[str, Any] = {
+                "$group": {
+                    "_id": "$item_code",
+                    "fields": {
+                        "$push": {
+                            "field_name": "$field_name",
+                            "value": "$value",
+                            "field_type": "$field_type",
                         }
                     },
-                    {"$skip": skip},
-                    {"$limit": limit},
-                ]
-            )
+                }
+            }
+            pipeline.extend([group_stage, {"$skip": skip}, {"$limit": limit}])
 
             cursor = self.field_values.aggregate(pipeline)
             results = await cursor.to_list(length=None)

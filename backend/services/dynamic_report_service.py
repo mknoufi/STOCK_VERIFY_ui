@@ -87,7 +87,7 @@ class DynamicReportService:
     async def get_report_templates(self, report_type: Optional[str] = None) -> list[dict[str, Any]]:
         """Get all report templates"""
         try:
-            query = {"enabled": True}
+            query: dict[str, Any] = {"enabled": True}
             if report_type:
                 query["report_type"] = report_type
 

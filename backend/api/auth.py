@@ -211,7 +211,7 @@ async def register(user: UserRegister):
 
         # Create user
         hashed_password = get_password_hash(user.password)
-        user_dict = {
+        user_dict: dict[str, Any] = {
             "username": user.username,
             "hashed_password": hashed_password,
             "full_name": user.full_name,

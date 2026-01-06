@@ -270,7 +270,7 @@ async def get_session_analytics(
     cursor = db.sessions.find({"status": "CLOSED", "closed_at": {"$gte": today_start.timestamp()}})
     closed_sessions = await cursor.to_list(length=1000)
 
-    total_duration = 0
+    total_duration = 0.0
     count = 0
 
     for s in closed_sessions:
@@ -278,10 +278,10 @@ async def get_session_analytics(
         end = s.get("closed_at")  # float
 
         if start and end:
-            start_ts = start.timestamp() if hasattr(start, "timestamp") else start
+            start_ts_val: float = start.timestamp() if hasattr(start, "timestamp") else float(start)
             # Ensure both are floats
             try:
-                dur = float(end) - float(start_ts)
+                dur = float(end) - start_ts_val
                 if dur > 0:
                     total_duration += dur
                     count += 1
@@ -309,7 +309,7 @@ async def get_session_analytics(
     )
     recent_sessions = await recent_sessions_cursor.to_list(length=1000)
 
-    sessions_by_date = {}
+    sessions_by_date: dict[str, int] = {}
     for s in recent_sessions:
         start = s.get("started_at")
         if start:

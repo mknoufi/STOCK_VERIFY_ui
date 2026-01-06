@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import date, datetime
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 from fastapi import HTTPException
 
@@ -52,7 +52,9 @@ def _safe_date_str(val: Any) -> Optional[str]:
         return None
 
 
-def _add_optional_fields(mapped: dict, item: dict, field_defs: list[tuple[str, str, str]]) -> None:
+def _add_optional_fields(
+    mapped: dict, item: dict, field_defs: Sequence[tuple[str, str, str]]
+) -> None:
     """Add optional fields to mapped dict if present in item.
 
     field_defs: list of (item_key, mapped_key, type) where type is 'str' or 'float'

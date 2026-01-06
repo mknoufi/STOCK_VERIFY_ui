@@ -5,6 +5,7 @@ Generates comprehensive reports in multiple formats (Excel, CSV, PDF)
 
 import io
 import logging
+from typing import Any
 
 import pandas as pd
 from openpyxl import Workbook
@@ -99,13 +100,13 @@ class ReportGenerator:
             if line_entry.get("variance", 0) < 0
         )
 
-        stats_data = [
-            ["Total Items Counted:", total_items],
-            ["Items with Variance:", with_variance],
-            ["Items Without Variance:", total_items - with_variance],
-            ["Positive Variance (Excess):", f"{positive_variance:.2f}"],
-            ["Negative Variance (Shortage):", f"{negative_variance:.2f}"],
-            ["Net Variance:", f"{positive_variance + negative_variance:.2f}"],
+        stats_data: list[tuple[str, Any]] = [
+            ("Total Items Counted:", total_items),
+            ("Items with Variance:", with_variance),
+            ("Items Without Variance:", total_items - with_variance),
+            ("Positive Variance (Excess):", f"{positive_variance:.2f}"),
+            ("Negative Variance (Shortage):", f"{negative_variance:.2f}"),
+            ("Net Variance:", f"{positive_variance + negative_variance:.2f}"),
         ]
 
         for label, value in stats_data:

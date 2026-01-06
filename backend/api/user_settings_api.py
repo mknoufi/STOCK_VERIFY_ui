@@ -152,7 +152,9 @@ async def update_user_settings(
         # Fetch and return updated settings
         updated_doc = await db.user_settings.find_one({"user_id": user_id})
         if not updated_doc:
-            raise HTTPException(status_code=500, detail="Failed to retrieve updated settings")
+            raise HTTPException(
+                status_code=500, detail="Failed to retrieve updated settings"
+            )
 
         return UserSettingsResponse(
             status="success",

@@ -431,6 +431,8 @@ async def approve_count_line(
             raise HTTPException(status_code=404, detail="Count line not found")
 
         return {"success": True, "message": "Count line approved"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error approving count line {line_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -469,6 +471,8 @@ async def reject_count_line(
             raise HTTPException(status_code=404, detail="Count line not found")
 
         return {"success": True, "message": "Count line rejected"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error rejecting count line {line_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

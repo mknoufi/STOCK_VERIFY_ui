@@ -5,6 +5,9 @@ Tests for PIN Authentication API
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from fastapi import HTTPException
+from pydantic import ValidationError
+
 from backend.api.pin_auth_api import (
     PinChangeRequest,
     PinLoginRequest,
@@ -13,8 +16,6 @@ from backend.api.pin_auth_api import (
 )
 from backend.utils.result import Fail as Err
 from backend.utils.result import Ok
-from fastapi import HTTPException
-from pydantic import ValidationError
 
 
 @pytest.mark.asyncio

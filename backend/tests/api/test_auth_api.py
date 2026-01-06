@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 
 import pytest
+from httpx import AsyncClient
+
 from backend.auth.dependencies import get_current_user as auth_get_current_user
 from backend.server import app, get_current_user
 from backend.utils.auth_utils import (
@@ -9,7 +11,6 @@ from backend.utils.auth_utils import (
     get_password_hash,
     verify_password,
 )
-from httpx import AsyncClient
 
 # Test Data
 TEST_USERNAME = "testuser_auth"

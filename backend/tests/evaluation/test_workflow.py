@@ -53,7 +53,7 @@ class TestAuthenticationWorkflow:
         # Step 1: Register new user
         user_data = {
             "username": f"workflow_user_{random.randint(10000, 99999)}",
-            "password": "WorkflowTest123!",
+            "password": "WorkflowTest123!"[:72],
             "full_name": "Workflow Test User",
             "role": "staff",
         }
@@ -153,7 +153,7 @@ class TestSessionWorkflow:
         """Create authenticated user and return headers."""
         user_data = {
             "username": f"session_user_{random.randint(10000, 99999)}",
-            "password": "SessionTest123!",
+            "password": "SessionTest123!"[:72],
             "full_name": "Session Test User",
             "role": "staff",
         }
@@ -250,7 +250,7 @@ class TestVerificationWorkflow:
         """Create authenticated user and return headers."""
         user_data = {
             "username": f"verify_user_{random.randint(10000, 99999)}",
-            "password": "VerifyTest123!",
+            "password": "VerifyTest123!"[:72],
             "full_name": "Verify Test User",
             "role": "staff",
         }
@@ -353,7 +353,7 @@ class TestAdminWorkflow:
         """Create admin user and return headers."""
         user_data = {
             "username": f"admin_user_{random.randint(10000, 99999)}",
-            "password": "AdminTest123!",
+            "password": "AdminTest123!"[:72],
             "full_name": "Admin Test User",
             "role": "admin",
         }
@@ -439,7 +439,7 @@ class TestFullWorkflowEvaluation:
         # Create auth for workflows
         user_data = {
             "username": f"full_eval_{random.randint(10000, 99999)}",
-            "password": "FullEval123!",
+            "password": "FullEval123!"[:72],
             "full_name": "Full Eval User",
             "role": "admin",
         }

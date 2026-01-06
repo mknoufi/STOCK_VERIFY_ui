@@ -11,7 +11,7 @@
 
 ### Scenario 1: "User cannot log in - keeps getting 401 Unauthorized"
 
-**Reported Symptom**:
+**Reported Symptom**: 
 Field staff member reports that login worked yesterday, but today they keep getting "Unauthorized" errors even with correct username/password.
 
 **Expected Subsystem**: Authentication & Access Control (FR-002)

@@ -1,7 +1,7 @@
 # Data Model: Comprehensive App Improvements
 
-**Date**: 2025-12-24
-**Feature**: 002-system-modernization-and-enhancements
+**Date**: 2025-12-24  
+**Feature**: 002-system-modernization-and-enhancements  
 **Status**: Complete
 
 ## Overview
@@ -42,25 +42,25 @@ Stores user-specific theme and display preferences.
 interface UserPreferences {
   _id: ObjectId;
   user_id: string;           // Reference to User
-
+  
   // Theme settings
   color_scheme: 'light' | 'dark' | 'system';
   primary_color: string;     // Hex color code, default: '#007AFF'
   font_size: 'small' | 'medium' | 'large';
   font_scale: number;        // 0.85, 1.0, 1.15
-
+  
   // Notification settings
   push_notifications: boolean;
   sound_enabled: boolean;
   vibration_enabled: boolean;
-
+  
   // Timestamps
   created_at: Date;
   updated_at: Date;
 }
 ```
 
-**Collection**: `user_preferences`
+**Collection**: `user_preferences`  
 **Indexes**: `{ user_id: 1 }` (unique)
 
 ---
@@ -81,8 +81,8 @@ interface ItemLock {
 }
 ```
 
-**Collection**: `item_locks`
-**Indexes**:
+**Collection**: `item_locks`  
+**Indexes**: 
 - `{ item_code: 1 }` (unique)
 - `{ expires_at: 1 }` (TTL index for auto-cleanup)
 
@@ -137,30 +137,30 @@ Aggregated analytics data for variance reporting.
 ```typescript
 interface VarianceAnalytics {
   _id: ObjectId;
-
+  
   // Time period
   period_type: 'daily' | 'weekly' | 'monthly';
   period_start: Date;
   period_end: Date;
-
+  
   // Metrics
   total_items_counted: number;
   items_with_variance: number;
   variance_rate: number;          // Percentage: (items_with_variance / total_items) * 100
   accuracy_score: number;         // 100 - variance_rate
-
+  
   // Breakdown
   variance_by_category: Record<string, {
     count: number;
     total_variance_value: number;
   }>;
-
+  
   variance_by_reason: Record<string, number>;  // reason -> count
-
+  
   // Comparison
   previous_period_accuracy: number;
   accuracy_change: number;        // Delta from previous period
-
+  
   // Metadata
   session_ids: string[];          // Sessions included in this period
   generated_at: Date;
@@ -168,8 +168,8 @@ interface VarianceAnalytics {
 }
 ```
 
-**Collection**: `variance_analytics`
-**Indexes**:
+**Collection**: `variance_analytics`  
+**Indexes**: 
 - `{ period_type: 1, period_start: 1 }` (unique)
 - `{ period_start: -1 }`
 

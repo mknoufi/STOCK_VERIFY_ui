@@ -366,9 +366,9 @@ async def _run_standalone_evaluations(
     }
 
     if args.business_logic or args.all:
-        results["evaluations"]["business_logic"] = await runner.run_standalone_evaluation(
+        results["evaluations"][
             "business_logic"
-        )
+        ] = await runner.run_standalone_evaluation("business_logic")
 
     if args.data_quality or args.all:
         results["evaluations"]["data_quality"] = await runner.run_standalone_evaluation(

@@ -5,7 +5,6 @@ Extends existing session API with rack-based workflow support
 
 import logging
 import time
-from datetime import datetime
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -132,6 +131,7 @@ async def create_session(
 ) -> Session:
     """Create a new session"""
     import uuid
+    from datetime import datetime
 
     # Input validation
     warehouse = session_data.warehouse.strip()
@@ -443,46 +443,6 @@ async def complete_session(
         "status": "CLOSED",
         "message": "Session completed successfully",
     }
-
-
-@router.put("/{session_id}/status")
-async def update_session_status(
-    session_id: str,
-    status: str = Query(...),
-    db: AsyncIOMotorDatabase = Depends(get_db),
-    current_user: dict[str, Any] = Depends(get_current_user),
-    redis_service=Depends(get_redis),
-) -> dict[str, Any]:
-    """
-    Update session status (e.g., to CLOSED)
-    """
-    status_upper = status.upper()
-
-    # If the status is CLOSED, we reuse the completion logic to handle rack release
-    if status_upper == "CLOSED":
-        return await complete_session(session_id, db, current_user, redis_service)
-
-    # For other status updates
-    user_id = current_user["username"]
-
-    # Check session in verification_sessions (new system)
-    session = await db.verification_sessions.find_one({"session_id": session_id})
-
-    if session:
-        # Verify ownership
-        if session["user_id"] != user_id and current_user["role"] != "supervisor":
-            raise HTTPException(status_code=403, detail="Not your session")
-
-        await db.verification_sessions.update_one(
-            {"session_id": session_id},
-            {"$set": {"status": status_upper, "updated_at": time.time()}},
-        )
-
-    # Also update in legacy sessions collection if it exists
-    # Use 'id' for legacy sessions
-    await db.sessions.update_one({"id": session_id}, {"$set": {"status": status_upper}})
-
-    return {"success": True, "id": session_id, "status": status_upper}
 
 
 @router.get("/user/history")

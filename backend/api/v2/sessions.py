@@ -41,9 +41,7 @@ async def get_sessions_v2(
     Returns standardized paginated response
     """
     try:
-        from backend.db.runtime import get_db
-
-        db = get_db()
+        from backend.server import db
 
         # Build query
         query = {}
@@ -104,9 +102,7 @@ async def get_rack_progress(
         # 1. Get Session to find Warehouse
         from bson import ObjectId
 
-        from backend.db.runtime import get_db
-
-        db = get_db()
+        from backend.server import db
 
         try:
             session = await db.sessions.find_one({"_id": ObjectId(session_id)})
@@ -219,9 +215,7 @@ async def get_watchtower_stats(
     try:
         from datetime import datetime, timedelta
 
-        from backend.db.runtime import get_db
-
-        db = get_db()
+        from backend.server import db
 
         # 1. Active Sessions
         active_sessions_count = await db.sessions.count_documents({"status": "OPEN"})

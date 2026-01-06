@@ -93,67 +93,9 @@ class ERPItem(BaseModel):
     purchase_voucher_type: Optional[str] = None
     purchase_type: Optional[str] = None
     batch_id: Optional[str] = None
-    manufacturing_date: Optional[datetime] = None
     batch_no: Optional[str] = None
-    expiry_date: Optional[datetime] = None
-
-    @field_validator(
-        "item_code",
-        "item_name",
-        "barcode",
-        "category",
-        "subcategory",
-        "warehouse",
-        "location",
-        "uom_code",
-        "uom_name",
-        "hsn_code",
-        "gst_category",
-        "floor",
-        "rack",
-        "manual_barcode",
-        "batch_id",
-        "batch_no",
-        "brand_id",
-        "brand_name",
-        "brand_code",
-        "supplier_id",
-        "supplier_code",
-        "supplier_name",
-        mode="before",
-    )
-    @classmethod
-    def coerce_to_string(cls, v: Any) -> Optional[str]:
-        if v is None:
-            return None
-        return str(v)
-
-    @field_validator(
-        "stock_qty",
-        "mrp",
-        "gst_percent",
-        "sgst_percent",
-        "cgst_percent",
-        "igst_percent",
-        "sales_price",
-        "sale_price",
-        "standard_rate",
-        "last_purchase_rate",
-        "last_purchase_price",
-        "purchase_price",
-        "last_purchase_qty",
-        "purchase_qty",
-        "last_purchase_cost",
-        mode="before",
-    )
-    @classmethod
-    def coerce_to_float(cls, v: Any) -> Optional[float]:
-        if v is None or v == "" or v == "null":
-            return 0.0
-        try:
-            return float(v)
-        except (ValueError, TypeError):
-            return 0.0
+    manufacturing_date: Optional[str] = None
+    expiry_date: Optional[str] = None
 
 
 class UserInfo(BaseModel):

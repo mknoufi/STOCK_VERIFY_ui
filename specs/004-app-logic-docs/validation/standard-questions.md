@@ -13,7 +13,7 @@
 ### Q1: System Startup (FR-001)
 **Question**: What are the 3 blocking failures that will prevent the backend from starting successfully?
 
-**Expected Answer**:
+**Expected Answer**: 
 1. Missing `JWT_SECRET` environment variable
 2. Missing `JWT_REFRESH_SECRET` environment variable
 3. MongoDB connection failure (cannot reach `MONGO_URL`)
@@ -25,7 +25,7 @@
 ### Q2: Authentication (FR-002)
 **Question**: How long does an access token remain valid by default, and what happens when it expires?
 
-**Expected Answer**:
+**Expected Answer**: 
 - Access token: 15 minutes (default via `ACCESS_TOKEN_EXPIRE_MINUTES`)
 - When expired: Client must use refresh token (30-day validity) to obtain new access token via `POST /api/auth/refresh`
 
@@ -36,7 +36,7 @@
 ### Q3: Session Lifecycle (FR-003, FR-004)
 **Question**: What are the valid state transitions for a stock verification session?
 
-**Expected Answer**:
+**Expected Answer**: 
 - `OPEN` → `ACTIVE` → `CLOSED`
 - Legacy `RECONCILE` status maps to `ACTIVE`
 
@@ -47,7 +47,7 @@
 ### Q4: Item Lookup Flow (FR-003)
 **Question**: When a user scans a barcode, which system is queried first, and what happens if the item is not found?
 
-**Expected Answer**:
+**Expected Answer**: 
 1. First check: MongoDB `erp_items` collection (cached/synced data)
 2. If not found: Query SQL Server ERP (read-only) via `enhanced_item_api.py`
 3. Cache result in MongoDB for future lookups
@@ -60,7 +60,7 @@
 ### Q5: Variance Handling (FR-003)
 **Question**: When is a `variance_reason` required for a count line?
 
-**Expected Answer**:
+**Expected Answer**: 
 When `counted_qty` differs from system/expected quantity, `variance_reason` field becomes required (validation enforced by `CountLineCreate` schema)
 
 **Location in Doc**: FR-003 "Item Verification Flow" and data-model.md CountLine validation rules
@@ -84,7 +84,7 @@ When `counted_qty` differs from system/expected quantity, `variance_reason` fiel
 ### Q7: Data Source of Truth (FR-004)
 **Question**: For operational stock verification data (sessions, count lines, variances), which database is the authoritative source of truth?
 
-**Expected Answer**:
+**Expected Answer**: 
 MongoDB is the authoritative source for operational state. SQL Server is read-only ERP source (never written to by this system).
 
 **Location in Doc**: FR-004 "Source of Truth" section (4.6)
@@ -105,7 +105,7 @@ MongoDB is the authoritative source for operational state. SQL Server is read-on
 ### Q9: Change Location Guide (FR-007)
 **Question**: If you need to modify barcode validation rules (e.g., allow 8-digit barcodes), which module should you change?
 
-**Expected Answer**:
+**Expected Answer**: 
 `backend/api/erp_api.py` or `backend/api/enhanced_item_api.py` - contains `_normalize_barcode_input` function with validation logic (6-digit numeric, prefixes 51/52/53)
 
 **Location in Doc**: FR-007 "Where to Change Behavior" table mapping change intents to modules
@@ -115,7 +115,7 @@ MongoDB is the authoritative source for operational state. SQL Server is read-on
 ### Q10: Compatibility & Sharp Edges (FR-008)
 **Question**: Why do two MongoDB collections store session data (`sessions` and `verification_sessions`), and what risk does this create?
 
-**Expected Answer**:
+**Expected Answer**: 
 - Dual collections exist for compatibility: `sessions` (operational) and `verification_sessions` (verification-oriented mirror)
 - Risk: Data can become inconsistent between collections if updates don't write to both
 - Mitigation: Use session service layer that writes to both collections

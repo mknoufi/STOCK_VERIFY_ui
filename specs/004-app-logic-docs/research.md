@@ -82,11 +82,11 @@ Resolve technical-context unknowns and lock decisions needed to produce accurate
 ## Question Resolutions
 
 ### Q1: Documentation Location
-**Decision**: `docs/APP_LOGIC_OVERVIEW.md` (long-lived, discoverable)
-**Rationale**: Task T001 selected `docs/` as the canonical location; working materials remain in `specs/004-app-logic-docs/` for traceability
+**Decision**: `docs/APP_LOGIC_OVERVIEW.md` (long-lived, discoverable)  
+**Rationale**: Task T001 selected `docs/` as the canonical location; working materials remain in `specs/004-app-logic-docs/` for traceability  
 **Date Resolved**: 2025-12-28 (Phase 1)
 
 ### Q2: Frontend Call Paths
-**Decision**: Backend-centric approach (implicit)
-**Rationale**: User stories US1-US3 focus on backend behavior (startup, auth, workflows, data model, compatibility); frontend paths not required for minimal disruption documentation goal
+**Decision**: Backend-centric approach (implicit)  
+**Rationale**: User stories US1-US3 focus on backend behavior (startup, auth, workflows, data model, compatibility); frontend paths not required for minimal disruption documentation goal  
 **Date Resolved**: 2025-12-29 (Phase 3 scope definition)

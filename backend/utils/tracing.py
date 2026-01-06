@@ -132,19 +132,16 @@ def instrument_fastapi_app(app) -> None:
 def trace_span(name: str, attributes: Optional[dict] = None, **kwargs):
     """Decorator/Context manager for tracing a span (dummy implementation)."""
     from contextlib import nullcontext
-
     return nullcontext()
 
 
 def trace_report_generation(report_type: str):
     """Decorator for tracing report generation (dummy implementation)."""
     from contextlib import nullcontext
-
     return nullcontext()
 
 
 def trace_dashboard_query(query_type: str):
     """Decorator for tracing dashboard queries (dummy implementation)."""
     from contextlib import nullcontext
-
     return nullcontext()

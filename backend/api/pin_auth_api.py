@@ -8,8 +8,8 @@ from pydantic import BaseModel, Field
 
 from backend.api.auth import (
     check_rate_limit,
-    find_user_by_username,
     generate_auth_tokens,
+    find_user_by_username,
     reset_rate_limit,
 )
 from backend.auth.dependencies import get_current_user

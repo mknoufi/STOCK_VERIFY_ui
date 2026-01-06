@@ -14,11 +14,14 @@ import logging
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field
 
 from backend.api.response_models import ApiResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.services.search_service import SearchResult, get_search_service
+from backend.services.search_service import (
+    SearchResult,
+    get_search_service,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,43 +49,6 @@ class SearchItemResponse(BaseModel):
     batch_id: Optional[str] = Field(None, description="Batch ID")
     relevance_score: float = Field(0.0, description="Search relevance score")
     match_type: str = Field("none", description="Type of match found")
-
-    @field_validator(
-        "item_code",
-        "barcode",
-        "category",
-        "subcategory",
-        "warehouse",
-        "uom_name",
-        "manual_barcode",
-        "unit2_barcode",
-        "unit_m_barcode",
-        "batch_id",
-        mode="before",
-    )
-    @classmethod
-    def coerce_to_string(cls, v: Any) -> Optional[str]:
-        if v is None:
-            return None
-        return str(v)
-
-    @field_validator("mrp", "sale_price", mode="before")
-    @classmethod
-    def coerce_to_float(cls, v: Any) -> Optional[float]:
-        if v is None or v == "" or v == "null":
-            return None
-        try:
-            return float(v)
-        except (ValueError, TypeError):
-            return 0.0
-
-    @model_validator(mode="before")
-    @classmethod
-    def ensure_item_name(cls, data: Any) -> Any:
-        if isinstance(data, dict):
-            if data.get("item_name") is None:
-                data["item_name"] = "Unknown Item"
-        return data
 
     class Config:
         json_schema_extra = {

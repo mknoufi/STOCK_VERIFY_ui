@@ -248,51 +248,19 @@ class SearchService:
                     SearchResult(
                         id=str(item.get("_id", "")),
                         item_name=item.get("item_name", ""),
-                        item_code=(
-                            str(item.get("item_code"))
-                            if item.get("item_code") is not None
-                            else None
-                        ),
-                        barcode=(
-                            str(item.get("barcode")) if item.get("barcode") is not None else None
-                        ),
+                        item_code=item.get("item_code"),
+                        barcode=item.get("barcode"),
                         stock_qty=float(item.get("stock_qty", 0.0)),
                         mrp=item.get("mrp"),
                         sale_price=item.get("sale_price"),
-                        category=(
-                            str(item.get("category")) if item.get("category") is not None else None
-                        ),
-                        subcategory=(
-                            str(item.get("subcategory"))
-                            if item.get("subcategory") is not None
-                            else None
-                        ),
-                        warehouse=(
-                            str(item.get("warehouse"))
-                            if item.get("warehouse") is not None
-                            else None
-                        ),
-                        uom_name=(
-                            str(item.get("uom_name")) if item.get("uom_name") is not None else None
-                        ),
-                        manual_barcode=(
-                            str(item.get("manual_barcode"))
-                            if item.get("manual_barcode") is not None
-                            else None
-                        ),
-                        unit2_barcode=(
-                            str(item.get("unit2_barcode"))
-                            if item.get("unit2_barcode") is not None
-                            else None
-                        ),
-                        unit_m_barcode=(
-                            str(item.get("unit_m_barcode"))
-                            if item.get("unit_m_barcode") is not None
-                            else None
-                        ),
-                        batch_id=(
-                            str(item.get("batch_id")) if item.get("batch_id") is not None else None
-                        ),
+                        category=item.get("category"),
+                        subcategory=item.get("subcategory"),
+                        warehouse=item.get("warehouse"),
+                        uom_name=item.get("uom_name"),
+                        manual_barcode=item.get("manual_barcode"),
+                        unit2_barcode=item.get("unit2_barcode"),
+                        unit_m_barcode=item.get("unit_m_barcode"),
+                        batch_id=item.get("batch_id"),
                         relevance_score=score,
                         match_type=match_type,
                     )

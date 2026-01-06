@@ -156,3 +156,4 @@ Only the documentation and repositories listed in this file are considered
 authoritative for the Stock Verify System.
 
 Any deviation must be justified with official documentation.
+

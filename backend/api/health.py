@@ -205,7 +205,11 @@ def _gather_system_resources() -> dict[str, Any]:
             "total_gb": round(disk_total_gb, 2),
             "used_percent": round(disk_percent, 2),
             "status": (
-                "healthy" if disk_percent < 90 else "warning" if disk_percent < 95 else "critical"
+                "healthy"
+                if disk_percent < 90
+                else "warning"
+                if disk_percent < 95
+                else "critical"
             ),
         },
     }

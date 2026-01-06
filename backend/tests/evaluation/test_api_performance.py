@@ -65,7 +65,9 @@ class TestAPILatency:
         p99 = sorted(latencies)[int(len(latencies) * 0.95)]
         # CI environments have higher latency variability, use 200ms threshold
         threshold = 200.0  # Relaxed from 100ms for CI compatibility
-        assert p99 < threshold, f"Health check p99 latency {p99}ms exceeds threshold {threshold}ms"
+        assert p99 < threshold, (
+            f"Health check p99 latency {p99}ms exceeds threshold {threshold}ms"
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.performance
@@ -102,7 +104,9 @@ class TestAPILatency:
         collector.record_latency_stats("login", latencies, p99_threshold=200.0)
 
         mean_latency = sum(latencies) / len(latencies)
-        assert mean_latency < 300.0, f"Login mean latency {mean_latency}ms exceeds threshold"
+        assert mean_latency < 300.0, (
+            f"Login mean latency {mean_latency}ms exceeds threshold"
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.performance
@@ -163,9 +167,9 @@ class TestAPIThroughput:
         collector.record_success_rate("concurrent", success_count / len(results), threshold=0.95)
 
         assert throughput > 5.0, f"Throughput {throughput} req/s is too low"
-        assert (
-            success_count == concurrent_requests
-        ), f"Only {success_count}/{concurrent_requests} succeeded"
+        assert success_count == concurrent_requests, (
+            f"Only {success_count}/{concurrent_requests} succeeded"
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.performance
@@ -339,7 +343,9 @@ class TestFullAPIEvaluation:
         report.print_summary()
 
         # Assert minimum success rate
-        assert report.success_rate >= 0.80, f"Overall success rate {report.success_rate} is too low"
+        assert report.success_rate >= 0.80, (
+            f"Overall success rate {report.success_rate} is too low"
+        )
 
 
 # Fixtures for authenticated requests

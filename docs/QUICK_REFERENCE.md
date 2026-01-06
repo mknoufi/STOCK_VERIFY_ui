@@ -165,13 +165,13 @@ const results = await service.runAllTests();
 
 ```typescript
 // Show error to user
-<ErrorNotification
+<ErrorNotification 
   message="Something went wrong"
   type="error"
 />
 
 // PIN pad
-<PINPad
+<PINPad 
   onPINComplete={(pin) => verify(pin)}
   onCancel={() => goBack()}
 />
@@ -238,7 +238,7 @@ try {
 const [pin, setPin] = useState('');
 const { verifyPIN } = usePINAuth();
 
-<Button
+<Button 
   onPress={async () => {
     const valid = await verifyPIN(pin);
     if (valid) enableFeature();
@@ -250,7 +250,7 @@ const { verifyPIN } = usePINAuth();
 ```typescript
 const { isOnline } = useWiFiStatus();
 
-<Button
+<Button 
   disabled={!isOnline}
   title="Sync"
   onPress={startSync}
@@ -259,7 +259,7 @@ const { isOnline } = useWiFiStatus();
 
 ### Use Case 4: Health Check
 ```typescript
-<Button
+<Button 
   title="System Diagnostics"
   onPress={() => navigation.navigate('SelfTest')}
 />

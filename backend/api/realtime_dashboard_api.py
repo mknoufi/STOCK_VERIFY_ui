@@ -211,7 +211,9 @@ async def get_dashboard_data(
         filters=parse_filters(config.filters),
         columns=default_columns,
         sort_by=config.sort_by,
-        sort_order=(SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC),
+        sort_order=SortOrder(config.sort_order)
+        if config.sort_order
+        else SortOrder.DESC,
         page=config.page,
         page_size=config.page_size,
         include_aggregations=True,
@@ -477,7 +479,9 @@ async def _ws_get_report(service: AdvancedReportService, config: DashboardConfig
             page=config.page,
             page_size=config.page_size,
             sort_by=config.sort_by,
-            sort_order=(SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC),
+            sort_order=SortOrder(config.sort_order)
+            if config.sort_order
+            else SortOrder.DESC,
         )
     )
 
@@ -605,7 +609,9 @@ async def export_dashboard_csv(
         page=1,
         page_size=10000,  # Max export
         sort_by=config.sort_by,
-        sort_order=(SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC),
+        sort_order=SortOrder(config.sort_order)
+        if config.sort_order
+        else SortOrder.DESC,
     )
 
     result = await service.generate_verified_items_report(report_config)
@@ -644,7 +650,9 @@ async def export_dashboard_xlsx(
         page=1,
         page_size=10000,
         sort_by=config.sort_by,
-        sort_order=(SortOrder(config.sort_order) if config.sort_order else SortOrder.DESC),
+        sort_order=SortOrder(config.sort_order)
+        if config.sort_order
+        else SortOrder.DESC,
     )
 
     result = await service.generate_verified_items_report(report_config)

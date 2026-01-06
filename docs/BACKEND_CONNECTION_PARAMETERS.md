@@ -176,7 +176,7 @@ if sql_host and sql_database:
     # Attempt connection
 else:
     # Skip SQL Server, use MongoDB only
-
+    
 # Step 3: Create enhanced connection pool
 connection_pool = EnhancedSQLServerConnectionPool(
     host=sql_host,
@@ -196,7 +196,7 @@ connection_pool = EnhancedSQLServerConnectionPool(
 except (ConnectionError, TimeoutError, OSError) as e:
     # Network/system errors
     logger.error(f"SQL Server connection failed (network/system error): {e}")
-
+    
 except Exception as e:
     # Other errors (authentication, database not found, etc.)
     logger.warning(f"SQL Server connection failed: {e}")
@@ -377,7 +377,7 @@ class SQLServerConnector:
 @retry(stop=stop_after_attempt(3), wait=wait_exponential())
 def connect(self, config: dict) -> bool:
     """Establish SQL Server connection with retry logic"""
-
+    
     try:
         # Build connection string
         conn_str = SQLServerConnectionBuilder.build_connection_string(
@@ -387,7 +387,7 @@ def connect(self, config: dict) -> bool:
             user=config.get('user'),
             password=config.get('password'),
         )
-
+        
         # Create connection
         self.connection = pyodbc.connect(conn_str)
         self.config = config

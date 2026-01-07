@@ -421,6 +421,6 @@ class TestFullBusinessLogicEvaluation:
 
         # All business logic should be 100% accurate
         assert report.failed_count == 0, "Business logic tests should not fail"
-        assert report.success_rate >= 0.95, (
-            f"Success rate {report.success_rate} is too low"
-        )
+        assert (
+            report.success_rate >= 0.95
+        ), f"Success rate {report.success_rate} is too low"

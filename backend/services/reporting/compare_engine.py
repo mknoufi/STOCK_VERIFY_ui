@@ -136,9 +136,7 @@ class CompareEngine:
                     "trend": (
                         "up"
                         if absolute_diff > 0
-                        else "down"
-                        if absolute_diff < 0
-                        else "stable"
+                        else "down" if absolute_diff < 0 else "stable"
                     ),
                 }
             else:

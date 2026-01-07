@@ -23,6 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install black ruff mypy bandit pylint
+          pip install -r backend/requirements.txt
 
       - name: Run Black (formatter check)
         run: |

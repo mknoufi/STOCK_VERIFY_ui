@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { API_BASE_URL } from '../services/httpClient';
 import { useAuthStore } from '../store/authStore';
-import { storage } from '../services/storage/asyncStorageService';
+import { authService } from '../services/auth';
 
 interface WebSocketMessage {
   type: string;
@@ -18,8 +18,7 @@ export const useWebSocket = (sessionId?: string) => {
   const connect = useCallback(async () => {
     if (!isAuthenticated) return;
 
-    // Get token from storage (assuming it's stored there)
-    const token = await storage.get<string>('auth_token');
+    const token = await authService.getAccessToken();
     if (!token) return;
 
     // Convert http:// to ws:// or https:// to wss://

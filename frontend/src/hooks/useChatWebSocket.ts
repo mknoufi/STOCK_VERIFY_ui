@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { API_BASE_URL } from "../services/httpClient";
-import { storage } from "../services/storage/asyncStorageService";
+import { authService } from "../services/auth";
 import { useAuthStore } from "../store/authStore";
 
 type ChatEvent =
@@ -43,7 +43,7 @@ export const useChatWebSocket = (initialConversationId?: string) => {
   const connect = useCallback(async () => {
     if (!isAuthenticated) return;
 
-    const token = await storage.get<string>("auth_token");
+    const token = await authService.getAccessToken();
     if (!token) return;
 
     const wsBase = API_BASE_URL.replace(/^http/, "ws");

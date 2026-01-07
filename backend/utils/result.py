@@ -81,9 +81,7 @@ class Result(Generic[T, E]):
     def ok(cls, value: T) -> Result[T, Any]:
         """Create a successful result with a value."""
         if value is None:
-            raise ValueError(
-                "Cannot create Ok(None). Use Optional[Result[T, E]] if needed."
-            )
+            raise ValueError("Cannot create Ok(None). Use Optional[Result[T, E]] if needed.")
         result = cls()
         object.__setattr__(result, "_value", value)
         object.__setattr__(result, "_is_success", True)
@@ -196,9 +194,7 @@ class Result(Generic[T, E]):
     def log_error(self, logger: logging.Logger, message: str = "") -> Result[T, E]:
         """Log the error if the result is a failure."""
         if self.is_err:
-            logger.error(
-                f"{message}: {str(self._error)}", extra={"traceback": self._traceback}
-            )
+            logger.error(f"{message}: {str(self._error)}", extra={"traceback": self._traceback})
         return self
 
     def to_optional(self) -> Optional[T]:
@@ -323,9 +319,7 @@ try:  # noqa: C901
 
     from fastapi import HTTPException
 
-    F_Async = TypeVar(
-        "F_Async", bound=Callable[..., Coroutine[AnyType, AnyType, AnyType]]
-    )
+    F_Async = TypeVar("F_Async", bound=Callable[..., Coroutine[AnyType, AnyType, AnyType]])
 
     ERROR_STATUS_MAP = {
         "AuthenticationError": 401,
@@ -341,9 +335,7 @@ try:  # noqa: C901
                 return code
         return 500
 
-    def handle_result(
-        result: Result[T, E], success_status: int = 200
-    ) -> dict[str, Any]:
+    def handle_result(result: Result[T, E], success_status: int = 200) -> dict[str, Any]:
         """Convert a Result type to a proper API response."""
         if result.is_ok:
             return {"success": True, "data": result.unwrap(), "error": None}
@@ -409,9 +401,7 @@ try:  # noqa: C901
 
         def decorator(func: F_Async) -> F_Async:
             @wraps(func)
-            async def wrapper(
-                *args: AnyType, **kwargs: AnyType
-            ) -> dict[str, Any] | Any:
+            async def wrapper(*args: AnyType, **kwargs: AnyType) -> dict[str, Any] | Any:
                 try:
                     result = await func(*args, **kwargs)
                     if isinstance(result, Result):

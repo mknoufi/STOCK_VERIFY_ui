@@ -97,9 +97,7 @@ class StressTestResults:
             avg_response = p50 = p95 = p99 = min_response = max_response = 0
 
         success_rate = (
-            (self.successful_requests / self.total_requests * 100)
-            if self.total_requests > 0
-            else 0
+            (self.successful_requests / self.total_requests * 100) if self.total_requests > 0 else 0
         )
 
         return {
@@ -163,9 +161,7 @@ class ConcurrentUserStressTester:
             pin=user_data["pin"],
         )
 
-    async def _login_user(
-        self, session: aiohttp.ClientSession, user: UserSession
-    ) -> bool:
+    async def _login_user(self, session: aiohttp.ClientSession, user: UserSession) -> bool:
         """Authenticate a user and store tokens."""
         try:
             start_time = time.time()
@@ -271,9 +267,7 @@ class ConcurrentUserStressTester:
             return True
         return False
 
-    async def _run_user_session(
-        self, user: UserSession, http_session: aiohttp.ClientSession
-    ):
+    async def _run_user_session(self, user: UserSession, http_session: aiohttp.ClientSession):
         """Run a complete user session with various operations."""
         # Login
         if not await self._login_user(http_session, user):
@@ -308,9 +302,7 @@ class ConcurrentUserStressTester:
             except Exception as e:
                 logger.debug(f"User {user.user_id} operation error: {e}")
 
-    async def _search_items(
-        self, http_session: aiohttp.ClientSession, user: UserSession
-    ) -> bool:
+    async def _search_items(self, http_session: aiohttp.ClientSession, user: UserSession) -> bool:
         """Perform an item search."""
         search_terms = ["rice", "oil", "sugar", "510", "520", "530"]
         search_term = random.choice(search_terms)
@@ -324,27 +316,21 @@ class ConcurrentUserStressTester:
         )
         return success
 
-    async def _get_sessions(
-        self, http_session: aiohttp.ClientSession, user: UserSession
-    ) -> bool:
+    async def _get_sessions(self, http_session: aiohttp.ClientSession, user: UserSession) -> bool:
         """Get active sessions."""
         success, _ = await self._make_authenticated_request(
             http_session, user, "GET", "/api/sessions"
         )
         return success
 
-    async def _heartbeat(
-        self, http_session: aiohttp.ClientSession, user: UserSession
-    ) -> bool:
+    async def _heartbeat(self, http_session: aiohttp.ClientSession, user: UserSession) -> bool:
         """Send heartbeat to keep session alive."""
         success, _ = await self._make_authenticated_request(
             http_session, user, "GET", "/api/auth/heartbeat"
         )
         return success
 
-    async def _ramp_up_users(
-        self, http_session: aiohttp.ClientSession
-    ) -> list[asyncio.Task]:
+    async def _ramp_up_users(self, http_session: aiohttp.ClientSession) -> list[asyncio.Task]:
         """Gradually start user sessions."""
         tasks = []
         delay_per_user = self.ramp_up_seconds / self.num_users
@@ -385,9 +371,7 @@ class ConcurrentUserStressTester:
             tasks = await self._ramp_up_users(http_session)
 
             # Run for specified duration
-            logger.info(
-                f"All users started. Running for {self.duration_seconds} seconds..."
-            )
+            logger.info(f"All users started. Running for {self.duration_seconds} seconds...")
             await asyncio.sleep(self.duration_seconds)
 
             # Signal stop
@@ -395,9 +379,7 @@ class ConcurrentUserStressTester:
 
             # Wait for tasks to complete (with timeout)
             try:
-                await asyncio.wait_for(
-                    asyncio.gather(*tasks, return_exceptions=True), timeout=10.0
-                )
+                await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=10.0)
             except asyncio.TimeoutError:
                 logger.warning("Some user sessions did not complete gracefully")
                 for task in tasks:
@@ -437,9 +419,7 @@ class ConcurrentUserStressTester:
         # Session isolation check
         if stats["errors"]["session_isolation_errors"] > 0:
             print("\n🚨 CRITICAL: Session isolation violations detected!")
-            print(
-                "   This indicates potential security issues with multi-user handling."
-            )
+            print("   This indicates potential security issues with multi-user handling.")
         else:
             print("\n✅ Session isolation: PASSED")
 

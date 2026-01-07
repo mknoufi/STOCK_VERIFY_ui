@@ -204,9 +204,7 @@ async def get_error_dashboard(
         now = datetime.utcnow()
         recent = []
         for error in errors:
-            error_time = datetime.fromisoformat(
-                error["timestamp"].replace("Z", "+00:00")
-            )
+            error_time = datetime.fromisoformat(error["timestamp"].replace("Z", "+00:00"))
             if now - error_time < timedelta(days=1):
                 recent.append(error)
 
@@ -217,9 +215,7 @@ async def get_error_dashboard(
             trends[f"{hour:02d}:00"] = 0
 
         for error in errors:
-            error_time = datetime.fromisoformat(
-                error["timestamp"].replace("Z", "+00:00")
-            )
+            error_time = datetime.fromisoformat(error["timestamp"].replace("Z", "+00:00"))
             if now - error_time < timedelta(days=1):
                 hour = error_time.hour
                 trends[f"{hour:02d}:00"] = trends.get(f"{hour:02d}:00", 0) + 1
@@ -227,9 +223,7 @@ async def get_error_dashboard(
         # Calculate statistics
         total_errors = stats["total"]
         resolved_count = len([e for e in errors if e["status"] == "resolved"])
-        resolution_rate = (
-            (resolved_count / total_errors * 100) if total_errors > 0 else 0
-        )
+        resolution_rate = (resolved_count / total_errors * 100) if total_errors > 0 else 0
 
         dashboard = {
             "errors": errors[:20],  # Latest 20 errors
@@ -332,9 +326,7 @@ async def delete_error(
         raise HTTPException(status_code=403, detail="Admin access required")
 
     try:
-        error_store["errors"] = [
-            e for e in error_store["errors"] if e["id"] != error_id
-        ]
+        error_store["errors"] = [e for e in error_store["errors"] if e["id"] != error_id]
 
         return JSONResponse({"success": True, "message": "Error deleted successfully"})
 
@@ -368,9 +360,7 @@ async def get_error_summary(
             },
             "by_status": {
                 "new": len([e for e in errors if e["status"] == "new"]),
-                "acknowledged": len(
-                    [e for e in errors if e["status"] == "acknowledged"]
-                ),
+                "acknowledged": len([e for e in errors if e["status"] == "acknowledged"]),
                 "resolved": len([e for e in errors if e["status"] == "resolved"]),
             },
             "by_type": {},

@@ -77,9 +77,7 @@ class ChatService:
     ) -> AsyncIterator[str]:
         """Stream assistant response as text deltas."""
         try:
-            async for delta in self._stream_agent_response(
-                user=user, prompt=user_message
-            ):
+            async for delta in self._stream_agent_response(user=user, prompt=user_message):
                 yield delta
         except Exception:
             logger.exception("Chat agent failed")

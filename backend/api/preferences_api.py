@@ -51,9 +51,7 @@ async def update_my_preferences(
 
     if existing:
         # Update existing
-        await db.user_preferences.update_one(
-            {"_id": existing["_id"]}, {"$set": update_data}
-        )
+        await db.user_preferences.update_one({"_id": existing["_id"]}, {"$set": update_data})
         # Fetch updated
         updated = await db.user_preferences.find_one({"_id": existing["_id"]})
         return UserPreferencesInDB(**updated)

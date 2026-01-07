@@ -55,9 +55,7 @@ _VERIFY_INDEXES = [
 ]
 
 
-async def _create_index(
-    db: Any, collection: str, fields: list[tuple[str, int]], desc: str
-) -> None:
+async def _create_index(db: Any, collection: str, fields: list[tuple[str, int]], desc: str) -> None:
     """Create a single index."""
     try:
         await db[collection].create_index(fields)

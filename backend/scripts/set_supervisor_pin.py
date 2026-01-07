@@ -5,10 +5,9 @@ import sys
 # Add parent directory to path to import backend modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from motor.motor_asyncio import AsyncIOMotorClient
-
 from backend.config import settings
 from backend.utils.auth_utils import get_password_hash
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 async def set_pin(username: str, pin: str):

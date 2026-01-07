@@ -2,7 +2,7 @@
 User Preferences API
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from backend.auth.dependencies import get_current_user
@@ -24,7 +24,7 @@ async def get_my_preferences(
 ):
     """Get current user's preferences."""
     user_id = current_user["_id"]
-    
+
     # Try to find existing preferences
     prefs = await db.user_preferences.find_one({"user_id": user_id})
 
@@ -43,7 +43,7 @@ async def update_my_preferences(
 ):
     """Update current user's preferences."""
     user_id = current_user["_id"]
-    
+
     # Check if preferences exist
     existing = await db.user_preferences.find_one({"user_id": user_id})
 

@@ -504,10 +504,10 @@ snapshot = await snapshot_engine.create_snapshot(
 
 ## 📚 Documentation
 
-- [Query Builder Guide](./QUERY_BUILDER_GUIDE.md) (TODO)
-- [Snapshot Management](./SNAPSHOT_GUIDE.md) (TODO)
-- [Export Formats](./EXPORT_GUIDE.md) (TODO)
-- [Comparison Reports](./COMPARISON_GUIDE.md) (TODO)
+- Query Builder Guide (TODO)
+- Snapshot Management (TODO)
+- Export Formats (TODO)
+- Comparison Reports (TODO)
 
 ---
 

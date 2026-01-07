@@ -129,10 +129,8 @@ from backend.services.sync_conflicts_service import SyncConflictsService  # noqa
 from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
-from backend.utils.api_utils import (
-    result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402; noqa: E402
-)
+from backend.utils.api_utils import result_to_response  # noqa: E402
+from backend.utils.api_utils import sanitize_for_logging  # noqa: E402; noqa: E402
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.port_detector import PortDetector  # noqa: E402

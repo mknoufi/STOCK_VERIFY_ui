@@ -270,9 +270,10 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     """
     from typing import cast
 
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
     import backend.server as server_module
     from backend.db.runtime import set_client, set_db
-    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     print("DEBUG: Imported server module")
 
@@ -305,8 +306,9 @@ def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
     """Setup core services like refresh tokens, activity logs, error logs."""
     from typing import cast
 
-    from backend.services.runtime import set_refresh_token_service
     from motor.motor_asyncio import AsyncIOMotorDatabase
+
+    from backend.services.runtime import set_refresh_token_service
 
     refresh_service = RefreshTokenService(
         cast(AsyncIOMotorDatabase, fake_db),
@@ -403,11 +405,12 @@ def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None
     """Initialize all API modules with the fake database."""
     from typing import cast
 
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
     from backend.api.count_lines_api import init_count_lines_api
     from backend.api.erp_api import init_erp_api
     from backend.api.item_verification_api import init_verification_api
     from backend.api.session_api import init_session_api
-    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     init_verification_api(cast(AsyncIOMotorDatabase, fake_db))
     init_erp_api(cast(AsyncIOMotorDatabase, fake_db), cache_service)
@@ -425,8 +428,9 @@ def _setup_auth_and_seed_users(monkeypatch, fake_db, server_module) -> None:
     """Setup authentication overrides and seed default test users."""
     from typing import cast
 
-    from backend.auth import dependencies as auth_deps_module
     from motor.motor_asyncio import AsyncIOMotorDatabase
+
+    from backend.auth import dependencies as auth_deps_module
 
     # Patch server module's auth settings to match test env
     server_module.SECRET_KEY = os.getenv("JWT_SECRET", "test-jwt-secret-key-for-testing-only")

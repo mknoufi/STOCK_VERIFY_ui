@@ -14,9 +14,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os  # noqa: E402
 
-from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
 from motor.motor_asyncio import AsyncIOMotorClient  # noqa: E402
+
+from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Load environment variables
 load_dotenv()

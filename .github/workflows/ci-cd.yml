@@ -357,12 +357,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y unixodbc-dev
 
+      - name: Free up disk space
+        run: |
+          # Free up disk space before installing large dependencies
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          df -h
+
       - name: Install dependencies
         working-directory: ./backend
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install httpx pytest
+          # Install only essential test dependencies, skip ML/AI packages
+          pip install httpx pytest pytest-asyncio pymongo motor fastapi uvicorn pydantic python-dotenv
+          pip install bcrypt python-jose passlib argon2-cffi pyodbc
 
       - name: Wait for MongoDB
         working-directory: ./backend
@@ -463,22 +472,24 @@ jobs:
           # Add your production smoke test commands here
 
       - name: Notify deployment success
+        if: success()
+        continue-on-error: true  # Skip if SLACK_WEBHOOK is not configured
         uses: 8398a7/action-slack@v3
         with:
           status: success
           text: "🚀 STOCK_VERIFY_2.1 deployed successfully to production!"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: success()
 
       - name: Notify deployment failure
+        if: failure()
+        continue-on-error: true  # Skip if SLACK_WEBHOOK is not configured
         uses: 8398a7/action-slack@v3
         with:
           status: failure
           text: "❌ STOCK_VERIFY_2.1 deployment failed!"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure()
 
   # Security Scan (optional - continue on error)
   #     - name: Checkout code

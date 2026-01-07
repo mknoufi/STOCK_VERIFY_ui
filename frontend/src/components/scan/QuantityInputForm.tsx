@@ -435,7 +435,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
       prevProps.currentItemCondition === nextProps.currentItemCondition &&
       prevProps.mrpVariants.length === nextProps.mrpVariants.length &&
       prevProps.workflowState.serialCaptureEnabled ===
-      nextProps.workflowState.serialCaptureEnabled &&
+        nextProps.workflowState.serialCaptureEnabled &&
       JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
       prevProps.markLocation === nextProps.markLocation &&
       prevProps.manufacturingDate === nextProps.manufacturingDate &&

@@ -82,7 +82,9 @@ export default function ScanScreen() {
   const cameraRef = useRef<any>(null);
 
   // Multi-read validation for accurate scanning
-  const scanBufferRef = useRef<{ code: string; count: number; timestamp: number }[]>([]);
+  const scanBufferRef = useRef<
+    { code: string; count: number; timestamp: number }[]
+  >([]);
   const SCAN_CONFIDENCE_THRESHOLD = 2; // Require 2 consistent reads
   const SCAN_BUFFER_TIMEOUT = 1500; // Clear buffer after 1.5s of no scans
   const SCAN_BUFFER_MAX_SIZE = 5; // Keep last 5 reads
@@ -95,7 +97,9 @@ export default function ScanScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isAISearching, setIsAISearching] = useState(false);
-  const [_searchMethod, setSearchMethod] = useState<"standard" | "semantic">("standard");
+  const [_searchMethod, setSearchMethod] = useState<"standard" | "semantic">(
+    "standard",
+  );
   const [scanned, setScanned] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showCloseSessionModal, setShowCloseSessionModal] = useState(false);
@@ -117,7 +121,7 @@ export default function ScanScreen() {
       console.log("[ScanScreen] Real-time update received:", lastMessage);
       toastService.show(
         `Item ${lastMessage.item_code} verified by ${lastMessage.user}`,
-        "info"
+        "info",
       );
       // Optionally refresh recent items or search results if they contain this item
       loadRecentItems();
@@ -164,7 +168,9 @@ export default function ScanScreen() {
         setShowResults(true);
         hapticService.scanSuccess();
       } else {
-        toastService.show("No semantic matches found for your query", { type: "info" });
+        toastService.show("No semantic matches found for your query", {
+          type: "info",
+        });
       }
     } catch {
       toastService.show("Failed to perform semantic search", { type: "error" });
@@ -196,12 +202,17 @@ export default function ScanScreen() {
           setSearchQuery(""); // Clear text search when using visual
           hapticService.scanSuccess();
         } else {
-          toastService.show("Could not identify the item. Please try a different angle or manual search.", { type: "warning" });
+          toastService.show(
+            "Could not identify the item. Please try a different angle or manual search.",
+            { type: "warning" },
+          );
         }
       }
     } catch (error) {
       console.error("Visual search error:", error);
-      toastService.show("Failed to process image for identification", { type: "error" });
+      toastService.show("Failed to process image for identification", {
+        type: "error",
+      });
     } finally {
       setIsAISearching(false);
       setLoading(false);
@@ -264,12 +275,12 @@ export default function ScanScreen() {
 
     // Clean old entries from buffer (older than timeout)
     scanBufferRef.current = scanBufferRef.current.filter(
-      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT
+      (entry) => now - entry.timestamp < SCAN_BUFFER_TIMEOUT,
     );
 
     // Find existing entry for this barcode
     const existingIndex = scanBufferRef.current.findIndex(
-      (entry) => entry.code === trimmedData
+      (entry) => entry.code === trimmedData,
     );
 
     if (existingIndex >= 0 && scanBufferRef.current[existingIndex]) {
@@ -292,7 +303,7 @@ export default function ScanScreen() {
 
     // Find the barcode with highest confidence (most reads)
     const confident = scanBufferRef.current.find(
-      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD
+      (entry) => entry.count >= SCAN_CONFIDENCE_THRESHOLD,
     );
 
     // Only proceed if we have confident read
@@ -309,7 +320,9 @@ export default function ScanScreen() {
     hapticService.scanSuccess();
 
     // Deduplication check
-    const { isDuplicate } = scanDeduplicationService.checkDuplicate(confident.code);
+    const { isDuplicate } = scanDeduplicationService.checkDuplicate(
+      confident.code,
+    );
     if (isDuplicate) {
       hapticService.notification("warning");
       // Show visual feedback for duplicate
@@ -379,11 +392,17 @@ export default function ScanScreen() {
         console.log("item.barcode:", item.barcode);
         console.log("sanitized input:", sanitized);
         console.log("final navigationBarcode:", navigationBarcode);
-        console.log("Full item before navigation:", JSON.stringify(item, null, 2));
+        console.log(
+          "Full item before navigation:",
+          JSON.stringify(item, null, 2),
+        );
 
         router.push({
           pathname: "/staff/item-detail",
-          params: { barcode: navigationBarcode, sessionId: sessionId as string },
+          params: {
+            barcode: navigationBarcode,
+            sessionId: sessionId as string,
+          },
         } as any);
       } else {
         hapticService.scanError();
@@ -407,7 +426,11 @@ export default function ScanScreen() {
     if (searchQuery.trim()) {
       // Only trigger direct lookup if it looks like a barcode (starts with 51, 52, 53)
       // Otherwise, just let the search results stay (don't auto-select)
-      if (searchQuery.startsWith("51") || searchQuery.startsWith("52") || searchQuery.startsWith("53")) {
+      if (
+        searchQuery.startsWith("51") ||
+        searchQuery.startsWith("52") ||
+        searchQuery.startsWith("53")
+      ) {
         handleLookup(searchQuery);
       } else {
         // Ensure results are shown (they should be from debounce)
@@ -457,7 +480,9 @@ export default function ScanScreen() {
       router.replace("/staff/home");
     } catch (error: any) {
       console.error("Failed to finish rack:", error);
-      toastService.show(error.message || "Failed to close session", { type: "error" });
+      toastService.show(error.message || "Failed to close session", {
+        type: "error",
+      });
     } finally {
       setIsFinishing(false);
       setShowCloseSessionModal(false);
@@ -499,11 +524,40 @@ export default function ScanScreen() {
         >
           {/* AR-style overlay */}
           <View style={styles.cameraOverlay}>
-            <View style={[styles.scanFrame, { width: width * 0.7, height: width * 0.7 }]}>
-              <View style={[styles.corner, styles.cornerTopLeft, { borderColor: colors.accent }]} />
-              <View style={[styles.corner, styles.cornerTopRight, { borderColor: colors.accent }]} />
-              <View style={[styles.corner, styles.cornerBottomLeft, { borderColor: colors.accent }]} />
-              <View style={[styles.corner, styles.cornerBottomRight, { borderColor: colors.accent }]} />
+            <View
+              style={[
+                styles.scanFrame,
+                { width: width * 0.7, height: width * 0.7 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerTopLeft,
+                  { borderColor: colors.accent },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerTopRight,
+                  { borderColor: colors.accent },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerBottomLeft,
+                  { borderColor: colors.accent },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.cornerBottomRight,
+                  { borderColor: colors.accent },
+                ]}
+              />
             </View>
 
             <Text style={[styles.scanInstructions, { color: "#FFFFFF" }]}>
@@ -591,8 +645,15 @@ export default function ScanScreen() {
             elevation="md"
             style={styles.searchCard}
           >
-            <Text style={[styles.cardTitle, { color: colors.text }]}>Quick Search</Text>
-            <View style={[styles.searchInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>
+              Quick Search
+            </Text>
+            <View
+              style={[
+                styles.searchInputContainer,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
               <Ionicons
                 name="search"
                 size={20}
@@ -641,7 +702,12 @@ export default function ScanScreen() {
 
             {/* Live Search Results */}
             {showResults && (
-              <View style={[styles.searchResultsContainer, { borderTopColor: colors.border }]}>
+              <View
+                style={[
+                  styles.searchResultsContainer,
+                  { borderTopColor: colors.border },
+                ]}
+              >
                 {isSearching ? (
                   <ActivityIndicator
                     size="small"
@@ -658,10 +724,18 @@ export default function ScanScreen() {
                     {searchResults.map((item, index) => (
                       <TouchableOpacity
                         key={`${item.barcode || item.item_code || item.id}-${index}`}
-                        style={[styles.resultItem, { borderBottomColor: colors.border }]}
+                        style={[
+                          styles.resultItem,
+                          { borderBottomColor: colors.border },
+                        ]}
                         onPress={() => handleSearchResultPress(item)}
                       >
-                        <View style={[styles.resultIcon, { backgroundColor: colors.surfaceElevated }]}>
+                        <View
+                          style={[
+                            styles.resultIcon,
+                            { backgroundColor: colors.surfaceElevated },
+                          ]}
+                        >
                           <Ionicons
                             name="cube-outline"
                             size={18}
@@ -669,39 +743,124 @@ export default function ScanScreen() {
                           />
                         </View>
                         <View style={styles.resultInfo}>
-                          <Text style={[styles.resultName, { color: colors.text }]} numberOfLines={1}>
+                          <Text
+                            style={[styles.resultName, { color: colors.text }]}
+                            numberOfLines={1}
+                          >
                             {item.item_name || item.name}
                           </Text>
                           <View style={styles.resultCodeRow}>
-                            <Text style={[styles.resultCode, { color: colors.textSecondary }]}>
+                            <Text
+                              style={[
+                                styles.resultCode,
+                                { color: colors.textSecondary },
+                              ]}
+                            >
                               {item.barcode || item.item_code || "—"}
                             </Text>
                             {item.mrp != null && item.mrp > 0 && (
-                              <View style={[styles.mrpBadge, { backgroundColor: colors.warning + '15', borderColor: colors.warning + '30' }]}>
-                                <Text style={[styles.mrpBadgeText, { color: colors.warning }]}>₹{item.mrp}</Text>
+                              <View
+                                style={[
+                                  styles.mrpBadge,
+                                  {
+                                    backgroundColor: colors.warning + "15",
+                                    borderColor: colors.warning + "30",
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.mrpBadgeText,
+                                    { color: colors.warning },
+                                  ]}
+                                >
+                                  ₹{item.mrp}
+                                </Text>
                               </View>
                             )}
                             {item.batch_id && (
-                              <View style={[styles.batchBadge, { backgroundColor: colors.accent + '10', borderColor: colors.accent + '20' }]}>
-                                <Text style={[styles.batchBadgeText, { color: colors.accent }]}>Batch: {item.batch_id}</Text>
+                              <View
+                                style={[
+                                  styles.batchBadge,
+                                  {
+                                    backgroundColor: colors.accent + "10",
+                                    borderColor: colors.accent + "20",
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.batchBadgeText,
+                                    { color: colors.accent },
+                                  ]}
+                                >
+                                  Batch: {item.batch_id}
+                                </Text>
                               </View>
                             )}
                           </View>
-                          {(item.manual_barcode || item.unit2_barcode || item.unit_m_barcode) && (
+                          {(item.manual_barcode ||
+                            item.unit2_barcode ||
+                            item.unit_m_barcode) && (
                             <View style={styles.altBarcodesRow}>
                               {item.manual_barcode && (
-                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
-                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>Manual: {item.manual_barcode}</Text>
+                                <View
+                                  style={[
+                                    styles.otherBarcodeBadge,
+                                    {
+                                      backgroundColor: colors.success + "10",
+                                      borderColor: colors.success + "20",
+                                    },
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.otherBarcodeText,
+                                      { color: colors.success },
+                                    ]}
+                                  >
+                                    Manual: {item.manual_barcode}
+                                  </Text>
                                 </View>
                               )}
                               {item.unit2_barcode && (
-                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
-                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>Unit2: {item.unit2_barcode}</Text>
+                                <View
+                                  style={[
+                                    styles.otherBarcodeBadge,
+                                    {
+                                      backgroundColor: colors.success + "10",
+                                      borderColor: colors.success + "20",
+                                    },
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.otherBarcodeText,
+                                      { color: colors.success },
+                                    ]}
+                                  >
+                                    Unit2: {item.unit2_barcode}
+                                  </Text>
                                 </View>
                               )}
                               {item.unit_m_barcode && (
-                                <View style={[styles.otherBarcodeBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '20' }]}>
-                                  <Text style={[styles.otherBarcodeText, { color: colors.success }]}>UnitM: {item.unit_m_barcode}</Text>
+                                <View
+                                  style={[
+                                    styles.otherBarcodeBadge,
+                                    {
+                                      backgroundColor: colors.success + "10",
+                                      borderColor: colors.success + "20",
+                                    },
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.otherBarcodeText,
+                                      { color: colors.success },
+                                    ]}
+                                  >
+                                    UnitM: {item.unit_m_barcode}
+                                  </Text>
                                 </View>
                               )}
                             </View>
@@ -718,18 +877,45 @@ export default function ScanScreen() {
                 ) : (
                   debouncedSearchQuery.length >= 2 && (
                     <View style={styles.semanticSearchContainer}>
-                      <Text style={[styles.noResultsText, { color: colors.textSecondary }]}>No direct matches found</Text>
+                      <Text
+                        style={[
+                          styles.noResultsText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        No direct matches found
+                      </Text>
                       <TouchableOpacity
-                        style={[styles.semanticSearchButton, { borderColor: colors.accent + '30', backgroundColor: colors.accent + '05' }]}
+                        style={[
+                          styles.semanticSearchButton,
+                          {
+                            borderColor: colors.accent + "30",
+                            backgroundColor: colors.accent + "05",
+                          },
+                        ]}
                         onPress={handleSemanticSearch}
                         disabled={isAISearching}
                       >
                         {isAISearching ? (
-                          <ActivityIndicator size="small" color={colors.accent} />
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.accent}
+                          />
                         ) : (
                           <>
-                            <Ionicons name="sparkles-outline" size={16} color={colors.accent} />
-                            <Text style={[styles.semanticSearchText, { color: colors.accent }]}>Search by meaning (AI)</Text>
+                            <Ionicons
+                              name="sparkles-outline"
+                              size={16}
+                              color={colors.accent}
+                            />
+                            <Text
+                              style={[
+                                styles.semanticSearchText,
+                                { color: colors.accent },
+                              ]}
+                            >
+                              Search by meaning (AI)
+                            </Text>
                           </>
                         )}
                       </TouchableOpacity>
@@ -744,7 +930,9 @@ export default function ScanScreen() {
         {/* Recent Items */}
         {recentItems.length > 0 && (
           <Animated.View entering={FadeInUp.delay(200).springify()}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Items</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Recent Items
+            </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -763,7 +951,12 @@ export default function ScanScreen() {
                     padding={16}
                     style={styles.recentItemCard}
                   >
-                    <View style={[styles.recentItemIcon, { backgroundColor: colors.accent + '15' }]}>
+                    <View
+                      style={[
+                        styles.recentItemIcon,
+                        { backgroundColor: colors.accent + "15" },
+                      ]}
+                    >
                       <Ionicons
                         name="cube-outline"
                         size={24}
@@ -771,16 +964,40 @@ export default function ScanScreen() {
                       />
                     </View>
                     <View style={styles.resultCodeRow}>
-                      <Text style={[styles.recentItemCode, { color: colors.textSecondary }]} numberOfLines={1}>
+                      <Text
+                        style={[
+                          styles.recentItemCode,
+                          { color: colors.textSecondary },
+                        ]}
+                        numberOfLines={1}
+                      >
                         {item.item_code}
                       </Text>
                       {item.batch_id && (
-                        <View style={[styles.batchBadge, { backgroundColor: colors.accent + '10', borderColor: colors.accent + '20' }]}>
-                          <Text style={[styles.batchBadgeText, { color: colors.accent }]}>B</Text>
+                        <View
+                          style={[
+                            styles.batchBadge,
+                            {
+                              backgroundColor: colors.accent + "10",
+                              borderColor: colors.accent + "20",
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.batchBadgeText,
+                              { color: colors.accent },
+                            ]}
+                          >
+                            B
+                          </Text>
                         </View>
                       )}
                     </View>
-                    <Text style={[styles.recentItemName, { color: colors.text }]} numberOfLines={2}>
+                    <Text
+                      style={[styles.recentItemName, { color: colors.text }]}
+                      numberOfLines={2}
+                    >
                       {item.item_name || "Unknown Item"}
                     </Text>
                   </GlassCard>
@@ -798,21 +1015,45 @@ export default function ScanScreen() {
             elevation="md"
             style={styles.statsCard}
           >
-            <Text style={[styles.cardTitle, { color: colors.text }]}>Today&apos;s Progress</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>
+              Today&apos;s Progress
+            </Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Scanned</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>
+                  0
+                </Text>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Scanned
+                </Text>
               </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+              <View
+                style={[styles.statDivider, { backgroundColor: colors.border }]}
+              />
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Verified</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>
+                  0
+                </Text>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Verified
+                </Text>
               </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+              <View
+                style={[styles.statDivider, { backgroundColor: colors.border }]}
+              />
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pending</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>
+                  0
+                </Text>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Pending
+                </Text>
               </View>
             </View>
           </GlassCard>
@@ -869,13 +1110,11 @@ export default function ScanScreen() {
               colors={[...appTheme.gradients.accent]}
               style={styles.quickActionGradient}
             >
-              <Ionicons
-                name="list"
-                size={24}
-                color="#FFF"
-              />
+              <Ionicons name="list" size={24} color="#FFF" />
             </LinearGradient>
-            <Text style={[styles.quickActionLabel, { color: colors.text }]}>History</Text>
+            <Text style={[styles.quickActionLabel, { color: colors.text }]}>
+              History
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -886,13 +1125,11 @@ export default function ScanScreen() {
               colors={[...appTheme.gradients.success]}
               style={styles.quickActionGradient}
             >
-              <Ionicons
-                name="checkmark-done"
-                size={24}
-                color="#FFF"
-              />
+              <Ionicons name="checkmark-done" size={24} color="#FFF" />
             </LinearGradient>
-            <Text style={[styles.quickActionLabel, { color: colors.text }]}>Verify</Text>
+            <Text style={[styles.quickActionLabel, { color: colors.text }]}>
+              Verify
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -921,7 +1158,7 @@ export default function ScanScreen() {
         isVisible={showLogoutModal}
         onBackdropPress={() => setShowLogoutModal(false)}
         onBackButtonPress={() => setShowLogoutModal(false)}
-        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
+        style={{ margin: 0, justifyContent: "center", padding: 20 }}
         animationIn="fadeIn"
         animationOut="fadeOut"
         backdropOpacity={0.5}
@@ -980,7 +1217,8 @@ export default function ScanScreen() {
               lineHeight: 22,
             }}
           >
-            Are you sure you want to log out?{"\n"}Any unsaved progress will be lost.
+            Are you sure you want to log out?{"\n"}Any unsaved progress will be
+            lost.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
@@ -1038,7 +1276,7 @@ export default function ScanScreen() {
         isVisible={showCloseSessionModal}
         onBackdropPress={() => setShowCloseSessionModal(false)}
         onBackButtonPress={() => setShowCloseSessionModal(false)}
-        style={{ margin: 0, justifyContent: 'center', padding: 20 }}
+        style={{ margin: 0, justifyContent: "center", padding: 20 }}
         animationIn="fadeIn"
         animationOut="fadeOut"
         backdropOpacity={0.5}
@@ -1097,7 +1335,8 @@ export default function ScanScreen() {
               lineHeight: 22,
             }}
           >
-            Are you sure you want to mark this rack as complete?{"\n"}You won't be able to add more items to this section.
+            Are you sure you want to mark this rack as complete?{"\n"}You won't
+            be able to add more items to this section.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
@@ -1150,7 +1389,7 @@ export default function ScanScreen() {
           </View>
         </View>
       </Modal>
-    </ScreenContainer >
+    </ScreenContainer>
   );
 }
 

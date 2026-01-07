@@ -30,13 +30,15 @@ type ChatEvent =
 export const useChatWebSocket = (initialConversationId?: string) => {
   const [isConnected, setIsConnected] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(
-    initialConversationId ?? null
+    initialConversationId ?? null,
   );
   const [lastEvent, setLastEvent] = useState<ChatEvent | null>(null);
   const [assistantText, setAssistantText] = useState<string>("");
 
   const socketRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const { isAuthenticated } = useAuthStore();
 
@@ -83,8 +85,21 @@ export const useChatWebSocket = (initialConversationId?: string) => {
       }
     };
 
-    socket.onclose = () => {
+    socket.onclose = (event) => {
       setIsConnected(false);
+
+      // Avoid infinite reconnect loops when auth fails (policy violation)
+      if (event.code === 1008) {
+        console.warn(
+          "[ChatWebSocket] Connection closed due to auth/policy violation (1008).",
+          {
+            reason: event.reason,
+            wasClean: event.wasClean,
+          },
+        );
+        return;
+      }
+
       if (isAuthenticated) {
         reconnectTimeoutRef.current = setTimeout(connect, 5000);
       }

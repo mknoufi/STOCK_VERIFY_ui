@@ -18,10 +18,7 @@ from pydantic import BaseModel, Field
 
 from backend.api.response_models import ApiResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.services.search_service import (
-    SearchResult,
-    get_search_service,
-)
+from backend.services.search_service import SearchResult, get_search_service
 
 logger = logging.getLogger(__name__)
 

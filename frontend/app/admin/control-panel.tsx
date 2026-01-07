@@ -232,8 +232,8 @@ export default function ControlPanelScreen() {
       Alert.alert(
         "Error",
         error.response?.data?.detail ||
-        error?.message ||
-        `Failed to ${action} ${service}`,
+          error?.message ||
+          `Failed to ${action} ${service}`,
       );
     }
   };
@@ -723,11 +723,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#333",
     ...(Platform.OS === "web"
       ? {
-        position: "sticky" as const,
-        top: 0,
-        zIndex: 100,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-      }
+          position: "sticky" as const,
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        }
       : {}),
   } as any,
   headerWeb: {

@@ -2,26 +2,32 @@
  * Haptic Feedback Service
  * Provides haptic feedback for scanner and other UI interactions
  */
-import * as Haptics from 'expo-haptics';
-import { Platform } from 'react-native';
-import { SCANNER_CONFIG } from '../config/scannerConfig';
+import * as Haptics from "expo-haptics";
+import { Platform } from "react-native";
+import { SCANNER_CONFIG } from "../config/scannerConfig";
 
 /**
  * Haptic feedback intensity levels
  */
-export type HapticIntensity = 'light' | 'medium' | 'heavy';
+export type HapticIntensity = "light" | "medium" | "heavy";
 
 /**
  * Haptic feedback patterns
  */
-export type HapticPattern = 'success' | 'error' | 'warning' | 'selection' | 'impact';
+export type HapticPattern =
+  | "success"
+  | "error"
+  | "warning"
+  | "selection"
+  | "impact";
 
 /**
  * Haptic Service for providing tactile feedback
  */
 export class HapticService {
   private enabled: boolean = SCANNER_CONFIG.haptics.enabled;
-  private isSupported: boolean = Platform.OS === 'ios' || Platform.OS === 'android';
+  private isSupported: boolean =
+    Platform.OS === "ios" || Platform.OS === "android";
 
   /**
    * Enable haptic feedback
@@ -53,35 +59,35 @@ export class HapticService {
     try {
       await Haptics.selectionAsync();
     } catch (error) {
-      __DEV__ && console.warn('Haptic selection failed:', error);
+      __DEV__ && console.warn("Haptic selection failed:", error);
     }
   }
 
   /**
    * Trigger impact feedback with intensity
    */
-  async impact(intensity: HapticIntensity = 'medium'): Promise<void> {
+  async impact(intensity: HapticIntensity = "medium"): Promise<void> {
     if (!this.isEnabled()) return;
 
     try {
       const style = this.getImpactStyle(intensity);
       await Haptics.impactAsync(style);
     } catch (error) {
-      __DEV__ && console.warn('Haptic impact failed:', error);
+      __DEV__ && console.warn("Haptic impact failed:", error);
     }
   }
 
   /**
    * Trigger notification feedback
    */
-  async notification(type: 'success' | 'warning' | 'error'): Promise<void> {
+  async notification(type: "success" | "warning" | "error"): Promise<void> {
     if (!this.isEnabled()) return;
 
     try {
       const notificationType = this.getNotificationType(type);
       await Haptics.notificationAsync(notificationType);
     } catch (error) {
-      __DEV__ && console.warn('Haptic notification failed:', error);
+      __DEV__ && console.warn("Haptic notification failed:", error);
     }
   }
 
@@ -89,21 +95,21 @@ export class HapticService {
    * Success feedback - for successful scan
    */
   async success(): Promise<void> {
-    await this.notification('success');
+    await this.notification("success");
   }
 
   /**
    * Error feedback - for failed scan
    */
   async error(): Promise<void> {
-    await this.notification('error');
+    await this.notification("error");
   }
 
   /**
    * Warning feedback - for warnings
    */
   async warning(): Promise<void> {
-    await this.notification('warning');
+    await this.notification("warning");
   }
 
   /**
@@ -119,10 +125,12 @@ export class HapticService {
       // Double tap for success confirmation
       await Haptics.impactAsync(style);
       setTimeout(async () => {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        );
       }, 100);
     } catch (error) {
-      __DEV__ && console.warn('Scan success haptic failed:', error);
+      __DEV__ && console.warn("Scan success haptic failed:", error);
     }
   }
 
@@ -140,7 +148,7 @@ export class HapticService {
       await Haptics.impactAsync(style);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } catch (error) {
-      __DEV__ && console.warn('Scan error haptic failed:', error);
+      __DEV__ && console.warn("Scan error haptic failed:", error);
     }
   }
 
@@ -151,20 +159,20 @@ export class HapticService {
     if (!this.isEnabled()) return;
 
     switch (pattern) {
-      case 'success':
+      case "success":
         await this.success();
         break;
-      case 'error':
+      case "error":
         await this.error();
         break;
-      case 'warning':
+      case "warning":
         await this.warning();
         break;
-      case 'selection':
+      case "selection":
         await this.selection();
         break;
-      case 'impact':
-        await this.impact('medium');
+      case "impact":
+        await this.impact("medium");
         break;
     }
   }
@@ -177,26 +185,28 @@ export class HapticService {
 
     try {
       // On iOS, use impact. On Android, use notification.
-      if (Platform.OS === 'ios') {
-        await this.impact('medium');
+      if (Platform.OS === "ios") {
+        await this.impact("medium");
       } else {
-        await this.notification('success');
+        await this.notification("success");
       }
     } catch (error) {
-      __DEV__ && console.warn('Vibrate failed:', error);
+      __DEV__ && console.warn("Vibrate failed:", error);
     }
   }
 
   /**
    * Get impact style from intensity
    */
-  private getImpactStyle(intensity: HapticIntensity): Haptics.ImpactFeedbackStyle {
+  private getImpactStyle(
+    intensity: HapticIntensity,
+  ): Haptics.ImpactFeedbackStyle {
     switch (intensity) {
-      case 'light':
+      case "light":
         return Haptics.ImpactFeedbackStyle.Light;
-      case 'heavy':
+      case "heavy":
         return Haptics.ImpactFeedbackStyle.Heavy;
-      case 'medium':
+      case "medium":
       default:
         return Haptics.ImpactFeedbackStyle.Medium;
     }
@@ -205,13 +215,15 @@ export class HapticService {
   /**
    * Get notification type
    */
-  private getNotificationType(type: 'success' | 'warning' | 'error'): Haptics.NotificationFeedbackType {
+  private getNotificationType(
+    type: "success" | "warning" | "error",
+  ): Haptics.NotificationFeedbackType {
     switch (type) {
-      case 'success':
+      case "success":
         return Haptics.NotificationFeedbackType.Success;
-      case 'warning':
+      case "warning":
         return Haptics.NotificationFeedbackType.Warning;
-      case 'error':
+      case "error":
         return Haptics.NotificationFeedbackType.Error;
     }
   }
@@ -234,7 +246,8 @@ export const {
 } = {
   selection: () => hapticService.selection(),
   impact: (intensity?: HapticIntensity) => hapticService.impact(intensity),
-  notification: (type: 'success' | 'warning' | 'error') => hapticService.notification(type),
+  notification: (type: "success" | "warning" | "error") =>
+    hapticService.notification(type),
   success: () => hapticService.success(),
   error: () => hapticService.error(),
   warning: () => hapticService.warning(),

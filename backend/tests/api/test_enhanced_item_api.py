@@ -5,6 +5,8 @@ Tests for Enhanced Item API
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from fastapi import HTTPException
+
 from backend.api.enhanced_item_api import (
     _validate_barcode_format,
     advanced_item_search,
@@ -12,7 +14,6 @@ from backend.api.enhanced_item_api import (
     get_unique_locations,
     init_enhanced_api,
 )
-from fastapi import HTTPException
 
 
 @pytest.fixture(autouse=True)

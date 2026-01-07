@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useNetworkStore } from '../../store/networkStore';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { useNetworkStore } from "../../store/networkStore";
+import { Ionicons } from "@expo/vector-icons";
 
 /**
  * A simple indicator that shows when the app is offline.
@@ -22,19 +22,19 @@ export const OfflineIndicator: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FF3B30',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FF3B30",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     gap: 6,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginVertical: 5,
   },
   text: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

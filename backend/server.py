@@ -28,20 +28,12 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from backend.api import auth, supervisor_pin  # noqa: E402
-from backend.api.admin_control_api import (
-    admin_control_router,
-)  # noqa: E402
-from backend.api.admin_dashboard_api import (
-    admin_dashboard_router,
-)  # noqa: E402
+from backend.api.admin_control_api import admin_control_router  # noqa: E402
+from backend.api.admin_dashboard_api import admin_dashboard_router  # noqa: E402
 from backend.api.auth import router as auth_router  # noqa: E402
 from backend.api.chat_ws_api import router as chat_ws_router  # noqa: E402
-from backend.api.dynamic_fields_api import (
-    dynamic_fields_router,
-)  # noqa: E402
-from backend.api.dynamic_reports_api import (
-    dynamic_reports_router,
-)  # noqa: E402
+from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
+from backend.api.dynamic_reports_api import dynamic_reports_router  # noqa: E402
 from backend.api.enhanced_item_api import (  # noqa: E402
     enhanced_item_router as items_router,
 )
@@ -137,10 +129,8 @@ from backend.services.sync_conflicts_service import SyncConflictsService  # noqa
 from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
-from backend.utils.api_utils import (  # noqa: E402
-    result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402
-)
+from backend.utils.api_utils import result_to_response  # noqa: E402
+from backend.utils.api_utils import sanitize_for_logging  # noqa: E402; noqa: E402
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.port_detector import PortDetector  # noqa: E402

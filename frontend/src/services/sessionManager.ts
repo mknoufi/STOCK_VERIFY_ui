@@ -115,7 +115,7 @@ class SessionManager {
 
     __DEV__ &&
       console.log(
-        `💓 Auth heartbeat started (interval: ${this.config.heartbeatIntervalMs}ms)`
+        `💓 Auth heartbeat started (interval: ${this.config.heartbeatIntervalMs}ms)`,
       );
   }
 
@@ -180,7 +180,7 @@ class SessionManager {
       __DEV__ &&
         console.error(
           `❌ Auth heartbeat failed (${this.consecutiveFailures}/${this.config.maxHeartbeatFailures}):`,
-          errorMessage
+          errorMessage,
         );
 
       // 401 means token expired or invalid
@@ -252,7 +252,7 @@ class SessionManager {
   private setupAppStateListener(): void {
     this.appStateSubscription = AppState.addEventListener(
       "change",
-      this.handleAppStateChange
+      this.handleAppStateChange,
     );
   }
 
@@ -306,7 +306,7 @@ class SessionManager {
    */
   on(
     event: (typeof SESSION_EVENTS)[keyof typeof SESSION_EVENTS],
-    callback: (data: any) => void
+    callback: (data: any) => void,
   ): () => void {
     eventEmitter.on(event, callback);
     return () => eventEmitter.off(event, callback);

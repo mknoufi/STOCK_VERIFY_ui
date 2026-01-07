@@ -28,7 +28,10 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
   initialIndex,
   onClose,
 }) => {
-  const safeInitialIndex = Math.min(Math.max(initialIndex, 0), Math.max(images.length - 1, 0));
+  const safeInitialIndex = Math.min(
+    Math.max(initialIndex, 0),
+    Math.max(images.length - 1, 0),
+  );
 
   return (
     <Modal
@@ -54,7 +57,11 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
             })}
             renderItem={({ item }) => (
               <View style={styles.page}>
-                <Image source={{ uri: item }} style={styles.image} contentFit="contain" />
+                <Image
+                  source={{ uri: item }}
+                  style={styles.image}
+                  contentFit="contain"
+                />
               </View>
             )}
           />

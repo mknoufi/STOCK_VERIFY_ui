@@ -205,13 +205,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   setLoading: (loading: boolean) => set({ isLoading: loading }),
 
   loadStoredAuth: async () => {
-    console.log('🔐 [AUTH] Loading stored auth...');
+    console.log("🔐 [AUTH] Loading stored auth...");
     set({ isLoading: true });
     try {
       const storedUser = await secureStorage.getItem(AUTH_STORAGE_KEY);
-      console.log('🔐 [AUTH] Stored user retrieved:', !!storedUser);
+      console.log("🔐 [AUTH] Stored user retrieved:", !!storedUser);
       const storedToken = await secureStorage.getItem(TOKEN_STORAGE_KEY);
-      console.log('🔐 [AUTH] Stored token retrieved:', !!storedToken);
+      console.log("🔐 [AUTH] Stored token retrieved:", !!storedToken);
 
       if (storedUser && storedToken) {
         const user = JSON.parse(storedUser) as User;
@@ -224,7 +224,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           isInitialized: true,
         });
       } else {
-        console.log('🔐 [AUTH] No stored credentials found');
+        console.log("🔐 [AUTH] No stored credentials found");
         set({
           isLoading: false,
           isInitialized: true,
@@ -237,7 +237,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isInitialized: true,
       });
     } finally {
-      console.log('🔐 [AUTH] loadStoredAuth completed');
+      console.log("🔐 [AUTH] loadStoredAuth completed");
     }
   },
 }));

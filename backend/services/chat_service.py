@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -19,8 +20,11 @@ class ChatService:
 
     def __init__(self):
         self._db = auth_deps.db
+        self._provider = os.getenv("CHAT_PROVIDER", "echo").strip().lower()
 
-    async def ensure_conversation(self, conversation_id: str, user_id: str) -> None:
+    async def ensure_conversation(
+        self, conversation_id: str, user_id: str
+    ) -> None:
         now = datetime.now(timezone.utc)
         await self._db.chat_conversations.update_one(
             {"_id": conversation_id, "user_id": user_id},
@@ -77,7 +81,9 @@ class ChatService:
     ) -> AsyncIterator[str]:
         """Stream assistant response as text deltas."""
         try:
-            async for delta in self._stream_agent_response(user=user, prompt=user_message):
+            async for delta in self._stream_agent_response(
+                user=user, prompt=user_message
+            ):
                 yield delta
         except Exception:
             logger.exception("Chat agent failed")
@@ -91,10 +97,17 @@ class ChatService:
         Replace this with a real LLM integration later.
         """
         _ = user
+
+        provider = self._provider
+        if provider != "echo":
+                        logger.warning(
+                                "Unknown CHAT_PROVIDER=%s; falling back to echo",
+                                provider,
+                        )
         text = f"Echo: {prompt}".strip()
 
         # Stream small chunks to mimic token streaming.
         chunk_size = 12
         for i in range(0, len(text), chunk_size):
             await asyncio.sleep(0)  # allow cooperative scheduling
-            yield text[i : i + chunk_size]
+            yield text[i:i + chunk_size]

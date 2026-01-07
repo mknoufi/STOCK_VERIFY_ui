@@ -43,9 +43,23 @@ async def chat_websocket(
     - Server: {"type":"text_delta","message_id":"...","content":"..."}
     """
 
+    requested_conversation_id = conversation_id
+
     user = await _authenticate_ws_user(token)
     if not user:
         await websocket.accept()
+        try:
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "error": "unauthorized",
+                    "detail": "Invalid or missing token",
+                    "conversation_id": requested_conversation_id,
+                    "message_id": None,
+                }
+            )
+        except Exception:
+            pass
         await websocket.close(code=1008)
         return
 
@@ -53,12 +67,26 @@ async def chat_websocket(
 
     user_id = str(user.get("_id") or user.get("username") or "")
     if not user_id:
+        try:
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "error": "unauthorized",
+                    "detail": "User not found",
+                    "conversation_id": requested_conversation_id,
+                    "message_id": None,
+                }
+            )
+        except Exception:
+            pass
         await websocket.close(code=1008)
         return
 
     conversation_id = conversation_id or uuid4().hex
 
     service = ChatService()
+
+    current_message_id: Optional[str] = None
 
     await websocket.send_json(
         {
@@ -91,7 +119,9 @@ async def chat_websocket(
                     {
                         "type": "error",
                         "error": "invalid_message",
-                        "detail": ("Expected a user_message with string content"),
+                        "detail": "Expected a user_message with string " "content",
+                        "conversation_id": conversation_id,
+                        "message_id": None,
                     }
                 )
                 continue
@@ -106,6 +136,7 @@ async def chat_websocket(
             )
 
             assistant_message_id = uuid4().hex
+            current_message_id = assistant_message_id
             await websocket.send_json(
                 {
                     "type": "assistant_start",
@@ -157,6 +188,8 @@ async def chat_websocket(
                     "type": "error",
                     "error": "server_error",
                     "detail": str(e),
+                    "conversation_id": conversation_id,
+                    "message_id": current_message_id,
                 }
             )
         except Exception:

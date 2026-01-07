@@ -59,7 +59,12 @@ import { useAuthStore } from "../../src/store/authStore";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 
-type DashboardTab = "overview" | "monitoring" | "reports" | "analytics" | "diagnosis";
+type DashboardTab =
+  | "overview"
+  | "monitoring"
+  | "reports"
+  | "analytics"
+  | "diagnosis";
 
 // Typography helper to map Aurora tokens to styles
 const typography = {
@@ -250,7 +255,10 @@ export default function DashboardWeb() {
   };
 
   const prepareSessionChartData = () => {
-    if (!sessionsAnalytics?.sessions_by_date || Object.keys(sessionsAnalytics.sessions_by_date).length === 0) {
+    if (
+      !sessionsAnalytics?.sessions_by_date ||
+      Object.keys(sessionsAnalytics.sessions_by_date).length === 0
+    ) {
       const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       return days.map((day) => ({
         x: day,
@@ -265,7 +273,7 @@ export default function DashboardWeb() {
     return last7Dates.map((date) => {
       const count = sessionsAnalytics.sessions_by_date[date];
       const dateObj = new Date(date);
-      const label = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+      const label = dateObj.toLocaleDateString(undefined, { weekday: "short" });
       return {
         x: label,
         y: count,
@@ -294,7 +302,10 @@ export default function DashboardWeb() {
   const handleAutoFix = async (issueId: string) => {
     try {
       setRefreshing(true);
-      const result = await diagnoseError({ error_type: issueId, error_message: "auto_fix" });
+      const result = await diagnoseError({
+        error_type: issueId,
+        error_message: "auto_fix",
+      });
       if (result.fixed) {
         Alert.alert("Success", "Issue has been automatically resolved.");
         await loadDashboardData(true);
@@ -379,7 +390,9 @@ export default function DashboardWeb() {
                   ]}
                 >
                   <Ionicons
-                    name={issue.severity === "critical" ? "alert-circle" : "warning"}
+                    name={
+                      issue.severity === "critical" ? "alert-circle" : "warning"
+                    }
                     size={20}
                     color={
                       issue.severity === "critical"
@@ -494,7 +507,7 @@ export default function DashboardWeb() {
           <Text style={styles.quickStatValue}>
             {servicesStatus
               ? Object.values(servicesStatus).filter((s: any) => s.running)
-                .length
+                  .length
               : 0}
             /4
           </Text>

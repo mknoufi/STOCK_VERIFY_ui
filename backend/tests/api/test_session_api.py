@@ -1,13 +1,14 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from fastapi import HTTPException
+
 from backend.api.session_api import (
     SessionCreate,
     create_session,
     get_sessions,
     init_session_api,
 )
-from fastapi import HTTPException
 
 
 @pytest.fixture(autouse=True)

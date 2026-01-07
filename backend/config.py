@@ -12,17 +12,13 @@ try:
     from pydantic_settings import (
         BaseSettings as PydanticBaseSettings,  # type: ignore[no-redef]
     )
-    from pydantic_settings import (
-        SettingsConfigDict,
-    )
+    from pydantic_settings import SettingsConfigDict
 
     HAS_PYDANTIC_V2 = True
 except ImportError:
     HAS_PYDANTIC_V2 = False
     try:
-        from pydantic import (
-            BaseSettings as PydanticBaseSettingsFallback,
-        )
+        from pydantic import BaseSettings as PydanticBaseSettingsFallback
     except (
         ImportError
     ) as exc:  # pragma: no cover - configuration import should succeed in production

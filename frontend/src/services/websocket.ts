@@ -4,14 +4,14 @@ class WebSocketService {
   private ws: WebSocket | null = null;
   private handlers: Map<string, MessageHandler[]> = new Map();
   private reconnectInterval: number = 5000;
-  private url: string = '';
+  private url: string = "";
 
   connect(url: string) {
     this.url = url;
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.log("WebSocket connected");
     };
 
     this.ws.onmessage = (event) => {
@@ -20,17 +20,17 @@ class WebSocketService {
         const { type, payload } = message;
         this.notify(type, payload);
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error("Error parsing WebSocket message:", error);
       }
     };
 
     this.ws.onclose = () => {
-      console.log('WebSocket disconnected. Reconnecting in 5s...');
+      console.log("WebSocket disconnected. Reconnecting in 5s...");
       setTimeout(() => this.connect(this.url), this.reconnectInterval);
     };
 
     this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error("WebSocket error:", error);
     };
   }
 
@@ -46,7 +46,7 @@ class WebSocketService {
     if (handlers) {
       this.handlers.set(
         type,
-        handlers.filter((h) => h !== handler)
+        handlers.filter((h) => h !== handler),
       );
     }
   }
@@ -62,7 +62,7 @@ class WebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({ type, payload }));
     } else {
-      console.warn('WebSocket is not connected');
+      console.warn("WebSocket is not connected");
     }
   }
 

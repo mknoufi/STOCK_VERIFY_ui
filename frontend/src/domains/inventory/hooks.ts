@@ -1,5 +1,5 @@
-import { useDomainAction } from '../../hooks/useDomainAction';
-import { getItemByBarcode, createCountLine, getCountLines } from './services';
+import { useDomainAction } from "../../hooks/useDomainAction";
+import { getItemByBarcode, createCountLine, getCountLines } from "./services";
 
 /**
  * Hook for looking up items by barcode.

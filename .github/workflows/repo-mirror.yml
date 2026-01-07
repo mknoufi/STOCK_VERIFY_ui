@@ -1,8 +1,7 @@
 name: Repo Mirror to New Repository
 
+# Only run on manual trigger - requires GH_PAT secret to be configured
 on:
-  push:
-    branches: [main, master]
   workflow_dispatch:
     inputs:
       target_owner:
@@ -25,8 +24,6 @@ on:
 jobs:
   mirror:
     runs-on: ubuntu-latest
-    # Only run if GH_PAT secret is configured
-    if: ${{ secrets.GH_PAT != '' }}
     env:
       # Required: a Personal Access Token with repo scope
       GH_TOKEN: ${{ secrets.GH_PAT }}

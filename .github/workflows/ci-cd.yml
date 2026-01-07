@@ -310,6 +310,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push frontend
+        if: hashFiles('frontend/Dockerfile') != ''
         uses: docker/build-push-action@v5
         with:
           context: ./frontend

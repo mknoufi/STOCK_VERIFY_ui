@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from backend.api.mapping_api import (
     ColumnMapping,
     MappingConfig,

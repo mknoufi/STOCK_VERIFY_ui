@@ -41,7 +41,9 @@ async def change_pin(
 
     # Verify current password before allowing PIN change
     hashed_password = current_user.get("hashed_password")
-    if not hashed_password or not verify_password(request.current_password, hashed_password):
+    if not hashed_password or not verify_password(
+        request.current_password, hashed_password
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Current password is incorrect",
@@ -60,12 +62,14 @@ async def change_pin(
 @router.post("/auth/login/pin")
 async def login_with_pin(
     request: PinLoginRequest,
-    http_request: Request,
     db: AsyncIOMotorDatabase = Depends(get_db),
+    http_request: Request = None,
 ):
     """Login with PIN."""
     # Rate limit login attempts by IP
-    ip_address = http_request.client.host if http_request and http_request.client else "unknown"
+    ip_address = (
+        http_request.client.host if http_request and http_request.client else "unknown"
+    )
     rate_result = await check_rate_limit(ip_address)
     if rate_result.is_err:
         raise HTTPException(

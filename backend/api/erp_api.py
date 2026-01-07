@@ -121,7 +121,9 @@ def _normalize_barcode_input(
 
 
 @router.get("/erp/items/barcode/{barcode}", response_model=ERPItem)
-async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
+async def get_item_by_barcode(
+    barcode: str, current_user: dict = Depends(get_current_user)
+):
     """
     Get item details by barcode from MongoDB.
     """
@@ -291,7 +293,9 @@ async def get_all_items(
 
 @router.get("/items/search")
 async def search_items_compatibility(
-    query: Optional[str] = Query(None, description="Search term (legacy param 'query')"),
+    query: Optional[str] = Query(
+        None, description="Search term (legacy param 'query')"
+    ),
     search: Optional[str] = Query(None, description="Alternate search param"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),

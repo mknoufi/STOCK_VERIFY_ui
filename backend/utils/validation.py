@@ -508,7 +508,9 @@ async def update_with_verification(
 
         # For upsert, we expect either a match or an upsert
         expected_match = 0 if upsert else 1
-        update_info = verify_update_result(result, collection_name, expected_match=expected_match)
+        update_info = verify_update_result(
+            result, collection_name, expected_match=expected_match
+        )
 
         # Verify document exists after update
         await verify_document_exists(collection, filter_query, collection_name)

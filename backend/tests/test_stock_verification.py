@@ -54,7 +54,9 @@ def mock_count_line():
 
 
 @pytest.mark.asyncio
-async def test_verify_stock_supervisor_only(mock_db, mock_current_user, mock_count_line):
+async def test_verify_stock_supervisor_only(
+    mock_db, mock_current_user, mock_count_line
+):
     """Test that only supervisors can verify stock"""
     from backend.server import verify_stock
 
@@ -148,7 +150,9 @@ async def test_get_count_lines_with_verification_filter(mock_db, mock_current_us
     mock_db.count_lines.find = MagicMock(return_value=mock_cursor)
 
     # Test with verified=True filter
-    await get_count_lines("test-session-id", mock_current_user, page=1, page_size=50, verified=True)
+    await get_count_lines(
+        "test-session-id", mock_current_user, page=1, page_size=50, verified=True
+    )
 
     # Verify filter was applied
     find_call = mock_db.count_lines.find.call_args

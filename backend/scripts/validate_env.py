@@ -16,7 +16,9 @@ def validate_env():
 
     if not os.path.exists(env_path):
         logger.error(".env file not found!")
-        logger.info("Create one from .env.example: cp backend/.env.example backend/.env")
+        logger.info(
+            "Create one from .env.example: cp backend/.env.example backend/.env"
+        )
         return False
 
     load_dotenv(env_path)
@@ -51,7 +53,9 @@ def validate_env():
         if value:
             logger.info(f"✅ {key} is set (optional)")
         else:
-            logger.warning(f"⚠️  {key} not set (optional - only needed for ERP integration)")
+            logger.warning(
+                f"⚠️  {key} not set (optional - only needed for ERP integration)"
+            )
 
     if missing:
         logger.error(f"❌ Missing required keys: {', '.join(missing)}")

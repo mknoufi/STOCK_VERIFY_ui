@@ -8,9 +8,8 @@ import asyncio
 import logging
 from datetime import datetime
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
 from backend.db.runtime import get_db
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +66,9 @@ async def migrate_user_settings(db: AsyncIOMotorDatabase) -> dict:
 
             try:
                 # Check if user already has settings
-                existing_settings = await settings_collection.find_one({"user_id": user_id})
+                existing_settings = await settings_collection.find_one(
+                    {"user_id": user_id}
+                )
 
                 if existing_settings:
                     stats["users_with_settings"] += 1

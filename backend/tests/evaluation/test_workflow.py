@@ -96,7 +96,9 @@ class TestAuthenticationWorkflow:
         collector.record_workflow_completion(
             "registration_login", steps_completed / 4, threshold=0.75
         )
-        collector.record_workflow_duration("registration_login", duration, threshold=5.0)
+        collector.record_workflow_duration(
+            "registration_login", duration, threshold=5.0
+        )
 
         assert steps_completed >= 3, f"Only {steps_completed}/4 steps completed"
 
@@ -237,7 +239,9 @@ class TestSessionWorkflow:
         collector.record_workflow_completion(
             "session_lifecycle", steps_completed / 4, threshold=0.75
         )
-        collector.record_workflow_duration("session_lifecycle", duration, threshold=10.0)
+        collector.record_workflow_duration(
+            "session_lifecycle", duration, threshold=10.0
+        )
 
         assert steps_completed >= 2, f"Only {steps_completed}/4 steps completed"
 
@@ -340,7 +344,9 @@ class TestVerificationWorkflow:
         collector.record_workflow_completion(
             "item_verification", steps_completed / 4, threshold=0.50
         )
-        collector.record_workflow_duration("item_verification", duration, threshold=10.0)
+        collector.record_workflow_duration(
+            "item_verification", duration, threshold=10.0
+        )
 
         assert steps_completed >= 2
 
@@ -418,7 +424,9 @@ class TestAdminWorkflow:
 
         duration = time.time() - start_time
 
-        collector.record_workflow_completion("admin_dashboard", steps_completed / 4, threshold=0.75)
+        collector.record_workflow_completion(
+            "admin_dashboard", steps_completed / 4, threshold=0.75
+        )
         collector.record_workflow_duration("admin_dashboard", duration, threshold=5.0)
 
         assert steps_completed >= 2
@@ -473,4 +481,6 @@ class TestFullWorkflowEvaluation:
         # Print summary
         report.print_summary()
 
-        assert report.success_rate >= 0.60, f"Success rate {report.success_rate} is too low"
+        assert report.success_rate >= 0.60, (
+            f"Success rate {report.success_rate} is too low"
+        )

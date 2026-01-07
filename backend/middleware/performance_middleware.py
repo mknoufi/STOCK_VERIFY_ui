@@ -54,7 +54,9 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
 
             # Add performance headers
             response.headers["X-Response-Time"] = f"{duration:.3f}s"
-            response.headers["X-Request-ID"] = request.headers.get("X-Request-ID", "unknown")
+            response.headers["X-Request-ID"] = request.headers.get(
+                "X-Request-ID", "unknown"
+            )
 
             return response
 
@@ -103,7 +105,9 @@ class CacheMiddleware(BaseHTTPMiddleware):
             and request.url.path not in self.no_cache_paths
         ):
             # Add cache headers
-            response.headers["Cache-Control"] = f"public, max-age={self.default_cache_max_age}"
+            response.headers["Cache-Control"] = (
+                f"public, max-age={self.default_cache_max_age}"
+            )
             response.headers["ETag"] = f'"{hash(request.url.path)}"'
 
         return response

@@ -273,7 +273,11 @@ class AuditService:
                 query["action"] = action_filter.value
 
             cursor = (
-                db[cls.COLLECTION_NAME].find(query).sort("timestamp", -1).skip(offset).limit(limit)
+                db[cls.COLLECTION_NAME]
+                .find(query)
+                .sort("timestamp", -1)
+                .skip(offset)
+                .limit(limit)
             )
 
             logs = await cursor.to_list(length=limit)

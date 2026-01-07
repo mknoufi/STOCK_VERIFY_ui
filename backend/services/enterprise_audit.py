@@ -192,7 +192,9 @@ class EnterpriseAuditService:
 
         # Load last hash for chain continuity
         if self.enable_hash_chain:
-            last_entry = await self.collection.find_one(sort=[("timestamp", -1), ("_id", -1)])
+            last_entry = await self.collection.find_one(
+                sort=[("timestamp", -1), ("_id", -1)]
+            )
             if last_entry:
                 self._last_hash = last_entry.get("entry_hash")
 
@@ -312,7 +314,12 @@ class EnterpriseAuditService:
         )
 
         total = await self.collection.count_documents(query)
-        cursor = self.collection.find(query).sort([("timestamp", -1)]).skip(skip).limit(limit)
+        cursor = (
+            self.collection.find(query)
+            .sort([("timestamp", -1)])
+            .skip(skip)
+            .limit(limit)
+        )
 
         entries = []
         async for doc in cursor:
@@ -354,7 +361,9 @@ class EnterpriseAuditService:
                         "reason": "hash_mismatch",
                     }
                 )
-            elif doc.get("previous_hash") != previous_hash and previous_hash is not None:
+            elif (
+                doc.get("previous_hash") != previous_hash and previous_hash is not None
+            ):
                 invalid_entries.append(
                     {
                         "id": str(doc["_id"]),

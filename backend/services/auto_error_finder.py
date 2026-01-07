@@ -57,7 +57,9 @@ class AutoErrorFinder:
         python_files = [
             f
             for f in python_files
-            if not any(skip in str(f) for skip in ["__pycache__", ".pyc", "venv", "env"])
+            if not any(
+                skip in str(f) for skip in ["__pycache__", ".pyc", "venv", "env"]
+            )
         ]
 
         for py_file in python_files:
@@ -77,11 +79,15 @@ class AutoErrorFinder:
 
         return {
             "total_issues": len(self.issues),
-            "critical_issues": len([i for i in self.issues if i.severity == "critical"]),
+            "critical_issues": len(
+                [i for i in self.issues if i.severity == "critical"]
+            ),
             "warnings": len([i for i in self.issues if i.severity == "warning"]),
             "broken_functions": len(self.broken_functions),
             "issues": [self._issue_to_dict(i) for i in self.issues],
-            "broken_function_details": [self._function_to_dict(bf) for bf in self.broken_functions],
+            "broken_function_details": [
+                self._function_to_dict(bf) for bf in self.broken_functions
+            ],
         }
 
     def _scan_file(self, file_path: Path):
@@ -134,7 +140,9 @@ class AutoErrorFinder:
             if isinstance(node, ast.Try):
                 self._check_try_except(node, file_path)
 
-    def _check_function(self, func_node: ast.FunctionDef, file_path: Path, lines: list[str]):
+    def _check_function(
+        self, func_node: ast.FunctionDef, file_path: Path, lines: list[str]
+    ):
         """Check if a function is broken or incomplete"""
         issues = []
         severity = "info"
@@ -156,7 +164,9 @@ class AutoErrorFinder:
 
         # Check for common error patterns
         if any(isinstance(node, ast.Raise) for node in ast.walk(func_node)):
-            issues.append("Function contains raise statements (may need error handling)")
+            issues.append(
+                "Function contains raise statements (may need error handling)"
+            )
             severity = "info"
 
         # Check for undefined variables in function

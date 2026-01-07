@@ -65,7 +65,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             # Use X-Forwarded-For header for proxied requests, otherwise client host
             forwarded_for = request.headers.get("X-Forwarded-For")
             client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else None
-            user_id = client_ip or (request.client.host if request.client else "anonymous")
+            user_id = client_ip or (
+                request.client.host if request.client else "anonymous"
+            )
 
         # Get endpoint
         endpoint = request.url.path

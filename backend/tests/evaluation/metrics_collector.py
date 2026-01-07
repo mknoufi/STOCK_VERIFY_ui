@@ -119,7 +119,9 @@ class EvaluationReport:
             return 1.0
         # Both PASSED and WARNING are considered successful (WARNING means at threshold)
         successful = sum(
-            1 for m in self.metrics if m.status in [MetricStatus.PASSED, MetricStatus.WARNING]
+            1
+            for m in self.metrics
+            if m.status in [MetricStatus.PASSED, MetricStatus.WARNING]
         )
         return successful / total
 
@@ -137,7 +139,8 @@ class EvaluationReport:
             "success_rate": f"{self.success_rate * 100:.1f}%",
             "duration_seconds": self.duration_seconds,
             "categories": {
-                cat.value: len(self.get_metrics_by_category(cat)) for cat in MetricCategory
+                cat.value: len(self.get_metrics_by_category(cat))
+                for cat in MetricCategory
             },
         }
 
@@ -199,7 +202,9 @@ class EvaluationReport:
             print("\n❌ Failed Metrics:")
             for m in self.metrics:
                 if m.status == MetricStatus.FAILED:
-                    threshold_info = f" (threshold: {m.threshold}{m.unit})" if m.threshold else ""
+                    threshold_info = (
+                        f" (threshold: {m.threshold}{m.unit})" if m.threshold else ""
+                    )
                     print(f"   - {m.name}: {m.value:.2f}{m.unit}{threshold_info}")
 
         print("\n" + "=" * 60)
@@ -235,7 +240,9 @@ class MetricsCollector:
         self.start_time = datetime.now()
         self._timers = {}
 
-    def finish_evaluation(self, metadata: dict[str, Optional[Any]] = None) -> EvaluationReport:
+    def finish_evaluation(
+        self, metadata: dict[str, Optional[Any]] = None
+    ) -> EvaluationReport:
         """Finish evaluation and generate report."""
         report = EvaluationReport(
             metrics=self.metrics.copy(),
@@ -528,18 +535,26 @@ class MetricsCollector:
 
         # Mean
         mean = statistics.mean(latencies)
-        metrics["mean"] = self.record_latency(f"{name}_mean", mean, threshold=p99_threshold * 0.5)
+        metrics["mean"] = self.record_latency(
+            f"{name}_mean", mean, threshold=p99_threshold * 0.5
+        )
 
         # P50 (median)
         p50 = sorted_latencies[int(n * 0.5)]
-        metrics["p50"] = self.record_latency(f"{name}_p50", p50, threshold=p99_threshold * 0.6)
+        metrics["p50"] = self.record_latency(
+            f"{name}_p50", p50, threshold=p99_threshold * 0.6
+        )
 
         # P95
         p95 = sorted_latencies[int(n * 0.95)]
-        metrics["p95"] = self.record_latency(f"{name}_p95", p95, threshold=p99_threshold * 0.8)
+        metrics["p95"] = self.record_latency(
+            f"{name}_p95", p95, threshold=p99_threshold * 0.8
+        )
 
         # P99
         p99 = sorted_latencies[int(n * 0.99)] if n >= 100 else sorted_latencies[-1]
-        metrics["p99"] = self.record_latency(f"{name}_p99", p99, threshold=p99_threshold)
+        metrics["p99"] = self.record_latency(
+            f"{name}_p99", p99, threshold=p99_threshold
+        )
 
         return metrics

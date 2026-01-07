@@ -149,7 +149,9 @@ class DataGovernanceService:
         results: dict[str, Any] = {}
 
         async for policy_doc in self.policies_collection.find():
-            policy = RetentionPolicy(**{k: v for k, v in policy_doc.items() if k != "_id"})
+            policy = RetentionPolicy(
+                **{k: v for k, v in policy_doc.items() if k != "_id"}
+            )
 
             cutoff_date = datetime.utcnow() - timedelta(days=policy.retention_days)
             collection = self.db[policy.collection_name]
@@ -200,7 +202,9 @@ class DataGovernanceService:
                 )
 
             except Exception as e:
-                logger.error(f"Failed to apply retention for {policy.collection_name}: {e}")
+                logger.error(
+                    f"Failed to apply retention for {policy.collection_name}: {e}"
+                )
                 results[policy.collection_name] = {"error": str(e)}
 
         return results
@@ -238,7 +242,9 @@ class DataGovernanceService:
 
         return str(result.inserted_id)
 
-    async def process_access_request(self, request_id: str, processed_by: str) -> dict[str, Any]:
+    async def process_access_request(
+        self, request_id: str, processed_by: str
+    ) -> dict[str, Any]:
         """
         Process a data access request (GDPR Art. 15)
         Returns all data associated with the subject
@@ -378,7 +384,9 @@ class DataGovernanceService:
             requests.append(doc)
         return requests
 
-    async def get_request_status(self, request_id: str) -> Optional[dict[str, Optional[Any]]]:
+    async def get_request_status(
+        self, request_id: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Get status of a data subject request"""
         doc = await self.requests_collection.find_one({"_id": request_id})
         if doc:
@@ -433,9 +441,13 @@ class DataGovernanceService:
 
         # Calculate statistics
         total_collections = len(inventory)
-        collections_with_policies = sum(1 for v in inventory.values() if v["has_retention_policy"])
+        collections_with_policies = sum(
+            1 for v in inventory.values() if v["has_retention_policy"]
+        )
         personal_data_collections = sum(
-            1 for v in inventory.values() if v["category"] == DataCategory.PERSONAL.value
+            1
+            for v in inventory.values()
+            if v["category"] == DataCategory.PERSONAL.value
         )
 
         return {

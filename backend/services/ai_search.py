@@ -43,7 +43,9 @@ class AISearchService:
             self._model = SentenceTransformer("all-MiniLM-L6-v2")
             logger.info("Semantic search model loaded successfully.")
         except ImportError:
-            logger.error("sentence-transformers not installed. Semantic search disabled.")
+            logger.error(
+                "sentence-transformers not installed. Semantic search disabled."
+            )
             self._model = None
         except Exception as e:
             logger.error(f"Failed to load semantic model: {e}")
@@ -89,7 +91,9 @@ class AISearchService:
             # 3. Encode Candidates (in batch)
             # Ideally we'd cache these, but for "reranking" small sets (e.g. 50-100), live encoding is OK.
             # For larger sets, we need pre-computed embeddings.
-            candidate_embeddings = self._model.encode(candidate_texts, convert_to_tensor=True)
+            candidate_embeddings = self._model.encode(
+                candidate_texts, convert_to_tensor=True
+            )
 
             # 4. Calculate Cosine Similarity
             scores = util.cos_sim(query_embedding, candidate_embeddings)[0]

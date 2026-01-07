@@ -1,8 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from fastapi import HTTPException
-
 from backend.api.erp_api import (
     _normalize_barcode_input,
     get_all_items,
@@ -11,6 +9,7 @@ from backend.api.erp_api import (
     refresh_item_stock,
     search_items_compatibility,
 )
+from fastapi import HTTPException
 
 
 @pytest.fixture(autouse=True)
@@ -157,7 +156,9 @@ async def test_get_all_items_search(setup_mocks):
 
     current_user = {"username": "testuser"}
 
-    response = await get_all_items(search="Test", current_user=current_user, page=1, page_size=10)
+    response = await get_all_items(
+        search="Test", current_user=current_user, page=1, page_size=10
+    )
 
     assert len(response["items"]) == 1
     assert response["items"][0].item_code == "CODE1"

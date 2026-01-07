@@ -70,7 +70,7 @@ class TestPinAuth:
         response = client.post("/api/auth/change-pin", json=payload, headers=headers)
 
         assert response.status_code == 200
-        assert response.json()["message"] == "PIN updated successfully"
+        assert response.json()["message"] == "PIN changed successfully"
 
     def test_change_pin_invalid_format(self, client, auth_token, test_user):
         """Test PIN change with invalid format (too short)"""

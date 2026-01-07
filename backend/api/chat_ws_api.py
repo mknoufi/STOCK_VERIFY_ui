@@ -119,7 +119,7 @@ async def chat_websocket(
                     {
                         "type": "error",
                         "error": "invalid_message",
-                        "detail": "Expected a user_message with string " "content",
+                        "detail": "Expected a user_message with string content",
                         "conversation_id": conversation_id,
                         "message_id": None,
                     }

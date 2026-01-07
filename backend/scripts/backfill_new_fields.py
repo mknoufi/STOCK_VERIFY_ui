@@ -14,10 +14,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os  # noqa: E402
 
+from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
 from motor.motor_asyncio import AsyncIOMotorClient  # noqa: E402
-
-from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Load environment variables
 load_dotenv()
@@ -134,7 +133,9 @@ def _needs_update(mongo_item, set_fields):
         if isinstance(current_value, float) and isinstance(new_value, float):
             if abs(current_value - new_value) > 0.001:
                 return True
-        elif current_value != new_value and not (current_value is None and new_value in ("", None)):
+        elif current_value != new_value and not (
+            current_value is None and new_value in ("", None)
+        ):
             return True
     return False
 
@@ -234,7 +235,9 @@ async def backfill_new_fields():
         # Connect to SQL Server
         logger.info(f"Connecting to SQL Server: {sql_host}:{sql_port}/{sql_database}")
         try:
-            sql_connector = _connect_sql(sql_host, sql_port, sql_database, sql_user, sql_password)
+            sql_connector = _connect_sql(
+                sql_host, sql_port, sql_database, sql_user, sql_password
+            )
             logger.info("✓ SQL Server connected")
         except Exception as e:
             logger.error(f"Failed to connect to SQL Server: {str(e)}")
@@ -267,7 +270,9 @@ async def backfill_new_fields():
         # Update each MongoDB item
         logger.info("Updating MongoDB items with new fields...")
         for mongo_item in mongo_items:
-            await _process_mongo_item(mongo_item, sql_item_map, sql_connector, db, stats)
+            await _process_mongo_item(
+                mongo_item, sql_item_map, sql_connector, db, stats
+            )
 
         _log_summary(stats)
 

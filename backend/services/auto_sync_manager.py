@@ -186,7 +186,9 @@ class AutoSyncManager:
 
         # Check if enough time has passed since last sync
         if self._last_sync_attempt:
-            time_since_last = (datetime.utcnow() - self._last_sync_attempt).total_seconds()
+            time_since_last = (
+                datetime.utcnow() - self._last_sync_attempt
+            ).total_seconds()
             if time_since_last < self.sync_interval:
                 logger.info(
                     f"Sync skipped - only {time_since_last:.0f}s since last sync (interval: {self.sync_interval}s)"
@@ -246,7 +248,9 @@ class AutoSyncManager:
             "sql_available": self._sql_available,
             "sync_in_progress": self._sync_in_progress,
             "last_connection_check": (
-                self._last_connection_check.isoformat() if self._last_connection_check else None
+                self._last_connection_check.isoformat()
+                if self._last_connection_check
+                else None
             ),
             "last_sync_attempt": (
                 self._last_sync_attempt.isoformat() if self._last_sync_attempt else None

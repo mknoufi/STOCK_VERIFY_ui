@@ -35,9 +35,15 @@ class FieldDefinitionCreate(BaseModel):
     field_name: str = Field(..., description="Internal field name")
     field_type: str = Field(..., description="Field type")
     display_label: str = Field(..., description="Display label")
-    db_mapping: Optional[str] = Field(default=None, description="Database field mapping")
-    options: Optional[list[str]] = Field(default=None, description="Options for select types")
-    validation_rules: dict[str, Optional[Any]] = Field(default=None, description="Validation rules")
+    db_mapping: Optional[str] = Field(
+        default=None, description="Database field mapping"
+    )
+    options: Optional[list[str]] = Field(
+        default=None, description="Options for select types"
+    )
+    validation_rules: dict[str, Optional[Any]] = Field(
+        default=None, description="Validation rules"
+    )
     default_value: Optional[Any] = Field(default=None, description="Default value")
     required: bool = Field(False, description="Is field required")
     visible: bool = Field(True, description="Is field visible")

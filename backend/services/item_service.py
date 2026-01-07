@@ -9,7 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class EnhancedItemService:
-    def __init__(self, sql_connector: SQLServerConnector, cache_service: RedisCacheService):
+    def __init__(
+        self, sql_connector: SQLServerConnector, cache_service: RedisCacheService
+    ):
         self.sql_connector = sql_connector
         self.cache_service = cache_service
         self.CACHE_TTL = 3600  # 1 hour
@@ -27,7 +29,9 @@ class EnhancedItemService:
         # Run synchronous SQL call in a separate thread to avoid blocking the event loop
         try:
             loop = asyncio.get_event_loop()
-            item = await loop.run_in_executor(None, self.sql_connector.get_item_by_barcode, barcode)
+            item = await loop.run_in_executor(
+                None, self.sql_connector.get_item_by_barcode, barcode
+            )
 
             if item:
                 await self.cache_service.set(cache_key, item, self.CACHE_TTL)
@@ -50,7 +54,9 @@ class EnhancedItemService:
         # Fetch from SQL Server
         try:
             loop = asyncio.get_event_loop()
-            item = await loop.run_in_executor(None, self.sql_connector.get_item_by_code, item_code)
+            item = await loop.run_in_executor(
+                None, self.sql_connector.get_item_by_code, item_code
+            )
 
             if item:
                 await self.cache_service.set(cache_key, item, self.CACHE_TTL)

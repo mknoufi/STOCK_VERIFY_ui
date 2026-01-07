@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 class RefreshTokenService:
     """Service for managing refresh tokens"""
 
-    def __init__(self, db: AsyncIOMotorDatabase, secret_key: str, algorithm: str = "HS256"):
+    def __init__(
+        self, db: AsyncIOMotorDatabase, secret_key: str, algorithm: str = "HS256"
+    ):
         self.db = db
         self.secret_key = secret_key
         self.algorithm = algorithm
@@ -40,11 +42,15 @@ class RefreshTokenService:
 
         return token
 
-    async def store_refresh_token(self, token: str, username: str, expires_at: datetime):
+    async def store_refresh_token(
+        self, token: str, username: str, expires_at: datetime
+    ):
         """Store refresh token in database (public method)"""
         await self._store_refresh_token(token, username, expires_at)
 
-    async def _store_refresh_token(self, token: str, username: str, expires_at: datetime):
+    async def _store_refresh_token(
+        self, token: str, username: str, expires_at: datetime
+    ):
         """Store refresh token in database"""
         try:
             await self.db.refresh_tokens.insert_one(
@@ -73,7 +79,9 @@ class RefreshTokenService:
         except Exception as e:
             logger.error(f"Error cleaning up tokens: {str(e)}")
 
-    async def verify_refresh_token(self, token: str) -> Optional[dict[str, Optional[Any]]]:
+    async def verify_refresh_token(
+        self, token: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Verify and return refresh token payload"""
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
@@ -127,7 +135,9 @@ class RefreshTokenService:
             logger.error(f"Error revoking user tokens: {str(e)}")
             return 0
 
-    async def refresh_access_token(self, refresh_token: str) -> Optional[dict[str, Optional[Any]]]:
+    async def refresh_access_token(
+        self, refresh_token: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Generate new access token from refresh token"""
         payload = await self.verify_refresh_token(refresh_token)
 
@@ -165,7 +175,9 @@ class RefreshTokenService:
             "expires_in": expires_in_seconds,
             "user": {
                 "username": str(username) if username else "",
-                "full_name": (str(user_profile.get("full_name", "")) if user_profile else ""),
+                "full_name": (
+                    str(user_profile.get("full_name", "")) if user_profile else ""
+                ),
                 "role": str(role) if role else "",
             },
         }

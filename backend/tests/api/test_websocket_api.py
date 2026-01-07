@@ -1,11 +1,10 @@
 import os
 
 import pytest
-from fastapi.testclient import TestClient
-
 from backend.core.websocket_manager import manager
 from backend.server import app
 from backend.utils.auth_utils import create_access_token
+from fastapi.testclient import TestClient
 
 # Test Data
 SUPERVISOR_USER = "supervisor_ws"
@@ -55,15 +54,17 @@ def test_websocket_connect_success(client):
 def test_websocket_connect_invalid_token(client):
     """Test connection with invalid token.
 
-    Note: When auth fails, the server accepts then immediately closes the connection.
-    Starlette TestClient doesn't raise WebSocketDisconnect for graceful closes,
+    Note: When auth fails, the server accepts then immediately closes
+    the connection. Starlette TestClient doesn't raise WebSocketDisconnect
+    for graceful closes,
     so we verify by attempting to receive a message which should fail.
     """
     from starlette.websockets import WebSocketDisconnect
 
     with client.websocket_connect("/ws/updates?token=invalid_token") as ws:
-        # Connection was accepted, but should be immediately closed by server
-        # Attempting to receive should raise WebSocketDisconnect
+        error = ws.receive_json()
+        assert error.get("type") == "error"
+        assert error.get("error") == "unauthorized"
         with pytest.raises(WebSocketDisconnect):
             ws.receive_text()
 
@@ -71,8 +72,9 @@ def test_websocket_connect_invalid_token(client):
 def test_websocket_connect_wrong_role(client):
     """Test connection with non-supervisor role.
 
-    Note: When auth fails, the server accepts then immediately closes the connection.
-    Starlette TestClient doesn't raise WebSocketDisconnect for graceful closes,
+    Note: When auth fails, the server accepts then immediately closes
+    the connection. Starlette TestClient doesn't raise WebSocketDisconnect
+    for graceful closes,
     so we verify by attempting to receive a message which should fail.
     """
     from starlette.websockets import WebSocketDisconnect
@@ -82,14 +84,18 @@ def test_websocket_connect_wrong_role(client):
     )
 
     with client.websocket_connect(f"/ws/updates?token={token}") as ws:
-        # Connection was accepted, but should be immediately closed by server
-        # Attempting to receive should raise WebSocketDisconnect
+        error = ws.receive_json()
+        assert error.get("type") == "error"
+        assert error.get("error") == "forbidden"
         with pytest.raises(WebSocketDisconnect):
             ws.receive_text()
 
 
 def test_websocket_manager_broadcast():
-    """Test WebSocketManager broadcast logic (unit test without full client)."""
+    """Test WebSocketManager broadcast logic.
+
+    Unit test without full client.
+    """
     import asyncio
     from unittest.mock import AsyncMock
 

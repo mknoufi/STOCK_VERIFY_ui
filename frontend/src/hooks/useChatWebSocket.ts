@@ -32,7 +32,9 @@ export const useChatWebSocket = (initialConversationId?: string) => {
   const [conversationId, setConversationId] = useState<string | null>(
     initialConversationId ?? null,
   );
-  const conversationIdRef = useRef<string | null>(initialConversationId ?? null);
+  const conversationIdRef = useRef<string | null>(
+    initialConversationId ?? null,
+  );
   const [lastEvent, setLastEvent] = useState<ChatEvent | null>(null);
   const [assistantText, setAssistantText] = useState<string>("");
 

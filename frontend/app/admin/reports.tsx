@@ -150,7 +150,17 @@ export default function ReportsScreen() {
                     style={[
                       styles.reportIconContainer,
                       {
-                        backgroundColor: `${getCategoryColor(report.category)}20`,
+                        backgroundColor: (() => {
+                          const color = getCategoryColor(report.category);
+                          // Normalize 3-digit hex (#RGB) to 6-digit (#RRGGBB) before adding alpha
+                          if (color.length === 4 && color.startsWith("#")) {
+                            const r = color[1];
+                            const g = color[2];
+                            const b = color[3];
+                            return `#${r}${r}${g}${g}${b}${b}20`;
+                          }
+                          return `${color}20`;
+                        })(),
                       },
                     ]}
                   >

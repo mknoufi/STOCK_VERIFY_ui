@@ -1,0 +1,2 @@
+# Normalize text files to LF in the repo to avoid cross-platform line-ending churn
+* text=auto eol=lf

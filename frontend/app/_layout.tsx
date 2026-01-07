@@ -61,7 +61,7 @@ export default function RootLayout() {
   const theme = useTheme();
   useSystemTheme();
   const segments = useSegments();
-  const router = useRouter();
+  const _router = useRouter();
   const [isInitialized, setIsInitialized] = React.useState(false);
   const [initError, setInitError] = React.useState<string | null>(null);
   const cleanupRef = React.useRef<(() => void)[]>([]);

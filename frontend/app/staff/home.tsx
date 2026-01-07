@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
+  Alert as _Alert,
   StyleSheet,
   Platform,
   ScrollView,

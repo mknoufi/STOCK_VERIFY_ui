@@ -1,6 +1,6 @@
 # Implementation Plan: Comprehensive App Improvements
 
-**Branch**: `002-system-modernization-and-enhancements` | **Date**: 2025-12-25 | **Spec**: [specs/002-system-modernization-and-enhancements/spec.md](../spec.md)
+**Branch**: `002-system-modernization-and-enhancements` | **Date**: 2025-12-25 | **Spec**: [specs/002-system-modernization-and-enhancements/spec.md](./spec.md)
 **Input**: Feature specification from `/specs/002-system-modernization-and-enhancements/spec.md`
 
 ## Summary

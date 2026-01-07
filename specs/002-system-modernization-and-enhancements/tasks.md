@@ -1,6 +1,6 @@
 # Tasks: Comprehensive App Improvements
 
-**Spec**: [specs/002-system-modernization-and-enhancements/spec.md](../spec.md)
+**Spec**: [specs/002-system-modernization-and-enhancements/spec.md](./spec.md)
 **Status**: In Progress
 
 ## Phase 0: Critical Fixes (Prerequisites)

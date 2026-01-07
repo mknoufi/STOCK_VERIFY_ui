@@ -211,7 +211,7 @@ npm install lottie-react-native
 ## 🎨 UI ENHANCEMENTS
 
 ### 13. **React Native Reanimated Carousel** ⭐
-**Repo:** https://github.com/margelo/react-native-reanimated-carousel
+**Repo:** (link removed; repo no longer available at this URL)
 **Why:** Smooth carousels
 
 **Use Cases:**

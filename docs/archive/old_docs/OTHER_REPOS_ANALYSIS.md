@@ -28,7 +28,7 @@
 ### ⭐ HIGHLY RECOMMENDED
 
 #### 1. **React Native Reusables** ⭐ STRONGLY RECOMMEND
-- **Repo:** https://github.com/nativefier/react-native-reusables
+- **Repo:** (link removed; repo no longer available)
 - **Why:** Universal components with accessibility focus
 - **Use for:**
   - Enhanced form components

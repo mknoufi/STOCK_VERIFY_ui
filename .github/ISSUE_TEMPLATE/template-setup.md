@@ -52,7 +52,7 @@ MONGODB_URI=mongodb://localhost:27017/...
 <!-- Add any other context, screenshots, or information -->
 
 ## Checklist
-- [ ] I have read [TEMPLATE_README.md](../TEMPLATE_README.md)
-- [ ] I have checked [docs/](../docs/) for relevant documentation
+- [ ] I have read [README.md](../../README.md)
+- [ ] I have checked [docs/](../../docs/) for relevant documentation
 - [ ] I have reviewed the troubleshooting section
 - [ ] This is not a security issue (if it is, please report privately)

@@ -337,7 +337,7 @@ make ci  # Runs lint, typecheck, test
 
 ## Resources
 
-- [API Reference](../docs/API_REFERENCE.md)
-- [API Contracts](../docs/API_CONTRACTS.md)
-- [Architecture Overview](../docs/ARCHITECTURE.md)
-- [Dynamic Fields Guide](../docs/DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md)
+- [API Reference](../../docs/archive/old_docs/API_REFERENCE.md)
+- [API Contracts](../../docs/API_CONTRACTS.md)
+- [Architecture Overview](../../docs/archive/old_docs/ARCHITECTURE.md)
+- [Dynamic Fields Guide](../../docs/archive/old_docs/DYNAMIC_FIELDS_AND_REPORTS_GUIDE.md)

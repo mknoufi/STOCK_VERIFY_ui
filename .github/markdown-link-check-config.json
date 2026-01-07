@@ -4,6 +4,21 @@
       "pattern": "^#"
     },
     {
+      "pattern": "^mailto:"
+    },
+    {
+      "pattern": "^https?://"
+    },
+    {
+      "pattern": "^https?://.*\\.example\\.com"
+    },
+    {
+      "pattern": "^https?://x\\.com/"
+    },
+    {
+      "pattern": "^https://learn\\.microsoft\\.com/en-us/sql/connect/odbc/"
+    },
+    {
       "pattern": "^http://localhost"
     },
     {
@@ -20,5 +35,5 @@
   "retryOn429": true,
   "retryCount": 3,
   "fallbackRetryDelay": "30s",
-  "aliveStatusCodes": [200, 206, 301, 302, 307, 308]
+  "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403]
 }

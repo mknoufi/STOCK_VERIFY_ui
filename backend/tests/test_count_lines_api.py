@@ -269,7 +269,9 @@ class TestCreateCountLine:
         assert exc_info.value.status_code == 404
 
     @pytest.mark.asyncio
-    async def test_create_count_line_variance_without_reason(self, mock_db, line_data, erp_item):
+    async def test_create_count_line_variance_without_reason(
+        self, mock_db, line_data, erp_item
+    ):
         """Test count line creation with variance but no reason"""
         line_data.variance_reason = None
         line_data.correction_reason = None
@@ -512,7 +514,9 @@ class TestCountLinesAPIEdgeCases:
         mock_db.count_lines.count_documents = AsyncMock(return_value=0)
         mock_db.count_lines.insert_one = AsyncMock()
         # Simulate error in session stats update
-        mock_db.count_lines.aggregate = AsyncMock(side_effect=Exception("Database error"))
+        mock_db.count_lines.aggregate = AsyncMock(
+            side_effect=Exception("Database error")
+        )
         mock_db.sessions.update_one = AsyncMock()
 
         with patch("backend.api.count_lines_api._get_db_client", return_value=mock_db):

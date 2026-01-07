@@ -39,7 +39,9 @@ class WebSocketManager:
         self.active_connections.append(connection)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections = [c for c in self.active_connections if c.websocket != websocket]
+        self.active_connections = [
+            c for c in self.active_connections if c.websocket != websocket
+        ]
 
     async def broadcast(self, message: dict, target_roles: Optional[list[str]] = None):
         json_message = json.dumps(message, default=str)

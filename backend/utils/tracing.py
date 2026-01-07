@@ -27,7 +27,9 @@ def _is_tracing_enabled() -> bool:
     if os.getenv("STOCK_VERIFY_TRACING_ENABLED"):
         return True
 
-    if os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or os.getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"):
+    if os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") or os.getenv(
+        "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
+    ):
         return True
 
     # Default: disabled to avoid surprises in production
@@ -45,7 +47,9 @@ def init_tracing(service_name: Optional[str] = None) -> None:
     """
 
     if not _is_tracing_enabled():
-        logger.info("Tracing is disabled (set STOCK_VERIFY_TRACING_ENABLED=1 to enable)")
+        logger.info(
+            "Tracing is disabled (set STOCK_VERIFY_TRACING_ENABLED=1 to enable)"
+        )
         return
 
     try:
@@ -132,16 +136,19 @@ def instrument_fastapi_app(app) -> None:
 def trace_span(name: str, attributes: Optional[dict] = None, **kwargs):
     """Decorator/Context manager for tracing a span (dummy implementation)."""
     from contextlib import nullcontext
+
     return nullcontext()
 
 
 def trace_report_generation(report_type: str):
     """Decorator for tracing report generation (dummy implementation)."""
     from contextlib import nullcontext
+
     return nullcontext()
 
 
 def trace_dashboard_query(query_type: str):
     """Decorator for tracing dashboard queries (dummy implementation)."""
     from contextlib import nullcontext
+
     return nullcontext()

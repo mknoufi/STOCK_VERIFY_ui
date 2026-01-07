@@ -30,7 +30,9 @@ class TestAuthenticationWorkflow:
             "role": "staff",
         }
 
-        register_response = await async_client.post("/api/auth/register", json=user_data)
+        register_response = await async_client.post(
+            "/api/auth/register", json=user_data
+        )
         assert register_response.status_code == status.HTTP_201_CREATED
 
         # Login with credentials
@@ -72,7 +74,9 @@ class TestSessionWorkflow:
         return {"Authorization": f"Bearer {token}"}
 
     @pytest.mark.asyncio
-    async def test_session_creation(self, async_client: AsyncClient, auth_headers: dict[str, str]):
+    async def test_session_creation(
+        self, async_client: AsyncClient, auth_headers: dict[str, str]
+    ):
         """Test creating a counting session"""
         logger.info("Testing session creation")
 
@@ -83,7 +87,9 @@ class TestSessionWorkflow:
         }
 
         # print(f"DEBUG: auth_headers: {auth_headers}")
-        response = await async_client.post("/api/sessions", json=session_data, headers=auth_headers)
+        response = await async_client.post(
+            "/api/sessions", json=session_data, headers=auth_headers
+        )
         # print(f"DEBUG: response status: {response.status_code}")
         # print(f"DEBUG: response text: {response.text}")
 
@@ -166,12 +172,16 @@ class TestERPItemsWorkflow:
         return {"Authorization": f"Bearer {token}"}
 
     @pytest.mark.asyncio
-    async def test_erp_items_search(self, async_client: AsyncClient, auth_headers: dict[str, str]):
+    async def test_erp_items_search(
+        self, async_client: AsyncClient, auth_headers: dict[str, str]
+    ):
         """Test searching ERP items"""
         logger.info("Testing ERP items search")
 
         # Test search endpoint
-        response = await async_client.get("/api/items/search?q=test", headers=auth_headers)
+        response = await async_client.get(
+            "/api/items/search?q=test", headers=auth_headers
+        )
 
         # Search might return 200 with empty results, 400 (bad request), or 404
         assert response.status_code in [200, 400, 404, 422]

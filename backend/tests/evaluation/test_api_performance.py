@@ -131,8 +131,12 @@ class TestAPILatency:
                 latency = (time.time() - start) * 1000
                 latencies.append(latency)
 
-            endpoint_name = endpoint.split("?")[0].replace("/api/", "").replace("/", "_")
-            collector.record_latency_stats(endpoint_name, latencies, p99_threshold=200.0)
+            endpoint_name = (
+                endpoint.split("?")[0].replace("/api/", "").replace("/", "_")
+            )
+            collector.record_latency_stats(
+                endpoint_name, latencies, p99_threshold=200.0
+            )
 
 
 class TestAPIThroughput:
@@ -154,7 +158,9 @@ class TestAPIThroughput:
             return time.time() - start, response.status_code
 
         start_time = time.time()
-        results = await asyncio.gather(*[make_request() for _ in range(concurrent_requests)])
+        results = await asyncio.gather(
+            *[make_request() for _ in range(concurrent_requests)]
+        )
         total_time = time.time() - start_time
 
         # Calculate metrics
@@ -164,7 +170,9 @@ class TestAPIThroughput:
 
         # Record metrics
         collector.record_throughput("concurrent", throughput, threshold=10.0)
-        collector.record_success_rate("concurrent", success_count / len(results), threshold=0.95)
+        collector.record_success_rate(
+            "concurrent", success_count / len(results), threshold=0.95
+        )
 
         assert throughput > 5.0, f"Throughput {throughput} req/s is too low"
         assert success_count == concurrent_requests, (
@@ -247,7 +255,9 @@ class TestAPISuccessRate:
 
                 total_requests += 1
                 # Success: 2xx, or 404 for endpoints that allow it (no data in test)
-                if response.status_code < 400 or (allow_404 and response.status_code == 404):
+                if response.status_code < 400 or (
+                    allow_404 and response.status_code == 404
+                ):
                     success_count += 1
 
         success_rate = success_count / total_requests

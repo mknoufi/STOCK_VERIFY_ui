@@ -24,7 +24,9 @@ class LockManager:
 
     # Rack Locking
 
-    async def acquire_rack_lock(self, rack_id: str, user_id: str, ttl: int = 60) -> bool:
+    async def acquire_rack_lock(
+        self, rack_id: str, user_id: str, ttl: int = 60
+    ) -> bool:
         """
         Acquire exclusive lock on a rack
 
@@ -43,11 +45,15 @@ class LockManager:
             acquired = await self.redis.set(lock_key, user_id, ex=ttl, nx=True)
 
             if acquired:
-                logger.info(f"✓ Rack lock acquired: {rack_id} by {user_id} (TTL: {ttl}s)")
+                logger.info(
+                    f"✓ Rack lock acquired: {rack_id} by {user_id} (TTL: {ttl}s)"
+                )
                 return True
             else:
                 current_owner = await self.redis.get(lock_key)
-                logger.warning(f"✗ Rack lock failed: {rack_id} already locked by {current_owner}")
+                logger.warning(
+                    f"✗ Rack lock failed: {rack_id} already locked by {current_owner}"
+                )
                 return False
 
         except Exception as e:
@@ -105,7 +111,9 @@ class LockManager:
 
             if current_owner == user_id:
                 await self.redis.expire(lock_key, ttl)
-                logger.debug(f"✓ Rack lock renewed: {rack_id} by {user_id} (TTL: {ttl}s)")
+                logger.debug(
+                    f"✓ Rack lock renewed: {rack_id} by {user_id} (TTL: {ttl}s)"
+                )
                 return True
             else:
                 logger.warning(
@@ -167,7 +175,9 @@ class LockManager:
         # Scan for heartbeat keys
         cursor = 0
         while True:
-            cursor, batch = await self.redis.client.scan(cursor, match=pattern, count=100)
+            cursor, batch = await self.redis.client.scan(
+                cursor, match=pattern, count=100
+            )
             keys.extend(batch)
             if cursor == 0:
                 break
@@ -260,7 +270,9 @@ class LockManager:
 
         cursor = 0
         while True:
-            cursor, batch = await self.redis.client.scan(cursor, match=lock_pattern, count=100)
+            cursor, batch = await self.redis.client.scan(
+                cursor, match=lock_pattern, count=100
+            )
             keys.extend(batch)
             if cursor == 0:
                 break
@@ -278,14 +290,18 @@ class LockManager:
 
         cursor = 0
         while True:
-            cursor, batch = await self.redis.client.scan(cursor, match=lock_pattern, count=100)
+            cursor, batch = await self.redis.client.scan(
+                cursor, match=lock_pattern, count=100
+            )
 
             for lock_key in batch:
                 owner = await self.redis.get(lock_key)
                 if owner == user_id:
                     await self.redis.delete(lock_key)
                     released += 1
-                    logger.warning(f"Force released lock: {lock_key} owned by {user_id}")
+                    logger.warning(
+                        f"Force released lock: {lock_key} owned by {user_id}"
+                    )
 
             if cursor == 0:
                 break

@@ -63,12 +63,16 @@ async def _handle_async_error(
             try:
                 return await func(*args, **kwargs)
             except Exception as retry_error:
-                retry_diagnosis = await diagnosis_service.diagnose_error(retry_error, context)
+                retry_diagnosis = await diagnosis_service.diagnose_error(
+                    retry_error, context
+                )
                 logger.error(
                     f"Auto-fix retry failed for {func.__name__}: {retry_diagnosis.root_cause}"
                 )
         else:
-            logger.warning(f"Auto-fix failed for {func.__name__}: {fix_result._error_message}")
+            logger.warning(
+                f"Auto-fix failed for {func.__name__}: {fix_result._error_message}"
+            )
 
     if raise_on_critical and diagnosis.severity.value == "critical":
         logger.error(
@@ -117,7 +121,9 @@ def _handle_sync_error(
 
     if auto_fix and diagnosis.auto_fixable:
         logger.info(f"Attempting auto-fix for {func.__name__}...")
-        fix_result = loop.run_until_complete(diagnosis_service.auto_fix_error(diagnosis, context))
+        fix_result = loop.run_until_complete(
+            diagnosis_service.auto_fix_error(diagnosis, context)
+        )
 
         if fix_result.is_success:
             logger.info(f"Auto-fix successful for {func.__name__}")
@@ -240,7 +246,9 @@ class SelfDiagnosingErrorHandler:
 
             # Attempt auto-fix if enabled
             if self.auto_fix and diagnosis.auto_fixable:
-                fix_result = await self.diagnosis_service.auto_fix_error(diagnosis, context)
+                fix_result = await self.diagnosis_service.auto_fix_error(
+                    diagnosis, context
+                )
                 if fix_result.is_success:
                     return True  # Suppress exception
 
@@ -256,7 +264,9 @@ class SelfDiagnosingErrorHandler:
 
             # Attempt auto-fix if enabled
             if self.auto_fix and diagnosis.auto_fixable:
-                fix_result = await self.diagnosis_service.auto_fix_error(diagnosis, context)
+                fix_result = await self.diagnosis_service.auto_fix_error(
+                    diagnosis, context
+                )
                 if fix_result.is_success:
                     # Retry execution
                     try:

@@ -24,7 +24,9 @@ async def set_pin(username: str, pin: str):
 
     pin_hash = get_password_hash(pin)
 
-    result = await db.users.update_one({"username": username}, {"$set": {"pin_hash": pin_hash}})
+    result = await db.users.update_one(
+        {"username": username}, {"$set": {"pin_hash": pin_hash}}
+    )
 
     if result.modified_count > 0:
         print(f"Success: PIN set for '{username}'.")

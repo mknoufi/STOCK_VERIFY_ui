@@ -69,7 +69,9 @@ async def list_notes(
         cursor = coll.find(query).sort("created_at", -1).skip(skip).limit(limit)
         items: list[Note] = [_serialize_note(doc) async for doc in cursor]
 
-        total_pages = (total_items + page_size - 1) // page_size if total_items > 0 else 0
+        total_pages = (
+            (total_items + page_size - 1) // page_size if total_items > 0 else 0
+        )
 
         return {
             "success": True,
@@ -83,7 +85,9 @@ async def list_notes(
             "error": None,
         }
     except Exception as e:
-        raise create_safe_error_response(500, "Failed to fetch notes", "NOTES_LIST_ERROR", str(e))
+        raise create_safe_error_response(
+            500, "Failed to fetch notes", "NOTES_LIST_ERROR", str(e)
+        )
 
 
 @router.post("/notes", response_model=dict[str, Any])
@@ -105,7 +109,9 @@ async def create_note(
         doc["_id"] = res.inserted_id
         return {"success": True, "data": _serialize_note(doc), "error": None}
     except Exception as e:
-        raise create_safe_error_response(500, "Failed to create note", "NOTES_CREATE_ERROR", str(e))
+        raise create_safe_error_response(
+            500, "Failed to create note", "NOTES_CREATE_ERROR", str(e)
+        )
 
 
 @router.delete("/notes/{note_id}", response_model=dict[str, Any])
@@ -142,4 +148,6 @@ async def delete_note(
     except HTTPException:
         raise
     except Exception as e:
-        raise create_safe_error_response(500, "Failed to delete note", "NOTES_DELETE_ERROR", str(e))
+        raise create_safe_error_response(
+            500, "Failed to delete note", "NOTES_DELETE_ERROR", str(e)
+        )

@@ -35,7 +35,9 @@ async def test_create_session_endpoint(async_client, authenticated_headers, test
     """Test POST /api/sessions creates a session"""
     payload = {"warehouse": "Test Warehouse", "type": "STANDARD"}
 
-    response = await async_client.post("/api/sessions", json=payload, headers=authenticated_headers)
+    response = await async_client.post(
+        "/api/sessions", json=payload, headers=authenticated_headers
+    )
     assert response.status_code == 200
     data = response.json()
 

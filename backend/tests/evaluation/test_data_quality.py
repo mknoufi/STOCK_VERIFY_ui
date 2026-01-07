@@ -115,7 +115,9 @@ class TestDataCompleteness:
         complete = 0
 
         for doc in documents:
-            if all(field in doc and doc[field] is not None for field in required_fields):
+            if all(
+                field in doc and doc[field] is not None for field in required_fields
+            ):
                 complete += 1
 
         completeness = complete / total
@@ -366,7 +368,9 @@ class TestReferentialIntegrity:
         valid = sum(1 for cl in count_lines if cl["session_id"] in session_ids)
 
         integrity_rate = valid / len(count_lines)
-        collector.record_consistency("countline_session_ref", integrity_rate, threshold=1.0)
+        collector.record_consistency(
+            "countline_session_ref", integrity_rate, threshold=1.0
+        )
 
         assert integrity_rate == 1.0
 

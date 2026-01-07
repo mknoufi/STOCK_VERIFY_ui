@@ -88,7 +88,9 @@ class AdvancedERPSyncService:
                 try:
                     float(item[field])
                 except (ValueError, TypeError):
-                    errors.append(f"Invalid numeric value for {field}: {item.get(field)}")
+                    errors.append(
+                        f"Invalid numeric value for {field}: {item.get(field)}"
+                    )
 
         # Barcode format validation
         barcode = item.get("barcode", "")
@@ -198,7 +200,9 @@ class AdvancedERPSyncService:
 
             # Keep only recent history
             if len(self._performance_history) > self._max_history:
-                self._performance_history = self._performance_history[-self._max_history :]
+                self._performance_history = self._performance_history[
+                    -self._max_history :
+                ]
 
             logger.info(
                 f"Advanced ERP sync completed: {stats['items_synced']:,} items "
@@ -214,7 +218,9 @@ class AdvancedERPSyncService:
                     "$set": {
                         "last_sync": self._last_sync,
                         "stats": stats,
-                        "performance_history": self._performance_history[-10:],  # Last 10 syncs
+                        "performance_history": self._performance_history[
+                            -10:
+                        ],  # Last 10 syncs
                         "updated_at": datetime.utcnow(),
                     },
                     "$inc": {"total_syncs": 1},
@@ -300,7 +306,9 @@ class AdvancedERPSyncService:
         # Execute bulk operations
         if bulk_operations:
             try:
-                result = await self.mongo_db.erp_items.bulk_write(bulk_operations, ordered=False)
+                result = await self.mongo_db.erp_items.bulk_write(
+                    bulk_operations, ordered=False
+                )
                 batch_stats["items_created"] = result.upserted_count
                 batch_stats["items_updated"] = result.modified_count
             except Exception as e:
@@ -318,7 +326,8 @@ class AdvancedERPSyncService:
                 "avg_duration": self._sync_stats["avg_sync_duration"],
                 "avg_items_per_second": self._sync_stats["items_per_second"],
                 "success_rate": (
-                    self._sync_stats["successful_syncs"] / max(1, self._sync_stats["total_syncs"])
+                    self._sync_stats["successful_syncs"]
+                    / max(1, self._sync_stats["total_syncs"])
                 )
                 * 100,
             },

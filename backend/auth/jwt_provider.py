@@ -38,7 +38,9 @@ def encode(payload: dict[str, Any], key: str, algorithm: str = "HS256") -> str:
     return str(token)
 
 
-def decode(token: str, key: str, algorithms: Optional[list[str]] = None) -> dict[str, Any]:
+def decode(
+    token: str, key: str, algorithms: Optional[list[str]] = None
+) -> dict[str, Any]:
     SUPPORTED_ALGORITHMS = ["HS256", "HS384", "HS512"]
     if algorithms:
         invalid_algs = [alg for alg in algorithms if alg not in SUPPORTED_ALGORITHMS]

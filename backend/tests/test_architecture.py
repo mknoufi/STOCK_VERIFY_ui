@@ -86,7 +86,9 @@ def test_erp_sync_reads_from_sql_writes_to_mongo():
         r"self\.sql_connector\.query",
     ]
 
-    has_sql_reads = any(re.search(pattern, content, re.IGNORECASE) for pattern in sql_read_patterns)
+    has_sql_reads = any(
+        re.search(pattern, content, re.IGNORECASE) for pattern in sql_read_patterns
+    )
 
     # Should write to MongoDB
     mongo_write_patterns = [

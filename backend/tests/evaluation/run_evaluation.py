@@ -217,7 +217,9 @@ class EvaluationRunner:
         lines.append(f"| ❌ Failed | {summary.get('total_failed', 0)} |")
         lines.append(f"| ⏭️ Skipped | {summary.get('total_skipped', 0)} |")
 
-        status = "✅ SUCCESS" if summary.get("overall_success") else "❌ NEEDS ATTENTION"
+        status = (
+            "✅ SUCCESS" if summary.get("overall_success") else "❌ NEEDS ATTENTION"
+        )
         lines.append(f"| Overall | {status} |")
 
         lines.append("\n## Detailed Results\n")
@@ -228,7 +230,9 @@ class EvaluationRunner:
             lines.append("")
             lines.append(f"- **Passed:** {eval_result.get('passed', 0)}")
             lines.append(f"- **Failed:** {eval_result.get('failed', 0)}")
-            lines.append(f"- **Duration:** {eval_result.get('duration_seconds', 0):.2f}s")
+            lines.append(
+                f"- **Duration:** {eval_result.get('duration_seconds', 0):.2f}s"
+            )
             lines.append("")
 
         lines.append("\n## Recommendations\n")
@@ -240,7 +244,9 @@ class EvaluationRunner:
                 if not eval_result.get("success"):
                     lines.append(f"- [ ] Fix issues in **{name}** evaluation")
         else:
-            lines.append("✅ All evaluations passed! The system is operating correctly.")
+            lines.append(
+                "✅ All evaluations passed! The system is operating correctly."
+            )
 
         return "\n".join(lines)
 
@@ -284,7 +290,9 @@ def _create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--data-quality", "-d", action="store_true", help="Run data quality evaluation"
     )
-    parser.add_argument("--workflow", "-w", action="store_true", help="Run workflow evaluation")
+    parser.add_argument(
+        "--workflow", "-w", action="store_true", help="Run workflow evaluation"
+    )
     parser.add_argument(
         "--standalone",
         "-s",
@@ -305,7 +313,9 @@ def _create_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _run_specific_evaluations(runner: EvaluationRunner, args: argparse.Namespace) -> dict[str, Any]:
+def _run_specific_evaluations(
+    runner: EvaluationRunner, args: argparse.Namespace
+) -> dict[str, Any]:
     """Run evaluations based on command-line flags."""
     results = {
         "timestamp": datetime.now().isoformat(),

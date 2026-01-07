@@ -43,7 +43,9 @@ class TestEnhancedConnectionPool:
         return conn
 
     @patch("backend.services.enhanced_connection_pool.pyodbc.connect")
-    def test_connection_creation_with_retry(self, mock_connect, pool_config, mock_connection):
+    def test_connection_creation_with_retry(
+        self, mock_connect, pool_config, mock_connection
+    ):
         """Test connection creation with retry logic"""
         # First two attempts fail, third succeeds
         mock_connect.side_effect = [
@@ -175,7 +177,9 @@ class TestEnhancedConnectionPool:
 
     def test_connection_timeout(self, pool_config, mock_connection):
         """Test connection timeout handling"""
-        with patch("backend.services.enhanced_connection_pool.pyodbc.connect") as mock_connect:
+        with patch(
+            "backend.services.enhanced_connection_pool.pyodbc.connect"
+        ) as mock_connect:
             mock_connect.return_value = mock_connection
 
             config = pool_config.copy()
@@ -191,7 +195,9 @@ class TestEnhancedConnectionPool:
 
             with patch.object(pool._pool, "get_nowait", side_effect=Empty):
                 with patch.object(pool._pool, "get", side_effect=Empty):
-                    with patch.object(pool._pool, "qsize", return_value=5):  # Pool is full
+                    with patch.object(
+                        pool._pool, "qsize", return_value=5
+                    ):  # Pool is full
                         with pytest.raises(TimeoutError):
                             with pool.get_connection():
                                 pass

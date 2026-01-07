@@ -53,7 +53,9 @@ class TestVarianceCalculations:
         VarianceCase(100, 110, 0, True, 10, 10.0, "Over count"),
         # Damage handling
         VarianceCase(100, 90, 10, True, 0, 0.0, "Damage included - no variance"),
-        VarianceCase(100, 90, 10, False, -10, -10.0, "Damage excluded - shows variance"),
+        VarianceCase(
+            100, 90, 10, False, -10, -10.0, "Damage excluded - shows variance"
+        ),
         VarianceCase(100, 85, 10, True, -5, -5.0, "Partial damage included"),
         # Edge cases
         VarianceCase(0, 5, 0, True, 5, 100.0, "New stock found (zero ERP)"),
@@ -207,7 +209,9 @@ class TestSessionStateMachine:
                 print(f"FAIL: {from_state} -> {to_state} should be INVALID")
 
         accuracy = correct / len(invalid_cases)
-        collector.record_accuracy("invalid_transitions_blocked", accuracy, threshold=1.0)
+        collector.record_accuracy(
+            "invalid_transitions_blocked", accuracy, threshold=1.0
+        )
 
         assert accuracy == 1.0
 
@@ -357,7 +361,9 @@ class TestAuthorizationRules:
             if has_permission == expected_has:
                 correct += 1
             else:
-                print(f"FAIL: {role}.{permission} = {has_permission}, expected {expected_has}")
+                print(
+                    f"FAIL: {role}.{permission} = {has_permission}, expected {expected_has}"
+                )
 
         accuracy = correct / len(test_cases)
         collector.record_accuracy("role_permissions", accuracy, threshold=1.0)
@@ -373,7 +379,9 @@ class TestAuthorizationRules:
         admin_perms = self.ROLE_PERMISSIONS["admin"]
 
         # Check staff subset of supervisor (excluding _own variations)
-        staff_base = {p.replace("_own", "_all") if "_own" in p else p for p in staff_perms}
+        staff_base = {
+            p.replace("_own", "_all") if "_own" in p else p for p in staff_perms
+        }
         supervisor_has_staff = all(
             p in supervisor_perms or p.replace("_all", "_own") in supervisor_perms
             for p in staff_base

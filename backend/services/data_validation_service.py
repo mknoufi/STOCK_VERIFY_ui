@@ -109,7 +109,9 @@ class DataValidationService:
                         )
         return errors
 
-    def _validate_length_constraints(self, field: str, value: Any, constraints: dict) -> list[str]:
+    def _validate_length_constraints(
+        self, field: str, value: Any, constraints: dict
+    ) -> list[str]:
         errors: list[str] = []
         if isinstance(value, str):
             if "min_length" in constraints and len(value) < constraints["min_length"]:
@@ -118,7 +120,9 @@ class DataValidationService:
                 errors.append(f"{field} too long (max: {constraints['max_length']})")
         return errors
 
-    def _validate_numeric_constraints(self, field: str, value: Any, constraints: dict) -> list[str]:
+    def _validate_numeric_constraints(
+        self, field: str, value: Any, constraints: dict
+    ) -> list[str]:
         errors: list[str] = []
         if isinstance(value, (int, float)):
             if "min" in constraints and value < constraints["min"]:
@@ -127,18 +131,24 @@ class DataValidationService:
                 errors.append(f"{field} above maximum ({constraints['max']})")
         return errors
 
-    def _validate_pattern_constraints(self, field: str, value: Any, constraints: dict) -> list[str]:
+    def _validate_pattern_constraints(
+        self, field: str, value: Any, constraints: dict
+    ) -> list[str]:
         errors: list[str] = []
         if "pattern" in constraints and isinstance(value, str):
             if not re.match(constraints["pattern"], value):
                 errors.append(f"{field} does not match required pattern")
         return errors
 
-    def _validate_allowed_values(self, field: str, value: Any, constraints: dict) -> list[str]:
+    def _validate_allowed_values(
+        self, field: str, value: Any, constraints: dict
+    ) -> list[str]:
         errors: list[str] = []
         if "allowed_values" in constraints:
             if value not in constraints["allowed_values"]:
-                errors.append(f"{field} must be one of: {constraints['allowed_values']}")
+                errors.append(
+                    f"{field} must be one of: {constraints['allowed_values']}"
+                )
         return errors
 
     def _validate_single_field_constraints(
@@ -158,11 +168,15 @@ class DataValidationService:
                 if field in data and data[field] is not None:
                     value = data[field]
                     errors.extend(
-                        self._validate_single_field_constraints(field, value, constraints)
+                        self._validate_single_field_constraints(
+                            field, value, constraints
+                        )
                     )
         return errors
 
-    async def validate_data(self, data: dict[str, Any], data_type: str) -> tuple[bool, list[str]]:
+    async def validate_data(
+        self, data: dict[str, Any], data_type: str
+    ) -> tuple[bool, list[str]]:
         """
         Validate data against defined rules
         Returns (is_valid, error_messages)
@@ -222,10 +236,14 @@ class DataValidationService:
             # Validate sessions collection
             sessions_report = await self._validate_collection("sessions", "session")
             if "validation_errors" in sessions_report:
-                validation_report["validation_errors"].extend(sessions_report["validation_errors"])
+                validation_report["validation_errors"].extend(
+                    sessions_report["validation_errors"]
+                )
 
             # Validate count_lines collection
-            count_lines_report = await self._validate_collection("count_lines", "count_line")
+            count_lines_report = await self._validate_collection(
+                "count_lines", "count_line"
+            )
             if "validation_errors" in count_lines_report:
                 validation_report["validation_errors"].extend(
                     count_lines_report["validation_errors"]
@@ -234,7 +252,9 @@ class DataValidationService:
             # Check for orphaned data
             orphan_report = await self._check_orphaned_data()
             if "cleanup_actions" in orphan_report:
-                validation_report["cleanup_actions"].extend(orphan_report["cleanup_actions"])
+                validation_report["cleanup_actions"].extend(
+                    orphan_report["cleanup_actions"]
+                )
 
             # Performance recommendations
             performance_report = await self._analyze_performance_opportunities()
@@ -249,7 +269,9 @@ class DataValidationService:
 
         return validation_report
 
-    async def _validate_collection(self, collection_name: str, data_type: str) -> dict[str, Any]:
+    async def _validate_collection(
+        self, collection_name: str, data_type: str
+    ) -> dict[str, Any]:
         """Validate a specific collection"""
         report: dict[str, Any] = {
             "collection": collection_name,
@@ -352,9 +374,9 @@ class DataValidationService:
 
         try:
             # Check index usage
-            index_stats = await self.mongo_db.erp_items.aggregate([{"$indexStats": {}}]).to_list(
-                None
-            )
+            index_stats = await self.mongo_db.erp_items.aggregate(
+                [{"$indexStats": {}}]
+            ).to_list(None)
 
             for stat in index_stats:
                 if stat["accesses"]["ops"] == 0:
@@ -373,7 +395,9 @@ class DataValidationService:
                 {"field": "stock_qty", "usage": "sorting"},
             ]
 
-            existing_indexes = await self.mongo_db.erp_items.list_indexes().to_list(None)
+            existing_indexes = await self.mongo_db.erp_items.list_indexes().to_list(
+                None
+            )
             existing_index_fields = set()
 
             for idx in existing_indexes:

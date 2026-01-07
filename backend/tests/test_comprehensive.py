@@ -127,7 +127,9 @@ async def test_activity_logging(mock_db, mock_supervisor):
     service = ActivityLogService(mock_db)
 
     # Mock insert
-    mock_db.activity_logs.insert_one = AsyncMock(return_value=MagicMock(inserted_id="log-1"))
+    mock_db.activity_logs.insert_one = AsyncMock(
+        return_value=MagicMock(inserted_id="log-1")
+    )
 
     # Log activity
     log_id = await service.log_activity(
@@ -173,7 +175,9 @@ async def test_error_logging(mock_db, mock_supervisor):
     service = ErrorLogService(mock_db)
 
     # Mock insert
-    mock_db.error_logs.insert_one = AsyncMock(return_value=MagicMock(inserted_id="error-1"))
+    mock_db.error_logs.insert_one = AsyncMock(
+        return_value=MagicMock(inserted_id="error-1")
+    )
 
     # Log error
     error = ValueError("Test error")

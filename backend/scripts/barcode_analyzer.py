@@ -123,11 +123,13 @@ class BarcodeAnalyzer:
                         result["flags"].append("URGENT")
 
                     # Add recommendations
-                    result["recommendations"] = BarcodeAnalyzer._generate_recommendations(
-                        range_config
+                    result["recommendations"] = (
+                        BarcodeAnalyzer._generate_recommendations(range_config)
                     )
 
-                    logger.info(f"Aging stock detected: {barcode} - {range_config['category']}")
+                    logger.info(
+                        f"Aging stock detected: {barcode} - {range_config['category']}"
+                    )
                     break
 
             # Additional pattern analysis

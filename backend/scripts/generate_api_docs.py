@@ -104,7 +104,9 @@ All input data is validated using Pydantic models. Invalid data will return a 42
                             "required": True,
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/UserCreate"},
+                                    "schema": {
+                                        "$ref": "#/components/schemas/UserCreate"
+                                    },
                                     "examples": {
                                         "staff_user": {
                                             "summary": "Register staff user",
@@ -829,4 +831,6 @@ if __name__ == "__main__":
     # This would normally import your FastAPI app
     # For demonstration, we'll create a minimal app structure
     print("API documentation generator ready")
-    print("Usage: from api_docs import save_api_documentation; save_api_documentation(app)")
+    print(
+        "Usage: from api_docs import save_api_documentation; save_api_documentation(app)"
+    )

@@ -19,23 +19,16 @@ def setup_mocks():
     init_verification_api(mock_db, mock_cache)
     return mock_db, mock_cache
 
+
 @pytest.mark.asyncio
 async def test_update_item_master_success(setup_mocks):
     mock_db, mock_cache = setup_mocks
 
     item_code = "CODE123"
-    existing_item = {
-        "item_code": item_code,
-        "barcode": "510001",
-        "mrp": 100.0
-    }
+    existing_item = {"item_code": item_code, "barcode": "510001", "mrp": 100.0}
     mock_db.erp_items.find_one.return_value = existing_item
 
-    request = ItemUpdateRequest(
-        mrp=150.0,
-        sales_price=120.0,
-        category="New Cat"
-    )
+    request = ItemUpdateRequest(mrp=150.0, sales_price=120.0, category="New Cat")
     current_user = {"username": "testuser"}
 
     response = await update_item_master(item_code, request, current_user)
@@ -58,6 +51,7 @@ async def test_update_item_master_success(setup_mocks):
     # Verify audit log
     mock_db.audit_logs.insert_one.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_update_item_master_not_found(setup_mocks):
     mock_db, _ = setup_mocks
@@ -71,6 +65,7 @@ async def test_update_item_master_not_found(setup_mocks):
 
     assert exc.value.status_code == 404
 
+
 @pytest.mark.asyncio
 async def test_verify_item_success(setup_mocks):
     mock_db, mock_cache = setup_mocks
@@ -80,7 +75,7 @@ async def test_verify_item_success(setup_mocks):
         "item_code": item_code,
         "stock_qty": 10.0,
         "floor": "Old Floor",
-        "barcode": "510001"
+        "barcode": "510001",
     }
     # First find_one returns existing item, second find_one returns updated item
     updated_item = existing_item.copy()
@@ -92,14 +87,14 @@ async def test_verify_item_success(setup_mocks):
         verified_qty=8.0,
         damaged_qty=1.0,
         floor="New Floor",
-        notes="Test notes"
+        notes="Test notes",
     )
     current_user = {"username": "testuser"}
 
     response = await verify_item(item_code, request, current_user)
 
     assert response["success"] is True
-    assert response["variance"] == -1.0 # 8 + 1 - 10 = -1
+    assert response["variance"] == -1.0  # 8 + 1 - 10 = -1
 
     # Verify DB update
     mock_db.erp_items.update_one.assert_called_once()
@@ -116,15 +111,12 @@ async def test_verify_item_success(setup_mocks):
 
     # Verify logs
     mock_db.verification_logs.insert_one.assert_called_once()
-    mock_db.item_variances.insert_one.assert_called_once() # Variance is not 0
+    mock_db.item_variances.insert_one.assert_called_once()  # Variance is not 0
+
 
 def test_build_item_filter_query():
     # Test basic filters
-    query = build_item_filter_query(
-        category="Cat1",
-        verified=True,
-        search="Test"
-    )
+    query = build_item_filter_query(category="Cat1", verified=True, search="Test")
 
     assert query["category"] == {"$regex": "Cat1", "$options": "i"}
     assert query["verified"] is True
@@ -134,4 +126,3 @@ def test_build_item_filter_query():
     # Test empty filters
     query = build_item_filter_query()
     assert query == {}
-

@@ -41,7 +41,7 @@ async def test_get_preferences_existing():
         "font_scale": 1.2,
         "primary_color": "#000000",
         "enable_haptic_feedback": False,
-        "enable_sound_effects": True
+        "enable_sound_effects": True,
     }
     mock_db.user_preferences.find_one.return_value = existing_prefs
 
@@ -59,7 +59,18 @@ async def test_update_preferences_create_new():
     mock_user = {"_id": valid_user_id}
 
     # First find_one returns None (doesn't exist)
-    mock_db.user_preferences.find_one.side_effect = [None, {"_id": "new_id", "user_id": valid_user_id, "theme": "dark", "font_scale": 1.0, "primary_color": "#007AFF", "enable_haptic_feedback": True, "enable_sound_effects": True}]
+    mock_db.user_preferences.find_one.side_effect = [
+        None,
+        {
+            "_id": "new_id",
+            "user_id": valid_user_id,
+            "theme": "dark",
+            "font_scale": 1.0,
+            "primary_color": "#007AFF",
+            "enable_haptic_feedback": True,
+            "enable_sound_effects": True,
+        },
+    ]
     mock_db.user_preferences.insert_one.return_value.inserted_id = "new_id"
 
     update_data = UserPreferencesUpdate(theme="dark")
@@ -84,7 +95,7 @@ async def test_update_preferences_update_existing():
         "_id": "pref123",
         "user_id": "user123",
         "theme": "light",
-        "font_scale": 1.0
+        "font_scale": 1.0,
     }
 
     # First find_one returns existing

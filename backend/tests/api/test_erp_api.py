@@ -1,8 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from fastapi import HTTPException
-
 from backend.api.erp_api import (
     _normalize_barcode_input,
     get_all_items,
@@ -11,6 +9,7 @@ from backend.api.erp_api import (
     refresh_item_stock,
     search_items_compatibility,
 )
+from fastapi import HTTPException
 
 
 @pytest.fixture(autouse=True)

@@ -3,9 +3,6 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi import HTTPException
-from pydantic import ValidationError
-
 from backend.api.pin_auth_api import (
     PinChangeRequest,
     PinLoginRequest,
@@ -13,6 +10,8 @@ from backend.api.pin_auth_api import (
     login_with_pin,
 )
 from backend.utils.result import Result
+from fastapi import HTTPException
+from pydantic import ValidationError
 
 
 @pytest.mark.asyncio

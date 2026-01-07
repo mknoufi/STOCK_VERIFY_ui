@@ -6,9 +6,8 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from pydantic import ValidationError  # noqa: E402
-
 from backend.api.schemas import ERPItem  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
 
 
 def test_erp_item_validation():

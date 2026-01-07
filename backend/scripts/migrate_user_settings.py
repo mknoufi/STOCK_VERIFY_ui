@@ -8,9 +8,8 @@ import asyncio
 import logging
 from datetime import datetime
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
 from backend.db.runtime import get_db
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
 

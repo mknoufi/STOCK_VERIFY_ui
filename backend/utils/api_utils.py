@@ -3,9 +3,8 @@ import re
 import uuid
 from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any
+from typing import Any, TypeVar
 from typing import Any as AnyType
-from typing import TypeVar
 
 from fastapi import HTTPException
 

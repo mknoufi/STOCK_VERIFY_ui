@@ -73,8 +73,10 @@ enterprise_security_service: Any = None
 
 # Phase 1-3: New Services
 # Utils
-from backend.utils.api_utils import result_to_response  # noqa: E402
-from backend.utils.api_utils import sanitize_for_logging  # noqa: E402; noqa: E402
+from backend.utils.api_utils import (  # noqa: E402
+    result_to_response,
+    sanitize_for_logging,
+)
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.result import Fail, Ok, Result  # noqa: E402

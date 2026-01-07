@@ -35,7 +35,10 @@ export const tokenStore = {
   /**
    * Set tokens
    */
-  setTokens: async (accessToken: string, refreshToken: string): Promise<void> => {
+  setTokens: async (
+    accessToken: string,
+    refreshToken: string,
+  ): Promise<void> => {
     cachedAccessToken = accessToken;
     cachedRefreshToken = refreshToken;
     await secureStorage.setItem("auth_token", accessToken);
@@ -65,7 +68,7 @@ export const tokenStore = {
   initialize: async (): Promise<void> => {
     cachedAccessToken = await secureStorage.getItem("auth_token");
     cachedRefreshToken = await secureStorage.getItem("refresh_token");
-  }
+  },
 };
 
 export default tokenStore;

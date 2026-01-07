@@ -53,9 +53,7 @@ async def get_sessions_v2(
 
         # Get paginated sessions
         skip = (page - 1) * page_size
-        sessions_cursor = (
-            db.sessions.find(query).sort("created_at", -1).skip(skip).limit(page_size)
-        )
+        sessions_cursor = db.sessions.find(query).sort("created_at", -1).skip(skip).limit(page_size)
         sessions = await sessions_cursor.to_list(length=page_size)
 
         # Convert to response models
@@ -148,9 +146,7 @@ async def get_rack_progress(
             {"$match": {"session_id": session_id}},
             {"$group": {"_id": "$item_code"}},  # distinct item codes
         ]
-        counted_items = await db.count_lines.aggregate(count_pipeline).to_list(
-            length=10000
-        )
+        counted_items = await db.count_lines.aggregate(count_pipeline).to_list(length=10000)
         counted_item_codes = [c["_id"] for c in counted_items]
 
         # Now query erp_items to see which racks these counted items belong to
@@ -165,13 +161,9 @@ async def get_rack_progress(
                 },
                 {"$group": {"_id": "$rack", "counted_items": {"$sum": 1}}},
             ]
-            progress_counts = await db.erp_items.aggregate(progress_pipeline).to_list(
-                length=1000
-            )
+            progress_counts = await db.erp_items.aggregate(progress_pipeline).to_list(length=1000)
             # Map: { "A1": 45, "B2": 10 }
-            progress_map = {
-                item["_id"]: item["counted_items"] for item in progress_counts
-            }
+            progress_map = {item["_id"]: item["counted_items"] for item in progress_counts}
         else:
             progress_map = {}
 
@@ -229,9 +221,7 @@ async def get_watchtower_stats(
         active_sessions_count = await db.sessions.count_documents({"status": "OPEN"})
 
         # 2. Total Scans Today
-        today_start = datetime.utcnow().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         total_scans_today = await db.count_lines.count_documents(
             {"counted_at": {"$gte": today_start.isoformat()}}
         )
@@ -246,12 +236,10 @@ async def get_watchtower_stats(
             {"$group": {"_id": "$counted_by"}},
             {"$count": "count"},
         ]
-        active_users_result = await db.count_lines.aggregate(
-            active_users_pipeline
-        ).to_list(length=1)
-        active_users_count = (
-            active_users_result[0]["count"] if active_users_result else 0
+        active_users_result = await db.count_lines.aggregate(active_users_pipeline).to_list(
+            length=1
         )
+        active_users_count = active_users_result[0]["count"] if active_users_result else 0
 
         # 4. Hourly Throughput (Today)
         # Group count_lines by hour
@@ -259,17 +247,13 @@ async def get_watchtower_stats(
             {"$match": {"counted_at": {"$gte": today_start.isoformat()}}},
             {
                 "$group": {
-                    "_id": {
-                        "$hour": {"$dateFromString": {"dateString": "$counted_at"}}
-                    },
+                    "_id": {"$hour": {"$dateFromString": {"dateString": "$counted_at"}}},
                     "count": {"$sum": 1},
                 }
             },
             {"$sort": {"_id": 1}},
         ]
-        throughput_data = await db.count_lines.aggregate(throughput_pipeline).to_list(
-            length=24
-        )
+        throughput_data = await db.count_lines.aggregate(throughput_pipeline).to_list(length=24)
 
         # Format for frontend chart [0, 0, ..., 10, 50, ...]
         hourly_throughput = [0] * 24
@@ -295,9 +279,7 @@ async def get_watchtower_stats(
 
         for sess in active_sessions:
             sess_id = str(sess["_id"])
-            preds = await ai_variance_service.predict_session_risks(
-                db, sess_id, limit=3
-            )
+            preds = await ai_variance_service.predict_session_risks(db, sess_id, limit=3)
             risk_predictions.extend(preds)
             total_high_risk += len(preds)
             if len(risk_predictions) >= 5:

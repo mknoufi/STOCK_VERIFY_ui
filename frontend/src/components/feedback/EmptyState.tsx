@@ -1,5 +1,13 @@
-import React, { ReactNode } from 'react';
-import { View, Text, Image, StyleProp, ViewStyle, TextStyle, ImageSourcePropType } from 'react-native';
+import React, { ReactNode } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+  ImageSourcePropType,
+} from "react-native";
 
 interface EmptyStateProps {
   title: string;
@@ -27,8 +35,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       style={[
         {
           flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
+          justifyContent: "center",
+          alignItems: "center",
           padding: 32,
         },
         containerStyle,
@@ -41,24 +49,20 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             width: 120,
             height: 120,
             marginBottom: 24,
-            resizeMode: 'contain',
+            resizeMode: "contain",
           }}
         />
       )}
 
-      {icon && !image && (
-        <View style={{ marginBottom: 24 }}>
-          {icon}
-        </View>
-      )}
+      {icon && !image && <View style={{ marginBottom: 24 }}>{icon}</View>}
 
       <Text
         style={[
           {
             fontSize: 20,
-            fontWeight: '600',
-            color: '#333',
-            textAlign: 'center',
+            fontWeight: "600",
+            color: "#333",
+            textAlign: "center",
             marginBottom: 8,
           },
           titleStyle,
@@ -72,8 +76,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           style={[
             {
               fontSize: 16,
-              color: '#666',
-              textAlign: 'center',
+              color: "#666",
+              textAlign: "center",
               lineHeight: 22,
               marginBottom: 24,
             },

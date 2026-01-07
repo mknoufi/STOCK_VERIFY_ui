@@ -61,7 +61,7 @@ export default function RootLayout() {
   const theme = useTheme();
   useSystemTheme();
   const segments = useSegments();
-  const router = useRouter();
+  const _router = useRouter();
   const [isInitialized, setIsInitialized] = React.useState(false);
   const [initError, setInitError] = React.useState<string | null>(null);
   const cleanupRef = React.useRef<(() => void)[]>([]);
@@ -102,13 +102,18 @@ export default function RootLayout() {
       // Emergency fallback: force initialization after 3 seconds
       const emergencyTimeout = setTimeout(() => {
         console.error("🚨 [EMERGENCY] FORCING INITIALIZATION AFTER 3s!");
-        console.error("🚨 Current isLoading:", useAuthStore.getState().isLoading);
+        console.error(
+          "🚨 Current isLoading:",
+          useAuthStore.getState().isLoading,
+        );
         console.error("🚨 Current isInitialized:", isInitialized);
         useAuthStore.getState().setLoading(false);
         useAuthStore.setState({ isInitialized: true });
         setIsInitialized(true);
         setInitError("Initialization timed out - some features may not work");
-        SplashScreen.hideAsync().catch((e) => console.error("SplashScreen hide failed:", e));
+        SplashScreen.hideAsync().catch((e) =>
+          console.error("SplashScreen hide failed:", e),
+        );
       }, 3000);
 
       try {
@@ -184,7 +189,10 @@ export default function RootLayout() {
         try {
           const syncPromise = registerBackgroundSync();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Background sync timeout")), 1000)
+            setTimeout(
+              () => reject(new Error("Background sync timeout")),
+              1000,
+            ),
           );
           await Promise.race([syncPromise, timeoutPromise]);
         } catch (syncError) {
@@ -197,7 +205,10 @@ export default function RootLayout() {
         try {
           const themePromise = ThemeService.initialize();
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Theme initialization timeout")), 1000)
+            setTimeout(
+              () => reject(new Error("Theme initialization timeout")),
+              1000,
+            ),
           );
           await Promise.race([themePromise, timeoutPromise]);
         } catch (themeError) {
@@ -302,7 +313,9 @@ export default function RootLayout() {
 
     // Navigation/redirect logic now handled by AuthGuard to avoid duplication
     if (__DEV__) {
-      console.log("🚀 [NAV] Initialization complete; navigation handled in AuthGuard");
+      console.log(
+        "🚀 [NAV] Initialization complete; navigation handled in AuthGuard",
+      );
     }
   }, [isInitialized, isLoading, segments, user]);
 

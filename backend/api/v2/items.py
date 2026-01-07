@@ -101,15 +101,9 @@ async def get_items_v2(
                 # Barcode match is critical (weight 1.2)
                 # Code match is high (1.1)
 
-                name_score = fuzz.partial_ratio(
-                    search.lower(), item.get("item_name", "").lower()
-                )
-                code_score = fuzz.ratio(
-                    search.lower(), str(item.get("item_code", "")).lower()
-                )
-                barcode_score = fuzz.ratio(
-                    search.lower(), str(item.get("barcode", "")).lower()
-                )
+                name_score = fuzz.partial_ratio(search.lower(), item.get("item_name", "").lower())
+                code_score = fuzz.ratio(search.lower(), str(item.get("item_code", "")).lower())
+                barcode_score = fuzz.ratio(search.lower(), str(item.get("barcode", "")).lower())
 
                 # Boost exact matches
                 final_score = max(name_score, code_score * 1.1, barcode_score * 1.2)
@@ -209,9 +203,7 @@ async def search_items_semantic(
         ]
 
         return ApiResponse.success_response(
-            data=PaginatedResponse.create(
-                item_responses, len(item_responses), 1, limit
-            ),
+            data=PaginatedResponse.create(item_responses, len(item_responses), 1, limit),
             message=f"Found top {len(item_responses)} semantic matches",
         )
 

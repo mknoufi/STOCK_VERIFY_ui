@@ -128,14 +128,18 @@ async def test_preview_mapping(mock_pyodbc):
 
 @pytest.mark.asyncio
 async def test_save_mapping(mock_db):
-    current_user = {"username": "testuser"}
+    current_user = {"username": "testuser", "role": "supervisor"}
 
     data = {
         "connection": {"host": "localhost"},
         "mapping": {"tables": {"items": "ItemMaster"}},
     }
 
-    response = await save_mapping(data=data, current_user=current_user)
+    response = await save_mapping(
+        data=data,
+        current_user=current_user,
+        db=mock_db,
+    )
 
     assert response["success"] is True
     mock_db.config.update_one.assert_called_once()
@@ -149,7 +153,7 @@ async def test_save_mapping(mock_db):
 
 @pytest.mark.asyncio
 async def test_get_current_mapping(mock_db):
-    current_user = {"username": "testuser"}
+    current_user = {"username": "testuser", "role": "supervisor"}
 
     mock_doc = {
         "_id": "erp_mapping",
@@ -158,7 +162,7 @@ async def test_get_current_mapping(mock_db):
     }
     mock_db.config.find_one.return_value = mock_doc
 
-    response = await get_current_mapping(current_user=current_user)
+    response = await get_current_mapping(current_user=current_user, db=mock_db)
 
     assert response["mapping"]["tables"]["items"] == "ItemMaster"
     assert response["connection"]["host"] == "localhost"
@@ -166,11 +170,11 @@ async def test_get_current_mapping(mock_db):
 
 @pytest.mark.asyncio
 async def test_get_current_mapping_empty(mock_db):
-    current_user = {"username": "testuser"}
+    current_user = {"username": "testuser", "role": "supervisor"}
 
     mock_db.config.find_one.return_value = None
 
-    response = await get_current_mapping(current_user=current_user)
+    response = await get_current_mapping(current_user=current_user, db=mock_db)
 
     assert response["mapping"] is None
     assert response["connection"] is None

@@ -82,9 +82,7 @@ class ItemResponse:
 async def get_item_by_barcode_enhanced(
     barcode: str,
     request: Request,
-    force_source: Optional[str] = Query(
-        None, description="Force data source: mongodb, or cache"
-    ),
+    force_source: Optional[str] = Query(None, description="Force data source: mongodb, or cache"),
     include_metadata: bool = Query(True, description="Include response metadata"),
     current_user: dict = Depends(get_current_user),
 ):
@@ -103,9 +101,7 @@ async def get_item_by_barcode_enhanced(
 
         # Determine data source strategy
         if force_source:
-            item_data, source = await _fetch_from_specific_source(
-                normalized_barcode, force_source
-            )
+            item_data, source = await _fetch_from_specific_source(normalized_barcode, force_source)
         else:
             item_data, source = await _fetch_with_fallback_strategy(normalized_barcode)
 
@@ -176,9 +172,7 @@ async def get_item_by_barcode_enhanced(
         )
 
 
-async def _fetch_from_specific_source(
-    barcode: str, source: str
-) -> tuple[Optional[dict], str]:
+async def _fetch_from_specific_source(barcode: str, source: str) -> tuple[Optional[dict], str]:
     """Fetch item from a specific data source"""
 
     if source == "mongodb":
@@ -334,15 +328,11 @@ def _build_match_conditions(
 
     # If search_fields explicitly provided, use all of them
     # This allows API callers to search across item_code, barcode, and item_name
-    target_fields = (
-        search_fields if search_fields else ["item_name", "item_code", "barcode"]
-    )
+    target_fields = search_fields if search_fields else ["item_name", "item_code", "barcode"]
 
     # Build $or conditions for all target fields
     for field in target_fields:
-        match_conditions["$or"].append(
-            {field: {"$regex": trimmed_query, "$options": "i"}}
-        )
+        match_conditions["$or"].append({field: {"$regex": trimmed_query, "$options": "i"}})
 
     # Additional filters
     if category:
@@ -364,9 +354,7 @@ def _build_match_conditions(
 
     if not match_conditions["$or"]:
         # Fallback if no fields selected (shouldn't happen with logic above)
-        match_conditions["$or"].append(
-            {"item_name": {"$regex": query, "$options": "i"}}
-        )
+        match_conditions["$or"].append({"item_name": {"$regex": query, "$options": "i"}})
 
     return match_conditions
 
@@ -449,9 +437,7 @@ async def advanced_item_search(
     ),
     limit: int = Query(50, ge=1, le=200, description="Maximum results"),
     offset: int = Query(0, ge=0, description="Results offset"),
-    sort_by: str = Query(
-        "relevance", description="Sort by: relevance, name, code, stock"
-    ),
+    sort_by: str = Query("relevance", description="Sort by: relevance, name, code, stock"),
     category: Optional[str] = Query(None, description="Filter by category"),
     warehouse: Optional[str] = Query(None, description="Filter by warehouse"),
     floor: Optional[str] = Query(None, description="Filter by floor"),
@@ -529,9 +515,7 @@ async def advanced_item_search(
 
     except Exception as e:
         response_time = (time.time() - start_time) * 1000
-        logger.error(
-            f"Advanced search failed: {query} in {response_time:.2f}ms - {str(e)}"
-        )
+        logger.error(f"Advanced search failed: {query} in {response_time:.2f}ms - {str(e)}")
 
         raise HTTPException(
             status_code=500,
@@ -572,9 +556,7 @@ async def get_unique_locations(current_user: dict = Depends(get_current_user)):
         return {"floors": floors, "racks": racks}
     except Exception as e:
         logger.error(f"Failed to fetch locations: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to fetch locations: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to fetch locations: {str(e)}")
 
 
 @enhanced_item_router.get("/performance/stats")
@@ -602,9 +584,7 @@ async def get_item_api_performance(current_user: dict = Depends(get_current_user
             "data_flow_verification": await db_manager.verify_data_flow(),
             "database_insights": await db_manager.get_database_insights(),
             "api_metrics": (
-                monitoring_service.get_endpoint_metrics("/erp/items")
-                if monitoring_service
-                else {}
+                monitoring_service.get_endpoint_metrics("/erp/items") if monitoring_service else {}
             ),
             "cache_stats": await cache_service.get_stats() if cache_service else {},
         }
@@ -613,9 +593,7 @@ async def get_item_api_performance(current_user: dict = Depends(get_current_user
 
     except Exception as e:
         logger.error(f"Performance stats failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Performance analysis failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Performance analysis failed: {str(e)}")
 
 
 @enhanced_item_router.post("/sync/realtime")

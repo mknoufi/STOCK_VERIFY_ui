@@ -156,9 +156,7 @@ async def test_get_all_items_search(setup_mocks):
 
     current_user = {"username": "testuser"}
 
-    response = await get_all_items(
-        search="Test", current_user=current_user, page=1, page_size=10
-    )
+    response = await get_all_items(search="Test", current_user=current_user, page=1, page_size=10)
 
     assert len(response["items"]) == 1
     assert response["items"][0].item_code == "CODE1"

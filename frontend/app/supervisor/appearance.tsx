@@ -20,7 +20,11 @@ export default function AppearanceScreen() {
       }}
       contentMode="scroll"
     >
-      <AppearanceSettings showTitle={false} scrollable={false} compact={false} />
+      <AppearanceSettings
+        showTitle={false}
+        scrollable={false}
+        compact={false}
+      />
     </ScreenContainer>
   );
 }

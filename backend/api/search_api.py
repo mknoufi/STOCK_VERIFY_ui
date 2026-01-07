@@ -18,10 +18,7 @@ from pydantic import BaseModel, Field
 
 from backend.api.response_models import ApiResponse
 from backend.auth.dependencies import get_current_user_async as get_current_user
-from backend.services.search_service import (
-    SearchResult,
-    get_search_service,
-)
+from backend.services.search_service import SearchResult, get_search_service
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +50,7 @@ class SearchItemResponse(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "id": "507f1f77bcf86cd799439011",
+                "id": "507f1f77bcf86cd799439011",  # pragma: allowlist secret
                 "item_name": "Apple iPhone 15 Pro",
                 "item_code": "IPHONE15PRO",
                 "barcode": "5100001234",
@@ -225,9 +222,7 @@ async def search_optimized_post(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> ApiResponse[OptimizedSearchResponse]:
     """POST version of optimized search (for compatibility)"""
-    return await search_optimized(
-        q=q, limit=limit, offset=offset, current_user=current_user
-    )
+    return await search_optimized(q=q, limit=limit, offset=offset, current_user=current_user)
 
 
 @router.get(

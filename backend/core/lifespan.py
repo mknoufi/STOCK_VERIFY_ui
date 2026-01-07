@@ -49,9 +49,7 @@ from backend.services.cache_service import CacheService
 from backend.services.database_health import DatabaseHealthService
 from backend.services.database_optimizer import DatabaseOptimizer
 from backend.services.error_log import ErrorLogService
-from backend.services.errors import (
-    DatabaseError,
-)
+from backend.services.errors import DatabaseError
 from backend.services.lock_manager import get_lock_manager
 from backend.services.monitoring_service import MonitoringService
 from backend.services.pubsub_service import get_pubsub_service
@@ -216,9 +214,7 @@ try:
         bcrypt.checkpw(b"test", test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(
-            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
-        )
+        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
@@ -253,9 +249,7 @@ if (
             max_overflow=getattr(settings, "MAX_OVERFLOW", 5),
             retry_attempts=getattr(settings, "CONNECTION_RETRY_ATTEMPTS", 3),
             retry_delay=getattr(settings, "CONNECTION_RETRY_DELAY", 1.0),
-            health_check_interval=getattr(
-                settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60
-            ),
+            health_check_interval=getattr(settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60),
         )
         logging.info("✓ Enhanced connection pool initialized")
     except ImportError as e:
@@ -395,32 +389,22 @@ async def lifespan(app: FastAPI):  # noqa: C901
                 f"Attempting to connect to SQL Server at {sql_host}:{sql_port}/{sql_database}..."
             )
             try:
-                sql_connector.connect(
-                    sql_host, sql_port, sql_database, sql_user, sql_password
-                )
+                sql_connector.connect(sql_host, sql_port, sql_database, sql_user, sql_password)
                 logger.info("OK: SQL Server connection established")
             except (ConnectionError, TimeoutError, OSError) as e:
-                logger.warning(
-                    f"SQL Server connection failed (network/system error): {str(e)}"
-                )
-                logger.warning(
-                    "ERP sync will be disabled until SQL Server is configured"
-                )
+                logger.warning(f"SQL Server connection failed (network/system error): {str(e)}")
+                logger.warning("ERP sync will be disabled until SQL Server is configured")
             except Exception as e:
                 # Catch-all for other SQL Server connection errors (authentication, database not found, etc.)
                 logger.warning(f"SQL Server connection failed: {str(e)}")
-                logger.warning(
-                    "ERP sync will be disabled until SQL Server is configured"
-                )
+                logger.warning("ERP sync will be disabled until SQL Server is configured")
         else:
             logger.warning(
                 "SQL Server credentials not configured. Set SQL_SERVER_HOST and SQL_SERVER_DATABASE in .env"
             )
     except (ValueError, AttributeError) as e:
         # Configuration errors - invalid settings
-        logger.warning(
-            f"Error initializing SQL Server connection (configuration error): {str(e)}"
-        )
+        logger.warning(f"Error initializing SQL Server connection (configuration error): {str(e)}")
     except Exception as e:
         # Other unexpected errors during initialization
         logger.warning(f"Unexpected error initializing SQL Server connection: {str(e)}")
@@ -428,9 +412,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     # CRITICAL: Verify MongoDB is available (required)
     try:
         await db.command("ping")
-        logger.info(
-            "✅ MongoDB connection verified - MongoDB is required and available"
-        )
+        logger.info("✅ MongoDB connection verified - MongoDB is required and available")
     except Exception as e:
         # MongoDB connection failed - check if we're in development mode
         error_type = type(e).__name__
@@ -469,9 +451,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         )
     except Exception as e:
         # Catch-all for migration errors (index creation failures, etc.)
-        logger.warning(
-            f"Migration error (may be due to MongoDB unavailability): {str(e)}"
-        )
+        logger.warning(f"Migration error (may be due to MongoDB unavailability): {str(e)}")
 
     # Initialize auto-sync manager (monitors SQL Server and auto-syncs when available)
     global auto_sync_manager
@@ -488,9 +468,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         if sql_configured:
             # Set callbacks for admin notifications
             async def on_connection_restored():
-                logger.info(
-                    "📢 SQL Server connection restored - sync will start automatically"
-                )
+                logger.info("📢 SQL Server connection restored - sync will start automatically")
                 # Could send notification to admin panel here
 
             async def on_connection_lost():
@@ -539,9 +517,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     try:
         await cache_service.initialize()
         cache_stats = await cache_service.get_stats()
-        logger.info(
-            f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}"
-        )
+        logger.info(f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}")
     except Exception as e:
         logger.warning(f"Cache service error: {str(e)}")
 
@@ -680,9 +656,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     # Verify Cache
     try:
         cache_stats = await cache_service.get_stats()
-        logger.info(
-            f"✓ Startup Check: Cache initialized ({cache_stats.get('backend', 'unknown')})"
-        )
+        logger.info(f"✓ Startup Check: Cache initialized ({cache_stats.get('backend', 'unknown')})")
     except Exception as e:
         logger.warning(f"⚠️ Startup Check: Cache service warning: {str(e)}")
 
@@ -721,9 +695,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         logger.info("✅ Startup Checklist: All critical services OK")
     else:
         failed = [svc for svc in critical_services if not startup_checklist[svc]]
-        logger.warning(
-            f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}"
-        )
+        logger.warning(f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}")
 
     logger.info("OK: Application startup complete")
 
@@ -861,9 +833,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
             timeout=shutdown_timeout,
         )
     except TimeoutError:
-        logger.warning(
-            f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown..."
-        )
+        logger.warning(f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown...")
     except Exception as e:
         logger.error(f"Error during shutdown: {str(e)}")
 

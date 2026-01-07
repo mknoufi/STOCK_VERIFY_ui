@@ -70,7 +70,7 @@ python-lint:
 
 python-format:
 	@echo "Formatting Python code..."
-	cd backend && black --line-length=100 api auth services middleware utils db scripts \
+	cd backend && black api auth services middleware utils db scripts \
 		config.py server.py api/mapping_api.py db_mapping_config.py sql_server_connector.py exceptions.py error_messages.py && ruff format .
 
 python-typecheck:

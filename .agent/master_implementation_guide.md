@@ -169,7 +169,7 @@ class ErrorBoundary extends React.Component {
 
 ### 14. Optimize AsyncStorage
 **Objective**: Batch updates.
-**Docs**: [AsyncStorage MultiSet](https://react-native-async-storage.github.io/async-storage/docs/api#multiset)
+**Docs**: [AsyncStorage MultiSet](https://react-native-async-storage.github.io/2.0/API/#multiset)
 **Implementation**:
 ```typescript
 await AsyncStorage.multiSet([
@@ -414,7 +414,7 @@ api.post('/audit', { action: 'SCAN', user: userId, time: Date.now() });
 
 ### 49. Real-time Analytics
 **Objective**: Usage tracking.
-**Docs**: [Segment](https://segment.com/docs/connections/sources/catalog/libraries/mobile/react-native/)
+**Docs**: [Segment](https://github.com/segmentio/analytics-react-native)
 
 ### 50. Error Tracking (Sentry)
 **Objective**: Crash reporting.

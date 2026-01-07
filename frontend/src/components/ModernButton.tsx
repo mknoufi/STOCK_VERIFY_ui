@@ -144,11 +144,15 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     // Variant-specific styles
     const variantStyles: Record<ButtonVariant, ViewStyle> = {
       primary: {
-        backgroundColor: theme ? theme.colors.accent : modernColors.primary[500],
+        backgroundColor: theme
+          ? theme.colors.accent
+          : modernColors.primary[500],
         ...modernShadows.sm,
       },
       secondary: {
-        backgroundColor: theme ? theme.colors.info : modernColors.secondary[500],
+        backgroundColor: theme
+          ? theme.colors.info
+          : modernColors.secondary[500],
         ...modernShadows.sm,
       },
       outline: {
@@ -255,7 +259,9 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
           size="small"
           color={
             variant === "outline" || variant === "ghost"
-              ? (theme ? theme.colors.accent : modernColors.primary[500])
+              ? theme
+                ? theme.colors.accent
+                : modernColors.primary[500]
               : "#FFFFFF"
           }
         />
@@ -276,7 +282,9 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
     const buttonStyle = [getButtonStyles(), style];
 
     if (variant === "gradient") {
-      const colors = gradientColors || (theme ? theme.gradients.primary : modernColors.gradients.primary);
+      const colors =
+        gradientColors ||
+        (theme ? theme.gradients.primary : modernColors.gradients.primary);
       return (
         <AnimatedTouchableOpacity
           onPress={onPress}

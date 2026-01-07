@@ -14,7 +14,7 @@ Add this `services:` section to the `python-ci` job (before or after `defaults:`
 python-ci:
   name: Python Backend CI
   runs-on: ubuntu-latest
-  
+
   services:
     mongodb:
       image: mongo:7
@@ -25,7 +25,7 @@ python-ci:
         --health-interval 10s
         --health-timeout 5s
         --health-retries 5
-  
+
   defaults:
     run:
       working-directory: ./backend
@@ -182,5 +182,5 @@ git push
 
 ---
 
-**Last Updated**: 2026-01-06  
+**Last Updated**: 2026-01-06
 **Quick Fix Priority**: MongoDB Service > Pre-commit Cache Investigation

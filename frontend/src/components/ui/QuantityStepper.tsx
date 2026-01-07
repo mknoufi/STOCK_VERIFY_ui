@@ -13,7 +13,14 @@ interface Props {
   testID?: string;
 }
 
-export function QuantityStepper({ value, onChange, min = 0, max, disabled, testID }: Props) {
+export function QuantityStepper({
+  value,
+  onChange,
+  min = 0,
+  max,
+  disabled,
+  testID,
+}: Props) {
   const clamp = (n: number) => {
     const lower = Math.max(min, isFinite(min) ? min : 0);
     const upper = typeof max === "number" ? max : Number.POSITIVE_INFINITY;
@@ -29,14 +36,24 @@ export function QuantityStepper({ value, onChange, min = 0, max, disabled, testI
   };
 
   return (
-    <View style={[styles.container, disabled && { opacity: 0.6 }]} testID={testID}>
+    <View
+      style={[styles.container, disabled && { opacity: 0.6 }]}
+      testID={testID}
+    >
       <TouchableOpacity
         onPress={() => handleChange(-1)}
         disabled={disabled || value <= min}
-        style={[styles.button, (disabled || value <= min) && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          (disabled || value <= min) && styles.buttonDisabled,
+        ]}
         accessibilityLabel="decrement"
       >
-        <Ionicons name="remove" size={20} color={auroraTheme.colors.text.primary} />
+        <Ionicons
+          name="remove"
+          size={20}
+          color={auroraTheme.colors.text.primary}
+        />
       </TouchableOpacity>
 
       <View style={styles.valueBox}>
@@ -46,10 +63,18 @@ export function QuantityStepper({ value, onChange, min = 0, max, disabled, testI
       <TouchableOpacity
         onPress={() => handleChange(1)}
         disabled={disabled || (typeof max === "number" && value >= max)}
-        style={[styles.button, (disabled || (typeof max === "number" && value >= max)) && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          (disabled || (typeof max === "number" && value >= max)) &&
+            styles.buttonDisabled,
+        ]}
         accessibilityLabel="increment"
       >
-        <Ionicons name="add" size={20} color={auroraTheme.colors.text.primary} />
+        <Ionicons
+          name="add"
+          size={20}
+          color={auroraTheme.colors.text.primary}
+        />
       </TouchableOpacity>
     </View>
   );

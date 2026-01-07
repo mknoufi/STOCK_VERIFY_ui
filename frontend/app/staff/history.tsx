@@ -281,7 +281,11 @@ export default function HistoryScreen() {
             contentContainerStyle={styles.list}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Ionicons name="file-tray-outline" size={64} color={theme.colors.text.tertiary} />
+                <Ionicons
+                  name="file-tray-outline"
+                  size={64}
+                  color={theme.colors.text.tertiary}
+                />
                 <Text style={styles.emptyText}>
                   {loading ? "Loading..." : "No counts yet"}
                 </Text>
@@ -298,7 +302,10 @@ export default function HistoryScreen() {
       >
         <Text style={styles.filterTitle}>Filters</Text>
         <TouchableOpacity
-          style={[styles.filterChip, showApprovedOnly && styles.filterChipActive]}
+          style={[
+            styles.filterChip,
+            showApprovedOnly && styles.filterChipActive,
+          ]}
           onPress={() => {
             const next = !showApprovedOnly;
             setShowApprovedOnly(next);

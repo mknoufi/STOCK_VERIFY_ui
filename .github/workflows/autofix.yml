@@ -1,0 +1,52 @@
+name: autofix.ci
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Python formatters
+        run: |
+          python -m pip install --upgrade pip
+          pip install black ruff
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run formatters
+        run: |
+          make python-format
+          make node-lint-fix
+
+      - name: Autofix
+        uses: autofix-ci/action@v1
+        with:
+          commit-message: "chore: autofix formatting"
+          comment: true

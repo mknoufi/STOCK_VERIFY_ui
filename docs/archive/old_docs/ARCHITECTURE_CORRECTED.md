@@ -76,9 +76,11 @@
 ## 🗄️ Database Roles
 
 ### **SQL Server (Source Database)**
+
 **Role:** READ-ONLY data source
 **Purpose:** Fetch existing data/records
 **Operations:**
+
 - ✅ SELECT queries only
 - ✅ Read historical data
 - ✅ Fetch reference data
@@ -88,15 +90,18 @@
 - ❌ NO write-back
 
 **Connection Type:**
+
 ```python
 # Read-only connection string
-SQL_SERVER_CONN = "mssql+pyodbc://user:pass@server/db?ReadOnly=true"
+SQL_SERVER_CONN = "mssql+pyodbc://username:password@server/db?ReadOnly=true"
 ```
 
 ### **MongoDB (Working Database)**
+
 **Role:** PRIMARY working database
 **Purpose:** Store, process, and manage all data
 **Operations:**
+
 - ✅ INSERT (store fetched data)
 - ✅ UPDATE (modify records)
 - ✅ DELETE (remove records)
@@ -105,6 +110,7 @@ SQL_SERVER_CONN = "mssql+pyodbc://user:pass@server/db?ReadOnly=true"
 - ✅ Transaction support
 
 **Collections (Examples):**
+
 ```javascript
 // Stock items fetched from SQL Server
 db.stock_items.insert({
@@ -147,6 +153,7 @@ db.audit_logs.insert({
 **Framework:** FastAPI (recommended) or Flask
 
 **Project Structure:**
+
 ```
 backend/
 ├── api/
@@ -176,6 +183,7 @@ backend/
 ```
 
 **Example Endpoints:**
+
 ```python
 # Fetch from SQL Server and store in MongoDB
 POST   /api/v1/stock/sync
@@ -199,6 +207,7 @@ GET    /api/v1/analytics/summary
 ### **React Native + Expo**
 
 **Project Structure:**
+
 ```
 frontend/
 ├── app/
@@ -257,12 +266,14 @@ frontend/
 ### **Data Security**
 
 **SQL Server:**
+
 - Read-only connection (no write risk)
 - Parameterized queries only
 - Connection string in environment variables
 - No sensitive data in logs
 
 **MongoDB:**
+
 - User authentication enabled
 - Role-based access control
 - Encrypted connections (TLS/SSL)
@@ -270,6 +281,7 @@ frontend/
 - Regular backups
 
 **Mobile App:**
+
 - Expo SecureStore for tokens
 - No hardcoded secrets
 - API keys in environment config
@@ -282,11 +294,13 @@ frontend/
 ### **Backend Deployment**
 
 **Options:**
+
 - Docker containers (recommended)
 - Kubernetes for scaling
 - AWS/Azure/GCP cloud hosting
 
 **Requirements:**
+
 - Python 3.11+
 - SQL Server ODBC driver
 - MongoDB connection
@@ -295,10 +309,12 @@ frontend/
 ### **Mobile App Deployment**
 
 **Development:**
+
 - Expo Go for testing
 - EAS Build for production builds
 
 **Production:**
+
 - iOS: App Store
 - Android: Google Play Store
 - OTA Updates via Expo
@@ -422,12 +438,14 @@ def test_sync_flow():
 ✅ **All changes stored in MongoDB**
 
 ### **Don't Do:**
+
 ❌ Write back to SQL Server
 ❌ Export to ERPNext
 ❌ Use Frappe framework
 ❌ Bidirectional sync
 
 ### **Do:**
+
 ✅ Fetch from SQL Server (read-only)
 ✅ Process in MongoDB
 ✅ Store changes in MongoDB

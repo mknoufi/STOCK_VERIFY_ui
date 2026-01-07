@@ -253,7 +253,7 @@ Add-Content -Path "commit-log.txt" -Value "Committed at $timestamp"
 
 ## 📦 Repository Info
 
-- **Repository:** https://github.com/mknoufi/STOCK_VERIFY_2
+- **Repository:** https://github.com/mknoufi/STOCK_VERIFY_ui
 - **Current Branch:** fixed
 - **Auto-Commit Status:** ✅ Active
 

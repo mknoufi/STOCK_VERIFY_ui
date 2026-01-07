@@ -37,10 +37,7 @@ import {
   AnimatedPressable,
   ScreenContainer,
 } from "../../src/components/ui";
-import {
-  SpeedDialAction,
-  ActivityType,
-} from "../../src/components/ui";
+import { SpeedDialAction, ActivityType } from "../../src/components/ui";
 import { theme } from "../../src/styles/modernDesignSystem";
 import { Session } from "../../src/types";
 
@@ -110,7 +107,8 @@ export default function SupervisorDashboard() {
           if ((session.total_variance || 0) < 0)
             acc.negativeVariance += session.total_variance;
 
-          if (Math.abs(session.total_variance ?? 0) > 1000) acc.highRiskSessions++;;
+          if (Math.abs(session.total_variance ?? 0) > 1000)
+            acc.highRiskSessions++;
 
           return acc;
         },
@@ -218,8 +216,8 @@ export default function SupervisorDashboard() {
   const completionPercentage =
     stats.totalSessions > 0
       ? ((stats.closedSessions + stats.reconciledSessions) /
-        stats.totalSessions) *
-      100
+          stats.totalSessions) *
+        100
       : 0;
 
   return (
@@ -239,7 +237,9 @@ export default function SupervisorDashboard() {
       noPadding
     >
       {loading && !refreshing ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Ionicons
             name="cube-outline"
             size={48}
@@ -470,9 +470,7 @@ export default function SupervisorDashboard() {
                       timestamp={activity.timestamp}
                       status={activity.status}
                       onPress={() =>
-                        router.push(
-                          `/supervisor/session/${activity.id}` as any,
-                        )
+                        router.push(`/supervisor/session/${activity.id}` as any)
                       }
                       delay={index * 50}
                     />

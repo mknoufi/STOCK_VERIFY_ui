@@ -332,9 +332,9 @@ curl -X GET "http://localhost:8001/api/analytics/inventory" \
 
 ## Additional Resources
 
-- [SQL Server Connectivity Guide](https://docs.microsoft.com/en-us/sql/connect/odbc/windows/system-dsn-setup-for-the-odbc-driver)
+- [SQL Server Connectivity Guide](https://learn.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server)
 - [pyodbc Documentation](https://github.com/mkleehammer/pyodbc/wiki)
-- [Barcode Gap Analysis Tool](scripts/find_missing_barcodes.py)
+- [Barcode Gap Analysis Tool](../scripts/find_missing_barcodes.py)
 - [API Documentation](http://localhost:8001/api/docs)
 
 ---
@@ -363,4 +363,3 @@ If you encounter issues:
    ```bash
    cat backend/config.py | grep SQL_SERVER
    ```
-

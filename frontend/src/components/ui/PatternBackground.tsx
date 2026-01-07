@@ -131,7 +131,16 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
       default:
         return null;
     }
-  }, [pattern, spacing, dotSize, primaryColor, secondary, opacity, width, height]);
+  }, [
+    pattern,
+    spacing,
+    dotSize,
+    primaryColor,
+    secondary,
+    opacity,
+    width,
+    height,
+  ]);
 
   if (!patternContent) return null;
 
@@ -152,11 +161,7 @@ const DotsPattern: React.FC<{
   height: number;
 }> = ({ spacing, size, color, opacity, width, height }) => {
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
         <SvgPattern
           id="dots"
@@ -187,11 +192,7 @@ const GridPattern: React.FC<{
   height: number;
 }> = ({ spacing, color, opacity, width, height }) => {
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
         <SvgPattern
           id="grid"
@@ -236,11 +237,7 @@ const WavesPattern: React.FC<{
   const waveCount = Math.ceil(height / waveHeight) + 2;
 
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id="waveGradient" x1="0" y1="0" x2="1" y2="0">
           <Stop offset="0%" stopColor={color} stopOpacity={opacity} />
@@ -277,11 +274,7 @@ const AuroraPattern: React.FC<{
   height: number;
 }> = ({ color, secondaryColor, opacity, width, height }) => {
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id="aurora1" x1="0" y1="0" x2="1" y2="1">
           <Stop offset="0%" stopColor={color} stopOpacity={opacity * 0.6} />
@@ -296,24 +289,9 @@ const AuroraPattern: React.FC<{
           <Stop offset="100%" stopColor={color} stopOpacity={0} />
         </LinearGradient>
       </Defs>
-      <Circle
-        cx={width * 0.2}
-        cy={height * 0.3}
-        r={200}
-        fill="url(#aurora1)"
-      />
-      <Circle
-        cx={width * 0.8}
-        cy={height * 0.5}
-        r={250}
-        fill="url(#aurora2)"
-      />
-      <Circle
-        cx={width * 0.5}
-        cy={height * 0.8}
-        r={180}
-        fill="url(#aurora1)"
-      />
+      <Circle cx={width * 0.2} cy={height * 0.3} r={200} fill="url(#aurora1)" />
+      <Circle cx={width * 0.8} cy={height * 0.5} r={250} fill="url(#aurora2)" />
+      <Circle cx={width * 0.5} cy={height * 0.8} r={180} fill="url(#aurora1)" />
     </Svg>
   );
 };
@@ -327,11 +305,7 @@ const MeshPattern: React.FC<{
   height: number;
 }> = ({ spacing, color, opacity, width, height }) => {
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
         <SvgPattern
           id="mesh"
@@ -394,11 +368,7 @@ const CircuitPattern: React.FC<{
   const circuitSpacing = spacing * 2;
 
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
         <SvgPattern
           id="circuit"
@@ -503,11 +473,7 @@ const HexagonPattern: React.FC<{
   };
 
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
         <SvgPattern
           id="hexagon"

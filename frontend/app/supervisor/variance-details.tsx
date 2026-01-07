@@ -147,10 +147,7 @@ export default function VarianceDetailsScreen() {
     return (
       <ScreenContainer>
         <View style={styles.centered}>
-          <ActivityIndicator
-            size="large"
-            color={theme.colors.primary[500]}
-          />
+          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
         </View>
       </ScreenContainer>
     );
@@ -301,10 +298,7 @@ export default function VarianceDetailsScreen() {
 
               {(itemDetails.floor || itemDetails.rack) && (
                 <View
-                  style={[
-                    styles.detailRow,
-                    { marginTop: theme.spacing.md },
-                  ]}
+                  style={[styles.detailRow, { marginTop: theme.spacing.md }]}
                 >
                   <View style={styles.detailItem}>
                     <Text style={styles.detailLabel}>Location</Text>

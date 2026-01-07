@@ -119,7 +119,7 @@ Blogs, tutorials, or unofficial sources are NOT considered valid references.
 	- GitHub: https://github.com/axios/axios
 
 - React Native MMKV
-	- Docs: https://mrousavy.com/react-native-mmkv/
+	- Docs: https://github.com/mrousavy/react-native-mmkv
 	- GitHub: https://github.com/mrousavy/react-native-mmkv
 
 - Async Storage
@@ -156,4 +156,3 @@ Only the documentation and repositories listed in this file are considered
 authoritative for the Stock Verify System.
 
 Any deviation must be justified with official documentation.
-

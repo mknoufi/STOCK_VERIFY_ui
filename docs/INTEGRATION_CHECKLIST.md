@@ -362,7 +362,7 @@ heartbeatService.start(sessionId);
 - [Phase 1 Implementation Log](./UPGRADE_IMPLEMENTATION_LOG.md)
 - [Phase 2 Implementation Log](./PHASE_2_IMPLEMENTATION_LOG.md)
 - [Technical Specification](./TECHNICAL_SPECIFICATION.md)
-- [API Documentation](./API_DOCUMENTATION.md) (TODO)
+- [API Documentation](./API_CONTRACTS.md)
 
 ---
 

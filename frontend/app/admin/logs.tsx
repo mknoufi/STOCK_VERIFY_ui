@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-} from "react-native";
-import {
-  AnimatedPressable,
-  ScreenContainer,
-} from "@/components/ui";
+import { View, Text, StyleSheet, TextInput } from "react-native";
+import { AnimatedPressable, ScreenContainer } from "@/components/ui";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";

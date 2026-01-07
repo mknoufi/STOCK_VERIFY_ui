@@ -53,9 +53,9 @@ make python-lint
 
 ## Result
 
-✅ `make python-lint` now passes  
-✅ All imports properly sorted  
-✅ No unused code  
+✅ `make python-lint` now passes
+✅ All imports properly sorted
+✅ No unused code
 ✅ Clean, maintainable codebase
 
 ## For More Details

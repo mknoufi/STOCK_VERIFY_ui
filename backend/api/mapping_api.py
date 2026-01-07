@@ -196,16 +196,15 @@ async def preview_mapping(
         select_fields = []
         for app_field, mapping in config.columns.items():
             erp_col = _safe_identifier(mapping.erp_column)
-            select_fields.append(f"[{erp_col}] as {app_field}")
+            safe_alias = _safe_identifier(app_field)
+            select_fields.append(f"[{erp_col}] as [{safe_alias}]")
 
         # Basic check to ensure at least one column
         if not select_fields:
             raise HTTPException(status_code=400, detail="No columns mapped")
 
         # Use TOP 5 to limit data
-        query = (
-            f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"
-        )
+        query = f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"
 
         # Log a sanitized summary (omit full query text to reduce risk)
         logger.info(
@@ -278,9 +277,7 @@ async def save_mapping(
 
 
 @router.get("/current")
-async def get_current_mapping(
-    current_user: dict = Depends(get_current_user), db=Depends(get_db)
-):
+async def get_current_mapping(current_user: dict = Depends(get_current_user), db=Depends(get_db)):
     if current_user.get("role") not in {"admin", "supervisor"}:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
 

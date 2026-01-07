@@ -321,7 +321,7 @@ All detailed documentation is available in the `docs/` folder:
 1. **[PRODUCTION_DEPLOYMENT_GUIDE.md](PRODUCTION_DEPLOYMENT_GUIDE.md)**: Complete deployment instructions with commands
 2. **[PRODUCTION_READINESS_CHECKLIST.md](PRODUCTION_READINESS_CHECKLIST.md)**: Step-by-step verification checklist
 3. **[FEATURE_ROADMAP.md](FEATURE_ROADMAP.md)**: Detailed feature specifications and timeline
-4. **[DEVELOPER_REPORT.md](../DEVELOPER_REPORT.md)**: Comprehensive system analysis
+4. **DEVELOPER_REPORT.md**: Comprehensive system analysis (Archived)
 5. **[codebase_memory_v2.1.md](codebase_memory_v2.1.md)**: Architecture and technical details
 
 ---

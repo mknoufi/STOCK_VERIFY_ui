@@ -6,9 +6,9 @@
 
 ## 🎯 TL;DR - Do This Now
 
-1. **Read This First:** [QUICK_START_VIBE_CODING.md](QUICK_START_VIBE_CODING.md) (⚡ 2 hours to first commit)
-2. **Then Read:** [VIBE_CODING_NEXT_STEPS.md](VIBE_CODING_NEXT_STEPS.md) (📚 Complete guide)
-3. **Visualize:** [VISUAL_ROADMAP.md](VISUAL_ROADMAP.md) (🗺️ See the big picture)
+1. **Read This First:** [Quick Start](QUICK_START.md) (⚡ 2 hours to first commit)
+2. **Then Read:** [Vibe Coding Workflow](VIBE_CODING_WORKFLOW.md) (📚 Complete guide)
+3. **Visualize:** [Feature Roadmap](FEATURE_ROADMAP.md) (🗺️ See the big picture)
 4. **Start Coding!** Follow the quick start guide
 
 ---
@@ -35,7 +35,7 @@ Your project is in **excellent shape**:
 **Goal:** Make your first contribution TODAY
 
 ```
-1. Open QUICK_START_VIBE_CODING.md
+1. Open QUICK_START.md
 2. Follow "Pre-flight Checklist" (15 min)
 3. Complete "First Vibe Coding Task" (1 hour)
 4. Make your first commit! 🎉
@@ -74,7 +74,7 @@ Your project is in **excellent shape**:
 ### 🧗 Advanced Track (30 Days)
 **Goal:** Ship a major feature
 
-Follow the 30-day learning path in `VIBE_CODING_NEXT_STEPS.md`:
+Follow the 30-day learning path in `VIBE_CODING_WORKFLOW.md`:
 - Week 1: Foundation + small fixes
 - Week 2: Small feature (biometric auth or notifications)
 - Week 3-4: Medium feature (barcode scanner or search)
@@ -194,20 +194,20 @@ Show me the current search in backend/api/enhanced_item_api.py and frontend/app/
 Here's all the documentation you have access to:
 
 ### 🎵 Vibe Coding Guides (NEW!)
-- **[QUICK_START_VIBE_CODING.md](QUICK_START_VIBE_CODING.md)** ← Start here!
-- **[VIBE_CODING_NEXT_STEPS.md](VIBE_CODING_NEXT_STEPS.md)** ← Comprehensive guide
-- **[VISUAL_ROADMAP.md](VISUAL_ROADMAP.md)** ← Visual timeline
-- **[VIBE_CODING_SETUP.md](VIBE_CODING_SETUP.md)** ← Tool setup
+- **[Quick Start](QUICK_START.md)** ← Start here!
+- **[Vibe Coding Workflow](VIBE_CODING_WORKFLOW.md)** ← Comprehensive guide
+- **[Feature Roadmap](FEATURE_ROADMAP.md)** ← Visual timeline
+- **[Startup Guide](STARTUP_GUIDE.md)** ← Tool setup
 
 ### 📖 Core Documentation
-- **[docs/codebase_memory_v2.1.md](docs/codebase_memory_v2.1.md)** ← Architecture
-- **[docs/STOCK_VERIFY_2.1_cursor_rules.md](docs/STOCK_VERIFY_2.1_cursor_rules.md)** ← Coding standards
-- **[docs/FEATURE_ROADMAP.md](docs/FEATURE_ROADMAP.md)** ← Full roadmap
-- **[docs/PENDING_WORK.md](docs/PENDING_WORK.md)** ← What's left
+- **[Architecture](codebase_memory_v2.1.md)** ← Architecture
+- **[Coding Standards](STOCK_VERIFY_2.1_cursor_rules.md)** ← Coding standards
+- **[Full Roadmap](FEATURE_ROADMAP.md)** ← Full roadmap
+- **[Pending Work](PENDING_WORK.md)** ← What's left
 
 ### 🚀 Past Work (Context)
-- **[FINAL_IMPLEMENTATION_SUMMARY.md](FINAL_IMPLEMENTATION_SUMMARY.md)** ← What was done
-- **[MODERNIZATION_ROADMAP.md](MODERNIZATION_ROADMAP.md)** ← Technical upgrades
+- **[Implementation Summary](IMPLEMENTATION_COMPLETE.md)** ← What was done
+- **[Upgrade Summary](COMPLETE_UPGRADE_SUMMARY.md)** ← Technical upgrades
 
 ---
 
@@ -366,7 +366,7 @@ The current code is in [file]. Can you help debug?"
 ## 🎯 Your Action Plan
 
 ### Right Now (5 minutes)
-1. [ ] Open `QUICK_START_VIBE_CODING.md`
+1. [ ] Open `QUICK_START.md`
 2. [ ] Bookmark this page
 3. [ ] Start reading
 
@@ -405,7 +405,7 @@ Open your AI assistant and type:
 I'm ready to start vibe coding on Stock Verify. I want to improve error messages in the mobile app as my first task. Show me frontend/services/api.ts and explain the current error handling. Then suggest improvements.
 ```
 
-**Then follow the steps in `QUICK_START_VIBE_CODING.md`!**
+**Then follow the steps in `QUICK_START.md`!**
 
 ---
 
@@ -413,6 +413,6 @@ I'm ready to start vibe coding on Stock Verify. I want to improve error messages
 
 ---
 
-**Created:** December 17, 2025
+**Updated:** January 2026
 **Status:** Ready to Use
-**Next Step:** Open `QUICK_START_VIBE_CODING.md` and start coding!
+**Next Step:** Open `QUICK_START.md` and start coding!

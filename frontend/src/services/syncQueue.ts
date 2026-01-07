@@ -3,10 +3,10 @@ import {
   deletePendingVerification,
   updatePendingVerificationStatus,
   saveLocalItems,
-  LocalItem
-} from '../db/localDb';
-import { syncBatch, isOnline } from './api/api';
-import api from './httpClient';
+  LocalItem,
+} from "../db/localDb";
+import { syncBatch, isOnline } from "./api/api";
+import api from "./httpClient";
 
 /**
  * SyncQueue service handles background synchronization of offline data.
@@ -23,16 +23,16 @@ export const syncQueue = {
 
     console.log(`Pushing ${pending.length} pending verifications...`);
 
-    const operations = pending.map(p => ({
+    const operations = pending.map((p) => ({
       id: p.id?.toString() || Date.now().toString(),
-      type: 'item_verification',
+      type: "item_verification",
       data: {
         barcode: p.barcode,
         verified: p.verified === 1,
         username: p.username,
-        variance: p.variance
+        variance: p.variance,
       },
-      timestamp: p.timestamp
+      timestamp: p.timestamp,
     }));
 
     try {
@@ -48,18 +48,23 @@ export const syncQueue = {
       if (result.conflicts) {
         for (const conflict of result.conflicts) {
           if (conflict.client_record_id) {
-            await updatePendingVerificationStatus(parseInt(conflict.client_record_id), 'locked');
-            console.log(`Marked verification ${conflict.client_record_id} as locked due to conflict: ${conflict.message}`);
+            await updatePendingVerificationStatus(
+              parseInt(conflict.client_record_id),
+              "locked",
+            );
+            console.log(
+              `Marked verification ${conflict.client_record_id} as locked due to conflict: ${conflict.message}`,
+            );
           }
         }
       }
 
       return {
         success: successfulIds.length,
-        failed: pending.length - successfulIds.length
+        failed: pending.length - successfulIds.length,
       };
     } catch (error) {
-      console.error('Failed to push pending verifications:', error);
+      console.error("Failed to push pending verifications:", error);
       return { success: 0, failed: pending.length };
     }
   },
@@ -71,8 +76,8 @@ export const syncQueue = {
     if (!isOnline()) return 0;
 
     try {
-      const response = await api.get('/api/v2/erp/items/sync', {
-        params: { since: lastSyncTimestamp }
+      const response = await api.get("/api/v2/erp/items/sync", {
+        params: { since: lastSyncTimestamp },
       });
 
       const items: LocalItem[] = response.data.items.map((item: any) => ({
@@ -80,7 +85,7 @@ export const syncQueue = {
         name: item.item_name,
         category: item.category,
         verified: item.verified ? 1 : 0,
-        last_sync: new Date().toISOString()
+        last_sync: new Date().toISOString(),
       }));
 
       if (items.length > 0) {
@@ -89,7 +94,7 @@ export const syncQueue = {
 
       return items.length;
     } catch (error) {
-      console.error('Failed to pull updated items:', error);
+      console.error("Failed to pull updated items:", error);
       return 0;
     }
   },
@@ -103,7 +108,7 @@ export const syncQueue = {
 
     return {
       pushed: pushResult.success,
-      pulled: pullCount
+      pulled: pullCount,
     };
-  }
+  },
 };

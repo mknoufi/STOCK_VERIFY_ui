@@ -21,21 +21,39 @@ async def websocket_endpoint(
     # Authenticate before accepting
     payload = None
     try:
-        payload = decode(
-            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
-        )
+        payload = decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
     except Exception as e:
         logger.warning(f"WebSocket auth failed: {str(e)}")
 
     if not payload:
         # Accept then immediately close with policy violation code
         await websocket.accept()
+        try:
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "error": "unauthorized",
+                    "detail": "Invalid token",
+                }
+            )
+        except Exception:
+            pass
         await websocket.close(code=1008)
         return
 
     user_id = payload.get("sub")
     if not user_id:
         await websocket.accept()
+        try:
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "error": "unauthorized",
+                    "detail": "Missing sub",
+                }
+            )
+        except Exception:
+            pass
         await websocket.close(code=1008)
         return
 
@@ -43,9 +61,21 @@ async def websocket_endpoint(
     role = payload.get("role", "").lower()
     if role != "supervisor":
         logger.warning(
-            f"WebSocket connection rejected for user {user_id}: Role '{role}' is not 'supervisor'"
+            "WebSocket rejected: user=%s role=%s (needs supervisor)",
+            user_id,
+            role,
         )
         await websocket.accept()
+        try:
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "error": "forbidden",
+                    "detail": "Supervisor role required",
+                }
+            )
+        except Exception:
+            pass
         await websocket.close(code=1008)
         return
 

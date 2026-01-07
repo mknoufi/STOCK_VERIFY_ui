@@ -31,6 +31,7 @@ from backend.api import auth, supervisor_pin  # noqa: E402
 from backend.api.admin_control_api import admin_control_router  # noqa: E402
 from backend.api.admin_dashboard_api import admin_dashboard_router  # noqa: E402
 from backend.api.auth import router as auth_router  # noqa: E402
+from backend.api.chat_ws_api import router as chat_ws_router  # noqa: E402
 from backend.api.dynamic_fields_api import dynamic_fields_router  # noqa: E402
 from backend.api.dynamic_reports_api import dynamic_reports_router  # noqa: E402
 from backend.api.enhanced_item_api import (  # noqa: E402
@@ -129,8 +130,8 @@ from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 
 # Utils
 from backend.utils.api_utils import (  # noqa: E402
-    result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402
+    result_to_response,
+    sanitize_for_logging,
 )
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
@@ -278,9 +279,7 @@ try:
         bcrypt.checkpw(b"test", test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(
-            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
-        )
+        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
@@ -315,9 +314,7 @@ if (
             max_overflow=getattr(settings, "MAX_OVERFLOW", 5),
             retry_attempts=getattr(settings, "CONNECTION_RETRY_ATTEMPTS", 3),
             retry_delay=getattr(settings, "CONNECTION_RETRY_DELAY", 1.0),
-            health_check_interval=getattr(
-                settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60
-            ),
+            health_check_interval=getattr(settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60),
         )
         logging.info("✓ Enhanced connection pool initialized")
     except ImportError as e:
@@ -458,32 +455,22 @@ async def lifespan(app: FastAPI):  # noqa: C901
                 f"Attempting to connect to SQL Server at {sql_host}:{sql_port}/{sql_database}..."
             )
             try:
-                sql_connector.connect(
-                    sql_host, sql_port, sql_database, sql_user, sql_password
-                )
+                sql_connector.connect(sql_host, sql_port, sql_database, sql_user, sql_password)
                 logger.info("OK: SQL Server connection established")
             except (ConnectionError, TimeoutError, OSError) as e:
-                logger.warning(
-                    f"SQL Server connection failed (network/system error): {str(e)}"
-                )
-                logger.warning(
-                    "ERP sync will be disabled until SQL Server is configured"
-                )
+                logger.warning(f"SQL Server connection failed (network/system error): {str(e)}")
+                logger.warning("ERP sync will be disabled until SQL Server is configured")
             except Exception as e:
                 # Catch-all for other SQL Server connection errors (authentication, database not found, etc.)
                 logger.warning(f"SQL Server connection failed: {str(e)}")
-                logger.warning(
-                    "ERP sync will be disabled until SQL Server is configured"
-                )
+                logger.warning("ERP sync will be disabled until SQL Server is configured")
         else:
             logger.warning(
                 "SQL Server credentials not configured. Set SQL_SERVER_HOST and SQL_SERVER_DATABASE in .env"
             )
     except (ValueError, AttributeError) as e:
         # Configuration errors - invalid settings
-        logger.warning(
-            f"Error initializing SQL Server connection (configuration error): {str(e)}"
-        )
+        logger.warning(f"Error initializing SQL Server connection (configuration error): {str(e)}")
     except Exception as e:
         # Other unexpected errors during initialization
         logger.warning(f"Unexpected error initializing SQL Server connection: {str(e)}")
@@ -491,9 +478,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     # CRITICAL: Verify MongoDB is available (required)
     try:
         await db.command("ping")
-        logger.info(
-            "✅ MongoDB connection verified - MongoDB is required and available"
-        )
+        logger.info("✅ MongoDB connection verified - MongoDB is required and available")
     except Exception as e:
         # MongoDB connection failed - check if we're in development mode
         error_type = type(e).__name__
@@ -532,9 +517,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         )
     except Exception as e:
         # Catch-all for migration errors (index creation failures, etc.)
-        logger.warning(
-            f"Migration error (may be due to MongoDB unavailability): {str(e)}"
-        )
+        logger.warning(f"Migration error (may be due to MongoDB unavailability): {str(e)}")
 
     # Initialize auto-sync manager (monitors SQL Server and auto-syncs when available)
     global auto_sync_manager
@@ -551,9 +534,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         if sql_configured:
             # Set callbacks for admin notifications
             async def on_connection_restored():
-                logger.info(
-                    "📢 SQL Server connection restored - sync will start automatically"
-                )
+                logger.info("📢 SQL Server connection restored - sync will start automatically")
                 # Could send notification to admin panel here
 
             async def on_connection_lost():
@@ -602,9 +583,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     try:
         await cache_service.initialize()
         cache_stats = await cache_service.get_stats()
-        logger.info(
-            f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}"
-        )
+        logger.info(f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}")
     except Exception:
         logger.warning("Cache service error", exc_info=True)
 
@@ -743,9 +722,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
     # Verify Cache
     try:
         cache_stats = await cache_service.get_stats()
-        logger.info(
-            f"✓ Startup Check: Cache initialized ({cache_stats.get('backend', 'unknown')})"
-        )
+        logger.info(f"✓ Startup Check: Cache initialized ({cache_stats.get('backend', 'unknown')})")
     except Exception as e:
         logger.warning(f"⚠️ Startup Check: Cache service warning: {str(e)}")
 
@@ -784,9 +761,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
         logger.info("✅ Startup Checklist: All critical services OK")
     else:
         failed = [svc for svc in critical_services if not startup_checklist[svc]]
-        logger.warning(
-            f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}"
-        )
+        logger.warning(f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}")
 
     # Initialize search service
     try:
@@ -879,9 +854,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
             timeout=shutdown_timeout,
         )
     except TimeoutError:
-        logger.warning(
-            f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown..."
-        )
+        logger.warning(f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown...")
     except Exception as e:
         logger.error(f"Error during shutdown: {str(e)}")
 
@@ -937,13 +910,9 @@ elif _env == "development":
     ]
     # Add additional dev origins from environment if configured
     if getattr(settings, "CORS_DEV_ORIGINS", None):
-        dev_origins = [
-            o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()
-        ]
+        dev_origins = [o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()]
         _allowed_origins.extend(dev_origins)
-        logger.info(
-            f"Added {len(dev_origins)} additional CORS origins from CORS_DEV_ORIGINS"
-        )
+        logger.info(f"Added {len(dev_origins)} additional CORS origins from CORS_DEV_ORIGINS")
 else:
     _allowed_origins = []
     if not getattr(settings, "CORS_ALLOW_ORIGINS", None):
@@ -998,25 +967,19 @@ app.include_router(mapping_router)  # Database mapping endpoints via mapping_api
 app.include_router(exports_router, prefix="/api")  # Export functionality
 
 app.include_router(auth_router, prefix="/api")
-app.include_router(
-    items_router
-)  # Enhanced items API (has its own prefix /api/v2/erp/items)
+app.include_router(items_router)  # Enhanced items API (has its own prefix /api/v2/erp/items)
 app.include_router(search_router)  # Search API (has prefix /api/items)
 app.include_router(metrics_router, prefix="/api")  # Metrics and monitoring
 app.include_router(sync_router, prefix="/api")  # Sync status
 app.include_router(sync_management_router, prefix="/api")  # Sync management
-app.include_router(
-    self_diagnosis_router, prefix="/api/diagnosis"
-)  # Self-diagnosis tools
+app.include_router(self_diagnosis_router, prefix="/api/diagnosis")  # Self-diagnosis tools
 app.include_router(security_router)  # Security dashboard (has its own prefix)
 app.include_router(verification_router)
 app.include_router(erp_router, prefix="/api")  # ERP endpoints
 app.include_router(variance_router, prefix="/api")  # Variance reasons and trendspoints
 app.include_router(admin_control_router)  # Admin control endpoints
 app.include_router(dynamic_fields_router)  # Dynamic fields management
-app.include_router(
-    dynamic_reports_router
-)  # Dynamic reports (has prefix /api/dynamic-reports)
+app.include_router(dynamic_reports_router)  # Dynamic reports (has prefix /api/dynamic-reports)
 app.include_router(logs_router, prefix="/api")  # Error and Activity logs
 app.include_router(locations_router)  # Locations (Zones/Warehouses)
 
@@ -1033,6 +996,7 @@ app.include_router(reporting_router)  # Reporting API (has prefix /api/reports)
 app.include_router(admin_dashboard_router, prefix="/api")  # Admin Dashboard API
 app.include_router(report_generation_router, prefix="/api")  # Report Generation API
 app.include_router(websocket_router)  # WebSocket updates (endpoint at /ws/updates)
+app.include_router(chat_ws_router)  # Chat WebSocket (endpoint at /api/chat/ws)
 logger.info("✓ Phase 1-3 upgrade routers registered")
 logger.info("✓ Admin Dashboard, Report Generation, and Dynamic Reports APIs registered")
 
@@ -1456,9 +1420,7 @@ async def log_failed_login_attempt(
         logger.error(f"Failed to log login attempt: {str(e)}")
 
 
-async def log_successful_login(
-    user: dict[str, Any], ip_address: str, request: Request
-) -> None:
+async def log_successful_login(user: dict[str, Any], ip_address: str, request: Request) -> None:
     """Log a successful login."""
     try:
         await db.login_attempts.insert_one(
@@ -1505,9 +1467,7 @@ async def refresh_token(request: Request) -> Result[dict[str, Any], Exception]:
             return Fail(ValidationError("Refresh token is required"))
 
         # Find refresh token in database
-        token_doc = await db.refresh_tokens.find_one(
-            {"token": refresh_token, "is_revoked": False}
-        )
+        token_doc = await db.refresh_tokens.find_one({"token": refresh_token, "is_revoked": False})
 
         if not token_doc:
             return Fail(AuthenticationError("Invalid or expired refresh token"))
@@ -1594,17 +1554,13 @@ async def create_session(
     if not warehouse:
         raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
     if len(warehouse) < 2:
-        raise HTTPException(
-            status_code=400, detail="Warehouse name must be at least 2 characters"
-        )
+        raise HTTPException(status_code=400, detail="Warehouse name must be at least 2 characters")
     if len(warehouse) > 100:
         raise HTTPException(
             status_code=400, detail="Warehouse name must be less than 100 characters"
         )
     # Sanitize warehouse name (remove potentially dangerous characters)
-    warehouse = (
-        warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
-    )
+    warehouse = warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
 
     session = Session(
         warehouse=warehouse,
@@ -1641,9 +1597,7 @@ async def get_sessions(
 
     if current_user["role"] == "supervisor":
         total = await db.sessions.count_documents({})
-        sessions_cursor = (
-            db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
-        )
+        sessions_cursor = db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
     else:
         filter_query = {"staff_user": current_user["username"]}
         total = await db.sessions.count_documents(filter_query)
@@ -1879,9 +1833,7 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
 
         # Transform results
         sessions_by_date = {item["_id"]: item["count"] for item in by_date}
-        variance_by_warehouse = {
-            item["_id"]: item["total_variance"] for item in by_warehouse
-        }
+        variance_by_warehouse = {item["_id"]: item["total_variance"] for item in by_warehouse}
         items_by_staff = {item["_id"]: item["total_items"] for item in by_staff}
 
         return {
@@ -1930,9 +1882,7 @@ async def get_session_by_id(
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(
-    erp_item: dict, line_data: CountLineCreate, variance: float
-) -> list[str]:
+def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
     """Detect high-risk correction patterns"""
     risk_flags = []
 
@@ -1958,17 +1908,11 @@ def detect_risk_flags(
         risk_flags.append("HIGH_VALUE_VARIANCE")
 
     # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (
-        not line_data.serial_numbers or len(line_data.serial_numbers) == 0
-    ):
+    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
         risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
 
     # Rule 5: Correction without reason when variance exists
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         risk_flags.append("MISSING_CORRECTION_REASON")
 
     # Rule 6: MRP change without reason
@@ -1997,9 +1941,7 @@ def detect_risk_flags(
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(
-    erp_mrp: float, counted_mrp: float, counted_qty: float
-) -> float:
+def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
@@ -2027,11 +1969,7 @@ async def create_count_line(
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
     # Validate mandatory correction reason for variance
-    if (
-        abs(variance) > 0
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
+    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
         raise HTTPException(
             status_code=400,
             detail="Correction reason is mandatory when variance exists",
@@ -2086,19 +2024,13 @@ async def create_count_line(
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
         "correction_reason": (
-            line_data.correction_reason.model_dump()
-            if line_data.correction_reason
-            else None
+            line_data.correction_reason.model_dump() if line_data.correction_reason else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs]
-            if line_data.photo_proofs
-            else None
+            [p.model_dump() for p in line_data.photo_proofs] if line_data.photo_proofs else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump()
-            if line_data.correction_metadata
-            else None
+            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
         ),
         "approval_status": approval_status,
         "approval_by": None,
@@ -2426,9 +2358,7 @@ def save_backend_info(port: int, local_ip: str) -> None:
         if frontend_public.exists():
             with open(frontend_public / "backend_port.json", "w") as f:
                 json.dump(port_data, f)
-            logger.info(
-                f"Saved backend port info to {frontend_public / 'backend_port.json'}"
-            )
+            logger.info(f"Saved backend port info to {frontend_public / 'backend_port.json'}")
 
         logger.info(
             f"Saved backend info (IP: {local_ip}, Port: {port}) to {root_dir / 'backend_port.json'}"
@@ -2464,9 +2394,7 @@ if __name__ == "__main__":
     # Get configured port as starting point
     start_port = int(getattr(settings, "PORT", os.getenv("PORT", 8001)))
     # Use PortDetector to find port and IP
-    port = PortDetector.find_available_port(
-        start_port, range(start_port, start_port + 10)
-    )
+    port = PortDetector.find_available_port(start_port, range(start_port, start_port + 10))
     local_ip = PortDetector.get_local_ip()
 
     # Save port to file for other services to discover

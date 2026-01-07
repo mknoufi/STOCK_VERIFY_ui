@@ -1,14 +1,20 @@
-import React, { ReactNode } from 'react';
-import { View, ViewStyle, StyleProp, TouchableOpacity, GestureResponderEvent } from 'react-native';
+import React, { ReactNode } from "react";
+import {
+  View,
+  ViewStyle,
+  StyleProp,
+  TouchableOpacity,
+  GestureResponderEvent,
+} from "react-native";
 
 interface CardProps {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   onPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
-  variant?: 'elevated' | 'outlined' | 'filled';
-  padding?: 'none' | 'small' | 'medium' | 'large';
-  margin?: 'none' | 'small' | 'medium' | 'large';
+  variant?: "elevated" | "outlined" | "filled";
+  padding?: "none" | "small" | "medium" | "large";
+  margin?: "none" | "small" | "medium" | "large";
   testID?: string;
 }
 
@@ -31,26 +37,26 @@ export const Card: React.FC<CardProps> = ({
   style,
   onPress,
   disabled = false,
-  variant = 'elevated',
-  padding = 'medium',
-  margin = 'small',
+  variant = "elevated",
+  padding = "medium",
+  margin = "small",
   testID,
 }) => {
   const cardStyles: ViewStyle = {
     padding: paddingMap[padding],
     margin: marginMap[margin],
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
-    ...(variant === 'elevated' && {
-      shadowColor: '#000',
+    ...(variant === "elevated" && {
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 3,
     }),
-    ...(variant === 'outlined' && {
+    ...(variant === "outlined" && {
       borderWidth: 1,
-      borderColor: '#e0e0e0',
+      borderColor: "#e0e0e0",
     }),
   };
 

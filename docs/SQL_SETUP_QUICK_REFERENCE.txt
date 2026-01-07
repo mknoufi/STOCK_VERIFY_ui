@@ -18,7 +18,7 @@ Workspace: /Users/noufi1/cursor new/STOCK_VERIFY_2-db-maped
 ./scripts/setup_sql_and_sync.sh
 
 # OR command-line mode - all at once
-./scripts/setup_sql_and_sync.sh 192.168.1.100 1433 ERP admin MyPassword123
+./scripts/setup_sql_and_sync.sh 192.168.1.100 1433 ERP admin YourPassword123
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 WHAT THE SCRIPT DOES AUTOMATICALLY
@@ -55,13 +55,13 @@ Ask your SQL Server admin for:
 
 2. Edit with your credentials:
    nano .env
-   
+
    (Update these 5 lines:)
    export SQL_SERVER_HOST="192.168.1.100"
    export SQL_SERVER_PORT="1433"
    export SQL_SERVER_DATABASE="ERP"
    export SQL_SERVER_USER="admin"
-   export SQL_SERVER_PASSWORD="MyPassword"
+   export SQL_SERVER_PASSWORD="REDACTED"
 
 3. Load environment:
    source .env

@@ -75,9 +75,7 @@ async def test_get_item_by_barcode_enhanced_cache(setup_mocks):
     mock_db, mock_cache, _ = setup_mocks
 
     # Mock Cache hit
-    cached_item = {
-        "item": {"item_code": "CODE123", "barcode": "510001", "item_name": "Test Item"}
-    }
+    cached_item = {"item": {"item_code": "CODE123", "barcode": "510001", "item_name": "Test Item"}}
     mock_cache.get_async.return_value = cached_item
 
     request = MagicMock()

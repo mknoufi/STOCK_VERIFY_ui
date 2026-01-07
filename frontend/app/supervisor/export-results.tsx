@@ -352,10 +352,7 @@ export default function ExportResultsScreen() {
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator
-              size="large"
-              color={theme.colors.primary[500]}
-            />
+            <ActivityIndicator size="large" color={theme.colors.primary[500]} />
             <Text style={styles.loadingText}>Loading results...</Text>
           </View>
         ) : (

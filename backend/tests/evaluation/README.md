@@ -299,6 +299,6 @@ Check that `conftest.py` is loading correctly and in-memory database is configur
 
 ## Related Documentation
 
-- [API Contracts](../../docs/API_CONTRACTS.md)
-- [Backend Tests](../BACKEND_TESTS_COMPLETE.md)
-- [Architecture](../../ARCHITECTURE.md)
+- [API Contracts](../../../docs/API_CONTRACTS.md)
+- [Backend Tests](../../../CONTRIBUTING.md#backend-tests)
+- [Architecture](../../../docs/archive/old_docs/ARCHITECTURE.md)

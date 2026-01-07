@@ -1,5 +1,5 @@
-import { logger } from '../logging';
-import { useAuthStore } from '../../store/authStore';
+import { logger } from "../logging";
+import { useAuthStore } from "../../store/authStore";
 
 /**
  * Service for logging user actions for audit purposes.
@@ -16,14 +16,17 @@ export const auditLogger = {
 
     const logEntry = {
       action,
-      userId: user?.id || 'anonymous',
-      username: user?.username || 'anonymous',
+      userId: user?.id || "anonymous",
+      username: user?.username || "anonymous",
       timestamp: new Date().toISOString(),
       ...metadata,
     };
 
     // Log to console/local logging service
-    logger.info(`[AUDIT] User ${logEntry.username} performed ${action}`, logEntry);
+    logger.info(
+      `[AUDIT] User ${logEntry.username} performed ${action}`,
+      logEntry,
+    );
 
     // In a real app, this would also send to a backend endpoint
     // auditApi.postLog(logEntry);
@@ -32,8 +35,13 @@ export const auditLogger = {
   /**
    * Specifically log a stock adjustment
    */
-  logStockAdjustment: (itemCode: string, oldQty: number, newQty: number, reason: string) => {
-    auditLogger.logAction('stock_adjustment', {
+  logStockAdjustment: (
+    itemCode: string,
+    oldQty: number,
+    newQty: number,
+    reason: string,
+  ) => {
+    auditLogger.logAction("stock_adjustment", {
       itemCode,
       oldQty,
       newQty,
@@ -44,11 +52,15 @@ export const auditLogger = {
   /**
    * Specifically log a sync operation
    */
-  logSync: (type: 'manual' | 'auto', status: 'success' | 'failure', details?: string) => {
-    auditLogger.logAction('sync_operation', {
+  logSync: (
+    type: "manual" | "auto",
+    status: "success" | "failure",
+    details?: string,
+  ) => {
+    auditLogger.logAction("sync_operation", {
       type,
       status,
       details,
     });
-  }
+  },
 };

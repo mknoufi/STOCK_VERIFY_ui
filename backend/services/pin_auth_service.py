@@ -125,9 +125,13 @@ class PINAuthService:
 
                 # Lock account after max attempts
                 if failed_attempts >= self.max_attempts:
-                    locked_until = datetime.utcnow() + timedelta(minutes=self.lockout_duration)
+                    locked_until = datetime.utcnow() + timedelta(
+                        minutes=self.lockout_duration
+                    )
                     update_data["$set"]["locked_until"] = locked_until
-                    logger.warning(f"PIN account locked due to failed attempts: {user_id}")
+                    logger.warning(
+                        f"PIN account locked due to failed attempts: {user_id}"
+                    )
 
                 await self.collection.update_one({"user_id": user_id}, update_data)
                 return False
@@ -158,7 +162,8 @@ class PINAuthService:
                 return {"enabled": False, "status": "not_set"}
 
             is_locked = (
-                pin_record.get("locked_until") and datetime.utcnow() < pin_record["locked_until"]
+                pin_record.get("locked_until")
+                and datetime.utcnow() < pin_record["locked_until"]
             )
 
             return {
@@ -174,4 +179,6 @@ class PINAuthService:
 
     def _validate_pin_format(self, pin: str) -> bool:
         """Validate PIN format (4-6 digits)"""
-        return isinstance(pin, str) and len(pin) >= 4 and len(pin) <= 6 and pin.isdigit()
+        return (
+            isinstance(pin, str) and len(pin) >= 4 and len(pin) <= 6 and pin.isdigit()
+        )

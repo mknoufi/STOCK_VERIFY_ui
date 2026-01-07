@@ -45,7 +45,9 @@ def _update_env_for_localhost(env_vars: dict[str, str]) -> None:
     print("\n✅ Updating SQL Server configuration for localhost...")
     env_vars["SQL_SERVER_HOST"] = "localhost"
     env_vars["SQL_SERVER_PORT"] = "1433"
-    env_vars["SQL_SERVER_DATABASE"] = env_vars.get("SQL_SERVER_DATABASE", "E_MART_KITCHEN_CARE")
+    env_vars["SQL_SERVER_DATABASE"] = env_vars.get(
+        "SQL_SERVER_DATABASE", "E_MART_KITCHEN_CARE"
+    )
     # Clear credentials for Windows Auth
     env_vars["SQL_SERVER_USER"] = ""
     env_vars["SQL_SERVER_PASSWORD"] = ""

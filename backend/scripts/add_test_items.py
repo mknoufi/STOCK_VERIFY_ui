@@ -75,14 +75,18 @@ async def add_test_items():
         # Check if items already exist
         existing_count = await db.erp_items.count_documents({})
         if existing_count > 0:
-            print(f"⚠️  MongoDB already has {existing_count} items. Proceeding to add test items...")
+            print(
+                f"⚠️  MongoDB already has {existing_count} items. Proceeding to add test items..."
+            )
 
         # Insert test items
         result = await db.erp_items.insert_many(test_items)
         print(f"✅ Added {len(result.inserted_ids)} test items to MongoDB")
         print("\n📋 Added items:")
         for item in test_items:
-            print(f"  - {item['item_code']}: {item['item_name']} (Barcode: {item['barcode']})")
+            print(
+                f"  - {item['item_code']}: {item['item_name']} (Barcode: {item['barcode']})"
+            )
 
         # Verify
         total_count = await db.erp_items.count_documents({})

@@ -32,11 +32,11 @@ def check_other_columns():
         cursor.execute(query_products)
         rows = cursor.fetchall()
         if rows:
-            print(f"Found barcodes in Products.Barcode (sample): {[r[0] for r in rows]}")
-
-            query_count = (
-                "SELECT COUNT(*) FROM Products WHERE Barcode IS NOT NULL AND Barcode != ''"
+            print(
+                f"Found barcodes in Products.Barcode (sample): {[r[0] for r in rows]}"
             )
+
+            query_count = "SELECT COUNT(*) FROM Products WHERE Barcode IS NOT NULL AND Barcode != ''"
             cursor.execute(query_count)
             print(f"Total barcodes in Products.Barcode: {cursor.fetchone()[0]}")
         else:

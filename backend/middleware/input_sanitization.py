@@ -109,7 +109,9 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
                 pass
         return None
 
-    def _sanitize_headers(self, request: Request, request_id: str) -> Optional[JSONResponse]:
+    def _sanitize_headers(
+        self, request: Request, request_id: str
+    ) -> Optional[JSONResponse]:
         if self.sanitize_headers:
             for header_name, header_value in request.headers.items():
                 if self._is_dangerous(str(header_value)):

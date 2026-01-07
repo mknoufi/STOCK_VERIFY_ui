@@ -17,7 +17,9 @@ from backend.services.dynamic_report_service import DynamicReportService
 logger = logging.getLogger(__name__)
 
 # Changed prefix to /api/dynamic-reports to avoid conflict with reporting_api.py (/api/reports)
-dynamic_reports_router = APIRouter(prefix="/api/dynamic-reports", tags=["dynamic-reports"])
+dynamic_reports_router = APIRouter(
+    prefix="/api/dynamic-reports", tags=["dynamic-reports"]
+)
 
 # Global service instance
 _dynamic_report_service = None
@@ -48,15 +50,21 @@ class ReportTemplate(BaseModel):
     fields: list[ReportField] = Field(..., description="Fields to include")
     filters: dict[str, Optional[Any]] = Field(None, description="Filter criteria")
     grouping: Optional[list[str]] = Field(None, description="Group by fields")
-    sorting: list[dict[str, Optional[str]]] = Field(None, description="Sort configuration")
-    aggregations: dict[str, Optional[str]] = Field(None, description="Aggregation functions")
+    sorting: list[dict[str, Optional[str]]] = Field(
+        None, description="Sort configuration"
+    )
+    aggregations: dict[str, Optional[str]] = Field(
+        None, description="Aggregation functions"
+    )
     format: str = Field("excel", description="Output format")
 
 
 class ReportGeneration(BaseModel):
     template_id: Optional[str] = Field(None, description="Template ID")
     template_data: ReportTemplate = Field(None, description="Custom template")
-    runtime_filters: dict[str, Optional[Any]] = Field(None, description="Runtime filters")
+    runtime_filters: dict[str, Optional[Any]] = Field(
+        None, description="Runtime filters"
+    )
 
 
 @dynamic_reports_router.post("/templates")
@@ -199,7 +207,9 @@ async def generate_report(
         template_dict = None
         if generation_data.template_data:
             template_dict = generation_data.template_data.model_dump()
-            template_dict["fields"] = [f.model_dump() for f in generation_data.template_data.fields]
+            template_dict["fields"] = [
+                f.model_dump() for f in generation_data.template_data.fields
+            ]
 
         report = await service.generate_report(
             template_id=generation_data.template_id,
@@ -246,7 +256,9 @@ async def get_generated_reports(
     try:
         reports = await service.get_generated_reports(
             generated_by=(
-                current_user.get("username") if current_user.get("role") == "staff" else None
+                current_user.get("username")
+                if current_user.get("role") == "staff"
+                else None
             ),
             limit=limit,
         )
@@ -305,7 +317,9 @@ async def quick_report_items_with_fields(
     try:
         # Create quick template
         fields_service = service.db.dynamic_field_definitions
-        dynamic_fields = await fields_service.find({"enabled": True}).to_list(length=None)
+        dynamic_fields = await fields_service.find({"enabled": True}).to_list(
+            length=None
+        )
 
         fields = [
             {"name": "item_code", "label": "Item Code", "source": "database"},
@@ -336,7 +350,9 @@ async def quick_report_items_with_fields(
         )
 
         # Immediate download
-        file_data, file_name, mime_type = await service.get_report_file(str(report["_id"]))
+        file_data, file_name, mime_type = await service.get_report_file(
+            str(report["_id"])
+        )
 
         return StreamingResponse(
             io.BytesIO(file_data),
@@ -400,7 +416,9 @@ async def quick_report_variance_summary(
         )
 
         # Immediate download
-        file_data, file_name, mime_type = await service.get_report_file(str(report["_id"]))
+        file_data, file_name, mime_type = await service.get_report_file(
+            str(report["_id"])
+        )
 
         return StreamingResponse(
             io.BytesIO(file_data),

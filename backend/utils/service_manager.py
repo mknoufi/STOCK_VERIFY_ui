@@ -76,7 +76,9 @@ class ServiceManager:
         """Kill a process by PID"""
         try:
             if platform.system() == "Windows":
-                subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, timeout=5)
+                subprocess.run(
+                    ["taskkill", "/F", "/PID", str(pid)], capture_output=True, timeout=5
+                )
             else:
                 subprocess.run(["kill", "-9", str(pid)], capture_output=True, timeout=5)
             return True
@@ -103,7 +105,9 @@ class ServiceManager:
             else:
                 for pattern in name_patterns:
                     try:
-                        subprocess.run(["pkill", "-f", pattern], capture_output=True, timeout=5)
+                        subprocess.run(
+                            ["pkill", "-f", pattern], capture_output=True, timeout=5
+                        )
                         killed += 1
                     except Exception:
                         pass
@@ -134,7 +138,9 @@ class ServiceManager:
                             "python" in result.stdout.lower()
                             or "server.py" in result.stdout.lower()
                         ):
-                            logger.info(f"Killing existing backend process (PID: {pid})")
+                            logger.info(
+                                f"Killing existing backend process (PID: {pid})"
+                            )
                             ServiceManager.kill_process(pid)
                             # Wait a moment for port to be released
                             import time
@@ -148,7 +154,9 @@ class ServiceManager:
                             timeout=5,
                         )
                         if "server.py" in result.stdout or "python" in result.stdout:
-                            logger.info(f"Killing existing backend process (PID: {pid})")
+                            logger.info(
+                                f"Killing existing backend process (PID: {pid})"
+                            )
                             ServiceManager.kill_process(pid)
                             import time
 
@@ -190,7 +198,9 @@ class ServiceManager:
 
             # If port still in use, find alternative
             if ServiceManager.is_port_in_use(preferred_port):
-                port = ServiceManager.find_available_port(preferred_port, max_attempts=10)
+                port = ServiceManager.find_available_port(
+                    preferred_port, max_attempts=10
+                )
                 return (port, True)
 
         return (preferred_port, False)

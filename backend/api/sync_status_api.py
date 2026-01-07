@@ -35,7 +35,9 @@ async def get_sync_status() -> dict[str, Any]:
         return {"success": True, "data": status_data}
     except Exception as e:
         logger.error(f"Error getting sync status: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @sync_router.get("/stats", status_code=status.HTTP_200_OK)
@@ -52,7 +54,9 @@ async def get_sync_stats() -> dict[str, Any]:
         return {"success": True, "data": stats}
     except Exception as e:
         logger.error(f"Error getting sync stats: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @sync_router.post("/trigger", status_code=status.HTTP_200_OK)
@@ -69,4 +73,6 @@ async def trigger_manual_sync() -> dict[str, Any]:
         return cast(dict[str, Any], result)
     except Exception as e:
         logger.error(f"Error triggering manual sync: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )

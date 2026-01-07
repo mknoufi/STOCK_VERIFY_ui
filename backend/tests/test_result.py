@@ -104,7 +104,9 @@ class TestResult:
         failure = Fail(ValueError("error"))
 
         def handle(result: Result[int, Exception]) -> str:
-            return result.match(ok=lambda x: f"Success: {x}", err=lambda e: f"Error: {str(e)}")
+            return result.match(
+                ok=lambda x: f"Success: {x}", err=lambda e: f"Error: {str(e)}"
+            )
 
         assert handle(success) == "Success: 42"
         assert handle(failure) == "Error: error"
@@ -209,13 +211,17 @@ class TestEither:
     def test_fold_right(self):
         """Test folding a Right value."""
         right = Right(42)
-        result = right.fold(left_fn=lambda e: f"Error: {e}", right_fn=lambda x: f"Success: {x}")
+        result = right.fold(
+            left_fn=lambda e: f"Error: {e}", right_fn=lambda x: f"Success: {x}"
+        )
         assert result == "Success: 42"
 
     def test_fold_left(self):
         """Test folding a Left value."""
         left = Left("failure")
-        result = left.fold(left_fn=lambda e: f"Error: {e}", right_fn=lambda x: f"Success: {x}")
+        result = left.fold(
+            left_fn=lambda e: f"Error: {e}", right_fn=lambda x: f"Success: {x}"
+        )
         assert result == "Error: failure"
 
     def test_map_right(self):

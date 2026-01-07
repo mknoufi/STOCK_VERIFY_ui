@@ -73,7 +73,9 @@ async def async_client(test_db, monkeypatch) -> AsyncGenerator[AsyncClient, None
     if app is None:
         pytest.skip("FastAPI app not available")
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         yield client
 
 
@@ -84,7 +86,11 @@ def pytest_configure(config):
         "markers",
         "performance: marks tests as performance evaluation (deselect with '-m \"not performance\"')",
     )
-    config.addinivalue_line("markers", "business_logic: marks tests as business logic evaluation")
-    config.addinivalue_line("markers", "data_quality: marks tests as data quality evaluation")
+    config.addinivalue_line(
+        "markers", "business_logic: marks tests as business logic evaluation"
+    )
+    config.addinivalue_line(
+        "markers", "data_quality: marks tests as data quality evaluation"
+    )
     config.addinivalue_line("markers", "workflow: marks tests as workflow evaluation")
     config.addinivalue_line("markers", "security: marks tests as security evaluation")

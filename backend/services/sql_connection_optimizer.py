@@ -57,10 +57,12 @@ class SQLConnectionOptimizer:
         """
         Add performance optimizations to connection string using shared utility
         """
-        self.connection_string = ConnectionStringOptimizer.optimize_existing_connection_string(
-            self.connection_string,
-            connect_timeout=self.connect_timeout,
-            command_timeout=self.command_timeout,
+        self.connection_string = (
+            ConnectionStringOptimizer.optimize_existing_connection_string(
+                self.connection_string,
+                connect_timeout=self.connect_timeout,
+                command_timeout=self.command_timeout,
+            )
         )
 
         logger.info("SQL connection string optimized using shared utility")

@@ -15,8 +15,12 @@ v2_router = APIRouter(prefix="/api/v2", tags=["API v2"])
 v2_router.include_router(items.router, prefix="/items", tags=["Items v2"])
 v2_router.include_router(sessions.router, prefix="/sessions", tags=["Sessions v2"])
 v2_router.include_router(health.router, prefix="/health", tags=["Health v2"])
-v2_router.include_router(connection_status.router, prefix="/connections", tags=["Connections v2"])
+v2_router.include_router(
+    connection_status.router, prefix="/connections", tags=["Connections v2"]
+)
 v2_router.include_router(metrics.router, prefix="/metrics", tags=["Metrics v2"])
-v2_router.include_router(supervisor.router, prefix="/supervisor", tags=["Supervisor v2"])
+v2_router.include_router(
+    supervisor.router, prefix="/supervisor", tags=["Supervisor v2"]
+)
 
 __all__ = ["v2_router"]

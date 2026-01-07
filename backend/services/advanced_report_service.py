@@ -108,13 +108,23 @@ class AdvancedReportService:
             ColumnConfig(field="item_code", label="Item Code", sortable=True),
             ColumnConfig(field="item_name", label="Item Name", sortable=True),
             ColumnConfig(field="barcode", label="Barcode", sortable=True),
-            ColumnConfig(field="category", label="Category", sortable=True, filterable=True),
-            ColumnConfig(field="warehouse", label="Warehouse", sortable=True, filterable=True),
+            ColumnConfig(
+                field="category", label="Category", sortable=True, filterable=True
+            ),
+            ColumnConfig(
+                field="warehouse", label="Warehouse", sortable=True, filterable=True
+            ),
             ColumnConfig(field="floor", label="Floor", sortable=True, filterable=True),
             ColumnConfig(field="rack_id", label="Rack", sortable=True, filterable=True),
-            ColumnConfig(field="stock_qty", label="ERP Qty", sortable=True, format="number"),
-            ColumnConfig(field="counted_qty", label="Counted Qty", sortable=True, format="number"),
-            ColumnConfig(field="variance", label="Variance", sortable=True, format="number"),
+            ColumnConfig(
+                field="stock_qty", label="ERP Qty", sortable=True, format="number"
+            ),
+            ColumnConfig(
+                field="counted_qty", label="Counted Qty", sortable=True, format="number"
+            ),
+            ColumnConfig(
+                field="variance", label="Variance", sortable=True, format="number"
+            ),
             ColumnConfig(
                 field="variance_percentage",
                 label="Variance %",
@@ -124,9 +134,13 @@ class AdvancedReportService:
             ColumnConfig(field="mrp", label="MRP", sortable=True, format="currency"),
             ColumnConfig(field="verified", label="Verified", sortable=True),
             ColumnConfig(field="verified_by", label="Verified By", sortable=True),
-            ColumnConfig(field="verified_at", label="Verified At", sortable=True, format="date"),
+            ColumnConfig(
+                field="verified_at", label="Verified At", sortable=True, format="date"
+            ),
             ColumnConfig(field="counted_by", label="Counted By", sortable=True),
-            ColumnConfig(field="counted_at", label="Counted At", sortable=True, format="date"),
+            ColumnConfig(
+                field="counted_at", label="Counted At", sortable=True, format="date"
+            ),
             ColumnConfig(field="session_id", label="Session ID", visible=False),
             ColumnConfig(field="notes", label="Notes", visible=False),
         ],
@@ -140,8 +154,12 @@ class AdvancedReportService:
             ColumnConfig(field="completed_at", label="Completed", format="date"),
             ColumnConfig(field="total_items", label="Total Items", format="number"),
             ColumnConfig(field="verified_items", label="Verified", format="number"),
-            ColumnConfig(field="total_variance", label="Total Variance", format="number"),
-            ColumnConfig(field="duration_minutes", label="Duration (min)", format="number"),
+            ColumnConfig(
+                field="total_variance", label="Total Variance", format="number"
+            ),
+            ColumnConfig(
+                field="duration_minutes", label="Duration (min)", format="number"
+            ),
         ],
         "variance_analysis": [
             ColumnConfig(field="item_code", label="Item Code"),
@@ -150,7 +168,9 @@ class AdvancedReportService:
             ColumnConfig(field="stock_qty", label="ERP Qty", format="number"),
             ColumnConfig(field="counted_qty", label="Counted", format="number"),
             ColumnConfig(field="variance", label="Variance", format="number"),
-            ColumnConfig(field="variance_percentage", label="Variance %", format="percentage"),
+            ColumnConfig(
+                field="variance_percentage", label="Variance %", format="percentage"
+            ),
             ColumnConfig(field="mrp", label="Unit Price", format="currency"),
             ColumnConfig(field="value_impact", label="Value Impact", format="currency"),
             ColumnConfig(field="status", label="Status"),
@@ -160,10 +180,16 @@ class AdvancedReportService:
             ColumnConfig(field="username", label="User"),
             ColumnConfig(field="role", label="Role"),
             ColumnConfig(field="total_scans", label="Total Scans", format="number"),
-            ColumnConfig(field="items_verified", label="Items Verified", format="number"),
+            ColumnConfig(
+                field="items_verified", label="Items Verified", format="number"
+            ),
             ColumnConfig(field="sessions_completed", label="Sessions", format="number"),
-            ColumnConfig(field="avg_items_per_hour", label="Items/Hour", format="number"),
-            ColumnConfig(field="accuracy_rate", label="Accuracy %", format="percentage"),
+            ColumnConfig(
+                field="avg_items_per_hour", label="Items/Hour", format="number"
+            ),
+            ColumnConfig(
+                field="accuracy_rate", label="Accuracy %", format="percentage"
+            ),
             ColumnConfig(field="last_activity", label="Last Activity", format="date"),
         ],
     }
@@ -202,7 +228,9 @@ class AdvancedReportService:
 
         return query
 
-    def _add_search_filter(self, query: dict[str, Any], search_query: Optional[str]) -> None:
+    def _add_search_filter(
+        self, query: dict[str, Any], search_query: Optional[str]
+    ) -> None:
         """Add search filter to query."""
         if search_query:
             query["$or"] = [
@@ -281,7 +309,9 @@ class AdvancedReportService:
         }
 
     @trace_report_generation("verified_items")
-    async def generate_verified_items_report(self, config: ReportConfig) -> dict[str, Any]:
+    async def generate_verified_items_report(
+        self, config: ReportConfig
+    ) -> dict[str, Any]:
         """Generate report of verified items with full details."""
         start_time = datetime.utcnow()
         filters = config.filters or ReportFilters()
@@ -313,7 +343,9 @@ class AdvancedReportService:
         ]
 
         with trace_span("mongodb.count_lines.aggregate", {"query": str(query)[:200]}):
-            data = await self.db.count_lines.aggregate(pipeline).to_list(config.page_size)
+            data = await self.db.count_lines.aggregate(pipeline).to_list(
+                config.page_size
+            )
 
         # Calculate aggregations if requested
         aggregations = {}
@@ -347,15 +379,21 @@ class AdvancedReportService:
                                 "$sum": {"$cond": [{"$eq": ["$verified", True]}, 1, 0]}
                             },
                             "positive_variance": {
-                                "$sum": {"$cond": [{"$gt": ["$variance", 0]}, "$variance", 0]}
+                                "$sum": {
+                                    "$cond": [{"$gt": ["$variance", 0]}, "$variance", 0]
+                                }
                             },
                             "negative_variance": {
-                                "$sum": {"$cond": [{"$lt": ["$variance", 0]}, "$variance", 0]}
+                                "$sum": {
+                                    "$cond": [{"$lt": ["$variance", 0]}, "$variance", 0]
+                                }
                             },
                         }
                     },
                 ]
-                agg_result = await self.db.count_lines.aggregate(agg_pipeline).to_list(1)
+                agg_result = await self.db.count_lines.aggregate(agg_pipeline).to_list(
+                    1
+                )
                 if agg_result:
                     aggregations = agg_result[0]
                     aggregations.pop("_id", None)
@@ -383,14 +421,17 @@ class AdvancedReportService:
             "pagination": {
                 "page": config.page,
                 "page_size": config.page_size,
-                "total_pages": (filtered_records + config.page_size - 1) // config.page_size,
+                "total_pages": (filtered_records + config.page_size - 1)
+                // config.page_size,
                 "has_next": skip + config.page_size < filtered_records,
                 "has_prev": config.page > 1,
             },
         }
 
     @trace_report_generation("session_summary")
-    async def generate_session_summary_report(self, config: ReportConfig) -> dict[str, Any]:
+    async def generate_session_summary_report(
+        self, config: ReportConfig
+    ) -> dict[str, Any]:
         """Generate session summary report with aggregated data."""
         start_time = datetime.utcnow()
         filters = config.filters or ReportFilters()
@@ -508,14 +549,17 @@ class AdvancedReportService:
             "pagination": {
                 "page": config.page,
                 "page_size": config.page_size,
-                "total_pages": (filtered_records + config.page_size - 1) // config.page_size,
+                "total_pages": (filtered_records + config.page_size - 1)
+                // config.page_size,
                 "has_next": skip + config.page_size < filtered_records,
                 "has_prev": config.page > 1,
             },
         }
 
     @trace_report_generation("variance_analysis")
-    async def generate_variance_analysis_report(self, config: ReportConfig) -> dict[str, Any]:
+    async def generate_variance_analysis_report(
+        self, config: ReportConfig
+    ) -> dict[str, Any]:
         """Generate variance analysis report with risk levels."""
         start_time = datetime.utcnow()
         filters = config.filters or ReportFilters()
@@ -537,7 +581,9 @@ class AdvancedReportService:
                 date_filter["$lte"] = filters.date_to
             query["counted_at"] = date_filter
 
-        total_records = await self.db.count_lines.count_documents({"variance": {"$ne": 0}})
+        total_records = await self.db.count_lines.count_documents(
+            {"variance": {"$ne": 0}}
+        )
         filtered_records = await self.db.count_lines.count_documents(query)
 
         sort_field = config.sort_by or "variance"
@@ -573,7 +619,9 @@ class AdvancedReportService:
                         }
                     },
                     "mrp": {"$ifNull": ["$mrp_erp", 0]},
-                    "value_impact": {"$multiply": ["$variance", {"$ifNull": ["$mrp_erp", 0]}]},
+                    "value_impact": {
+                        "$multiply": ["$variance", {"$ifNull": ["$mrp_erp", 0]}]
+                    },
                     "status": 1,
                     "risk_level": {
                         "$switch": {
@@ -658,7 +706,9 @@ class AdvancedReportService:
                         "total_variance_items": {"$sum": 1},
                         "total_variance_qty": {"$sum": "$variance"},
                         "total_value_impact": {
-                            "$sum": {"$multiply": ["$variance", {"$ifNull": ["$mrp_erp", 0]}]}
+                            "$sum": {
+                                "$multiply": ["$variance", {"$ifNull": ["$mrp_erp", 0]}]
+                            }
                         },
                         "positive_variance_count": {
                             "$sum": {"$cond": [{"$gt": ["$variance", 0]}, 1, 0]}
@@ -696,7 +746,8 @@ class AdvancedReportService:
             "pagination": {
                 "page": config.page,
                 "page_size": config.page_size,
-                "total_pages": (filtered_records + config.page_size - 1) // config.page_size,
+                "total_pages": (filtered_records + config.page_size - 1)
+                // config.page_size,
                 "has_next": skip + config.page_size < filtered_records,
                 "has_prev": config.page > 1,
             },
@@ -725,7 +776,9 @@ class AdvancedReportService:
 
         return output.getvalue()
 
-    async def export_to_xlsx(self, data: list[dict], columns: list[ColumnConfig]) -> bytes:
+    async def export_to_xlsx(
+        self, data: list[dict], columns: list[ColumnConfig]
+    ) -> bytes:
         """Export data to XLSX format."""
         try:
             import openpyxl

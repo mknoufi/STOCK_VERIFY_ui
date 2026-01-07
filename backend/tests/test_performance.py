@@ -37,7 +37,9 @@ class PerformanceBenchmark:
     def __init__(self):
         self.metrics = []
 
-    def record_metric(self, name: str, value: float, unit: str, threshold: Optional[float] = None):
+    def record_metric(
+        self, name: str, value: float, unit: str, threshold: Optional[float] = None
+    ):
         """Record a performance metric"""
         passed = True
         if threshold and value > threshold:
@@ -78,9 +80,9 @@ class TestAPIPerformance:
             json={"username": user_data["username"], "password": user_data["password"]},
         )
 
-        assert (
-            login_response.status_code == status.HTTP_200_OK
-        ), f"Login failed: {login_response.text}"
+        assert login_response.status_code == status.HTTP_200_OK, (
+            f"Login failed: {login_response.text}"
+        )
         token = login_response.json()["data"]["access_token"]
         return {"Authorization": f"Bearer {token}"}
 
@@ -129,7 +131,9 @@ class TestAPIPerformance:
 
         # Test search endpoint performance
         start_time = time.time()
-        response = await async_client.get("/api/items/search?q=test", headers=auth_headers)
+        response = await async_client.get(
+            "/api/items/search?q=test", headers=auth_headers
+        )
         search_time = (time.time() - start_time) * 1000
 
         # Search might return 200, 400, or 404
@@ -165,7 +169,9 @@ class TestAPIPerformance:
 
         avg_latency = statistics.mean(latencies)
         p95_latency = (
-            statistics.quantiles(latencies, n=20)[18] if len(latencies) > 1 else latencies[0]
+            statistics.quantiles(latencies, n=20)[18]
+            if len(latencies) > 1
+            else latencies[0]
         )
         throughput = concurrency / total_time
 
@@ -215,7 +221,9 @@ class TestSessionPerformance:
         }
 
         start_time = time.time()
-        response = await async_client.post("/api/sessions", json=session_data, headers=auth_headers)
+        response = await async_client.post(
+            "/api/sessions", json=session_data, headers=auth_headers
+        )
         creation_time = (time.time() - start_time) * 1000
 
         # Session endpoint might not be fully implemented

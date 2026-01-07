@@ -45,7 +45,11 @@ def get_warehouses(zone: str = None, current_user: dict = Depends(get_current_us
                     ]
                 else:
                     # Generic filter
-                    warehouses = [w for w in warehouses if z in w.get("warehouse_name", "").lower()]
+                    warehouses = [
+                        w
+                        for w in warehouses
+                        if z in w.get("warehouse_name", "").lower()
+                    ]
 
             return warehouses
 

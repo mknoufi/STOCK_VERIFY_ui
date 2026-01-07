@@ -204,7 +204,9 @@ async def preview_mapping(
             raise HTTPException(status_code=400, detail="No columns mapped")
 
         # Use TOP 5 to limit data
-        query = f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"
+        query = (
+            f"SELECT TOP 5 {', '.join(select_fields)} FROM [{schema}].[{table_name}]"
+        )
 
         # Log a sanitized summary (omit full query text to reduce risk)
         logger.info(
@@ -277,7 +279,9 @@ async def save_mapping(
 
 
 @router.get("/current")
-async def get_current_mapping(current_user: dict = Depends(get_current_user), db=Depends(get_db)):
+async def get_current_mapping(
+    current_user: dict = Depends(get_current_user), db=Depends(get_db)
+):
     if current_user.get("role") not in {"admin", "supervisor"}:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
 

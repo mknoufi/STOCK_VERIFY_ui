@@ -103,10 +103,14 @@ class EnterpriseSecurityService:
         self._whitelist_cache.clear()
         self._blacklist_cache.clear()
 
-        async for doc in self.ip_list_collection.find({"list_type": IPListType.WHITELIST.value}):
+        async for doc in self.ip_list_collection.find(
+            {"list_type": IPListType.WHITELIST.value}
+        ):
             self._whitelist_cache.add(doc["ip_address"])
 
-        async for doc in self.ip_list_collection.find({"list_type": IPListType.BLACKLIST.value}):
+        async for doc in self.ip_list_collection.find(
+            {"list_type": IPListType.BLACKLIST.value}
+        ):
             self._blacklist_cache.add(doc["ip_address"])
 
         self._cache_loaded = True
@@ -375,9 +379,9 @@ class EnterpriseSecurityService:
         now = datetime.utcnow()
 
         # Generate session ID
-        session_id = hashlib.sha256(f"{user_id}{now.isoformat()}{ip_address}".encode()).hexdigest()[
-            :32
-        ]
+        session_id = hashlib.sha256(
+            f"{user_id}{now.isoformat()}{ip_address}".encode()
+        ).hexdigest()[:32]
 
         # Check concurrent session limit
         active_sessions = await self.session_collection.count_documents(
@@ -410,7 +414,9 @@ class EnterpriseSecurityService:
 
         return session_id
 
-    async def validate_session(self, session_id: str) -> Optional[dict[str, Optional[Any]]]:
+    async def validate_session(
+        self, session_id: str
+    ) -> Optional[dict[str, Optional[Any]]]:
         """Validate and refresh session"""
         now = datetime.utcnow()
 
@@ -511,7 +517,9 @@ class EnterpriseSecurityService:
             query["timestamp"] = {"$gte": start_date}
 
         events = []
-        async for doc in self.events_collection.find(query).sort("timestamp", -1).limit(limit):
+        async for doc in (
+            self.events_collection.find(query).sort("timestamp", -1).limit(limit)
+        ):
             doc["id"] = str(doc.pop("_id"))
             events.append(doc)
 

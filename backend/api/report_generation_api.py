@@ -164,7 +164,9 @@ async def generate_stock_summary(db, filters: ReportFilter) -> list[dict]:
                 "floor": 1,
                 "stock_qty": 1,
                 "price": {"$ifNull": ["$price", 0]},
-                "stock_value": {"$multiply": ["$stock_qty", {"$ifNull": ["$price", 0]}]},
+                "stock_value": {
+                    "$multiply": ["$stock_qty", {"$ifNull": ["$price", 0]}]
+                },
                 "verification_count": {"$size": "$verifications"},
                 "last_verified": {"$max": "$verifications.created_at"},
                 "is_verified": {"$gt": [{"$size": "$verifications"}, 0]},
@@ -257,8 +259,12 @@ async def generate_user_activity_report(db, filters: ReportFilter) -> list[dict]
                 "_id": "$user_id",
                 "total_actions": {"$sum": 1},
                 "scans": {"$sum": {"$cond": [{"$eq": ["$action", "scan"]}, 1, 0]}},
-                "verifications": {"$sum": {"$cond": [{"$eq": ["$action", "verify"]}, 1, 0]}},
-                "approvals": {"$sum": {"$cond": [{"$eq": ["$action", "approve"]}, 1, 0]}},
+                "verifications": {
+                    "$sum": {"$cond": [{"$eq": ["$action", "verify"]}, 1, 0]}
+                },
+                "approvals": {
+                    "$sum": {"$cond": [{"$eq": ["$action", "approve"]}, 1, 0]}
+                },
                 "first_action": {"$min": "$timestamp"},
                 "last_action": {"$max": "$timestamp"},
             }
@@ -483,7 +489,9 @@ async def export_report_csv(
     Export report as CSV file.
     """
     if request.report_type not in REPORT_TYPES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type"
+        )
 
     db = get_db()
     filters = request.filters or ReportFilter()
@@ -542,7 +550,9 @@ async def export_report_xlsx(
         )
 
     if request.report_type not in REPORT_TYPES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type"
+        )
 
     db = get_db()
     filters = request.filters or ReportFilter()
@@ -593,7 +603,9 @@ async def get_report_filter_options(
     Returns distinct values for filterable fields.
     """
     if report_type not in REPORT_TYPES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid report type"
+        )
 
     db = get_db()
 

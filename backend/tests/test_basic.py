@@ -39,7 +39,9 @@ def test_environment_variables():
     # These should be set in CI/CD
     required_vars = ["JWT_SECRET", "JWT_REFRESH_SECRET"]
     for var in required_vars:
-        assert var in os.environ or "TESTING" in os.environ, f"Missing required env var: {var}"
+        assert var in os.environ or "TESTING" in os.environ, (
+            f"Missing required env var: {var}"
+        )
 
 
 def test_math_operations():

@@ -39,7 +39,9 @@ def _require_supervisor(current_user: dict):
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
+def detect_risk_flags(
+    erp_item: dict, line_data: CountLineCreate, variance: float
+) -> list[str]:
     """Detect high-risk correction patterns"""
     risk_flags = []
 
@@ -65,11 +67,17 @@ def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: floa
         risk_flags.append("HIGH_VALUE_VARIANCE")
 
     # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
+    if erp_mrp > 5000 and (
+        not line_data.serial_numbers or len(line_data.serial_numbers) == 0
+    ):
         risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
 
     # Rule 5: Correction without reason when variance exists
-    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
+    if (
+        abs(variance) > 0
+        and not line_data.correction_reason
+        and not line_data.variance_reason
+    ):
         risk_flags.append("MISSING_CORRECTION_REASON")
 
     # Rule 6: MRP change without reason
@@ -98,7 +106,9 @@ def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: floa
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
+def calculate_financial_impact(
+    erp_mrp: float, counted_mrp: float, counted_qty: float
+) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
@@ -141,7 +151,11 @@ async def create_count_line(
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
     # Validate mandatory correction reason for variance
-    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
+    if (
+        abs(variance) > 0
+        and not line_data.correction_reason
+        and not line_data.variance_reason
+    ):
         raise HTTPException(
             status_code=400,
             detail="Correction reason is mandatory when variance exists",
@@ -173,7 +187,9 @@ async def create_count_line(
         }
     )
     duplicate_check = (
-        await duplicate_result if inspect.isawaitable(duplicate_result) else duplicate_result
+        await duplicate_result
+        if inspect.isawaitable(duplicate_result)
+        else duplicate_result
     )
     if duplicate_check > 0:
         risk_flags.append("DUPLICATE_CORRECTION")
@@ -205,15 +221,22 @@ async def create_count_line(
         "expiry_date": line_data.expiry_date,
         "non_returnable_damaged_qty": line_data.non_returnable_damaged_qty,
         "correction_reason": (
-            line_data.correction_reason.model_dump() if line_data.correction_reason else None
+            line_data.correction_reason.model_dump()
+            if line_data.correction_reason
+            else None
         ),
         "photo_proofs": (
-            [p.model_dump() if hasattr(p, "model_dump") else p for p in line_data.photo_proofs]
+            [
+                p.model_dump() if hasattr(p, "model_dump") else p
+                for p in line_data.photo_proofs
+            ]
             if line_data.photo_proofs
             else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
+            line_data.correction_metadata.model_dump()
+            if line_data.correction_metadata
+            else None
         ),
         "approval_status": approval_status,
         "approval_by": None,
@@ -230,7 +253,9 @@ async def create_count_line(
         # Additional fields
         "split_section": line_data.split_section,
         "serial_numbers": (
-            [s.model_dump() for s in line_data.serial_numbers] if line_data.serial_numbers else None
+            [s.model_dump() for s in line_data.serial_numbers]
+            if line_data.serial_numbers
+            else None
         ),
         # Legacy approval fields
         "status": "pending",

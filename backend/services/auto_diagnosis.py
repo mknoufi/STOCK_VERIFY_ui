@@ -92,7 +92,9 @@ class AutoDiagnosisService:
     def __init__(self, mongo_db: AsyncIOMotorDatabase = None):
         self.mongo_db = mongo_db
         self._error_patterns: dict[str, dict[str, Any]] = self._load_error_patterns()
-        self._error_history: deque[dict[str, Any]] = deque(maxlen=1000)  # Last 1000 errors
+        self._error_history: deque[dict[str, Any]] = deque(
+            maxlen=1000
+        )  # Last 1000 errors
         self._diagnosis_cache: dict[str, DiagnosisResult] = {}
         self._auto_fix_registry: dict[str, Callable] = self._register_auto_fixes()
         self._health_checks: list[Callable] = []
@@ -316,7 +318,9 @@ class AutoDiagnosisService:
             "OSError": (ErrorCategory.RESOURCE, ErrorSeverity.MEDIUM),
         }
 
-        return type_classifications.get(error_type, (ErrorCategory.UNKNOWN, ErrorSeverity.MEDIUM))
+        return type_classifications.get(
+            error_type, (ErrorCategory.UNKNOWN, ErrorSeverity.MEDIUM)
+        )
 
     def _recognize_pattern(
         self, error: Exception, category: ErrorCategory
@@ -340,7 +344,9 @@ class AutoDiagnosisService:
                     if re.search(pattern, error_str, re.IGNORECASE) or re.search(
                         pattern, traceback_str, re.IGNORECASE
                     ):
-                        root_cause = f"{pattern_name.replace('_', ' ').title()} detected"
+                        root_cause = (
+                            f"{pattern_name.replace('_', ' ').title()} detected"
+                        )
                         return root_cause, pattern_data["suggestions"]
 
         # Default
@@ -590,7 +596,9 @@ class AutoDiagnosisService:
 
         try:
             context = context or {}
-            result = await asyncio.to_thread(diagnosis.auto_fix, diagnosis.error, context)
+            result = await asyncio.to_thread(
+                diagnosis.auto_fix, diagnosis.error, context
+            )
             if isinstance(result, Result):
                 return result
             return Result.success(result)
@@ -598,13 +606,17 @@ class AutoDiagnosisService:
             logger.error(f"Auto-fix failed: {str(e)}")
             return Result.error(e, f"Auto-fix execution failed: {str(e)}")
 
-    async def get_error_statistics(self, time_window: Optional[timedelta] = None) -> dict[str, Any]:
+    async def get_error_statistics(
+        self, time_window: Optional[timedelta] = None
+    ) -> dict[str, Any]:
         """Get error statistics for analysis"""
         time_window = time_window or timedelta(hours=24)
         cutoff_time = datetime.utcnow() - time_window
 
         # Filter recent errors
-        recent_errors = [e for e in self._error_history if e["timestamp"] >= cutoff_time]
+        recent_errors = [
+            e for e in self._error_history if e["timestamp"] >= cutoff_time
+        ]
 
         # Calculate statistics
         total_errors = len(recent_errors)
@@ -636,7 +648,9 @@ class AutoDiagnosisService:
             error_type = type(error_entry["error"]).__name__
             error_counts[error_type] += 1
 
-        common_errors = sorted(error_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        common_errors = sorted(error_counts.items(), key=lambda x: x[1], reverse=True)[
+            :10
+        ]
 
         return {
             "total_errors": total_errors,

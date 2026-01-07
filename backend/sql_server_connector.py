@@ -110,7 +110,9 @@ class SQLServerConnector:
 
         try:
             self._load_schema_metadata()
-            columns_clause, joins_clause, enabled_fields = self._build_optional_selects_and_joins()
+            columns_clause, joins_clause, enabled_fields = (
+                self._build_optional_selects_and_joins()
+            )
             self.optional_columns_clause = columns_clause
             self.optional_joins_clause = joins_clause
             self._enabled_optional_fields = enabled_fields
@@ -176,7 +178,9 @@ class SQLServerConnector:
                 return actual
         return None
 
-    def _resolve_column_name(self, columns: dict[str, str], candidates: list[str]) -> Optional[str]:
+    def _resolve_column_name(
+        self, columns: dict[str, str], candidates: list[str]
+    ) -> Optional[str]:
         for candidate in candidates:
             if not candidate:
                 continue
@@ -193,7 +197,9 @@ class SQLServerConnector:
             return f"{alias}.{column}"
         return None
 
-    def _build_coalesce_expression(self, expressions: list[str], default: str = "0") -> str:
+    def _build_coalesce_expression(
+        self, expressions: list[str], default: str = "0"
+    ) -> str:
         values = [expr for expr in expressions if expr]
         if not values:
             return default
@@ -310,7 +316,9 @@ class SQLServerConnector:
         if password:
             self.config["password"] = password
 
-        methods_to_try = self._build_connection_methods(host, port, database, user, password)
+        methods_to_try = self._build_connection_methods(
+            host, port, database, user, password
+        )
 
         # Try each method
         last_error = None
@@ -338,10 +346,14 @@ class SQLServerConnector:
 
         if user and password:
             methods_to_try.extend(
-                self._build_sql_auth_methods(host_variants, port, database, user, password)
+                self._build_sql_auth_methods(
+                    host_variants, port, database, user, password
+                )
             )
         else:
-            methods_to_try.extend(self._build_windows_auth_methods(host_variants, port, database))
+            methods_to_try.extend(
+                self._build_windows_auth_methods(host_variants, port, database)
+            )
 
         return methods_to_try
 
@@ -476,7 +488,9 @@ class SQLServerConnector:
     def _get_last_error_from_method(self, method: dict[str, Any]) -> Optional[str]:
         """Get last error from connection methods history"""
         for conn_method in reversed(self.connection_methods):
-            if conn_method.get("method") == method["name"] and not conn_method.get("success"):
+            if conn_method.get("method") == method["name"] and not conn_method.get(
+                "success"
+            ):
                 error = conn_method.get("error")
                 return str(error) if error is not None else None
         return None
@@ -507,7 +521,9 @@ class SQLServerConnector:
             return False
 
         try:
-            logger.info("Attempting to establish SQL Server connection from saved config...")
+            logger.info(
+                "Attempting to establish SQL Server connection from saved config..."
+            )
             return self._reconnect_with_config()
         except Exception as e:
             logger.debug(f"Auto-reconnect failed: {str(e)[:100]}")
@@ -565,7 +581,9 @@ class SQLServerConnector:
         if "item_name" in result and result["item_name"]:
             # Use placehold.co for dynamic placeholder
             safe_name = result["item_name"].replace(" ", "+")
-            result["image_url"] = f"https://placehold.co/400x400/e2e8f0/1e293b?text={safe_name}"
+            result["image_url"] = (
+                f"https://placehold.co/400x400/e2e8f0/1e293b?text={safe_name}"
+            )
 
         return result
 

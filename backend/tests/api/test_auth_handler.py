@@ -1,9 +1,8 @@
 import pytest
-from httpx import AsyncClient
-
 from backend.auth.dependencies import get_current_user as auth_get_current_user
 from backend.server import app, get_current_user
 from backend.utils.auth_utils import create_access_token
+from httpx import AsyncClient
 
 # Test Data
 USER_A_ID = "507f1f77bcf86cd799439011"

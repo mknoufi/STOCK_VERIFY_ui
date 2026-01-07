@@ -1,11 +1,10 @@
 import os
 
 import pytest
-from fastapi.testclient import TestClient
-
 from backend.core.websocket_manager import manager
 from backend.server import app
 from backend.utils.auth_utils import create_access_token
+from fastapi.testclient import TestClient
 
 # Test Data
 SUPERVISOR_USER = "supervisor_ws"

@@ -96,8 +96,8 @@ jobs:
           BACKOFF=10
 
           install_deps() {
-            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES: Running npm install --legacy-peer-deps"
-            npm install --legacy-peer-deps --omit=optional --ignore-scripts
+            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES: Running npm ci --legacy-peer-deps"
+            npm ci --legacy-peer-deps
             return $?
           }
 
@@ -179,7 +179,7 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd frontend
-          npm install --omit=optional --ignore-scripts
+          npm ci --legacy-peer-deps
 
       - name: Create test environment
         run: |

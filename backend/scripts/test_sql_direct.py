@@ -29,9 +29,7 @@ except Exception as e:
 # Test pymssql
 print("\n--- Testing pymssql ---")
 try:
-    conn = pymssql.connect(
-        server=host, user=user, password=password, database=database, timeout=5
-    )
+    conn = pymssql.connect(server=host, user=user, password=password, database=database, timeout=5)
     print("SUCCESS: pymssql connected!")
     cursor = conn.cursor()
     cursor.execute("SELECT @@VERSION")

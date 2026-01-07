@@ -284,9 +284,7 @@ async def list_export_results(
     if schedule_id:
         query["schedule_id"] = ObjectId(schedule_id)
 
-    cursor = (
-        export_service.db.export_results.find(query).sort("created_at", -1).limit(limit)
-    )
+    cursor = export_service.db.export_results.find(query).sort("created_at", -1).limit(limit)
     results = await cursor.to_list(length=limit)
 
     # Remove file_content from list (too large)

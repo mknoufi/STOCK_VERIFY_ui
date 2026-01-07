@@ -106,9 +106,7 @@ class AutoRecovery:
         self.recovery_stats["successful_recoveries"] += 1
         return default_value, True, "Used default value"
 
-    def _handle_failure(
-        self, last_error: Optional[Exception]
-    ) -> tuple[None, bool, str]:
+    def _handle_failure(self, last_error: Optional[Exception]) -> tuple[None, bool, str]:
         """Handle final failure after all attempts exhausted."""
         self.recovery_stats["failed_recoveries"] += 1
         error_msg = f"All recovery attempts failed: {last_error!s}"
@@ -144,9 +142,7 @@ class AutoRecovery:
                 self._record_error(e, retry_count, strategy, context, max_retries)
                 if retry_count < max_retries:
                     wait_time = _calculate_backoff(retry_delay, retry_count)
-                    logger.debug(
-                        f"Waiting {wait_time:.2f}s before retry {retry_count + 1}"
-                    )
+                    logger.debug(f"Waiting {wait_time:.2f}s before retry {retry_count + 1}")
                     time.sleep(wait_time)
 
         # Try fallback strategy
@@ -188,9 +184,7 @@ class AutoRecovery:
                 self._record_error(e, retry_count, strategy, context, max_retries)
                 if retry_count < max_retries:
                     wait_time = _calculate_backoff(retry_delay, retry_count)
-                    logger.debug(
-                        f"Waiting {wait_time:.2f}s before retry {retry_count + 1}"
-                    )
+                    logger.debug(f"Waiting {wait_time:.2f}s before retry {retry_count + 1}")
                     await asyncio.sleep(wait_time)
 
         # Try fallback strategy
@@ -203,9 +197,7 @@ class AutoRecovery:
 
         return self._handle_failure(last_error)
 
-    async def _handle_fallback_async(
-        self, fallback: Callable
-    ) -> tuple[Any, bool, Optional[str]]:
+    async def _handle_fallback_async(self, fallback: Callable) -> tuple[Any, bool, Optional[str]]:
         """Execute async fallback and return result tuple."""
         try:
             self.recovery_stats["fallback_used"] += 1

@@ -1,0 +1,2 @@
+# Regex patterns to exclude from TruffleHog scans
+^\.secrets\.baseline$

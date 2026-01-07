@@ -6,8 +6,9 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from backend.api.search_api import SearchItemResponse  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
+
+from backend.api.search_api import SearchItemResponse  # noqa: E402
 
 
 def test_search_response_validation():

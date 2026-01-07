@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 
 import pytest
+from httpx import AsyncClient
+
 from backend.auth.dependencies import get_current_user as auth_get_current_user
 from backend.server import app, get_current_user
 from backend.utils.auth_utils import (
@@ -9,7 +11,6 @@ from backend.utils.auth_utils import (
     get_password_hash,
     verify_password,
 )
-from httpx import AsyncClient
 
 # Test Data
 TEST_USERNAME = "testuser_auth"
@@ -81,9 +82,7 @@ async def auth_headers(test_db):
 async def test_change_pin_success(async_client: AsyncClient, auth_headers, test_db):
     payload = {"current_pin": TEST_PIN, "new_pin": NEW_PIN}
 
-    response = await async_client.post(
-        "/api/auth/change-pin", json=payload, headers=auth_headers
-    )
+    response = await async_client.post("/api/auth/change-pin", json=payload, headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -102,9 +101,7 @@ async def test_change_pin_wrong_current(async_client: AsyncClient, auth_headers)
         "new_pin": NEW_PIN,
     }
 
-    response = await async_client.post(
-        "/api/auth/change-pin", json=payload, headers=auth_headers
-    )
+    response = await async_client.post("/api/auth/change-pin", json=payload, headers=auth_headers)
 
     assert response.status_code == 400
     data = response.json()
@@ -118,9 +115,7 @@ async def test_change_pin_invalid_new(async_client: AsyncClient, auth_headers):
         "new_pin": "1234",  # Sequential/Weak PIN might be rejected by validator
     }
 
-    response = await async_client.post(
-        "/api/auth/change-pin", json=payload, headers=auth_headers
-    )
+    response = await async_client.post("/api/auth/change-pin", json=payload, headers=auth_headers)
 
     # Depending on validator config, 1234 might be rejected.
     # Let's assume the validator rejects simple sequences.
@@ -134,9 +129,7 @@ async def test_change_pin_invalid_new(async_client: AsyncClient, auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_change_password_success(
-    async_client: AsyncClient, auth_headers, test_db
-):
+async def test_change_password_success(async_client: AsyncClient, auth_headers, test_db):
     payload = {"current_password": TEST_PASSWORD, "new_password": NEW_PASSWORD}
 
     response = await async_client.post(

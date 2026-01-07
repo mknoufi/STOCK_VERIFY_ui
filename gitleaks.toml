@@ -1,0 +1,11 @@
+# Gitleaks config
+#
+# We keep a detect-secrets baseline in-repo (`.secrets.baseline`). That file is
+# expected to contain high-entropy strings / hashes that can trip secret
+# scanners. We explicitly allowlist it for gitleaks so Security Scan can run
+# cleanly while still keeping the baseline for pre-commit.
+
+[allowlist]
+paths = [
+  '''\.secrets\.baseline$''',
+]

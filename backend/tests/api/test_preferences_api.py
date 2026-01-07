@@ -5,13 +5,14 @@ Tests for User Preferences API
 from unittest.mock import AsyncMock
 
 import pytest
+from bson import ObjectId
+
 from backend.api.preferences_api import (
     UserPreferencesUpdate,
     get_my_preferences,
     update_my_preferences,
 )
 from backend.models.preferences import UserPreferencesBase
-from bson import ObjectId
 
 
 @pytest.mark.asyncio

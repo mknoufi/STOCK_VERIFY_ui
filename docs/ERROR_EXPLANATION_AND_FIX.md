@@ -187,7 +187,7 @@ cd .. && make ci
 
 **Reason**: Clean environment without dependencies installed + accumulated code quality issues
 
-**Fix**: 
+**Fix**:
 1. Install required tools: `pip3 install black ruff mypy`
 2. Auto-fix code issues: `ruff check . --fix`
 3. Verify: `make ci`

@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from backend.api.auth import (
     UserRegister,
     check_rate_limit,
@@ -119,9 +120,7 @@ async def test_generate_auth_tokens_success(
 
 
 @pytest.mark.asyncio
-async def test_register_success(
-    mock_db, mock_refresh_token_service, mock_settings, mock_auth_deps
-):
+async def test_register_success(mock_db, mock_refresh_token_service, mock_settings, mock_auth_deps):
     mock_db.users.find_one.return_value = None
     # mock_db.users.insert_one is not used, auth_deps.db.users.insert_one is used
     mock_auth_deps.db.users.insert_one.return_value.inserted_id = "new_id"

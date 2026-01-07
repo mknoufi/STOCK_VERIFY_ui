@@ -9,7 +9,7 @@ The backend uses a robust, multi-layered approach to SQL Server connectivity wit
 ## 1. Configuration Parameters
 
 ### Source File
-- **Location**: [backend/config.py](backend/config.py#L127-L136)
+- **Location**: [backend/config.py](../backend/config.py#L127-L136)
 - **Type**: Pydantic Settings class with validation
 - **Loading**: Environment variables (case-sensitive)
 
@@ -55,7 +55,7 @@ def validate_sql_port(cls, v):
 ## 2. Connection String Builder
 
 ### Source File
-- **Location**: [backend/utils/db_connection.py](backend/utils/db_connection.py)
+- **Location**: [backend/utils/db_connection.py](../backend/utils/db_connection.py)
 - **Class**: `SQLServerConnectionBuilder`
 
 ### ODBC Configuration
@@ -158,7 +158,7 @@ Trusted_Connection=yes;
 ## 4. Connection Initialization
 
 ### Source File
-- **Location**: [backend/core/lifespan.py](backend/core/lifespan.py#L385-L426)
+- **Location**: [backend/core/lifespan.py](../backend/core/lifespan.py#L385-L426)
 - **Lifecycle Stage**: Application startup
 
 ### Initialization Sequence
@@ -249,7 +249,7 @@ export CONNECTION_HEALTH_CHECK_INTERVAL=30
 ## 6. Connection Testing
 
 ### Source File
-- **Location**: [backend/utils/db_connection.py](backend/utils/db_connection.py)
+- **Location**: [backend/utils/db_connection.py](../backend/utils/db_connection.py)
 - **Method**: `SQLServerConnectionBuilder.test_connection()`
 
 ### Test Method
@@ -288,7 +288,7 @@ success = SQLServerConnectionBuilder.test_connection(
 
 ### Endpoint
 - **URL**: `GET /health`
-- **Location**: [backend/api/health.py](backend/api/health.py)
+- **Location**: [backend/api/health.py](../backend/api/health.py)
 
 ### Response Format
 
@@ -358,7 +358,7 @@ ApplicationIntent=ReadWrite
 ## 9. Connector Usage
 
 ### Source File
-- **Location**: [backend/sql_server_connector.py](backend/sql_server_connector.py)
+- **Location**: [backend/sql_server_connector.py](../backend/sql_server_connector.py)
 - **Class**: `SQLServerConnector`
 
 ### Initialization
@@ -563,8 +563,8 @@ ALTER ROLE db_datareader ADD MEMBER readonly_user
 
 ## References
 
-- **Config**: [backend/config.py](backend/config.py)
-- **Builder**: [backend/utils/db_connection.py](backend/utils/db_connection.py)
-- **Connector**: [backend/sql_server_connector.py](backend/sql_server_connector.py)
-- **Lifecycle**: [backend/core/lifespan.py](backend/core/lifespan.py)
+- **Config**: [backend/config.py](../backend/config.py)
+- **Builder**: [backend/utils/db_connection.py](../backend/utils/db_connection.py)
+- **Connector**: [backend/sql_server_connector.py](../backend/sql_server_connector.py)
+- **Lifecycle**: [backend/core/lifespan.py](../backend/core/lifespan.py)
 - **Setup Guide**: [SQL_SERVER_SETUP_GUIDE.md](SQL_SERVER_SETUP_GUIDE.md)

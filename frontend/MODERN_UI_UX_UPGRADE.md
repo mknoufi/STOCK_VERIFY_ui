@@ -257,10 +257,10 @@ xl:  shadow with 12px elevation
 
 See these files for detailed information:
 
-- [ScreenContainer Component](frontend/src/components/ui/ScreenContainer.tsx)
-- [Modern Design System](frontend/src/styles/modernDesignSystem.ts)
-- [Screen Styles & Responsive Hooks](frontend/src/styles/screenStyles.ts)
-- [Aurora Theme](frontend/src/theme/auroraTheme.ts)
+- [ScreenContainer Component](src/components/ui/ScreenContainer.tsx)
+- [Modern Design System](src/styles/modernDesignSystem.ts)
+- [Screen Styles & Responsive Hooks](src/styles/screenStyles.ts)
+- [Aurora Theme](src/theme/auroraTheme.ts)
 
 ---
 

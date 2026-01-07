@@ -377,9 +377,9 @@ const heartbeatConfig = {
 
 ## 📚 Documentation
 
-- [Rack API Documentation](./API_RACK_MANAGEMENT.md) (TODO)
-- [Session API Documentation](./API_SESSION_MANAGEMENT.md) (TODO)
-- [Sync Manager Guide](./SYNC_MANAGER_GUIDE.md) (TODO)
+- Rack API Documentation (TODO)
+- Session API Documentation (TODO)
+- Sync Manager Guide (TODO)
 
 ---
 

@@ -78,9 +78,7 @@ class SQLServerConnectionBuilder:
                 base_params.append(f"{key}={value}")
 
         conn_str = ";".join(base_params)
-        logger.debug(
-            f"Built connection string for {host}:{port or 'default'}/{database}"
-        )
+        logger.debug(f"Built connection string for {host}:{port or 'default'}/{database}")
         return conn_str
 
     @staticmethod
@@ -160,9 +158,7 @@ class SQLServerConnectionBuilder:
             conn.close()
             return True
         except Exception as e:
-            logger.debug(
-                f"Connection test failed for {host}:{port or 'default'}/{database}: {e}"
-            )
+            logger.debug(f"Connection test failed for {host}:{port or 'default'}/{database}: {e}")
             return False
 
     @staticmethod

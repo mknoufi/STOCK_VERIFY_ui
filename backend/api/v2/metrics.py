@@ -79,12 +79,8 @@ async def get_system_metrics(current_user: dict = Depends(get_current_user)):
             "services": {},
         }
 
-        metrics["monitoring"] = _safe_get_metrics(
-            monitoring_service, "get_metrics", "monitoring"
-        )
-        metrics["services"]["cache"] = _safe_get_metrics(
-            cache_service, "get_status", "cache"
-        )
+        metrics["monitoring"] = _safe_get_metrics(monitoring_service, "get_metrics", "monitoring")
+        metrics["services"]["cache"] = _safe_get_metrics(cache_service, "get_status", "cache")
         metrics["services"]["rate_limiter"] = _safe_get_metrics(
             rate_limiter, "get_stats", "rate_limiter"
         )

@@ -17,18 +17,12 @@ class UserSettings(BaseModel):
         default="light",
         description="UI theme: light, dark, premium, ocean, sunset, highContrast",
     )
-    font_size: str = Field(
-        default="medium", description="Font size: small, medium, large, xlarge"
-    )
+    font_size: str = Field(default="medium", description="Font size: small, medium, large, xlarge")
     primary_color: Optional[str] = Field(
         default=None, description="Custom primary color in hex format (e.g., #3B82F6)"
     )
-    haptic_enabled: bool = Field(
-        default=True, description="Enable haptic feedback for scans"
-    )
-    sound_enabled: bool = Field(
-        default=True, description="Enable sound feedback for scans"
-    )
+    haptic_enabled: bool = Field(default=True, description="Enable haptic feedback for scans")
+    sound_enabled: bool = Field(default=True, description="Enable sound feedback for scans")
     auto_sync_enabled: bool = Field(
         default=True, description="Enable automatic data synchronization"
     )
@@ -62,15 +56,9 @@ class UserSettingsUpdate(BaseModel):
     primary_color: Optional[str] = Field(
         default=None, description="Custom primary color in hex format"
     )
-    haptic_enabled: Optional[bool] = Field(
-        default=None, description="Enable haptic feedback"
-    )
-    sound_enabled: Optional[bool] = Field(
-        default=None, description="Enable sound feedback"
-    )
-    auto_sync_enabled: Optional[bool] = Field(
-        default=None, description="Enable automatic sync"
-    )
+    haptic_enabled: Optional[bool] = Field(default=None, description="Enable haptic feedback")
+    sound_enabled: Optional[bool] = Field(default=None, description="Enable sound feedback")
+    auto_sync_enabled: Optional[bool] = Field(default=None, description="Enable automatic sync")
 
     class Config:
         json_schema_extra = {"example": {"theme": "dark", "font_size": "large"}}

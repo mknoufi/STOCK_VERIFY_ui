@@ -13,9 +13,7 @@ def _build_item_risk_pipeline(item_codes: list[str]) -> list[dict[str, Any]]:
             "$group": {
                 "_id": "$item_code",
                 "total_counts": {"$sum": 1},
-                "variance_count": {
-                    "$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}
-                },
+                "variance_count": {"$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}},
             }
         },
     ]
@@ -29,9 +27,7 @@ def _build_category_risk_pipeline(categories: list[str]) -> list[dict[str, Any]]
             "$group": {
                 "_id": "$category",
                 "total_counts": {"$sum": 1},
-                "variance_count": {
-                    "$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}
-                },
+                "variance_count": {"$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}},
             }
         },
     ]
@@ -69,9 +65,7 @@ def _build_risk_item(
         return None
 
     reason = (
-        "Historical variance pattern"
-        if item_risk > cat_risk
-        else f"High-risk category: {category}"
+        "Historical variance pattern" if item_risk > cat_risk else f"High-risk category: {category}"
     )
 
     return {
@@ -128,9 +122,7 @@ class AIVarianceService:
                         "_id": None,
                         "total_counts": {"$sum": 1},
                         "variance_count": {
-                            "$sum": {
-                                "$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]
-                            }
+                            "$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}
                         },
                     }
                 },
@@ -167,9 +159,7 @@ class AIVarianceService:
                         "_id": None,
                         "total_counts": {"$sum": 1},
                         "variance_count": {
-                            "$sum": {
-                                "$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]
-                            }
+                            "$sum": {"$cond": [{"$ne": ["$variance_reason", None]}, 1, 0]}
                         },
                     }
                 },
@@ -201,20 +191,16 @@ class AIVarianceService:
         """
         try:
             # 1. Get all counted items in this session
-            counted_items = await db.count_lines.find(
-                {"session_id": session_id}
-            ).to_list(length=1000)
+            counted_items = await db.count_lines.find({"session_id": session_id}).to_list(
+                length=1000
+            )
 
             if not counted_items:
                 return []
 
             # 2. Extract unique item codes and categories for bulk lookup
             item_codes = list(
-                {
-                    item.get("item_code")
-                    for item in counted_items
-                    if item.get("item_code")
-                }
+                {item.get("item_code") for item in counted_items if item.get("item_code")}
             )
             categories = list(
                 {item.get("category") for item in counted_items if item.get("category")}
@@ -238,9 +224,7 @@ class AIVarianceService:
             logger.error(f"Error predicting session risks for {session_id}: {e}")
             return []
 
-    async def _calculate_item_risks(
-        self, db, item_codes: list[str]
-    ) -> dict[str, float]:
+    async def _calculate_item_risks(self, db, item_codes: list[str]) -> dict[str, float]:
         """Calculate item risk scores from historical variances."""
         if not item_codes:
             return {}
@@ -251,14 +235,10 @@ class AIVarianceService:
         risk_map = {}
         for res in results:
             if res["total_counts"] > 0:
-                risk_map[res["_id"]] = (
-                    float(res["variance_count"]) / res["total_counts"]
-                )
+                risk_map[res["_id"]] = float(res["variance_count"]) / res["total_counts"]
         return risk_map
 
-    async def _calculate_category_risks(
-        self, db, categories: list[str]
-    ) -> dict[str, float]:
+    async def _calculate_category_risks(self, db, categories: list[str]) -> dict[str, float]:
         """Calculate category risk scores with hybrid heuristic/historical."""
         if not categories:
             return {}
@@ -270,9 +250,7 @@ class AIVarianceService:
         for res in results:
             heuristic = self.category_heuristics.get(res["_id"], self.default_risk)
             historical = (
-                float(res["variance_count"]) / res["total_counts"]
-                if res["total_counts"] > 0
-                else 0
+                float(res["variance_count"]) / res["total_counts"] if res["total_counts"] > 0 else 0
             )
             risk_map[res["_id"]] = _calculate_hybrid_risk(
                 heuristic, historical, res["total_counts"]
@@ -288,17 +266,18 @@ class AIVarianceService:
         """Process counted items and build high-risk items list."""
         high_risk_items = []
         for item in counted_items:
-            item_code = item.get("item_code")
-            category = item.get("category", "General")
+            item_code_val = item.get("item_code")
+            if not isinstance(item_code_val, str):
+                continue
+            item_code = item_code_val
+            category = str(item.get("category", "General"))
 
             item_risk = item_risk_map.get(item_code, 0.0)
             cat_risk = cat_risk_map.get(
                 category, self.category_heuristics.get(category, self.default_risk)
             )
 
-            risk_item = _build_risk_item(
-                item, item_risk, cat_risk, self.category_heuristics
-            )
+            risk_item = _build_risk_item(item, item_risk, cat_risk, self.category_heuristics)
             if risk_item:
                 high_risk_items.append(risk_item)
 

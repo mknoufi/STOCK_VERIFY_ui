@@ -28,14 +28,14 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 # Try to import Redis with async support, fallback to in-memory if not available
 try:
-    import redis.asyncio as redis
-    from redis.exceptions import RedisError
+    import redis.asyncio as redis  # type: ignore[no-redef]
+    from redis.exceptions import RedisError  # type: ignore[no-redef]
 
     REDIS_AVAILABLE = True
 except ImportError:
     try:
-        import redis
-        from redis.exceptions import RedisError
+        import redis  # type: ignore[no-redef]
+        from redis.exceptions import RedisError  # type: ignore[no-redef]
 
         REDIS_AVAILABLE = True
     except ImportError:
@@ -43,7 +43,7 @@ except ImportError:
         logger.warning("Redis not available, using in-memory cache")
 
         # Define dummy RedisError for type safety when Redis is missing
-        class RedisError(Exception):
+        class RedisError(Exception):  # type: ignore[no-redef]
             pass
 
 
@@ -74,9 +74,7 @@ class CacheService:
                 self.use_redis = True
                 logger.info("Redis client created (pending connection verification)")
             except Exception as e:
-                logger.warning(
-                    f"Redis client creation failed, using in-memory cache: {str(e)}"
-                )
+                logger.warning(f"Redis client creation failed, using in-memory cache: {str(e)}")
                 self.use_redis = False
         else:
             self.use_redis = False
@@ -122,9 +120,7 @@ class CacheService:
 
         return None
 
-    async def set(
-        self, prefix: str, key: str, value: Any, ttl: Optional[int] = None
-    ) -> bool:
+    async def set(self, prefix: str, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """Set value in cache"""
         cache_key = self._get_key(prefix, key)
         ttl = ttl or self.default_ttl
@@ -193,9 +189,7 @@ class CacheService:
             except RedisError as e:
                 logger.error(f"Redis clear error: {str(e)}")
         else:
-            keys_to_remove = [
-                k for k in self._memory_cache.keys() if k.startswith(f"{prefix}:")
-            ]
+            keys_to_remove = [k for k in self._memory_cache.keys() if k.startswith(f"{prefix}:")]
             for k in keys_to_remove:
                 del self._memory_cache[k]
             return len(keys_to_remove)

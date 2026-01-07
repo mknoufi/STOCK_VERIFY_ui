@@ -2,7 +2,7 @@
 User Preferences API
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from backend.auth.dependencies import get_current_user
@@ -51,11 +51,11 @@ async def update_my_preferences(
 
     if existing:
         # Update existing
-        await db.user_preferences.update_one(
-            {"_id": existing["_id"]}, {"$set": update_data}
-        )
+        await db.user_preferences.update_one({"_id": existing["_id"]}, {"$set": update_data})
         # Fetch updated
         updated = await db.user_preferences.find_one({"_id": existing["_id"]})
+        if not updated:
+            raise HTTPException(status_code=500, detail="Failed to retrieve updated preferences")
         return UserPreferencesInDB(**updated)
     else:
         # Create new
@@ -65,4 +65,6 @@ async def update_my_preferences(
 
         result = await db.user_preferences.insert_one(new_prefs.model_dump())
         created = await db.user_preferences.find_one({"_id": result.inserted_id})
+        if not created:
+            raise HTTPException(status_code=500, detail="Failed to retrieve created preferences")
         return UserPreferencesInDB(**created)

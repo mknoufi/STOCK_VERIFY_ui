@@ -10,7 +10,7 @@ explicit and handle them in a functional way.
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import UpdateMany
@@ -23,7 +23,7 @@ from .errors import ConnectionError, DatabaseError, SyncConfigError, SyncError
 logger = logging.getLogger(__name__)
 
 # Type aliases for better readability
-SyncResult = Result[dict[str, Any], SyncError]
+SyncResult: TypeAlias = Result[dict[str, Any], SyncError]
 ProductData = dict[str, Any]
 SyncStats = dict[str, Any]
 
@@ -95,9 +95,7 @@ class ChangeDetectionSyncService:
             """
 
             # Add modified date filter if available
-            modified_column = mapping.get("query_options", {}).get(
-                "modified_date_column"
-            )
+            modified_column = mapping.get("query_options", {}).get("modified_date_column")
             if modified_column and last_sync_time:
                 query += f" WHERE {modified_column} >= ?"
 
@@ -185,9 +183,7 @@ class ChangeDetectionSyncService:
             )
 
     @result_function(SyncError)
-    async def _apply_changes_to_mongodb(
-        self, changes: list[ProductData]
-    ) -> dict[str, int]:
+    async def _apply_changes_to_mongodb(self, changes: list[ProductData]) -> dict[str, int]:
         """Apply changes to MongoDB."""
         if not changes:
             return Ok({"matched": 0, "modified": 0})
@@ -258,9 +254,7 @@ class ChangeDetectionSyncService:
             )
 
             # Update and return stats
-            return self._finalize_sync(
-                start_time, len(changed_products), stats["modified"]
-            )
+            return self._finalize_sync(start_time, len(changed_products), stats["modified"])
 
         except Exception as e:
             error = DatabaseError("Unexpected error during sync", {"error": str(e)})
@@ -388,9 +382,7 @@ class ChangeDetectionSyncService:
             except asyncio.CancelledError:
                 logger.debug("Sync task cancelled successfully")
             except Exception as e:
-                error = SyncError(
-                    "Error while stopping sync service", {"error": str(e)}
-                )
+                error = SyncError("Error while stopping sync service", {"error": str(e)})
                 logger.error(str(error))
                 return Fail(error)
 
@@ -424,9 +416,7 @@ class ChangeDetectionSyncService:
         # Add additional calculated metrics
         if self._sync_stats["total_syncs"] > 0:
             success_rate = (
-                self._sync_stats["successful_syncs"]
-                / self._sync_stats["total_syncs"]
-                * 100
+                self._sync_stats["successful_syncs"] / self._sync_stats["total_syncs"] * 100
             )
             status["success_rate"] = f"{success_rate:.1f}%"
 

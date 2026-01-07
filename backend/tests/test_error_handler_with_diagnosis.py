@@ -17,9 +17,7 @@ from backend.utils.result_types import Result
 
 @pytest.fixture
 def mock_diagnosis_service():
-    with patch(
-        "backend.utils.error_handler_with_diagnosis.get_auto_diagnosis"
-    ) as mock_get:
+    with patch("backend.utils.error_handler_with_diagnosis.get_auto_diagnosis") as mock_get:
         service = AsyncMock()
         mock_get.return_value = service
         yield service

@@ -37,7 +37,7 @@ jobs:
       - name: Run MyPy (type checking)
         run: |
           cd backend
-          mypy . --ignore-missing-imports --no-strict-optional || true
+          mypy .
 
       - name: Run Bandit (security linting)
         run: |

@@ -75,7 +75,7 @@ python-format:
 
 python-typecheck:
 	@echo "Running Python type checker..."
-	mypy backend --ignore-missing-imports --python-version=3.10 || true
+	cd backend && mypy .
 
 # =============================================================================
 # 📦 NODE.JS FRONTEND

@@ -51,8 +51,7 @@ jobs:
         run: ruff check .
 
       - name: Run MyPy (type checking)
-        run: mypy . --ignore-missing-imports --python-version=3.11 || true
-        continue-on-error: true
+        run: mypy .
 
       - name: Run tests
         env:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
@@ -12,9 +12,9 @@ _DATABASE: AsyncIOMotorDatabase = None
 
 
 @asynccontextmanager
-def lifespan_db(
+async def lifespan_db(
     uri: str, db_name: str
-) -> AsyncIterator[tuple[AsyncIOMotorClient, AsyncIOMotorDatabase]]:
+) -> AsyncGenerator[tuple[AsyncIOMotorClient, AsyncIOMotorDatabase], None]:
     """Create a Mongo client bound to the active event loop and tear it down safely."""
     global _MONGO_CLIENT, _DATABASE
 
@@ -45,9 +45,7 @@ def get_db() -> AsyncIOMotorDatabase:
 
 def get_client() -> AsyncIOMotorClient:
     if _MONGO_CLIENT is None:
-        raise RuntimeError(
-            "Mongo client has not been initialised. Ensure lifespan is configured."
-        )
+        raise RuntimeError("Mongo client has not been initialised. Ensure lifespan is configured.")
     return _MONGO_CLIENT
 
 

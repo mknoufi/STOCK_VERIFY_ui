@@ -481,6 +481,6 @@ class TestFullWorkflowEvaluation:
         # Print summary
         report.print_summary()
 
-        assert (
-            report.success_rate >= 0.60
-        ), f"Success rate {report.success_rate} is too low"
+        assert report.success_rate >= 0.60, (
+            f"Success rate {report.success_rate} is too low"
+        )

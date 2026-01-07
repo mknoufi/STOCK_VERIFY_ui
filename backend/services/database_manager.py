@@ -206,7 +206,9 @@ class DatabaseManager:
             status = (
                 "healthy"
                 if difference < 100
-                else "degraded" if difference < 500 else "critical"
+                else "degraded"
+                if difference < 500
+                else "critical"
             )
 
             return {

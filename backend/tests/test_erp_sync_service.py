@@ -65,9 +65,7 @@ class TestSQLSyncService:
     """Test SQL Sync Service"""
 
     @pytest.mark.asyncio
-    async def test_sync_items_success(
-        self, sync_service, mock_sql_connector, mock_mongo_db
-    ):
+    async def test_sync_items_success(self, sync_service, mock_sql_connector, mock_mongo_db):
         """Test successful sync of items"""
         # Mock existing item in MongoDB
         mock_mongo_db.erp_items.find_one.side_effect = [

@@ -3,6 +3,9 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from fastapi import HTTPException
+from pydantic import ValidationError
+
 from backend.api.pin_auth_api import (
     PinChangeRequest,
     PinLoginRequest,
@@ -10,8 +13,6 @@ from backend.api.pin_auth_api import (
     login_with_pin,
 )
 from backend.utils.result import Result
-from fastapi import HTTPException
-from pydantic import ValidationError
 
 
 @pytest.mark.asyncio
@@ -54,9 +55,7 @@ async def test_login_with_pin_success():
         ),
         patch(
             "backend.api.pin_auth_api.generate_auth_tokens",
-            new=AsyncMock(
-                return_value=Result.ok({"access_token": "t", "refresh_token": "rt"})
-            ),
+            new=AsyncMock(return_value=Result.ok({"access_token": "t", "refresh_token": "rt"})),
         ),
         patch("backend.api.pin_auth_api.reset_rate_limit", new=AsyncMock()),
         patch("backend.api.pin_auth_api.PINAuthService") as MockService,

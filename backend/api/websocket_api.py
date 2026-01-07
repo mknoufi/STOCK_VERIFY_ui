@@ -21,9 +21,7 @@ async def websocket_endpoint(
     # Authenticate before accepting
     payload = None
     try:
-        payload = decode(
-            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
-        )
+        payload = decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
     except Exception as e:
         logger.warning(f"WebSocket auth failed: {str(e)}")
 

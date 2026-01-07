@@ -37,9 +37,7 @@ def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
     return True
 
 
-def _matches_exists_logic(
-    document: dict[str, Any], key: str, value: dict[str, Any]
-) -> bool:
+def _matches_exists_logic(document: dict[str, Any], key: str, value: dict[str, Any]) -> bool:
     """Helper to handle $exists operator logic."""
     should_exist = value["$exists"]
     does_exist = key in document
@@ -61,9 +59,7 @@ def _matches_exists_logic(
     return _match_condition(doc_value, condition_without_exists)
 
 
-def _match_filter(
-    document: dict[str, Any], filter_query: dict[str, Optional[Any]]
-) -> bool:
+def _match_filter(document: dict[str, Any], filter_query: dict[str, Optional[Any]]) -> bool:
     """Basic Mongo-style filter matching."""
     if not filter_query:
         return True
@@ -125,9 +121,7 @@ class InMemoryCursor:
 
     def sort(self, key: str, direction: int) -> InMemoryCursor:
         reverse = direction < 0
-        self._documents.sort(
-            key=lambda doc: doc.get(key, datetime.min), reverse=reverse
-        )
+        self._documents.sort(key=lambda doc: doc.get(key, datetime.min), reverse=reverse)
         return self
 
     def skip(self, count: int) -> InMemoryCursor:
@@ -153,9 +147,7 @@ class InMemoryCollection:
     def _ensure_id(self, document: dict[str, Any]) -> None:
         document.setdefault("_id", uuid.uuid4().hex)
 
-    async def find_one(
-        self, filter: dict[str, Any], *args, **kwargs
-    ) -> dict[str, Optional[Any]]:
+    async def find_one(self, filter: dict[str, Any], *args, **kwargs) -> dict[str, Optional[Any]]:
         print(f"DEBUG: find_one called with {filter}")
         for doc in self._documents:
             if _match_filter(doc, filter):
@@ -164,9 +156,7 @@ class InMemoryCollection:
         print("DEBUG: find_one no match")
         return None
 
-    async def insert_one(
-        self, document: dict[str, Any], *args, **kwargs
-    ) -> InsertOneResult:
+    async def insert_one(self, document: dict[str, Any], *args, **kwargs) -> InsertOneResult:
         print("DEBUG: insert_one called")
         doc_copy = copy.deepcopy(document)
         self._ensure_id(doc_copy)
@@ -199,9 +189,7 @@ class InMemoryCollection:
             _apply_update(new_doc, update)
             self._ensure_id(new_doc)
             self._documents.append(new_doc)
-            return UpdateResult(
-                matched_count=0, modified_count=1, upserted_id=new_doc["_id"]
-            )
+            return UpdateResult(matched_count=0, modified_count=1, upserted_id=new_doc["_id"])
 
         return UpdateResult(matched_count=0, modified_count=0)
 
@@ -216,9 +204,7 @@ class InMemoryCollection:
         self._documents = to_keep
         return DeleteResult(deleted_count=deleted)
 
-    async def count_documents(
-        self, filter_query: dict[str, Optional[Any]] = None
-    ) -> int:
+    async def count_documents(self, filter_query: dict[str, Optional[Any]] = None) -> int:
         return sum(1 for doc in self._documents if _match_filter(doc, filter_query))
 
     def find(
@@ -284,9 +270,10 @@ def setup_server_with_in_memory_db(monkeypatch) -> InMemoryDatabase:
     """
     from typing import cast
 
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
     import backend.server as server_module
     from backend.db.runtime import set_client, set_db
-    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     print("DEBUG: Imported server module")
 
@@ -319,8 +306,9 @@ def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
     """Setup core services like refresh tokens, activity logs, error logs."""
     from typing import cast
 
-    from backend.services.runtime import set_refresh_token_service
     from motor.motor_asyncio import AsyncIOMotorDatabase
+
+    from backend.services.runtime import set_refresh_token_service
 
     refresh_service = RefreshTokenService(
         cast(AsyncIOMotorDatabase, fake_db),
@@ -330,12 +318,8 @@ def _setup_core_services(monkeypatch, fake_db, server_module) -> None:
     server_module.refresh_token_service = refresh_service
     set_refresh_token_service(refresh_service)
 
-    server_module.activity_log_service = ActivityLogService(
-        cast(AsyncIOMotorDatabase, fake_db)
-    )
-    server_module.error_log_service = ErrorLogService(
-        cast(AsyncIOMotorDatabase, fake_db)
-    )
+    server_module.activity_log_service = ActivityLogService(cast(AsyncIOMotorDatabase, fake_db))
+    server_module.error_log_service = ErrorLogService(cast(AsyncIOMotorDatabase, fake_db))
 
     class _NoOpMigrationManager:
         async def ensure_indexes(self):
@@ -364,9 +348,7 @@ def _setup_mock_services(monkeypatch, server_module) -> None:
     mock_health.stop = MagicMock()
     mock_health.check_mongo_health = AsyncMock(return_value={"status": "healthy"})
     mock_health.check_sql_server_health = AsyncMock(return_value={"status": "healthy"})
-    monkeypatch.setattr(
-        server_module, "DatabaseHealthService", MagicMock(return_value=mock_health)
-    )
+    monkeypatch.setattr(server_module, "DatabaseHealthService", MagicMock(return_value=mock_health))
     if hasattr(server_module, "database_health_service"):
         monkeypatch.setattr(server_module, "database_health_service", mock_health)
 
@@ -374,9 +356,7 @@ def _setup_mock_services(monkeypatch, server_module) -> None:
     mock_auto_sync = MagicMock()
     mock_auto_sync.start = AsyncMock()
     mock_auto_sync.stop = AsyncMock()
-    monkeypatch.setattr(
-        server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync)
-    )
+    monkeypatch.setattr(server_module, "AutoSyncManager", MagicMock(return_value=mock_auto_sync))
     if hasattr(server_module, "auto_sync_manager"):
         monkeypatch.setattr(server_module, "auto_sync_manager", mock_auto_sync)
 
@@ -390,9 +370,7 @@ def _setup_mock_services(monkeypatch, server_module) -> None:
         MagicMock(return_value=mock_export_service),
     )
     if hasattr(server_module, "scheduled_export_service"):
-        monkeypatch.setattr(
-            server_module, "scheduled_export_service", mock_export_service
-        )
+        monkeypatch.setattr(server_module, "scheduled_export_service", mock_export_service)
 
 
 def _setup_cache_and_redis(monkeypatch, server_module) -> Any:
@@ -427,11 +405,12 @@ def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None
     """Initialize all API modules with the fake database."""
     from typing import cast
 
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
     from backend.api.count_lines_api import init_count_lines_api
     from backend.api.erp_api import init_erp_api
     from backend.api.item_verification_api import init_verification_api
     from backend.api.session_api import init_session_api
-    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
     init_verification_api(cast(AsyncIOMotorDatabase, fake_db))
     init_erp_api(cast(AsyncIOMotorDatabase, fake_db), cache_service)
@@ -441,9 +420,7 @@ def _initialize_apis(monkeypatch, fake_db, server_module, cache_service) -> None
     server_module.client = cast(AsyncIOMotorClient, fake_db.client)
 
     # Initialize APIs that depend on global db
-    init_session_api(
-        cast(AsyncIOMotorDatabase, fake_db), server_module.activity_log_service
-    )
+    init_session_api(cast(AsyncIOMotorDatabase, fake_db), server_module.activity_log_service)
     init_count_lines_api(server_module.activity_log_service)
 
 
@@ -451,13 +428,12 @@ def _setup_auth_and_seed_users(monkeypatch, fake_db, server_module) -> None:
     """Setup authentication overrides and seed default test users."""
     from typing import cast
 
-    from backend.auth import dependencies as auth_deps_module
     from motor.motor_asyncio import AsyncIOMotorDatabase
 
+    from backend.auth import dependencies as auth_deps_module
+
     # Patch server module's auth settings to match test env
-    server_module.SECRET_KEY = os.getenv(
-        "JWT_SECRET", "test-jwt-secret-key-for-testing-only"
-    )
+    server_module.SECRET_KEY = os.getenv("JWT_SECRET", "test-jwt-secret-key-for-testing-only")
     server_module.ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
     # Mock get_current_user to debug if it's even called
@@ -466,9 +442,7 @@ def _setup_auth_and_seed_users(monkeypatch, fake_db, server_module) -> None:
         return {"username": "staff1", "role": "staff", "full_name": "Staff Member"}
 
     # Override both the server module's dependency and the auth module's dependency
-    server_module.app.dependency_overrides[server_module.get_current_user] = (
-        mock_get_current_user
-    )
+    server_module.app.dependency_overrides[server_module.get_current_user] = mock_get_current_user
     server_module.app.dependency_overrides[auth_deps_module.get_current_user] = (
         mock_get_current_user
     )

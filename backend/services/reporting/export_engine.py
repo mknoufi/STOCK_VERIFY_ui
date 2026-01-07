@@ -30,9 +30,7 @@ def _xlsx_write_metadata(ws: "Worksheet", snapshot: dict[str, Any]) -> int:
     return 6
 
 
-def _xlsx_write_summary(
-    ws: "Worksheet", summary: dict[str, Any], start_row: int
-) -> int:
+def _xlsx_write_summary(ws: "Worksheet", summary: dict[str, Any], start_row: int) -> int:
     """Write summary section to worksheet, return next row number."""
     from openpyxl.styles import Font
 
@@ -46,9 +44,7 @@ def _xlsx_write_summary(
     return row_num + 1
 
 
-def _xlsx_write_data(
-    ws: "Worksheet", row_data: list[dict[str, Any]], start_row: int
-) -> int:
+def _xlsx_write_data(ws: "Worksheet", row_data: list[dict[str, Any]], start_row: int) -> int:
     """Write data rows to worksheet, return next row number."""
     from openpyxl.styles import Font, PatternFill
 
@@ -59,9 +55,7 @@ def _xlsx_write_data(
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=start_row, column=col_num, value=header)
         cell.font = Font(bold=True)
-        cell.fill = PatternFill(
-            start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
-        )
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
     row_num = start_row + 1
     for row in row_data:
@@ -95,9 +89,7 @@ class ExportEngine:
     def __init__(self):
         pass
 
-    def export_to_csv(
-        self, snapshot: dict[str, Any], include_summary: bool = True
-    ) -> bytes:
+    def export_to_csv(self, snapshot: dict[str, Any], include_summary: bool = True) -> bytes:
         """
         Export snapshot to CSV
 
@@ -114,9 +106,7 @@ class ExportEngine:
         # Write metadata
         writer.writerow(["Snapshot Report"])
         writer.writerow(["Name:", snapshot.get("name", "Untitled")])
-        writer.writerow(
-            ["Created:", datetime.fromtimestamp(snapshot["created_at"]).isoformat()]
-        )
+        writer.writerow(["Created:", datetime.fromtimestamp(snapshot["created_at"]).isoformat()])
         writer.writerow(["Created By:", snapshot.get("created_by", "Unknown")])
         writer.writerow([])
 
@@ -146,9 +136,7 @@ class ExportEngine:
         logger.info(f"✓ CSV export created: {len(row_data)} rows")
         return csv_bytes
 
-    def export_to_xlsx(
-        self, snapshot: dict[str, Any], include_summary: bool = True
-    ) -> bytes:
+    def export_to_xlsx(self, snapshot: dict[str, Any], include_summary: bool = True) -> bytes:
         """
         Export snapshot to Excel (XLSX)
 

@@ -125,9 +125,7 @@ async def detailed_health_check(
         health_data: dict[str, Any] = {
             "timestamp": datetime.utcnow().isoformat(),
             "services": {
-                "mongodb": _safe_service_check(
-                    database_health_service, "check_mongodb_health"
-                ),
+                "mongodb": _safe_service_check(database_health_service, "check_mongodb_health"),
                 "sql_server_pool": _safe_service_check(connection_pool, "get_stats"),
                 "cache": _safe_service_check(cache_service, "get_status"),
             },

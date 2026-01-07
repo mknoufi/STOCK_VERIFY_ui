@@ -87,9 +87,7 @@ class TestVersionCheckEndpoint:
 
     @pytest.mark.asyncio
     async def test_version_check_endpoint_basic(self, test_db):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/version/check?client_version=1.0.0")
             assert response.status_code == 200
 
@@ -102,18 +100,14 @@ class TestVersionCheckEndpoint:
 
     @pytest.mark.asyncio
     async def test_version_check_endpoint_missing_version(self, test_db):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/version/check")
             # Missing required parameter
             assert response.status_code == 422
 
     @pytest.mark.asyncio
     async def test_version_check_endpoint_invalid_version(self, test_db):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/version/check?client_version=invalid!")
             # Invalid version format (doesn't match pattern)
             assert response.status_code == 422

@@ -49,9 +49,7 @@ def _normalize_index_key(index_spec: Any) -> tuple[tuple[str, int], ...]:
             return ((index_spec[0], index_spec[1]),)
         return tuple(
             (k, v) if isinstance(k, str) else tuple(k)
-            for k, v in (
-                index_spec if isinstance(index_spec[0], tuple) else [index_spec]
-            )
+            for k, v in (index_spec if isinstance(index_spec[0], tuple) else [index_spec])
         )
     return ((index_spec, 1),)
 
@@ -76,9 +74,7 @@ async def _create_single_index(
         ):
             await collection.create_index(index_spec[0], index_spec[1])
         else:
-            index_list = (
-                list(index_spec) if isinstance(index_spec[0], tuple) else [index_spec]
-            )
+            index_list = list(index_spec) if isinstance(index_spec[0], tuple) else [index_spec]
             await collection.create_index(index_list)
         logger.info(f"  ✓ Created index: {index_key}")
     except Exception as e:
@@ -110,9 +106,7 @@ async def add_performance_indexes():
             collection = db[collection_name]
 
             existing_indexes = await collection.list_indexes().to_list(length=100)
-            existing_keys = {
-                tuple(idx.get("key", {}).items()) for idx in existing_indexes
-            }
+            existing_keys = {tuple(idx.get("key", {}).items()) for idx in existing_indexes}
 
             for index_spec in indexes:
                 await _create_single_index(collection, index_spec, existing_keys)

@@ -196,7 +196,8 @@ async def preview_mapping(
         select_fields = []
         for app_field, mapping in config.columns.items():
             erp_col = _safe_identifier(mapping.erp_column)
-            select_fields.append(f"[{erp_col}] as {app_field}")
+            safe_alias = _safe_identifier(app_field)
+            select_fields.append(f"[{erp_col}] as [{safe_alias}]")
 
         # Basic check to ensure at least one column
         if not select_fields:

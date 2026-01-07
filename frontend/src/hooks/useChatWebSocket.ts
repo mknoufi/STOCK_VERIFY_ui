@@ -32,6 +32,7 @@ export const useChatWebSocket = (initialConversationId?: string) => {
   const [conversationId, setConversationId] = useState<string | null>(
     initialConversationId ?? null,
   );
+  const conversationIdRef = useRef<string | null>(initialConversationId ?? null);
   const [lastEvent, setLastEvent] = useState<ChatEvent | null>(null);
   const [assistantText, setAssistantText] = useState<string>("");
 
@@ -52,7 +53,10 @@ export const useChatWebSocket = (initialConversationId?: string) => {
     const wsUrl = wsBase + "/api/chat/ws";
 
     const params = new URLSearchParams({ token });
-    if (conversationId) params.set("conversation_id", conversationId);
+    // Use the ref to get the latest ID without triggering a reconnect loop
+    if (conversationIdRef.current) {
+      params.set("conversation_id", conversationIdRef.current);
+    }
 
     const socket = new WebSocket(`${wsUrl}?${params.toString()}`);
 
@@ -71,6 +75,7 @@ export const useChatWebSocket = (initialConversationId?: string) => {
 
         if (parsed.type === "connected") {
           setConversationId(parsed.conversation_id);
+          conversationIdRef.current = parsed.conversation_id;
         }
 
         if (parsed.type === "assistant_start") {
@@ -106,7 +111,7 @@ export const useChatWebSocket = (initialConversationId?: string) => {
     };
 
     socketRef.current = socket;
-  }, [conversationId, isAuthenticated]);
+  }, [isAuthenticated]); // Removed conversationId from dependencies
 
   useEffect(() => {
     connect();

@@ -108,10 +108,20 @@ async def get_export_schedule(
 ):
     """Get details of a specific export schedule"""
     from bson import ObjectId
+    from bson.errors import InvalidId
 
-    schedule = await export_service.db.export_schedules.find_one(
-        {"_id": ObjectId(schedule_id)}
-    )
+    try:
+        oid = ObjectId(schedule_id)
+    except InvalidId:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "error": {"message": "Invalid schedule ID", "code": "INVALID_ID"},
+            },
+        )
+
+    schedule = await export_service.db.export_schedules.find_one({"_id": oid})
 
     if not schedule:
         raise HTTPException(
@@ -214,11 +224,21 @@ async def execute_export_schedule(
 ):
     """Manually execute an export schedule"""
     from bson import ObjectId
+    from bson.errors import InvalidId
 
     # Get schedule
-    schedule = await export_service.db.export_schedules.find_one(
-        {"_id": ObjectId(schedule_id)}
-    )
+    try:
+        oid = ObjectId(schedule_id)
+    except InvalidId:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "error": {"message": "Invalid schedule ID", "code": "INVALID_ID"},
+            },
+        )
+
+    schedule = await export_service.db.export_schedules.find_one({"_id": oid})
 
     if not schedule:
         raise HTTPException(
@@ -286,10 +306,20 @@ async def download_export_result(
 ):
     """Download an export result file"""
     from bson import ObjectId
+    from bson.errors import InvalidId
 
-    result = await export_service.db.export_results.find_one(
-        {"_id": ObjectId(result_id)}
-    )
+    try:
+        oid = ObjectId(result_id)
+    except InvalidId:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "error": {"message": "Invalid result ID", "code": "INVALID_ID"},
+            },
+        )
+
+    result = await export_service.db.export_results.find_one({"_id": oid})
 
     if not result:
         raise HTTPException(

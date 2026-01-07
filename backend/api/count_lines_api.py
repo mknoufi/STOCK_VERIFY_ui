@@ -226,7 +226,10 @@ async def create_count_line(
             else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs]
+            [
+                p.model_dump() if hasattr(p, "model_dump") else p
+                for p in line_data.photo_proofs
+            ]
             if line_data.photo_proofs
             else None
         ),

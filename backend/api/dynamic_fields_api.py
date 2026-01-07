@@ -41,7 +41,7 @@ class FieldDefinitionCreate(BaseModel):
     options: Optional[list[str]] = Field(
         default=None, description="Options for select types"
     )
-    validation_rules: dict[str, Optional[Any]] = Field(
+    validation_rules: Optional[dict[str, Optional[Any]]] = Field(
         default=None, description="Validation rules"
     )
     default_value: Optional[Any] = Field(default=None, description="Default value")

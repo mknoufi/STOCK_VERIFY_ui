@@ -188,7 +188,9 @@ def _get_sql_server_status() -> ServiceStatus:
         "port": config.get("port"),
         "status": "connected" if is_connected else "disconnected",
         "url": (
-            f"{config.get('host')}:{config.get('port')}" if config.get("host") else None
+            f"sqlserver://{config.get('host')}:{config.get('port')}"
+            if config.get("host")
+            else None
         ),
     }
 
@@ -870,6 +872,8 @@ async def test_sql_server_connection(
                 ),
             }
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         return {"success": False, "message": f"Connection failed: {str(e)}"}
 
 

@@ -143,9 +143,7 @@ async def record_item_enrichment(
         raise
     except Exception as e:
         logger.error(f"Enrichment API error for {request.item_code}: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to record enrichment: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail="Failed to record enrichment")
 
 
 @enrichment_router.get(
@@ -207,9 +205,7 @@ async def get_enrichment_statistics(
 
     except Exception as e:
         logger.error(f"Enrichment stats error: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get enrichment stats: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail="Failed to get enrichment stats")
 
 
 @enrichment_router.get("/incomplete")

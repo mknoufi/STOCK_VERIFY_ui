@@ -197,7 +197,7 @@ async def update_item_master(
 def _calculate_variance(
     request: VerificationRequest, system_qty: float
 ) -> Optional[float]:
-    """Calculates the variance based on verified and damaged quantities."""
+    """Calculates the variance based on verified, damaged, and non-returnable damaged quantities."""
     if request.verified_qty is not None:
         total_assets = request.verified_qty + (request.damaged_qty or 0.0)
         return total_assets - system_qty

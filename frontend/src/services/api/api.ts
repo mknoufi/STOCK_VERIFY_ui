@@ -6,6 +6,7 @@ import { useAuthStore } from "../../store/authStore";
 import api from "../httpClient";
 import { retryWithBackoff } from "../../utils/retry";
 import { validateBarcode } from "../../utils/validation";
+import { getNetworkStatus } from "../../utils/network";
 import { CreateCountLinePayload, Item } from "../../types/scan";
 import {
   addToOfflineQueue,

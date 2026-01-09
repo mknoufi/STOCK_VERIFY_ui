@@ -31,6 +31,13 @@
 .continue/index/
 .continue/logs/
 
+# Claude Code + Claude-Mem
+.claude/plugins/
+.claude/*.db
+.claude/*.sqlite
+.claude/memory/
+!.claude/settings.json
+
 # Dependencies
 node_modules/
 /node_modules
@@ -45,6 +52,14 @@ node_modules/
 
 # Testing
 /coverage
+
+# SonarQube
+.scannerwork/
+**/coverage.xml
+**/bandit-report.json
+**/ruff-report.json
+**/pylint-report.txt
+**/eslint-report.json
 
 # Next.js
 /.next/

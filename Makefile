@@ -19,7 +19,12 @@ help:
 	@echo "  make lint        - Run all linters"
 	@echo "  make format      - Format all code"
 	@echo ""
-	@echo "🛠️  Development:"
+	@echo "� Code Analysis:"
+	@echo "  make sonar       - Run SonarQube analysis (requires sonar-scanner)"
+	@echo "  make sonar-reports - Generate coverage/lint reports for SonarQube"
+	@echo "  make sonar-local - Run local analysis via Python script"
+	@echo ""
+	@echo "�🛠️  Development:"
 	@echo "  make install     - Install dependencies"
 	@echo "  make clean       - Clean build artifacts"
 	@echo ""
@@ -160,6 +165,33 @@ clean:
 # =============================================================================
 # 🔒 SECURITY
 # =============================================================================
+# =============================================================================
+# 📈 SONARQUBE ANALYSIS
+# =============================================================================
+.PHONY: sonar sonar-reports sonar-local
+
+sonar: sonar-reports
+	@echo "📈 Running SonarQube analysis..."
+	sonar-scanner
+
+sonar-reports:
+	@echo "📊 Generating analysis reports for SonarQube..."
+	@echo "Generating Python coverage..."
+	cd backend && pytest tests/ -v --cov=. --cov-report=xml:coverage.xml || true
+	@echo "Generating Bandit security report..."
+	cd backend && bandit -r . -ll -f json -o bandit-report.json --exclude ./tests,./venv,./__pycache__ || true
+	@echo "Generating Ruff lint report..."
+	cd backend && ruff check . --output-format=json > ruff-report.json || true
+	@echo "Generating frontend coverage..."
+	cd frontend && npm run test:coverage -- --ci || true
+	@echo "Generating ESLint report..."
+	cd frontend && npx eslint . --format json --output-file eslint-report.json || true
+	@echo "✅ Reports generated!"
+
+sonar-local:
+	@echo "📈 Running local SonarQube analysis..."
+	python scripts/run_sonar_analysis.py
+
 .PHONY: security secrets validate-env
 
 security:

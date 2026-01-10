@@ -10,6 +10,8 @@ module.exports = {
     }],
     // Disable false positive for string comparisons in JSX expressions
     'react-native/no-raw-text': 'off',
+    // Disable import/no-unresolved for path aliases - TypeScript handles this
+    'import/no-unresolved': ['error', { ignore: ['^@/'] }],
   },
   settings: {
     'import/resolver': {

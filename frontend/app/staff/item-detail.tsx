@@ -64,6 +64,23 @@ const BLIND_SESSION_TYPE = "BLIND" as const;
 const AUTO_REFRESH_INTERVAL = 60000;
 const MAX_REFRESH_ERRORS = 3;
 
+/**
+ * Get the color for stock difference indicator based on difference value
+ */
+const getDifferenceColor = (stockDifference: number | null): string => {
+  if (stockDifference === null) return theme.colors.muted;
+  if (stockDifference === 0) return theme.colors.success.main;
+  if (Math.abs(stockDifference) <= 5) return theme.colors.warning.main;
+  return theme.colors.danger;
+};
+
+/**
+ * Format stock difference with + prefix for positive values
+ */
+const formatDifferenceSign = (value: number): string => {
+  return value >= 0 ? '+' : '';
+};
+
 export default function ItemDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ barcode: string; sessionId: string }>();
@@ -79,6 +96,12 @@ export default function ItemDetailScreen() {
   const [refreshingStock, setRefreshingStock] = useState(false);
   const [item, setItem] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
+  const [erpStockInfo, setErpStockInfo] = useState<{
+    erpConnected: boolean;
+    erpStockQty: number | null;
+    mongoStockQty: number | null;
+    stockDifference: number | null;
+  } | null>(null);
 
   // Editable fields
   const [mrp, setMrp] = useState("");
@@ -184,38 +207,66 @@ export default function ItemDetailScreen() {
   }, [item?.item_code]);
 
   // ========================================================================
+  // Stock Refresh Helpers
+  // ========================================================================
+  const showRefreshSuccessAlert = useCallback((result: { 
+    stock_difference?: number | null; 
+    message?: string 
+  }) => {
+    const diffMsg = result.stock_difference !== null && result.stock_difference !== undefined
+      ? ` (ERP diff: ${formatDifferenceSign(result.stock_difference)}${result.stock_difference})`
+      : '';
+    const baseMsg = typeof result.message === 'string' ? result.message : "Stock refreshed successfully";
+    Alert.alert("Success", baseMsg + diffMsg);
+  }, []);
+
+  const handleRefreshSuccess = useCallback((result: any, silent: boolean) => {
+    setItem(result.item);
+    setErpStockInfo({
+      erpConnected: result.erp_connected ?? false,
+      erpStockQty: result.erp_stock_qty ?? null,
+      mongoStockQty: result.mongo_stock_qty ?? null,
+      stockDifference: result.stock_difference ?? null,
+    });
+    refreshErrorCountRef.current = 0;
+    
+    if (!silent && Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    if (!silent) {
+      showRefreshSuccessAlert(result);
+    }
+  }, [showRefreshSuccessAlert]);
+
+  const handleRefreshError = useCallback((error: any, silent: boolean) => {
+    refreshErrorCountRef.current++;
+    setErpStockInfo(null);
+    if (!silent) {
+      const errMsg = typeof error?.message === 'string' ? error.message : "Failed to refresh stock";
+      Alert.alert("Error", errMsg);
+    }
+  }, []);
+
+  // ========================================================================
   // Stock Refresh
   // ========================================================================
   const handleRefreshStock = useCallback(async (silent: boolean = false) => {
     const currentItemCode = itemCodeRef.current;
     if (!currentItemCode) return;
-
-    if (silent && refreshErrorCountRef.current >= MAX_REFRESH_ERRORS) {
-      return;
-    }
+    if (silent && refreshErrorCountRef.current >= MAX_REFRESH_ERRORS) return;
 
     setRefreshingStock(true);
     try {
       const result = await refreshItemStock(currentItemCode);
       if (result.success && result.item) {
-        setItem(result.item);
-        refreshErrorCountRef.current = 0;
-        if (!silent && Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-        if (!silent) {
-          Alert.alert("Success", result.message || "Stock refreshed successfully");
-        }
+        handleRefreshSuccess(result, silent);
       }
     } catch (error: any) {
-      refreshErrorCountRef.current++;
-      if (!silent) {
-        Alert.alert("Error", error.message || "Failed to refresh stock");
-      }
+      handleRefreshError(error, silent);
     } finally {
       setRefreshingStock(false);
     }
-  }, []);
+  }, [handleRefreshSuccess, handleRefreshError]);
 
   // Auto-refresh interval
   useEffect(() => {
@@ -538,6 +589,53 @@ export default function ItemDetailScreen() {
             onRefreshStock={() => handleRefreshStock(false)}
             animationDelay={100}
           />
+
+          {/* ERP Stock Comparison (real-time from SQL Server) */}
+          {!isBlindMode && erpStockInfo && erpStockInfo.erpConnected && erpStockInfo.stockDifference !== null && (
+            <Animated.View entering={FadeInDown.delay(150).springify()}>
+              <GlassCard
+                intensity={15}
+                padding={theme.spacing.sm}
+                borderRadius={theme.borderRadius.md}
+                style={{
+                  marginBottom: theme.spacing.md,
+                  borderLeftWidth: 4,
+                  borderLeftColor: getDifferenceColor(erpStockInfo.stockDifference),
+                }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View>
+                    <Text style={{ fontSize: 12, color: theme.colors.muted, marginBottom: 2 }}>
+                      ERP Real-time Stock
+                    </Text>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: theme.colors.text.primary }}>
+                      {erpStockInfo.erpStockQty ?? '-'}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 12, color: theme.colors.muted, marginBottom: 2 }}>
+                      Difference
+                    </Text>
+                    <Text style={{ 
+                      fontSize: 18, 
+                      fontWeight: '700', 
+                      color: getDifferenceColor(erpStockInfo.stockDifference),
+                    }}>
+                      {erpStockInfo.stockDifference >= 0 ? '+' : ''}{erpStockInfo.stockDifference}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={{ fontSize: 12, color: theme.colors.muted, marginBottom: 2 }}>
+                      Cached Stock
+                    </Text>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: theme.colors.text.secondary }}>
+                      {erpStockInfo.mongoStockQty ?? '-'}
+                    </Text>
+                  </View>
+                </View>
+              </GlassCard>
+            </Animated.View>
+          )}
 
           {/* Variance Stats (for non-blind mode) */}
           {!isBlindMode && (

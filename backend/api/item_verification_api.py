@@ -16,6 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 
 from backend.auth.dependencies import get_current_user_async as get_current_user
+from backend.api.count_schemas import SaveCountRequest, CountType
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,77 @@ def init_verification_api(database, cache_svc=None):
 
 verification_router = APIRouter(prefix="/api/v2/erp/items", tags=["Item Verification"])
 
+
+
+from backend.services.item_verification_service import ItemVerificationService
+
+# Error codes for structured responses
+class CountErrorCodes:
+    SERIAL_VALIDATION_FAILED = "SERIAL_VALIDATION_FAILED"
+    BUNDLE_VALIDATION_FAILED = "BUNDLE_VALIDATION_FAILED"
+    LAN_BLOCKED = "LAN_BLOCKED"
+    DEVICE_LIMIT_EXCEEDED = "DEVICE_LIMIT_EXCEEDED"
+    ATOMIC_COMMIT_FAILED = "ATOMIC_COMMIT_FAILED"
+
+
+@verification_router.post("/sessions/{session_id}/racks/{rack_no}/counts")
+async def save_count(
+    session_id: str,
+    rack_no: str,
+    payload: SaveCountRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Atomic Commit for Cycle Count.
+    Enforces LAN allowlist and Single Device Policy via Middleware.
+    """
+    if not db:
+        raise HTTPException(status_code=503, detail="Database not initialized")
+
+    service = ItemVerificationService(db)
+    
+    try:
+        txn_ref = await service.save_count_atomic(
+            session_id=session_id,
+            rack=rack_no,
+            request=payload,
+            user=current_user
+        )
+        
+        return {
+            "success": True, 
+            "message": "Count saved successfully",
+            "data": {
+                "txn_ref": txn_ref,
+                "item_id": payload.item_id,
+                "variance": payload.client_variance.variance
+            }
+        }
+    except ValueError as e:
+        error_msg = str(e)
+        error_code = CountErrorCodes.SERIAL_VALIDATION_FAILED
+        if "bundle" in error_msg.lower():
+            error_code = CountErrorCodes.BUNDLE_VALIDATION_FAILED
+        
+        logger.warning(f"Validation failed [{error_code}]: {e}")
+        raise HTTPException(
+            status_code=400, 
+            detail={
+                "error_code": error_code,
+                "message": error_msg,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+    except Exception as e:
+        logger.error(f"Save count failed: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail={
+                "error_code": CountErrorCodes.ATOMIC_COMMIT_FAILED,
+                "message": "Internal Server Error during atomic commit",
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
 
 def _regex_filter(value: Optional[str]) -> dict[str, Optional[str]]:
     if not value:

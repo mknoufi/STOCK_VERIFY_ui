@@ -2,7 +2,10 @@
   "expo": {
     "scheme": "stockverify",
     "ios": {
-      "bundleIdentifier": "com.anonymous.frontend"
+      "bundleIdentifier": "com.anonymous.frontend",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Enable FaceID for faster login access."
+      }
     },
     "android": {
       "package": "com.anonymous.frontend"

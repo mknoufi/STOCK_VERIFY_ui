@@ -9,3 +9,9 @@ export * from "./api";
 export * from "./user";
 export * from "./enrichment";
 export * from "./session";
+
+// Count API types (strict validated)
+export * from "./count";
+
+// Auto-generated OpenAPI types
+export type * from "./api-generated";

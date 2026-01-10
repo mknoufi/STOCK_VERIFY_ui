@@ -83,7 +83,25 @@ python-typecheck:
 	cd backend && mypy .
 
 # =============================================================================
-# 📦 NODE.JS FRONTEND
+# � OPENAPI CONTRACT
+# =============================================================================
+.PHONY: api-generate api-mock api-test
+
+api-generate:
+	@echo "Generating types from OpenAPI spec..."
+	cd frontend && npx openapi-typescript ../docs/openapi/stock-verify-api.yaml -o src/types/api-generated.ts
+	python -m datamodel_codegen --input docs/openapi/stock-verify-api.yaml --output backend/models/generated.py --input-file-type openapi
+
+api-mock:
+	@echo "Starting mock API server on port 4010..."
+	cd frontend && npx prism mock ../docs/openapi/stock-verify-api.yaml -p 4010
+
+api-test:
+	@echo "Running contract tests against backend..."
+	python -m schemathesis run docs/openapi/stock-verify-api.yaml --base-url http://localhost:8001
+
+# =============================================================================
+# �📦 NODE.JS FRONTEND
 # =============================================================================
 .PHONY: node-ci node-test node-lint node-typecheck
 

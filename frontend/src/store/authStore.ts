@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { secureStorage } from "../services/storage/secureStorage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiClient from "../services/httpClient";
 import { useSettingsStore } from "./settingsStore";
 import { setUnauthorizedHandler } from "../services/authUnauthorizedHandler";
+import { BiometricAuthService } from "../services/biometricAuth";
 
 interface User {
   id: string;
@@ -19,6 +21,14 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialized: boolean;
+  isBiometricEnabled: boolean;
+  isBiometricSupported: boolean;
+  
+  checkBiometricSupport: () => Promise<void>;
+  enableBiometrics: (pin: string) => Promise<boolean>;
+  disableBiometrics: () => Promise<void>;
+  loginWithBiometrics: () => Promise<{ success: boolean; message?: string }>;
+
   login: (
     username: string,
     password: string,
@@ -36,12 +46,60 @@ export interface AuthState {
 const AUTH_STORAGE_KEY = "auth_user";
 const TOKEN_STORAGE_KEY = "auth_token";
 const REFRESH_TOKEN_STORAGE_KEY = "refresh_token";
+const BIOMETRIC_ENABLED_KEY = "biometric_enabled";
 
-export const useAuthStore = create<AuthState>((set) => ({
+const biometricService = BiometricAuthService.getInstance();
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
   isInitialized: false,
+  isBiometricEnabled: false,
+  isBiometricSupported: false,
+
+  checkBiometricSupport: async () => {
+    const hardware = await biometricService.checkHardwareAvailability();
+    const enrolled = await biometricService.checkBiometricsEnrolled();
+    const enabled = await AsyncStorage.getItem(BIOMETRIC_ENABLED_KEY);
+    
+    set({
+        isBiometricSupported: hardware && enrolled,
+        isBiometricEnabled: enabled === 'true' && hardware && enrolled
+    });
+  },
+
+  enableBiometrics: async (pin: string) => {
+      const success = await biometricService.savePinWithBiometrics(pin);
+      if (success) {
+          await AsyncStorage.setItem(BIOMETRIC_ENABLED_KEY, 'true');
+          set({ isBiometricEnabled: true });
+          return true;
+      }
+      return false;
+  },
+
+  disableBiometrics: async () => {
+      await biometricService.clearBiometricPin();
+      await AsyncStorage.removeItem(BIOMETRIC_ENABLED_KEY);
+      set({ isBiometricEnabled: false });
+  },
+
+  loginWithBiometrics: async () => {
+    set({ isLoading: true });
+    try {
+        const pin = await biometricService.getBiometricPin();
+        if (!pin) {
+            set({ isLoading: false });
+            return { success: false, message: "Biometric authentication failed or cancelled" };
+        }
+        // Proceed to login with retrieved PIN
+        return await get().loginWithPin(pin);
+    } catch (error) {
+        set({ isLoading: false });
+        return { success: false, message: "Biometric login error" };
+    }
+  },
 
   login: async (
     username: string,
@@ -207,6 +265,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   loadStoredAuth: async () => {
     console.log('🔐 [AUTH] Loading stored auth...');
     set({ isLoading: true });
+    
+    // Check biometrics on load
+    await get().checkBiometricSupport();
+
     try {
       const storedUser = await secureStorage.getItem(AUTH_STORAGE_KEY);
       console.log('🔐 [AUTH] Stored user retrieved:', !!storedUser);

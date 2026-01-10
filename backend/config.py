@@ -39,6 +39,9 @@ ROOT_DIR = Path(__file__).parent
 # Setup logger for configuration warnings
 logger = logging.getLogger(__name__)
 
+# Default MongoDB connection URL constant to avoid duplication
+DEFAULT_MONGO_URL = "mongodb://localhost:27017"
+
 
 class Settings(PydanticBaseSettings):
     """Application settings with validation"""
@@ -92,7 +95,7 @@ class Settings(PydanticBaseSettings):
     # Note: we support multiple common env var names for developer convenience:
     # - MONGO_URL (preferred)
     # - MONGODB_URI / MONGODB_URL (common in many deploy setups)
-    MONGO_URL: str = Field(default="mongodb://localhost:27017")
+    MONGO_URL: str = Field(default=DEFAULT_MONGO_URL)
     DB_NAME: str = "stock_verification"
 
     @validator("MONGO_URL", pre=True, always=True)
@@ -114,9 +117,9 @@ class Settings(PydanticBaseSettings):
 
         # 2) If still default, try auto-detection.
         if not v:
-            v = "mongodb://localhost:27017"
+            v = DEFAULT_MONGO_URL
 
-        if v == "mongodb://localhost:27017":
+        if v == DEFAULT_MONGO_URL:
             try:
                 from backend.utils.port_detector import PortDetector
 
@@ -348,9 +351,9 @@ except Exception as e:
                 os.getenv("MONGO_URL")
                 or os.getenv("MONGODB_URI")
                 or os.getenv("MONGODB_URL")
-                or "mongodb://localhost:27017"
+                or DEFAULT_MONGO_URL
             )
-            if mongo_url == "mongodb://localhost:27017":
+            if mongo_url == DEFAULT_MONGO_URL:
                 try:
                     from backend.utils.port_detector import PortDetector
 

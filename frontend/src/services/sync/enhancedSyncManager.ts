@@ -21,6 +21,7 @@ export interface SyncRecord {
   category?: string;
   subcategory?: string;
   item_condition?: string;
+  condition_details?: string;
   evidence_photos: string[];
   status: "partial" | "finalized";
   created_at: string;

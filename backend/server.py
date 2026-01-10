@@ -643,8 +643,8 @@ def _startup_connect_monitoring_service_safe() -> None:
 
 def _startup_init_domain_apis_safe() -> None:
     try:
-        init_erp_api(db, cache_service)
-        logger.info("✓ ERP API initialized")
+        init_erp_api(db, cache_service, sql_connector)
+        logger.info("✓ ERP API initialized with SQL connector")
     except Exception as e:
         logger.error(f"Failed to initialize ERP API: {str(e)}")
 

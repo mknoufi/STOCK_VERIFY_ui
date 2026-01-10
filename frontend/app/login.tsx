@@ -84,7 +84,14 @@ const STORAGE_KEYS = {
 export default function LoginScreen() {
   const { width, height } = useWindowDimensions();
   const responsive = getResponsiveSizes(width, height);
-  const { login, loginWithPin } = useAuthStore();
+  const { 
+    login, 
+    loginWithPin, 
+    loginWithBiometrics, 
+    isBiometricEnabled, 
+    isBiometricSupported, 
+    enableBiometrics 
+  } = useAuthStore();
   const { theme } = useThemeContext();
 
   // Login mode state (PIN is primary/default)
@@ -193,6 +200,27 @@ export default function LoginScreen() {
         triggerShake();
         setPin("");
         Alert.alert("Invalid PIN", result.message || "Please try again");
+      } else {
+        // Successful login
+        if (isBiometricSupported && !isBiometricEnabled) {
+          Alert.alert(
+            "Enable Biometrics",
+            "Would you like to enable FaceID/TouchID for faster login next time?",
+            [
+              {
+                text: "No Thanks",
+                style: "cancel",
+              },
+              {
+                text: "Enable",
+                onPress: async () => {
+                   await enableBiometrics(pinValue);
+                   Alert.alert("Success", "Biometrics enabled!");
+                },
+              },
+            ]
+          );
+        }
       }
     } catch {
       if (Platform.OS !== "web") {
@@ -204,6 +232,13 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBiometricLogin = async () => {
+      const result = await loginWithBiometrics();
+      if (!result.success) {
+          Alert.alert("Authentication Failed", result.message);
+      }
   };
 
   // Switch login mode
@@ -428,9 +463,29 @@ export default function LoginScreen() {
                             </TouchableOpacity>
                           ))}
                         </View>
-                        {/* Row 4: Empty, 0, Backspace */}
+                        {/* Row 4: Biometric, 0, Backspace */}
                         <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
-                          <View style={{ width: responsive.keypadButtonSize, height: responsive.keypadButtonSize }} />
+                          {isBiometricEnabled ? (
+                            <TouchableOpacity
+                              style={[styles.keypadButton, {
+                                width: responsive.keypadButtonSize,
+                                height: responsive.keypadButtonSize,
+                                borderRadius: responsive.keypadButtonSize / 2,
+                                backgroundColor: 'rgba(255,255,255,0.1)', // Subtle background
+                              }]}
+                              onPress={handleBiometricLogin}
+                              disabled={loading}
+                              activeOpacity={0.7}
+                            >
+                              <Ionicons
+                                name={Platform.OS === 'ios' ? "scan-outline" : "finger-print-outline"}
+                                size={Math.round(responsive.keypadButtonSize * 0.45)}
+                                color={modernColors.text.primary}
+                              />
+                            </TouchableOpacity>
+                          ) : (
+                             <View style={{ width: responsive.keypadButtonSize, height: responsive.keypadButtonSize }} />
+                          )}
                           <TouchableOpacity
                             style={[styles.keypadButton, {
                               width: responsive.keypadButtonSize,

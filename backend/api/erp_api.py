@@ -9,21 +9,102 @@ from backend.api.schemas import ERPItem
 from backend.auth.dependencies import get_current_user
 from backend.error_messages import get_error_message
 from backend.services.cache_service import CacheService
+from backend.sql_server_connector import SQLServerConnector
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+# Constants to avoid magic string duplication
+SERVICE_NOT_INITIALIZED_MSG = "Service not initialized"
+MONGO_REGEX_KEY = "$regex"
+MONGO_OPTIONS_KEY = "$options"
+MONGO_CASE_INSENSITIVE = "i"
+
 _db: Optional[AsyncIOMotorDatabase[Any]] = None
 _cache_service: Optional[CacheService] = None
+_sql_connector: Optional[SQLServerConnector] = None
+
+
+def _make_regex_match(pattern: str, case_insensitive: bool = True) -> dict:
+    """Create a MongoDB regex match pattern."""
+    result = {MONGO_REGEX_KEY: pattern}
+    if case_insensitive:
+        result[MONGO_OPTIONS_KEY] = MONGO_CASE_INSENSITIVE
+    return result
+
+
+def _make_exact_regex(value: str) -> dict:
+    """Create an exact match regex pattern (case-insensitive)."""
+    return _make_regex_match(f"^{re.escape(value)}$")
 
 
 def init_erp_api(
     db: AsyncIOMotorDatabase,
     cache_service: CacheService,
+    sql_connector: Optional[SQLServerConnector] = None,
 ):
-    global _db, _cache_service
+    global _db, _cache_service, _sql_connector
     _db = db
     _cache_service = cache_service
+    _sql_connector = sql_connector
+
+
+def _get_request_time(request: Request) -> Any:
+    state = getattr(request, "state", None)
+    return getattr(state, "request_time", None)
+
+
+async def _find_mongo_item_for_refresh(normalized_code: str) -> dict[str, Any] | None:
+    if _db is None:
+        return None
+
+    regex_match = _make_exact_regex(normalized_code)
+    return await _db.erp_items.find_one(
+        {
+            "$or": [
+                {"item_code": normalized_code},
+                {"item_code": regex_match},
+                {"barcode": normalized_code},
+                {"manual_barcode": normalized_code},
+            ]
+        }
+    )
+
+
+def _get_erp_barcode_for_refresh(mongo_item: dict[str, Any], normalized_code: str) -> str:
+    return mongo_item.get("barcode") or normalized_code
+
+
+async def _update_mongo_stock_from_erp(
+    mongo_item: dict[str, Any], *, erp_stock_qty: float, request: Request
+) -> None:
+    if _db is None:
+        return
+
+    await _db.erp_items.update_one(
+        {"_id": mongo_item["_id"]},
+        {
+            "$set": {
+                "stock_qty": erp_stock_qty,
+                "last_erp_sync": _get_request_time(request),
+            }
+        },
+    )
+
+
+async def _invalidate_item_cache_for_refresh(
+    normalized_code: str, mongo_item: dict[str, Any]
+) -> None:
+    if _cache_service is None:
+        return
+
+    await _cache_service.delete("items", normalized_code)
+    if mongo_item.get("barcode"):
+        await _cache_service.delete("items", mongo_item["barcode"])
+
+
+def _sql_connector_is_connected() -> bool:
+    return _sql_connector is not None and getattr(_sql_connector, "connection", None) is not None
 
 
 _ALPHANUMERIC_PATTERN = re.compile(r"^[A-Z0-9_\-]+$")
@@ -128,7 +209,7 @@ async def get_item_by_barcode(
     Get item details by barcode from MongoDB.
     """
     if _db is None or _cache_service is None:
-        raise HTTPException(status_code=503, detail="Service not initialized")
+        raise HTTPException(status_code=503, detail=SERVICE_NOT_INITIALIZED_MSG)
 
     # For barcode lookups, we only accept numeric barcodes with valid prefixes
     normalized_barcode = _normalize_barcode_input(barcode, allow_alphanumeric=False)
@@ -140,7 +221,7 @@ async def get_item_by_barcode(
         return ERPItem(**cached_item)
 
     # Fallback to MongoDB
-    regex_match = {"$regex": f"^{re.escape(normalized_barcode)}$", "$options": "i"}
+    regex_match = _make_exact_regex(normalized_barcode)
     item = await _db.erp_items.find_one(
         {
             "$or": [
@@ -179,34 +260,68 @@ async def refresh_item_stock(
     request: Request, item_code: str, current_user: dict = Depends(get_current_user)
 ):
     """
-    Refresh item stock from ERP and update MongoDB
-    (Now just returns the data from MongoDB as ERP is disabled)
+    Refresh item stock from ERP (SQL Server) and compare with MongoDB.
+    Returns real-time stock difference between ERP and cached MongoDB data.
     """
     if _db is None or _cache_service is None:
-        raise HTTPException(status_code=503, detail="Service not initialized")
+        raise HTTPException(status_code=503, detail=SERVICE_NOT_INITIALIZED_MSG)
 
     # For refresh-stock we accept both numeric barcodes and item codes
     # We disable strict numeric checks because item codes might be numeric but not follow barcode rules
     normalized_code = _normalize_barcode_input(item_code, strict_numeric=False)
 
-    regex_match = {"$regex": f"^{re.escape(normalized_code)}$", "$options": "i"}
-    item = await _db.erp_items.find_one(
-        {
-            "$or": [
-                {"item_code": normalized_code},
-                {"item_code": regex_match},
-                {"barcode": normalized_code},
-                {"manual_barcode": normalized_code},
-            ]
-        }
-    )
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
+    mongo_item = await _find_mongo_item_for_refresh(normalized_code)
+    if not mongo_item:
+        raise HTTPException(status_code=404, detail="Item not found in database")
+
+    # Try to get real-time stock from SQL Server (ERP)
+    erp_item = None
+    erp_connected = False
+    stock_difference = None
+    erp_stock_qty = None
+    mongo_stock_qty = mongo_item.get("stock_qty", 0) or 0
+
+    if _sql_connector_is_connected():
+        try:
+            erp_connected = True
+            barcode = _get_erp_barcode_for_refresh(mongo_item, normalized_code)
+            erp_item = _sql_connector.get_item_by_barcode(barcode)  # type: ignore[union-attr]
+
+            if erp_item:
+                erp_stock_qty = erp_item.get("stock_qty", 0) or 0
+                stock_difference = erp_stock_qty - mongo_stock_qty
+
+                await _update_mongo_stock_from_erp(
+                    mongo_item, erp_stock_qty=erp_stock_qty, request=request
+                )
+                await _invalidate_item_cache_for_refresh(normalized_code, mongo_item)
+
+                logger.info(
+                    f"Refreshed stock for {normalized_code}: "
+                    f"ERP={erp_stock_qty}, MongoDB={mongo_stock_qty}, diff={stock_difference}"
+                )
+        except Exception as e:
+            logger.warning(f"Failed to fetch from SQL Server: {str(e)}")
+            erp_connected = False
+
+    # Build response
+    response_item = ERPItem(**mongo_item)
+    if erp_item and erp_stock_qty is not None:
+        # Update response with fresh ERP stock
+        response_item = ERPItem(**{**mongo_item, "stock_qty": erp_stock_qty})
 
     return {
         "success": True,
-        "item": ERPItem(**item),
-        "message": "Stock from MongoDB (ERP connection is disabled)",
+        "item": response_item,
+        "erp_connected": erp_connected,
+        "erp_stock_qty": erp_stock_qty,
+        "mongo_stock_qty": mongo_stock_qty,
+        "stock_difference": stock_difference,
+        "message": (
+            f"Real-time ERP stock: {erp_stock_qty} (diff: {stock_difference:+d})"
+            if erp_connected and erp_stock_qty is not None
+            else "Stock from MongoDB (ERP connection unavailable)"
+        ),
     }
 
 
@@ -221,30 +336,31 @@ async def get_all_items(
     Get all items or search items from MongoDB
     """
     if _db is None:
-        raise HTTPException(status_code=503, detail="Service not initialized")
+        raise HTTPException(status_code=503, detail=SERVICE_NOT_INITIALIZED_MSG)
 
     # If search query provided, search items
     if search and search.strip():
         search_term = search.strip()
 
         # Search in MongoDB
+        search_regex = _make_regex_match(search_term)
         items_cursor = _db.erp_items.find(
             {
                 "$or": [
-                    {"item_name": {"$regex": search_term, "$options": "i"}},
-                    {"item_code": {"$regex": search_term, "$options": "i"}},
-                    {"barcode": {"$regex": search_term, "$options": "i"}},
-                    {"manual_barcode": {"$regex": search_term, "$options": "i"}},
+                    {"item_name": search_regex},
+                    {"item_code": search_regex},
+                    {"barcode": search_regex},
+                    {"manual_barcode": search_regex},
                 ]
             }
         )
         total = await _db.erp_items.count_documents(
             {
                 "$or": [
-                    {"item_name": {"$regex": search_term, "$options": "i"}},
-                    {"item_code": {"$regex": search_term, "$options": "i"}},
-                    {"barcode": {"$regex": search_term, "$options": "i"}},
-                    {"manual_barcode": {"$regex": search_term, "$options": "i"}},
+                    {"item_name": search_regex},
+                    {"item_code": search_regex},
+                    {"barcode": search_regex},
+                    {"manual_barcode": search_regex},
                 ]
             }
         )

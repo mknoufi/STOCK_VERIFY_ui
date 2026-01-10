@@ -433,11 +433,13 @@ async def search_items_in_erp(
             pass
 
     # Fallback: Search in MongoDB
+    from backend.utils.mongo_query import make_regex_match
+
     query = {
         "$or": [
-            {"item_name": {"$regex": search_term, "$options": "i"}},
-            {"item_code": {"$regex": search_term, "$options": "i"}},
-            {"barcode": {"$regex": search_term, "$options": "i"}},
+            {"item_name": make_regex_match(search_term)},
+            {"item_code": make_regex_match(search_term)},
+            {"barcode": make_regex_match(search_term)},
         ]
     }
     cursor = db.erp_items.find(query).limit(50)

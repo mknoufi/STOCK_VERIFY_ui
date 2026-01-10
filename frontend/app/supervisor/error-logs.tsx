@@ -83,14 +83,12 @@ export default function ErrorLogsScreen() {
     async (pageNum: number = 1) => {
       try {
         setLoading(pageNum === 1);
-        const response = await getErrorLogs(
-          pageNum,
-          20,
-          filters.severity || undefined,
-          undefined,
-          undefined,
-          filters.resolved,
-        );
+        const response = await getErrorLogs({
+          page: pageNum,
+          pageSize: 20,
+          severity: filters.severity || undefined,
+          resolved: filters.resolved,
+        });
         if (pageNum === 1) {
           setErrors(response.errors || []);
         } else {

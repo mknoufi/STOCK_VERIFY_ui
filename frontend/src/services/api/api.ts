@@ -62,7 +62,7 @@ export const createSession = async (
   params: string | { warehouse: string; type?: string },
 ) => {
   const warehouse = typeof params === "string" ? params : params.warehouse;
-  const sessionType = typeof params !== "string" ? params.type : undefined;
+  const sessionType = typeof params === "string" ? undefined : params.type;
 
   // Helper to create offline session - single source of truth
   const createOfflineSession = () => ({
@@ -247,125 +247,126 @@ export const getSession = async (sessionId: string) => {
   }
 };
 
+// === Rack Progress Helper Types and Functions ===
+type RackStats = {
+  counted: number;
+  uniqueItems: Set<string>;
+  totalQuantity: number;
+  lastUpdated: string;
+  hasDiscrepancies: boolean;
+};
+
+/**
+ * Process a count line to update rack statistics
+ */
+const processCountLineForRack = (
+  line: any,
+  rackStats: Record<string, RackStats>
+): void => {
+  const rack = line.rack_no || line.rack || line.rack_id || "Unknown";
+
+  rackStats[rack] ??= {
+    counted: 0,
+    uniqueItems: new Set(),
+    totalQuantity: 0,
+    lastUpdated: line.counted_at || new Date().toISOString(),
+    hasDiscrepancies: false,
+  };
+
+  const stats = rackStats[rack];
+
+  if (!stats.uniqueItems.has(line.item_code)) {
+    stats.uniqueItems.add(line.item_code);
+    stats.counted++;
+  }
+
+  stats.totalQuantity += line.counted_qty || 1;
+
+  if (line.variance && Math.abs(line.variance) > 0) {
+    stats.hasDiscrepancies = true;
+  }
+
+  const lineTime = line.counted_at;
+  if (lineTime && lineTime > stats.lastUpdated) {
+    stats.lastUpdated = lineTime;
+  }
+};
+
+/**
+ * Build rack progress array from statistics
+ */
+const buildRackProgressArray = (rackStats: Record<string, RackStats>) => {
+  return Object.entries(rackStats)
+    .filter(([rack]) => rack !== "Unknown")
+    .map(([rack, stats]) => ({
+      rack,
+      total: null,
+      counted: stats.counted,
+      counted_quantity: stats.totalQuantity,
+      percentage: null,
+      offline: true,
+      last_updated: stats.lastUpdated,
+      has_discrepancies: stats.hasDiscrepancies,
+      status: stats.hasDiscrepancies ? "discrepancies" : "counting",
+      estimated_completion: null,
+    }))
+    .sort((a, b) => a.rack.localeCompare(b.rack));
+};
+
+/**
+ * Build offline rack progress response
+ */
+const buildOfflineRackProgressResponse = (
+  cachedLines: any[]
+) => {
+  if (cachedLines.length === 0) {
+    return {
+      data: [],
+      message: "Offline mode - no cached count data available for this session",
+      offline: true,
+    };
+  }
+
+  const rackStats: Record<string, RackStats> = {};
+
+  for (const line of cachedLines) {
+    processCountLineForRack(line, rackStats);
+  }
+
+  const rackProgress = buildRackProgressArray(rackStats);
+
+  const totalItems = rackProgress.reduce((sum, rack) => sum + rack.counted, 0);
+  const totalQuantity = rackProgress.reduce((sum, rack) => sum + rack.counted_quantity, 0);
+  const racksWithDiscrepancies = rackProgress.filter((r) => r.has_discrepancies).length;
+
+  const baseMessage = `Offline mode - ${rackProgress.length} racks with ${totalItems} counted items (${totalQuantity} total quantity)`;
+  const discrepancyMessage = racksWithDiscrepancies > 0 
+    ? `, ${racksWithDiscrepancies} racks with discrepancies` 
+    : "";
+
+  return {
+    data: rackProgress,
+    message: baseMessage + discrepancyMessage,
+    offline: true,
+    summary: {
+      total_racks: rackProgress.length,
+      total_counted_items: totalItems,
+      total_counted_quantity: totalQuantity,
+      racks_with_discrepancies: racksWithDiscrepancies,
+      last_sync: new Date().toISOString(),
+    },
+  };
+};
+
 // Get Rack Progress
 export const getRackProgress = async (sessionId: string) => {
   try {
     if (!isOnline()) {
-      // Offline: Calculate rack progress from cached count lines
-      // Implementation: Provides meaningful progress data using available cached information
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
-
-      if (cachedLines.length === 0) {
-        return {
-          data: [],
-          message:
-            "Offline mode - no cached count data available for this session",
-          offline: true,
-        };
-      }
-
-      // Group counted items by rack with enhanced calculation
-      const rackStats: Record<
-        string,
-        {
-          counted: number;
-          uniqueItems: Set<string>;
-          totalQuantity: number;
-          lastUpdated: string;
-          hasDiscrepancies: boolean;
-        }
-      > = {};
-
-      for (const line of cachedLines) {
-        // Extract rack information from count line data
-        const rack =
-          line.rack_no ||
-          line.rack ||
-          line.rack_id ||
-          "Unknown";
-
-        // Create stats object if it doesn't exist
-        let stats = rackStats[rack];
-        if (!stats) {
-          stats = {
-            counted: 0,
-            uniqueItems: new Set(),
-            totalQuantity: 0,
-            lastUpdated: line.counted_at || new Date().toISOString(),
-            hasDiscrepancies: false,
-          };
-          rackStats[rack] = stats;
-        }
-
-        // Track unique items and quantities
-        if (!stats.uniqueItems.has(line.item_code)) {
-          stats.uniqueItems.add(line.item_code);
-          stats.counted++;
-        }
-
-        // Accumulate total quantity counted
-        stats.totalQuantity += line.counted_qty || 1;
-
-        // Check for discrepancies (if variance data is available)
-        if (line.variance && Math.abs(line.variance) > 0) {
-          stats.hasDiscrepancies = true;
-        }
-
-        // Update last modified time
-        const lineTime = line.counted_at;
-        if (lineTime && lineTime > stats.lastUpdated) {
-          stats.lastUpdated = lineTime;
-        }
-      }
-
-      // Build comprehensive rack progress array
-      const rackProgress = Object.entries(rackStats)
-        .filter(([rack]) => rack !== "Unknown")
-        .map(([rack, stats]) => ({
-          rack,
-          total: null, // Unknown offline - would require full ERP data cache
-          counted: stats.counted,
-          counted_quantity: stats.totalQuantity,
-          percentage: null, // Cannot calculate without total items per rack
-          offline: true,
-          last_updated: stats.lastUpdated,
-          has_discrepancies: stats.hasDiscrepancies,
-          status: stats.hasDiscrepancies ? "discrepancies" : "counting",
-          estimated_completion: null, // Would need historical data for estimation
-        }))
-        .sort((a, b) => a.rack.localeCompare(b.rack));
-
-      // Provide detailed offline status information
-      const totalItems = rackProgress.reduce(
-        (sum, rack) => sum + rack.counted,
-        0,
-      );
-      const totalQuantity = rackProgress.reduce(
-        (sum, rack) => sum + rack.counted_quantity,
-        0,
-      );
-      const racksWithDiscrepancies = rackProgress.filter(
-        (r) => r.has_discrepancies,
-      ).length;
-
-      return {
-        data: rackProgress,
-        message: `Offline mode - ${rackProgress.length} racks with ${totalItems} counted items (${totalQuantity} total quantity)${racksWithDiscrepancies > 0 ? `, ${racksWithDiscrepancies} racks with discrepancies` : ""}`,
-        offline: true,
-        summary: {
-          total_racks: rackProgress.length,
-          total_counted_items: totalItems,
-          total_counted_quantity: totalQuantity,
-          racks_with_discrepancies: racksWithDiscrepancies,
-          last_sync: new Date().toISOString(),
-        },
-      };
+      return buildOfflineRackProgressResponse(cachedLines);
     }
-    // Note: The backend response wrapper puts the actual array in data.data
-    const response = await api.get(
-      `/api/v2/sessions/${sessionId}/rack-progress`,
-    );
-    // Return just the data part which is the array of racks
+
+    const response = await api.get(`/api/v2/sessions/${sessionId}/rack-progress`);
     return response.data;
   } catch (error) {
     __DEV__ && console.error("Error getting rack progress:", error);
@@ -429,10 +430,126 @@ export const getSessionsAnalytics = async () => {
  * @param barcode Barcode string scanned/entered
  * @param retryCount Number of retries for transient failures
  */
+
+type ItemWithSourceMeta = Item & {
+  _source?: DataSource;
+  _cachedAt?: string;
+  _stale?: boolean;
+  _degraded?: boolean;
+};
+
+const mapCachedItemToItem = (cached: any): ItemWithSourceMeta => {
+  const stale = isCacheStale(cached.cached_at);
+  const stockValue = cached.current_stock ?? cached.stock_qty ?? 0;
+  return {
+    id: cached.item_code,
+    name: cached.item_name,
+    item_code: cached.item_code,
+    barcode: cached.barcode,
+    item_name: cached.item_name,
+    description: cached.description,
+    stock_qty: stockValue,
+    current_stock: stockValue,
+    uom_name: cached.uom_name ?? cached.uom,
+    mrp: cached.mrp,
+    sales_price: cached.sales_price,
+    category: cached.category,
+    subcategory: cached.subcategory,
+    _source: 'cache',
+    _cachedAt: cached.cached_at,
+    _stale: stale,
+  };
+};
+
+const normalizeApiItemToFrontendItem = (itemData: any): ItemWithSourceMeta => {
+  const displayName =
+    itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
+
+  const stockQty = itemData.stock_qty ?? itemData.current_stock ?? 0;
+
+  return {
+    id: itemData.id || itemData._id || itemData.item_code,
+    name: itemData.name || displayName,
+    item_code: itemData.item_code,
+    barcode: itemData.barcode,
+    item_name: itemData.item_name || displayName,
+    uom_name: itemData.uom_name ?? itemData.uom ?? itemData.uom_code,
+    uom: itemData.uom_name ?? itemData.uom ?? itemData.uom_code,
+    sales_price:
+      itemData.sales_price ?? itemData.sale_price ?? itemData.standard_rate,
+    sale_price: itemData.sale_price ?? itemData.sales_price,
+    mrp: itemData.mrp,
+    category: itemData.category,
+    subcategory: itemData.subcategory,
+    warehouse: itemData.warehouse,
+    stock_qty: stockQty,
+    current_stock: stockQty,
+    batch_id: itemData.batch_id,
+    manual_barcode: itemData.manual_barcode,
+    unit2_barcode: itemData.unit2_barcode,
+    unit_m_barcode: itemData.unit_m_barcode,
+    _source: 'api',
+  };
+};
+
+const cacheItemBestEffort = async (normalizedItem: ItemWithSourceMeta) => {
+  try {
+    await cacheItem({
+      item_code: normalizedItem.item_code,
+      barcode: normalizedItem.barcode,
+      item_name:
+        normalizedItem.item_name ||
+        normalizedItem.name ||
+        normalizedItem.item_code ||
+        '',
+      description: (normalizedItem as any).description,
+      uom: normalizedItem.uom ??
+        (normalizedItem as any).uom_code ??
+        normalizedItem.uom_name,
+      uom_name: normalizedItem.uom_name,
+      mrp: normalizedItem.mrp,
+      sales_price: normalizedItem.sales_price,
+      sale_price: normalizedItem.sale_price ?? normalizedItem.sales_price,
+      category: normalizedItem.category,
+      subcategory: normalizedItem.subcategory,
+      warehouse: normalizedItem.warehouse,
+      manual_barcode: (normalizedItem as any).manual_barcode,
+      unit2_barcode: (normalizedItem as any).unit2_barcode,
+      unit_m_barcode: (normalizedItem as any).unit_m_barcode,
+      batch_id: (normalizedItem as any).batch_id,
+      current_stock: normalizedItem.current_stock || normalizedItem.stock_qty,
+    });
+  } catch (cacheError) {
+    log.warn('Failed to cache item', {
+      error:
+        cacheError instanceof Error ? cacheError.message : String(cacheError),
+    });
+  }
+};
+
+const getItemByBarcodeFromCache = async (
+  trimmedBarcode: string,
+  { degraded }: { degraded: boolean },
+): Promise<ItemWithSourceMeta> => {
+  const items = await searchItemsInCache(trimmedBarcode);
+  if (items.length > 0 && items[0]) {
+    const cached = mapCachedItemToItem(items[0]);
+    return degraded ? ({ ...cached, _degraded: true } as any) : cached;
+  }
+
+  throw new AppError({
+    code: 'ITEM_NOT_FOUND',
+    severity: 'USER',
+    message: 'Item not found in cache',
+    userMessage: `Barcode ${trimmedBarcode} not found. Please try again when online.`,
+    context: { barcode: trimmedBarcode },
+  });
+};
+
 export const getItemByBarcode = async (
   barcode: string,
   retryCount: number = 3,
-): Promise<Item & { _source?: DataSource; _cachedAt?: string; _stale?: boolean }> => {
+): Promise<ItemWithSourceMeta> => {
   // Validate and normalize barcode before making API call
   const validation = validateBarcode(barcode);
   if (!validation.valid || !validation.value) {
@@ -450,46 +567,28 @@ export const getItemByBarcode = async (
 
   log.debug(`Looking up barcode: ${trimmedBarcode}`, { original: barcode });
 
-  // Helper to return cached item with source metadata
-  const returnCachedItem = (cached: any): Item & { _source: DataSource; _cachedAt: string; _stale: boolean } => {
-    const stale = isCacheStale(cached.cached_at);
-    const stockValue = cached.current_stock ?? cached.stock_qty ?? 0;
-    return {
-      id: cached.item_code,
-      name: cached.item_name,
-      item_code: cached.item_code,
-      barcode: cached.barcode,
-      item_name: cached.item_name,
-      description: cached.description,
-      stock_qty: stockValue,
-      current_stock: stockValue, // Also set current_stock for item-detail.tsx compatibility
-      uom_name: cached.uom_name ?? cached.uom,
-      mrp: cached.mrp,
-      sales_price: cached.sales_price,
-      category: cached.category,
-      subcategory: cached.subcategory,
-      // Source metadata
-      _source: 'cache',
-      _cachedAt: cached.cached_at,
-      _stale: stale,
-    };
-  };
-
   // Check if offline first - only use cache if truly offline
   if (!isOnline()) {
     log.debug("Offline mode - searching cache");
-    const items = await searchItemsInCache(trimmedBarcode);
-    if (items.length > 0 && items[0]) {
-      log.debug("Found in cache", { itemCode: items[0].item_code });
-      return returnCachedItem(items[0]);
+    try {
+      const cached = await getItemByBarcodeFromCache(trimmedBarcode, {
+        degraded: false,
+      });
+      log.debug('Found in cache', { itemCode: cached.item_code });
+      return cached;
+    } catch (cacheError) {
+      if (cacheError instanceof AppError) {
+        throw new AppError({
+          code: 'ITEM_CACHE_MISS',
+          severity: 'USER',
+          message: `Item not found in offline cache: ${trimmedBarcode}`,
+          userMessage:
+            'Item not found in offline cache. Connect to internet to search.',
+          context: { barcode: trimmedBarcode },
+        });
+      }
+      throw cacheError;
     }
-    throw new AppError({
-      code: 'ITEM_CACHE_MISS',
-      severity: 'USER',
-      message: `Item not found in offline cache: ${trimmedBarcode}`,
-      userMessage: 'Item not found in offline cache. Connect to internet to search.',
-      context: { barcode: trimmedBarcode },
-    });
   }
 
   // Online - try API first, then cache as fallback
@@ -518,11 +617,8 @@ export const getItemByBarcode = async (
       },
     );
 
-    // Handle v2 response format { item: ..., metadata: ... }
     const itemData = response.data.item || response.data;
-
-    // Check if we actually got an item
-    if (!itemData || !itemData.item_code) {
+    if (!itemData?.item_code) {
       throw new AppError({
         code: 'ITEM_NOT_FOUND',
         severity: 'USER',
@@ -532,66 +628,12 @@ export const getItemByBarcode = async (
       });
     }
 
-    // Normalize backend fields to the canonical frontend Item interface.
-    const displayName =
-      itemData.item_name || itemData.category || `Item ${itemData.item_code}`;
-
-    // Fix: Use proper fallback chain without redundancy
-    const stockQty = itemData.stock_qty ?? itemData.current_stock ?? 0;
-
-    const normalizedItem: Item & { _source: DataSource } = {
-      id: itemData.id || itemData._id || itemData.item_code,
-      name: itemData.name || displayName,
-      item_code: itemData.item_code,
-      barcode: itemData.barcode,
-      item_name: itemData.item_name || displayName,
-      uom_name: itemData.uom_name ?? itemData.uom ?? itemData.uom_code,
-      uom: itemData.uom_name ?? itemData.uom ?? itemData.uom_code,
-      sales_price: itemData.sales_price ?? itemData.sale_price ?? itemData.standard_rate,
-      sale_price: itemData.sale_price ?? itemData.sales_price,
-      mrp: itemData.mrp,
-      category: itemData.category,
-      subcategory: itemData.subcategory,
-      warehouse: itemData.warehouse,
-      stock_qty: stockQty,
-      current_stock: stockQty, // Also set current_stock for item-detail.tsx compatibility
-      batch_id: itemData.batch_id,
-      manual_barcode: itemData.manual_barcode,
-      unit2_barcode: itemData.unit2_barcode,
-      unit_m_barcode: itemData.unit_m_barcode,
-      // Source metadata
-      _source: 'api',
-    };
+    const normalizedItem = normalizeApiItemToFrontendItem(itemData);
 
     log.debug("Found via API", { itemCode: normalizedItem.item_code });
 
 
-    // Cache the item for future offline use
-    try {
-      await cacheItem({
-        item_code: normalizedItem.item_code,
-        barcode: normalizedItem.barcode,
-        item_name: normalizedItem.item_name || normalizedItem.name || normalizedItem.item_code || '',
-        description: (normalizedItem as any).description,
-        uom: normalizedItem.uom ?? normalizedItem.uom_code ?? normalizedItem.uom_name,
-        uom_name: normalizedItem.uom_name,
-        mrp: normalizedItem.mrp,
-        sales_price: normalizedItem.sales_price,
-        sale_price: normalizedItem.sale_price ?? normalizedItem.sales_price,
-        category: normalizedItem.category,
-        subcategory: normalizedItem.subcategory,
-        warehouse: normalizedItem.warehouse,
-        manual_barcode: normalizedItem.manual_barcode,
-        unit2_barcode: normalizedItem.unit2_barcode,
-        unit_m_barcode: normalizedItem.unit_m_barcode,
-        batch_id: normalizedItem.batch_id,
-        current_stock:
-          normalizedItem.current_stock || normalizedItem.stock_qty,
-      });
-    } catch (cacheError) {
-      log.warn("Failed to cache item", { error: cacheError instanceof Error ? cacheError.message : String(cacheError) });
-      // Don't fail the whole operation for cache errors
-    }
+    await cacheItemBestEffort(normalizedItem);
 
     return normalizedItem;
   } catch (apiError: any) {
@@ -601,24 +643,11 @@ export const getItemByBarcode = async (
     // Only fallback to cache if API fails (degraded mode)
     log.debug("API failed, trying cache fallback");
     try {
-      const items = await searchItemsInCache(trimmedBarcode);
-      if (items.length > 0 && items[0]) {
-        log.debug("Found in cache fallback", { itemCode: items[0].item_code });
-        // Return with degraded metadata to indicate stale data
-        return {
-          ...returnCachedItem(items[0]),
-          _source: 'cache' as DataSource,
-          _degraded: true, // API failed, cache fallback
-        } as any;
-      }
-      // Cache is empty too
-      throw new AppError({
-        code: 'ITEM_NOT_FOUND',
-        severity: 'USER',
-        message: "Item not found in cache",
-        userMessage: `Barcode ${trimmedBarcode} not found. Please try again when online.`,
-        context: { barcode: trimmedBarcode },
+      const cached = await getItemByBarcodeFromCache(trimmedBarcode, {
+        degraded: true,
       });
+      log.debug('Found in cache fallback', { itemCode: cached.item_code });
+      return cached;
     } catch (cacheError: any) {
       // If it's already an AppError, just rethrow
       if (cacheError instanceof AppError) {
@@ -722,7 +751,7 @@ export const searchItems = async (query: string): Promise<(Item & { _source?: Da
     // Cache the items
     for (const item of mappedItems) {
       await cacheItem({
-        item_code: item.item_code!,
+        item_code: item.item_code,
         barcode: item.barcode,
         item_name: item.item_name || item.name,
         description: (item as any).description,
@@ -850,7 +879,7 @@ export const searchItemsOptimized = async (
     // Cache top items for offline access
     for (const item of mappedItems.slice(0, 10)) {
       await cacheItem({
-        item_code: item.item_code!,
+        item_code: item.item_code,
         barcode: item.barcode,
         item_name: item.item_name || item.name,
         description: (item as any).description,
@@ -1028,7 +1057,7 @@ export const identifyItem = async (imageUri: string): Promise<Item[]> => {
  * Create a count line with offline fallback.
  * Uses createOfflineCountLine helper for consistent offline object creation.
  */
-export const createCountLine = async (countData: CreateCountLinePayload): Promise<any & { _source?: DataSource; _offline?: boolean }> => {
+export const createCountLine = async (countData: CreateCountLinePayload): Promise<Record<string, unknown> & { _source?: DataSource; _offline?: boolean }> => {
   // Helper to resolve item name from cache
   const resolveItemName = async (): Promise<string> => {
     try {
@@ -1095,7 +1124,7 @@ export const createCountLine = async (countData: CreateCountLinePayload): Promis
       _source: 'local' as DataSource,
       _offline: true,
       _degraded: true, // API failed, fallback
-    } as any;
+    };
   }
 };
 
@@ -1146,9 +1175,9 @@ export const getCountLines = async (
       const cachedLines = await getCountLinesBySessionFromCache(sessionId);
 
       // Filter by verified status if provided
-      const filteredLines = verified !== undefined
-        ? cachedLines.filter((line) => line.verified === verified)
-        : cachedLines;
+      const filteredLines = verified === undefined
+        ? cachedLines
+        : cachedLines.filter((line) => line.verified === verified);
 
       return paginateItems(filteredLines, page, pageSize, 'cache', true);
     }
@@ -1185,9 +1214,9 @@ export const getCountLines = async (
     // Fallback to cache with proper pagination
     const cachedLines = await getCountLinesBySessionFromCache(sessionId);
 
-    const filteredLines = verified !== undefined
-      ? cachedLines.filter((line) => line.verified === verified)
-      : cachedLines;
+    const filteredLines = verified === undefined
+      ? cachedLines
+      : cachedLines.filter((line) => line.verified === verified);
 
     return {
       ...paginateItems(filteredLines, page, pageSize, 'cache', true),
@@ -1250,11 +1279,7 @@ export const addQuantityToCountLine = async (
 export const getVarianceReasons = async () => {
   const response = await api.get("/api/variance-reasons");
   // Handle wrapped response format
-  if (
-    response.data &&
-    response.data.reasons &&
-    Array.isArray(response.data.reasons)
-  ) {
+  if (Array.isArray(response.data?.reasons)) {
     return response.data.reasons.map((r: Record<string, unknown>) => ({
       ...r,
       code: r.id || r.code,
@@ -1563,17 +1588,30 @@ export const getActivityStats = async (
   }
 };
 
-// Error Log API
-export const getErrorLogs = async (
-  page: number = 1,
-  pageSize: number = 50,
-  severity?: string,
-  errorType?: string,
-  endpoint?: string,
-  resolved?: boolean,
-  startDate?: string,
-  endDate?: string,
-) => {
+// Error Log API - Options interface to reduce parameter count
+interface GetErrorLogsOptions {
+  page?: number;
+  pageSize?: number;
+  severity?: string;
+  errorType?: string;
+  endpoint?: string;
+  resolved?: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export const getErrorLogs = async (options: GetErrorLogsOptions = {}) => {
+  const {
+    page = 1,
+    pageSize = 50,
+    severity,
+    errorType,
+    endpoint,
+    resolved,
+    startDate,
+    endDate,
+  } = options;
+
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -2809,8 +2847,6 @@ export const diagnoseError = async (errorInfo: {
   }
 };
 
-export default api;
-
 // Batch sync offline queue
 export const syncBatch = async (operations: Record<string, unknown>[]) => {
   try {
@@ -2859,3 +2895,6 @@ export const getWarehouses = async (zone?: string) => {
     throw error;
   }
 };
+
+// Export the axios instance as default
+export default api;

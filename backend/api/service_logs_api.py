@@ -35,9 +35,13 @@ def require_admin(current_user: dict = Depends(get_current_user)):
         user_role = getattr(current_user, "role", None)
 
     if user_role != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
     return (
-        current_user if isinstance(current_user, dict) else {"role": "admin", "username": "admin"}
+        current_user
+        if isinstance(current_user, dict)
+        else {"role": "admin", "username": "admin"}
     )
 
 

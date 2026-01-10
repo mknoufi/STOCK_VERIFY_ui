@@ -55,7 +55,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 ),
             ),
             # Referrer Policy
-            "Referrer-Policy": options.get("REFERRER_POLICY", "strict-origin-when-cross-origin"),
+            "Referrer-Policy": options.get(
+                "REFERRER_POLICY", "strict-origin-when-cross-origin"
+            ),
             # Permissions Policy (formerly Feature Policy)
             "Permissions-Policy": options.get(
                 "PERMISSIONS_POLICY", "geolocation=(), microphone=(), camera=()"
@@ -70,7 +72,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "X-Powered-By": None,  # Remove default X-Powered-By
             # Additional security headers
             "X-Permitted-Cross-Domain-Policies": "all",  # Allow cross-domain for dev
-            "Cross-Origin-Embedder-Policy": options.get("COEP", "unsafe-none"),  # Relaxed for dev
+            "Cross-Origin-Embedder-Policy": options.get(
+                "COEP", "unsafe-none"
+            ),  # Relaxed for dev
             "Cross-Origin-Opener-Policy": options.get(
                 "COOP", "same-origin-allow-popups"
             ),  # Allow popups

@@ -66,12 +66,18 @@ class AsyncExecutor:
                 return Result.success(result)
 
             except TimeoutError:
-                last_error = TimeoutError(f"{operation_name} timed out after {self.timeout}s")
-                logger.warning(f"{operation_name} attempt {attempt + 1} failed: timeout")
+                last_error = TimeoutError(
+                    f"{operation_name} timed out after {self.timeout}s"
+                )
+                logger.warning(
+                    f"{operation_name} attempt {attempt + 1} failed: timeout"
+                )
 
             except Exception as e:
                 last_error = e
-                logger.warning(f"{operation_name} attempt {attempt + 1} failed: {str(e)}")
+                logger.warning(
+                    f"{operation_name} attempt {attempt + 1} failed: {str(e)}"
+                )
 
                 # Record failure for circuit breaker
                 self._record_failure(operation_name)
@@ -154,7 +160,9 @@ _async_executor = AsyncExecutor(
 )
 
 
-def with_async_executor(operation_name: Optional[str] = None, timeout: Optional[float] = None):
+def with_async_executor(
+    operation_name: Optional[str] = None, timeout: Optional[float] = None
+):
     """
     Decorator for automatic async execution with retry and error handling
     """

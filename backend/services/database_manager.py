@@ -156,7 +156,9 @@ class DatabaseManager:
             cursor.execute("SELECT COUNT(*) FROM dbo.Products WHERE IsActive = 1")
             active_products = cursor.fetchone()[0]
 
-            cursor.execute("SELECT COUNT(*) FROM dbo.ProductBatches WHERE AutoBarcode IS NOT NULL")
+            cursor.execute(
+                "SELECT COUNT(*) FROM dbo.ProductBatches WHERE AutoBarcode IS NOT NULL"
+            )
             items_with_barcodes = cursor.fetchone()[0]
 
             cursor.close()
@@ -202,7 +204,11 @@ class DatabaseManager:
             ) * 100
 
             status = (
-                "healthy" if difference < 100 else "degraded" if difference < 500 else "critical"
+                "healthy"
+                if difference < 100
+                else "degraded"
+                if difference < 500
+                else "critical"
             )
 
             return {
@@ -227,9 +233,9 @@ class DatabaseManager:
             mongo_query_time = (time.time() - mongo_start) * 1000
 
             # Index usage stats
-            index_stats = await self.mongo_db.erp_items.aggregate([{"$indexStats": {}}]).to_list(
-                None
-            )
+            index_stats = await self.mongo_db.erp_items.aggregate(
+                [{"$indexStats": {}}]
+            ).to_list(None)
 
             return {
                 "mongodb": {
@@ -238,7 +244,9 @@ class DatabaseManager:
                     "sample_item_found": sample_item is not None,
                 },
                 "sql_server": {
-                    "connection_pool_size": getattr(self.sql_connector, "_pool_size", 1),
+                    "connection_pool_size": getattr(
+                        self.sql_connector, "_pool_size", 1
+                    ),
                     "active_connections": 1,  # Basic connection
                 },
             }
@@ -256,7 +264,9 @@ class DatabaseManager:
 
             for collection in collections:
                 try:
-                    indexes = await self.mongo_db[collection].list_indexes().to_list(None)
+                    indexes = (
+                        await self.mongo_db[collection].list_indexes().to_list(None)
+                    )
                     index_info[collection] = [idx["name"] for idx in indexes]
                 except Exception as e:
                     logger.error(f"Error listing indexes for {collection}: {e}")
@@ -298,9 +308,13 @@ class DatabaseManager:
             for collection in large_collections:
                 try:
                     await self.mongo_db.command("compact", collection)
-                    optimizations["maintenance_tasks"].append(f"Compacted collection {collection}")
+                    optimizations["maintenance_tasks"].append(
+                        f"Compacted collection {collection}"
+                    )
                 except Exception as e:
-                    logger.warning(f"Collection compaction failed for {collection}: {str(e)}")
+                    logger.warning(
+                        f"Collection compaction failed for {collection}: {str(e)}"
+                    )
 
             return optimizations
 
@@ -340,7 +354,9 @@ class DatabaseManager:
         # Check which indexes are missing
         for collection, indexes in recommended_indexes.items():
             try:
-                existing_indexes = await self.mongo_db[collection].list_indexes().to_list(None)
+                existing_indexes = (
+                    await self.mongo_db[collection].list_indexes().to_list(None)
+                )
                 existing_names = {idx["name"] for idx in existing_indexes}
 
                 missing_for_collection = []
@@ -509,7 +525,9 @@ class DatabaseManager:
                 step.get("status") == "success" for step in flow_test["steps"].values()
             )
 
-            flow_test["overall_status"] = "success" if all_success else "partial_failure"
+            flow_test["overall_status"] = (
+                "success" if all_success else "partial_failure"
+            )
 
         except Exception as e:
             logger.error(f"Data flow verification failed: {str(e)}")

@@ -113,12 +113,14 @@ class EnhancedSQLServerConnectionPool:
 
                 # Keep only last 100 connection times for average calculation
                 if len(self._metrics.connection_times) > 100:
-                    self._metrics.connection_times = self._metrics.connection_times[-100:]
+                    self._metrics.connection_times = self._metrics.connection_times[
+                        -100:
+                    ]
 
                 # Update average
-                self._metrics.average_connection_time = sum(self._metrics.connection_times) / len(
+                self._metrics.average_connection_time = sum(
                     self._metrics.connection_times
-                )
+                ) / len(self._metrics.connection_times)
 
                 # Set connection attributes for performance
                 conn.timeout = self.timeout
@@ -157,7 +159,9 @@ class EnhancedSQLServerConnectionPool:
                     self._metrics.last_error_time = datetime.now()
 
                 if attempt < self.retry_attempts:
-                    wait_time = self.retry_delay * (2 ** (attempt - 1))  # Exponential backoff
+                    wait_time = self.retry_delay * (
+                        2 ** (attempt - 1)
+                    )  # Exponential backoff
                     logger.warning(
                         f"Connection attempt {attempt} failed: {last_error}. Retrying in {wait_time:.2f}s..."
                     )
@@ -191,10 +195,14 @@ class EnhancedSQLServerConnectionPool:
                     self._created += 1
                     successful += 1
             except Exception as e:
-                logger.warning(f"Failed to pre-create connection {i + 1}/{initial_size}: {str(e)}")
+                logger.warning(
+                    f"Failed to pre-create connection {i + 1}/{initial_size}: {str(e)}"
+                )
 
         if successful > 0:
-            logger.info(f"Initialized connection pool with {successful}/{initial_size} connections")
+            logger.info(
+                f"Initialized connection pool with {successful}/{initial_size} connections"
+            )
         else:
             logger.error("Failed to initialize any connections in the pool")
 
@@ -209,11 +217,15 @@ class EnhancedSQLServerConnectionPool:
     def _update_health_status(self):
         """Update health status based on recent errors"""
         if self._metrics.last_error_time:
-            time_since_error = (datetime.now() - self._metrics.last_error_time).total_seconds()
+            time_since_error = (
+                datetime.now() - self._metrics.last_error_time
+            ).total_seconds()
 
             # If errors occurred recently, mark as degraded/unhealthy
             if time_since_error < 60:  # Last minute
-                error_rate = self._metrics.total_errors / max(self._metrics.total_created, 1)
+                error_rate = self._metrics.total_errors / max(
+                    self._metrics.total_created, 1
+                )
                 if error_rate > 0.5:  # More than 50% error rate
                     self._metrics.health_status = "unhealthy"
                 elif error_rate > 0.2:  # More than 20% error rate
@@ -375,9 +387,12 @@ class EnhancedSQLServerConnectionPool:
                 "total_errors": self._metrics.total_errors,
                 "total_timeouts": self._metrics.total_timeouts,
                 "total_retries": self._metrics.total_retries,
-                "average_connection_time": round(self._metrics.average_connection_time, 3),
+                "average_connection_time": round(
+                    self._metrics.average_connection_time, 3
+                ),
                 "error_rate": (
-                    (self._metrics.total_errors / max(self._metrics.total_created, 1)) * 100
+                    (self._metrics.total_errors / max(self._metrics.total_created, 1))
+                    * 100
                 ),
                 "last_error": self._metrics.last_error,
                 "last_error_time": (
@@ -421,7 +436,8 @@ class EnhancedSQLServerConnectionPool:
                 "available": self._pool.qsize(),
                 "checked_out": len(self._checked_out),
                 "utilization": (
-                    (len(self._checked_out) / (self.pool_size + self.max_overflow)) * 100
+                    (len(self._checked_out) / (self.pool_size + self.max_overflow))
+                    * 100
                     if (self.pool_size + self.max_overflow) > 0
                     else 0
                 ),
@@ -431,9 +447,15 @@ class EnhancedSQLServerConnectionPool:
                     "total_errors": self._metrics.total_errors,
                     "total_timeouts": self._metrics.total_timeouts,
                     "total_retries": self._metrics.total_retries,
-                    "average_connection_time": round(self._metrics.average_connection_time, 3),
+                    "average_connection_time": round(
+                        self._metrics.average_connection_time, 3
+                    ),
                     "error_rate": (
-                        (self._metrics.total_errors / max(self._metrics.total_created, 1)) * 100
+                        (
+                            self._metrics.total_errors
+                            / max(self._metrics.total_created, 1)
+                        )
+                        * 100
                     ),
                 },
                 "health_status": self._metrics.health_status,

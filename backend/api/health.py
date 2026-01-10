@@ -205,7 +205,11 @@ def _gather_system_resources() -> dict[str, Any]:
             "total_gb": round(disk_total_gb, 2),
             "used_percent": round(disk_percent, 2),
             "status": (
-                "healthy" if disk_percent < 90 else "warning" if disk_percent < 95 else "critical"
+                "healthy"
+                if disk_percent < 90
+                else "warning"
+                if disk_percent < 95
+                else "critical"
             ),
         },
     }
@@ -243,7 +247,9 @@ async def get_version() -> dict[str, Any]:
         from config import settings
 
         version_info = {
-            "version": getattr(app, "version", getattr(settings, "APP_VERSION", "1.0.0")),
+            "version": getattr(
+                app, "version", getattr(settings, "APP_VERSION", "1.0.0")
+            ),
             "name": getattr(settings, "APP_NAME", "Stock Count API"),
             "environment": getattr(
                 settings, "ENVIRONMENT", os.getenv("ENVIRONMENT", "development")
@@ -495,7 +501,9 @@ async def check_version(
         from backend.server import app
         from config import settings
 
-        current_version = getattr(app, "version", getattr(settings, "APP_VERSION", "1.0.0"))
+        current_version = getattr(
+            app, "version", getattr(settings, "APP_VERSION", "1.0.0")
+        )
         min_version = getattr(settings, "MIN_CLIENT_VERSION", "1.0.0")
 
         result = _compare_versions(client_version, min_version, current_version)

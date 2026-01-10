@@ -67,7 +67,9 @@ def _safe_int(value: Any) -> Optional[int]:
 def require_admin(current_user: dict = Depends(get_current_user)):
     """Require admin role"""
     if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
     return current_user
 
 
@@ -154,7 +156,9 @@ async def _get_mongodb_status() -> ServiceStatus:
                 "status": "connected",
             }
     except Exception as e:
-        logger.warning(f"Direct MongoDB check failed, falling back to PortDetector: {e}")
+        logger.warning(
+            f"Direct MongoDB check failed, falling back to PortDetector: {e}"
+        )
 
     mongo_status = PortDetector.get_mongo_status()
     running_flag = mongo_status.get("is_running")
@@ -183,7 +187,9 @@ def _get_sql_server_status() -> ServiceStatus:
         "running": is_connected,
         "port": config.get("port"),
         "status": "connected" if is_connected else "disconnected",
-        "url": (f"{config.get('host')}:{config.get('port')}" if config.get("host") else None),
+        "url": (
+            f"{config.get('host')}:{config.get('port')}" if config.get("host") else None
+        ),
     }
 
 
@@ -247,7 +253,11 @@ def _collect_system_issues() -> list[dict[str, Any]]:
 
     # Add SQL Server check
     if not _test_sql_connection():
-        issues.append(_format_issue("sql_server", "SQL Server is not connected", severity="medium"))
+        issues.append(
+            _format_issue(
+                "sql_server", "SQL Server is not connected", severity="medium"
+            )
+        )
 
     return issues
 
@@ -807,7 +817,9 @@ async def update_sql_server_config(
         password = config.get("password")
 
         if not host or not database:
-            raise HTTPException(status_code=400, detail="Host and database are required")
+            raise HTTPException(
+                status_code=400, detail="Host and database are required"
+            )
 
         # Try to connect
         # connect() raises exception on failure
@@ -841,7 +853,9 @@ async def test_sql_server_connection(
             password = config.get("password")
 
             if not host or not database:
-                raise HTTPException(status_code=400, detail="Host and database are required")
+                raise HTTPException(
+                    status_code=400, detail="Host and database are required"
+                )
 
             # Try to connect
             sql_connector.connect(host, int(port), database, user, password)
@@ -851,7 +865,9 @@ async def test_sql_server_connection(
             success = sql_connector.test_connection()
             return {
                 "success": success,
-                "message": ("Connection is active" if success else "Connection is inactive"),
+                "message": (
+                    "Connection is active" if success else "Connection is inactive"
+                ),
             }
     except Exception as e:
         return {"success": False, "message": f"Connection failed: {str(e)}"}
@@ -863,7 +879,9 @@ async def get_system_health_score(current_user: dict = Depends(require_admin)):
     try:
         services_status = await get_services_status(current_user)
         services = services_status["data"]
-        base_score, running_critical, running_optional = _calculate_service_scores(services)
+        base_score, running_critical, running_optional = _calculate_service_scores(
+            services
+        )
 
         issues_data = await get_system_issues(current_user)
         issues_payload = issues_data.get("data", {})

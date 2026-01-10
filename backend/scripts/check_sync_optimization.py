@@ -34,7 +34,9 @@ def check_optimization():
 
         # 2. Check ModifiedDate for incremental sync
         print("\nChecking ModifiedDate...")
-        cursor.execute("SELECT COUNT(*) FROM ProductBatches WHERE ModifiedDate IS NOT NULL")
+        cursor.execute(
+            "SELECT COUNT(*) FROM ProductBatches WHERE ModifiedDate IS NOT NULL"
+        )
         count = cursor.fetchone()[0]
         print(f"Items with ModifiedDate: {count} / {row[2]}")
 

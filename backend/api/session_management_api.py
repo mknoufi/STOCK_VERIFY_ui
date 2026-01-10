@@ -98,7 +98,9 @@ async def get_sessions(
 
     # Get paginated sessions
     skip = (page - 1) * page_size
-    sessions_cursor = db.sessions.find(query).sort("started_at", -1).skip(skip).limit(page_size)
+    sessions_cursor = (
+        db.sessions.find(query).sort("started_at", -1).skip(skip).limit(page_size)
+    )
     sessions = await sessions_cursor.to_list(length=page_size)
 
     # DEBUG LOGGING
@@ -132,6 +134,38 @@ async def create_session(
     """Create a new session"""
     import uuid
     from datetime import datetime
+
+    # Enforce per-user concurrent open session limit (TDD: max 5)
+    # Count distinct open session IDs across both collections to avoid double-counting.
+    username = current_user["username"]
+    open_session_ids: set[str] = set()
+
+    sessions_cursor = db.sessions.find(
+        {"staff_user": username, "status": {"$in": ["OPEN"]}},
+        {"id": 1},
+    )
+    for doc in await sessions_cursor.to_list(length=1000):
+        session_id = doc.get("id")
+        if session_id:
+            open_session_ids.add(str(session_id))
+
+    verification_cursor = db.verification_sessions.find(
+        {
+            "user_id": username,
+            "status": {"$in": ["ACTIVE", "OPEN", "PAUSED", "active", "paused"]},
+        },
+        {"session_id": 1},
+    )
+    for doc in await verification_cursor.to_list(length=1000):
+        session_id = doc.get("session_id")
+        if session_id:
+            open_session_ids.add(str(session_id))
+
+    if len(open_session_ids) >= 5:
+        raise HTTPException(
+            status_code=409,
+            detail="Maximum open sessions reached (5). Please close an existing session.",
+        )
 
     # Input validation
     warehouse = session_data.warehouse.strip()
@@ -240,11 +274,16 @@ async def get_session_detail(
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
+    if (
+        current_user["role"] != "supervisor"
+        and session["user_id"] != current_user["username"]
+    ):
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get counts
-    item_count = await db.verification_records.count_documents({"session_id": session_id})
+    item_count = await db.verification_records.count_documents(
+        {"session_id": session_id}
+    )
 
     verified_count = await db.verification_records.count_documents(
         {"session_id": session_id, "status": "finalized"}
@@ -277,7 +316,10 @@ async def get_session_stats(
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     # Check access
-    if current_user["role"] != "supervisor" and session["user_id"] != current_user["username"]:
+    if (
+        current_user["role"] != "supervisor"
+        and session["user_id"] != current_user["username"]
+    ):
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Get item statistics
@@ -287,7 +329,9 @@ async def get_session_stats(
             "$group": {
                 "_id": None,
                 "total": {"$sum": 1},
-                "verified": {"$sum": {"$cond": [{"$eq": ["$status", "finalized"]}, 1, 0]}},
+                "verified": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "finalized"]}, 1, 0]}
+                },
                 "damage": {"$sum": "$damage_qty"},
             }
         },
@@ -370,7 +414,8 @@ async def session_heartbeat(
     )
 
     logger.debug(
-        f"Heartbeat: session={session_id}, user={user_id}, " f"rack_renewed={rack_lock_renewed}"
+        f"Heartbeat: session={session_id}, user={user_id}, "
+        f"rack_renewed={rack_lock_renewed}"
     )
 
     return HeartbeatResponse(

@@ -12,7 +12,9 @@ def mock_db():
     db.erp_items = MagicMock()
 
     # Mock count_documents as AsyncMock
-    db.erp_items.count_documents = AsyncMock(side_effect=lambda query: 100 if not query else 40)
+    db.erp_items.count_documents = AsyncMock(
+        side_effect=lambda query: 100 if not query else 40
+    )
 
     return db
 

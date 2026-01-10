@@ -74,7 +74,9 @@ class CacheService:
                 self.use_redis = True
                 logger.info("Redis client created (pending connection verification)")
             except Exception as e:
-                logger.warning(f"Redis client creation failed, using in-memory cache: {str(e)}")
+                logger.warning(
+                    f"Redis client creation failed, using in-memory cache: {str(e)}"
+                )
                 self.use_redis = False
         else:
             self.use_redis = False
@@ -120,7 +122,9 @@ class CacheService:
 
         return None
 
-    async def set(self, prefix: str, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def set(
+        self, prefix: str, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         """Set value in cache"""
         cache_key = self._get_key(prefix, key)
         ttl = ttl or self.default_ttl
@@ -189,7 +193,9 @@ class CacheService:
             except RedisError as e:
                 logger.error(f"Redis clear error: {str(e)}")
         else:
-            keys_to_remove = [k for k in self._memory_cache.keys() if k.startswith(f"{prefix}:")]
+            keys_to_remove = [
+                k for k in self._memory_cache.keys() if k.startswith(f"{prefix}:")
+            ]
             for k in keys_to_remove:
                 del self._memory_cache[k]
             return len(keys_to_remove)

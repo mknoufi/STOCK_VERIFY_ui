@@ -1,5 +1,7 @@
+# +#+#+#+
 # ruff: noqa: E402
 
+import asyncio
 import json
 import logging
 import os
@@ -7,7 +9,7 @@ import sys
 import time
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, TypeVar, cast
 
@@ -41,6 +43,7 @@ from backend.api.erp_api import init_erp_api  # noqa: E402
 from backend.api.erp_api import router as erp_router  # noqa: E402
 from backend.api.exports_api import exports_router  # noqa: E402
 from backend.api.health import health_router, info_router  # noqa: E402
+from backend.api.inventory_api import router as inventory_router  # noqa: E402
 from backend.api.item_verification_api import (  # noqa: E402
     init_verification_api,
     verification_router,
@@ -102,8 +105,6 @@ from backend.services.errors import (  # noqa: E402
     AuthenticationError,
     AuthorizationError,
     DatabaseError,
-    NotFoundError,
-    RateLimitExceededError,
     ValidationError,
 )
 from backend.services.lock_manager import get_lock_manager  # noqa: E402
@@ -130,8 +131,7 @@ from backend.sql_server_connector import SQLServerConnector  # noqa: E402
 # Utils
 from backend.utils.api_utils import (  # noqa: E402
     result_to_response,  # noqa: E402
-    sanitize_for_logging,  # noqa: E402
-)
+    )
 from backend.utils.auth_utils import get_password_hash  # noqa: E402
 from backend.utils.logging_config import setup_logging  # noqa: E402
 from backend.utils.port_detector import PortDetector  # noqa: E402
@@ -190,6 +190,32 @@ except Exception:
 T = TypeVar("T")
 E = TypeVar("E", bound=Exception)
 R = TypeVar("R")
+
+
+DETAIL_INSUFFICIENT_PERMISSIONS = "Insufficient permissions"
+DETAIL_COUNT_LINE_NOT_FOUND = "Count line not found"
+CATEGORY_PERSONAL_CARE = "Personal Care"
+
+MONGO_GROUP = "$group"
+FIELD_TOTAL_VARIANCE = "$total_variance"
+
+
+def utcnow() -> datetime:
+    """Timezone-aware current UTC time.
+
+    Note: PyMongo/Motor typically deserialize datetimes as naive UTC.
+    Use `ensure_utc()` when comparing with values loaded from MongoDB.
+    """
+
+    return datetime.now(timezone.utc)
+
+
+def ensure_utc(value: datetime) -> datetime:
+    """Coerce a datetime to timezone-aware UTC (assume naive values are UTC)."""
+
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
 
 
 RUNNING_UNDER_PYTEST = "pytest" in sys.modules
@@ -274,11 +300,14 @@ try:
         import bcrypt
 
         # Verify bcrypt is working
-        test_hash = bcrypt.hashpw(b"test", bcrypt.gensalt())
-        bcrypt.checkpw(b"test", test_hash)
+        test_password = os.urandom(16)
+        test_hash = bcrypt.hashpw(test_password, bcrypt.gensalt())
+        bcrypt.checkpw(test_password, test_hash)
         logger.info("Password hashing: Using Argon2 with bcrypt fallback")
     except Exception as e:
-        logger.warning(f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}")
+        logger.warning(
+            f"Bcrypt backend check failed, using bcrypt-only context: {str(e)}"
+        )
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception as e:
     logger.warning(f"Argon2 not available, using bcrypt-only: {str(e)}")
@@ -313,7 +342,9 @@ if (
             max_overflow=getattr(settings, "MAX_OVERFLOW", 5),
             retry_attempts=getattr(settings, "CONNECTION_RETRY_ATTEMPTS", 3),
             retry_delay=getattr(settings, "CONNECTION_RETRY_DELAY", 1.0),
-            health_check_interval=getattr(settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60),
+            health_check_interval=getattr(
+                settings, "CONNECTION_HEALTH_CHECK_INTERVAL", 60
+            ),
         )
         logging.info("✓ Enhanced connection pool initialized")
     except ImportError as e:
@@ -362,21 +393,6 @@ database_health_service = DatabaseHealthService(
     mongo_client_options=mongo_client_options,
 )
 
-# ERP sync service (full sync) - DISABLED to avoid conflicts with change detection
-# Using ChangeDetectionSyncService instead for better performance
-erp_sync_service = None
-# if getattr(settings, 'ERP_SYNC_ENABLED', True):
-#     try:
-#         erp_sync_service = ERPSyncService(
-#             sql_connector=sql_connector,
-#             mongo_db=db,
-#             sync_interval=getattr(settings, 'ERP_SYNC_INTERVAL', 3600),
-#             enabled=True,
-#         )
-#         logging.info("✓ ERP sync service initialized")
-#     except Exception as e:
-#         logging.warning(f"ERP sync service initialization failed: {str(e)}")
-
 # Change detection sync service (syncs item_name, manual_barcode, MRP changes)
 # FULLY DISABLED FOR TESTING
 change_detection_sync = None
@@ -397,40 +413,34 @@ activity_log_service = ActivityLogService(db)
 error_log_service = ErrorLogService(db)
 
 
-# Create the main app with lifespan
-@asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: C901
-    # Startup
-    logger.info("🚀 Starting StockVerify application...")
-
-    # Initialize runtime globals
+def _startup_set_runtime_globals() -> None:
     set_client(client)
     set_db(db)
     set_cache_service(cache_service)
     set_refresh_token_service(refresh_token_service)
 
-    # Phase 1: Initialize Redis and related services
-    redis_service = None
+
+async def _startup_init_redis_services():
     pubsub_service = None
     try:
         logger.info("📦 Phase 1: Initializing Redis services...")
         redis_service = await init_redis()
         logger.info("✓ Redis service initialized")
 
-        # Start Pub/Sub service
         pubsub_service = get_pubsub_service(redis_service)
         await pubsub_service.start()
         logger.info("✓ Pub/Sub service started")
 
-        # Initialize lock manager (will be used by APIs)
         get_lock_manager(redis_service)
         logger.info("✓ Lock manager initialized")
-
     except Exception as e:
         logger.warning(f"⚠️ Redis services not available: {str(e)}")
         logger.warning("Multi-user locking and real-time updates will be disabled")
 
-    # Create MongoDB indexes
+    return pubsub_service
+
+
+async def _startup_create_mongo_indexes() -> None:
     try:
         logger.info("📊 Creating MongoDB indexes...")
         index_results = await create_indexes(db)
@@ -441,7 +451,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
     except Exception as e:
         logger.warning(f"⚠️ Index creation warning: {str(e)}")
 
-    # Initialize SQL Server connection if credentials are available
+
+def _startup_try_sql_connect() -> None:
     try:
         sql_host = getattr(settings, "SQL_SERVER_HOST", None)
         sql_port = getattr(settings, "SQL_SERVER_PORT", 1433)
@@ -454,49 +465,59 @@ async def lifespan(app: FastAPI):  # noqa: C901
                 f"Attempting to connect to SQL Server at {sql_host}:{sql_port}/{sql_database}..."
             )
             try:
-                sql_connector.connect(sql_host, sql_port, sql_database, sql_user, sql_password)
+                sql_connector.connect(
+                    sql_host, sql_port, sql_database, sql_user, sql_password
+                )
                 logger.info("OK: SQL Server connection established")
-            except (ConnectionError, TimeoutError, OSError) as e:
-                logger.warning(f"SQL Server connection failed (network/system error): {str(e)}")
-                logger.warning("ERP sync will be disabled until SQL Server is configured")
+            except OSError as e:
+                logger.warning(
+                    f"SQL Server connection failed (network/system error): {str(e)}"
+                )
+                logger.warning(
+                    "ERP sync will be disabled until SQL Server is configured"
+                )
             except Exception as e:
-                # Catch-all for other SQL Server connection errors (authentication, database not found, etc.)
                 logger.warning(f"SQL Server connection failed: {str(e)}")
-                logger.warning("ERP sync will be disabled until SQL Server is configured")
+                logger.warning(
+                    "ERP sync will be disabled until SQL Server is configured"
+                )
         else:
             logger.warning(
                 "SQL Server credentials not configured. Set SQL_SERVER_HOST and SQL_SERVER_DATABASE in .env"
             )
     except (ValueError, AttributeError) as e:
-        # Configuration errors - invalid settings
-        logger.warning(f"Error initializing SQL Server connection (configuration error): {str(e)}")
+        logger.warning(
+            f"Error initializing SQL Server connection (configuration error): {str(e)}"
+        )
     except Exception as e:
-        # Other unexpected errors during initialization
         logger.warning(f"Unexpected error initializing SQL Server connection: {str(e)}")
 
-    # CRITICAL: Verify MongoDB is available (required)
+
+async def _startup_verify_mongo_required() -> None:
     try:
         await db.command("ping")
-        logger.info("✅ MongoDB connection verified - MongoDB is required and available")
+        logger.info(
+            "✅ MongoDB connection verified - MongoDB is required and available"
+        )
     except Exception as e:
-        # MongoDB connection failed - check if we're in development mode
         error_type = type(e).__name__
         logger.error(f"❌ MongoDB is required but unavailable ({error_type}): {e}")
 
-        # In development, allow app to run without MongoDB
         if os.getenv("ENVIRONMENT", "development").lower() in ["development", "dev"]:
             logger.warning(
                 "⚠️ Running in DEVELOPMENT mode without MongoDB - some features may be limited"
             )
-        else:
-            logger.error(
-                "Application cannot start without MongoDB. Please ensure MongoDB is running."
-            )
-            raise SystemExit(
-                f"MongoDB is required but unavailable ({error_type}). Please start MongoDB and try again."
-            ) from e
+            return
 
-    # Initialize default users
+        logger.error(
+            "Application cannot start without MongoDB. Please ensure MongoDB is running."
+        )
+        raise SystemExit(
+            f"MongoDB is required but unavailable ({error_type}). Please start MongoDB and try again."
+        ) from e
+
+
+async def _startup_init_default_users_safe() -> None:
     try:
         await init_default_users()
         logger.info("OK: Default users initialized")
@@ -505,7 +526,8 @@ async def lifespan(app: FastAPI):  # noqa: C901
             f"Could not initialize default users (may be due to MongoDB unavailability): {str(e)}"
         )
 
-    # Run migrations
+
+async def _startup_run_migrations_safe() -> None:
     try:
         await migration_manager.ensure_indexes()
         await migration_manager.run_migrations()
@@ -515,10 +537,12 @@ async def lifespan(app: FastAPI):  # noqa: C901
             f"Database error during migrations (may be due to MongoDB unavailability): {str(e)}"
         )
     except Exception as e:
-        # Catch-all for migration errors (index creation failures, etc.)
-        logger.warning(f"Migration error (may be due to MongoDB unavailability): {str(e)}")
+        logger.warning(
+            f"Migration error (may be due to MongoDB unavailability): {str(e)}"
+        )
 
-    # Initialize auto-sync manager (monitors SQL Server and auto-syncs when available)
+
+async def _startup_init_auto_sync_manager() -> None:
     global auto_sync_manager
     try:
         sql_configured = bool(getattr(sql_connector, "config", None))
@@ -526,243 +550,118 @@ async def lifespan(app: FastAPI):  # noqa: C901
             sql_connector=sql_connector,
             mongo_db=db,
             sync_interval=getattr(settings, "ERP_SYNC_INTERVAL", 3600),
-            check_interval=30,  # Check connection every 30 seconds
+            check_interval=30,
             enabled=sql_configured,
         )
 
-        if sql_configured:
-            # Set callbacks for admin notifications
-            async def on_connection_restored():
-                logger.info("📢 SQL Server connection restored - sync will start automatically")
-                # Could send notification to admin panel here
-
-            async def on_connection_lost():
-                logger.warning("📢 SQL Server connection lost - sync paused")
-                # Could send notification to admin panel here
-
-            async def on_sync_complete():
-                logger.info("📢 Sync completed successfully")
-                # Could send notification to admin panel here
-
-            auto_sync_manager.set_callbacks(
-                on_connection_restored=on_connection_restored,
-                on_connection_lost=on_connection_lost,
-                on_sync_complete=on_sync_complete,
-            )
-
-            await auto_sync_manager.start()
-            logger.info("✅ Auto-sync manager started")
-        else:
+        if not sql_configured:
             logger.info("Auto-sync manager disabled: SQL Server not configured")
+            set_auto_sync_manager(auto_sync_manager)
+            return
 
-        # Register with API router
+        async def on_connection_restored() -> None:
+            logger.info(
+                "📢 SQL Server connection restored - sync will start automatically"
+            )
+            await asyncio.sleep(0)
+
+        async def on_connection_lost() -> None:
+            logger.warning("📢 SQL Server connection lost - sync paused")
+            await asyncio.sleep(0)
+
+        async def on_sync_complete() -> None:
+            logger.info("📢 Sync completed successfully")
+            await asyncio.sleep(0)
+
+        auto_sync_manager.set_callbacks(
+            on_connection_restored=on_connection_restored,
+            on_connection_lost=on_connection_lost,
+            on_sync_complete=on_sync_complete,
+        )
+
+        await auto_sync_manager.start()
+        logger.info("✅ Auto-sync manager started")
         set_auto_sync_manager(auto_sync_manager)
     except Exception:
         logger.warning("Auto-sync manager initialization failed", exc_info=True)
         auto_sync_manager = None
 
-    # Start ERP sync service (full sync) - legacy, kept for backward compatibility
-    # if erp_sync_service:
-    #     try:
-    #         erp_sync_service.start()
-    #         logger.info("✓ ERP sync service started")
-    #     except Exception as e:
-    #         logger.error(f"Failed to start ERP sync service: {str(e)}")
 
-    # Change detection sync service is fully disabled for testing
-
-    # Start database health monitoring
+def _startup_start_db_health_monitoring_safe() -> None:
     try:
         database_health_service.start()
         logger.info("OK: Database health monitoring started")
     except Exception:
         logger.exception("Failed to start database health monitoring")
 
-    # Initialize cache
+
+async def _startup_init_cache_safe() -> None:
     try:
         await cache_service.initialize()
         cache_stats = await cache_service.get_stats()
-        logger.info(f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}")
+        logger.info(
+            f"OK: Cache service initialized: {cache_stats.get('backend', 'unknown')}"
+        )
     except Exception:
         logger.warning("Cache service error", exc_info=True)
 
-    # Initialize auth dependencies for routers (avoid circular imports)
+
+def _startup_init_auth_deps_safe() -> None:
     try:
         init_auth_dependencies(db, SECRET_KEY, ALGORITHM)
         logger.info("OK: Auth dependencies initialized")
     except Exception:
         logger.exception("Failed to initialize auth dependencies")
 
-    # Initialize new feature services
-    global scheduled_export_service, sync_conflicts_service
+
+def _startup_init_scheduled_export_safe() -> None:
+    global scheduled_export_service
     try:
-        # Scheduled export service
         scheduled_export_service = ScheduledExportService(db)
         scheduled_export_service.start()
         logger.info("✓ Scheduled export service started")
     except Exception:
         logger.exception("Failed to start scheduled export service")
 
-    # Initialize enrichment service
-    if EnrichmentService is not None and init_enrichment_api is not None:
-        try:
-            enrichment_svc = EnrichmentService(db)
-            init_enrichment_api(enrichment_svc)
-            logger.info("✓ Enrichment service initialized")
-        except Exception:
-            logger.exception("Failed to initialize enrichment service")
 
-    # Initialize enterprise services
-    if ENTERPRISE_AVAILABLE:
-        try:
-            # Enterprise Audit Service
-            app.state.enterprise_audit = EnterpriseAuditService(db)
-            await app.state.enterprise_audit.initialize()
-            logger.info("✓ Enterprise audit service initialized")
-        except Exception:
-            app.state.enterprise_audit = None
-            logger.warning("Enterprise audit service not available", exc_info=True)
-
-        try:
-            # Enterprise Security Service
-            app.state.enterprise_security = EnterpriseSecurityService(db)
-            await app.state.enterprise_security.initialize()
-            logger.info("✓ Enterprise security service initialized")
-        except Exception:
-            app.state.enterprise_security = None
-            logger.warning("Enterprise security service not available", exc_info=True)
-
-        try:
-            # Feature Flags Service
-            app.state.feature_flags = FeatureFlagService(db)
-            await app.state.feature_flags.initialize()
-            logger.info("✓ Feature flags service initialized")
-        except Exception:
-            app.state.feature_flags = None
-            logger.warning("Feature flags service not available", exc_info=True)
-
-        try:
-            # Data Governance Service
-            app.state.data_governance = DataGovernanceService(db)
-            await app.state.data_governance.initialize()
-            logger.info("✓ Data governance service initialized")
-        except Exception:
-            app.state.data_governance = None
-            logger.warning("Data governance service not available", exc_info=True)
-    else:
-        # Set None for enterprise services if not available
-        app.state.enterprise_audit = None
-        app.state.enterprise_security = None
-        app.state.feature_flags = None
-        app.state.data_governance = None
-
+def _startup_init_sync_conflicts_safe() -> None:
+    global sync_conflicts_service
     try:
-        # Sync conflicts service
         sync_conflicts_service = SyncConflictsService(db)
         logger.info("✓ Sync conflicts service initialized")
     except Exception:
         logger.exception("Failed to initialize sync conflicts service")
 
+
+def _startup_connect_monitoring_service_safe() -> None:
     try:
-        # Set monitoring service for metrics API
         set_monitoring_service(monitoring_service)
         logger.info("✓ Monitoring service connected to metrics API")
     except Exception:
         logger.exception("Failed to set monitoring service")
 
+
+def _startup_init_domain_apis_safe() -> None:
     try:
-        # Initialize ERP API
         init_erp_api(db, cache_service)
         logger.info("✓ ERP API initialized")
     except Exception as e:
         logger.error(f"Failed to initialize ERP API: {str(e)}")
 
     try:
-        # Initialize Enhanced Item API
         init_enhanced_api(db, cache_service, monitoring_service)
         logger.info("✓ Enhanced Item API initialized")
     except Exception as e:
         logger.error(f"Failed to initialize Enhanced Item API: {str(e)}")
 
     try:
-        # Initialize verification API
         init_verification_api(db, cache_service)
         logger.info("✓ Item verification API initialized")
     except Exception as e:
         logger.error(f"Failed to initialize verification API: {str(e)}")
 
-    # Startup checklist verification
-    startup_checklist = {
-        "mongodb": False,
-        "sql_server": False,
-        "cache": False,
-        "auth": False,
-        "services": False,
-    }
 
-    # Verify MongoDB
-    try:
-        await db.command("ping")
-        startup_checklist["mongodb"] = True
-        logger.info("✓ Startup Check: MongoDB connected")
-    except Exception as e:
-        logger.warning(f"⚠️  Startup Check: MongoDB not connected - {str(e)}")
-
-    # Verify SQL Server (optional)
-    try:
-        if sql_connector and sql_connector.test_connection():
-            startup_checklist["sql_server"] = True
-            logger.info("✓ Startup Check: SQL Server connected")
-        else:
-            logger.info("ℹ️  Startup Check: SQL Server not configured (optional)")
-    except Exception as e:
-        logger.info(f"ℹ️  Startup Check: SQL Server not available - {str(e)}")
-
-    # Verify Cache
-    try:
-        cache_stats = await cache_service.get_stats()
-        logger.info(f"✓ Startup Check: Cache initialized ({cache_stats.get('backend', 'unknown')})")
-    except Exception as e:
-        logger.warning(f"⚠️ Startup Check: Cache service warning: {str(e)}")
-
-    # Verify Auth
-    try:
-        from backend.auth.dependencies import auth_deps
-
-        if auth_deps._initialized:
-            startup_checklist["auth"] = True
-            logger.info("✓ Startup Check: Auth initialized")
-    except Exception as e:
-        logger.warning(f"⚠️  Startup Check: Auth error - {str(e)}")
-
-    # Verify Services
-    services_running = []
-    # if erp_sync_service:
-    #     services_running.append("ERP Sync")
-    if scheduled_export_service:
-        services_running.append("Scheduled Export")
-    if sync_conflicts_service:
-        services_running.append("Sync Conflicts")
-    if monitoring_service:
-        services_running.append("Monitoring")
-    if database_health_service:
-        services_running.append("Database Health")
-
-    if services_running:
-        startup_checklist["services"] = True
-        logger.info(f"✓ Startup Check: {len(services_running)} services running")
-
-    # Log startup summary
-    critical_services = ["mongodb", "auth"]
-    all_critical_ok = all(startup_checklist[svc] for svc in critical_services)
-
-    if all_critical_ok:
-        logger.info("✅ Startup Checklist: All critical services OK")
-    else:
-        failed = [svc for svc in critical_services if not startup_checklist[svc]]
-        logger.warning(f"⚠️  Startup Checklist: Critical services failed - {', '.join(failed)}")
-
-    # Initialize search service
+def _startup_init_search_service_safe() -> None:
     try:
         from backend.db.runtime import get_db
         from backend.services.search_service import init_search_service
@@ -773,91 +672,134 @@ async def lifespan(app: FastAPI):  # noqa: C901
     except Exception as e:
         logger.error(f"❌ Failed to initialize search service: {e}")
 
-    logger.info("OK: Application startup complete")
 
-    yield
+async def _startup_init_enterprise_services(app: FastAPI) -> None:
+    if not ENTERPRISE_AVAILABLE:
+        app.state.enterprise_audit = None
+        app.state.enterprise_security = None
+        app.state.feature_flags = None
+        app.state.data_governance = None
+        return
 
-    # Shutdown with timeout handling
-    logger.info("🛑 Shutting down application...")
-    shutdown_start = time.time()
-    shutdown_timeout = 30  # 30 seconds max for graceful shutdown
-
-    shutdown_tasks = []
-
-    # Stop sync services
-    # if erp_sync_service is not None:
-    #     erp_sync = erp_sync_service  # Type narrowing for Pyright
-
-    #     async def stop_erp_sync():
-    #         try:
-    #             erp_sync.stop()
-    #             logger.info("✓ ERP sync service stopped")
-    #         except Exception as e:
-    #             logger.error(f"Error stopping ERP sync service: {str(e)}")
-
-    #     shutdown_tasks.append(stop_erp_sync())
-
-    # Stop scheduled export service
-    if scheduled_export_service:
-
-        async def stop_export_service():
-            try:
-                await scheduled_export_service.stop()
-                logger.info("✓ Scheduled export service stopped")
-            except Exception as e:
-                logger.error(f"Error stopping scheduled export service: {str(e)}")
-
-        shutdown_tasks.append(stop_export_service())
-
-    # Stop database health monitoring
-    async def stop_health_monitoring():
-        try:
-            await database_health_service.stop()
-            logger.info("✓ Database health monitoring stopped")
-        except Exception as e:
-            logger.error(f"Error stopping database health monitoring: {str(e)}")
-
-    shutdown_tasks.append(stop_health_monitoring())
-
-    # Stop auto-sync manager
-    async def stop_auto_sync():
-        if auto_sync_manager:
-            try:
-                await auto_sync_manager.stop()
-                logger.info("✅ Auto-sync manager stopped")
-            except Exception as e:
-                logger.error(f"Error stopping auto-sync manager: {e}")
-
-    shutdown_tasks.append(stop_auto_sync())
-
-    # Phase 1: Stop Pub/Sub and Redis services
-    async def stop_redis_services():
-        try:
-            if pubsub_service:
-                await pubsub_service.stop()
-                logger.info("✓ Pub/Sub service stopped")
-
-            await close_redis()
-            logger.info("✓ Redis connection closed")
-        except Exception as e:
-            logger.error(f"Error stopping Redis services: {str(e)}")
-
-    shutdown_tasks.append(stop_redis_services())
-
-    # Execute shutdown tasks with timeout
     try:
-        import asyncio
+        app.state.enterprise_audit = EnterpriseAuditService(db)
+        await app.state.enterprise_audit.initialize()
+        logger.info("✓ Enterprise audit service initialized")
+    except Exception:
+        app.state.enterprise_audit = None
+        logger.warning("Enterprise audit service not available", exc_info=True)
 
+    try:
+        app.state.enterprise_security = EnterpriseSecurityService(db)
+        await app.state.enterprise_security.initialize()
+        logger.info("✓ Enterprise security service initialized")
+    except Exception:
+        app.state.enterprise_security = None
+        logger.warning("Enterprise security service not available", exc_info=True)
+
+    try:
+        app.state.feature_flags = FeatureFlagService(db)
+        await app.state.feature_flags.initialize()
+        logger.info("✓ Feature flags service initialized")
+    except Exception:
+        app.state.feature_flags = None
+        logger.warning("Feature flags service not available", exc_info=True)
+
+    try:
+        app.state.data_governance = DataGovernanceService(db)
+        await app.state.data_governance.initialize()
+        logger.info("✓ Data governance service initialized")
+    except Exception:
+        app.state.data_governance = None
+        logger.warning("Data governance service not available", exc_info=True)
+
+
+async def _do_startup(app: FastAPI):
+    logger.info("🚀 Starting StockVerify application...")
+    _startup_set_runtime_globals()
+    pubsub_service = await _startup_init_redis_services()
+    await _startup_create_mongo_indexes()
+    _startup_try_sql_connect()
+    await _startup_verify_mongo_required()
+    await _startup_init_default_users_safe()
+    await _startup_run_migrations_safe()
+    await _startup_init_auto_sync_manager()
+    _startup_start_db_health_monitoring_safe()
+    await _startup_init_cache_safe()
+    _startup_init_auth_deps_safe()
+    _startup_init_scheduled_export_safe()
+    _startup_init_sync_conflicts_safe()
+    _startup_connect_monitoring_service_safe()
+    _startup_init_domain_apis_safe()
+    await _startup_init_enterprise_services(app)
+    _startup_init_search_service_safe()
+    logger.info("OK: Application startup complete")
+    return pubsub_service
+
+
+async def _shutdown_task_stop_export(service) -> None:
+    if not service:
+        return
+    try:
+        await service.stop()
+        logger.info("✓ Scheduled export service stopped")
+    except Exception as e:
+        logger.error(f"Error stopping scheduled export service: {str(e)}")
+
+
+async def _shutdown_task_stop_health_monitoring() -> None:
+    try:
+        await database_health_service.stop()
+        logger.info("✓ Database health monitoring stopped")
+    except Exception as e:
+        logger.error(f"Error stopping database health monitoring: {str(e)}")
+
+
+async def _shutdown_task_stop_auto_sync() -> None:
+    if not auto_sync_manager:
+        return
+    try:
+        await auto_sync_manager.stop()
+        logger.info("✅ Auto-sync manager stopped")
+    except Exception as e:
+        logger.error(f"Error stopping auto-sync manager: {e}")
+
+
+async def _shutdown_task_stop_redis(pubsub_service) -> None:
+    try:
+        if pubsub_service:
+            await pubsub_service.stop()
+            logger.info("✓ Pub/Sub service stopped")
+        await close_redis()
+        logger.info("✓ Redis connection closed")
+    except Exception as e:
+        logger.error(f"Error stopping Redis services: {str(e)}")
+
+
+async def _shutdown_stop_services(pubsub_service) -> None:
+    shutdown_timeout = 30
+    shutdown_tasks: list[Any] = [
+        _shutdown_task_stop_health_monitoring(),
+        _shutdown_task_stop_auto_sync(),
+        _shutdown_task_stop_redis(pubsub_service),
+    ]
+    if scheduled_export_service:
+        shutdown_tasks.append(_shutdown_task_stop_export(scheduled_export_service))
+
+    try:
         await asyncio.wait_for(
             asyncio.gather(*shutdown_tasks, return_exceptions=True),
             timeout=shutdown_timeout,
         )
     except TimeoutError:
-        logger.warning(f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown...")
+        logger.warning(
+            f"⚠️  Shutdown timeout after {shutdown_timeout}s, forcing shutdown..."
+        )
     except Exception as e:
         logger.error(f"Error during shutdown: {str(e)}")
 
-    # Close connection pool (blocking operation)
+
+def _shutdown_close_pool_safe() -> None:
     if connection_pool:
         try:
             connection_pool.close_all()
@@ -865,15 +807,35 @@ async def lifespan(app: FastAPI):  # noqa: C901
         except Exception as e:
             logger.error(f"Error closing connection pool: {str(e)}")
 
-    # Close MongoDB connection
+
+def _shutdown_close_mongo_safe() -> None:
     try:
         client.close()
         logger.info("✓ MongoDB connection closed")
     except Exception as e:
         logger.error(f"Error closing MongoDB connection: {str(e)}")
 
+
+async def _do_shutdown(pubsub_service) -> None:
+    logger.info("🛑 Shutting down application...")
+    shutdown_start = time.time()
+    await _shutdown_stop_services(pubsub_service)
+    _shutdown_close_pool_safe()
+    _shutdown_close_mongo_safe()
     shutdown_duration = time.time() - shutdown_start
     logger.info(f"✓ Application shutdown complete (took {shutdown_duration:.2f}s)")
+
+
+# Create the main app with lifespan
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    pubsub_service = await _do_startup(app)
+    try:
+        yield
+    finally:
+        await _do_shutdown(pubsub_service)
+
+    # NOTE: Startup checklist logging was removed here to keep lifecycle handlers small.
 
 
 # Create FastAPI app with lifespan
@@ -909,9 +871,13 @@ elif _env == "development":
     ]
     # Add additional dev origins from environment if configured
     if getattr(settings, "CORS_DEV_ORIGINS", None):
-        dev_origins = [o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()]
+        dev_origins = [
+            o.strip() for o in (settings.CORS_DEV_ORIGINS or "").split(",") if o.strip()
+        ]
         _allowed_origins.extend(dev_origins)
-        logger.info(f"Added {len(dev_origins)} additional CORS origins from CORS_DEV_ORIGINS")
+        logger.info(
+            f"Added {len(dev_origins)} additional CORS origins from CORS_DEV_ORIGINS"
+        )
 else:
     _allowed_origins = []
     if not getattr(settings, "CORS_ALLOW_ORIGINS", None):
@@ -966,19 +932,28 @@ app.include_router(mapping_router)  # Database mapping endpoints via mapping_api
 app.include_router(exports_router, prefix="/api")  # Export functionality
 
 app.include_router(auth_router, prefix="/api")
-app.include_router(items_router)  # Enhanced items API (has its own prefix /api/v2/erp/items)
+app.include_router(
+    items_router
+)  # Enhanced items API (has its own prefix /api/v2/erp/items)
 app.include_router(search_router)  # Search API (has prefix /api/items)
 app.include_router(metrics_router, prefix="/api")  # Metrics and monitoring
 app.include_router(sync_router, prefix="/api")  # Sync status
 app.include_router(sync_management_router, prefix="/api")  # Sync management
-app.include_router(self_diagnosis_router, prefix="/api/diagnosis")  # Self-diagnosis tools
+app.include_router(
+    self_diagnosis_router, prefix="/api/diagnosis"
+)  # Self-diagnosis tools
 app.include_router(security_router)  # Security dashboard (has its own prefix)
 app.include_router(verification_router)
 app.include_router(erp_router, prefix="/api")  # ERP endpoints
+app.include_router(
+    inventory_router, prefix="/api"
+)  # Inventory management (expiry, stock, batch priority)
 app.include_router(variance_router, prefix="/api")  # Variance reasons and trendspoints
 app.include_router(admin_control_router)  # Admin control endpoints
 app.include_router(dynamic_fields_router)  # Dynamic fields management
-app.include_router(dynamic_reports_router)  # Dynamic reports (has prefix /api/dynamic-reports)
+app.include_router(
+    dynamic_reports_router
+)  # Dynamic reports (has prefix /api/dynamic-reports)
 app.include_router(logs_router, prefix="/api")  # Error and Activity logs
 app.include_router(locations_router)  # Locations (Zones/Warehouses)
 
@@ -1149,7 +1124,7 @@ async def init_default_users():
                     "role": "staff",
                     "is_active": True,
                     "permissions": [],
-                    "created_at": datetime.utcnow(),
+                    "created_at": utcnow(),
                 }
             )
             logger.info("Default user created: staff1/staff123")
@@ -1165,7 +1140,7 @@ async def init_default_users():
                     "role": "supervisor",
                     "is_active": True,
                     "permissions": [],
-                    "created_at": datetime.utcnow(),
+                    "created_at": utcnow(),
                 }
             )
             logger.info("Default user created: supervisor/super123")
@@ -1181,7 +1156,7 @@ async def init_default_users():
                     "role": "admin",
                     "is_active": True,
                     "permissions": [],
-                    "created_at": datetime.utcnow(),
+                    "created_at": utcnow(),
                 }
             )
             logger.info("Default user created: admin/admin123")
@@ -1237,7 +1212,7 @@ async def init_mock_erp_data():
                 "barcode": "1234567890127",
                 "stock_qty": 300.0,
                 "mrp": 25.0,
-                "category": "Personal Care",
+                "category": CATEGORY_PERSONAL_CARE,
                 "warehouse": "Main",
             },
             {
@@ -1246,7 +1221,7 @@ async def init_mock_erp_data():
                 "barcode": "1234567890128",
                 "stock_qty": 120.0,
                 "mrp": 150.0,
-                "category": "Personal Care",
+                "category": CATEGORY_PERSONAL_CARE,
                 "warehouse": "Main",
             },
             {
@@ -1255,7 +1230,7 @@ async def init_mock_erp_data():
                 "barcode": "1234567890129",
                 "stock_qty": 180.0,
                 "mrp": 75.0,
-                "category": "Personal Care",
+                "category": CATEGORY_PERSONAL_CARE,
                 "warehouse": "Main",
             },
             {
@@ -1302,153 +1277,6 @@ async def init_mock_erp_data():
 # Routes
 
 
-# Helper functions for login
-async def check_rate_limit(ip_address: str) -> Result[bool, Exception]:
-    """
-    Check if the IP has exceeded the login attempt limit.
-
-    Rate limiting is configurable via RATE_LIMIT_ENABLED environment variable.
-    Default: Enabled in production, disabled in development.
-    """
-    # Check if rate limiting is enabled (default: True for production)
-    rate_limit_enabled = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
-
-    if not rate_limit_enabled:
-        logger.debug(f"Rate limiting disabled for IP: {ip_address}")
-        return Ok(True)
-
-    namespace = "login_attempts"
-    key = ip_address
-
-    # Get current attempt count
-    attempts = (await cache_service.get(namespace, key)) or 0
-    try:
-        attempts = int(attempts)
-    except (ValueError, TypeError):
-        attempts = 0
-
-    # Configuration: max attempts and TTL
-    max_attempts = int(getattr(settings, "RATE_LIMIT_MAX_ATTEMPTS", 5))
-    ttl_seconds = int(getattr(settings, "RATE_LIMIT_TTL_SECONDS", 300))
-
-    if attempts >= max_attempts:
-        # Block for configured TTL period
-        await cache_service.set(namespace, key, attempts, ttl=ttl_seconds)
-        logger.warning(f"Rate limit exceeded for IP {ip_address}: {attempts} attempts")
-        return Fail(
-            RateLimitExceededError(
-                f"Too many login attempts. Please try again in {ttl_seconds // 60} minutes.",
-                retry_after=ttl_seconds,
-            )
-        )
-
-    # Increment attempt counter with TTL
-    await cache_service.set(namespace, key, attempts + 1, ttl=ttl_seconds)
-    logger.debug(
-        f"Rate limit check passed for IP {ip_address}: {attempts + 1}/{max_attempts} attempts"
-    )
-    return Ok(True)
-
-
-async def find_user_by_username(username: str) -> Result[dict[str, Any], Exception]:
-    """Find a user by username with error handling."""
-    try:
-        user = await db.users.find_one({"username": username})
-        if not user:
-            return Fail(NotFoundError("User not found"))
-        return Ok(user)
-    except Exception as e:
-        logger.error(f"Error finding user {sanitize_for_logging(username)}: {str(e)}")
-        return Fail(DatabaseError("Error accessing user data"))
-
-
-async def generate_auth_tokens(
-    user: dict[str, Any], ip_address: str, request: Request
-) -> Result[dict[str, Any], Exception]:
-    """Generate access and refresh tokens with error handling."""
-    try:
-        # Generate access token
-        access_token_expires = timedelta(
-            minutes=getattr(settings, "ACCESS_TOKEN_EXPIRE_MINUTES", 15)
-        )
-        access_token = create_access_token(
-            {"sub": user["username"], "role": user.get("role", "staff")}
-        )
-
-        # Generate refresh token using service
-        refresh_payload = {"sub": user["username"], "role": user.get("role", "staff")}
-        refresh_token = refresh_token_service.create_refresh_token(refresh_payload)
-        refresh_token_expires = datetime.utcnow() + timedelta(
-            days=getattr(settings, "REFRESH_TOKEN_EXPIRE_DAYS", 30)
-        )
-
-        # Store refresh token via service
-        await refresh_token_service.store_refresh_token(
-            refresh_token, user["username"], refresh_token_expires
-        )
-
-        return Ok(
-            {
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "expires_in": int(access_token_expires.total_seconds()),
-            }
-        )
-    except Exception as e:
-        logger.error(f"Error generating auth tokens: {str(e)}")
-        return Fail(DatabaseError("Error generating authentication tokens"))
-
-
-async def log_failed_login_attempt(
-    username: str, ip_address: str, user_agent: Optional[str], error: str
-) -> None:
-    """Log a failed login attempt."""
-    try:
-        await db.login_attempts.insert_one(
-            {
-                "username": username,
-                "ip_address": ip_address,
-                "user_agent": user_agent,
-                "success": False,
-                "timestamp": datetime.utcnow(),
-                "error": error,
-            }
-        )
-    except Exception as e:
-        logger.error(f"Failed to log login attempt: {str(e)}")
-
-
-async def log_successful_login(user: dict[str, Any], ip_address: str, request: Request) -> None:
-    """Log a successful login."""
-    try:
-        await db.login_attempts.insert_one(
-            {
-                "user_id": user["_id"],
-                "username": user["username"],
-                "ip_address": ip_address,
-                "user_agent": request.headers.get("user-agent"),
-                "success": True,
-                "timestamp": datetime.utcnow(),
-            }
-        )
-
-        # Update last login timestamp
-        await db.users.update_one(
-            {"_id": user["_id"]}, {"$set": {"last_login_at": datetime.utcnow()}}
-        )
-
-        # Log to monitoring
-        # monitoring_service.log_event(
-        #     "user_login",
-        #     user_id=user["_id"],
-        #     username=user["username"],
-        #     ip_address=ip_address,
-        #     user_agent=request.headers.get("user-agent")
-        # )
-    except Exception as e:
-        logger.error(f"Failed to log successful login: {str(e)}")
-
-
 @api_router.post("/auth/refresh", response_model=ApiResponse[TokenResponse])
 @result_to_response(success_status=200)
 async def refresh_token(request: Request) -> Result[dict[str, Any], Exception]:
@@ -1465,13 +1293,15 @@ async def refresh_token(request: Request) -> Result[dict[str, Any], Exception]:
             return Fail(ValidationError("Refresh token is required"))
 
         # Find refresh token in database
-        token_doc = await db.refresh_tokens.find_one({"token": refresh_token, "is_revoked": False})
+        token_doc = await db.refresh_tokens.find_one(
+            {"token": refresh_token, "is_revoked": False}
+        )
 
         if not token_doc:
             return Fail(AuthenticationError("Invalid or expired refresh token"))
 
         # Check if token is expired
-        if token_doc["expires_at"] < datetime.utcnow():
+        if ensure_utc(token_doc["expires_at"]) < utcnow():
             return Fail(AuthenticationError("Refresh token has expired"))
 
         # Get user
@@ -1487,7 +1317,7 @@ async def refresh_token(request: Request) -> Result[dict[str, Any], Exception]:
 
         # Update last_used_at for refresh token
         await db.refresh_tokens.update_one(
-            {"token": refresh_token}, {"$set": {"last_used_at": datetime.utcnow()}}
+            {"token": refresh_token}, {"$set": {"last_used_at": utcnow()}}
         )
 
         # Return new tokens
@@ -1530,7 +1360,7 @@ async def logout(
             # Revoke the refresh token
             await db.refresh_tokens.update_one(
                 {"token": refresh_token, "user_id": current_user["_id"]},
-                {"$set": {"is_revoked": True, "revoked_at": datetime.utcnow()}},
+                {"$set": {"is_revoked": True, "revoked_at": utcnow()}},
             )
 
         return {"message": "Logged out successfully"}
@@ -1547,18 +1377,57 @@ async def create_session(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> Session:
     logger.debug(f"create_session called. User: {current_user.get('username')}")
+    # Enforce per-user concurrent open session limit (TDD: max 5)
+    # Count distinct open session IDs across both collections to avoid double-counting.
+    username = current_user["username"]
+    open_session_ids: set[str] = set()
+
+    sessions_cursor = db.sessions.find(
+        {"staff_user": username, "status": {"$in": ["OPEN"]}},
+        {"id": 1},
+    )
+    for doc in await sessions_cursor.to_list(length=1000):
+        session_id = doc.get("id")
+        if session_id:
+            open_session_ids.add(str(session_id))
+
+    try:
+        verification_cursor = db.verification_sessions.find(
+            {
+                "user_id": username,
+                "status": {"$in": ["ACTIVE", "OPEN", "PAUSED", "active", "paused"]},
+            },
+            {"session_id": 1},
+        )
+        for doc in await verification_cursor.to_list(length=1000):
+            session_id = doc.get("session_id")
+            if session_id:
+                open_session_ids.add(str(session_id))
+    except Exception:
+        pass
+
+    if len(open_session_ids) >= 5:
+        raise HTTPException(
+            status_code=409,
+            detail="Maximum open sessions reached (5). Please close an existing session.",
+        )
+
     # Input validation and sanitization
     warehouse = session_data.warehouse.strip()
     if not warehouse:
         raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
     if len(warehouse) < 2:
-        raise HTTPException(status_code=400, detail="Warehouse name must be at least 2 characters")
+        raise HTTPException(
+            status_code=400, detail="Warehouse name must be at least 2 characters"
+        )
     if len(warehouse) > 100:
         raise HTTPException(
             status_code=400, detail="Warehouse name must be less than 100 characters"
         )
     # Sanitize warehouse name (remove potentially dangerous characters)
-    warehouse = warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
+    warehouse = (
+        warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
+    )
 
     session = Session(
         warehouse=warehouse,
@@ -1595,7 +1464,9 @@ async def get_sessions(
 
     if current_user["role"] == "supervisor":
         total = await db.sessions.count_documents({})
-        sessions_cursor = db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
+        sessions_cursor = (
+            db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
+        )
     else:
         filter_query = {"staff_user": current_user["username"]}
         total = await db.sessions.count_documents(filter_query)
@@ -1631,7 +1502,7 @@ async def bulk_close_sessions(
 ):
     """Bulk close sessions (supervisor only)"""
     if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+        raise HTTPException(status_code=403, detail=DETAIL_INSUFFICIENT_PERMISSIONS)
 
     try:
         updated_count = 0
@@ -1641,7 +1512,7 @@ async def bulk_close_sessions(
             try:
                 result = await db.sessions.update_one(
                     {"id": session_id},
-                    {"$set": {"status": "closed", "ended_at": datetime.utcnow()}},
+                    {"$set": {"status": "closed", "ended_at": utcnow()}},
                 )
                 if result.modified_count > 0:
                     updated_count += 1
@@ -1676,7 +1547,7 @@ async def bulk_reconcile_sessions(
 ):
     """Bulk reconcile sessions (supervisor only)"""
     if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+        raise HTTPException(status_code=403, detail=DETAIL_INSUFFICIENT_PERMISSIONS)
 
     try:
         updated_count = 0
@@ -1689,7 +1560,7 @@ async def bulk_reconcile_sessions(
                     {
                         "$set": {
                             "status": "reconciled",
-                            "reconciled_at": datetime.utcnow(),
+                            "reconciled_at": utcnow(),
                         }
                     },
                 )
@@ -1728,7 +1599,7 @@ async def bulk_export_sessions(
 ):
     """Bulk export sessions (supervisor only)"""
     if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+        raise HTTPException(status_code=403, detail=DETAIL_INSUFFICIENT_PERMISSIONS)
 
     try:
         sessions = []
@@ -1769,18 +1640,18 @@ async def bulk_export_sessions(
 async def get_sessions_analytics(current_user: dict = Depends(get_current_user)):
     """Get aggregated session analytics (supervisor only)"""
     if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+        raise HTTPException(status_code=403, detail=DETAIL_INSUFFICIENT_PERMISSIONS)
 
     try:
         # Aggregation pipeline for efficient server-side calculation
         pipeline = [
             {
-                "$group": {
+                MONGO_GROUP: {
                     "_id": None,
                     "total_sessions": {"$sum": 1},
                     "total_items": {"$sum": "$total_items"},
-                    "total_variance": {"$sum": "$total_variance"},
-                    "avg_variance": {"$avg": "$total_variance"},
+                    "total_variance": {"$sum": FIELD_TOTAL_VARIANCE},
+                    "avg_variance": {"$avg": FIELD_TOTAL_VARIANCE},
                     "sessions_by_status": {"$push": {"status": "$status", "count": 1}},
                 }
             }
@@ -1797,16 +1668,16 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
                     "total_variance": 1,
                 }
             },
-            {"$group": {"_id": "$date", "count": {"$sum": 1}}},
+            {MONGO_GROUP: {"_id": "$date", "count": {"$sum": 1}}},
             {"$sort": {"_id": 1}},
         ]
 
         # Variance by warehouse
         warehouse_pipeline = [
             {
-                "$group": {
+                MONGO_GROUP: {
                     "_id": "$warehouse",
-                    "total_variance": {"$sum": {"$abs": "$total_variance"}},
+                    "total_variance": {"$sum": {"$abs": FIELD_TOTAL_VARIANCE}},
                     "session_count": {"$sum": 1},
                 }
             }
@@ -1815,7 +1686,7 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
         # Items by staff
         staff_pipeline = [
             {
-                "$group": {
+                MONGO_GROUP: {
                     "_id": "$staff_name",
                     "total_items": {"$sum": "$total_items"},
                     "session_count": {"$sum": 1},
@@ -1831,7 +1702,9 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
 
         # Transform results
         sessions_by_date = {item["_id"]: item["count"] for item in by_date}
-        variance_by_warehouse = {item["_id"]: item["total_variance"] for item in by_warehouse}
+        variance_by_warehouse = {
+            item["_id"]: item["total_variance"] for item in by_warehouse
+        }
         items_by_staff = {item["_id"]: item["total_items"] for item in by_staff}
 
         return {
@@ -1880,70 +1753,139 @@ async def get_session_by_id(
 
 
 # Helper function to detect high-risk corrections
-def detect_risk_flags(erp_item: dict, line_data: CountLineCreate, variance: float) -> list[str]:
+def detect_risk_flags(
+    erp_item: dict, line_data: CountLineCreate, variance: float
+) -> list[str]:
     """Detect high-risk correction patterns"""
-    risk_flags = []
-
-    # Get values
     erp_qty = erp_item.get("stock_qty", 0)
     erp_mrp = erp_item.get("mrp", 0)
     counted_mrp = line_data.mrp_counted or erp_mrp
 
-    # Calculate percentages safely
-    variance_percent = (abs(variance) / erp_qty * 100) if erp_qty > 0 else 100
+    variance_abs = abs(variance)
+    variance_percent = (variance_abs / erp_qty * 100) if erp_qty > 0 else 100
     mrp_change_percent = ((counted_mrp - erp_mrp) / erp_mrp * 100) if erp_mrp > 0 else 0
 
-    # Rule 1: Large variance
-    if abs(variance) > 100 or variance_percent > 50:
-        risk_flags.append("LARGE_VARIANCE")
+    serial_missing = not line_data.serial_numbers
+    missing_reason = not line_data.correction_reason and not line_data.variance_reason
+    photo_missing = not line_data.photo_base64 and not line_data.photo_proofs
 
-    # Rule 2: MRP reduced significantly
-    if mrp_change_percent < -20:
-        risk_flags.append("MRP_REDUCED_SIGNIFICANTLY")
+    rules: list[tuple[str, bool]] = [
+        ("LARGE_VARIANCE", variance_abs > 100 or variance_percent > 50),
+        ("MRP_REDUCED_SIGNIFICANTLY", mrp_change_percent < -20),
+        ("HIGH_VALUE_VARIANCE", erp_mrp > 10000 and variance_percent > 5),
+        ("SERIAL_MISSING_HIGH_VALUE", erp_mrp > 5000 and serial_missing),
+        ("MISSING_CORRECTION_REASON", variance_abs > 0 and missing_reason),
+        ("MRP_CHANGE_WITHOUT_REASON", abs(mrp_change_percent) > 5 and missing_reason),
+    ]
 
-    # Rule 3: High value item with variance
-    if erp_mrp > 10000 and variance_percent > 5:
-        risk_flags.append("HIGH_VALUE_VARIANCE")
-
-    # Rule 4: Serial numbers missing for high-value item
-    if erp_mrp > 5000 and (not line_data.serial_numbers or len(line_data.serial_numbers) == 0):
-        risk_flags.append("SERIAL_MISSING_HIGH_VALUE")
-
-    # Rule 5: Correction without reason when variance exists
-    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
-        risk_flags.append("MISSING_CORRECTION_REASON")
-
-    # Rule 6: MRP change without reason
-    if (
-        abs(mrp_change_percent) > 5
-        and not line_data.correction_reason
-        and not line_data.variance_reason
-    ):
-        risk_flags.append("MRP_CHANGE_WITHOUT_REASON")
-
-    # Rule 7: Photo required but missing
     photo_required = (
-        abs(variance) > 100
+        variance_abs > 100
         or variance_percent > 50
         or abs(mrp_change_percent) > 20
         or erp_mrp > 10000
     )
-    if (
-        photo_required
-        and not line_data.photo_base64
-        and (not line_data.photo_proofs or len(line_data.photo_proofs) == 0)
-    ):
-        risk_flags.append("PHOTO_PROOF_REQUIRED")
+    rules.append(("PHOTO_PROOF_REQUIRED", photo_required and photo_missing))
 
-    return risk_flags
+    return [flag for flag, condition in rules if condition]
 
 
 # Helper function to calculate financial impact
-def calculate_financial_impact(erp_mrp: float, counted_mrp: float, counted_qty: float) -> float:
+def calculate_financial_impact(
+    erp_mrp: float, counted_mrp: float, counted_qty: float
+) -> float:
     """Calculate revenue impact of MRP change"""
     old_value = erp_mrp * counted_qty
     new_value = counted_mrp * counted_qty
     return new_value - old_value
+
+
+async def _get_session_or_404(session_id: str) -> dict[str, Any]:
+    session = await db.sessions.find_one({"id": session_id})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session
+
+
+async def _get_erp_item_or_404(item_code: str) -> dict[str, Any]:
+    erp_item = await db.erp_items.find_one({"item_code": item_code})
+    if not erp_item:
+        raise HTTPException(status_code=404, detail="Item not found in ERP")
+    return erp_item
+
+
+def _validate_correction_reason(variance: float, line_data: CountLineCreate) -> None:
+    if (
+        abs(variance) > 0
+        and not line_data.correction_reason
+        and not line_data.variance_reason
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Correction reason is mandatory when variance exists",
+        )
+
+
+async def _has_duplicate_count_line(
+    session_id: str, item_code: str, username: str
+) -> bool:
+    duplicate_check = await db.count_lines.count_documents(
+        {
+            "session_id": session_id,
+            "item_code": item_code,
+            "counted_by": username,
+        }
+    )
+    return duplicate_check > 0
+
+
+async def _update_session_stats_safe(session_id: str) -> None:
+    try:
+        pipeline = [
+            {"$match": {"session_id": session_id}},
+            {
+                MONGO_GROUP: {
+                    "_id": None,
+                    "total_items": {"$sum": 1},
+                    "total_variance": {"$sum": "$variance"},
+                }
+            },
+        ]
+        stats = await db.count_lines.aggregate(pipeline).to_list(1)  # type: ignore
+        if not stats:
+            return
+        await db.sessions.update_one(
+            {"id": session_id},
+            {
+                "$set": {
+                    "total_items": stats[0]["total_items"],
+                    "total_variance": stats[0]["total_variance"],
+                }
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to update session stats: {str(e)}")
+
+
+async def _log_high_risk_safe(
+    *,
+    request: Request,
+    current_user: dict,
+    item_code: str,
+    entity_id: str,
+    risk_flags: list[str],
+) -> None:
+    if not risk_flags:
+        return
+    await activity_log_service.log_activity(
+        user=current_user["username"],
+        role=current_user["role"],
+        action="high_risk_correction",
+        entity_type="count_line",
+        entity_id=entity_id,
+        details={"risk_flags": risk_flags, "item_code": item_code},
+        ip_address=request.client.host if request and request.client else None,
+        user_agent=request.headers.get("user-agent") if request else None,
+    )
 
 
 # Count Line routes
@@ -1953,25 +1895,13 @@ async def create_count_line(
     line_data: CountLineCreate,
     current_user: dict = Depends(get_current_user),
 ):
-    # Validate session exists
-    session = await db.sessions.find_one({"id": line_data.session_id})
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    # Get ERP item
-    erp_item = await db.erp_items.find_one({"item_code": line_data.item_code})
-    if not erp_item:
-        raise HTTPException(status_code=404, detail="Item not found in ERP")
+    await _get_session_or_404(line_data.session_id)
+    erp_item = await _get_erp_item_or_404(line_data.item_code)
 
     # Calculate variance
     variance = line_data.counted_qty - erp_item["stock_qty"]
 
-    # Validate mandatory correction reason for variance
-    if abs(variance) > 0 and not line_data.correction_reason and not line_data.variance_reason:
-        raise HTTPException(
-            status_code=400,
-            detail="Correction reason is mandatory when variance exists",
-        )
+    _validate_correction_reason(variance, line_data)
 
     # Detect risk flags
     risk_flags = detect_risk_flags(erp_item, line_data, variance)
@@ -1986,15 +1916,11 @@ async def create_count_line(
     # High-risk corrections require supervisor review
     approval_status = "NEEDS_REVIEW" if risk_flags else "PENDING"
 
-    # Check for duplicates
-    duplicate_check = await db.count_lines.count_documents(
-        {
-            "session_id": line_data.session_id,
-            "item_code": line_data.item_code,
-            "counted_by": current_user["username"],
-        }
-    )
-    if duplicate_check > 0:
+    if await _has_duplicate_count_line(
+        line_data.session_id,
+        line_data.item_code,
+        current_user["username"],
+    ):
         risk_flags.append("DUPLICATE_CORRECTION")
         approval_status = "NEEDS_REVIEW"
 
@@ -2022,13 +1948,19 @@ async def create_count_line(
         "sr_no": line_data.sr_no,
         "manufacturing_date": line_data.manufacturing_date,
         "correction_reason": (
-            line_data.correction_reason.model_dump() if line_data.correction_reason else None
+            line_data.correction_reason.model_dump()
+            if line_data.correction_reason
+            else None
         ),
         "photo_proofs": (
-            [p.model_dump() for p in line_data.photo_proofs] if line_data.photo_proofs else None
+            [p.model_dump() for p in line_data.photo_proofs]
+            if line_data.photo_proofs
+            else None
         ),
         "correction_metadata": (
-            line_data.correction_metadata.model_dump() if line_data.correction_metadata else None
+            line_data.correction_metadata.model_dump()
+            if line_data.correction_metadata
+            else None
         ),
         "approval_status": approval_status,
         "approval_by": None,
@@ -2038,7 +1970,7 @@ async def create_count_line(
         "financial_impact": financial_impact,
         # User and timestamp
         "counted_by": current_user["username"],
-        "counted_at": datetime.utcnow(),
+        "counted_at": utcnow(),
         # MRP tracking
         "mrp_erp": erp_item["mrp"],
         "mrp_counted": line_data.mrp_counted,
@@ -2054,45 +1986,14 @@ async def create_count_line(
 
     await db.count_lines.insert_one(count_line)
 
-    # Update session stats atomically using aggregation
-    try:
-        pipeline = [
-            {"$match": {"session_id": line_data.session_id}},
-            {
-                "$group": {
-                    "_id": None,
-                    "total_items": {"$sum": 1},
-                    "total_variance": {"$sum": "$variance"},
-                }
-            },
-        ]
-        stats = await db.count_lines.aggregate(pipeline).to_list(1)  # type: ignore
-        if stats:
-            await db.sessions.update_one(
-                {"id": line_data.session_id},
-                {
-                    "$set": {
-                        "total_items": stats[0]["total_items"],
-                        "total_variance": stats[0]["total_variance"],
-                    }
-                },
-            )
-    except Exception as e:
-        logger.error(f"Failed to update session stats: {str(e)}")
-        # Non-critical error, continue execution
-
-    # Log high-risk correction
-    if risk_flags:
-        await activity_log_service.log_activity(
-            user=current_user["username"],
-            role=current_user["role"],
-            action="high_risk_correction",
-            entity_type="count_line",
-            entity_id=count_line["id"],
-            details={"risk_flags": risk_flags, "item_code": line_data.item_code},
-            ip_address=request.client.host if request and request.client else None,
-            user_agent=request.headers.get("user-agent") if request else None,
-        )
+    await _update_session_stats_safe(line_data.session_id)
+    await _log_high_risk_safe(
+        request=request,
+        current_user=current_user,
+        item_code=line_data.item_code,
+        entity_id=count_line["id"],
+        risk_flags=risk_flags,
+    )
 
     # Remove the MongoDB _id field before returning
     count_line.pop("_id", None)
@@ -2129,12 +2030,12 @@ async def verify_stock(
             "$set": {
                 "verified": True,
                 "verified_by": current_user["username"],
-                "verified_at": datetime.utcnow(),
+                "verified_at": utcnow(),
             }
         },
     )
     if update_result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Count line not found")
+        raise HTTPException(status_code=404, detail=DETAIL_COUNT_LINE_NOT_FOUND)
 
     if activity_log_service:
         await activity_log_service.log_activity(
@@ -2166,7 +2067,7 @@ async def unverify_stock(
         update={"$set": {"verified": False, "verified_by": None, "verified_at": None}},
     )
     if update_result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Count line not found")
+        raise HTTPException(status_code=404, detail=DETAIL_COUNT_LINE_NOT_FOUND)
 
     if activity_log_service:
         await activity_log_service.log_activity(
@@ -2192,6 +2093,7 @@ async def get_count_lines(
     db_override=None,
 ):
     """Get count lines with pagination. Shared between routes and tests."""
+    del current_user
     skip = (page - 1) * page_size
     filter_query: dict[str, Any] = {"session_id": session_id}
 
@@ -2228,7 +2130,7 @@ async def approve_count_line(
 ):
     """Approve a count line variance."""
     if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+        raise HTTPException(status_code=403, detail=DETAIL_INSUFFICIENT_PERMISSIONS)
 
     try:
         result = await db.count_lines.update_one(
@@ -2238,16 +2140,16 @@ async def approve_count_line(
                     "status": "APPROVED",
                     "approval_status": "approved",
                     "approved_by": current_user["username"],
-                    "approved_at": datetime.utcnow(),
+                    "approved_at": utcnow(),
                     "verified": True,
                     "verified_by": current_user["username"],
-                    "verified_at": datetime.utcnow(),
+                    "verified_at": utcnow(),
                 }
             },
         )
 
         if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Count line not found")
+            raise HTTPException(status_code=404, detail=DETAIL_COUNT_LINE_NOT_FOUND)
 
         return {"success": True, "message": "Count line approved"}
     except Exception as e:
@@ -2262,7 +2164,7 @@ async def reject_count_line(
 ):
     """Reject a count line (request recount)."""
     if current_user["role"] not in ["supervisor", "admin"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+        raise HTTPException(status_code=403, detail=DETAIL_INSUFFICIENT_PERMISSIONS)
 
     try:
         result = await db.count_lines.update_one(
@@ -2272,14 +2174,14 @@ async def reject_count_line(
                     "status": "REJECTED",
                     "approval_status": "rejected",
                     "rejected_by": current_user["username"],
-                    "rejected_at": datetime.utcnow(),
+                    "rejected_at": utcnow(),
                     "verified": False,
                 }
             },
         )
 
         if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Count line not found")
+            raise HTTPException(status_code=404, detail=DETAIL_COUNT_LINE_NOT_FOUND)
 
         return {"success": True, "message": "Count line rejected"}
     except Exception as e:
@@ -2343,7 +2245,7 @@ def save_backend_info(port: int, local_ip: str) -> None:
             "ip": local_ip,
             "url": f"http://{local_ip}:{port}",
             "pid": os.getpid(),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Save to backend_port.json in project root
@@ -2356,7 +2258,9 @@ def save_backend_info(port: int, local_ip: str) -> None:
         if frontend_public.exists():
             with open(frontend_public / "backend_port.json", "w") as f:
                 json.dump(port_data, f)
-            logger.info(f"Saved backend port info to {frontend_public / 'backend_port.json'}")
+            logger.info(
+                f"Saved backend port info to {frontend_public / 'backend_port.json'}"
+            )
 
         logger.info(
             f"Saved backend info (IP: {local_ip}, Port: {port}) to {root_dir / 'backend_port.json'}"
@@ -2395,7 +2299,9 @@ if __name__ == "__main__":
     # Get configured port as starting point
     start_port = int(getattr(settings, "PORT", os.getenv("PORT", 8001)))
     # Use PortDetector to find port and IP
-    port = PortDetector.find_available_port(start_port, range(start_port, start_port + 10))
+    port = PortDetector.find_available_port(
+        start_port, range(start_port, start_port + 10)
+    )
     local_ip = PortDetector.get_local_ip()
 
     # Save port to file for other services to discover

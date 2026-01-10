@@ -64,7 +64,9 @@ async def test_update_settings(async_client: AsyncClient, auth_headers, test_db)
     """Test updating user settings."""
     payload = {"theme": "dark", "font_size": "large", "primary_color": "#000000"}
 
-    response = await async_client.patch("/api/user/settings", json=payload, headers=auth_headers)
+    response = await async_client.patch(
+        "/api/user/settings", json=payload, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -92,7 +94,9 @@ async def test_get_settings_existing(async_client: AsyncClient, auth_headers, te
     data = response.json()
     assert data["data"]["theme"] == "ocean"
     assert data["data"]["haptic_enabled"] is False
-    assert data["data"]["font_size"] == "medium"  # Should still have default for missing field
+    assert (
+        data["data"]["font_size"] == "medium"
+    )  # Should still have default for missing field
 
 
 @pytest.mark.asyncio

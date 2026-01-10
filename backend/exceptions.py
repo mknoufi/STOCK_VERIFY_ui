@@ -181,7 +181,9 @@ class AuthorizationError(StockVerifyException):
 class RateLimitError(StockVerifyException):
     """Rate limiting errors"""
 
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: Optional[int] = None):
+    def __init__(
+        self, message: str = "Rate limit exceeded", retry_after: Optional[int] = None
+    ):
         super().__init__(
             message=message,
             error_code="RATE_LIMIT_ERROR",

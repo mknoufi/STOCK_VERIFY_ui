@@ -276,11 +276,17 @@ class BatchManager:
             by_condition[condition].append(batch)
 
         # Priority batches (need immediate attention)
-        priority_batches = [b for b in batches if b.get("action_priority") in ["URGENT", "HIGH"]]
+        priority_batches = [
+            b for b in batches if b.get("action_priority") in ["URGENT", "HIGH"]
+        ]
 
         # Calculate discount potential
-        total_value = sum(b.get("quantity", 0) * b.get("original_mrp", 0) for b in batches)
-        discounted_value = sum(b.get("quantity", 0) * b.get("current_price", 0) for b in batches)
+        total_value = sum(
+            b.get("quantity", 0) * b.get("original_mrp", 0) for b in batches
+        )
+        discounted_value = sum(
+            b.get("quantity", 0) * b.get("current_price", 0) for b in batches
+        )
         potential_loss = total_value - discounted_value
 
         return {

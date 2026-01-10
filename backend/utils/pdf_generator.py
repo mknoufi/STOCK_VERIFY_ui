@@ -37,7 +37,9 @@ class PDFGenerator:
         # Metadata
         gen_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         elements.append(Paragraph(f"Generated on: {gen_time}", normal_style))
-        elements.append(Paragraph(f"Period: Last {data.get('period_days', 7)} days", normal_style))
+        elements.append(
+            Paragraph(f"Period: Last {data.get('period_days', 7)} days", normal_style)
+        )
         elements.append(Spacer(1, 0.3 * inch))
 
         # Summary Stats
@@ -75,7 +77,9 @@ class PDFGenerator:
         if top_users:
             user_data = [["User ID", "Verifications"]]
             for user in top_users[:10]:  # Top 10
-                user_data.append([user.get("_id", "Unknown"), str(user.get("count", 0))])
+                user_data.append(
+                    [user.get("_id", "Unknown"), str(user.get("count", 0))]
+                )
 
             user_table = Table(user_data, colWidths=[3 * inch, 1.5 * inch])
             user_table.setStyle(
@@ -91,7 +95,9 @@ class PDFGenerator:
             )
             elements.append(user_table)
         else:
-            elements.append(Paragraph("No user data available for this period.", normal_style))
+            elements.append(
+                Paragraph("No user data available for this period.", normal_style)
+            )
 
         elements.append(Spacer(1, 0.4 * inch))
 
@@ -101,7 +107,9 @@ class PDFGenerator:
         if dist:
             dist_data = [["Category", "Count"]]
             for item in dist:
-                dist_data.append([item.get("_id", "Uncategorized"), str(item.get("count", 0))])
+                dist_data.append(
+                    [item.get("_id", "Uncategorized"), str(item.get("count", 0))]
+                )
 
             dist_table = Table(dist_data, colWidths=[3 * inch, 1.5 * inch])
             dist_table.setStyle(

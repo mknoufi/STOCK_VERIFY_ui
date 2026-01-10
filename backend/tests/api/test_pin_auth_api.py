@@ -59,14 +59,15 @@ async def test_login_with_pin_success():
 
     with (
         patch("backend.api.pin_auth_api.PINAuthService") as MockService,
-        patch("backend.api.pin_auth_api.find_user_by_username", return_value=mock_result),
+        patch(
+            "backend.api.pin_auth_api.find_user_by_username", return_value=mock_result
+        ),
         patch("backend.api.pin_auth_api.check_rate_limit") as mock_rate,
         patch(
             "backend.api.pin_auth_api.generate_auth_tokens",
             return_value=mock_tokens_result,
         ),
     ):
-
         mock_rate_result = MagicMock()
         mock_rate_result.is_err = False
         mock_rate.return_value = mock_rate_result
@@ -94,7 +95,9 @@ async def test_login_with_pin_invalid_user():
 
     with (
         patch("backend.api.pin_auth_api.check_rate_limit") as mock_rate,
-        patch("backend.api.pin_auth_api.find_user_by_username", return_value=mock_result),
+        patch(
+            "backend.api.pin_auth_api.find_user_by_username", return_value=mock_result
+        ),
     ):
         mock_rate_result = MagicMock()
         mock_rate_result.is_err = False
@@ -121,10 +124,11 @@ async def test_login_with_pin_invalid_pin():
 
     with (
         patch("backend.api.pin_auth_api.PINAuthService") as MockService,
-        patch("backend.api.pin_auth_api.find_user_by_username", return_value=mock_result),
+        patch(
+            "backend.api.pin_auth_api.find_user_by_username", return_value=mock_result
+        ),
         patch("backend.api.pin_auth_api.check_rate_limit") as mock_rate,
     ):
-
         mock_rate_result = MagicMock()
         mock_rate_result.is_err = False
         mock_rate.return_value = mock_rate_result

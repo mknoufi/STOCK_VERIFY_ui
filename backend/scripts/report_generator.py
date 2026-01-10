@@ -17,7 +17,9 @@ class ReportGenerator:
     """Generate various reports for stock verification"""
 
     @staticmethod
-    def generate_session_summary_excel(session_data: dict, count_lines: list[dict]) -> bytes:
+    def generate_session_summary_excel(
+        session_data: dict, count_lines: list[dict]
+    ) -> bytes:
         """Generate comprehensive session summary in Excel format"""
 
         output = io.BytesIO()
@@ -56,7 +58,9 @@ class ReportGenerator:
         # Header
         ws["A1"] = "LAVANYA E-MART - STOCK VERIFICATION SUMMARY"
         ws["A1"].font = Font(size=16, bold=True, color="FFFFFF")
-        ws["A1"].fill = PatternFill(start_color="4CAF50", end_color="4CAF50", fill_type="solid")
+        ws["A1"].fill = PatternFill(
+            start_color="4CAF50", end_color="4CAF50", fill_type="solid"
+        )
         ws.merge_cells("A1:D1")
 
         # Session Info
@@ -86,7 +90,11 @@ class ReportGenerator:
         # Calculate stats
         total_items = len(count_lines)
         with_variance = len(
-            [line_entry for line_entry in count_lines if line_entry.get("variance", 0) != 0]
+            [
+                line_entry
+                for line_entry in count_lines
+                if line_entry.get("variance", 0) != 0
+            ]
         )
         positive_variance = sum(
             line_entry.get("variance", 0)
@@ -139,13 +147,17 @@ class ReportGenerator:
         for col, header in enumerate(headers, 1):
             cell = ws.cell(1, col, header)
             cell.font = Font(bold=True, color="FFFFFF")
-            cell.fill = PatternFill(start_color="4CAF50", end_color="4CAF50", fill_type="solid")
+            cell.fill = PatternFill(
+                start_color="4CAF50", end_color="4CAF50", fill_type="solid"
+            )
             cell.alignment = Alignment(horizontal="center")
 
         # Data
         for row, line in enumerate(count_lines, 2):
             erp_qty = line.get("erp_qty", 0)
-            variance_pct = (line.get("variance", 0) / erp_qty * 100) if erp_qty > 0 else 0
+            variance_pct = (
+                (line.get("variance", 0) / erp_qty * 100) if erp_qty > 0 else 0
+            )
 
             data = [
                 line.get("item_code", ""),
@@ -184,7 +196,9 @@ class ReportGenerator:
         """Create variance analysis sheet"""
         # Only items with variance
         variance_lines = [
-            line_entry for line_entry in count_lines if line_entry.get("variance", 0) != 0
+            line_entry
+            for line_entry in count_lines
+            if line_entry.get("variance", 0) != 0
         ]
 
         # Headers
@@ -203,11 +217,15 @@ class ReportGenerator:
         for col, header in enumerate(headers, 1):
             cell = ws.cell(1, col, header)
             cell.font = Font(bold=True, color="FFFFFF")
-            cell.fill = PatternFill(start_color="FF5252", end_color="FF5252", fill_type="solid")
+            cell.fill = PatternFill(
+                start_color="FF5252", end_color="FF5252", fill_type="solid"
+            )
 
         # Data
         for row, line in enumerate(
-            sorted(variance_lines, key=lambda x: abs(x.get("variance", 0)), reverse=True),
+            sorted(
+                variance_lines, key=lambda x: abs(x.get("variance", 0)), reverse=True
+            ),
             2,
         ):
             erp_qty = line.get("erp_qty", 0)
@@ -284,11 +302,15 @@ class ReportGenerator:
         for col, header in enumerate(headers, 1):
             cell = ws.cell(1, col, header)
             cell.font = Font(bold=True, color="FFFFFF")
-            cell.fill = PatternFill(start_color="FF9800", end_color="FF9800", fill_type="solid")
+            cell.fill = PatternFill(
+                start_color="FF9800", end_color="FF9800", fill_type="solid"
+            )
 
         # Data
         for row, item in enumerate(
-            sorted(aging_items, key=lambda x: x["analysis"]["age_months"], reverse=True),
+            sorted(
+                aging_items, key=lambda x: x["analysis"]["age_months"], reverse=True
+            ),
             2,
         ):
             analysis = item["analysis"]
@@ -337,7 +359,9 @@ class ReportGenerator:
         for col, header in enumerate(headers, 1):
             cell = ws.cell(1, col, header)
             cell.font = Font(bold=True, color="FFFFFF")
-            cell.fill = PatternFill(start_color="9C27B0", end_color="9C27B0", fill_type="solid")
+            cell.fill = PatternFill(
+                start_color="9C27B0", end_color="9C27B0", fill_type="solid"
+            )
 
         ws["A2"] = "NOTE: Unmatched items require full ERP vs Counted comparison"
         ws["A2"].font = Font(italic=True, color="666666")

@@ -100,7 +100,9 @@ def sanitize_filter_keys(
             # Sanitize string values
             if isinstance(value, str):
                 # Escape regex special characters to prevent regex injection
-                sanitized[normalized_key] = re.escape(value) if _is_regex_value(value) else value
+                sanitized[normalized_key] = (
+                    re.escape(value) if _is_regex_value(value) else value
+                )
             else:
                 sanitized[normalized_key] = value
         else:
@@ -169,7 +171,9 @@ class LoginRateLimiter:
         now = datetime.utcnow()
 
         # Clean up old attempts
-        self.attempts[ip_address] = [t for t in self.attempts[ip_address] if now - t < self.window]
+        self.attempts[ip_address] = [
+            t for t in self.attempts[ip_address] if now - t < self.window
+        ]
 
         current_attempts = len(self.attempts[ip_address])
 
@@ -219,7 +223,9 @@ class BatchRateLimiter:
         now = datetime.utcnow()
 
         # Clean up old requests
-        self.requests[user_id] = [t for t in self.requests[user_id] if now - t < self.window]
+        self.requests[user_id] = [
+            t for t in self.requests[user_id] if now - t < self.window
+        ]
 
         current_count = len(self.requests[user_id])
 

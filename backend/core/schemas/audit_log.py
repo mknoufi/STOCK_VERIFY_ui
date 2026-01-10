@@ -62,9 +62,15 @@ class AuditLogCreate(BaseModel):
         default=None,
         description="Type of resource affected (e.g., 'user', 'item', 'session')",
     )
-    resource_id: Optional[str] = Field(default=None, description="ID of the affected resource")
-    details: Optional[dict[str, Any]] = Field(default=None, description="Additional action details")
-    ip_address: Optional[str] = Field(default=None, description="IP address of the request")
+    resource_id: Optional[str] = Field(
+        default=None, description="ID of the affected resource"
+    )
+    details: Optional[dict[str, Any]] = Field(
+        default=None, description="Additional action details"
+    )
+    ip_address: Optional[str] = Field(
+        default=None, description="IP address of the request"
+    )
     user_agent: Optional[str] = Field(default=None, description="User agent string")
 
     class Config:

@@ -229,7 +229,9 @@ class SearchService:
         query_lower = query.lower()
 
         for item in candidates:
-            score, match_type = self._calculate_score(item, query, query_lower, is_barcode)
+            score, match_type = self._calculate_score(
+                item, query, query_lower, is_barcode
+            )
 
             if score > 0:
                 # Create deduplication key: barcode + item_code + mrp
@@ -390,7 +392,9 @@ def get_search_service() -> SearchService:
     return _search_service
 
 
-def init_search_service(db: AsyncIOMotorDatabase, cache: Optional[Any] = None) -> SearchService:
+def init_search_service(
+    db: AsyncIOMotorDatabase, cache: Optional[Any] = None
+) -> SearchService:
     """Initialize the search service singleton"""
     global _search_service
     _search_service = SearchService(db, cache)

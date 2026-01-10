@@ -19,7 +19,9 @@ _db: Optional[AsyncIOMotorDatabase[Any]] = None
 _activity_log_service: Optional[ActivityLogService] = None
 
 
-def init_session_api(db: AsyncIOMotorDatabase, activity_log_service: ActivityLogService):
+def init_session_api(
+    db: AsyncIOMotorDatabase, activity_log_service: ActivityLogService
+):
     global _db, _activity_log_service
     _db = db
     _activity_log_service = activity_log_service
@@ -34,18 +36,57 @@ async def create_session(
     if not _db or not _activity_log_service:
         raise HTTPException(status_code=503, detail="Service not initialized")
 
+    # Enforce per-user concurrent open session limit (TDD: max 5)
+    username = current_user["username"]
+    open_session_ids: set[str] = set()
+
+    sessions_cursor = _db.sessions.find(
+        {"staff_user": username, "status": {"$in": ["OPEN"]}},
+        {"id": 1},
+    )
+    for doc in await sessions_cursor.to_list(length=1000):
+        session_id = doc.get("id")
+        if session_id:
+            open_session_ids.add(str(session_id))
+
+    # If verification_sessions exists, include those too (rack workflow)
+    try:
+        verification_cursor = _db.verification_sessions.find(
+            {
+                "user_id": username,
+                "status": {"$in": ["ACTIVE", "OPEN", "PAUSED", "active", "paused"]},
+            },
+            {"session_id": 1},
+        )
+        for doc in await verification_cursor.to_list(length=1000):
+            session_id = doc.get("session_id")
+            if session_id:
+                open_session_ids.add(str(session_id))
+    except Exception:
+        pass
+
+    if len(open_session_ids) >= 5:
+        raise HTTPException(
+            status_code=409,
+            detail="Maximum open sessions reached (5). Please close an existing session.",
+        )
+
     # Input validation and sanitization
     warehouse = session_data.warehouse.strip()
     if not warehouse:
         raise HTTPException(status_code=400, detail="Warehouse name cannot be empty")
     if len(warehouse) < 2:
-        raise HTTPException(status_code=400, detail="Warehouse name must be at least 2 characters")
+        raise HTTPException(
+            status_code=400, detail="Warehouse name must be at least 2 characters"
+        )
     if len(warehouse) > 100:
         raise HTTPException(
             status_code=400, detail="Warehouse name must be less than 100 characters"
         )
     # Sanitize warehouse name (remove potentially dangerous characters)
-    warehouse = warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
+    warehouse = (
+        warehouse.replace("<", "").replace(">", "").replace('"', "").replace("'", "")
+    )
 
     session = Session(
         warehouse=warehouse,
@@ -84,7 +125,9 @@ async def get_sessions(
 
     if current_user["role"] == "supervisor":
         total = await _db.sessions.count_documents({})
-        sessions_cursor = _db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
+        sessions_cursor = (
+            _db.sessions.find().sort("started_at", -1).skip(skip).limit(page_size)
+        )
     else:
         filter_query = {"staff_user": current_user["username"]}
         total = await _db.sessions.count_documents(filter_query)
@@ -350,7 +393,9 @@ async def get_sessions_analytics(current_user: dict = Depends(get_current_user))
 
         # Transform results
         sessions_by_date = {item["_id"]: item["count"] for item in by_date}
-        variance_by_warehouse = {item["_id"]: item["total_variance"] for item in by_warehouse}
+        variance_by_warehouse = {
+            item["_id"]: item["total_variance"] for item in by_warehouse
+        }
         items_by_staff = {item["_id"]: item["total_items"] for item in by_staff}
 
         return {

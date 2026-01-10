@@ -62,7 +62,9 @@ class DatabaseHealthService:
         self._dedicated_client: AsyncIOMotorClient = None
 
         if self.mongo_db is None and not self._switch_to_dedicated_client():
-            raise RuntimeError("Failed to initialize MongoDB connection for health monitoring")
+            raise RuntimeError(
+                "Failed to initialize MongoDB connection for health monitoring"
+            )
 
     def _switch_to_dedicated_client(self) -> bool:
         """Initialize a dedicated Mongo client if the shared one is unavailable."""
@@ -131,7 +133,10 @@ class DatabaseHealthService:
         """Check SQL Server connection health"""
         start_time = datetime.utcnow()
         try:
-            if self.sql_connector is None or getattr(self.sql_connector, "config", None) is None:
+            if (
+                self.sql_connector is None
+                or getattr(self.sql_connector, "config", None) is None
+            ):
                 logger.debug("SQL Server not configured; skipping health check")
                 self._health_status["sql_server"] = {
                     "status": "skipped",
@@ -188,7 +193,10 @@ class DatabaseHealthService:
         # Determine overall status
         if mongo_result["status"] == "healthy" and sql_result["status"] == "healthy":
             overall_status = "healthy"
-        elif mongo_result["status"] == "unhealthy" and sql_result["status"] == "unhealthy":
+        elif (
+            mongo_result["status"] == "unhealthy"
+            and sql_result["status"] == "unhealthy"
+        ):
             overall_status = "unhealthy"
         else:
             overall_status = "degraded"
@@ -220,7 +228,9 @@ class DatabaseHealthService:
 
         self._running = True
         self._task = asyncio.create_task(self._health_check_loop())
-        logger.info(f"Database health monitoring started (interval: {self.check_interval}s)")
+        logger.info(
+            f"Database health monitoring started (interval: {self.check_interval}s)"
+        )
 
     async def stop(self):
         """Stop background health monitoring"""
@@ -240,7 +250,9 @@ class DatabaseHealthService:
 
     def get_status(self) -> dict[str, Any]:
         """Get current health status"""
-        uptime = (datetime.utcnow() - self._health_status["uptime_start"]).total_seconds()
+        uptime = (
+            datetime.utcnow() - self._health_status["uptime_start"]
+        ).total_seconds()
 
         return {
             **self._health_status,

@@ -211,7 +211,9 @@ class DatabaseOptimizer:
         """Reset query statistics"""
         self._query_stats = {}
 
-    async def warmup_connections(self, db: AsyncIOMotorDatabase, collections: list[str]):
+    async def warmup_connections(
+        self, db: AsyncIOMotorDatabase, collections: list[str]
+    ):
         """
         Warm up database connections by performing lightweight operations
         """
@@ -245,11 +247,15 @@ class DatabaseOptimizer:
             for field_or_keys, opts in _INDEX_DEFINITIONS.get(collection_name, []):
                 expected_name = _build_index_name(field_or_keys)
                 if expected_name not in index_names:
-                    await collection.create_index(field_or_keys, background=True, **opts)
+                    await collection.create_index(
+                        field_or_keys, background=True, **opts
+                    )
                     optimizations.append(expected_name)
 
             if optimizations:
-                logger.info(f"Optimized indexes for {collection_name}: {', '.join(optimizations)}")
+                logger.info(
+                    f"Optimized indexes for {collection_name}: {', '.join(optimizations)}"
+                )
             else:
                 logger.debug(f"All indexes optimal for {collection_name}")
 

@@ -20,7 +20,7 @@ jobs:
     name: SonarCloud Scan
     runs-on: ubuntu-latest
     # Skip if SONAR_TOKEN is not set
-    if: ${{ secrets.SONAR_TOKEN != '' }}
+    if: ${{ secrets.SONAR_TOKEN != '3a960850114e7d288c770ff1714c7c2a29d354a9' }}
 
     services:
       mongodb:

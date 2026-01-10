@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 SQL_CONNECTION_STRING = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
+    "DRIVER={SQL Server};"  # Legacy driver (use {ODBC Driver 17 for SQL Server} if installed)
     "SERVER=192.168.1.109,1433;"
     "DATABASE=E_MART_KITCHEN_CARE;"
     "UID=stockapp;"
@@ -127,7 +127,8 @@ async def sync() -> None:
                 item["synced_at"] = datetime.utcnow().isoformat()
                 item["synced_from_erp"] = True
 
-                # Upsert item to MongoDB
+                # Upsert item to MongoDB by barcode (preserves all batches)
+                # Each barcode = unique batch with its own expiry, stock qty, etc.
                 await db.erp_items.update_one(
                     {"barcode": item["barcode"]}, {"$set": item}, upsert=True
                 )

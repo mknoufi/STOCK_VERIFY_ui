@@ -89,7 +89,9 @@ def test_get_service_logs_backend():
         patch("backend.api.admin_control_api.Path.exists", return_value=True),
         patch(
             "builtins.open",
-            mock_open(read_data="2023-10-27 10:00:00 - logger - INFO - Test log message\n"),
+            mock_open(
+                read_data="2023-10-27 10:00:00 - logger - INFO - Test log message\n"
+            ),
         ),
     ):
         response = client.get("/api/admin/control/logs/backend")
@@ -100,7 +102,9 @@ def test_get_service_logs_backend():
         assert data["data"]["logs"][0]["message"] == "Test log message"
 
 
-def test_get_system_issues(mock_port_detector, mock_sql_connector, mock_service_manager):
+def test_get_system_issues(
+    mock_port_detector, mock_sql_connector, mock_service_manager
+):
     # Simulate issues
     mock_port_detector.get_mongo_status.return_value = {"is_running": False}
     mock_service_manager.is_port_in_use.return_value = False  # Backend down

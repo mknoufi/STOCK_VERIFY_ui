@@ -211,6 +211,37 @@ async def claim_rack(
     # Get or create rack
     rack = await get_or_create_rack(db, rack_id, request.floor)
 
+    # Enforce per-user concurrent open session limit (TDD: max 5)
+    # Count distinct open session IDs across both collections to avoid double-counting.
+    open_session_ids: set[str] = set()
+
+    sessions_cursor = db.sessions.find(
+        {"staff_user": user_id, "status": {"$in": ["OPEN"]}},
+        {"id": 1},
+    )
+    for doc in await sessions_cursor.to_list(length=1000):
+        session_id = doc.get("id")
+        if session_id:
+            open_session_ids.add(str(session_id))
+
+    verification_cursor = db.verification_sessions.find(
+        {
+            "user_id": user_id,
+            "status": {"$in": ["ACTIVE", "OPEN", "PAUSED", "active", "paused"]},
+        },
+        {"session_id": 1},
+    )
+    for doc in await verification_cursor.to_list(length=1000):
+        session_id = doc.get("session_id")
+        if session_id:
+            open_session_ids.add(str(session_id))
+
+    if len(open_session_ids) >= 5:
+        raise HTTPException(
+            status_code=409,
+            detail="Maximum open sessions reached (5). Please close an existing session.",
+        )
+
     # Check if rack is available
     if rack["status"] not in ["available", "paused"]:
         raise HTTPException(
@@ -374,7 +405,9 @@ async def pause_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
+        raise HTTPException(
+            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
+        )
 
     # Update status
     await update_rack_status(
@@ -420,7 +453,9 @@ async def resume_rack(
 
     # Verify ownership
     if rack["claimed_by"] != user_id:
-        raise HTTPException(status_code=403, detail=f"Rack {rack_id} is not claimed by you")
+        raise HTTPException(
+            status_code=403, detail=f"Rack {rack_id} is not claimed by you"
+        )
 
     # Verify paused
     if rack["status"] != "paused":

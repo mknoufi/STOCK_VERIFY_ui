@@ -145,7 +145,9 @@ class ErrorNotificationService:
             logger.error(f"Error getting unresolved errors: {e}")
             return []
 
-    async def get_user_errors(self, user_id: str, limit: int = 20) -> list[dict[str, Any]]:
+    async def get_user_errors(
+        self, user_id: str, limit: int = 20
+    ) -> list[dict[str, Any]]:
         """Get user-specific errors"""
         try:
             query = {

@@ -39,7 +39,9 @@ class PortDetector:
 
         for port in port_range:
             if PortDetector.is_port_available(port):
-                logger.info(f"Found available port: {port} (preferred was {preferred_port})")
+                logger.info(
+                    f"Found available port: {port} (preferred was {preferred_port})"
+                )
                 return port
 
         raise Exception(f"No available ports found in range {port_range}")
@@ -94,7 +96,9 @@ class PortDetector:
             return False
 
     @staticmethod
-    def find_mongo_port(start_port: int = 27017, max_attempts: int = 10) -> tuple[int, bool]:
+    def find_mongo_port(
+        start_port: int = 27017, max_attempts: int = 10
+    ) -> tuple[int, bool]:
         """Find MongoDB port and return (port, is_running)"""
         # Check default port first
         if PortDetector.is_mongo_running(start_port):
@@ -114,7 +118,11 @@ class PortDetector:
     def get_mongo_url() -> str:
         """Get MongoDB URL with dynamic port detection"""
         # If explicitly provided, respect it
-        explicit = os.getenv("MONGO_URL") or os.getenv("MONGODB_URI") or os.getenv("MONGODB_URL")
+        explicit = (
+            os.getenv("MONGO_URL")
+            or os.getenv("MONGODB_URI")
+            or os.getenv("MONGODB_URL")
+        )
         if explicit:
             return explicit
 
@@ -126,9 +134,7 @@ class PortDetector:
 
         # If MONGO_PORT is set, use it
         if os.getenv("MONGO_PORT"):
-            mongo_url = (
-                f"mongodb://localhost:{int(os.getenv('MONGO_PORT', '27017'))}?directConnection=true"
-            )
+            mongo_url = f"mongodb://localhost:{int(os.getenv('MONGO_PORT', '27017'))}?directConnection=true"
             logger.info(f"Using MongoDB URL (MONGO_PORT): {mongo_url}")
             return mongo_url
 

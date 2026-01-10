@@ -6,6 +6,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { NormalizedMrpVariant } from "@/types/scan";
 import { MRP_MATCH_TOLERANCE } from "@/constants/scanConstants";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface MRPVariantSelectorProps {
   variants: NormalizedMrpVariant[];
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   mrpVariantsLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 12,
   },
   mrpVariantsChips: {
@@ -118,12 +119,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mrpVariantChip: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
     minWidth: 80,
     alignItems: "center",
   },
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     color: "#3B82F6",
   },
   mrpVariantChipMeta: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 11,
     marginTop: 2,
   },
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     color: "#3B82F6",
   },
   mrpChangeBox: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     marginTop: 12,
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   mrpChangeLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 8,
   },
   mrpChangeValue: {
@@ -170,14 +171,14 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
   },
   mrpDecrease: {
-    color: "#EF4444",
+    color: theme.colors.danger,
   },
   mrpNeutral: {
     color: "#fff",
   },
   mrpChangeNotice: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontStyle: "italic",
     marginTop: 4,
   },

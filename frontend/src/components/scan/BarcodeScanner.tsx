@@ -15,6 +15,7 @@ import {
 import { CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { ScannerMode } from "@/types/scan";
+import { defaultTheme as theme } from "@/theme/themes";
 import {
   SCANNER_CONFIG,
   ScanThrottleManager,
@@ -333,7 +334,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   scannerSubtext: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 14,
     textAlign: "center",
     backgroundColor: "rgba(0,0,0,0.6)",

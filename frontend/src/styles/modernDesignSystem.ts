@@ -1,34 +1,34 @@
 /**
- * Modern Design System - Enhanced UI/UX Upgrade v3.5
- * Deep Ocean & Emerald Color Scheme
+ * Modern Design System - Industrial Standard 1.0
+ * Dark Mode HUD with Neon Accents
  *
  * Features:
- * - Professional Sapphire Blue primary with Emerald accents
- * - Refined typography scale for better readability
- * - Optimized spacing system for modern mobile layouts
- * - Subtle glassmorphism and depth effects
+ * - Deep Slate backgrounds (#0F172A)
+ * - Neon accent colors (Blue, Emerald, Amber, Red)
+ * - Industrial typography
+ * - Enhanced shadows and glassmorphism
  * - High-contrast accessibility support
  */
 
 import { StyleSheet, Platform } from "react-native";
 
 // ==========================================
-// MODERN COLOR PALETTE - DEEP OCEAN
+// INDUSTRIAL STANDARD 1.0 COLOR PALETTE
 // ==========================================
 
 export const modernColors = {
-  // Primary Brand Colors - Deep Sapphire
+  // Primary Brand Colors - Industrial Blue
   primary: {
-    50: "#F0F9FF",
-    100: "#E0F2FE",
-    200: "#BAE6FD",
-    300: "#7DD3FC",
-    400: "#38BDF8",
-    500: "#0EA5E9", // Main primary - Sky Blue
-    600: "#0284C7",
-    700: "#0369A1",
-    800: "#075985",
-    900: "#0C4A6E",
+    50: "#EFF6FF",
+    100: "#DBEAFE",
+    200: "#BFDBFE",
+    300: "#93C5FD",
+    400: "#60A5FA",
+    500: "#3B82F6", // Main primary - Neon Blue
+    600: "#2563EB",
+    700: "#1D4ED8",
+    800: "#1E40AF",
+    900: "#1E3A8A",
   },
 
   // Secondary - Emerald Green (Success/Verification)
@@ -45,21 +45,21 @@ export const modernColors = {
     900: "#064E3B",
   },
 
-  // Accent - Royal Blue / Indigo
+  // Accent - Neon Blue (Focus/Active)
   accent: {
-    50: "#EEF2FF",
-    100: "#E0E7FF",
-    200: "#C7D2FE",
-    300: "#A5B4FC",
-    400: "#818CF8",
-    500: "#6366F1", // Main accent - Indigo
-    600: "#4F46E5",
-    700: "#4338CA",
-    800: "#3730A3",
-    900: "#312E81",
+    50: "#EFF6FF",
+    100: "#DBEAFE",
+    200: "#BFDBFE",
+    300: "#93C5FD",
+    400: "#60A5FA",
+    500: "#3B82F6", // Main accent - Neon Blue
+    600: "#2563EB",
+    700: "#1D4ED8",
+    800: "#1E40AF",
+    900: "#1E3A8A",
   },
 
-  // Neutral Grays - Slate (Professional & Clean)
+  // Neutral Grays - Deep Slate (Industrial Dark)
   neutral: {
     50: "#F8FAFC",
     100: "#F1F5F9",
@@ -69,93 +69,99 @@ export const modernColors = {
     500: "#64748B",
     600: "#475569",
     700: "#334155",
-    800: "#1E293B",
-    900: "#0F172A",
+    800: "#1E293B",  // BG_CARD
+    900: "#0F172A",  // BG_MAIN
     950: "#020617",
   },
 
-  // Semantic Colors - More Vibrant
+  // Semantic Colors - Industrial Standard
   success: {
-    light: "#DCFCE7",
-    main: "#22C55E", // Brighter green
-    dark: "#16A34A",
+    light: "#D1FAE5",
+    main: "#10B981", // Emerald Green
+    dark: "#059669",
     contrast: "#FFFFFF",
   },
 
   error: {
     light: "#FEE2E2",
-    main: "#EF4444",
+    main: "#EF4444", // Industrial Red
     dark: "#DC2626",
     contrast: "#FFFFFF",
   },
 
   warning: {
-    light: "#FEF9C3",
-    main: "#EAB308", // Brighter yellow
-    dark: "#CA8A04",
+    light: "#FEF3C7",
+    main: "#F59E0B", // Amber (Pending/Print)
+    dark: "#D97706",
     contrast: "#18181B",
   },
 
   info: {
-    light: "#E0F2FE",
-    main: "#0EA5E9", // Sky blue
-    dark: "#0284C7",
+    light: "#DBEAFE",
+    main: "#3B82F6", // Neon Blue (matches primary)
+    dark: "#2563EB",
     contrast: "#FFFFFF",
   },
 
-  // Background Colors (Dark Mode) - Deeper & Richer
+  // Background Colors - Industrial Dark Mode
   background: {
-    default: "#020617", // Slate 950
-    paper: "#0F172A", // Slate 900
-    elevated: "#1E293B", // Slate 800
-    overlay: "rgba(2, 6, 23, 0.9)",
+    default: "#0F172A", // BG_MAIN - Deep Slate
+    paper: "#1E293B",   // BG_CARD - Lighter Slate
+    elevated: "#334155", // BG_MODAL
+    overlay: "rgba(15, 23, 42, 0.9)",
     glass: "rgba(15, 23, 42, 0.75)", // Glassmorphism
   },
 
-  // Text Colors - Higher Contrast
+  // Text Colors - Industrial Standard
   text: {
-    primary: "#F8FAFC", // Slate 50
-    secondary: "#94A3B8", // Slate 400
-    tertiary: "#64748B", // Slate 500
-    disabled: "#475569", // Slate 600
-    inverse: "#020617", // Slate 950
-    link: "#38BDF8", // Sky 400
-    linkHover: "#7DD3FC", // Sky 300
+    primary: "#F8FAFC",   // White
+    secondary: "#94A3B8", // Light Grey
+    tertiary: "#64748B",  // Dark Grey (TEXT_MUTED)
+    disabled: "#475569",
+    inverse: "#0F172A",
+    link: "#3B82F6",      // Neon Blue
+    linkHover: "#60A5FA",
   },
 
-  // Border Colors - Subtle & Clean
+  // Border Colors - Industrial Standard
   border: {
-    light: "#1E293B", // Slate 800
-    medium: "#334155", // Slate 700
-    dark: "#475569", // Slate 600
-    focus: "#0EA5E9", // Sky 500
-    error: "#EF4444", // Red 500
+    light: "#334155",     // BORDER
+    medium: "#475569",    // INPUT_BORDER
+    dark: "#64748B",
+    focus: "#3B82F6",     // INFO - Neon Blue
+    error: "#EF4444",
   },
 
   // Semantic Colors Shorthand (for backward compatibility)
   semantic: {
-    success: "#10B981",
-    error: "#EF4444",
-    warning: "#F59E0B",
-    info: "#0EA5E9",
+    success: "#10B981",   // Emerald
+    error: "#EF4444",     // Red
+    warning: "#F59E0B",   // Amber
+    info: "#3B82F6",      // Neon Blue
   },
 
-  // Gradient Definitions - More Professional
+  // Surface shorthand for easier access
+  surface: "#1E293B",
+  surfaceElevated: "#334155",
+  muted: "#64748B",
+  danger: "#EF4444",
+
+  // Gradient Definitions - Industrial Standard
   gradients: {
-    primary: ["#0EA5E9", "#0284C7", "#0369A1"] as const, // Sky Blue spectrum
+    primary: ["#3B82F6", "#2563EB", "#1D4ED8"] as const, // Neon Blue spectrum
     secondary: ["#10B981", "#059669", "#047857"] as const, // Emerald spectrum
-    accent: ["#6366F1", "#4F46E5", "#4338CA"] as const, // Indigo spectrum
+    accent: ["#3B82F6", "#2563EB", "#1D4ED8"] as const, // Same as primary
     dark: ["#0F172A", "#020617", "#000000"] as const, // Deep background
     surface: ["#1E293B", "#0F172A", "#020617"] as const, // Surface layers
-    aurora: ["#0EA5E9", "#10B981", "#6366F1"] as const, // Sky to Emerald to Indigo
+    aurora: ["#3B82F6", "#10B981", "#F59E0B"] as const, // Blue to Emerald to Amber
     success: ["#10B981", "#059669"] as const,
     warning: ["#F59E0B", "#D97706"] as const,
     error: ["#EF4444", "#DC2626"] as const,
-    glass: ["rgba(255, 255, 255, 0.08)", "rgba(255, 255, 255, 0.02)"] as const,
+    glass: ["rgba(59, 130, 246, 0.08)", "rgba(59, 130, 246, 0.02)"] as const,
     shimmer: [
-      "rgba(14, 165, 233, 0.1)",
+      "rgba(59, 130, 246, 0.1)",
       "rgba(16, 185, 129, 0.15)",
-      "rgba(14, 165, 233, 0.1)",
+      "rgba(59, 130, 246, 0.1)",
     ] as const,
   },
 };

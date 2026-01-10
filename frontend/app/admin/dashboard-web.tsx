@@ -671,7 +671,11 @@ export default function DashboardWeb() {
               }}
             >
               <Text style={styles.generateButtonText}>Generate Report</Text>
-              <Ionicons name="download-outline" size={18} color="#FFF" />
+              <Ionicons
+                name="download-outline"
+                size={18}
+                color={auroraTheme.colors.text.primary}
+              />
             </AnimatedPressable>
           </GlassCard>
         ))}
@@ -814,7 +818,7 @@ export default function DashboardWeb() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={() => loadDashboardData(true)}
-                tintColor="#fff"
+                tintColor={auroraTheme.colors.text.primary}
               />
             }
           >
@@ -857,7 +861,11 @@ export default function DashboardWeb() {
                     <TouchableOpacity
                       style={[styles.formatOption, styles.formatOptionActive]}
                     >
-                      <Ionicons name="grid-outline" size={20} color="#FFF" />
+                      <Ionicons
+                        name="grid-outline"
+                        size={20}
+                        color={auroraTheme.colors.text.primary}
+                      />
                       <Text style={styles.formatText}>Excel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.formatOption}>
@@ -892,7 +900,10 @@ export default function DashboardWeb() {
                     disabled={generating}
                   >
                     {generating ? (
-                      <ActivityIndicator size="small" color="#FFF" />
+                      <ActivityIndicator
+                        size="small"
+                        color={auroraTheme.colors.text.primary}
+                      />
                     ) : (
                       <Text style={styles.confirmButtonText}>Download</Text>
                     )}
@@ -1246,7 +1257,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   generateButtonText: {
-    color: "#FFF",
+    color: auroraTheme.colors.text.primary,
     fontWeight: "600",
   },
   analyticsCard: {
@@ -1312,7 +1323,7 @@ const styles = StyleSheet.create({
     borderColor: auroraTheme.colors.primary[500],
   },
   formatText: {
-    color: "#FFF",
+    color: auroraTheme.colors.text.primary,
     fontWeight: "500",
   },
   modalFooter: {
@@ -1342,7 +1353,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   confirmButtonText: {
-    color: "#FFF",
+    color: auroraTheme.colors.text.primary,
     fontWeight: "600",
   },
 });

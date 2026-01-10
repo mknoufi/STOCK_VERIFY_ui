@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SerialInput } from "@/types/scan";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface SerialNumberEntryProps {
   serialInputs: SerialInput[];
@@ -140,7 +141,7 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                           style={styles.removeSerialButton}
                           onPress={() => handleRemove(entry.id ?? "")}
                         >
-                          <Ionicons name="trash" size={18} color="#EF4444" />
+                          <Ionicons name="trash" size={18} color={theme.colors.danger} />
                         </TouchableOpacity>
                       )}
                   </View>
@@ -148,7 +149,7 @@ export const SerialNumberEntry: React.FC<SerialNumberEntryProps> = ({
                 <TextInput
                   style={styles.serialTextInput}
                   placeholder="Scan or enter serial number"
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor={theme.colors.muted}
                   value={entry.value}
                   onChangeText={(text) =>
                     handleSerialChange(entry.id ?? "", text)
@@ -204,11 +205,11 @@ const styles = StyleSheet.create({
   },
   serialToggleLabel: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
   },
   serialRequirementText: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 8,
   },
   serialHelperText: {
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
   },
   serialErrorText: {
     fontSize: 12,
-    color: "#EF4444",
+    color: theme.colors.danger,
     marginBottom: 8,
     fontWeight: "600",
   },
@@ -227,12 +228,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   serialInputRow: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
   serialInputRowActive: {
     borderColor: "#3B82F6",
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
   serialInputLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94A3B8",
+    color: theme.colors.muted,
   },
   serialInputActions: {
     flexDirection: "row",
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
   serialControlsRow: {
     flexDirection: "row",
@@ -299,7 +300,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,

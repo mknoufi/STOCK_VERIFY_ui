@@ -12,6 +12,7 @@ export type AppTheme = {
     text: string;
     textSecondary: string;
     muted: string;
+    primary: string; // Added to support legacy styles
     accent: string;
     accentLight: string;
     accentDark: string;
@@ -61,37 +62,38 @@ export type AppTheme = {
 };
 
 export const themes: Record<string, AppTheme> = {
-  // Modern Light Theme - Clean & Professional
+  // Modern Light Theme - Lavanya Mart Branding
   light: {
     colors: {
-      background: "#FAFBFC",
+      background: "#F2F6FA", // Soft blue-grey background
       surface: "#FFFFFF",
-      surfaceElevated: "#F8F9FB",
-      text: "#0D1117",
-      textSecondary: "#57606A",
-      muted: "#8B949E",
-      accent: "#0969DA",
-      accentLight: "#54AEFF",
-      accentDark: "#0550AE",
-      success: "#1A7F37",
-      successLight: "#2DA44E",
-      danger: "#CF222E",
-      dangerLight: "#FA4549",
-      warning: "#BF8700",
-      warningLight: "#D4A72C",
-      info: "#0969DA",
-      border: "#D0D7DE",
-      borderLight: "#E1E7ED",
-      overlay: "rgba(27, 31, 36, 0.5)",
-      glass: "rgba(255, 255, 255, 0.85)",
-      shimmer: ["#E1E4E8", "#F6F8FA", "#E1E4E8"],
+      surfaceElevated: "#FFFFFF",
+      text: "#1E293B", // Slate 800
+      textSecondary: "#64748B",
+      muted: "#94A3B8",
+      primary: "#0066CC", // Lavanya Blue Main
+      accent: "#0066CC", // Lavanya Blue
+      accentLight: "#4DA6FF",
+      accentDark: "#004080",
+      success: "#059669",
+      successLight: "#34D399",
+      danger: "#DC2626",
+      dangerLight: "#F87171",
+      warning: "#D97706",
+      warningLight: "#FBBF24",
+      info: "#0284C7",
+      border: "#E2E8F0",
+      borderLight: "#F1F5F9",
+      overlay: "rgba(15, 23, 42, 0.6)",
+      glass: "rgba(255, 255, 255, 0.9)",
+      shimmer: ["#F1F5F9", "#E2E8F0", "#F1F5F9"],
     },
     gradients: {
-      primary: ["#0969DA", "#0550AE", "#033D8B"],
-      accent: ["#54AEFF", "#0969DA"],
-      surface: ["#FFFFFF", "#F6F8FA"],
-      success: ["#2DA44E", "#1A7F37"],
-      danger: ["#FA4549", "#CF222E"],
+      primary: ["#0066CC", "#0052A3", "#003D7A"], // Lavanya Blue Gradient
+      accent: ["#3399FF", "#0066CC"],
+      surface: ["#FFFFFF", "#F8FAFC"],
+      success: ["#10B981", "#059669"],
+      danger: ["#EF4444", "#DC2626"],
     },
     spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 },
     radius: { xs: 4, sm: 6, md: 8, lg: 12, xl: 16, full: 9999 },
@@ -113,6 +115,7 @@ export const themes: Record<string, AppTheme> = {
       text: "#F0F6FC",
       textSecondary: "#8B949E",
       muted: "#6E7681",
+      primary: "#58A6FF",
       accent: "#58A6FF",
       accentLight: "#79C0FF",
       accentDark: "#388BFD",
@@ -147,34 +150,35 @@ export const themes: Record<string, AppTheme> = {
     },
   },
 
-  // Aurora Premium - Deep Ocean & Emerald (Professional & Modern)
+  // Aurora Premium - Industrial Standard 1.0 (Deep Slate & Neon Blue)
   premium: {
     colors: {
-      background: "#020617",
-      surface: "#0F172A",
-      surfaceElevated: "#1E293B",
-      text: "#F8FAFC",
-      textSecondary: "#94A3B8",
-      muted: "#64748B",
-      accent: "#0EA5E9",
-      accentLight: "#38BDF8",
-      accentDark: "#0284C7",
-      success: "#10B981",
+      background: "#0F172A",     // BG_MAIN - Deep Slate
+      surface: "#1E293B",        // BG_CARD - Lighter Slate
+      surfaceElevated: "#334155", // BG_MODAL
+      text: "#F8FAFC",           // TEXT_PRIMARY
+      textSecondary: "#94A3B8",  // TEXT_SECONDARY
+      muted: "#64748B",          // TEXT_MUTED
+      primary: "#3B82F6",        // Neon Blue
+      accent: "#3B82F6",         // Neon Blue (INFO)
+      accentLight: "#60A5FA",
+      accentDark: "#2563EB",
+      success: "#10B981",        // Emerald Green
       successLight: "#34D399",
-      danger: "#EF4444",
+      danger: "#EF4444",         // Industrial Red
       dangerLight: "#F87171",
-      warning: "#F59E0B",
+      warning: "#F59E0B",        // Amber
       warningLight: "#FBBF24",
-      info: "#0EA5E9",
-      border: "#1E293B",
-      borderLight: "#334155",
-      overlay: "rgba(2, 6, 23, 0.9)",
+      info: "#3B82F6",           // Neon Blue
+      border: "#334155",         // BORDER
+      borderLight: "#475569",    // INPUT_BORDER
+      overlay: "rgba(15, 23, 42, 0.9)",
       glass: "rgba(15, 23, 42, 0.75)",
       shimmer: ["#1E293B", "#334155", "#1E293B"],
     },
     gradients: {
-      primary: ["#0EA5E9", "#0284C7", "#0369A1"],
-      accent: ["#38BDF8", "#0EA5E9"],
+      primary: ["#3B82F6", "#2563EB", "#1D4ED8"],
+      accent: ["#60A5FA", "#3B82F6"],
       surface: ["#1E293B", "#0F172A"],
       success: ["#34D399", "#10B981"],
       danger: ["#F87171", "#EF4444"],
@@ -186,7 +190,7 @@ export const themes: Record<string, AppTheme> = {
       sm: "0 2px 4px rgba(0,0,0,0.2)",
       md: "0 6px 12px rgba(0,0,0,0.3)",
       lg: "0 12px 32px rgba(0,0,0,0.4)",
-      glow: "0 0 30px rgba(14,165,233,0.3)",
+      glow: "0 0 30px rgba(59,130,246,0.4)",  // Neon Blue glow
     },
   },
 
@@ -199,6 +203,7 @@ export const themes: Record<string, AppTheme> = {
       text: "#F0FDFA",
       textSecondary: "#99F6E4",
       muted: "#5EEAD4",
+      primary: "#14B8A6",
       accent: "#14B8A6",
       accentLight: "#2DD4BF",
       accentDark: "#0D9488",
@@ -242,6 +247,7 @@ export const themes: Record<string, AppTheme> = {
       text: "#FAFAF9",
       textSecondary: "#E7E5E4",
       muted: "#A8A29E",
+      primary: "#F97316",
       accent: "#F97316",
       accentLight: "#FB923C",
       accentDark: "#EA580C",
@@ -285,6 +291,7 @@ export const themes: Record<string, AppTheme> = {
       text: "#FFFFFF",
       textSecondary: "#E5E5E5",
       muted: "#A3A3A3",
+      primary: "#00D4FF",
       accent: "#00D4FF",
       accentLight: "#5CE1FF",
       accentDark: "#00B8E0",
@@ -321,4 +328,4 @@ export const themes: Record<string, AppTheme> = {
 };
 
 // Default theme export for quick access
-export const defaultTheme = themes.premium;
+export const defaultTheme: AppTheme = themes["premium"] ?? themes["light"]!;

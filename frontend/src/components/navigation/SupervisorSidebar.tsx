@@ -54,6 +54,12 @@ const SUPERVISOR_GROUPS: SidebarGroup[] = [
         icon: "cube",
         route: "/supervisor/sessions",
       },
+      {
+        key: "inventory",
+        label: "Inventory",
+        icon: "layers",
+        route: "/supervisor/inventory",
+      },
     ],
   },
   {

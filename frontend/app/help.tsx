@@ -11,9 +11,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { Header } from "@/components/layout/Header";
-import { useTheme } from "@/hooks/useTheme";
+import { GlassCard, ScreenContainer } from "@/components/ui";
+import { useThemeContext } from "@/theme/ThemeContext";
 
 interface HelpSection {
   title: string;
@@ -139,8 +138,7 @@ const helpSections: HelpSection[] = [
 ];
 
 export default function HelpScreen() {
-  const router = useRouter();
-  const theme = useTheme();
+  const { theme } = useThemeContext();
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(
     new Set(),
   );
@@ -157,26 +155,23 @@ export default function HelpScreen() {
   };
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    <ScreenContainer
+      backgroundType="pattern"
+      header={{
+        title: "Help & Documentation",
+        showBackButton: true,
+        showLogoutButton: false,
+      }}
+      contentMode="scroll"
     >
-      <Header
-        title="Help & Documentation"
-        leftIcon="arrow-back"
-        onLeftPress={() => router.back()}
-      />
-
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {helpSections.map((section, sectionIndex) => (
-          <View
-            key={sectionIndex}
-            style={[styles.section, { backgroundColor: theme.colors.card }]}
-          >
+          <GlassCard key={sectionIndex} variant="medium" style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons
                 name={section.icon as any}
-                size={24}
-                color={theme.colors.primary}
+                size={22}
+                color={theme.colors.accent}
               />
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
                 {section.title}
@@ -192,13 +187,13 @@ export default function HelpScreen() {
                   <TouchableOpacity
                     style={styles.questionContainer}
                     onPress={() => toggleItem(sectionIndex, itemIndex)}
-                    activeOpacity={0.7}
+                    activeOpacity={0.8}
                   >
                     <View style={styles.questionContent}>
                       {item.icon && (
                         <Ionicons
                           name={item.icon as any}
-                          size={20}
+                          size={18}
                           color={theme.colors.textSecondary}
                           style={styles.itemIcon}
                         />
@@ -211,7 +206,7 @@ export default function HelpScreen() {
                     </View>
                     <Ionicons
                       name={isExpanded ? "chevron-up" : "chevron-down"}
-                      size={20}
+                      size={18}
                       color={theme.colors.textSecondary}
                     />
                   </TouchableOpacity>
@@ -220,7 +215,7 @@ export default function HelpScreen() {
                     <View
                       style={[
                         styles.answerContainer,
-                        { backgroundColor: theme.colors.background },
+                        { backgroundColor: theme.colors.surface },
                       ]}
                     >
                       <Text
@@ -236,18 +231,13 @@ export default function HelpScreen() {
                 </View>
               );
             })}
-          </View>
+          </GlassCard>
         ))}
 
-        {/* Contact Support */}
-        <View
-          style={[
-            styles.contactSection,
-            { backgroundColor: theme.colors.card },
-          ]}
-        >
-          <Ionicons name="mail" size={32} color={theme.colors.primary} />
-          <Text style={[styles.contactTitle, { color: theme.colors.text }]}>
+        <GlassCard variant="medium" style={styles.contactSection}>
+          <Ionicons name="mail" size={32} color={theme.colors.accent} />
+          <Text style={[styles.contactTitle, { color: theme.colors.text }]}
+          >
             Need More Help?
           </Text>
           <Text
@@ -256,23 +246,18 @@ export default function HelpScreen() {
             Contact your system administrator or IT support team for additional
             assistance.
           </Text>
-        </View>
+        </GlassCard>
       </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },
   section: {
     margin: 16,
-    padding: 16,
-    borderRadius: 12,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -291,8 +276,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
   },
   questionContent: {
     flex: 1,
@@ -310,7 +296,7 @@ const styles = StyleSheet.create({
   },
   answerContainer: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginTop: 4,
   },
   answer: {
@@ -319,8 +305,6 @@ const styles = StyleSheet.create({
   },
   contactSection: {
     margin: 16,
-    padding: 24,
-    borderRadius: 12,
     alignItems: "center",
   },
   contactTitle: {

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   StyleSheet,
   Platform,
   ScrollView,
@@ -55,7 +54,6 @@ export default function StaffHome() {
   const [currentPage] = useState(1);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [_lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [showFloorPicker, setShowFloorPicker] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -92,32 +90,37 @@ export default function StaffHome() {
   // Compute display floors for the floor picker modal
   // This ensures fallback data is always available based on locationType
   const displayFloors = useMemo(() => {
+    console.log("📊 displayFloors recalculating. warehouses:", warehouses.length, "locationType:", locationType);
     if (warehouses.length > 0) {
+      console.log("📊 Using warehouses:", warehouses.map(w => w.warehouse_name));
       return warehouses;
     }
     if (!locationType) {
+      console.log("📊 No locationType, returning empty array");
       return [];
     }
     // Fallback floors based on location type
     if (locationType.toLowerCase().includes("showroom")) {
-      return [
+      const showroomFloors = [
         { warehouse_name: "Ground Floor", id: "fl_ground" },
         { warehouse_name: "First Floor", id: "fl_first" },
         { warehouse_name: "Second Floor", id: "fl_second" },
       ];
+      console.log("📊 Using showroom fallback");
+      return showroomFloors;
     }
-    return [
+    const godownFloors = [
       { warehouse_name: "Main Godown", id: "wh_main" },
       { warehouse_name: "Top Godown", id: "wh_top" },
       { warehouse_name: "Damage Area", id: "wh_damage" },
     ];
+    console.log("📊 Using godown fallback");
+    return godownFloors;
   }, [warehouses, locationType]);
 
   // Effects
   useEffect(() => {
-    if (sessionsData && !isLoadingSessions) {
-      setLastSyncTime(new Date());
-    }
+    // No-op: sessionsData is consumed via queries/memos
   }, [sessionsData, isLoadingSessions]);
 
   // Handlers
@@ -127,7 +130,6 @@ export default function StaffHome() {
     setIsRefreshing(true);
     try {
       await refetch();
-      setLastSyncTime(new Date());
     } finally {
       setIsRefreshing(false);
     }
@@ -347,30 +349,6 @@ export default function StaffHome() {
     }
   };
 
-  const handleOpenFloorPicker = () => {
-    if (Platform.OS !== "web") Haptics.selectionAsync();
-    console.log("🚪 handleOpenFloorPicker called. warehouses:", warehouses.length, "locationType:", locationType);
-
-    // Ensure we have floors to show if warehouses is empty
-    if (locationType && warehouses.length === 0) {
-      const fallback = locationType.toLowerCase().includes("showroom")
-        ? [
-            { warehouse_name: "Ground Floor", id: "fl_ground" },
-            { warehouse_name: "First Floor", id: "fl_first" },
-            { warehouse_name: "Second Floor", id: "fl_second" },
-          ]
-        : [
-            { warehouse_name: "Main Godown", id: "wh_main" },
-            { warehouse_name: "Top Godown", id: "wh_top" },
-            { warehouse_name: "Damage Area", id: "wh_damage" },
-          ];
-      console.log("🏢 Setting warehouses to fallback:", fallback.map(f => f.warehouse_name));
-      setWarehouses(fallback);
-    }
-
-    setShowFloorPicker(true);
-  };
-
   // Render Helpers
   const _formatSyncTime = (date: Date | null): string => {
     if (!date) return "Never";
@@ -460,7 +438,7 @@ export default function StaffHome() {
             style={[
               styles.newSectionModalContent,
               {
-                backgroundColor: isDark ? "#0F172A" : "#FFFFFF",
+                backgroundColor: theme.colors.surface,
               },
             ]}
           >
@@ -473,16 +451,16 @@ export default function StaffHome() {
                 <View
                   style={[
                     styles.headerIconContainer,
-                    { backgroundColor: "#0EA5E920" },
+                    { backgroundColor: theme.colors.accent + '20' },
                   ]}
                 >
-                  <Ionicons name="add-circle" size={24} color="#0EA5E9" />
+                  <Ionicons name="add-circle" size={24} color={theme.colors.accent} />
                 </View>
                 <View>
                   <Text
                     style={[
                       styles.modalTitle,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
+                      { color: theme.colors.text },
                     ]}
                   >
                     New Section
@@ -490,7 +468,7 @@ export default function StaffHome() {
                   <Text
                     style={[
                       styles.modalSubtitle,
-                      { color: isDark ? "#94A3B8" : "#64748B" },
+                      { color: theme.colors.muted },
                     ]}
                   >
                     Set up your counting area
@@ -500,14 +478,14 @@ export default function StaffHome() {
               <TouchableOpacity
                 style={[
                   styles.closeButton,
-                  { backgroundColor: isDark ? "#1E293B" : "#F1F5F9" },
+                  { backgroundColor: theme.colors.surfaceElevated },
                 ]}
                 onPress={() => setShowNewSectionForm(false)}
               >
                 <Ionicons
                   name="close"
                   size={20}
-                  color={isDark ? "#94A3B8" : "#64748B"}
+                  color={theme.colors.muted}
                 />
               </TouchableOpacity>
             </View>
@@ -524,7 +502,7 @@ export default function StaffHome() {
                   <View
                     style={[
                       styles.stepNumber,
-                      { backgroundColor: "#0EA5E9" },
+                      { backgroundColor: theme.colors.accent },
                     ]}
                   >
                     <Text style={styles.stepNumberText}>1</Text>
@@ -532,7 +510,7 @@ export default function StaffHome() {
                   <Text
                     style={[
                       styles.stepLabel,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
+                      { color: theme.colors.text },
                     ]}
                   >
                     Choose Location Type
@@ -540,7 +518,7 @@ export default function StaffHome() {
                 </View>
                 <View style={styles.locationTypeRow}>
                   {isLoadingLocations && zones.length === 0 ? (
-                    <ActivityIndicator color={isDark ? "#F8FAFC" : "#0F172A"} />
+                    <ActivityIndicator color={theme.colors.text} />
                   ) : (
                     zones.map((zone) => (
                       <TouchableOpacity
@@ -550,16 +528,12 @@ export default function StaffHome() {
                           {
                             backgroundColor:
                               locationType === zone.zone_name
-                                ? "#0EA5E915"
-                                : isDark
-                                  ? "#1E293B"
-                                  : "#F8FAFC",
+                                ? theme.colors.accent + '15'
+                                : theme.colors.surfaceElevated,
                             borderColor:
                               locationType === zone.zone_name
-                                ? "#0EA5E9"
-                                : isDark
-                                  ? "#334155"
-                                  : "#E2E8F0",
+                                ? theme.colors.accent
+                                : theme.colors.border,
                           },
                         ]}
                         onPress={() => handleLocationTypeChange(zone.zone_name)}
@@ -571,10 +545,8 @@ export default function StaffHome() {
                             {
                               backgroundColor:
                                 locationType === zone.zone_name
-                                  ? "#0EA5E920"
-                                  : isDark
-                                    ? "#334155"
-                                    : "#F1F5F9",
+                                  ? theme.colors.accent + '20'
+                                  : theme.colors.border,
                             },
                           ]}
                         >
@@ -587,10 +559,8 @@ export default function StaffHome() {
                             size={24}
                             color={
                               locationType === zone.zone_name
-                                ? "#0EA5E9"
-                                : isDark
-                                  ? "#94A3B8"
-                                  : "#64748B"
+                                ? theme.colors.accent
+                                : theme.colors.muted
                             }
                           />
                         </View>
@@ -600,10 +570,8 @@ export default function StaffHome() {
                             {
                               color:
                                 locationType === zone.zone_name
-                                  ? "#0EA5E9"
-                                  : isDark
-                                    ? "#F8FAFC"
-                                    : "#0F172A",
+                                  ? theme.colors.accent
+                                  : theme.colors.text,
                             },
                           ]}
                         >
@@ -626,7 +594,7 @@ export default function StaffHome() {
                   <View
                     style={[
                       styles.stepNumber,
-                      { backgroundColor: "#0EA5E9" },
+                      { backgroundColor: theme.colors.accent },
                     ]}
                   >
                     <Text style={styles.stepNumberText}>2</Text>
@@ -634,7 +602,7 @@ export default function StaffHome() {
                   <Text
                     style={[
                       styles.stepLabel,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
+                      { color: theme.colors.text },
                     ]}
                   >
                     Select Floor / Area
@@ -645,11 +613,14 @@ export default function StaffHome() {
                   style={[
                     styles.dropdownButton,
                     {
-                      backgroundColor: isDark ? "#1E293B" : "#F8FAFC",
-                      borderColor: isDark ? "#334155" : "#E2E8F0",
+                      backgroundColor: theme.colors.surfaceElevated,
+                      borderColor: theme.colors.border,
                     },
                   ]}
-                  onPress={handleOpenFloorPicker}
+                  onPress={() => {
+                    if (Platform.OS !== "web") Haptics.selectionAsync();
+                    setShowFloorPicker(!showFloorPicker);
+                  }}
                   disabled={!locationType}
                   activeOpacity={0.7}
                 >
@@ -657,17 +628,15 @@ export default function StaffHome() {
                     <Ionicons
                       name="business"
                       size={20}
-                      color={locationType ? "#0EA5E9" : "#94A3B8"}
+                      color={locationType ? theme.colors.accent : theme.colors.muted}
                     />
                     <Text
                       style={[
                         styles.dropdownText,
                         {
                           color: selectedFloor
-                            ? isDark
-                              ? "#F8FAFC"
-                              : "#0F172A"
-                            : "#94A3B8",
+                            ? theme.colors.text
+                            : theme.colors.muted,
                         },
                       ]}
                     >
@@ -677,16 +646,69 @@ export default function StaffHome() {
                   <View
                     style={[
                       styles.dropdownChevron,
-                      { backgroundColor: isDark ? "#334155" : "#F1F5F9" },
+                      { backgroundColor: theme.colors.border },
                     ]}
                   >
                     <Ionicons
-                      name="chevron-down"
+                      name={showFloorPicker ? "chevron-up" : "chevron-down"}
                       size={18}
-                      color={isDark ? "#94A3B8" : "#64748B"}
+                      color={theme.colors.muted}
                     />
                   </View>
                 </TouchableOpacity>
+
+                {/* Inline Floor Options (shown when expanded) */}
+                {showFloorPicker && locationType && (
+                  <View style={{ 
+                    marginTop: 8, 
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    overflow: 'hidden'
+                  }}>
+                    {displayFloors.map((floor, index) => (
+                      <TouchableOpacity
+                        key={floor.id || floor.warehouse_name}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingHorizontal: 16,
+                          paddingVertical: 14,
+                          backgroundColor: selectedFloor === floor.warehouse_name
+                            ? theme.colors.accent + '15'
+                            : 'transparent',
+                          borderBottomWidth: index < displayFloors.length - 1 ? 1 : 0,
+                          borderBottomColor: theme.colors.border,
+                        }}
+                        onPress={() => {
+                          setSelectedFloor(floor.warehouse_name);
+                          setShowFloorPicker(false);
+                          if (Platform.OS !== "web") Haptics.selectionAsync();
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          <Ionicons 
+                            name={locationType.toLowerCase().includes("showroom") ? "layers-outline" : "cube-outline"} 
+                            size={18} 
+                            color={selectedFloor === floor.warehouse_name ? theme.colors.accent : theme.colors.muted} 
+                          />
+                          <Text style={{
+                            fontSize: 15,
+                            color: selectedFloor === floor.warehouse_name ? theme.colors.accent : theme.colors.text,
+                            fontWeight: selectedFloor === floor.warehouse_name ? '600' : '400',
+                          }}>
+                            {floor.warehouse_name}
+                          </Text>
+                        </View>
+                        {selectedFloor === floor.warehouse_name && (
+                          <Ionicons name="checkmark-circle" size={20} color={theme.colors.accent} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
 
               {/* Step 3: Rack Name */}
@@ -695,7 +717,7 @@ export default function StaffHome() {
                   <View
                     style={[
                       styles.stepNumber,
-                      { backgroundColor: "#0EA5E9" },
+                      { backgroundColor: theme.colors.accent },
                     ]}
                   >
                     <Text style={styles.stepNumberText}>3</Text>
@@ -703,7 +725,7 @@ export default function StaffHome() {
                   <Text
                     style={[
                       styles.stepLabel,
-                      { color: isDark ? "#F8FAFC" : "#0F172A" },
+                      { color: theme.colors.text },
                     ]}
                   >
                     Rack / Shelf Identifier
@@ -728,10 +750,8 @@ export default function StaffHome() {
                   {
                     backgroundColor:
                       locationType && selectedFloor && rackName.trim()
-                        ? "#0EA5E9"
-                        : isDark
-                          ? "#1E293B"
-                          : "#E2E8F0",
+                        ? theme.colors.accent
+                        : theme.colors.border,
                   },
                 ]}
                 onPress={handleStartNewSection}
@@ -753,118 +773,6 @@ export default function StaffHome() {
           </View>
       </Modal >
 
-      {/* Floor Picker Modal */}
-      {/* @ts-ignore */}
-      <Modal
-        isVisible={showFloorPicker}
-        onBackdropPress={() => setShowFloorPicker(false)}
-        onBackButtonPress={() => setShowFloorPicker(false)}
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.5}
-        swipeDirection="down"
-        onSwipeComplete={() => setShowFloorPicker(false)}
-        useNativeDriver
-        hideModalContentWhileAnimating
-        statusBarTranslucent
-      >
-          <View
-            style={[
-              styles.modalContent,
-              styles.floorPickerContent,
-              { backgroundColor: isDark ? "#0F172A" : "#FFFFFF" },
-            ]}
-          >
-            <View style={styles.dragHandle} />
-            <View style={styles.modalHeader}>
-              <View>
-                <Text
-                  style={[
-                    styles.modalTitle,
-                    { color: isDark ? "#F8FAFC" : "#0F172A" },
-                  ]}
-                >
-                  Select Floor
-                </Text>
-                {locationType && (
-                  <Text style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 12, marginTop: 2 }}>
-                    for {locationType}
-                  </Text>
-                )}
-              </View>
-              <TouchableOpacity onPress={() => setShowFloorPicker(false)}>
-                <Ionicons
-                  name="close"
-                  size={24}
-                  color={isDark ? "#94A3B8" : "#64748B"}
-                />
-              </TouchableOpacity>
-            </View>
-            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-              {displayFloors.length === 0 ? (
-                <View style={{ padding: 20, alignItems: "center" }}>
-                  <Ionicons name="folder-open-outline" size={48} color={isDark ? "#475569" : "#CBD5E1"} style={{ marginBottom: 12 }} />
-                  <Text style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 16, marginBottom: 8 }}>
-                    Select a zone first
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  {displayFloors.map((floor) => (
-                    <TouchableOpacity
-                      key={floor.id || floor.warehouse_name}
-                      style={[
-                        styles.modalOption,
-                        {
-                          backgroundColor:
-                            selectedFloor === floor.warehouse_name
-                              ? "#0EA5E910"
-                              : "transparent",
-                        },
-                      ]}
-                      onPress={() => {
-                        setSelectedFloor(floor.warehouse_name);
-                        setShowFloorPicker(false);
-                        if (Platform.OS !== "web") Haptics.selectionAsync();
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.modalOptionText,
-                          {
-                            color:
-                              selectedFloor === floor.warehouse_name
-                                ? "#0EA5E9"
-                                : isDark
-                                  ? "#F8FAFC"
-                                  : "#0F172A",
-                            fontWeight: selectedFloor === floor.warehouse_name ? "700" : "400",
-                          },
-                        ]}
-                      >
-                        {floor.warehouse_name}
-                      </Text>
-                      {selectedFloor === floor.warehouse_name && (
-                        <Ionicons name="checkmark" size={20} color="#0EA5E9" />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                  {__DEV__ && (
-                    <View style={{ padding: 10, marginTop: 10, borderTopWidth: 1, borderColor: isDark ? "#334155" : "#E2E8F0" }}>
-                      <Text style={{ fontSize: 10, color: isDark ? "#94A3B8" : "#64748B", fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>
-                        Debug: {displayFloors.length} floors available
-                        {"\n"}Location: {locationType}
-                        {"\n"}Warehouses: {warehouses.length}
-                      </Text>
-                    </View>
-                  )}
-                </>
-              )}
-            </ScrollView>
-          </View>
-      </Modal >
-
       {/* Logout Confirmation Modal */}
       {/* @ts-ignore */}
       <Modal
@@ -881,7 +789,7 @@ export default function StaffHome() {
       >
         <View
           style={{
-            backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
+            backgroundColor: theme.colors.surface,
             borderRadius: 20,
             padding: 24,
             alignItems: "center",
@@ -900,20 +808,20 @@ export default function StaffHome() {
               width: 64,
               height: 64,
               borderRadius: 32,
-              backgroundColor: "#EF444420",
+              backgroundColor: theme.colors.danger + '20',
               alignItems: "center",
               justifyContent: "center",
               marginBottom: 16,
             }}
           >
-            <Ionicons name="log-out" size={32} color="#EF4444" />
+            <Ionicons name="log-out" size={32} color={theme.colors.danger} />
           </View>
 
           <Text
             style={{
               fontSize: 20,
               fontWeight: "700",
-              color: isDark ? "#F8FAFC" : "#0F172A",
+              color: theme.colors.text,
               marginBottom: 8,
               textAlign: "center",
             }}
@@ -924,7 +832,7 @@ export default function StaffHome() {
           <Text
             style={{
               fontSize: 15,
-              color: isDark ? "#94A3B8" : "#64748B",
+              color: theme.colors.muted,
               textAlign: "center",
               marginBottom: 24,
               lineHeight: 22,
@@ -939,7 +847,7 @@ export default function StaffHome() {
                 flex: 1,
                 paddingVertical: 14,
                 borderRadius: 12,
-                backgroundColor: isDark ? "#334155" : "#F1F5F9",
+                backgroundColor: theme.colors.border,
                 alignItems: "center",
               }}
               onPress={() => setShowLogoutModal(false)}
@@ -948,7 +856,7 @@ export default function StaffHome() {
                 style={{
                   fontSize: 15,
                   fontWeight: "600",
-                  color: isDark ? "#F8FAFC" : "#0F172A",
+                  color: theme.colors.text,
                 }}
               >
                 Cancel
@@ -960,7 +868,7 @@ export default function StaffHome() {
                 flex: 1,
                 paddingVertical: 14,
                 borderRadius: 12,
-                backgroundColor: "#EF4444",
+                backgroundColor: theme.colors.danger,
                 alignItems: "center",
               }}
               onPress={() => {
@@ -1282,6 +1190,7 @@ const styles = StyleSheet.create({
   },
   floorPickerContent: {
     maxHeight: "65%",
+    minHeight: 250,
   },
   newSectionModalContent: {
     borderTopLeftRadius: 18,

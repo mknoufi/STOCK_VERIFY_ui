@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeContext } from "../../theme/ThemeContext";
 
 export default function OnlineStatus() {
+  const { theme } = useThemeContext();
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
 
   useEffect(() => {
@@ -20,7 +22,14 @@ export default function OnlineStatus() {
 
   return (
     <View
-      style={[styles.container, isConnected ? styles.online : styles.offline]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: isConnected
+            ? theme.colors.success
+            : theme.colors.danger,
+        },
+      ]}
     >
       <Ionicons
         name={isConnected ? "cloud-done" : "cloud-offline"}
@@ -41,12 +50,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 6,
     alignSelf: "flex-start",
-  },
-  online: {
-    backgroundColor: "#4CAF50",
-  },
-  offline: {
-    backgroundColor: "#FF5252",
   },
   text: {
     color: "#fff",

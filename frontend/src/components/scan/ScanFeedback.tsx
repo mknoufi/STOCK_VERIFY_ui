@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SCANNER_CONFIG } from '../../config/scannerConfig';
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface ScanFeedbackProps {
   /** Type of feedback to display */
@@ -101,7 +102,7 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
   if (type === 'none') return null;
 
   const isSuccess = type === 'success';
-  const backgroundColor = isSuccess ? '#22C55E' : '#EF4444';
+  const backgroundColor = isSuccess ? '#22C55E' : theme.colors.danger;
   const iconName = isSuccess ? 'checkmark-circle' : 'close-circle';
 
   return (
@@ -208,7 +209,7 @@ export const ScanToast: React.FC<ScanToastProps> = ({
 
   if (!visible) return null;
 
-  const backgroundColor = type === 'success' ? '#22C55E' : '#EF4444';
+  const backgroundColor = type === 'success' ? '#22C55E' : theme.colors.danger;
   const iconName = type === 'success' ? 'checkmark-circle' : 'close-circle';
 
   return (
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#94A3B8',
+    backgroundColor: theme.colors.muted,
     marginRight: 8,
   },
   indicatorDotActive: {

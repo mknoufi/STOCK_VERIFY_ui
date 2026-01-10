@@ -8,6 +8,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { flags } from "../../constants/flags";
+import { useThemeContext } from "../../theme/ThemeContext";
 
 interface BottomSheetProps {
   visible: boolean;
@@ -22,6 +23,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   height = 400,
   children,
 }) => {
+  const { theme } = useThemeContext();
   const progress = useSharedValue(visible ? 1 : 0);
   const [render, setRender] = React.useState(visible);
 
@@ -78,7 +80,17 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           onPress={onClose}
         />
       </Animated.View>
-      <Animated.View style={[styles.sheet, { height }, sheetStyle]}>
+      <Animated.View
+        style={[
+          styles.sheet,
+          {
+            height,
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.border,
+          },
+          sheetStyle,
+        ]}
+      >
         {children}
       </Animated.View>
     </Modal>
@@ -95,12 +107,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#1e1e1e",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#333",
   },
 });
 

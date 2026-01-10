@@ -80,9 +80,13 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       const fullUrl = toFullUrl(error.config?.baseURL, error.config?.url);
+      const status: number = error.response.status;
+      const requestUrl = error.config?.url || "";
 
       // Handle session expiration (401 Unauthorized)
-      if (error.response.status === 401) {
+      // BUT: Don't logout for auth endpoints - 401 there means invalid credentials
+      const isAuthEndpoint = requestUrl.includes("/auth/login");
+      if (status === 401 && !isAuthEndpoint) {
         console.warn("[API] Session expired or unauthorized. Logging out...");
 
         // Clear storage immediately to prevent stale token persistence
@@ -91,11 +95,10 @@ apiClient.interceptors.response.use(
 
         handleUnauthorized();
       } else {
-        // Log other errors as usual
-        console.error(
-          `[API Error] ${error.response.status} ${fullUrl}`,
-          error.response.data,
-        );
+        // 4xx errors are often expected (not found, validation, etc.) and should
+        // not trigger noisy red-box error overlays during development.
+        const logFn = status >= 500 ? console.error : console.warn;
+        logFn(`[API Error] ${status} ${fullUrl}`, error.response.data);
       }
     } else if (error.request) {
       const fullUrl = toFullUrl(error.config?.baseURL, error.config?.url);

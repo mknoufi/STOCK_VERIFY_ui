@@ -202,4 +202,48 @@ export const notify = {
       priority: "default",
     });
   },
+
+  // Inventory-specific notifications
+  expiryAlert: (count: number, days: number = 30) => {
+    NotificationService.showNotification({
+      title: "⚠️ Expiry Alert",
+      body: `${count} items expiring within ${days} days`,
+      priority: "high",
+      data: { type: "expiry_alert", count, days },
+    });
+  },
+
+  lowStockAlert: (count: number, threshold: number = 10) => {
+    NotificationService.showNotification({
+      title: "📦 Low Stock Alert",
+      body: `${count} items below ${threshold} units`,
+      priority: "high",
+      data: { type: "low_stock_alert", count, threshold },
+    });
+  },
+
+  criticalExpiry: (itemName: string, daysLeft: number) => {
+    NotificationService.showNotification({
+      title: "🚨 Critical Expiry",
+      body: `${itemName} expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}!`,
+      priority: "max",
+      data: { type: "critical_expiry", itemName, daysLeft },
+    });
+  },
+
+  syncStarted: () => {
+    NotificationService.showNotification({
+      title: "🔄 Sync Started",
+      body: "ERP inventory sync in progress...",
+      priority: "default",
+    });
+  },
+
+  syncFailed: (error?: string) => {
+    NotificationService.showNotification({
+      title: "❌ Sync Failed",
+      body: error || "ERP sync encountered an error",
+      priority: "high",
+    });
+  },
 };

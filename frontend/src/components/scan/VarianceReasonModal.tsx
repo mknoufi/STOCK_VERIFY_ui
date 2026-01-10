@@ -12,6 +12,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { VarianceReason } from "@/types/scan";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface VarianceReasonModalProps {
   visible: boolean;
@@ -58,7 +59,7 @@ export const VarianceReasonModal: React.FC<VarianceReasonModalProps> = ({
             <TextInput
               style={styles.noteInput}
               placeholder="Enter reason"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={theme.colors.muted}
               value={varianceNote}
               onChangeText={onNoteChange}
               multiline
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContent: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 16,
     padding: 24,
   },
@@ -101,16 +102,16 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 24,
   },
   reasonOption: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
   reasonSelected: {
     borderColor: "#3B82F6",
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   noteInput: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     color: "#fff",
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
   confirmButton: {
     backgroundColor: "#3B82F6",

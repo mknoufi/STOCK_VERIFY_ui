@@ -15,3 +15,12 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(async () => undefined),
 }));
 
+// Mock NetInfo (used by networkService) to avoid native module dependencies
+jest.mock("@react-native-community/netinfo", () => ({
+  __esModule: true,
+  default: {
+    addEventListener: jest.fn(),
+    fetch: jest.fn(),
+  },
+}));
+

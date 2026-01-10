@@ -12,6 +12,7 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface SessionStartModalProps {
   visible: boolean;
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContent: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 16,
     padding: 24,
   },
@@ -106,24 +107,24 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 24,
   },
   modalLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 8,
     marginTop: 16,
   },
   input: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     color: "#fff",
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
   confirmButton: {
     backgroundColor: "#3B82F6",

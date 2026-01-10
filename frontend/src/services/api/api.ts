@@ -2,7 +2,6 @@
  * API service layer: network-aware endpoints with offline fallbacks and caching.
  * Most functions prefer online calls and transparently fall back to cache.
  */
-import { useNetworkStore } from "../../store/networkStore";
 import { useAuthStore } from "../../store/authStore";
 import api from "../httpClient";
 import { retryWithBackoff } from "../../utils/retry";
@@ -21,12 +20,9 @@ import {
   isCacheStale,
   type DataSource,
 } from "../offline/offlineStorage";
-import { createOfflineCountLine, setDeviceContext } from "../offline/offlineCountLine";
+import { createOfflineCountLine } from "../offline/offlineCountLine";
 import {
-  isOnline as checkIsOnline,
   getNetworkStatus,
-  isDefinitelyOffline,
-  type NetworkStatus
 } from "../../utils/network";
 import { AppError } from "../../utils/errors";
 import { createLogger } from "../logging";
@@ -221,10 +217,32 @@ export const getSession = async (sessionId: string) => {
     await cacheSession(response.data);
     return response.data;
   } catch (error) {
-    __DEV__ && console.error("Error getting session:", error);
+    const status = (error as any)?.response?.status;
 
-    // Fallback to cache
-    // Fallback to cache
+    // If the server doesn't know about this session (common when local Mongo is
+    // empty but the device has cached sessions), fall back to cache without
+    // triggering noisy red-box errors.
+    if (status === 404) {
+      const cached = await getSessionFromCache(sessionId);
+      if (cached) {
+        log.warn("Session not found on server; using cached session", {
+          sessionId,
+        });
+        return cached;
+      }
+
+      log.warn("Session not found on server and not in cache", {
+        sessionId,
+      });
+      return null;
+    }
+
+    log.warn("Error getting session; falling back to cache", {
+      sessionId,
+      error: error instanceof Error ? error.message : String(error),
+      status,
+    });
+
     return await getSessionFromCache(sessionId);
   }
 };
@@ -670,6 +688,16 @@ export const searchItems = async (query: string): Promise<(Item & { _source?: Da
     const apiResponse = response.data;
     const data = apiResponse.data || { items: [] };
     const items = data.items || [];
+
+    // If API returns no results, fallback to local cache search
+    if (items.length === 0) {
+      log.debug("API returned no results, searching local cache", { query });
+      const cachedItems = await searchItemsInCache(query);
+      if (cachedItems.length > 0) {
+        log.debug("Found items in cache fallback", { count: cachedItems.length });
+        return mapCachedItems(cachedItems, 'cache');
+      }
+    }
 
     // Map backend fields to frontend Item interface
     const mappedItems: (Item & { _source: DataSource })[] = items.map((item: Record<string, unknown>) => {

@@ -39,6 +39,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useAuthStore } from "../src/store/authStore";
+import { useThemeContext } from "../src/theme/ThemeContext";
 import { GlassCard } from "../src/components/ui";
 import {
   modernColors,
@@ -84,6 +85,7 @@ export default function LoginScreen() {
   const { width, height } = useWindowDimensions();
   const responsive = getResponsiveSizes(width, height);
   const { login, loginWithPin } = useAuthStore();
+  const { theme } = useThemeContext();
 
   // Login mode state (PIN is primary/default)
   const [loginMode, setLoginMode] = useState<LoginMode>("pin");
@@ -313,7 +315,7 @@ export default function LoginScreen() {
                 <Ionicons
                   name="cube"
                   size={responsive.iconSize}
-                  color="#0EA5E9"
+                  color={theme.colors.accent}
                 />
                 <View style={styles.iconGlow} />
               </View>

@@ -1,9 +1,8 @@
 /**
- * Filtered Items Screen
- * View and filter all items with category, subcategory, floor, rack, UOM filters
- * Refactored to use Aurora Design System
+ * Filtered Items Screen - Refactored with Shared Components
+ * Uses unified ItemDetailCard for consistent item display
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -28,14 +27,18 @@ import { exportItemsToCSV, downloadCSV } from "../../src/utils/csvExport";
 import {
   ScreenContainer,
   GlassCard,
-  StatsCard,
   AnimatedPressable,
 } from "../../src/components/ui";
+import {
+  ItemDetailCard,
+  ItemStatsRow,
+  ItemQuickActions,
+  createStockStats,
+} from "../../src/components/items";
 import { theme } from "../../src/styles/modernDesignSystem";
 
 const getLocalFileUri = (filename: string) => {
-  const baseDir =
-    FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
+  const baseDir = FileSystem.Paths?.document?.uri ?? FileSystem.Paths?.cache?.uri ?? "";
   return `${baseDir}${filename}`;
 };
 
@@ -57,7 +60,10 @@ export default function ItemsScreen() {
     total_qty: 0,
   });
 
-  const loadItems = React.useCallback(
+  // ========================================================================
+  // Data Loading
+  // ========================================================================
+  const loadItems = useCallback(
     async (reset = false) => {
       try {
         if (reset) {
@@ -87,7 +93,7 @@ export default function ItemsScreen() {
         setRefreshing(false);
       }
     },
-    [filters, pagination.limit, pagination.skip],
+    [filters, pagination.limit, pagination.skip]
   );
 
   useEffect(() => {
@@ -95,8 +101,9 @@ export default function ItemsScreen() {
   }, [loadItems]);
 
   const handleRefresh = () => {
-    if (Platform.OS !== "web")
+    if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     setRefreshing(true);
     loadItems(true);
   };
@@ -111,6 +118,9 @@ export default function ItemsScreen() {
     }
   };
 
+  // ========================================================================
+  // Export
+  // ========================================================================
   const handleExportCSV = async () => {
     try {
       if (items.length === 0) {
@@ -118,8 +128,9 @@ export default function ItemsScreen() {
         return;
       }
 
-      if (Platform.OS !== "web")
+      if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
 
       let allItems = items;
       if (pagination.total > items.length) {
@@ -154,125 +165,101 @@ export default function ItemsScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: any }) => {
+  // ========================================================================
+  // Item Navigation
+  // ========================================================================
+  const handleItemPress = (item: any) => {
+    if (Platform.OS !== "web") {
+      Haptics.selectionAsync();
+    }
+    // Navigate to variance details if there's a variance
+    if (item.variance !== undefined && item.variance !== 0) {
+      router.push({
+        pathname: "/supervisor/variance-details",
+        params: { itemCode: item.item_code },
+      });
+    }
+  };
+
+  // ========================================================================
+  // Render
+  // ========================================================================
+  const renderItem = ({ item, index }: { item: any; index: number }) => {
+    // Only animate first 10 items for performance
+    const animationDelay = index < 10 ? 100 + index * 50 : 0;
+    
     return (
-      <AnimatedPressable
-        onPress={() => {
-          // Could navigate to item detail
-          if (Platform.OS !== "web") Haptics.selectionAsync();
+      <ItemDetailCard
+        item={{
+          item_code: item.item_code,
+          item_name: item.item_name,
+          barcode: item.barcode,
+          category: item.category,
+          subcategory: item.subcategory,
+          floor: item.floor,
+          rack: item.rack,
+          stock_qty: item.stock_qty,
+          mrp: item.mrp,
+          sales_price: item.sales_price,
+          uom_name: item.uom_name,
+          verified: item.verified,
+          verified_by: item.verified_by,
+          verified_at: item.verified_at,
         }}
-        style={{ marginBottom: theme.spacing.sm }}
-      >
-        <GlassCard
-          intensity={15}
-          padding={theme.spacing.md}
-          borderRadius={theme.borderRadius.lg}
-        >
-          <View style={styles.itemHeader}>
-            <View style={styles.itemHeaderLeft}>
-              <Text style={styles.itemName}>{item.item_name}</Text>
-              <Text style={styles.itemCode}>{item.item_code}</Text>
-            </View>
-            {item.verified && (
-              <View style={styles.verifiedBadge}>
-                <Ionicons
-                  name="checkmark-circle"
-                  size={14}
-                  color={theme.colors.success.main}
-                />
-              </View>
-            )}
-          </View>
-
-          <View style={styles.itemDetails}>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Stock</Text>
-              <Text style={styles.detailValue}>
-                {item.stock_qty?.toFixed(2) || "0.00"} {item.uom_name || ""}
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>MRP</Text>
-              <Text style={styles.detailValue}>
-                ₹{item.mrp?.toFixed(2) || "0.00"}
-              </Text>
-            </View>
-          </View>
-
-          {(item.floor || item.rack) && (
-            <View style={styles.locationRow}>
-              <Ionicons
-                name="location-outline"
-                size={14}
-                color={theme.colors.text.tertiary}
-              />
-              <Text style={styles.locationText}>
-                {[item.floor, item.rack].filter(Boolean).join(" / ")}
-              </Text>
-            </View>
-          )}
-
-          {item.category && (
-            <View style={{ marginTop: 4 }}>
-              <Text style={styles.categoryText}>
-                {item.category}
-                {item.subcategory && ` • ${item.subcategory}`}
-              </Text>
-            </View>
-          )}
-
-          {item.verified && item.verified_by && (
-            <View style={styles.verificationInfo}>
-              <Ionicons
-                name="person-outline"
-                size={12}
-                color={theme.colors.text.tertiary}
-              />
-              <Text style={styles.verificationInfoText}>
-                Verified by {item.verified_by}
-                {item.verified_at &&
-                  ` • ${new Date(item.verified_at).toLocaleDateString()}`}
-              </Text>
-            </View>
-          )}
-        </GlassCard>
-      </AnimatedPressable>
+        variant="compact"
+        showStock={true}
+        showPrices={true}
+        showLocation={true}
+        showVerificationStatus={true}
+        onPress={() => handleItemPress(item)}
+        animationDelay={animationDelay}
+      />
     );
   };
 
+  const renderEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons
+        name="cube-outline"
+        size={64}
+        color={theme.colors.text.tertiary}
+      />
+      <Text style={styles.emptyText}>No items found</Text>
+      <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+    </View>
+  );
+
   return (
-    <ScreenContainer>
+    <ScreenContainer
+      header={{
+        title: "Items",
+        showBackButton: true,
+        showLogoutButton: true,
+      }}
+      backgroundType="aurora"
+      auroraVariant="primary"
+      auroraIntensity="medium"
+      contentMode="static"
+      noPadding
+      statusBarStyle="light"
+    >
       <StatusBar style="light" />
+      
       <View style={styles.container}>
-        {/* Header */}
+        {/* Header with Export Button */}
         <Animated.View
           entering={FadeInDown.delay(100).springify()}
           style={styles.header}
         >
           <View style={styles.headerLeft}>
-            <AnimatedPressable
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color={theme.colors.text.primary}
-              />
-            </AnimatedPressable>
-            <View>
-              <Text style={styles.pageTitle}>Items</Text>
-              <Text style={styles.pageSubtitle}>
-                {pagination.total} items listed
-              </Text>
-            </View>
+            <Text style={styles.pageTitle}>Items</Text>
+            <Text style={styles.pageSubtitle}>
+              {pagination.total} items listed
+            </Text>
           </View>
 
           <AnimatedPressable
-            style={[
-              styles.exportButton,
-              items.length === 0 && { opacity: 0.5 },
-            ]}
+            style={[styles.exportButton, items.length === 0 && { opacity: 0.5 }]}
             onPress={handleExportCSV}
             disabled={items.length === 0}
           >
@@ -290,40 +277,23 @@ export default function ItemsScreen() {
           </AnimatedPressable>
         </Animated.View>
 
-        {/* Statistics Cards */}
-        <Animated.View
-          entering={FadeInDown.delay(200).springify()}
-          style={styles.statsContainer}
-        >
-          <StatsCard
-            title="Total Items"
-            value={statistics.total_items.toString()}
-            icon="cube-outline"
-            variant="primary"
-            style={{ flex: 1 }}
-          />
-          <StatsCard
-            title="Verified"
-            value={statistics.verified_items.toString()}
-            icon="checkmark-done-circle-outline"
-            variant="success"
-            style={{ flex: 1 }}
-          />
-          <StatsCard
-            title="Total Qty"
-            value={statistics.total_qty.toFixed(0)}
-            icon="layers-outline"
-            variant="warning"
-            style={{ flex: 1 }}
-          />
-        </Animated.View>
+        {/* Statistics Row */}
+        <ItemStatsRow
+          stats={createStockStats(
+            statistics.total_items,
+            statistics.verified_items,
+            statistics.total_qty
+          )}
+          animationDelay={200}
+          style={styles.statsRow}
+        />
 
         {/* Filters */}
         <Animated.View entering={FadeInDown.delay(300).springify()}>
           <GlassCard
             intensity={10}
             padding={theme.spacing.sm}
-            style={{ marginBottom: theme.spacing.md }}
+            style={styles.filtersCard}
           >
             <ItemFilters
               onFilterChange={setFilters}
@@ -333,23 +303,14 @@ export default function ItemsScreen() {
           </GlassCard>
         </Animated.View>
 
+        {/* Item List */}
         {items.length === 0 && !loading ? (
-          <View style={styles.centered}>
-            <Ionicons
-              name="cube-outline"
-              size={64}
-              color={theme.colors.text.tertiary}
-            />
-            <Text style={styles.emptyText}>No items found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
-          </View>
+          renderEmpty()
         ) : (
-          <View style={{ flex: 1 }}>
+          <View style={styles.listContainer}>
             <FlashList
               data={items}
               renderItem={renderItem}
-              // @ts-ignore
-              estimatedItemSize={150}
               keyExtractor={(item, index) => `${item.item_code}-${index}`}
               contentContainerStyle={styles.listContent}
               refreshControl={
@@ -364,7 +325,7 @@ export default function ItemsScreen() {
               onEndReachedThreshold={0.5}
               ListFooterComponent={
                 loading && items.length > 0 ? (
-                  <View style={{ paddingVertical: 20 }}>
+                  <View style={styles.loadingFooter}>
                     <ActivityIndicator
                       size="small"
                       color={theme.colors.primary[500]}
@@ -378,21 +339,40 @@ export default function ItemsScreen() {
           </View>
         )}
       </View>
+
+      {/* Quick Actions FAB */}
+      <ItemQuickActions
+        actions={[
+          {
+            id: "export",
+            icon: "download-outline",
+            label: "Export CSV",
+            color: theme.colors.success.main,
+            onPress: handleExportCSV,
+          },
+          {
+            id: "refresh",
+            icon: "refresh-outline",
+            label: "Refresh",
+            color: theme.colors.primary[500],
+            onPress: handleRefresh,
+          },
+        ]}
+        position="bottom-right"
+      />
     </ScreenContainer>
   );
 }
 
+// ============================================================================
+// Styles
+// ============================================================================
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
     paddingHorizontal: theme.spacing.md,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingBottom: 100,
+    paddingTop: theme.spacing.md,
   },
   header: {
     flexDirection: "row",
@@ -401,111 +381,40 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.md,
-  },
-  backButton: {
-    padding: theme.spacing.xs,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: theme.borderRadius.full,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    flex: 1,
   },
   pageTitle: {
-    fontSize: 32,
+    fontSize: 28,
     color: theme.colors.text.primary,
     fontWeight: "700",
   },
   pageSubtitle: {
     fontSize: 14,
     color: theme.colors.text.secondary,
+    marginTop: 2,
   },
-  exportButton: {
-    //
-  },
-  statsContainer: {
-    flexDirection: "row",
-    gap: theme.spacing.sm,
+  exportButton: {},
+  statsRow: {
     marginBottom: theme.spacing.md,
+  },
+  filtersCard: {
+    marginBottom: theme.spacing.md,
+  },
+  listContainer: {
+    flex: 1,
   },
   listContent: {
     paddingBottom: theme.spacing.xl,
   },
-  itemHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: theme.spacing.sm,
+  loadingFooter: {
+    paddingVertical: 20,
+    alignItems: "center",
   },
-  itemHeaderLeft: {
+  emptyContainer: {
     flex: 1,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: theme.colors.text.primary,
-    marginBottom: 4,
-  },
-  itemCode: {
-    fontSize: 14,
-    color: theme.colors.text.tertiary,
-  },
-  verifiedBadge: {
-    backgroundColor: "rgba(16, 185, 129, 0.15)", // Emerald color with opacity
-    borderRadius: theme.borderRadius.full,
-    padding: 4,
-  },
-  itemDetails: {
-    flexDirection: "row",
-    gap: theme.spacing.lg,
-    marginBottom: theme.spacing.sm,
-    backgroundColor: "rgba(255,255,255,0.03)",
-    padding: theme.spacing.xs,
-    borderRadius: theme.borderRadius.sm,
-  },
-  detailRow: {
-    //
-  },
-  detailLabel: {
-    fontSize: 12,
-    color: theme.colors.text.tertiary,
-    marginBottom: 2,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  detailValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.text.primary,
-  },
-  locationRow: {
-    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    gap: theme.spacing.xs,
-    marginBottom: 4, // Added margin bottom for spacing
-  },
-  locationText: {
-    fontSize: 12,
-    color: theme.colors.text.secondary,
-  },
-  categoryText: {
-    fontSize: 12,
-    color: theme.colors.text.tertiary,
-    fontStyle: "italic",
-  },
-  verificationInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    marginTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.05)",
-    paddingTop: theme.spacing.xs,
-  },
-  verificationInfoText: {
-    fontSize: 12,
-    color: theme.colors.text.tertiary,
+    paddingBottom: 100,
   },
   emptyText: {
     fontSize: 20,

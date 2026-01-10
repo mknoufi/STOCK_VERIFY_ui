@@ -27,6 +27,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAutoLogout } from "../../src/hooks/useAutoLogout";
 import { getSessions } from "../../src/services/api/api";
+import InventoryAPI from "../../src/domains/inventory/services/inventoryApi";
 import {
   GlassCard,
   StatsCard,
@@ -36,8 +37,6 @@ import {
   ProgressRing,
   AnimatedPressable,
   ScreenContainer,
-} from "../../src/components/ui";
-import {
   SpeedDialAction,
   ActivityType,
 } from "../../src/components/ui";
@@ -55,6 +54,9 @@ interface DashboardStats {
   negativeVariance: number;
   avgVariancePerSession: number;
   highRiskSessions: number;
+  // Inventory alerts
+  expiringItems: number;
+  lowStockItems: number;
 }
 
 interface ActivityItem {
@@ -84,13 +86,22 @@ export default function SupervisorDashboard() {
     negativeVariance: 0,
     avgVariancePerSession: 0,
     highRiskSessions: 0,
+    expiringItems: 0,
+    lowStockItems: 0,
   });
   const [activities, setActivities] = useState<ActivityItem[]>([]);
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const sessionsRes = await getSessions(1, 100); // Get first 100 sessions
+      
+      // Fetch sessions and inventory alerts in parallel
+      const [sessionsRes, expiryRes, lowStockRes] = await Promise.all([
+        getSessions(1, 100),
+        InventoryAPI.getExpiryAlerts(30).catch(() => ({ total: 0, items: [] })),
+        InventoryAPI.getLowStock(10).catch(() => ({ total: 0, items: [] })),
+      ]);
+      
       const sessionData = sessionsRes.items || [];
       setSessions(sessionData);
 
@@ -125,6 +136,8 @@ export default function SupervisorDashboard() {
           negativeVariance: 0,
           avgVariancePerSession: 0,
           highRiskSessions: 0,
+          expiringItems: 0,
+          lowStockItems: 0,
         },
       );
 
@@ -132,6 +145,10 @@ export default function SupervisorDashboard() {
         newStats.totalSessions > 0
           ? newStats.totalVariance / newStats.totalSessions
           : 0;
+      
+      // Add inventory alert counts
+      newStats.expiringItems = expiryRes.total || 0;
+      newStats.lowStockItems = lowStockRes.total || 0;
 
       setStats(newStats);
 
@@ -345,10 +362,36 @@ export default function SupervisorDashboard() {
                 animated
               />
             </View>
+
+            {/* Inventory Alerts Row */}
+            <View style={styles.statsRow}>
+              <StatsCard
+                title="Expiring Soon"
+                value={stats.expiringItems}
+                icon="calendar"
+                variant="warning"
+                subtitle="30 days"
+                onPress={() => router.push("/supervisor/inventory" as any)}
+                style={styles.statCard}
+                delay={275}
+                animated
+              />
+              <StatsCard
+                title="Low Stock"
+                value={stats.lowStockItems}
+                icon="trending-down"
+                variant="error"
+                subtitle="Below 10"
+                onPress={() => router.push("/supervisor/inventory" as any)}
+                style={styles.statCard}
+                delay={300}
+                animated
+              />
+            </View>
           </View>
 
           {/* Completion Progress */}
-          <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <Animated.View entering={FadeInDown.delay(350).springify()}>
             <GlassCard
               variant="medium"
               intensity={25}

@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { View, ViewStyle, StyleProp, TouchableOpacity, GestureResponderEvent } from 'react-native';
+import { useThemeContext } from '../../theme/ThemeContext';
 
 interface CardProps {
   children: ReactNode;
@@ -36,21 +37,23 @@ export const Card: React.FC<CardProps> = ({
   margin = 'small',
   testID,
 }) => {
+  const { theme, isDark } = useThemeContext();
+
   const cardStyles: ViewStyle = {
     padding: paddingMap[padding],
     margin: marginMap[margin],
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     ...(variant === 'elevated' && {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: isDark ? 0.25 : 0.1,
       shadowRadius: 4,
       elevation: 3,
     }),
     ...(variant === 'outlined' && {
       borderWidth: 1,
-      borderColor: '#e0e0e0',
+      borderColor: theme.colors.border,
     }),
   };
 

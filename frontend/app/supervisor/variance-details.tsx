@@ -1,10 +1,12 @@
+/**
+ * Variance Details Screen - Refactored with Shared Components
+ * Uses unified ItemDetailCard, ItemStatsRow, ItemActionsFooter
+ */
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  ActivityIndicator,
   Alert,
   Platform,
 } from "react-native";
@@ -14,24 +16,38 @@ import { StatusBar } from "expo-status-bar";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-import { ItemVerificationAPI } from "../../src/domains/inventory/services/itemVerificationApi";
 import {
   ScreenContainer,
   GlassCard,
-  StatsCard,
   AnimatedPressable,
 } from "../../src/components/ui";
-import { theme } from "../../src/styles/modernDesignSystem";
+import {
+  ItemDetailCard,
+  ItemStatsRow,
+  ItemActionsFooter,
+  ItemShareSheet,
+  ItemQuickActions,
+  createVarianceStats,
+  createItemQuickActions,
+  type ActionButton,
+} from "../../src/components/items";
+import { ItemVerificationAPI } from "../../src/domains/inventory/services/itemVerificationApi";
 import { useToast } from "../../src/components/feedback/ToastProvider";
+import { theme } from "../../src/styles/modernDesignSystem";
 
 export default function VarianceDetailsScreen() {
   const { itemCode } = useLocalSearchParams();
   const router = useRouter();
   const { show } = useToast();
+  
   const [loading, setLoading] = useState(true);
-  const [itemDetails, setItemDetails] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
+  const [itemDetails, setItemDetails] = useState<any>(null);
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
+  // ========================================================================
+  // Data Loading
+  // ========================================================================
   const loadDetails = useCallback(async () => {
     try {
       setLoading(true);
@@ -43,14 +59,16 @@ export default function VarianceDetailsScreen() {
       if (response.variances && response.variances.length > 0) {
         setItemDetails(response.variances[0]);
       } else {
-        if (Platform.OS !== "web")
+        if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
         show("Item details not found", "error");
         router.back();
       }
     } catch (error: any) {
-      if (Platform.OS !== "web")
+      if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
       show(error.message || "Failed to load details", "error");
     } finally {
       setLoading(false);
@@ -61,9 +79,14 @@ export default function VarianceDetailsScreen() {
     loadDetails();
   }, [loadDetails]);
 
+  // ========================================================================
+  // Actions
+  // ========================================================================
   const handleApprove = async () => {
-    if (Platform.OS !== "web")
+    if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+    
     Alert.alert(
       "Confirm Approval",
       "Are you sure you want to approve this variance? This will update the system stock.",
@@ -76,35 +99,34 @@ export default function VarianceDetailsScreen() {
             try {
               setProcessing(true);
               if (itemDetails?.count_line_id) {
-                await ItemVerificationAPI.approveVariance(
-                  itemDetails.count_line_id,
-                );
-                if (Platform.OS !== "web")
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Success,
-                  );
+                await ItemVerificationAPI.approveVariance(itemDetails.count_line_id);
+                if (Platform.OS !== "web") {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                }
                 show("Variance approved successfully", "success");
                 router.back();
               } else {
                 throw new Error("Count line ID not found");
               }
             } catch (error: any) {
-              if (Platform.OS !== "web")
-                Haptics.notificationAsync(
-                  Haptics.NotificationFeedbackType.Error,
-                );
+              if (Platform.OS !== "web") {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              }
               show(error.message || "Failed to approve variance", "error");
             } finally {
               setProcessing(false);
             }
           },
         },
-      ],
+      ]
     );
   };
 
   const handleRecount = async () => {
-    if (Platform.OS !== "web") Haptics.selectionAsync();
+    if (Platform.OS !== "web") {
+      Haptics.selectionAsync();
+    }
+    
     Alert.alert(
       "Request Recount",
       "This will flag the item for recount and remove the current verification status.",
@@ -116,64 +138,60 @@ export default function VarianceDetailsScreen() {
             try {
               setProcessing(true);
               if (itemDetails?.count_line_id) {
-                await ItemVerificationAPI.requestRecount(
-                  itemDetails.count_line_id,
-                );
-                if (Platform.OS !== "web")
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Success,
-                  );
+                await ItemVerificationAPI.requestRecount(itemDetails.count_line_id);
+                if (Platform.OS !== "web") {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                }
                 show("Recount requested successfully", "success");
                 router.back();
               } else {
                 throw new Error("Count line ID not found");
               }
             } catch (error: any) {
-              if (Platform.OS !== "web")
-                Haptics.notificationAsync(
-                  Haptics.NotificationFeedbackType.Error,
-                );
+              if (Platform.OS !== "web") {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              }
               show(error.message || "Failed to request recount", "error");
             } finally {
               setProcessing(false);
             }
           },
         },
-      ],
+      ]
     );
   };
 
+  // ========================================================================
+  // Render
+  // ========================================================================
   if (loading) {
     return (
-      <ScreenContainer>
-        <View style={styles.centered}>
-          <ActivityIndicator
-            size="large"
-            color={theme.colors.primary[500]}
-          />
-        </View>
-      </ScreenContainer>
+      <ScreenContainer
+        header={{ title: "Variance Details", showBackButton: true }}
+        backgroundType="aurora"
+        loading={true}
+        loadingText="Loading Details..."
+      />
     );
   }
 
   if (!itemDetails) {
     return (
-      <ScreenContainer>
+      <ScreenContainer
+        header={{ title: "Variance Details", showBackButton: true }}
+        backgroundType="aurora"
+      >
         <View style={styles.centered}>
           <GlassCard intensity={15} padding={theme.spacing.xl}>
-            <View style={{ alignItems: "center", gap: theme.spacing.md }}>
+            <View style={styles.emptyContent}>
               <Ionicons
                 name="alert-circle-outline"
                 size={48}
                 color={theme.colors.text.tertiary}
               />
-              <Text style={{ color: theme.colors.text.secondary }}>
-                Item not found
-              </Text>
+              <Text style={styles.emptyText}>Item not found</Text>
               <AnimatedPressable onPress={() => router.back()}>
-                <Text style={{ color: theme.colors.primary[500] }}>
-                  Go Back
-                </Text>
+                <Text style={styles.backLink}>Go Back</Text>
               </AnimatedPressable>
             </View>
           </GlassCard>
@@ -182,257 +200,250 @@ export default function VarianceDetailsScreen() {
     );
   }
 
-  return (
-    <ScreenContainer>
-      <StatusBar style="light" />
-      <View style={styles.container}>
-        {/* Header */}
-        <Animated.View
-          entering={FadeInDown.delay(100).springify()}
-          style={styles.header}
-        >
-          <View style={styles.headerLeft}>
-            <AnimatedPressable
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color={theme.colors.text.primary}
-              />
-            </AnimatedPressable>
-            <Text style={styles.headerTitle}>Variance Details</Text>
-          </View>
-        </Animated.View>
+  const systemQty = itemDetails.system_qty || 0;
+  const verifiedQty = itemDetails.verified_qty || 0;
+  const variance = itemDetails.variance ?? (verifiedQty - systemQty);
 
-        <ScrollView contentContainerStyle={styles.content}>
-          {/* Item Profile */}
-          <Animated.View entering={FadeInDown.delay(200).springify()}>
-            <GlassCard
-              intensity={15}
-              padding={theme.spacing.lg}
-              borderRadius={theme.borderRadius.lg}
-              style={styles.card}
-            >
-              <View style={styles.itemHeader}>
-                <View style={styles.itemIcon}>
+  const actions: ActionButton[] = [
+    {
+      type: "recount",
+      label: "Request Recount",
+      variant: "secondary",
+      onPress: handleRecount,
+      disabled: processing,
+    },
+    {
+      type: "approve",
+      label: "Approve Variance",
+      variant: "danger",
+      onPress: handleApprove,
+      disabled: processing,
+      loading: processing,
+    },
+  ];
+
+  return (
+    <ScreenContainer
+      header={{
+        title: "Variance Details",
+        showBackButton: true,
+        showLogoutButton: true,
+      }}
+      backgroundType="aurora"
+      auroraVariant="primary"
+      auroraIntensity="medium"
+      contentMode="scroll"
+      statusBarStyle="light"
+    >
+      <StatusBar style="light" />
+      
+      <View style={styles.container}>
+        {/* Item Card */}
+        <ItemDetailCard
+          item={{
+            item_code: itemDetails.item_code,
+            item_name: itemDetails.item_name,
+            barcode: itemDetails.barcode,
+            category: itemDetails.category,
+            subcategory: itemDetails.subcategory,
+            floor: itemDetails.floor,
+            rack: itemDetails.rack,
+            verified: itemDetails.verified,
+            verified_by: itemDetails.verified_by,
+            verified_at: itemDetails.verified_at,
+          }}
+          variant="full"
+          showStock={false}
+          showPrices={false}
+          showLocation={true}
+          showVerificationStatus={true}
+          animationDelay={100}
+        />
+
+        {/* Variance Stats */}
+        <ItemStatsRow
+          stats={createVarianceStats(systemQty, verifiedQty, variance)}
+          animationDelay={200}
+        />
+
+        {/* Verification Details */}
+        <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <GlassCard
+            intensity={15}
+            padding={theme.spacing.lg}
+            borderRadius={theme.borderRadius.lg}
+            style={styles.detailsCard}
+          >
+            <Text style={styles.cardTitle}>Verification Details</Text>
+            
+            <View style={styles.detailRow}>
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Verified By</Text>
+                <View style={styles.detailValueRow}>
                   <Ionicons
-                    name="cube-outline"
-                    size={32}
-                    color={theme.colors.primary[500]}
+                    name="person-circle-outline"
+                    size={18}
+                    color={theme.colors.text.secondary}
                   />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.itemName}>{itemDetails.item_name}</Text>
-                  <Text style={styles.itemCode}>{itemDetails.item_code}</Text>
+                  <Text style={styles.detailValue}>
+                    {itemDetails.verified_by || "Unknown"}
+                  </Text>
                 </View>
               </View>
-            </GlassCard>
-          </Animated.View>
 
-          {/* Stats Row */}
-          <Animated.View
-            entering={FadeInDown.delay(300).springify()}
-            style={styles.statsRow}
-          >
-            <StatsCard
-              title="System Qty"
-              value={itemDetails.system_qty?.toString() || "0"}
-              icon="server-outline"
-              variant="primary"
-              style={{ flex: 1 }}
-            />
-            <StatsCard
-              title="Verified Qty"
-              value={itemDetails.verified_qty?.toString() || "0"}
-              icon="checkmark-circle-outline"
-              variant="success"
-              style={{ flex: 1 }}
-            />
-            <StatsCard
-              title="Variance"
-              value={`${itemDetails.variance > 0 ? "+" : ""}${itemDetails.variance}`}
-              icon="swap-vertical-outline"
-              variant={itemDetails.variance === 0 ? "success" : "error"}
-              style={{ flex: 1 }}
-            />
-          </Animated.View>
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Time</Text>
+                <View style={styles.detailValueRow}>
+                  <Ionicons
+                    name="time-outline"
+                    size={18}
+                    color={theme.colors.text.secondary}
+                  />
+                  <Text style={styles.detailValue}>
+                    {itemDetails.verified_at
+                      ? new Date(itemDetails.verified_at).toLocaleString()
+                      : "N/A"}
+                  </Text>
+                </View>
+              </View>
+            </View>
 
-          {/* Details */}
+            {(itemDetails.floor || itemDetails.rack) && (
+              <View style={[styles.detailRow, { marginTop: theme.spacing.md }]}>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Location</Text>
+                  <View style={styles.detailValueRow}>
+                    <Ionicons
+                      name="location-outline"
+                      size={18}
+                      color={theme.colors.text.secondary}
+                    />
+                    <Text style={styles.detailValue}>
+                      {itemDetails.floor}
+                      {itemDetails.rack ? ` / ${itemDetails.rack}` : ""}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {itemDetails.remark && (
+              <View style={styles.remarkSection}>
+                <Text style={styles.detailLabel}>Remark</Text>
+                <Text style={styles.remarkText}>{itemDetails.remark}</Text>
+              </View>
+            )}
+
+            {itemDetails.condition && itemDetails.condition !== "Good" && (
+              <View style={styles.conditionSection}>
+                <Text style={styles.detailLabel}>Condition</Text>
+                <View style={styles.conditionBadge}>
+                  <Text style={styles.conditionText}>{itemDetails.condition}</Text>
+                </View>
+                {itemDetails.damaged_qty > 0 && (
+                  <Text style={styles.damageText}>
+                    Damaged: {itemDetails.damaged_qty}
+                  </Text>
+                )}
+              </View>
+            )}
+          </GlassCard>
+        </Animated.View>
+
+        {/* Photo Preview (if available) */}
+        {itemDetails.photo_url && (
           <Animated.View entering={FadeInDown.delay(400).springify()}>
             <GlassCard
               intensity={15}
-              padding={theme.spacing.lg}
+              padding={theme.spacing.md}
               borderRadius={theme.borderRadius.lg}
-              style={styles.card}
+              style={styles.photoCard}
             >
-              <View style={styles.detailRow}>
-                <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Verified By</Text>
-                  <View style={styles.detailValueRow}>
-                    <Ionicons
-                      name="person-circle-outline"
-                      size={18}
-                      color={theme.colors.text.secondary}
-                    />
-                    <Text style={styles.detailValue}>
-                      {itemDetails.verified_by || "Unknown"}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Time</Text>
-                  <View style={styles.detailValueRow}>
-                    <Ionicons
-                      name="time-outline"
-                      size={18}
-                      color={theme.colors.text.secondary}
-                    />
-                    <Text style={styles.detailValue}>
-                      {itemDetails.verified_at
-                        ? new Date(itemDetails.verified_at).toLocaleString()
-                        : "N/A"}
-                    </Text>
-                  </View>
-                </View>
+              <Text style={styles.cardTitle}>Photo Evidence</Text>
+              <View style={styles.photoPlaceholder}>
+                <Ionicons
+                  name="image-outline"
+                  size={48}
+                  color={theme.colors.text.tertiary}
+                />
+                <Text style={styles.photoText}>Photo attached</Text>
               </View>
-
-              {(itemDetails.floor || itemDetails.rack) && (
-                <View
-                  style={[
-                    styles.detailRow,
-                    { marginTop: theme.spacing.md },
-                  ]}
-                >
-                  <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Location</Text>
-                    <View style={styles.detailValueRow}>
-                      <Ionicons
-                        name="location-outline"
-                        size={18}
-                        color={theme.colors.text.secondary}
-                      />
-                      <Text style={styles.detailValue}>
-                        {itemDetails.floor}
-                        {itemDetails.rack ? ` / ${itemDetails.rack}` : ""}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )}
             </GlassCard>
           </Animated.View>
-        </ScrollView>
+        )}
 
-        {/* Footer Actions */}
-        <Animated.View
-          entering={FadeInDown.delay(500).springify()}
-          style={styles.footer}
-        >
-          <GlassCard
-            intensity={15}
-            padding={theme.spacing.md}
-            style={styles.footerInner}
-          >
-            <View style={styles.actionsContainer}>
-              <AnimatedPressable
-                onPress={handleRecount}
-                disabled={processing}
-                style={[styles.actionButton, styles.secondaryButton]}
-              >
-                <Text style={styles.secondaryButtonText}>Request Recount</Text>
-              </AnimatedPressable>
-
-              <AnimatedPressable
-                onPress={handleApprove}
-                disabled={processing}
-                style={[styles.actionButton, styles.primaryButton]}
-              >
-                {processing ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>Approve Variance</Text>
-                )}
-              </AnimatedPressable>
-            </View>
-          </GlassCard>
-        </Animated.View>
+        {/* Spacer for footer */}
+        <View style={{ height: 120 }} />
       </View>
+
+      {/* Footer Actions */}
+      <ItemActionsFooter
+        actions={actions}
+        processing={processing}
+        animationDelay={500}
+      />
+
+      {/* Share Sheet */}
+      <ItemShareSheet
+        visible={showShareSheet}
+        onClose={() => setShowShareSheet(false)}
+        item={{
+          name: itemDetails.item_name,
+          barcode: itemDetails.barcode || itemDetails.item_code,
+          quantity: verifiedQty,
+          systemQty: systemQty,
+          variance: variance,
+          category: itemDetails.category,
+          location: `${itemDetails.floor || ""} ${itemDetails.rack || ""}`.trim(),
+          verifiedBy: itemDetails.verified_by,
+          verifiedAt: itemDetails.verified_at,
+        }}
+      />
+
+      {/* Quick Actions FAB */}
+      <ItemQuickActions
+        actions={createItemQuickActions({
+          onShare: () => setShowShareSheet(true),
+        })}
+        position="bottom-right"
+      />
     </ScreenContainer>
   );
 }
 
+// ============================================================================
+// Styles
+// ============================================================================
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingTop: 60,
+    padding: theme.spacing.md,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-  },
-  headerLeft: {
-    flexDirection: "row",
+  emptyContent: {
     alignItems: "center",
     gap: theme.spacing.md,
   },
-  backButton: {
-    padding: theme.spacing.xs,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: theme.borderRadius.full,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-  },
-  headerTitle: {
-    fontSize: 24,
-    color: theme.colors.text.primary,
-    fontWeight: "700",
-  },
-  content: {
-    padding: theme.spacing.md,
-    paddingBottom: 100, // Space for footer
-  },
-  card: {
-    marginBottom: theme.spacing.md,
-  },
-  itemHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.md,
-  },
-  itemIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: "rgba(14, 165, 233, 0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(14, 165, 233, 0.4)",
-  },
-  itemName: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: theme.colors.text.primary,
-    marginBottom: 4,
-  },
-  itemCode: {
-    fontSize: 14,
+  emptyText: {
     color: theme.colors.text.secondary,
+    fontSize: 16,
   },
-  statsRow: {
-    flexDirection: "row",
-    gap: theme.spacing.sm,
+  backLink: {
+    color: theme.colors.primary[500],
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  detailsCard: {
+    marginBottom: theme.spacing.md,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: theme.colors.text.primary,
     marginBottom: theme.spacing.md,
   },
   detailRow: {
@@ -456,54 +467,55 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   detailValue: {
-    fontSize: 16,
+    fontSize: 15,
     color: theme.colors.text.primary,
     fontWeight: "500",
   },
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: theme.spacing.md,
+  remarkSection: {
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.sm,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderRadius: theme.borderRadius.sm,
   },
-  footerInner: {
-    borderTopLeftRadius: theme.borderRadius.xl,
-    borderTopRightRadius: theme.borderRadius.xl,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+  remarkText: {
+    fontSize: 14,
+    color: theme.colors.text.secondary,
+    marginTop: 4,
   },
-  actionsContainer: {
-    flexDirection: "row",
-    gap: theme.spacing.md,
+  conditionSection: {
+    marginTop: theme.spacing.md,
   },
-  actionButton: {
-    flex: 1,
-    height: 50,
+  conditionBadge: {
+    backgroundColor: theme.colors.warning.main + "20",
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 4,
     borderRadius: theme.borderRadius.full,
+    alignSelf: "flex-start",
+    marginTop: 4,
+  },
+  conditionText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.warning.main,
+  },
+  damageText: {
+    fontSize: 13,
+    color: theme.colors.error.main,
+    marginTop: 4,
+  },
+  photoCard: {
+    marginBottom: theme.spacing.md,
+  },
+  photoPlaceholder: {
+    height: 120,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
+    gap: theme.spacing.xs,
   },
-  secondaryButton: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-  },
-  secondaryButtonText: {
-    color: theme.colors.text.primary,
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  primaryButton: {
-    backgroundColor: theme.colors.error.main,
-    shadowColor: theme.colors.error.main,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  primaryButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
+  photoText: {
+    fontSize: 13,
+    color: theme.colors.text.tertiary,
   },
 });

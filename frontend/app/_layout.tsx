@@ -5,18 +5,18 @@
 import React from "react";
 
 import { Platform, View, Text, ActivityIndicator } from "react-native";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { StatusBar } from "expo-status-bar";
 import { useAuthStore } from "../src/store/authStore";
-import { initializeNetworkListener } from "../src/services/networkService";
 import { initializeSyncService } from "../src/services/syncService";
 import { registerBackgroundSync } from "../src/services/backgroundSync";
 import { ErrorBoundary } from "../src/components/ErrorBoundary";
 import { ThemeService } from "../src/services/themeService";
 import { useSettingsStore } from "../src/store/settingsStore";
 import { useTheme } from "../src/hooks/useTheme";
+import { useNetworkStatus } from "../src/hooks/useNetworkStatus";
 import { useSystemTheme } from "../src/hooks/useSystemTheme";
 import { ToastProvider } from "../src/components/feedback/ToastProvider";
 import { initializeBackendURL } from "../src/utils/backendUrl";
@@ -60,8 +60,8 @@ export default function RootLayout() {
   const { loadSettings } = useSettingsStore();
   const theme = useTheme();
   useSystemTheme();
+  useNetworkStatus({ enabled: Platform.OS !== "web" });
   const segments = useSegments();
-  const router = useRouter();
   const [isInitialized, setIsInitialized] = React.useState(false);
   const [initError, setInitError] = React.useState<string | null>(null);
   const cleanupRef = React.useRef<(() => void)[]>([]);
@@ -208,7 +208,6 @@ export default function RootLayout() {
         }
 
         if (Platform.OS !== "web") {
-          const networkUnsubscribe = initializeNetworkListener();
           const syncService = initializeSyncService();
 
           // Start offline queue (if enabled) after listeners are ready
@@ -222,7 +221,6 @@ export default function RootLayout() {
 
           // Store cleanup for later
           cleanupRef.current.push(() => {
-            networkUnsubscribe();
             syncService.cleanup();
             try {
               stopOfflineQueue();
@@ -314,7 +312,7 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#0F172A", // modernColors.background.primary
+          backgroundColor: theme.colors.background, // modernColors.background.primary
         }}
       >
         <ActivityIndicator
@@ -324,7 +322,7 @@ export default function RootLayout() {
         />
         <Text
           style={{
-            color: "#F8FAFC", // modernColors.text.primary
+            color: theme.colors.surface, // modernColors.text.primary
             fontSize: 24, // modernTypography.heading.h3.fontSize
             fontWeight: "700", // modernTypography.heading.h3.fontWeight
             letterSpacing: 0.5,
@@ -334,7 +332,7 @@ export default function RootLayout() {
         </Text>
         <Text
           style={{
-            color: "#94A3B8", // modernColors.text.tertiary
+            color: theme.colors.textTertiary, // modernColors.text.tertiary
             fontSize: 14, // modernTypography.body.small.fontSize
             marginTop: 8,
             letterSpacing: 0.5,
@@ -356,7 +354,7 @@ export default function RootLayout() {
           >
             <Text
               style={{
-                color: "#EF4444", // modernColors.error
+                color: theme.colors.error, // modernColors.error
                 fontSize: 12,
                 textAlign: "center",
               }}
@@ -377,7 +375,7 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#0F172A",
+          backgroundColor: theme.colors.background,
           padding: 20,
         }}
       >
@@ -396,7 +394,7 @@ export default function RootLayout() {
         </View>
         <Text
           style={{
-            color: "#EF4444",
+            color: theme.colors.error,
             fontSize: 20,
             fontWeight: "bold",
             marginBottom: 12,
@@ -406,7 +404,7 @@ export default function RootLayout() {
         </Text>
         <Text
           style={{
-            color: "#94A3B8",
+            color: theme.colors.textTertiary,
             fontSize: 14,
             marginBottom: 32,
             textAlign: "center",

@@ -188,6 +188,19 @@ export default function WelcomeScreen() {
               <Text style={styles.registerButtonText}>Create Account</Text>
             </GlassSurface>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => handlePress("/scaffold")}
+            activeOpacity={0.7}
+            style={styles.registerButtonWrapper}
+          >
+            <GlassSurface intensity={10} tint="light" style={styles.registerButton}>
+              <View style={styles.scaffoldButtonInner}>
+                <Ionicons name="scan-outline" size={18} color="#fff" />
+                <Text style={styles.registerButtonText}>Open Scaffold</Text>
+              </View>
+            </GlassSurface>
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Footer */}
@@ -374,6 +387,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  scaffoldButtonInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   footer: {
     alignItems: "center",

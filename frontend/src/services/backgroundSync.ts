@@ -48,8 +48,12 @@ export const registerBackgroundSync = async () => {
     });
 
     console.log('Background sync task registered');
-  } catch (error) {
-    console.error('Failed to register background sync task:', error);
+  } catch (_error) {
+    // This is expected in Expo Go - background tasks require a development build
+    // Only log as warning, not error, to reduce noise
+    if (__DEV__) {
+      console.warn('Background sync not available (expected in Expo Go)');
+    }
   }
 };
 

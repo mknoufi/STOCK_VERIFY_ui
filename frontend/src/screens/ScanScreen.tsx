@@ -186,12 +186,17 @@ export function ScanScreen() {
                 <TouchableOpacity
                   style={[styles.roundBtn, torchOn && { backgroundColor: COLORS.INFO }]}
                   onPress={() => setTorchOn(!torchOn)}
+                  accessibilityLabel="Toggle flash"
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: torchOn }}
                 >
                   <Ionicons name={torchOn ? "flash" : "flash-off"} size={22} color="white" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.roundBtn, { marginTop: 12, backgroundColor: COLORS.WARNING }]}
                   onPress={handlePrintRequest}
+                  accessibilityLabel="Print label"
+                  accessibilityRole="button"
                 >
                   <Ionicons name="print" size={22} color="white" />
                 </TouchableOpacity>
@@ -203,7 +208,11 @@ export function ScanScreen() {
             <Ionicons name="checkmark-circle" size={60} color={COLORS.SUCCESS} />
             <Text style={styles.itemTitle}>{scannedItem?.name}</Text>
             <Text style={styles.skuText}>SKU: {scannedItem?.sku}</Text>
-            <TouchableOpacity onPress={handleRescan}>
+            <TouchableOpacity
+              onPress={handleRescan}
+              accessibilityRole="button"
+              accessibilityLabel="Rescan item"
+            >
               <Text style={styles.rescan}>Tap to Rescan</Text>
             </TouchableOpacity>
           </View>
@@ -262,6 +271,9 @@ export function ScanScreen() {
               key={c}
               style={[styles.chip, conditions[c] && styles.chipActive]}
               onPress={() => toggleCondition(c)}
+              accessibilityRole="checkbox"
+              accessibilityLabel={c}
+              accessibilityState={{ checked: conditions[c] }}
             >
               <Text style={[styles.chipText, conditions[c] && styles.chipTextActive]}>
                 {c}

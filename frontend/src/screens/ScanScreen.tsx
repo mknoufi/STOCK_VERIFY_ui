@@ -186,12 +186,17 @@ export function ScanScreen() {
                 <TouchableOpacity
                   style={[styles.roundBtn, torchOn && { backgroundColor: COLORS.INFO }]}
                   onPress={() => setTorchOn(!torchOn)}
+                  accessibilityLabel={torchOn ? "Turn flashlight off" : "Turn flashlight on"}
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: torchOn }}
                 >
                   <Ionicons name={torchOn ? "flash" : "flash-off"} size={22} color="white" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.roundBtn, { marginTop: 12, backgroundColor: COLORS.WARNING }]}
                   onPress={handlePrintRequest}
+                  accessibilityLabel="Print label"
+                  accessibilityRole="button"
                 >
                   <Ionicons name="print" size={22} color="white" />
                 </TouchableOpacity>
@@ -262,6 +267,9 @@ export function ScanScreen() {
               key={c}
               style={[styles.chip, conditions[c] && styles.chipActive]}
               onPress={() => toggleCondition(c)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: conditions[c] }}
+              accessibilityLabel={c}
             >
               <Text style={[styles.chipText, conditions[c] && styles.chipTextActive]}>
                 {c}

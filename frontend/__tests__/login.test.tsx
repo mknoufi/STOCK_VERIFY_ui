@@ -3,6 +3,7 @@
  */
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import LoginScreen from "../app/login";
 
 // Mock expo-router
 jest.mock("expo-router", () => ({
@@ -24,68 +25,81 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 jest.mock("../src/store/authStore", () => ({
   useAuthStore: () => ({
     login: jest.fn(() => Promise.resolve({ success: true })),
+    loginWithPin: jest.fn(() => Promise.resolve({ success: true })),
+    loginWithBiometrics: jest.fn(),
     isLoading: false,
     error: null,
     isAuthenticated: false,
+    isBiometricEnabled: false,
+    isBiometricSupported: true,
+    enableBiometrics: jest.fn(),
   }),
 }));
 
-describe("Login Screen", () => {
+// Mock ThemeContext
+jest.mock("../src/theme/ThemeContext", () => ({
+  useThemeContext: () => ({
+    theme: {
+      colors: {
+        primary: { 400: '#000', 600: '#000' },
+        accent: { 600: '#000', default: '#000' },
+        text: { primary: '#000', secondary: '#000', tertiary: '#000' },
+        background: { default: '#000' }
+      }
+    },
+  }),
+}));
+
+// Mock LinearGradient
+jest.mock("expo-linear-gradient", () => ({
+  LinearGradient: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock Ionicons
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: "Ionicons",
+}));
+
+// Mock Haptics
+jest.mock("expo-haptics", () => ({
+  impactAsync: jest.fn(),
+  notificationAsync: jest.fn(),
+  ImpactFeedbackStyle: {},
+  NotificationFeedbackType: {},
+}));
+
+// Mock Expo Blur
+jest.mock("expo-blur", () => ({
+  BlurView: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock Safe Area
+jest.mock("react-native-safe-area-context", () => ({
+  SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
+
+describe("Login Screen Accessibility", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should render login form elements", () => {
-    // Basic render test placeholder
-    expect(true).toBe(true);
-  });
+  it("should have accessible keypad buttons", () => {
+    const { getByLabelText } = render(<LoginScreen />);
 
-  it("should have username and password fields", () => {
-    // Field validation test placeholder
-    expect(true).toBe(true);
-  });
+    // Check digits 1-9
+    for (let i = 1; i <= 9; i++) {
+      expect(getByLabelText(`Enter ${i}`)).toBeTruthy();
+    }
 
-  it("should have a login button", () => {
-    // Button test placeholder
-    expect(true).toBe(true);
-  });
+    // Check digit 0
+    expect(getByLabelText("Enter 0")).toBeTruthy();
 
-  it("should have remember me checkbox", () => {
-    // Remember me feature test
-    expect(true).toBe(true);
-  });
+    // Check backspace
+    expect(getByLabelText("Backspace")).toBeTruthy();
 
-  it("should have forgot password link", () => {
-    // Forgot password feature test
-    expect(true).toBe(true);
-  });
-
-  it("should display security notice", () => {
-    // Security badge test
-    expect(true).toBe(true);
-  });
-
-  it("should display version footer", () => {
-    // Version footer test
-    expect(true).toBe(true);
-  });
-});
-
-describe("Authentication Flow", () => {
-  it("should validate empty username", () => {
-    // Empty username validation
-    expect("").toBeFalsy();
-  });
-
-  it("should validate empty password", () => {
-    // Empty password validation
-    expect("").toBeFalsy();
-  });
-
-  it("should accept valid credentials format", () => {
-    const username = "staff1";
-    const password = "staff123";
-    expect(username.length).toBeGreaterThan(0);
-    expect(password.length).toBeGreaterThan(0);
+    // Check mode switch button
+    expect(getByLabelText("Switch to username and password login")).toBeTruthy();
   });
 });

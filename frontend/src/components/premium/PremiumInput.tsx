@@ -50,6 +50,7 @@ interface PremiumInputProps {
   leftIcon?: keyof typeof Ionicons.glyphMap;
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightIconPress?: () => void;
+  rightIconAccessibilityLabel?: string;
   style?: ViewStyle;
   inputStyle?: TextStyle;
   testID?: string;
@@ -76,6 +77,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   leftIcon,
   rightIcon,
   onRightIconPress,
+  rightIconAccessibilityLabel,
   style,
   inputStyle,
   testID,
@@ -304,6 +306,21 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
                 : onRightIconPress
             }
             disabled={!isPasswordField && !onRightIconPress}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isPasswordField
+                ? showPassword
+                  ? "Hide password"
+                  : "Show password"
+                : rightIconAccessibilityLabel ||
+                  (label ? `${label} icon` : "Input icon")
+            }
+            accessibilityHint={
+              isPasswordField
+                ? "Double tap to toggle password visibility"
+                : undefined
+            }
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <Ionicons
               name={

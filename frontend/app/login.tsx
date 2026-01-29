@@ -106,6 +106,14 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
+  // Toggle functions for UI
+  const _toggleRememberMe = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setRememberMe(!rememberMe);
+  };
+
   // Animation values
   const logoScale = useSharedValue(0.8);
   const cardTranslateY = useSharedValue(50);
@@ -541,7 +549,7 @@ export default function LoginScreen() {
                       <View style={styles.optionsRow}>
                         <TouchableOpacity
                           style={styles.rememberMeRow}
-                          onPress={() => setRememberMe(!rememberMe)}
+                          onPress={_toggleRememberMe}
                           activeOpacity={0.7}
                           accessibilityRole="checkbox"
                           accessibilityState={{ checked: rememberMe }}

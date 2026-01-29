@@ -105,7 +105,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Animation values
   const logoScale = useSharedValue(0.8);
@@ -259,21 +258,6 @@ export default function LoginScreen() {
       "Please contact your administrator to reset your password.",
       [{ text: "OK", style: "default" }],
     );
-  };
-
-  // Toggle functions for UI (used in credentials mode JSX below)
-  const _toggleRememberMe = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setRememberMe(!rememberMe);
-  };
-
-  const _toggleShowPassword = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setShowPassword(!showPassword);
   };
 
   const handleLogin = async () => {

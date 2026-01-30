@@ -12,20 +12,20 @@ describe('CameraControls', () => {
     onResetZoom: jest.fn(),
   };
 
-  it('renders torch button with accessibility label', () => {
+  it('renders torch button with correct accessibility label', () => {
     const { getByLabelText } = render(<CameraControls {...mockProps} />);
 
     expect(getByLabelText('Turn flash on')).toBeTruthy();
   });
 
-  it('renders zoom buttons with accessibility labels', () => {
+  it('renders zoom buttons with correct accessibility labels', () => {
     const { getByLabelText } = render(<CameraControls {...mockProps} />);
 
     expect(getByLabelText('Zoom in')).toBeTruthy();
     expect(getByLabelText('Zoom out')).toBeTruthy();
   });
 
-  it('renders reset zoom button with accessibility label', () => {
+  it('renders reset zoom button with correct accessibility label', () => {
     const { getByLabelText } = render(<CameraControls {...mockProps} />);
 
     expect(getByLabelText('Reset zoom level')).toBeTruthy();

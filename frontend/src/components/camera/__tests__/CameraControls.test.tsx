@@ -38,4 +38,20 @@ describe('CameraControls', () => {
 
     expect(getByLabelText('Turn flash off')).toBeTruthy();
   });
+
+  it('includes accessibility hints for better context', () => {
+    const { getByLabelText } = render(<CameraControls {...mockProps} />);
+
+    const torchButton = getByLabelText('Turn flash on');
+    expect(torchButton.props.accessibilityHint).toBe('Double tap to toggle camera flash');
+
+    const zoomInButton = getByLabelText('Zoom in');
+    expect(zoomInButton.props.accessibilityHint).toBe('Increases camera zoom level');
+
+    const zoomOutButton = getByLabelText('Zoom out');
+    expect(zoomOutButton.props.accessibilityHint).toBe('Decreases camera zoom level');
+
+    const resetButton = getByLabelText('Reset zoom level');
+    expect(resetButton.props.accessibilityHint).toBe('Resets zoom to 100%');
+  });
 });

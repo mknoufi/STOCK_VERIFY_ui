@@ -307,7 +307,26 @@ export default function LoginScreen() {
     }
   };
 
-
+  const renderPinButton = (digit: number) => (
+    <TouchableOpacity
+      key={digit}
+      style={[
+        styles.keypadButton,
+        {
+          width: responsive.keypadButtonSize,
+          height: responsive.keypadButtonSize,
+          borderRadius: responsive.keypadButtonSize / 2,
+        },
+      ]}
+      onPress={() => handlePinDigit(String(digit))}
+      disabled={loading}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Number ${digit}`}
+    >
+      <Text style={styles.keypadText}>{digit}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -414,63 +433,15 @@ export default function LoginScreen() {
                       <View style={[styles.keypadContainer, { gap: responsive.keypadGap }]}>
                         {/* Row 1: 1, 2, 3 */}
                         <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
-                          {[1, 2, 3].map((digit) => (
-                            <TouchableOpacity
-                              key={digit}
-                              style={[styles.keypadButton, {
-                                width: responsive.keypadButtonSize,
-                                height: responsive.keypadButtonSize,
-                                borderRadius: responsive.keypadButtonSize / 2,
-                              }]}
-                              onPress={() => handlePinDigit(String(digit))}
-                              disabled={loading}
-                              activeOpacity={0.7}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Number ${digit}`}
-                            >
-                              <Text style={styles.keypadText}>{digit}</Text>
-                            </TouchableOpacity>
-                          ))}
+                          {[1, 2, 3].map(renderPinButton)}
                         </View>
                         {/* Row 2: 4, 5, 6 */}
                         <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
-                          {[4, 5, 6].map((digit) => (
-                            <TouchableOpacity
-                              key={digit}
-                              style={[styles.keypadButton, {
-                                width: responsive.keypadButtonSize,
-                                height: responsive.keypadButtonSize,
-                                borderRadius: responsive.keypadButtonSize / 2,
-                              }]}
-                              onPress={() => handlePinDigit(String(digit))}
-                              disabled={loading}
-                              activeOpacity={0.7}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Number ${digit}`}
-                            >
-                              <Text style={styles.keypadText}>{String(digit)}</Text>
-                            </TouchableOpacity>
-                          ))}
+                          {[4, 5, 6].map(renderPinButton)}
                         </View>
                         {/* Row 3: 7, 8, 9 */}
                         <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
-                          {[7, 8, 9].map((digit) => (
-                            <TouchableOpacity
-                              key={digit}
-                              style={[styles.keypadButton, {
-                                width: responsive.keypadButtonSize,
-                                height: responsive.keypadButtonSize,
-                                borderRadius: responsive.keypadButtonSize / 2,
-                              }]}
-                              onPress={() => handlePinDigit(String(digit))}
-                              disabled={loading}
-                              activeOpacity={0.7}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Number ${digit}`}
-                            >
-                              <Text style={styles.keypadText}>{String(digit)}</Text>
-                            </TouchableOpacity>
-                          ))}
+                          {[7, 8, 9].map(renderPinButton)}
                         </View>
                         {/* Row 4: Biometric, 0, Backspace */}
                         <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
@@ -497,20 +468,7 @@ export default function LoginScreen() {
                           ) : (
                              <View style={{ width: responsive.keypadButtonSize, height: responsive.keypadButtonSize }} />
                           )}
-                          <TouchableOpacity
-                            style={[styles.keypadButton, {
-                              width: responsive.keypadButtonSize,
-                              height: responsive.keypadButtonSize,
-                              borderRadius: responsive.keypadButtonSize / 2,
-                            }]}
-                            onPress={() => handlePinDigit(String(0))}
-                            disabled={loading}
-                            activeOpacity={0.7}
-                            accessibilityRole="button"
-                            accessibilityLabel="Number 0"
-                          >
-                            <Text style={styles.keypadText}>{String(0)}</Text>
-                          </TouchableOpacity>
+                          {renderPinButton(0)}
                           <TouchableOpacity
                             style={[styles.keypadButton, {
                               width: responsive.keypadButtonSize,

@@ -84,13 +84,13 @@ const STORAGE_KEYS = {
 export default function LoginScreen() {
   const { width, height } = useWindowDimensions();
   const responsive = getResponsiveSizes(width, height);
-  const { 
-    login, 
-    loginWithPin, 
-    loginWithBiometrics, 
-    isBiometricEnabled, 
-    isBiometricSupported, 
-    enableBiometrics 
+  const {
+    login,
+    loginWithPin,
+    loginWithBiometrics,
+    isBiometricEnabled,
+    isBiometricSupported,
+    enableBiometrics,
   } = useAuthStore();
   const { theme } = useThemeContext();
 
@@ -152,7 +152,7 @@ export default function LoginScreen() {
       withTiming(10, { duration: 50 }),
       withTiming(-10, { duration: 50 }),
       withTiming(10, { duration: 50 }),
-      withTiming(0, { duration: 50 }),
+      withTiming(0, { duration: 50 })
     );
   }, [pinShake]);
 
@@ -174,7 +174,7 @@ export default function LoginScreen() {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pin, loading],
+    [pin, loading]
   );
 
   // Handle PIN backspace
@@ -214,8 +214,8 @@ export default function LoginScreen() {
               {
                 text: "Enable",
                 onPress: async () => {
-                   await enableBiometrics(pinValue);
-                   Alert.alert("Success", "Biometrics enabled!");
+                  await enableBiometrics(pinValue);
+                  Alert.alert("Success", "Biometrics enabled!");
                 },
               },
             ]
@@ -235,10 +235,10 @@ export default function LoginScreen() {
   };
 
   const handleBiometricLogin = async () => {
-      const result = await loginWithBiometrics();
-      if (!result.success) {
-          Alert.alert("Authentication Failed", result.message);
-      }
+    const result = await loginWithBiometrics();
+    if (!result.success) {
+      Alert.alert("Authentication Failed", result.message);
+    }
   };
 
   // Switch login mode
@@ -254,11 +254,9 @@ export default function LoginScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     }
-    Alert.alert(
-      "Reset Password",
-      "Please contact your administrator to reset your password.",
-      [{ text: "OK", style: "default" }],
-    );
+    Alert.alert("Reset Password", "Please contact your administrator to reset your password.", [
+      { text: "OK", style: "default" },
+    ]);
   };
 
   // Toggle functions for UI (used in credentials mode JSX below)
@@ -295,10 +293,7 @@ export default function LoginScreen() {
       const result = await login(username, password);
       // Success is handled by router based on auth state
       if (!result.success) {
-        Alert.alert(
-          "Login Failed",
-          result.message || "Invalid username or password",
-        );
+        Alert.alert("Login Failed", result.message || "Invalid username or password");
       }
     } catch {
       Alert.alert("Login Failed", "An unexpected error occurred");
@@ -306,8 +301,6 @@ export default function LoginScreen() {
       setLoading(false);
     }
   };
-
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -333,25 +326,31 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.contentContainer, {
-            maxWidth: responsive.maxContentWidth,
-            paddingHorizontal: responsive.horizontalPadding
-          }]}>
+          <View
+            style={[
+              styles.contentContainer,
+              {
+                maxWidth: responsive.maxContentWidth,
+                paddingHorizontal: responsive.horizontalPadding,
+              },
+            ]}
+          >
             {/* Logo & Brand Section */}
             <Animated.View
               entering={FadeInDown.delay(200).springify()}
               style={[styles.header, logoStyle]}
             >
-              <View style={[styles.iconContainer, {
-                width: responsive.iconContainerSize,
-                height: responsive.iconContainerSize,
-                borderRadius: responsive.iconContainerSize * 0.29,
-              }]}>
-                <Ionicons
-                  name="cube"
-                  size={responsive.iconSize}
-                  color={theme.colors.accent}
-                />
+              <View
+                style={[
+                  styles.iconContainer,
+                  {
+                    width: responsive.iconContainerSize,
+                    height: responsive.iconContainerSize,
+                    borderRadius: responsive.iconContainerSize * 0.29,
+                  },
+                ]}
+              >
+                <Ionicons name="cube" size={responsive.iconSize} color={theme.colors.accent} />
                 <View style={styles.iconGlow} />
               </View>
               <Text style={styles.title}>Stock Verify</Text>
@@ -394,13 +393,19 @@ export default function LoginScreen() {
                       {/* PIN Indicator Dots */}
                       <Animated.View
                         style={[styles.pinIndicators, pinIndicatorStyle]}
+                        accessible={true}
+                        accessibilityLabel={`PIN entry, ${pin.length} of ${PIN_LENGTH} digits entered`}
                       >
                         {[0, 1, 2, 3].map((index) => (
                           <View
                             key={index}
                             style={[
                               styles.pinDot,
-                              { width: responsive.pinDotSize, height: responsive.pinDotSize, borderRadius: responsive.pinDotSize / 2 },
+                              {
+                                width: responsive.pinDotSize,
+                                height: responsive.pinDotSize,
+                                borderRadius: responsive.pinDotSize / 2,
+                              },
                               pin.length > index && styles.pinDotFilled,
                             ]}
                           />
@@ -414,14 +419,19 @@ export default function LoginScreen() {
                           {[1, 2, 3].map((digit) => (
                             <TouchableOpacity
                               key={digit}
-                              style={[styles.keypadButton, {
-                                width: responsive.keypadButtonSize,
-                                height: responsive.keypadButtonSize,
-                                borderRadius: responsive.keypadButtonSize / 2,
-                              }]}
+                              style={[
+                                styles.keypadButton,
+                                {
+                                  width: responsive.keypadButtonSize,
+                                  height: responsive.keypadButtonSize,
+                                  borderRadius: responsive.keypadButtonSize / 2,
+                                },
+                              ]}
                               onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Digit ${digit}`}
                             >
                               <Text style={styles.keypadText}>{digit}</Text>
                             </TouchableOpacity>
@@ -432,14 +442,19 @@ export default function LoginScreen() {
                           {[4, 5, 6].map((digit) => (
                             <TouchableOpacity
                               key={digit}
-                              style={[styles.keypadButton, {
-                                width: responsive.keypadButtonSize,
-                                height: responsive.keypadButtonSize,
-                                borderRadius: responsive.keypadButtonSize / 2,
-                              }]}
+                              style={[
+                                styles.keypadButton,
+                                {
+                                  width: responsive.keypadButtonSize,
+                                  height: responsive.keypadButtonSize,
+                                  borderRadius: responsive.keypadButtonSize / 2,
+                                },
+                              ]}
                               onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Digit ${digit}`}
                             >
                               <Text style={styles.keypadText}>{String(digit)}</Text>
                             </TouchableOpacity>
@@ -450,14 +465,19 @@ export default function LoginScreen() {
                           {[7, 8, 9].map((digit) => (
                             <TouchableOpacity
                               key={digit}
-                              style={[styles.keypadButton, {
-                                width: responsive.keypadButtonSize,
-                                height: responsive.keypadButtonSize,
-                                borderRadius: responsive.keypadButtonSize / 2,
-                              }]}
+                              style={[
+                                styles.keypadButton,
+                                {
+                                  width: responsive.keypadButtonSize,
+                                  height: responsive.keypadButtonSize,
+                                  borderRadius: responsive.keypadButtonSize / 2,
+                                },
+                              ]}
                               onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Digit ${digit}`}
                             >
                               <Text style={styles.keypadText}>{String(digit)}</Text>
                             </TouchableOpacity>
@@ -467,46 +487,68 @@ export default function LoginScreen() {
                         <View style={[styles.keypadRow, { gap: responsive.keypadGap }]}>
                           {isBiometricEnabled ? (
                             <TouchableOpacity
-                              style={[styles.keypadButton, {
-                                width: responsive.keypadButtonSize,
-                                height: responsive.keypadButtonSize,
-                                borderRadius: responsive.keypadButtonSize / 2,
-                                backgroundColor: 'rgba(255,255,255,0.1)', // Subtle background
-                              }]}
+                              style={[
+                                styles.keypadButton,
+                                {
+                                  width: responsive.keypadButtonSize,
+                                  height: responsive.keypadButtonSize,
+                                  borderRadius: responsive.keypadButtonSize / 2,
+                                  backgroundColor: "rgba(255,255,255,0.1)", // Subtle background
+                                },
+                              ]}
                               onPress={handleBiometricLogin}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel="Biometric login"
                             >
                               <Ionicons
-                                name={Platform.OS === 'ios' ? "scan-outline" : "finger-print-outline"}
+                                name={
+                                  Platform.OS === "ios" ? "scan-outline" : "finger-print-outline"
+                                }
                                 size={Math.round(responsive.keypadButtonSize * 0.45)}
                                 color={modernColors.text.primary}
                               />
                             </TouchableOpacity>
                           ) : (
-                             <View style={{ width: responsive.keypadButtonSize, height: responsive.keypadButtonSize }} />
+                            <View
+                              style={{
+                                width: responsive.keypadButtonSize,
+                                height: responsive.keypadButtonSize,
+                              }}
+                            />
                           )}
                           <TouchableOpacity
-                            style={[styles.keypadButton, {
-                              width: responsive.keypadButtonSize,
-                              height: responsive.keypadButtonSize,
-                              borderRadius: responsive.keypadButtonSize / 2,
-                            }]}
+                            style={[
+                              styles.keypadButton,
+                              {
+                                width: responsive.keypadButtonSize,
+                                height: responsive.keypadButtonSize,
+                                borderRadius: responsive.keypadButtonSize / 2,
+                              },
+                            ]}
                             onPress={() => handlePinDigit(String(0))}
                             disabled={loading}
                             activeOpacity={0.7}
+                            accessibilityRole="button"
+                            accessibilityLabel="Digit 0"
                           >
                             <Text style={styles.keypadText}>{String(0)}</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
-                            style={[styles.keypadButton, {
-                              width: responsive.keypadButtonSize,
-                              height: responsive.keypadButtonSize,
-                              borderRadius: responsive.keypadButtonSize / 2,
-                            }]}
+                            style={[
+                              styles.keypadButton,
+                              {
+                                width: responsive.keypadButtonSize,
+                                height: responsive.keypadButtonSize,
+                                borderRadius: responsive.keypadButtonSize / 2,
+                              },
+                            ]}
                             onPress={handlePinBackspace}
                             disabled={loading || pin.length === 0}
                             activeOpacity={0.7}
+                            accessibilityRole="button"
+                            accessibilityLabel="Backspace"
                           >
                             <Ionicons
                               name="backspace-outline"
@@ -521,16 +563,11 @@ export default function LoginScreen() {
                         </View>
                       </View>
 
-                      {loading && (
-                        <Text style={styles.loadingText}>Verifying PIN...</Text>
-                      )}
+                      {loading && <Text style={styles.loadingText}>Verifying PIN...</Text>}
                     </Animated.View>
                   ) : (
                     /* Credentials Login Mode */
-                    <Animated.View
-                      entering={FadeIn.duration(200)}
-                      exiting={FadeOut.duration(200)}
-                    >
+                    <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)}>
                       <View style={styles.inputSection}>
                         <PremiumInput
                           label="Username"
@@ -563,19 +600,8 @@ export default function LoginScreen() {
                           accessibilityState={{ checked: rememberMe }}
                           accessibilityLabel="Remember my username"
                         >
-                          <View
-                            style={[
-                              styles.checkbox,
-                              rememberMe && styles.checkboxChecked,
-                            ]}
-                          >
-                            {rememberMe && (
-                              <Ionicons
-                                name="checkmark"
-                                size={12}
-                                color="#FFF"
-                              />
-                            )}
+                          <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                            {rememberMe && <Ionicons name="checkmark" size={12} color="#FFF" />}
                           </View>
                           <Text style={styles.rememberMeText}>Remember me</Text>
                         </TouchableOpacity>
@@ -585,9 +611,7 @@ export default function LoginScreen() {
                           activeOpacity={0.7}
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                         >
-                          <Text style={styles.forgotPasswordText}>
-                            Forgot Password?
-                          </Text>
+                          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                         </TouchableOpacity>
                       </View>
 
@@ -611,16 +635,12 @@ export default function LoginScreen() {
                     activeOpacity={0.7}
                   >
                     <Ionicons
-                      name={
-                        loginMode === "pin" ? "key-outline" : "keypad-outline"
-                      }
+                      name={loginMode === "pin" ? "key-outline" : "keypad-outline"}
                       size={16}
                       color={modernColors.primary[400]}
                     />
                     <Text style={styles.modeSwitchText}>
-                      {loginMode === "pin"
-                        ? "Use Username & Password"
-                        : "Use PIN Instead"}
+                      {loginMode === "pin" ? "Use Username & Password" : "Use PIN Instead"}
                     </Text>
                   </TouchableOpacity>
 
@@ -630,19 +650,14 @@ export default function LoginScreen() {
                       size={14}
                       color={modernColors.text.tertiary}
                     />
-                    <Text style={styles.securityText}>
-                      Secured with 256-bit encryption
-                    </Text>
+                    <Text style={styles.securityText}>Secured with 256-bit encryption</Text>
                   </View>
                 </View>
               </GlassCard>
             </Animated.View>
 
             {/* Footer */}
-            <Animated.View
-              entering={FadeInUp.delay(600).springify()}
-              style={styles.footer}
-            >
+            <Animated.View entering={FadeInUp.delay(600).springify()} style={styles.footer}>
               <Text style={styles.versionText}>Version {APP_VERSION}</Text>
               <View style={styles.footerDivider} />
               <Text style={styles.copyrightText}>© 2025 Stock Verify</Text>

@@ -135,6 +135,10 @@ const ServiceItem = ({
             },
           ]}
           disabled={loading}
+          accessibilityLabel={`${isRunning ? "Stop" : "Start"} ${name} service`}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: loading, checked: isRunning }}
+          accessibilityHint="Double tap to toggle service status"
         >
           {loading ? (
             <ActivityIndicator size="small" color={modernColors.text.primary} />
@@ -283,6 +287,9 @@ export default function AdminControlPanelV2() {
               <AnimatedPressable
                 style={styles.iconButton}
                 onPress={() => router.back()}
+                accessibilityLabel="Close control panel"
+                accessibilityRole="button"
+                accessibilityHint="Navigates back to previous screen"
               >
                 <Ionicons
                   name="close"
@@ -413,6 +420,9 @@ export default function AdminControlPanelV2() {
                   <AnimatedPressable
                     style={styles.toolCard}
                     onPress={() => router.push(item.route as any)}
+                    accessibilityLabel={`Navigate to ${item.title}`}
+                    accessibilityRole="button"
+                    accessibilityHint={`Opens the ${item.title} screen`}
                   >
                     <GlassCard variant="medium" style={styles.toolCardContent}>
                       <View style={styles.toolIcon}>

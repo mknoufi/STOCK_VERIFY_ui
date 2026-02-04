@@ -19,6 +19,201 @@ import {
 import { ScreenContainer } from "../../src/components/ui/ScreenContainer";
 import { useThemeContext } from "../../src/theme/ThemeContext";
 
+type SettingItem =
+  | {
+      type: "input";
+      label: string;
+      key: string;
+      keyboardType?: "numeric" | "default";
+      description?: string;
+    }
+  | {
+      type: "switch";
+      label: string;
+      key: string;
+      description?: string;
+    };
+
+type SettingSection = {
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  items: SettingItem[];
+};
+
+const SECTIONS: SettingSection[] = [
+  {
+    title: "API Configuration",
+    icon: "globe-outline",
+    items: [
+      {
+        type: "input",
+        label: "API Timeout (seconds)",
+        key: "api_timeout",
+        keyboardType: "numeric",
+        description: "Request timeout duration",
+      },
+      {
+        type: "input",
+        label: "Rate Limit (per minute)",
+        key: "api_rate_limit",
+        keyboardType: "numeric",
+        description: "Maximum requests per minute",
+      },
+    ],
+  },
+  {
+    title: "Caching",
+    icon: "hardware-chip-outline",
+    items: [
+      { type: "switch", label: "Enable Caching", key: "cache_enabled" },
+      {
+        type: "input",
+        label: "Cache TTL (seconds)",
+        key: "cache_ttl",
+        keyboardType: "numeric",
+        description: "Time to live for cached items",
+      },
+      {
+        type: "input",
+        label: "Max Cache Size",
+        key: "cache_max_size",
+        keyboardType: "numeric",
+        description: "Maximum number of items in cache",
+      },
+    ],
+  },
+  {
+    title: "Synchronization",
+    icon: "sync-outline",
+    items: [
+      { type: "switch", label: "Auto Sync", key: "auto_sync_enabled" },
+      {
+        type: "input",
+        label: "Sync Interval (seconds)",
+        key: "sync_interval",
+        keyboardType: "numeric",
+        description: "Time between automatic syncs",
+      },
+      {
+        type: "input",
+        label: "Batch Size",
+        key: "sync_batch_size",
+        keyboardType: "numeric",
+        description: "Items per sync batch",
+      },
+    ],
+  },
+  {
+    title: "Sessions",
+    icon: "people-outline",
+    items: [
+      {
+        type: "input",
+        label: "Session Timeout (seconds)",
+        key: "session_timeout",
+        keyboardType: "numeric",
+      },
+      {
+        type: "input",
+        label: "Max Concurrent Sessions",
+        key: "max_concurrent_sessions",
+        keyboardType: "numeric",
+      },
+    ],
+  },
+  {
+    title: "Logging",
+    icon: "document-text-outline",
+    items: [
+      { type: "switch", label: "Enable Audit Log", key: "enable_audit_log" },
+      {
+        type: "input",
+        label: "Log Retention (days)",
+        key: "log_retention_days",
+        keyboardType: "numeric",
+      },
+      {
+        type: "input",
+        label: "Log Level",
+        key: "log_level",
+        keyboardType: "default",
+        description: "DEBUG, INFO, WARN, ERROR",
+      },
+    ],
+  },
+  {
+    title: "Database",
+    icon: "server-outline",
+    items: [
+      {
+        type: "input",
+        label: "MongoDB Pool Size",
+        key: "mongo_pool_size",
+        keyboardType: "numeric",
+      },
+      {
+        type: "input",
+        label: "SQL Pool Size",
+        key: "sql_pool_size",
+        keyboardType: "numeric",
+      },
+      {
+        type: "input",
+        label: "Query Timeout (seconds)",
+        key: "query_timeout",
+        keyboardType: "numeric",
+      },
+    ],
+  },
+  {
+    title: "Security",
+    icon: "shield-checkmark-outline",
+    items: [
+      {
+        type: "input",
+        label: "Min Password Length",
+        key: "password_min_length",
+        keyboardType: "numeric",
+      },
+      {
+        type: "switch",
+        label: "Require Uppercase",
+        key: "password_require_uppercase",
+      },
+      {
+        type: "switch",
+        label: "Require Lowercase",
+        key: "password_require_lowercase",
+      },
+      {
+        type: "switch",
+        label: "Require Numbers",
+        key: "password_require_numbers",
+      },
+      {
+        type: "input",
+        label: "JWT Expiration (seconds)",
+        key: "jwt_expiration",
+        keyboardType: "numeric",
+      },
+    ],
+  },
+  {
+    title: "Performance",
+    icon: "speedometer-outline",
+    items: [
+      { type: "switch", label: "Enable Compression", key: "enable_compression" },
+      { type: "switch", label: "Enable CORS", key: "enable_cors" },
+      {
+        type: "input",
+        label: "Max Request Size (bytes)",
+        key: "max_request_size",
+        keyboardType: "numeric",
+      },
+    ],
+  },
+];
+
 export default function MasterSettingsScreen() {
   const router = useRouter();
   const { hasRole } = usePermission();
@@ -81,65 +276,76 @@ export default function MasterSettingsScreen() {
     }));
   };
 
-  const renderSectionHeader = (title: string, icon: any) => (
-    <View style={[styles.sectionHeader, { borderBottomColor: theme.colors.border }]}>
-      <Ionicons name={icon} size={24} color={theme.colors.accent} />
-      <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{title}</Text>
-    </View>
-  );
+  const renderItem = (item: SettingItem) => {
+    if (item.type === "switch") {
+      return (
+        <View key={item.key} style={styles.switchContainer}>
+          <View style={styles.switchTextContainer}>
+            <Text style={[styles.switchLabel, { color: theme.colors.text }]}>
+              {item.label}
+            </Text>
+            {item.description && (
+              <Text
+                style={[
+                  styles.switchDescription,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                {item.description}
+              </Text>
+            )}
+          </View>
+          <Switch
+            value={settings?.[item.key] || false}
+            onValueChange={(value) => updateSetting(item.key, value)}
+            trackColor={{ false: "#767577", true: theme.colors.accent }}
+            thumbColor={settings?.[item.key] ? "#fff" : "#f4f3f4"}
+            accessibilityLabel={item.label}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: settings?.[item.key] || false }}
+          />
+        </View>
+      );
+    }
 
-  const renderInput = (
-    label: string,
-    key: string,
-    keyboardType: "default" | "numeric" = "default",
-    description?: string,
-  ) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>{label}</Text>
-      <TextInput
-        style={[
-          styles.input,
-          {
-            borderColor: theme.colors.border,
-            color: theme.colors.text,
-            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f9f9f9'
-          }
-        ]}
-        value={settings?.[key]?.toString() || ""}
-        onChangeText={(text) => {
-          const value = keyboardType === "numeric" ? parseInt(text) || 0 : text;
-          updateSetting(key, value);
-        }}
-        keyboardType={keyboardType}
-        placeholder={label}
-        placeholderTextColor={theme.colors.textSecondary}
-        accessibilityLabel={label}
-      />
-      {description && (
-        <Text style={[styles.inputDescription, { color: theme.colors.textSecondary }]}>{description}</Text>
-      )}
-    </View>
-  );
-
-  const renderSwitch = (label: string, key: string, description?: string) => (
-    <View style={styles.switchContainer}>
-      <View style={styles.switchTextContainer}>
-        <Text style={[styles.switchLabel, { color: theme.colors.text }]}>{label}</Text>
-        {description && (
-          <Text style={[styles.switchDescription, { color: theme.colors.textSecondary }]}>{description}</Text>
+    return (
+      <View key={item.key} style={styles.inputContainer}>
+        <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>
+          {item.label}
+        </Text>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              borderColor: theme.colors.border,
+              color: theme.colors.text,
+              backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f9f9f9",
+            },
+          ]}
+          value={settings?.[item.key]?.toString() || ""}
+          onChangeText={(text) => {
+            const value =
+              item.keyboardType === "numeric" ? parseInt(text) || 0 : text;
+            updateSetting(item.key, value);
+          }}
+          keyboardType={item.keyboardType || "default"}
+          placeholder={item.label}
+          placeholderTextColor={theme.colors.textSecondary}
+          accessibilityLabel={item.label}
+        />
+        {item.description && (
+          <Text
+            style={[
+              styles.inputDescription,
+              { color: theme.colors.textSecondary },
+            ]}
+          >
+            {item.description}
+          </Text>
         )}
       </View>
-      <Switch
-        value={settings?.[key] || false}
-        onValueChange={(value) => updateSetting(key, value)}
-        trackColor={{ false: "#767577", true: theme.colors.accent }}
-        thumbColor={settings?.[key] ? "#fff" : "#f4f3f4"}
-        accessibilityLabel={label}
-        accessibilityRole="switch"
-        accessibilityState={{ checked: settings?.[key] || false }}
-      />
-    </View>
-  );
+    );
+  };
 
   return (
     <ScreenContainer
@@ -152,7 +358,10 @@ export default function MasterSettingsScreen() {
             onPress={handleSave}
             style={[
               styles.saveButton,
-              { backgroundColor: theme.colors.accent, opacity: saving || !settings ? 0.7 : 1 },
+              {
+                backgroundColor: theme.colors.accent,
+                opacity: saving || !settings ? 0.7 : 1,
+              },
             ]}
             disabled={saving || !settings}
             accessibilityRole="button"
@@ -171,122 +380,34 @@ export default function MasterSettingsScreen() {
       contentMode="keyboard-scroll"
       backgroundType="aurora"
     >
-        {/* API Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("API Configuration", "globe-outline")}
-          {renderInput(
-            "API Timeout (seconds)",
-            "api_timeout",
-            "numeric",
-            "Request timeout duration",
-          )}
-          {renderInput(
-            "Rate Limit (per minute)",
-            "api_rate_limit",
-            "numeric",
-            "Maximum requests per minute",
-          )}
+      {SECTIONS.map((section, index) => (
+        <View
+          key={index}
+          style={[
+            styles.section,
+            { backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "#fff" },
+          ]}
+        >
+          <View
+            style={[
+              styles.sectionHeader,
+              { borderBottomColor: theme.colors.border },
+            ]}
+          >
+            <Ionicons name={section.icon} size={24} color={theme.colors.accent} />
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {section.title}
+            </Text>
+          </View>
+          {section.items.map((item) => renderItem(item))}
         </View>
+      ))}
 
-        {/* Cache Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("Caching", "hardware-chip-outline")}
-          {renderSwitch("Enable Caching", "cache_enabled")}
-          {renderInput(
-            "Cache TTL (seconds)",
-            "cache_ttl",
-            "numeric",
-            "Time to live for cached items",
-          )}
-          {renderInput(
-            "Max Cache Size",
-            "cache_max_size",
-            "numeric",
-            "Maximum number of items in cache",
-          )}
-        </View>
-
-        {/* Sync Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("Synchronization", "sync-outline")}
-          {renderSwitch("Auto Sync", "auto_sync_enabled")}
-          {renderInput(
-            "Sync Interval (seconds)",
-            "sync_interval",
-            "numeric",
-            "Time between automatic syncs",
-          )}
-          {renderInput(
-            "Batch Size",
-            "sync_batch_size",
-            "numeric",
-            "Items per sync batch",
-          )}
-        </View>
-
-        {/* Session Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("Sessions", "people-outline")}
-          {renderInput(
-            "Session Timeout (seconds)",
-            "session_timeout",
-            "numeric",
-          )}
-          {renderInput(
-            "Max Concurrent Sessions",
-            "max_concurrent_sessions",
-            "numeric",
-          )}
-        </View>
-
-        {/* Logging Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("Logging", "document-text-outline")}
-          {renderSwitch("Enable Audit Log", "enable_audit_log")}
-          {renderInput("Log Retention (days)", "log_retention_days", "numeric")}
-          {renderInput(
-            "Log Level",
-            "log_level",
-            "default",
-            "DEBUG, INFO, WARN, ERROR",
-          )}
-        </View>
-
-        {/* Database Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("Database", "server-outline")}
-          {renderInput("MongoDB Pool Size", "mongo_pool_size", "numeric")}
-          {renderInput("SQL Pool Size", "sql_pool_size", "numeric")}
-          {renderInput("Query Timeout (seconds)", "query_timeout", "numeric")}
-        </View>
-
-        {/* Security Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("Security", "shield-checkmark-outline")}
-          {renderInput("Min Password Length", "password_min_length", "numeric")}
-          {renderSwitch("Require Uppercase", "password_require_uppercase")}
-          {renderSwitch("Require Lowercase", "password_require_lowercase")}
-          {renderSwitch("Require Numbers", "password_require_numbers")}
-          {renderInput("JWT Expiration (seconds)", "jwt_expiration", "numeric")}
-        </View>
-
-        {/* Performance Settings */}
-        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
-          {renderSectionHeader("Performance", "speedometer-outline")}
-          {renderSwitch("Enable Compression", "enable_compression")}
-          {renderSwitch("Enable CORS", "enable_cors")}
-          {renderInput(
-            "Max Request Size (bytes)",
-            "max_request_size",
-            "numeric",
-          )}
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
-            Note: Some changes may require a system restart to take full effect.
-          </Text>
-        </View>
+      <View style={styles.footer}>
+        <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
+          Note: Some changes may require a system restart to take full effect.
+        </Text>
+      </View>
     </ScreenContainer>
   );
 }

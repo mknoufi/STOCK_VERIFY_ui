@@ -80,7 +80,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
           label={item.label}
           value={settings?.[item.key]?.toString() || ""}
           onChangeText={(text) => {
-            const value =
+            if (!settings) return;
               item.keyboardType === "numeric" ? parseInt(text) || 0 : text;
             onUpdate(item.key, value);
           }}

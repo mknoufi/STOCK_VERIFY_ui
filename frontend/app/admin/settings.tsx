@@ -3,13 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   TextInput,
   Switch,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -18,10 +16,13 @@ import {
   getSystemSettings,
   updateSystemSettings,
 } from "../../src/services/api";
+import { ScreenContainer } from "../../src/components/ui/ScreenContainer";
+import { useThemeContext } from "../../src/theme/ThemeContext";
 
 export default function MasterSettingsScreen() {
   const router = useRouter();
   const { hasRole } = usePermission();
+  const { theme, isDark } = useThemeContext();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<any>(null);
@@ -81,9 +82,9 @@ export default function MasterSettingsScreen() {
   };
 
   const renderSectionHeader = (title: string, icon: any) => (
-    <View style={styles.sectionHeader}>
-      <Ionicons name={icon} size={24} color="#007AFF" />
-      <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={[styles.sectionHeader, { borderBottomColor: theme.colors.border }]}>
+      <Ionicons name={icon} size={24} color={theme.colors.accent} />
+      <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{title}</Text>
     </View>
   );
 
@@ -94,9 +95,16 @@ export default function MasterSettingsScreen() {
     description?: string,
   ) => (
     <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>{label}</Text>
+      <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>{label}</Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            borderColor: theme.colors.border,
+            color: theme.colors.text,
+            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f9f9f9'
+          }
+        ]}
         value={settings?.[key]?.toString() || ""}
         onChangeText={(text) => {
           const value = keyboardType === "numeric" ? parseInt(text) || 0 : text;
@@ -104,9 +112,11 @@ export default function MasterSettingsScreen() {
         }}
         keyboardType={keyboardType}
         placeholder={label}
+        placeholderTextColor={theme.colors.textSecondary}
+        accessibilityLabel={label}
       />
       {description && (
-        <Text style={styles.inputDescription}>{description}</Text>
+        <Text style={[styles.inputDescription, { color: theme.colors.textSecondary }]}>{description}</Text>
       )}
     </View>
   );
@@ -114,55 +124,55 @@ export default function MasterSettingsScreen() {
   const renderSwitch = (label: string, key: string, description?: string) => (
     <View style={styles.switchContainer}>
       <View style={styles.switchTextContainer}>
-        <Text style={styles.switchLabel}>{label}</Text>
+        <Text style={[styles.switchLabel, { color: theme.colors.text }]}>{label}</Text>
         {description && (
-          <Text style={styles.switchDescription}>{description}</Text>
+          <Text style={[styles.switchDescription, { color: theme.colors.textSecondary }]}>{description}</Text>
         )}
       </View>
       <Switch
         value={settings?.[key] || false}
         onValueChange={(value) => updateSetting(key, value)}
-        trackColor={{ false: "#767577", true: "#81b0ff" }}
-        thumbColor={settings?.[key] ? "#007AFF" : "#f4f3f4"}
+        trackColor={{ false: "#767577", true: theme.colors.accent }}
+        thumbColor={settings?.[key] ? "#fff" : "#f4f3f4"}
+        accessibilityLabel={label}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: settings?.[key] || false }}
       />
     </View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading settings...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Master Settings</Text>
-        <TouchableOpacity
-          onPress={handleSave}
-          style={styles.saveButton}
-          disabled={saving || !settings}
-        >
-          {saving ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.saveButtonText}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.content}>
+    <ScreenContainer
+      header={{
+        title: "Master Settings",
+        showBackButton: true,
+        showLogoutButton: false,
+        customRightContent: (
+          <TouchableOpacity
+            onPress={handleSave}
+            style={[
+              styles.saveButton,
+              { backgroundColor: theme.colors.accent, opacity: saving || !settings ? 0.7 : 1 },
+            ]}
+            disabled={saving || !settings}
+            accessibilityRole="button"
+            accessibilityLabel="Save settings"
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.saveButtonText}>Save</Text>
+            )}
+          </TouchableOpacity>
+        ),
+      }}
+      loading={loading}
+      loadingType="spinner"
+      contentMode="keyboard-scroll"
+      backgroundType="aurora"
+    >
         {/* API Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("API Configuration", "globe-outline")}
           {renderInput(
             "API Timeout (seconds)",
@@ -179,7 +189,7 @@ export default function MasterSettingsScreen() {
         </View>
 
         {/* Cache Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("Caching", "hardware-chip-outline")}
           {renderSwitch("Enable Caching", "cache_enabled")}
           {renderInput(
@@ -197,7 +207,7 @@ export default function MasterSettingsScreen() {
         </View>
 
         {/* Sync Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("Synchronization", "sync-outline")}
           {renderSwitch("Auto Sync", "auto_sync_enabled")}
           {renderInput(
@@ -215,7 +225,7 @@ export default function MasterSettingsScreen() {
         </View>
 
         {/* Session Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("Sessions", "people-outline")}
           {renderInput(
             "Session Timeout (seconds)",
@@ -230,7 +240,7 @@ export default function MasterSettingsScreen() {
         </View>
 
         {/* Logging Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("Logging", "document-text-outline")}
           {renderSwitch("Enable Audit Log", "enable_audit_log")}
           {renderInput("Log Retention (days)", "log_retention_days", "numeric")}
@@ -243,7 +253,7 @@ export default function MasterSettingsScreen() {
         </View>
 
         {/* Database Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("Database", "server-outline")}
           {renderInput("MongoDB Pool Size", "mongo_pool_size", "numeric")}
           {renderInput("SQL Pool Size", "sql_pool_size", "numeric")}
@@ -251,7 +261,7 @@ export default function MasterSettingsScreen() {
         </View>
 
         {/* Security Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("Security", "shield-checkmark-outline")}
           {renderInput("Min Password Length", "password_min_length", "numeric")}
           {renderSwitch("Require Uppercase", "password_require_uppercase")}
@@ -261,7 +271,7 @@ export default function MasterSettingsScreen() {
         </View>
 
         {/* Performance Settings */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#fff' }]}>
           {renderSectionHeader("Performance", "speedometer-outline")}
           {renderSwitch("Enable Compression", "enable_compression")}
           {renderSwitch("Enable CORS", "enable_cors")}
@@ -273,51 +283,18 @@ export default function MasterSettingsScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
             Note: Some changes may require a system restart to take full effect.
           </Text>
         </View>
-      </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 10,
-    color: "#666",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    paddingTop: Platform.OS === "ios" ? 50 : 16,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
   saveButton: {
-    backgroundColor: "#007AFF",
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 20,
     minWidth: 70,
     alignItems: "center",
@@ -325,34 +302,28 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#fff",
     fontWeight: "600",
-  },
-  content: {
-    flex: 1,
-    padding: 16,
+    fontSize: 14,
   },
   section: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
     paddingBottom: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
     marginLeft: 8,
   },
   inputContainer: {
@@ -360,20 +331,17 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: "#666",
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: "500",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 10,
+    borderRadius: 12,
+    padding: 12,
     fontSize: 16,
-    backgroundColor: "#f9f9f9",
   },
   inputDescription: {
     fontSize: 12,
-    color: "#999",
     marginTop: 4,
   },
   switchContainer: {
@@ -388,11 +356,10 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 16,
-    color: "#333",
+    fontWeight: "500",
   },
   switchDescription: {
     fontSize: 12,
-    color: "#999",
     marginTop: 2,
   },
   footer: {
@@ -401,8 +368,8 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   footerText: {
-    color: "#666",
     textAlign: "center",
     fontStyle: "italic",
+    fontSize: 13,
   },
 });

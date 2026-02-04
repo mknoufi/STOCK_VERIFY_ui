@@ -6,10 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  TextInput,
-  Switch,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePermission } from "../../src/hooks/usePermission";
 import {
@@ -18,27 +15,10 @@ import {
 } from "../../src/services/api";
 import { ScreenContainer } from "../../src/components/ui/ScreenContainer";
 import { useThemeContext } from "../../src/theme/ThemeContext";
-
-type SettingItem =
-  | {
-      type: "input";
-      label: string;
-      key: string;
-      keyboardType?: "numeric" | "default";
-      description?: string;
-    }
-  | {
-      type: "switch";
-      label: string;
-      key: string;
-      description?: string;
-    };
-
-type SettingSection = {
-  title: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  items: SettingItem[];
-};
+import {
+  SettingsForm,
+  SettingSection,
+} from "../../src/components/admin/SettingsForm";
 
 const SECTIONS: SettingSection[] = [
   {
@@ -217,7 +197,7 @@ const SECTIONS: SettingSection[] = [
 export default function MasterSettingsScreen() {
   const router = useRouter();
   const { hasRole } = usePermission();
-  const { theme, isDark } = useThemeContext();
+  const { theme } = useThemeContext();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<any>(null);
@@ -276,77 +256,6 @@ export default function MasterSettingsScreen() {
     }));
   };
 
-  const renderItem = (item: SettingItem) => {
-    if (item.type === "switch") {
-      return (
-        <View key={item.key} style={styles.switchContainer}>
-          <View style={styles.switchTextContainer}>
-            <Text style={[styles.switchLabel, { color: theme.colors.text }]}>
-              {item.label}
-            </Text>
-            {item.description && (
-              <Text
-                style={[
-                  styles.switchDescription,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                {item.description}
-              </Text>
-            )}
-          </View>
-          <Switch
-            value={settings?.[item.key] || false}
-            onValueChange={(value) => updateSetting(item.key, value)}
-            trackColor={{ false: "#767577", true: theme.colors.accent }}
-            thumbColor={settings?.[item.key] ? "#fff" : "#f4f3f4"}
-            accessibilityLabel={item.label}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: settings?.[item.key] || false }}
-          />
-        </View>
-      );
-    }
-
-    return (
-      <View key={item.key} style={styles.inputContainer}>
-        <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>
-          {item.label}
-        </Text>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              borderColor: theme.colors.border,
-              color: theme.colors.text,
-              backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f9f9f9",
-            },
-          ]}
-          value={settings?.[item.key]?.toString() || ""}
-          onChangeText={(text) => {
-            const value =
-              item.keyboardType === "numeric" ? parseInt(text) || 0 : text;
-            updateSetting(item.key, value);
-          }}
-          keyboardType={item.keyboardType || "default"}
-          placeholder={item.label}
-          placeholderTextColor={theme.colors.textSecondary}
-          accessibilityLabel={item.label}
-        />
-        {item.description && (
-          <Text
-            style={[
-              styles.inputDescription,
-              { color: theme.colors.textSecondary },
-            ]}
-          >
-            {item.description}
-          </Text>
-        )}
-      </View>
-    );
-  };
-
   return (
     <ScreenContainer
       header={{
@@ -380,28 +289,11 @@ export default function MasterSettingsScreen() {
       contentMode="keyboard-scroll"
       backgroundType="aurora"
     >
-      {SECTIONS.map((section, index) => (
-        <View
-          key={index}
-          style={[
-            styles.section,
-            { backgroundColor: isDark ? "rgba(30, 41, 59, 0.7)" : "#fff" },
-          ]}
-        >
-          <View
-            style={[
-              styles.sectionHeader,
-              { borderBottomColor: theme.colors.border },
-            ]}
-          >
-            <Ionicons name={section.icon} size={24} color={theme.colors.accent} />
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              {section.title}
-            </Text>
-          </View>
-          {section.items.map((item) => renderItem(item))}
-        </View>
-      ))}
+      <SettingsForm
+        sections={SECTIONS}
+        settings={settings}
+        onUpdate={updateSetting}
+      />
 
       <View style={styles.footer}>
         <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
@@ -424,64 +316,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 14,
-  },
-  section: {
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    paddingBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 14,
-    marginBottom: 6,
-    fontWeight: "500",
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 16,
-  },
-  inputDescription: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  switchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  switchTextContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  switchLabel: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  switchDescription: {
-    fontSize: 12,
-    marginTop: 2,
   },
   footer: {
     padding: 16,

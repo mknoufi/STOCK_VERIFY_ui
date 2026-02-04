@@ -60,7 +60,10 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
           </View>
           <Switch
             value={settings?.[item.key] || false}
-            onValueChange={(value) => onUpdate(item.key, value)}
+            onValueChange={(value) => {
+              if (!settings) return;
+              onUpdate(item.key, value);
+            }}
             trackColor={{ false: "#767577", true: theme.colors.accent }}
             thumbColor={settings?.[item.key] ? "#fff" : "#f4f3f4"}
             accessibilityLabel={item.label}

@@ -107,11 +107,11 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   // Animation values
   const logoScale = useSharedValue(0.8);
   const cardTranslateY = useSharedValue(50);
-  const pinShake = useSharedValue(0);
 
   // Load remembered username on mount
   useEffect(() => {
@@ -142,24 +142,10 @@ export default function LoginScreen() {
     transform: [{ scale: logoScale.value }],
   }));
 
-  const pinIndicatorStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: pinShake.value }],
-  }));
-
-  // Shake animation for wrong PIN
-  const triggerShake = useCallback(() => {
-    pinShake.value = withSequence(
-      withTiming(-10, { duration: 50 }),
-      withTiming(10, { duration: 50 }),
-      withTiming(-10, { duration: 50 }),
-      withTiming(10, { duration: 50 }),
-      withTiming(0, { duration: 50 }),
-    );
-  }, [pinShake]);
-
   // Handle PIN change from component
   const handlePinChange = useCallback((newPin: string) => {
     setPin(newPin);
+    setIsError(false);
     if (newPin.length === PIN_LENGTH) {
       handlePinLogin(newPin);
     }
@@ -174,7 +160,7 @@ export default function LoginScreen() {
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         }
-        triggerShake();
+        setIsError(true);
         setPin("");
         Alert.alert("Invalid PIN", result.message || "Please try again");
       } else {
@@ -203,7 +189,7 @@ export default function LoginScreen() {
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
-      triggerShake();
+      setIsError(true);
       setPin("");
       Alert.alert("Login Failed", "An unexpected error occurred");
     } finally {
@@ -373,6 +359,7 @@ export default function LoginScreen() {
                         onPinChange={handlePinChange}
                         maxLength={PIN_LENGTH}
                         disabled={loading}
+                        error={isError}
                         biometricEnabled={isBiometricEnabled}
                         onBiometricPress={handleBiometricLogin}
                       />

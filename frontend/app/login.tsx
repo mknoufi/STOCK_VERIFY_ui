@@ -394,6 +394,9 @@ export default function LoginScreen() {
                       {/* PIN Indicator Dots */}
                       <Animated.View
                         style={[styles.pinIndicators, pinIndicatorStyle]}
+                        accessible={true}
+                        accessibilityLabel={`${pin.length} of 4 digits entered`}
+                        accessibilityLiveRegion="polite"
                       >
                         {[0, 1, 2, 3].map((index) => (
                           <View
@@ -422,6 +425,9 @@ export default function LoginScreen() {
                               onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Digit ${digit}`}
+                              accessibilityHint="Double tap to enter digit"
                             >
                               <Text style={styles.keypadText}>{digit}</Text>
                             </TouchableOpacity>
@@ -440,6 +446,9 @@ export default function LoginScreen() {
                               onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Digit ${digit}`}
+                              accessibilityHint="Double tap to enter digit"
                             >
                               <Text style={styles.keypadText}>{String(digit)}</Text>
                             </TouchableOpacity>
@@ -458,6 +467,9 @@ export default function LoginScreen() {
                               onPress={() => handlePinDigit(String(digit))}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Digit ${digit}`}
+                              accessibilityHint="Double tap to enter digit"
                             >
                               <Text style={styles.keypadText}>{String(digit)}</Text>
                             </TouchableOpacity>
@@ -476,6 +488,8 @@ export default function LoginScreen() {
                               onPress={handleBiometricLogin}
                               disabled={loading}
                               activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel="Biometric Login"
                             >
                               <Ionicons
                                 name={Platform.OS === 'ios' ? "scan-outline" : "finger-print-outline"}
@@ -495,6 +509,9 @@ export default function LoginScreen() {
                             onPress={() => handlePinDigit(String(0))}
                             disabled={loading}
                             activeOpacity={0.7}
+                            accessibilityRole="button"
+                            accessibilityLabel="Digit 0"
+                            accessibilityHint="Double tap to enter digit"
                           >
                             <Text style={styles.keypadText}>{String(0)}</Text>
                           </TouchableOpacity>
@@ -507,6 +524,9 @@ export default function LoginScreen() {
                             onPress={handlePinBackspace}
                             disabled={loading || pin.length === 0}
                             activeOpacity={0.7}
+                            accessibilityRole="button"
+                            accessibilityLabel="Backspace"
+                            accessibilityHint="Deletes the last digit"
                           >
                             <Ionicons
                               name="backspace-outline"
@@ -584,6 +604,7 @@ export default function LoginScreen() {
                           onPress={handleForgotPassword}
                           activeOpacity={0.7}
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                          accessibilityRole="button"
                         >
                           <Text style={styles.forgotPasswordText}>
                             Forgot Password?
@@ -609,6 +630,7 @@ export default function LoginScreen() {
                     style={styles.modeSwitchButton}
                     onPress={switchLoginMode}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
                   >
                     <Ionicons
                       name={

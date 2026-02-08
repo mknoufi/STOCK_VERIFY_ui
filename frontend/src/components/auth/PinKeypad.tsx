@@ -37,6 +37,8 @@ interface PinKeypadProps {
   onComplete?: (pin: string) => void;
   disabled?: boolean;
   error?: boolean;
+  biometricEnabled?: boolean;
+  onBiometricPress?: () => void;
 }
 
 export function PinKeypad({
@@ -46,6 +48,8 @@ export function PinKeypad({
   onComplete,
   disabled = false,
   error = false,
+  biometricEnabled = false,
+  onBiometricPress,
 }: PinKeypadProps) {
   const { width } = useWindowDimensions();
   const KEYPAD_SIZE = Math.min(width - 64, 320);
@@ -56,9 +60,9 @@ export function PinKeypad({
       ["1", "2", "3"],
       ["4", "5", "6"],
       ["7", "8", "9"],
-      ["clear", "0", "backspace"],
+      [biometricEnabled ? "biometric" : "clear", "0", "backspace"],
     ],
-    [],
+    [biometricEnabled],
   );
 
   // Animation for error shake
@@ -76,6 +80,8 @@ export function PinKeypad({
         onPinChange(pin.slice(0, -1));
       } else if (key === "clear") {
         onPinChange("");
+      } else if (key === "biometric") {
+        onBiometricPress?.();
       } else if (pin.length < maxLength) {
         const newPin = pin + key;
         onPinChange(newPin);
@@ -84,7 +90,7 @@ export function PinKeypad({
         }
       }
     },
-    [pin, maxLength, onPinChange, onComplete, disabled],
+    [pin, maxLength, onPinChange, onComplete, disabled, onBiometricPress],
   );
 
   // Trigger shake animation on error
@@ -108,7 +114,12 @@ export function PinKeypad({
   }));
 
   const renderIndicators = () => (
-    <Animated.View style={[styles.indicators, indicatorStyle]}>
+    <Animated.View
+      style={[styles.indicators, indicatorStyle]}
+      accessible={true}
+      accessibilityLabel={`${pin.length} of ${maxLength} digits entered`}
+      accessibilityLiveRegion="polite"
+    >
       {Array.from({ length: maxLength }).map((_, index) => (
         <View
           key={index}
@@ -123,7 +134,7 @@ export function PinKeypad({
   );
 
   const renderKey = (key: string, rowIndex: number, colIndex: number) => {
-    const isSpecialKey = key === "backspace" || key === "clear";
+    const isSpecialKey = key === "backspace" || key === "clear" || key === "biometric";
     const isEmpty = key === "";
 
     if (isEmpty) {
@@ -151,10 +162,15 @@ export function PinKeypad({
         accessibilityRole="button"
         accessibilityLabel={
           key === "backspace"
-            ? "Delete"
+            ? "Backspace"
             : key === "clear"
               ? "Clear"
-              : `Number ${key}`
+              : key === "biometric"
+                ? "Biometric Login"
+                : `Digit ${key}`
+        }
+        accessibilityHint={
+           !isSpecialKey ? "Double tap to enter digit" : key === "backspace" ? "Deletes the last digit" : undefined
         }
       >
         {key === "backspace" ? (
@@ -173,6 +189,12 @@ export function PinKeypad({
           >
             C
           </Text>
+        ) : key === "biometric" ? (
+          <Ionicons
+            name={Platform.OS === 'ios' ? "scan-outline" : "finger-print-outline"}
+            size={28}
+            color={modernColors.text.primary}
+          />
         ) : (
           <Text style={[styles.keyText, disabled && styles.keyTextDisabled]}>
             {key}

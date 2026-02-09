@@ -1,0 +1,3 @@
+## 2025-05-24 - Accessibility Labels for Custom Keypads
+**Learning:** Custom interactive elements like a PIN keypad implemented with `TouchableOpacity` and `View` often lack implicit accessibility semantics. While visual cues (dots, numbers) are clear to sighted users, screen readers need explicit `accessibilityLabel` and `accessibilityRole` to convey the same information.
+**Action:** When creating custom input controls (like keypads or dialers), always add `accessibilityRole="button"`, descriptive `accessibilityLabel` (e.g., "Enter digit 5"), and helpful `accessibilityHint` to guide screen reader users. Also consider using `accessibilityLiveRegion` or dynamic labels on containers to announce state changes (e.g., "3 of 4 digits entered").

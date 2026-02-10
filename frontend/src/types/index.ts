@@ -11,7 +11,7 @@ export * from "./enrichment";
 export * from "./session";
 
 // Count API types (strict validated)
-export * from "./count";
+// export * from "./count";
 
 // Auto-generated OpenAPI types
-export type * from "./api-generated";
+// export type * from "./api-generated";

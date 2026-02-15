@@ -96,11 +96,14 @@ const ServiceItem = ({
 }) => {
   const isRunning = status?.running;
   const showToggleButton = !NON_TOGGLEABLE_SERVICES.includes(name);
+  const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
 
   return (
     <View style={styles.serviceItem}>
       <View style={styles.serviceInfo}>
         <View
+          accessible={true}
+          accessibilityLabel={`${formattedName} service is ${isRunning ? "running" : "stopped"}`}
           style={[
             styles.statusIndicator,
             {
@@ -112,7 +115,7 @@ const ServiceItem = ({
         />
         <View>
           <Text style={styles.serviceName}>
-            {name.charAt(0).toUpperCase() + name.slice(1)}
+            {formattedName}
           </Text>
           <Text style={styles.serviceDetail}>
             {isRunning ? `Running on port ${status.port}` : "Stopped"}
@@ -135,6 +138,10 @@ const ServiceItem = ({
             },
           ]}
           disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={`${isRunning ? "Stop" : "Start"} ${name} service`}
+          accessibilityHint={`Double tap to ${isRunning ? "stop" : "start"} the ${name} service`}
+          accessibilityState={{ busy: loading, disabled: loading }}
         >
           {loading ? (
             <ActivityIndicator size="small" color={modernColors.text.primary} />

@@ -29,7 +29,6 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { GlassCard } from "@/components/ui/GlassCard";
-// @ts-ignore - StatsCard might have strict type checks that we are fixing
 import { StatsCard } from "@/components/ui";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import {
@@ -420,6 +419,9 @@ export default function AdminControlPanelV2() {
                   <AnimatedPressable
                     style={styles.toolCard}
                     onPress={() => router.push(item.route as any)}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.title}
+                    accessibilityHint={`Navigate to ${item.title}`}
                   >
                     <GlassCard variant="medium" style={styles.toolCardContent}>
                       <View style={styles.toolIcon}>

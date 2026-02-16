@@ -17,6 +17,7 @@ import { AuroraBackground } from "../../../src/components/ui/AuroraBackground";
 import { GlassCard } from "../../../src/components/ui/GlassCard";
 import { AnimatedPressable } from "../../../src/components/ui/AnimatedPressable";
 import { auroraTheme } from "../../../src/theme/auroraTheme";
+import { ItemQuickActions } from "../../../src/components/items";
 import {
   getSession,
   getCountLines,
@@ -546,6 +547,34 @@ export default function SessionDetail() {
           contentContainerStyle={styles.listContent}
         />
       </View>
+
+      {/* Quick Actions FAB */}
+      <ItemQuickActions
+        actions={[
+          {
+            id: "refresh",
+            icon: "refresh-outline",
+            label: "Refresh",
+            color: auroraTheme.colors.primary[500],
+            onPress: loadData,
+          },
+          {
+            id: "approve-all",
+            icon: "checkmark-done-outline",
+            label: "Approve All",
+            color: auroraTheme.colors.success[500],
+            onPress: () => handleUpdateStatus("approved"),
+          },
+          {
+            id: "complete",
+            icon: "flag-outline",
+            label: "Complete",
+            color: auroraTheme.colors.warning[500],
+            onPress: () => handleUpdateStatus("completed"),
+          },
+        ]}
+        position="bottom-right"
+      />
     </AuroraBackground>
   );
 }

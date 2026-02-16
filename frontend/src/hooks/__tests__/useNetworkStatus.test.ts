@@ -3,43 +3,132 @@
  * Tests for useNetworkStatus hook
  */
 
+import React from "react";
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import { render, waitFor } from "@testing-library/react-native";
+import { Text } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+import { useNetworkStatus } from "../useNetworkStatus";
+import { useNetworkStore } from "../../store/networkStore";
 
-// Mock NetInfo
-const mockNetInfo = {
-  addEventListener: jest.fn(),
-  fetch: jest.fn(),
+type MockNetInfoState = {
+  isConnected: boolean | null;
+  isInternetReachable: boolean | null;
+  type: string;
 };
 
-jest.mock("@react-native-community/netinfo", () => mockNetInfo);
+const mockNetInfo = NetInfo as unknown as {
+  addEventListener: jest.Mock<(cb: (state: any) => void) => () => void>;
+  fetch: jest.Mock<() => Promise<MockNetInfoState>>;
+};
+
+
+const makeFetchResponse = (status: number, json: any = { status: "healthy" }) =>
+  Promise.resolve({
+    status,
+    ok: status >= 200 && status < 300,
+    headers: {
+      get: () => "application/json",
+    },
+    json: async () => json,
+  });
+
+const TestComponent = ({ enabled = true }: { enabled?: boolean }) => {
+  const { isOnline, backendReachability } = useNetworkStatus({ enabled });
+  return React.createElement(
+    Text,
+    { testID: "status" },
+    `${String(isOnline)}-${backendReachability}`,
+  );
+};
 
 describe("useNetworkStatus Hook", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Ensure NetInfo methods are Jest mocks (some environments load real implementations)
+    mockNetInfo.fetch = jest.fn() as any;
+    mockNetInfo.addEventListener = jest.fn() as any;
+
+    useNetworkStore.setState({
+      isOnline: true,
+      isInternetReachable: null,
+      connectionType: "unknown",
+      backendReachability: "UNKNOWN",
+      backendHealthStatus: null,
+      lastBackendPingAt: null,
+      backendLatencyMs: null,
+    });
+
+    // Mock global fetch used by backend reachability ping
+    // @ts-expect-error - test env
+    global.fetch = jest.fn(() => makeFetchResponse(200));
   });
 
   it("should initialize with default network state", () => {
-    // Test placeholder - implement when hook is available
-    expect(true).toBe(true);
+    mockNetInfo.fetch.mockResolvedValue({
+      isConnected: true,
+      isInternetReachable: true,
+      type: "wifi",
+    });
+    mockNetInfo.addEventListener.mockImplementation(() => () => undefined);
+
+    const { getByTestId } = render(React.createElement(TestComponent, null));
+    expect(getByTestId("status").props.children).toContain("true");
   });
 
-  it("should update when network state changes", () => {
-    // Test placeholder
-    expect(true).toBe(true);
+  it("should update when network state changes", async () => {
+    const unsubscribe = jest.fn();
+    let listener: ((state: any) => void) | undefined;
+
+    mockNetInfo.fetch.mockResolvedValue({
+      isConnected: true,
+      isInternetReachable: true,
+      type: "wifi",
+    });
+    mockNetInfo.addEventListener.mockImplementation((cb: any) => {
+      listener = cb;
+      return unsubscribe;
+    });
+
+    const { getByTestId } = render(React.createElement(TestComponent, null));
+
+    expect(getByTestId("status").props.children).toContain("true");
+
+    listener?.({ isConnected: false, isInternetReachable: false, type: "none" });
+
+    await waitFor(() => {
+      expect(getByTestId("status").props.children).toContain("false");
+    });
   });
 
   it("should detect online to offline transition", () => {
-    // Test placeholder
-    expect(true).toBe(true);
+    const { setIsOnline } = useNetworkStore.getState();
+    setIsOnline(true);
+    expect(useNetworkStore.getState().isOnline).toBe(true);
+    setIsOnline(false);
+    expect(useNetworkStore.getState().isOnline).toBe(false);
   });
 
   it("should detect offline to online transition", () => {
-    // Test placeholder
-    expect(true).toBe(true);
+    const { setIsOnline } = useNetworkStore.getState();
+    setIsOnline(false);
+    expect(useNetworkStore.getState().isOnline).toBe(false);
+    setIsOnline(true);
+    expect(useNetworkStore.getState().isOnline).toBe(true);
   });
 
   it("should cleanup listeners on unmount", () => {
-    // Test placeholder
-    expect(true).toBe(true);
+    const unsubscribe = jest.fn();
+    mockNetInfo.fetch.mockResolvedValue({
+      isConnected: true,
+      isInternetReachable: true,
+      type: "wifi",
+    });
+    mockNetInfo.addEventListener.mockImplementation(() => unsubscribe);
+
+    const { unmount } = render(React.createElement(TestComponent, null));
+    unmount();
+    expect(unsubscribe).toHaveBeenCalled();
   });
 });

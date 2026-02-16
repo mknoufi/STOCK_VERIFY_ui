@@ -10,7 +10,7 @@ explicit and handle them in a functional way.
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import UpdateMany
@@ -23,7 +23,7 @@ from .errors import ConnectionError, DatabaseError, SyncConfigError, SyncError
 logger = logging.getLogger(__name__)
 
 # Type aliases for better readability
-SyncResult = Result[dict[str, Any], SyncError]
+SyncResult: TypeAlias = Result[dict[str, Any], SyncError]
 ProductData = dict[str, Any]
 SyncStats = dict[str, Any]
 

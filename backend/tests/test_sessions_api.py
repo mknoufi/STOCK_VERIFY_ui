@@ -59,3 +59,40 @@ async def test_get_sessions_pagination(async_client, authenticated_headers):
     pagination = data["pagination"]
     assert pagination["page"] == 1
     assert pagination["page_size"] == 5
+
+
+@pytest.mark.asyncio
+async def test_create_session_enforces_open_session_cap(
+    async_client, authenticated_headers, test_db
+):
+    """Test POST /api/sessions enforces max 5 open sessions per user."""
+    # Seed 5 open sessions for the authenticated user (staff1)
+    for i in range(5):
+        await test_db.sessions.insert_one(
+            {
+                "id": f"seed_{i}",
+                "warehouse": "WH",
+                "staff_user": "staff1",
+                "status": "OPEN",
+            }
+        )
+
+    open_session_count = await test_db.sessions.count_documents(
+        {"staff_user": "staff1", "status": "OPEN"}
+    )
+    assert open_session_count == 5
+
+    sessions_before_request = await test_db.sessions.count_documents({})
+
+    payload = {"warehouse": "Test Warehouse", "type": "STANDARD"}
+    response = await async_client.post(
+        "/api/sessions", json=payload, headers=authenticated_headers
+    )
+
+    assert response.status_code == 409
+    body = response.json()
+    assert "detail" in body
+
+    # Ensure the request hit the same in-memory DB instance
+    sessions_after = await test_db.sessions.count_documents({})
+    assert sessions_after == sessions_before_request

@@ -1,0 +1,11 @@
+# Expo caches
+.expo/
+
+# Build outputs
+/dist/
+
+# Dependencies
+/node_modules/
+
+# Legacy / duplicate routes kept for reference
+reference/legacy_routes/

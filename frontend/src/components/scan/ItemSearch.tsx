@@ -16,6 +16,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SearchResult } from "../../services/enhancedSearchService";
 import { Skeleton } from "../ui/Skeleton";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface ItemSearchProps {
   manualBarcode: string;
@@ -95,7 +96,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           Stock: {item.stock_qty || 0}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+      <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
     </TouchableOpacity>
   ), [onSearchResultSelect]);
 
@@ -152,7 +153,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           <TextInput
             style={styles.manualInput}
             placeholder="Enter barcode"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={theme.colors.muted}
             value={manualBarcode}
             onChangeText={(text) => {
               onActivityReset?.();
@@ -208,7 +209,7 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
           <TextInput
             style={styles.manualInput}
             placeholder="Enter item name"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={theme.colors.muted}
             value={manualItemName}
             onChangeText={(text) => {
               onActivityReset?.();
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94A3B8",
+    color: theme.colors.muted,
     flex: 1,
   },
   voiceButton: {
@@ -333,10 +334,10 @@ const styles = StyleSheet.create({
   combinedInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
   },
   searchButtonDisabled: {
     opacity: 0.5,
-    backgroundColor: "#334155",
+    backgroundColor: theme.colors.border,
   },
   searchButtonText: {
     color: "#fff",
@@ -376,15 +377,15 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#334155",
+    backgroundColor: theme.colors.border,
   },
   orText: {
     marginHorizontal: 16,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 14,
   },
   searchResultsContainer: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
@@ -403,7 +404,7 @@ const styles = StyleSheet.create({
   },
   searchResultsCount: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
   },
   searchResultsFlatList: {
     maxHeight: 280,
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   loadingMoreText: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 14,
   },
   loadMoreButton: {
@@ -476,12 +477,12 @@ const styles = StyleSheet.create({
   },
   searchResultCode: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 2,
   },
   searchResultBarcode: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 2,
     fontFamily: "monospace",
   },
@@ -498,7 +499,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   searchingText: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 14,
   },
 });

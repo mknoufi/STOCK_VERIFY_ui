@@ -358,7 +358,7 @@ async def get_error_summary(
         errors = error_store["errors"]
 
         # Calculate summary
-        summary = {
+        summary: dict[str, Any] = {
             "total_errors": len(errors),
             "by_severity": {
                 "critical": len([e for e in errors if e["severity"] == "critical"]),

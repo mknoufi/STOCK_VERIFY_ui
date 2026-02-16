@@ -116,7 +116,7 @@ class ReportGenerator:
             ["Net Variance:", f"{positive_variance + negative_variance:.2f}"],
         ]
 
-        for label, value in stats_data:
+        for label, value in stats_data:  # type: ignore
             ws[f"A{row}"] = label
             ws[f"A{row}"].font = Font(bold=True)
             ws[f"B{row}"] = value

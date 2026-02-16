@@ -247,9 +247,7 @@ async def create_count_line(
         # Additional fields
         "split_section": line_data.split_section,
         "serial_numbers": (
-            [s.model_dump() for s in line_data.serial_numbers]
-            if line_data.serial_numbers
-            else None
+            line_data.serial_numbers if line_data.serial_numbers else None
         ),
         # Legacy approval fields
         "status": "pending",
@@ -426,7 +424,7 @@ async def approve_count_line(
     db = _get_db_client()
 
     try:
-        query = {"$or": [{"id": line_id}]}
+        query: dict[str, Any] = {"$or": [{"id": line_id}]}
         if ObjectId.is_valid(line_id):
             query["$or"].append({"_id": ObjectId(line_id)})
 
@@ -466,7 +464,7 @@ async def reject_count_line(
     db = _get_db_client()
 
     try:
-        query = {"$or": [{"id": line_id}]}
+        query: dict[str, Any] = {"$or": [{"id": line_id}]}
         if ObjectId.is_valid(line_id):
             query["$or"].append({"_id": ObjectId(line_id)})
 

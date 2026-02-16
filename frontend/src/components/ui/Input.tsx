@@ -8,6 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useThemeContext } from '../../theme/ThemeContext';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   label?: string;
@@ -52,6 +53,7 @@ export const Input = forwardRef<TextInput, InputProps>(
     },
     ref
   ) => {
+    const { theme } = useThemeContext();
     const sizeStyles = sizeMap[size];
     const hasError = Boolean(error);
 
@@ -67,23 +69,27 @@ export const Input = forwardRef<TextInput, InputProps>(
           return {
             ...baseStyles,
             borderWidth: 1,
-            borderColor: hasError ? '#FF3B30' : editable ? '#C7C7CC' : '#E5E5E5',
+            borderColor: hasError
+              ? theme.colors.danger
+              : editable
+                ? theme.colors.border
+                : theme.colors.borderLight,
             borderRadius: 8,
-            backgroundColor: editable ? '#FFFFFF' : '#F5F5F5',
+            backgroundColor: editable ? theme.colors.surface : theme.colors.surfaceElevated,
           };
         case 'filled':
           return {
             ...baseStyles,
-            backgroundColor: editable ? '#F2F2F7' : '#E5E5E5',
+            backgroundColor: editable ? theme.colors.surfaceElevated : theme.colors.borderLight,
             borderRadius: 8,
             borderBottomWidth: 2,
-            borderBottomColor: hasError ? '#FF3B30' : '#007AFF',
+            borderBottomColor: hasError ? theme.colors.danger : theme.colors.accent,
           };
         case 'underlined':
           return {
             ...baseStyles,
             borderBottomWidth: 1,
-            borderBottomColor: hasError ? '#FF3B30' : '#C7C7CC',
+            borderBottomColor: hasError ? theme.colors.danger : theme.colors.border,
             paddingHorizontal: 0,
           };
         default:
@@ -94,9 +100,14 @@ export const Input = forwardRef<TextInput, InputProps>(
     return (
       <View style={containerStyle}>
         {label && (
-          <Text style={[{ fontSize: 14, marginBottom: 4, color: '#666' }, labelStyle]}>
+          <Text
+            style={[
+              { fontSize: 14, marginBottom: 4, color: theme.colors.textSecondary },
+              labelStyle,
+            ]}
+          >
             {label}
-            {required && <Text style={{ color: '#FF3B30' }}> *</Text>}
+            {required && <Text style={{ color: theme.colors.danger }}> *</Text>}
           </Text>
         )}
 
@@ -108,26 +119,36 @@ export const Input = forwardRef<TextInput, InputProps>(
               {
                 flex: 1,
                 fontSize: sizeStyles.fontSize,
-                color: editable ? '#000' : '#666',
+                color: editable ? theme.colors.text : theme.colors.textSecondary,
                 paddingHorizontal: leftIcon || rightIcon ? 8 : 0,
               },
               inputStyle,
             ]}
             editable={editable}
-            placeholderTextColor="#999"
+            placeholderTextColor={theme.colors.muted}
             {...textInputProps}
           />
           {rightIcon}
         </View>
 
         {error && (
-          <Text style={[{ fontSize: 12, color: '#FF3B30', marginTop: 4 }, errorStyle]}>
+          <Text
+            style={[
+              { fontSize: 12, color: theme.colors.danger, marginTop: 4 },
+              errorStyle,
+            ]}
+          >
             {error}
           </Text>
         )}
 
         {helperText && !error && (
-          <Text style={[{ fontSize: 12, color: '#666', marginTop: 4 }, helperTextStyle]}>
+          <Text
+            style={[
+              { fontSize: 12, color: theme.colors.textSecondary, marginTop: 4 },
+              helperTextStyle,
+            ]}
+          >
             {helperText}
           </Text>
         )}

@@ -32,7 +32,13 @@ def _match_condition(value: Any, condition: dict[str, Any]) -> bool:
             return False
         if op == "$ne" and not (value != expected):
             return False
-        if op not in {"$lt", "$lte", "$gt", "$gte", "$ne"}:
+        if op == "$in":
+            if value not in expected:
+                return False
+        if op == "$nin":
+            if value in expected:
+                return False
+        if op not in {"$lt", "$lte", "$gt", "$gte", "$ne", "$in", "$nin"}:
             raise ValueError(f"Unsupported operator: {op}")
     return True
 
@@ -258,6 +264,10 @@ class InMemoryDatabase:
         self.activity_logs = InMemoryCollection()
         self.error_logs = InMemoryCollection()
         self.sessions = InMemoryCollection()
+        # Rack/session workflow collections
+        self.verification_sessions = InMemoryCollection()
+        self.verification_records = InMemoryCollection()
+        self.rack_registry = InMemoryCollection()
         self.count_lines = InMemoryCollection()
         self.unknown_items = InMemoryCollection()
         self.erp_items = InMemoryCollection()

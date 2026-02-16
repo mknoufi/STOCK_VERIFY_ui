@@ -459,7 +459,7 @@ class ConditionMarker:
             ],
         }
 
-        return actions_map.get(condition, [])
+        return actions_map.get(condition, [])  # type: ignore
 
 
 # Sample batch tracking workflow

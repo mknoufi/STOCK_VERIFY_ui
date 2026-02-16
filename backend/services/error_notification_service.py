@@ -130,7 +130,7 @@ class ErrorNotificationService:
     ) -> list[dict[str, Any]]:
         """Get unresolved error notifications"""
         try:
-            query = {"resolved": False}
+            query: dict[str, Any] = {"resolved": False}
             if target:
                 query["target"] = {"$in": [target.value, NotificationTarget.BOTH.value]}
 

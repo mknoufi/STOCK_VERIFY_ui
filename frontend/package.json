@@ -7,7 +7,7 @@
     "react-test-renderer": "19.1.0"
   },
   "engines": {
-    "node": ">=18.18"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "postinstall": "node -e \"if (process.env.SKIP_POSTINSTALL === 'true') { process.exit(0); }\" && patch-package",
@@ -24,11 +24,14 @@
     "web:clear": "expo start --web --clear",
     "lint": "expo lint",
     "lint:fix": "expo lint -- --fix",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "typecheck": "tsc --noEmit",
+    "typecheck:scaffold": "tsc -p tsconfig.scaffold.json --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
+    "api:generate": "openapi-typescript ../docs/openapi/stock-verify-api.yaml -o src/types/api-generated.ts",
+    "api:mock": "prism mock ../docs/openapi/stock-verify-api.yaml -p 4010",
     "build:web": "expo export -p web",
     "build:android": "eas build -p android",
     "build:ios": "eas build -p ios",
@@ -68,6 +71,7 @@
     "expo-keep-awake": "~15.0.7",
     "expo-linear-gradient": "~15.0.7",
     "expo-linking": "~8.0.9",
+    "expo-local-authentication": "~17.0.8",
     "expo-notifications": "~0.32.15",
     "expo-router": "~6.0.19",
     "expo-secure-store": "~15.0.8",
@@ -101,6 +105,7 @@
     "@babel/runtime": "^7.26.0",
     "@expo/cli": "^54.0.0",
     "@expo/metro-runtime": "~6.1.2",
+    "@stoplight/prism-cli": "^5.14.2",
     "@storybook/addon-essentials": "^8.6.15",
     "@storybook/react": "^8.6.15",
     "@testing-library/jest-dom": "^6.9.1",
@@ -113,6 +118,7 @@
     "babel-jest": "~29.7.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "babel-plugin-transform-import-meta": "^2.3.3",
+    "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
     "eslint-config-expo": "~10.0.0",
     "eslint-import-resolver-typescript": "^4.4.4",

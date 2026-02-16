@@ -4,6 +4,7 @@ Provides connection pooling, health checks, and utility methods
 """
 
 import asyncio
+import builtins
 import logging
 from typing import Optional, Union
 
@@ -190,7 +191,7 @@ class RedisService:
         """Add members to set"""
         return await self.client.sadd(name, *values)  # type: ignore
 
-    async def smembers(self, name: str) -> "set[str]":
+    async def smembers(self, name: str) -> builtins.set[str]:
         """Get all set members"""
         return await self.client.smembers(name)  # type: ignore
 

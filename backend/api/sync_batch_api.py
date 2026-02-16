@@ -62,6 +62,7 @@ class SyncRecord(BaseModel):
     category: Optional[str] = Field(None, description="Category")
     subcategory: Optional[str] = Field(None, description="Subcategory")
     item_condition: Optional[str] = Field(None, description="Item condition")
+    condition_details: Optional[str] = Field(None, description="Detailed condition notes")
     evidence_photos: list[str] = Field(default_factory=list, description="Photo URLs")
     status: str = Field("finalized", description="Record status (partial/finalized)")
     created_at: str = Field(..., description="Client creation timestamp")
@@ -147,7 +148,7 @@ async def validate_record(
     lock_manager: LockManager,
     sync_service: SyncConflictsService = None,
     user_id: Optional[str] = None,
-) -> SyncConflict:
+) -> Optional[SyncConflict]:
     """
     Validate a single record before syncing
 
@@ -240,6 +241,7 @@ async def sync_single_record(
             "category": record.category,
             "subcategory": record.subcategory,
             "item_condition": record.item_condition,
+            "condition_details": record.condition_details,
             "evidence_photos": record.evidence_photos,
             "status": record.status,
             "created_at": record.created_at,

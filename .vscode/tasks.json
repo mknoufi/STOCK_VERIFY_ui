@@ -1,35 +1,85 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Open FastAPI Docs",
-      "type": "shell",
-      "command": "open https://fastapi.tiangolo.com/",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open MongoDB Docs",
-      "type": "shell",
-      "command": "open https://www.mongodb.com/docs/manual/",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open React Native Docs",
-      "type": "shell",
-      "command": "open https://reactnative.dev/docs/getting-started",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open Expo Docs",
-      "type": "shell",
-      "command": "open https://docs.expo.dev/",
-      "problemMatcher": []
-    },
-    {
-      "label": "Open Redis Docs",
-      "type": "shell",
-      "command": "open https://redis.io/docs/",
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Open FastAPI Docs",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"Start-Process 'https://fastapi.tiangolo.com/'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Open MongoDB Docs",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"Start-Process 'https://www.mongodb.com/docs/manual/'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Open React Native Docs",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"Start-Process 'https://reactnative.dev/docs/getting-started'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Open Expo Docs",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"Start-Process 'https://docs.expo.dev/'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Open Redis Docs",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"Start-Process 'https://redis.io/docs/'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Frontend: lint + typecheck",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"Set-Location \"$(Resolve-Path .\\frontend)\"; npm run -s lint; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; npm run -s typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		}
+	]
 }

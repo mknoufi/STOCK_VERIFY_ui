@@ -1,9 +1,9 @@
-fastapi>=0.115.0,<0.116.0
+fastapi>=0.115.0,<0.129.0
 uvicorn[standard]==0.39.0
 gunicorn>=23.0.0
 python-dotenv>=1.0.1
 # Motor 3.7.0 supports pymongo 4.10+; updated compatibility
-pymongo>=4.10.0,<4.16
+pymongo>=4.10.0,<4.17
 pydantic==2.12.5
 pydantic-settings>=2.7.0
 email-validator>=2.2.0
@@ -15,12 +15,15 @@ tzdata>=2024.2
 motor==3.7.1
 pytest>=8.3.4
 pytest-asyncio>=0.24.0
-httpx==0.27.2
+httpx==0.28.1
 black>=24.10.0
 isort>=5.13.2
 flake8>=7.1.1
 mypy>=1.13.0
 requests>=2.32.3
+types-requests>=2.31.0.20240311
+PyYAML>=6.0.1
+types-PyYAML>=6.0.12.20240311
 pandas>=2.2.3
 numpy>=2.0.2
 python-multipart>=0.0.18
@@ -58,3 +61,6 @@ opentelemetry-instrumentation-pymongo>=0.46b0
 # Upgrade setuptools to address known advisories
 setuptools>=78.1.1
 pytest-cov==7.0.0
+
+# AI Agent Memory Layer
+memvid-sdk>=2.0.0

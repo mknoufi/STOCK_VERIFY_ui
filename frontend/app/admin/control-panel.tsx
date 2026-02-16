@@ -1,3 +1,6 @@
+export { default } from "./control-panel-v2";
+
+/*
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -1014,3 +1017,4 @@ const styles = StyleSheet.create({
     color: "#666",
   },
 });
+*/

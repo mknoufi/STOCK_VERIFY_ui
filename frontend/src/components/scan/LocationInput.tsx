@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface LocationInputProps {
   floorNo: string;
@@ -61,7 +62,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
           <TextInput
             style={styles.locationInput}
             placeholder="e.g., 1, 2, G"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={theme.colors.muted}
             value={floorNo}
             onChangeText={handleFloorChange}
             autoCapitalize="characters"
@@ -74,7 +75,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
             <TextInput
               style={styles.locationInput}
               placeholder="e.g., A1, B2"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={theme.colors.muted}
               value={rackNo}
               onChangeText={handleRackChange}
               autoCapitalize="characters"
@@ -88,7 +89,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
             <TextInput
               style={styles.locationInput}
               placeholder="e.g., 1, 2, 3"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={theme.colors.muted}
               value={shelfNo}
               onChangeText={handleShelfChange}
               autoCapitalize="characters"
@@ -101,7 +102,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
           <TextInput
             style={styles.locationInput}
             placeholder="e.g., Top, Middle"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={theme.colors.muted}
             value={markLocation}
             onChangeText={handleMarkLocationChange}
             autoCapitalize="words"
@@ -131,15 +132,15 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94A3B8",
+    color: theme.colors.muted,
   },
   locationInput: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 8,
     padding: 12,
     color: "#fff",
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
 });

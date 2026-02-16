@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { VersionCheckResult } from "../services/versionService";
+import { useThemeContext } from "../theme/ThemeContext";
 
 interface UpgradeNotificationProps {
   /** Version check result */
@@ -36,6 +37,8 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
   storeUrl,
   variant = "banner",
 }) => {
+  const { theme, isDark } = useThemeContext();
+
   const handleUpdate = async () => {
     if (onUpdate) {
       await onUpdate();
@@ -86,15 +89,19 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
 
   const getIconColor = () => {
     if (forceUpdate) {
-      return "#FF5252";
+      return theme.colors.danger;
     }
-    return versionInfo.update_type === "major" ? "#4CAF50" : "#2196F3";
+    return versionInfo.update_type === "major"
+      ? theme.colors.success
+      : theme.colors.accent;
   };
 
   if (variant === "modal") {
     return (
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
+      <View
+        style={[styles.modalContainer, { backgroundColor: theme.colors.overlay }]}
+      >
+        <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
           <View style={styles.modalIconContainer}>
             <Ionicons
               name={getIcon() as any}
@@ -103,22 +110,30 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
             />
           </View>
 
-          <Text style={styles.modalTitle}>
+          <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
             {forceUpdate ? "Update Required" : "Update Available"}
           </Text>
 
-          <Text style={styles.modalMessage}>{getUpdateMessage()}</Text>
+          <Text style={[styles.modalMessage, { color: theme.colors.textSecondary }]}>
+            {getUpdateMessage()}
+          </Text>
 
           <View style={styles.versionInfo}>
-            <Text style={styles.versionLabel}>Current Version:</Text>
-            <Text style={styles.versionValue}>
+            <Text style={[styles.versionLabel, { color: theme.colors.muted }]}
+            >
+              Current Version:
+            </Text>
+            <Text style={[styles.versionValue, { color: theme.colors.text }]}>
               {versionInfo.client_version ?? "unknown"}
             </Text>
           </View>
 
           <View style={styles.versionInfo}>
-            <Text style={styles.versionLabel}>Latest Version:</Text>
-            <Text style={styles.versionValue}>
+            <Text style={[styles.versionLabel, { color: theme.colors.muted }]}
+            >
+              Latest Version:
+            </Text>
+            <Text style={[styles.versionValue, { color: theme.colors.text }]}>
               {versionInfo.current_version ?? "unknown"}
             </Text>
           </View>
@@ -133,7 +148,14 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
 
           {!forceUpdate && onDismiss && (
             <TouchableOpacity style={styles.dismissButton} onPress={onDismiss}>
-              <Text style={styles.dismissButtonText}>Remind Me Later</Text>
+              <Text
+                style={[
+                  styles.dismissButtonText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                Remind Me Later
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -142,11 +164,19 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
   }
 
   // Banner variant
+  const bannerBackground = forceUpdate
+    ? isDark
+      ? `${theme.colors.danger}20`
+      : "#FFEBEE"
+    : isDark
+      ? `${theme.colors.accent}20`
+      : "#E3F2FD";
+
   return (
     <View
       style={[
         styles.bannerContainer,
-        { backgroundColor: forceUpdate ? "#FFEBEE" : "#E3F2FD" },
+        { backgroundColor: bannerBackground },
       ]}
     >
       <View style={styles.bannerContent}>
@@ -158,10 +188,13 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
         />
 
         <View style={styles.bannerTextContainer}>
-          <Text style={styles.bannerTitle}>
+          <Text style={[styles.bannerTitle, { color: theme.colors.text }]}>
             {forceUpdate ? "Update Required" : "Update Available"}
           </Text>
-          <Text style={styles.bannerMessage} numberOfLines={2}>
+          <Text
+            style={[styles.bannerMessage, { color: theme.colors.textSecondary }]}
+            numberOfLines={2}
+          >
             {getUpdateMessage()}
           </Text>
         </View>
@@ -181,7 +214,11 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
             style={styles.bannerCloseButton}
             onPress={onDismiss}
           >
-            <Ionicons name="close" size={20} color="#666" />
+            <Ionicons
+              name="close"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -193,13 +230,11 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 24,
     width: "100%",
@@ -212,13 +247,11 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 12,
     textAlign: "center",
   },
   modalMessage: {
     fontSize: 16,
-    color: "#666",
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 22,
@@ -230,12 +263,10 @@ const styles = StyleSheet.create({
   },
   versionLabel: {
     fontSize: 14,
-    color: "#888",
     marginRight: 8,
   },
   versionValue: {
     fontSize: 14,
-    color: "#333",
     fontWeight: "600",
   },
   updateButton: {
@@ -259,7 +290,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   dismissButtonText: {
-    color: "#666",
     fontSize: 14,
   },
 
@@ -285,12 +315,10 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 2,
   },
   bannerMessage: {
     fontSize: 12,
-    color: "#666",
   },
   bannerUpdateButton: {
     paddingVertical: 8,

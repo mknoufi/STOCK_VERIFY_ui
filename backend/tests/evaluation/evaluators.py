@@ -54,7 +54,7 @@ class APIPerformanceEvaluator(BaseEvaluator):
     THROUGHPUT_THRESHOLD = 50.0  # Minimum requests/second
     SUCCESS_RATE_THRESHOLD = 0.95  # 95% success rate
 
-    async def evaluate(
+    async def evaluate(  # type: ignore[override]
         self,
         client,
         auth_headers: dict[str, Optional[str]] = None,

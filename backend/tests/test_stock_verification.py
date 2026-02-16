@@ -176,7 +176,7 @@ def test_verification_fields_in_count_line_creation():
 
     # This is a structural test - verify the fields are set in the code
     server_file = Path(__file__).parent.parent / "server.py"
-    content = server_file.read_text()
+    content = server_file.read_text(encoding="utf-8")
 
     # Check for verification fields in count line creation
     assert '"verified": False' in content or "'verified': False" in content

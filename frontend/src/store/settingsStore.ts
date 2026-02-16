@@ -3,6 +3,15 @@ import { mmkvStorage } from "../services/mmkvStorage";
 import { ThemeService, Theme } from "../services/themeService";
 import { authApi, UserSettings } from "../services/api/authApi";
 
+const normalizeThemeSetting = (value: unknown): Settings["theme"] => {
+  if (value === "light" || value === "dark" || value === "auto") return value;
+  return "auto";
+};
+
+const toThemeServiceTheme = (theme: Settings["theme"]): Theme => {
+  return theme === "auto" ? "system" : theme;
+};
+
 export interface Settings {
   // Theme
   darkMode: boolean;
@@ -103,22 +112,32 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   isSyncing: false,
 
   setSetting: (key, value) => {
-    const newSettings = { ...get().settings, [key]: value };
+    const prevSettings = get().settings;
+    const newSettings = { ...prevSettings, [key]: value } as Settings;
+
+    // Keep `theme` and `darkMode` consistent.
+    if (key === "theme") {
+      newSettings.darkMode = value === "dark";
+    }
+    if (key === "darkMode") {
+      newSettings.theme = (value ? "dark" : "auto") as Settings["theme"];
+    }
+
     set({ settings: newSettings });
 
     // Persist to storage
     mmkvStorage.setItem("app_settings", JSON.stringify(newSettings));
 
     // Handle side effects
-    if (key === "theme") {
-      ThemeService.setTheme(value as Theme);
+    if (key === "theme" || key === "darkMode") {
+      ThemeService.setTheme(toThemeServiceTheme(newSettings.theme));
     }
   },
 
   resetSettings: async () => {
     set({ settings: DEFAULT_SETTINGS });
     mmkvStorage.setItem("app_settings", JSON.stringify(DEFAULT_SETTINGS));
-    ThemeService.setTheme(DEFAULT_SETTINGS.theme as Theme);
+    ThemeService.setTheme(toThemeServiceTheme(DEFAULT_SETTINGS.theme));
   },
 
   loadSettings: async () => {
@@ -131,7 +150,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         set({ settings: mergedSettings });
 
         // Apply theme
-        ThemeService.setTheme(mergedSettings.theme);
+        ThemeService.setTheme(toThemeServiceTheme(mergedSettings.theme));
       }
     } catch (error) {
       console.error("Failed to load settings:", error);
@@ -149,7 +168,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       // Map backend fields to frontend settings
       const updatedSettings: Partial<Settings> = {
         ...currentSettings,
-        theme: backendSettings.theme as Settings["theme"],
+        theme: normalizeThemeSetting(backendSettings.theme),
         fontSizeValue: backendSettings.font_size,
         primaryColor: backendSettings.primary_color,
         scannerVibration: backendSettings.haptic_enabled,
@@ -158,6 +177,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       };
 
       const mergedSettings = { ...currentSettings, ...updatedSettings };
+      mergedSettings.darkMode = mergedSettings.theme === "dark";
       set({ settings: mergedSettings });
 
       // Persist locally
@@ -165,7 +185,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       // Apply theme if changed
       if (backendSettings.theme !== currentSettings.theme) {
-        ThemeService.setTheme(mergedSettings.theme as Theme);
+        ThemeService.setTheme(toThemeServiceTheme(mergedSettings.theme));
       }
 
       console.log("[SettingsStore] Synced settings from backend");

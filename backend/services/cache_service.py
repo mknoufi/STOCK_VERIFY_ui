@@ -28,14 +28,14 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 # Try to import Redis with async support, fallback to in-memory if not available
 try:
-    import redis.asyncio as redis
-    from redis.exceptions import RedisError
+    import redis.asyncio as redis  # type: ignore[no-redef]
+    from redis.exceptions import RedisError  # type: ignore[no-redef]
 
     REDIS_AVAILABLE = True
 except ImportError:
     try:
-        import redis
-        from redis.exceptions import RedisError
+        import redis  # type: ignore[no-redef]
+        from redis.exceptions import RedisError  # type: ignore[no-redef]
 
         REDIS_AVAILABLE = True
     except ImportError:
@@ -43,7 +43,7 @@ except ImportError:
         logger.warning("Redis not available, using in-memory cache")
 
         # Define dummy RedisError for type safety when Redis is missing
-        class RedisError(Exception):
+        class RedisError(Exception):  # type: ignore[no-redef]
             pass
 
 

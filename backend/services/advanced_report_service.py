@@ -224,7 +224,9 @@ class AdvancedReportService:
             query["counted_by"] = filters.user_id
 
         if filters.item_code:
-            query["item_code"] = {"$regex": filters.item_code, "$options": "i"}
+            from backend.utils.mongo_query import make_regex_match
+
+            query["item_code"] = make_regex_match(filters.item_code)
 
         return query
 
@@ -233,10 +235,12 @@ class AdvancedReportService:
     ) -> None:
         """Add search filter to query."""
         if search_query:
+            from backend.utils.mongo_query import make_regex_match
+
             query["$or"] = [
-                {"item_code": {"$regex": search_query, "$options": "i"}},
-                {"item_name": {"$regex": search_query, "$options": "i"}},
-                {"barcode": {"$regex": search_query, "$options": "i"}},
+                {"item_code": make_regex_match(search_query)},
+                {"item_name": make_regex_match(search_query)},
+                {"barcode": make_regex_match(search_query)},
             ]
 
     def _add_date_filter(

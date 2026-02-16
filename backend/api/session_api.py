@@ -36,6 +36,41 @@ async def create_session(
     if not _db or not _activity_log_service:
         raise HTTPException(status_code=503, detail="Service not initialized")
 
+    # Enforce per-user concurrent open session limit (TDD: max 5)
+    username = current_user["username"]
+    open_session_ids: set[str] = set()
+
+    sessions_cursor = _db.sessions.find(
+        {"staff_user": username, "status": {"$in": ["OPEN"]}},
+        {"id": 1},
+    )
+    for doc in await sessions_cursor.to_list(length=1000):
+        session_id = doc.get("id")
+        if session_id:
+            open_session_ids.add(str(session_id))
+
+    # If verification_sessions exists, include those too (rack workflow)
+    try:
+        verification_cursor = _db.verification_sessions.find(
+            {
+                "user_id": username,
+                "status": {"$in": ["ACTIVE", "OPEN", "PAUSED", "active", "paused"]},
+            },
+            {"session_id": 1},
+        )
+        for doc in await verification_cursor.to_list(length=1000):
+            session_id = doc.get("session_id")
+            if session_id:
+                open_session_ids.add(str(session_id))
+    except Exception:
+        pass
+
+    if len(open_session_ids) >= 5:
+        raise HTTPException(
+            status_code=409,
+            detail="Maximum open sessions reached (5). Please close an existing session.",
+        )
+
     # Input validation and sanitization
     warehouse = session_data.warehouse.strip()
     if not warehouse:

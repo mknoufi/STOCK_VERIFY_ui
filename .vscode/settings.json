@@ -27,5 +27,9 @@
         "zadd",
         "zrange"
     ],
-    "thunder-client.autoRunCurl": true
+    "thunder-client.autoRunCurl": true,
+    "sonarlint.connectedMode.project": {
+        "connectionId": "mknoufi",
+        "projectKey": "mknoufi_stck-new"
+    }
 }

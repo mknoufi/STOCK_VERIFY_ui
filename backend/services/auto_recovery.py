@@ -35,7 +35,7 @@ def _build_error_info(
     e: Exception,
     retry_count: int,
     strategy: RecoveryStrategy,
-    context: dict[str, Optional[Optional[Any]]],
+    context: Optional[dict[str, Any]],
 ) -> dict[str, Any]:
     """Build error info dictionary for history."""
     return {
@@ -68,7 +68,7 @@ class AutoRecovery:
         e: Exception,
         retry_count: int,
         strategy: RecoveryStrategy,
-        context: dict[str, Optional[Optional[Any]]],
+        context: Optional[dict[str, Any]],
         max_retries: int,
     ) -> None:
         """Record error in history and stats."""

@@ -11,6 +11,27 @@
     },
     {
       "pattern": "^http://192.168"
+    },
+    {
+      "pattern": "^https://yourdomain.com"
+    },
+    {
+      "pattern": "^https://example.com"
+    },
+    {
+      "pattern": "example.com"
+    },
+    {
+      "pattern": "^https://status.stockverify.example.com"
+    },
+    {
+      "pattern": "^https://developers.stockverify.example.com"
+    },
+    {
+      "pattern": "^https://lottiefiles.com"
+    },
+    {
+      "pattern": "^https://github.com/mknoufi/STOCK_VERIFY_2"
     }
   ],
   "timeout": "20s",

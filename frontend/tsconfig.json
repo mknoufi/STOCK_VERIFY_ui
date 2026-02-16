@@ -52,6 +52,7 @@
     "android",
     "ios",
     "e2e",
+    "reference/legacy_routes",
     "playwright.config.ts"
   ],
   "extends": "expo/tsconfig.base"

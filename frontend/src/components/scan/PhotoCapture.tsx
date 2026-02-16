@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
 import { PhotoProofType, PhotoProofDraft } from "@/types/scan";
 import { PHOTO_PROOF_TYPES } from "@/constants/scanConstants";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface PhotoCaptureProps {
   photos: PhotoProofDraft[];
@@ -119,7 +120,7 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
             onPress={onOpenPhotoCapture}
             disabled={isWeb}
           >
-            <Ionicons name="camera" size={18} color="#1E293B" />
+            <Ionicons name="camera" size={18} color={theme.colors.surfaceElevated} />
             <Text style={styles.photoCaptureButtonText}>Capture Photo</Text>
           </TouchableOpacity>
         </View>
@@ -193,12 +194,12 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   disabled={photoCaptureLoading}
                 >
                   {photoCaptureLoading ? (
-                    <ActivityIndicator size="small" color="#1E293B" />
+                    <ActivityIndicator size="small" color={theme.colors.surfaceElevated} />
                   ) : (
                     <Ionicons
                       name="radio-button-on"
                       size={64}
-                      color="#1E293B"
+                      color={theme.colors.surfaceElevated}
                     />
                   )}
                 </TouchableOpacity>
@@ -228,11 +229,11 @@ const styles = StyleSheet.create({
   },
   photoCountLabel: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
   },
   photoHelper: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 8,
   },
   photoWebNotice: {
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
   },
   photoSerialWarning: {
     fontSize: 12,
-    color: "#EF4444",
+    color: theme.colors.danger,
     marginBottom: 8,
     fontWeight: "600",
   },
@@ -257,12 +258,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
   photoTypePillActive: {
     backgroundColor: "#3B82F6",
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   photoTypeTextActive: {
-    color: "#1E293B",
+    color: theme.colors.surfaceElevated,
   },
   photoControls: {
     marginBottom: 16,
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   photoCaptureButtonText: {
-    color: "#1E293B",
+    color: theme.colors.surfaceElevated,
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 12,
     overflow: "hidden",
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
   },
   photoPreviewImage: {
     width: "100%",
@@ -332,13 +333,13 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   photoRemoveButton: {
-    backgroundColor: "#EF4444",
+    backgroundColor: theme.colors.danger,
     borderRadius: 12,
     padding: 4,
   },
   photoEmptyText: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     textAlign: "center",
     padding: 20,
     fontStyle: "italic",

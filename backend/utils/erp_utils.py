@@ -1,5 +1,6 @@
 import logging
 import os
+from collections.abc import Sequence
 from datetime import date, datetime
 from typing import Any, Optional
 
@@ -53,7 +54,7 @@ def _safe_date_str(val: Any) -> Optional[str]:
 
 
 def _add_optional_fields(
-    mapped: dict, item: dict, field_defs: list[tuple[str, str, str]]
+    mapped: dict, item: dict, field_defs: Sequence[tuple[str, str, str]]
 ) -> None:
     """Add optional fields to mapped dict if present in item.
 
@@ -432,11 +433,13 @@ async def search_items_in_erp(
             pass
 
     # Fallback: Search in MongoDB
+    from backend.utils.mongo_query import make_regex_match
+
     query = {
         "$or": [
-            {"item_name": {"$regex": search_term, "$options": "i"}},
-            {"item_code": {"$regex": search_term, "$options": "i"}},
-            {"barcode": {"$regex": search_term, "$options": "i"}},
+            {"item_name": make_regex_match(search_term)},
+            {"item_code": make_regex_match(search_term)},
+            {"barcode": make_regex_match(search_term)},
         ]
     }
     cursor = db.erp_items.find(query).limit(50)

@@ -275,9 +275,9 @@ class TestCountAggregation:
 
         # Calculate summary
         total_items = len(count_lines)
-        total_erp = sum(line["erp_qty"] for line in count_lines)
-        total_counted = sum(line["counted_qty"] for line in count_lines)
-        total_damaged = sum(line["damaged_qty"] for line in count_lines)
+        total_erp = sum(line["erp_qty"] for line in count_lines)  # type: ignore
+        total_counted = sum(line["counted_qty"] for line in count_lines)  # type: ignore
+        total_damaged = sum(line["damaged_qty"] for line in count_lines)  # type: ignore
 
         # Variance summary
         variances = []

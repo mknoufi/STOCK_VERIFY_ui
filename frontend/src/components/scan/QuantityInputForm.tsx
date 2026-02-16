@@ -18,6 +18,7 @@ import {
   NormalizedMrpVariant,
   WorkflowState,
 } from "@/types/scan";
+import { defaultTheme as theme } from "@/theme/themes";
 import { MRPVariantSelector } from "./MRPVariantSelector";
 import { formatMrpValue } from "@/utils/scanUtils";
 import { Ionicons } from "@expo/vector-icons";
@@ -132,7 +133,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
               <TextInput
                 style={styles.countInput}
                 placeholder="Enter physical quantity"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={theme.colors.muted}
                 onBlur={onBlur}
                 onChangeText={(text) => {
                   onActivityReset?.();
@@ -154,8 +155,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
           <Switch
             value={showMrpChange}
             onValueChange={(val) => toggleSwitch(setShowMrpChange, val)}
-            trackColor={{ false: "#334155", true: "#3B82F6" }}
-            thumbColor={showMrpChange ? "#fff" : "#94A3B8"}
+            trackColor={{ false: theme.colors.border, true: "#3B82F6" }}
+            thumbColor={showMrpChange ? "#fff" : theme.colors.muted}
           />
         </View>
 
@@ -170,7 +171,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                   <TextInput
                     style={[styles.countInput, styles.mrpInput]}
                     placeholder="New MRP"
-                    placeholderTextColor="#94A3B8"
+                    placeholderTextColor={theme.colors.muted}
                     onBlur={onBlur}
                     onChangeText={(text) => {
                       onActivityReset?.();
@@ -218,8 +219,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
           <Switch
             value={showDamage}
             onValueChange={(val) => toggleSwitch(setShowDamage, val)}
-            trackColor={{ false: "#334155", true: "#3B82F6" }}
-            thumbColor={showDamage ? "#fff" : "#94A3B8"}
+            trackColor={{ false: theme.colors.border, true: "#3B82F6" }}
+            thumbColor={showDamage ? "#fff" : theme.colors.muted}
           />
         </View>
 
@@ -234,10 +235,10 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                   <TextInput
                     style={[
                       styles.countInput,
-                      { borderColor: value ? "#FF9800" : "#334155" },
+                      { borderColor: value ? "#FF9800" : theme.colors.border },
                     ]}
                     placeholder="0"
-                    placeholderTextColor="#94A3B8"
+                    placeholderTextColor={theme.colors.muted}
                     onBlur={onBlur}
                     onChangeText={(text) => {
                       onChange(text);
@@ -259,10 +260,10 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                   <TextInput
                     style={[
                       styles.countInput,
-                      { borderColor: value ? "#EF4444" : "#334155" },
+                      { borderColor: value ? "#EF4444" : theme.colors.border },
                     ]}
                     placeholder="0"
-                    placeholderTextColor="#94A3B8"
+                    placeholderTextColor={theme.colors.muted}
                     onBlur={onBlur}
                     onChangeText={(text) => {
                       onChange(text);
@@ -283,8 +284,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
           <Switch
             value={showSerial}
             onValueChange={handleSerialToggle}
-            trackColor={{ false: "#334155", true: "#3B82F6" }}
-            thumbColor={showSerial ? "#fff" : "#94A3B8"}
+            trackColor={{ false: theme.colors.border, true: "#3B82F6" }}
+            thumbColor={showSerial ? "#fff" : theme.colors.muted}
           />
         </View>
         {/* Serial input logic is handled by SerialNumberEntry component in parent, but toggle is here */}
@@ -295,8 +296,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
           <Switch
             value={showMfgDate}
             onValueChange={(val) => toggleSwitch(setShowMfgDate, val)}
-            trackColor={{ false: "#334155", true: "#3B82F6" }}
-            thumbColor={showMfgDate ? "#fff" : "#94A3B8"}
+            trackColor={{ false: theme.colors.border, true: "#3B82F6" }}
+            thumbColor={showMfgDate ? "#fff" : theme.colors.muted}
           />
         </View>
 
@@ -314,7 +315,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
               >
                 {manufacturingDate || "Select Manufacturing Date"}
               </Text>
-              <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
+              <Ionicons name="calendar-outline" size={20} color={theme.colors.muted} />
             </TouchableOpacity>
           </View>
         )}
@@ -341,8 +342,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
           <Switch
             value={showExpiryDate}
             onValueChange={(val) => toggleSwitch(setShowExpiryDate, val)}
-            trackColor={{ false: "#334155", true: "#3B82F6" }}
-            thumbColor={showExpiryDate ? "#fff" : "#94A3B8"}
+            trackColor={{ false: theme.colors.border, true: "#3B82F6" }}
+            thumbColor={showExpiryDate ? "#fff" : theme.colors.muted}
           />
         </View>
 
@@ -360,7 +361,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
               >
                 {expiryDate || "Select Expiry Date"}
               </Text>
-              <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
+              <Ionicons name="calendar-outline" size={20} color={theme.colors.muted} />
             </TouchableOpacity>
           </View>
         )}
@@ -387,8 +388,8 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
           <Switch
             value={showAdditionalDetail}
             onValueChange={(val) => toggleSwitch(setShowAdditionalDetail, val)}
-            trackColor={{ false: "#334155", true: "#3B82F6" }}
-            thumbColor={showAdditionalDetail ? "#fff" : "#94A3B8"}
+            trackColor={{ false: theme.colors.border, true: "#3B82F6" }}
+            thumbColor={showAdditionalDetail ? "#fff" : theme.colors.muted}
           />
         </View>
 
@@ -404,7 +405,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                   onMarkLocationChange(text);
                 }}
                 placeholder="Specific location marker"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={theme.colors.muted}
               />
             </View>
 
@@ -418,7 +419,7 @@ export const QuantityInputForm: React.FC<QuantityInputFormProps> = React.memo(
                   onRemarkChange(text);
                 }}
                 placeholder="Add a remark"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={theme.colors.muted}
                 multiline
               />
             </View>
@@ -463,17 +464,17 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 8,
   },
   countInput: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     color: "#fff",
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
   },
   toggleRow: {
     flexDirection: "row",
@@ -481,12 +482,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
+    borderBottomColor: theme.colors.border,
     marginBottom: 12,
   },
   toggleLabel: {
     fontSize: 16,
-    color: "#E2E8F0",
+    color: theme.colors.border,
     fontWeight: "500",
   },
   mrpContainer: {
@@ -501,15 +502,15 @@ const styles = StyleSheet.create({
     borderColor: "#3B82F6",
   },
   readOnlyInput: {
-    backgroundColor: "#0F172A",
+    backgroundColor: theme.colors.background,
     justifyContent: "center",
   },
   readOnlyText: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 16,
   },
   errorText: {
-    color: "#EF4444",
+    color: theme.colors.danger,
     fontSize: 12,
     marginTop: 4,
   },
@@ -520,11 +521,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   dateButton: {
-    backgroundColor: "#1E293B",
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: theme.colors.border,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -534,7 +535,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   placeholderText: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
   },
   remarkInput: {
     minHeight: 80,

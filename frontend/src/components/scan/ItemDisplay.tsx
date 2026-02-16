@@ -16,6 +16,7 @@ import { Item } from "@/types/scan";
 import Animated, { FadeInUp, Layout } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { flags } from "@/constants/flags";
+import { defaultTheme as theme } from "@/theme/themes";
 
 interface ItemDisplayProps {
   item: Item;
@@ -55,7 +56,7 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
           <View style={styles.itemInfoGrid}>
             {item.category && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="pricetag" size={14} color="#94A3B8" />
+                <Ionicons name="pricetag" size={14} color={theme.colors.muted} />
                 <Text style={styles.itemInfoText}>
                   {item.category}
                   {item.subcategory && ` • ${item.subcategory}`}
@@ -64,13 +65,13 @@ export const ItemDisplay: React.FC<ItemDisplayProps> = React.memo(
             )}
             {item.item_type && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="layers" size={14} color="#94A3B8" />
+                <Ionicons name="layers" size={14} color={theme.colors.muted} />
                 <Text style={styles.itemInfoText}>Type: {item.item_type}</Text>
               </View>
             )}
             {item.item_group && (
               <View style={styles.itemInfoItem}>
-                <Ionicons name="albums" size={14} color="#94A3B8" />
+                <Ionicons name="albums" size={14} color={theme.colors.muted} />
                 <Text style={styles.itemInfoText}>
                   Group: {item.item_group}
                 </Text>
@@ -217,12 +218,12 @@ const styles = StyleSheet.create({
   },
   itemCode: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 4,
   },
   itemBarcode: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginBottom: 12,
     fontFamily: "monospace",
   },
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   locationText: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 14,
   },
   verificationBadge: {
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   verificationTime: {
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontSize: 12,
   },
   qtyRow: {
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   },
   qtyLabel: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     fontWeight: "600",
   },
   refreshButton: {
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   },
   uomText: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: theme.colors.muted,
     marginTop: 4,
   },
 });

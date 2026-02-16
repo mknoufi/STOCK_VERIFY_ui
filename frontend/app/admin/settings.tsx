@@ -8,11 +8,11 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
-  Switch,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Switch } from "../../src/components/ui/Switch";
 import { usePermission } from "../../src/hooks/usePermission";
 import {
   getSystemSettings,
@@ -122,8 +122,8 @@ export default function MasterSettingsScreen() {
       <Switch
         value={settings?.[key] || false}
         onValueChange={(value) => updateSetting(key, value)}
-        trackColor={{ false: "#767577", true: "#81b0ff" }}
-        thumbColor={settings?.[key] ? "#007AFF" : "#f4f3f4"}
+        accessibilityLabel={label}
+        accessibilityHint={description}
       />
     </View>
   );
@@ -150,7 +150,7 @@ export default function MasterSettingsScreen() {
         <TouchableOpacity
           onPress={handleSave}
           style={styles.saveButton}
-          disabled={saving}
+          disabled={saving || !settings}
         >
           {saving ? (
             <ActivityIndicator size="small" color="#fff" />

@@ -19,7 +19,12 @@ help:
 	@echo "  make lint        - Run all linters"
 	@echo "  make format      - Format all code"
 	@echo ""
-	@echo "🛠️  Development:"
+	@echo "� Code Analysis:"
+	@echo "  make sonar       - Run SonarQube analysis (requires sonar-scanner)"
+	@echo "  make sonar-reports - Generate coverage/lint reports for SonarQube"
+	@echo "  make sonar-local - Run local analysis via Python script"
+	@echo ""
+	@echo "�🛠️  Development:"
 	@echo "  make install     - Install dependencies"
 	@echo "  make clean       - Clean build artifacts"
 	@echo ""
@@ -75,10 +80,28 @@ python-format:
 
 python-typecheck:
 	@echo "Running Python type checker..."
-	mypy backend --ignore-missing-imports --python-version=3.10 || true
+	cd backend && mypy .
 
 # =============================================================================
-# 📦 NODE.JS FRONTEND
+# � OPENAPI CONTRACT
+# =============================================================================
+.PHONY: api-generate api-mock api-test
+
+api-generate:
+	@echo "Generating types from OpenAPI spec..."
+	cd frontend && npx openapi-typescript ../docs/openapi/stock-verify-api.yaml -o src/types/api-generated.ts
+	python -m datamodel_codegen --input docs/openapi/stock-verify-api.yaml --output backend/models/generated.py --input-file-type openapi
+
+api-mock:
+	@echo "Starting mock API server on port 4010..."
+	cd frontend && npx prism mock ../docs/openapi/stock-verify-api.yaml -p 4010
+
+api-test:
+	@echo "Running contract tests against backend..."
+	python -m schemathesis run docs/openapi/stock-verify-api.yaml --base-url http://localhost:8001
+
+# =============================================================================
+# �📦 NODE.JS FRONTEND
 # =============================================================================
 .PHONY: node-ci node-test node-lint node-typecheck
 
@@ -160,6 +183,33 @@ clean:
 # =============================================================================
 # 🔒 SECURITY
 # =============================================================================
+# =============================================================================
+# 📈 SONARQUBE ANALYSIS
+# =============================================================================
+.PHONY: sonar sonar-reports sonar-local
+
+sonar: sonar-reports
+	@echo "📈 Running SonarQube analysis..."
+	sonar-scanner
+
+sonar-reports:
+	@echo "📊 Generating analysis reports for SonarQube..."
+	@echo "Generating Python coverage..."
+	cd backend && pytest tests/ -v --cov=. --cov-report=xml:coverage.xml || true
+	@echo "Generating Bandit security report..."
+	cd backend && bandit -r . -ll -f json -o bandit-report.json --exclude ./tests,./venv,./__pycache__ || true
+	@echo "Generating Ruff lint report..."
+	cd backend && ruff check . --output-format=json > ruff-report.json || true
+	@echo "Generating frontend coverage..."
+	cd frontend && npm run test:coverage -- --ci || true
+	@echo "Generating ESLint report..."
+	cd frontend && npx eslint . --format json --output-file eslint-report.json || true
+	@echo "✅ Reports generated!"
+
+sonar-local:
+	@echo "📈 Running local SonarQube analysis..."
+	python scripts/run_sonar_analysis.py
+
 .PHONY: security secrets validate-env
 
 security:

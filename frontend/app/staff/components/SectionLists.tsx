@@ -106,7 +106,7 @@ export function SectionLists({
         </Text>
 
         {isLoading ? (
-          <ActivityIndicator color="#0EA5E9" style={{ marginTop: 20 }} />
+          <ActivityIndicator color={theme.colors.accent} style={{ marginTop: 20 }} />
         ) : activeSections.length > 0 ? (
           <View style={styles.listContainer}>
             {topActiveSections.map((session, index) => (
@@ -125,10 +125,10 @@ export function SectionLists({
                   <View
                     style={[
                       styles.sessionIcon,
-                      { backgroundColor: "#0EA5E915" },
+                      { backgroundColor: theme.colors.accent + '15' },
                     ]}
                   >
-                    <Ionicons name="layers" size={24} color="#0EA5E9" />
+                    <Ionicons name="layers" size={24} color={theme.colors.accent} />
                   </View>
                   <View style={styles.sessionInfo}>
                     <Text
@@ -178,10 +178,10 @@ export function SectionLists({
                         <View
                           style={[
                             styles.sessionIcon,
-                            { backgroundColor: "#0EA5E915" },
+                            { backgroundColor: theme.colors.accent + '15' },
                           ]}
                         >
-                          <Ionicons name="layers" size={24} color="#0EA5E9" />
+                          <Ionicons name="layers" size={24} color={theme.colors.accent} />
                         </View>
                         <View style={styles.sessionInfo}>
                           <Text
@@ -218,7 +218,7 @@ export function SectionLists({
               <Ionicons
                 name="checkmark-circle-outline"
                 size={40}
-                color="#10B981"
+                color={theme.colors.success}
               />
               <Text style={styles.emptyTitle}>
                 All Caught Up!
@@ -238,9 +238,9 @@ export function SectionLists({
             <Ionicons
               name="checkmark-done-circle"
               size={22}
-              color="#10B981"
+              color={theme.colors.success}
             />
-            <Text style={[styles.sectionTitle, { color: "#F8FAFC" }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.surface }]}>
               Previous Sessions
             </Text>
           </View>
@@ -270,11 +270,11 @@ export function SectionLists({
           <View
             style={styles.searchContainer}
           >
-            <Ionicons name="search" size={18} color="#94A3B8" />
+            <Ionicons name="search" size={18} color={theme.colors.muted} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search previous sessions..."
-              placeholderTextColor="#64748B"
+              placeholderTextColor={theme.colors.textSecondary}
               value={finishedSearchQuery}
               onChangeText={onSearchQueryChange}
               autoFocus
@@ -282,7 +282,7 @@ export function SectionLists({
             />
             {finishedSearchQuery.length > 0 && (
               <TouchableOpacity onPress={() => onSearchQueryChange("")} accessibilityRole="button">
-                <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                <Ionicons name="close-circle" size={18} color={theme.colors.muted} />
               </TouchableOpacity>
             )}
           </View>
@@ -309,13 +309,13 @@ export function SectionLists({
                     <View
                       style={[
                         styles.sessionIcon,
-                        { backgroundColor: "#10B98115" },
+                        { backgroundColor: theme.colors.success + '15' },
                       ]}
                     >
                       <Ionicons
                         name="checkmark-circle"
                         size={24}
-                        color="#10B981"
+                        color={theme.colors.success}
                       />
                     </View>
                     <View style={styles.sessionInfo}>
@@ -386,7 +386,7 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     },
     sectionSubtitle: {
       fontSize: 14,
-      color: "#94A3B8",
+      color: _theme.colors.muted,
       marginBottom: 16,
     },
     iconButton: {
@@ -395,8 +395,8 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       borderRadius: 12,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#0EA5E9",
-      shadowColor: "#0EA5E9",
+      backgroundColor: _theme.colors.accent,
+      shadowColor: _theme.colors.accent,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
@@ -443,12 +443,12 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     sessionName: {
       fontSize: 16,
       fontWeight: "600",
-      color: "#F8FAFC",
+      color: _theme.colors.surface,
       marginBottom: 4,
     },
     sessionMeta: {
       fontSize: 13,
-      color: "#94A3B8",
+      color: _theme.colors.muted,
     },
     resumeButton: {
       width: 40,
@@ -456,7 +456,7 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#0EA5E9",
+      backgroundColor: _theme.colors.accent,
     },
     emptyState: {
       alignItems: "center",
@@ -468,12 +468,12 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
       fontSize: 17,
       fontWeight: "700",
       marginTop: 8,
-      color: "#F8FAFC",
+      color: _theme.colors.surface,
     },
     emptyText: {
       fontSize: 14,
       textAlign: "center",
-      color: "#94A3B8",
+      color: _theme.colors.muted,
       lineHeight: 20,
     },
     searchContainer: {
@@ -491,7 +491,7 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     searchInput: {
       flex: 1,
       fontSize: 16,
-      color: "#F8FAFC",
+      color: _theme.colors.surface,
       paddingVertical: 4,
     },
     emptyStateSmall: {
@@ -500,18 +500,18 @@ const createStyles = (_theme: AppTheme, _isDark: boolean) =>
     },
     emptyTextSmall: {
       fontSize: 14,
-      color: "#64748B",
+      color: _theme.colors.textSecondary,
       fontStyle: "italic",
     },
     moreText: {
       fontSize: 14,
-      color: "#64748B",
+      color: _theme.colors.textSecondary,
       textAlign: "center",
       marginTop: 8,
     },
     overflowHint: {
       fontSize: 12,
-      color: "#64748B",
+      color: _theme.colors.textSecondary,
       marginBottom: 8,
       marginLeft: 4,
     },

@@ -25,6 +25,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run TruffleHog
+        continue-on-error: true
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./

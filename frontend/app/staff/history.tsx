@@ -148,13 +148,14 @@ export default function HistoryScreen() {
     item: CountLine;
     index: number;
   }) => {
-    const varianceColor = item.variance === 0 ? "#10B981" : "#EF4444";
+    const varianceColor =
+      item.variance === 0 ? "#10B981" : theme.colors.error.main;
     const statusColor =
       item.status === "approved"
         ? "#10B981"
         : item.status === "rejected"
           ? "#EF4444"
-          : "#F59E0B";
+          : theme.colors.warning.main;
 
     const CardContent = (
       <GlassCard variant="medium" style={styles.countCard}>
@@ -460,7 +461,7 @@ const styles = StyleSheet.create({
   batchBadgeText: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#0EA5E9",
+    color: theme.colors.accent[500],
     textTransform: "uppercase",
     letterSpacing: 0.3,
   },
@@ -510,7 +511,7 @@ const styles = StyleSheet.create({
   },
   reasonText: {
     fontSize: 13,
-    color: "#F59E0B",
+    color: theme.colors.warning.main,
     fontWeight: "700",
   },
   remark: {

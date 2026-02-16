@@ -20,7 +20,7 @@ class AnalyticsService:
         verified_items = await self.db.erp_items.count_documents({"verified": True})
 
         # Verification trend (daily)
-        pipeline = [
+        pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}}},
             {
                 "$group": {
@@ -35,7 +35,7 @@ class AnalyticsService:
         trend = await self.db.verification_logs.aggregate(pipeline).to_list(length=days)
 
         # Top verifiers
-        user_pipeline = [
+        user_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}}},
             {"$group": {"_id": "$username", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}},
@@ -46,7 +46,7 @@ class AnalyticsService:
         )
 
         # Variance summary
-        variance_pipeline = [
+        variance_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$ne": 0}}},
             {
                 "$group": {
@@ -69,7 +69,7 @@ class AnalyticsService:
         # T078: Enhanced Discrepancy & Accuracy Metrics
 
         # Surplus (variance > 0)
-        surplus_pipeline = [
+        surplus_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$gt": 0}}},
             {"$count": "count"},
         ]
@@ -79,7 +79,7 @@ class AnalyticsService:
         surplus_count = surplus_res[0]["count"] if surplus_res else 0
 
         # Shortage (variance < 0)
-        shortage_pipeline = [
+        shortage_pipeline: list[dict[str, Any]] = [
             {"$match": {"timestamp": {"$gte": start_date}, "variance": {"$lt": 0}}},
             {"$count": "count"},
         ]
@@ -118,7 +118,7 @@ class AnalyticsService:
 
     async def get_category_distribution(self) -> list[dict[str, Any]]:
         """Get item distribution by category"""
-        pipeline = [
+        pipeline: list[dict[str, Any]] = [
             {
                 "$group": {
                     "_id": "$category",

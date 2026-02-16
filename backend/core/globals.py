@@ -15,6 +15,7 @@ enrichment_router: Optional[Any] = None
 ENTERPRISE_AVAILABLE = False
 
 # Core Services
+db: Optional[Any] = None
 cache_service: Optional[Any] = None
 rate_limiter: Optional[Any] = None
 concurrent_handler: Optional[Any] = None

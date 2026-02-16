@@ -349,7 +349,7 @@ class SearchService:
 
         try:
             # Get name suggestions
-            pipeline = [
+            pipeline: list[dict[str, Any]] = [
                 {"$match": {"item_name": {"$regex": f"^{prefix}", "$options": "i"}}},
                 {"$group": {"_id": "$item_name"}},
                 {"$limit": limit},

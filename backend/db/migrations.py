@@ -38,7 +38,7 @@ class MigrationManager:
     async def _ensure_users_indexes(self) -> None:
         """Create indexes for users collection."""
         # Check for duplicate usernames first
-        pipeline = [
+        pipeline: list[dict[str, Any]] = [
             {"$group": {"_id": "$username", "count": {"$sum": 1}}},
             {"$match": {"count": {"$gt": 1}}},
         ]

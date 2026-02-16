@@ -1,23 +1,14 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar } from "expo-status-bar";
 import { storage } from "@/services/asyncStorageService";
 import { useAuthStore } from "@/store/authStore";
 import { registerUser } from "@/services/api/api";
 import { AppLogo } from "@/components/AppLogo";
+import { ScreenContainer, GlassCard } from "@/components/ui";
+import { PremiumInput } from "@/components/premium/PremiumInput";
+import { PremiumButton } from "@/components/premium/PremiumButton";
+import { useThemeContext } from "@/theme/ThemeContext";
 
 export default function Register() {
   const [formData, setFormData] = React.useState({
@@ -29,8 +20,8 @@ export default function Register() {
     phone: "",
   });
   const [loading, setLoading] = React.useState(false);
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+
+  const { theme } = useThemeContext();
 
   const router = useRouter();
 
@@ -181,323 +172,156 @@ export default function Register() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <ScreenContainer
+      backgroundType="aurora"
+      auroraVariant="primary"
+      auroraIntensity="high"
+      withParticles
+      header={{
+        title: "Create Account",
+        showBackButton: true,
+        showLogoutButton: false,
+      }}
+      contentMode="keyboard-scroll"
     >
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={["#1a1a1a", "#0d0d0d", "#000000"]}
-        style={StyleSheet.absoluteFill}
-      />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View
+        style={[
+          styles.content,
+          Platform.OS === "web" && {
+            maxWidth: 520,
+            width: "100%",
+            alignSelf: "center",
+          },
+        ]}
+      >
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
+          <AppLogo size="medium" showText variant="default" />
+          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <AppLogo size="medium" showText={true} variant="default" />
-          <Text style={styles.subtitle}>Join the Stock Verification Team</Text>
+            Join the Stock Verification Team
+          </Text>
         </View>
 
-        <View style={styles.form}>
-          {/* Username */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Username <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="person-outline"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                value={formData.username}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, username: text })
-                }
-                placeholder="Enter username"
-                placeholderTextColor="#666"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-          </View>
+        <GlassCard variant="strong" elevation="lg" style={styles.card}>
+          <PremiumInput
+            label="Username"
+            required
+            value={formData.username}
+            onChangeText={(text) => setFormData({ ...formData, username: text })}
+            placeholder="Enter username"
+            autoCapitalize="none"
+            leftIcon="person-outline"
+          />
 
-          {/* Full Name */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Full Name <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="person"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                value={formData.full_name}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, full_name: text })
-                }
-                placeholder="Enter your full name"
-                placeholderTextColor="#666"
-              />
-            </View>
-          </View>
+          <PremiumInput
+            label="Full Name"
+            required
+            value={formData.full_name}
+            onChangeText={(text) => setFormData({ ...formData, full_name: text })}
+            placeholder="Enter your full name"
+            autoCapitalize="words"
+            leftIcon="person"
+          />
 
-          {/* Employee ID */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Employee ID</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="card-outline"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                value={formData.employee_id}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, employee_id: text })
-                }
-                placeholder="Enter employee ID (optional)"
-                placeholderTextColor="#666"
-              />
-            </View>
-          </View>
+          <PremiumInput
+            label="Employee ID"
+            value={formData.employee_id}
+            onChangeText={(text) =>
+              setFormData({ ...formData, employee_id: text })
+            }
+            placeholder="Enter employee ID (optional)"
+            autoCapitalize="none"
+            leftIcon="card-outline"
+          />
 
-          {/* Phone */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone Number</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="call-outline"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                value={formData.phone}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, phone: text })
-                }
-                placeholder="Enter phone number (optional)"
-                placeholderTextColor="#666"
-                keyboardType="phone-pad"
-              />
-            </View>
-          </View>
+          <PremiumInput
+            label="Phone Number"
+            value={formData.phone}
+            onChangeText={(text) => setFormData({ ...formData, phone: text })}
+            placeholder="Enter phone number (optional)"
+            autoCapitalize="none"
+            keyboardType="phone-pad"
+            leftIcon="call-outline"
+          />
 
-          {/* Password */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Password <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                value={formData.password}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, password: text })
-                }
-                placeholder="Enter password (min 6 characters)"
-                placeholderTextColor="#666"
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#888"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <PremiumInput
+            label="Password"
+            required
+            value={formData.password}
+            onChangeText={(text) => setFormData({ ...formData, password: text })}
+            placeholder="Enter password (min 6 characters)"
+            autoCapitalize="none"
+            secureTextEntry
+            leftIcon="lock-closed-outline"
+          />
 
-          {/* Confirm Password */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Confirm Password <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                value={formData.confirmPassword}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, confirmPassword: text })
-                }
-                placeholder="Re-enter password"
-                placeholderTextColor="#666"
-                secureTextEntry={!showConfirmPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons
-                  name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#888"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <PremiumInput
+            label="Confirm Password"
+            required
+            value={formData.confirmPassword}
+            onChangeText={(text) =>
+              setFormData({ ...formData, confirmPassword: text })
+            }
+            placeholder="Re-enter password"
+            autoCapitalize="none"
+            secureTextEntry
+            leftIcon="lock-closed-outline"
+          />
 
-          {/* Register Button */}
-          <TouchableOpacity
-            style={[styles.registerButton, loading && styles.buttonDisabled]}
+          <PremiumButton
+            title={loading ? "Creating Account..." : "Create Account"}
             onPress={handleRegister}
-            disabled={loading}
-          >
-            <Text style={styles.registerButtonText}>
-              {loading ? "Creating Account..." : "Register"}
-            </Text>
-          </TouchableOpacity>
+            loading={loading}
+            fullWidth
+            icon="person-add-outline"
+          />
 
-          {/* Login Link */}
           <View style={styles.loginLink}>
-            <Text style={styles.loginLinkText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Text style={styles.loginLinkButton}>Login</Text>
+            <Text style={[styles.loginLinkText, { color: theme.colors.textSecondary }]}>
+              Already have an account?
+            </Text>
+            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+              <Text style={[styles.loginLinkButton, { color: theme.colors.accent }]}
+              >
+                Login
+              </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </GlassCard>
+      </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  content: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
-  },
-  scrollContent: {
-    flexGrow: 1,
-    ...(Platform.OS === "web"
-      ? {
-          maxWidth: 500,
-          width: "100%",
-          alignSelf: "center",
-          paddingTop: 40,
-          paddingBottom: 40,
-        }
-      : {}),
+    justifyContent: "center",
+    paddingVertical: Platform.OS === "web" ? 32 : 16,
   },
   header: {
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    backgroundColor: "#2a2a2a",
-    ...(Platform.OS === "web"
-      ? {
-          borderRadius: 12,
-          marginTop: 20,
-        }
-      : {}),
-  },
-  backButton: {
+    alignItems: "center",
     marginBottom: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#888",
-  },
-  form: {
-    padding: 24,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#ccc",
-    marginBottom: 8,
-  },
-  required: {
-    color: "#FF5252",
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#2a2a2a",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#333",
-    paddingHorizontal: 12,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    height: 48,
-    color: "#fff",
-    fontSize: 16,
-  },
-  eyeIcon: {
-    padding: 8,
-  },
-  registerButton: {
-    backgroundColor: "#4CAF50",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
+    textAlign: "center",
     marginTop: 8,
   },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+  card: {
+    marginTop: 8,
   },
   loginLink: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
     marginTop: 24,
+    gap: 6,
   },
   loginLinkText: {
-    color: "#888",
     fontSize: 14,
   },
   loginLinkButton: {
-    color: "#4CAF50",
     fontSize: 14,
     fontWeight: "bold",
   },

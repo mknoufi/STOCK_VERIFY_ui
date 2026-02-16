@@ -68,8 +68,8 @@ try:
     from backend.api.enrichment_api import init_enrichment_api
     from backend.services.enrichment_service import EnrichmentService
 except ImportError:
-    EnrichmentService = None
-    init_enrichment_api = None
+    EnrichmentService = None  # type: ignore
+    init_enrichment_api = None  # type: ignore
 
 try:
     from backend.services.data_governance import DataGovernanceService
@@ -451,7 +451,7 @@ async def lifespan(app: FastAPI):  # noqa: C901
 
     # Initialize default users
     try:
-        await init_default_users()
+        await init_default_users(db)
         logger.info("OK: Default users initialized")
     except Exception as e:
         logger.warning(

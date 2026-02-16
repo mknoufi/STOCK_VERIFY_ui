@@ -44,7 +44,7 @@ export type LoadingType = "spinner" | "skeleton" | "none";
 export type ContentMode = "scroll" | "static" | "keyboard-scroll";
 
 export interface ScreenContainerProps {
-  children: ReactNode;
+  children?: ReactNode;
 
   // Header configuration
   header?: ScreenHeaderProps | false;
@@ -94,7 +94,7 @@ export interface ScreenContainerProps {
 // ============================================================================
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
-  children,
+  children = null,
   header,
   customHeader,
   backgroundType = "aurora",

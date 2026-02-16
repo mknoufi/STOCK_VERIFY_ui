@@ -156,16 +156,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Compute effective theme based on mode
   const effectiveThemeKey = useMemo((): ThemeKey => {
-    if (themeMode === "system") {
-      return systemColorScheme === "dark" ? "dark" : "light";
-    }
-    if (themeMode === "dark" && themeKey === "light") {
-      return "dark";
-    }
-    if (themeMode === "light" && themeKey === "dark") {
+    // Light mode should always be truly light (regardless of a previously-selected dark theme).
+    if (themeMode === "light") {
       return "light";
     }
-    return themeKey;
+
+    // Dark mode should never be the light palette.
+    if (themeMode === "dark") {
+      return themeKey === "light" ? "dark" : themeKey;
+    }
+
+    // System mode: follow system, but avoid applying dark-only themes on a light system.
+    if (systemColorScheme === "dark") {
+      return themeKey === "light" ? "dark" : themeKey;
+    }
+    return themeKey === "light" ? "light" : "light";
   }, [themeMode, themeKey, systemColorScheme]);
 
   const theme = useMemo(
@@ -234,6 +239,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     setThemeModeState(mode);
     mmkvStorage.setItem(STORAGE_KEYS.THEME_MODE, mode);
   }, []);
+
+  // Keep ThemeContext mode aligned with the simplified settings store (`light`/`dark`/`auto`).
+  // This makes Dark Mode / Theme selection behave consistently across the app.
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const desired: ThemeMode =
+      settings.theme === "auto" ? "system" : (settings.theme as ThemeMode);
+
+    if (desired !== themeMode) {
+      setThemeMode(desired);
+    }
+  }, [isInitialized, settings.theme, setThemeMode, themeMode]);
 
   const setPattern = useCallback((p: PatternType) => {
     setPatternState(p);

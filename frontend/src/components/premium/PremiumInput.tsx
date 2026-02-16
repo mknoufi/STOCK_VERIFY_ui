@@ -276,6 +276,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={colors.textDisabled}
+          accessibilityLabel={label || placeholder}
           editable={editable && !disabled}
           multiline={multiline}
           numberOfLines={numberOfLines}
@@ -304,6 +305,17 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
                 : onRightIconPress
             }
             disabled={!isPasswordField && !onRightIconPress}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isPasswordField
+                ? showPassword
+                  ? "Hide password"
+                  : "Show password"
+                : "Right icon"
+            }
+            accessibilityHint={
+              isPasswordField ? "Toggles password visibility" : undefined
+            }
           >
             <Ionicons
               name={

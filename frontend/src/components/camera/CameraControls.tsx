@@ -63,6 +63,10 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
           ]}
           onPress={handleTorchPress}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={torchEnabled ? "Turn flash off" : "Turn flash on"}
+          accessibilityState={{ selected: torchEnabled }}
+          accessibilityHint="Double tap to toggle camera flash"
         >
           <Ionicons
             name={torchEnabled ? "flash" : "flash-off"}
@@ -81,6 +85,10 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
           onPress={onZoomOut}
           disabled={zoom <= 0}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Zoom out"
+          accessibilityState={{ disabled: zoom <= 0 }}
+          accessibilityHint="Decreases camera zoom level"
         >
           <Ionicons
             name="remove"
@@ -95,6 +103,9 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
           style={[styles.zoomIndicator, shadows[2]]}
           onPress={onResetZoom}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Reset zoom level"
+          accessibilityHint="Resets zoom to 100%"
         >
           <Text style={styles.zoomText}>{(zoom * 100).toFixed(0)}%</Text>
         </TouchableOpacity>
@@ -104,6 +115,10 @@ export const CameraControls: React.FC<CameraControlsProps> = ({
           onPress={onZoomIn}
           disabled={zoom >= 1}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Zoom in"
+          accessibilityState={{ disabled: zoom >= 1 }}
+          accessibilityHint="Increases camera zoom level"
         >
           <Ionicons
             name="add"

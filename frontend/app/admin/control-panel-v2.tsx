@@ -29,7 +29,6 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { GlassCard } from "@/components/ui/GlassCard";
-// @ts-ignore - StatsCard might have strict type checks that we are fixing
 import { StatsCard } from "@/components/ui";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import {
@@ -96,11 +95,14 @@ const ServiceItem = ({
 }) => {
   const isRunning = status?.running;
   const showToggleButton = !NON_TOGGLEABLE_SERVICES.includes(name);
+  const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
 
   return (
     <View style={styles.serviceItem}>
       <View style={styles.serviceInfo}>
         <View
+          accessible={true}
+          accessibilityLabel={`${formattedName} service is ${isRunning ? "running" : "stopped"}`}
           style={[
             styles.statusIndicator,
             {
@@ -112,7 +114,7 @@ const ServiceItem = ({
         />
         <View>
           <Text style={styles.serviceName}>
-            {name.charAt(0).toUpperCase() + name.slice(1)}
+            {formattedName}
           </Text>
           <Text style={styles.serviceDetail}>
             {isRunning ? `Running on port ${status.port}` : "Stopped"}
@@ -135,6 +137,10 @@ const ServiceItem = ({
             },
           ]}
           disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={`${isRunning ? "Stop" : "Start"} ${name} service`}
+          accessibilityHint={`Double tap to ${isRunning ? "stop" : "start"} the ${name} service`}
+          accessibilityState={{ busy: loading, disabled: loading }}
         >
           {loading ? (
             <ActivityIndicator size="small" color={modernColors.text.primary} />
@@ -413,6 +419,9 @@ export default function AdminControlPanelV2() {
                   <AnimatedPressable
                     style={styles.toolCard}
                     onPress={() => router.push(item.route as any)}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.title}
+                    accessibilityHint={`Navigate to ${item.title}`}
                   >
                     <GlassCard variant="medium" style={styles.toolCardContent}>
                       <View style={styles.toolIcon}>

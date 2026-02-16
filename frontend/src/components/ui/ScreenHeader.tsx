@@ -84,6 +84,8 @@ interface AnimatedButtonProps {
   backgroundColor: string;
   size?: number;
   testID?: string;
+  accessibilityLabel: string;
+  accessibilityHint?: string;
 }
 
 const AnimatedButton: React.FC<AnimatedButtonProps> = ({
@@ -93,6 +95,8 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   backgroundColor,
   size = 22,
   testID,
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const scale = useSharedValue(1);
 
@@ -117,6 +121,9 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
         style={[styles.actionButton, { backgroundColor }]}
         activeOpacity={0.8}
         testID={testID}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
       >
         <Ionicons name={icon} size={size} color={iconColor} />
       </TouchableOpacity>
@@ -289,6 +296,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
               backgroundColor={colors.buttonBg}
               size={24}
               testID="back-button"
+              accessibilityLabel="Go back"
+              accessibilityHint="Navigates to the previous screen"
             />
           </Animated.View>
         )}
@@ -325,6 +334,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             iconColor={colors.accent}
             backgroundColor={colors.buttonBg}
             testID="right-action-button"
+            accessibilityLabel={rightAction.label || "Action"}
+            accessibilityHint="Performs the screen action"
           />
         )}
         {showLogoutButton && (
@@ -334,6 +345,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             iconColor={colors.danger}
             backgroundColor={colors.dangerBg}
             testID="logout-button"
+            accessibilityLabel="Log out"
+            accessibilityHint="Logs out of your account"
           />
         )}
       </Animated.View>

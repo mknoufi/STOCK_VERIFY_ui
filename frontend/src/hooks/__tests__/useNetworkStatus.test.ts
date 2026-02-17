@@ -95,6 +95,9 @@ describe("useNetworkStatus Hook", () => {
 
     expect(getByTestId("status").props.children).toContain("true");
 
+    // Wait for the initial fetch to resolve to avoid race condition overwriting the update
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     listener?.({ isConnected: false, isInternetReachable: false, type: "none" });
 
     await waitFor(() => {

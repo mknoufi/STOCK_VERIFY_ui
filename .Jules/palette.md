@@ -5,3 +5,7 @@
 ## 2024-05-22 - Custom Switch Accessibility
 **Learning:** Custom UI components like `Switch` often miss default accessibility behaviors found in native components (role, state, label).
 **Action:** Always verify custom interactive components expose `accessibilityRole`, `accessibilityState`, `accessibilityLabel`, and `accessibilityHint` props.
+
+## 2024-05-24 - Indeterminate Checkbox State
+**Learning:** The `indeterminate` state for checkboxes in React Native must be explicitly mapped to `accessibilityState={{ checked: 'mixed' }}`. Boolean logic (`checked: checked || indeterminate`) incorrectly announces "checked" to screen readers.
+**Action:** Always test indeterminate states with specific accessibility values, not just visual props.

@@ -27,6 +27,8 @@ interface CheckboxProps {
   description?: string;
   disabled?: boolean;
   indeterminate?: boolean;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const Checkbox: React.FC<CheckboxProps> = ({
@@ -36,6 +38,8 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   description,
   disabled = false,
   indeterminate = false,
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const scale = useSharedValue(checked || indeterminate ? 1 : 0);
 
@@ -62,6 +66,13 @@ export const Checkbox: React.FC<CheckboxProps> = ({
       onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.7}
+      accessibilityRole="checkbox"
+      accessibilityState={{
+        checked: indeterminate ? "mixed" : checked,
+        disabled,
+      }}
+      accessibilityLabel={accessibilityLabel || label}
+      accessibilityHint={accessibilityHint || description}
     >
       <View
         style={[

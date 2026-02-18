@@ -37,6 +37,7 @@ export interface SpeedDialAction {
   onPress: () => void;
   color?: string;
   badge?: number;
+  accessibilityHint?: string;
 }
 
 interface SpeedDialMenuProps {
@@ -44,6 +45,7 @@ interface SpeedDialMenuProps {
   mainIcon?: keyof typeof Ionicons.glyphMap;
   mainColor?: readonly [string, string, ...string[]];
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  accessibilityLabel?: string;
 }
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -82,11 +84,18 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
     };
   });
 
+  const accessibilityLabel = `${action.label}${
+    action.badge ? `, ${action.badge} items` : ""
+  }`;
+
   return (
     <AnimatedTouchable
       style={[styles.actionButton, actionStyle]}
       onPress={() => onPress(action)}
       activeOpacity={0.9}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={action.accessibilityHint}
     >
       <View style={styles.actionContent}>
         {/* Label */}
@@ -141,6 +150,7 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
   mainIcon = "menu",
   mainColor = auroraTheme.colors.aurora.primary,
   position = "bottom-right",
+  accessibilityLabel = "Quick Actions",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const animationProgress = useSharedValue(0);
@@ -222,6 +232,9 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={StyleSheet.absoluteFill}
           onPress={toggleMenu}
           activeOpacity={1}
+          accessibilityRole="button"
+          accessibilityLabel="Close menu"
+          accessibilityHint="Double tap to close the menu"
         />
       </AnimatedBlurView>
 
@@ -243,6 +256,10 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={styles.mainButton}
           onPress={toggleMenu}
           activeOpacity={0.9}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          accessibilityHint="Double tap to expand options"
+          accessibilityState={{ expanded: isOpen }}
         >
           <LinearGradient
             colors={mainColor}

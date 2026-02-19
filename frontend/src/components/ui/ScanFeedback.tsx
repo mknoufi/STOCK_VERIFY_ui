@@ -201,7 +201,14 @@ export const ScanFeedback: React.FC<ScanFeedbackProps> = ({
   if (!visible) return null;
 
   return (
-    <View style={styles.overlay} pointerEvents="none">
+    <View
+      style={styles.overlay}
+      pointerEvents="none"
+      accessible={true}
+      accessibilityLiveRegion={type === "error" ? "assertive" : "polite"}
+      accessibilityRole="alert"
+      accessibilityLabel={`${title}${message ? `. ${message}` : ""}`}
+    >
       <Animated.View style={[styles.container, { width: screenWidth * 0.7 }, containerStyle]}>
         <LinearGradient
           colors={config.gradient as readonly [string, string, ...string[]]}

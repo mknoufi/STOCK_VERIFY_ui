@@ -280,7 +280,13 @@ export default function Register() {
             <Text style={[styles.loginLinkText, { color: theme.colors.textSecondary }]}>
               Already have an account?
             </Text>
-            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Login"
+              accessibilityHint="Navigates to the login screen"
+            >
               <Text style={[styles.loginLinkButton, { color: theme.colors.accent }]}
               >
                 Login

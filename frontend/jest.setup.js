@@ -15,6 +15,13 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(async () => undefined),
 }));
 
+// Mock LocalAuthentication
+jest.mock("expo-local-authentication", () => ({
+  hasHardwareAsync: jest.fn(async () => false),
+  isEnrolledAsync: jest.fn(async () => false),
+  authenticateAsync: jest.fn(async () => ({ success: false })),
+}), { virtual: true });
+
 // Mock NetInfo (used by networkService) to avoid native module dependencies
 jest.mock("@react-native-community/netinfo", () => ({
   __esModule: true,

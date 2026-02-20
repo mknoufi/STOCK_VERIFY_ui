@@ -167,6 +167,9 @@ export default function WelcomeScreen() {
             onPress={() => handlePress("/login")}
             activeOpacity={0.9}
             style={styles.buttonShadow}
+            accessibilityRole="button"
+            accessibilityLabel="Get Started"
+            accessibilityHint="Navigates to the login screen"
           >
             <LinearGradient
               colors={gradients.primary}
@@ -183,6 +186,9 @@ export default function WelcomeScreen() {
             onPress={() => handlePress("/register")}
             activeOpacity={0.7}
             style={styles.registerButtonWrapper}
+            accessibilityRole="button"
+            accessibilityLabel="Create Account"
+            accessibilityHint="Navigates to the registration screen"
           >
             <GlassSurface intensity={10} tint="light" style={styles.registerButton}>
               <Text style={styles.registerButtonText}>Create Account</Text>
@@ -193,6 +199,9 @@ export default function WelcomeScreen() {
             onPress={() => handlePress("/scaffold")}
             activeOpacity={0.7}
             style={styles.registerButtonWrapper}
+            accessibilityRole="button"
+            accessibilityLabel="Open Scaffold"
+            accessibilityHint="Navigates to the scaffold screen"
           >
             <GlassSurface intensity={10} tint="light" style={styles.registerButton}>
               <View style={styles.scaffoldButtonInner}>

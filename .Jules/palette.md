@@ -5,3 +5,7 @@
 ## 2024-05-22 - Custom Switch Accessibility
 **Learning:** Custom UI components like `Switch` often miss default accessibility behaviors found in native components (role, state, label).
 **Action:** Always verify custom interactive components expose `accessibilityRole`, `accessibilityState`, `accessibilityLabel`, and `accessibilityHint` props.
+
+## 2026-02-20 - Navigation Link Accessibility
+**Learning:** Navigation links implemented as `TouchableOpacity` wrapping `Text` are completely invisible to screen readers as actionable elements unless they have `accessibilityRole="button"`.
+**Action:** Always wrap text-based navigation links in a container with `accessibilityRole="button"` and `accessibilityLabel` that describes the action (e.g., "Login"), even if the visible text seems self-explanatory.

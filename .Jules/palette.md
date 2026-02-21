@@ -5,3 +5,7 @@
 ## 2024-05-22 - Custom Switch Accessibility
 **Learning:** Custom UI components like `Switch` often miss default accessibility behaviors found in native components (role, state, label).
 **Action:** Always verify custom interactive components expose `accessibilityRole`, `accessibilityState`, `accessibilityLabel`, and `accessibilityHint` props.
+
+## 2024-05-24 - Dynamic Loading State Labels
+**Learning:** Icon-only buttons (like "Refresh") often lack context, especially during async operations. Screen readers might just announce "button" or the icon name, leaving users unsure if the action was triggered.
+**Action:** When adding loading states to icon buttons, dynamically override the `accessibilityLabel` to "Loading..." (or similar status) to provide immediate, explicit feedback to non-visual users that the action is processing.

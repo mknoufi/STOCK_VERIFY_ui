@@ -9,14 +9,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
 import { GlassCard } from "../ui/GlassCard";
 import { theme } from "../../styles/modernDesignSystem";
+import { RefreshButton } from "../RefreshButton";
 
 // ============================================================================
 // Types
@@ -126,25 +125,15 @@ const StockDisplay: React.FC<{
       <View style={styles.stockHeader}>
         <Text style={styles.stockLabel}>ERP Stock</Text>
         {showRefreshButton && onRefreshStock && (
-          <TouchableOpacity
-            style={[
-              styles.refreshButton,
-              refreshingStock && styles.refreshButtonDisabled,
-            ]}
-            onPress={() => {
-              if (Platform.OS !== "web") {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }
-              onRefreshStock();
-            }}
-            disabled={refreshingStock}
-          >
-            {refreshingStock ? (
-              <ActivityIndicator size="small" color={theme.colors.primary[500]} />
-            ) : (
-              <Ionicons name="refresh" size={18} color={theme.colors.primary[500]} />
-            )}
-          </TouchableOpacity>
+          <RefreshButton
+            onRefresh={onRefreshStock}
+            loading={refreshingStock}
+            size={18}
+            hapticFeedback={true}
+            style={styles.refreshButton}
+            iconName="refresh"
+            accessibilityLabel="Refresh stock count"
+          />
         )}
       </View>
       <Text style={styles.stockValue}>{stockValue}</Text>
@@ -469,9 +458,6 @@ const styles = StyleSheet.create({
   },
   refreshButton: {
     padding: 4,
-  },
-  refreshButtonDisabled: {
-    opacity: 0.5,
   },
   stockValue: {
     fontSize: 28,

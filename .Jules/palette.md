@@ -7,5 +7,5 @@
 **Action:** Always verify custom interactive components expose `accessibilityRole`, `accessibilityState`, `accessibilityLabel`, and `accessibilityHint` props.
 
 ## 2024-05-24 - Transient Overlay Accessibility
-**Learning:** Full-screen transient overlays (like scan feedback) that block interaction must announce their content via `accessibilityLiveRegion`. Without it, screen reader users might not know why the screen is unresponsive or what the feedback was.
-**Action:** Use `accessibilityLiveRegion="assertive"` for critical feedback (errors) and `"polite"` for non-critical (success), along with `accessibilityViewIsModal={true}` if the overlay covers the screen.
+**Learning:** Visual-only overlays (like scan feedback) with `pointerEvents="none"` are often ignored by screen readers, making them inaccessible. Standard accessibility props on the container may not work because the view is technically not interactive.
+**Action:** Use `AccessibilityInfo.announceForAccessibility(message)` within a `useEffect` hook to imperatively announce the feedback message when the overlay appears. This ensures screen reader users receive the status update regardless of the view's interactivity.

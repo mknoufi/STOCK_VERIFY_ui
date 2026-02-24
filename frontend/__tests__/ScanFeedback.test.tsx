@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 import { ScanFeedback } from '../src/components/ui/ScanFeedback';
 
 // Mock dependencies
@@ -27,15 +28,21 @@ jest.mock('@expo/vector-icons', () => ({
 // Mock Reanimated
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
-  // The mock for call is needed for some animations
   Reanimated.default.call = () => {};
   return Reanimated;
 });
 
+// Mock AccessibilityInfo
+const mockAnnounceForAccessibility = jest.fn();
+jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(mockAnnounceForAccessibility);
 
 describe('ScanFeedback Accessibility', () => {
-  it('should have accessibility props when visible', () => {
-    const { getByLabelText, getByRole } = render(
+  beforeEach(() => {
+    mockAnnounceForAccessibility.mockClear();
+  });
+
+  it('should announce content when visible', () => {
+    render(
       <ScanFeedback
         visible={true}
         type="success"
@@ -44,25 +51,18 @@ describe('ScanFeedback Accessibility', () => {
       />
     );
 
-    // This should fail initially because ScanFeedback lacks accessibility props
-    const feedbackElement = getByLabelText('Scan Complete, Item added to cart');
-    expect(feedbackElement).toBeTruthy();
-    expect(feedbackElement.props.accessibilityRole).toBe('alert');
-    expect(feedbackElement.props.accessibilityLiveRegion).toBe('polite');
-    expect(feedbackElement.props.accessible).toBe(true);
+    expect(mockAnnounceForAccessibility).toHaveBeenCalledWith('Scan Complete, Item added to cart');
   });
 
-  it('should have assertive live region for errors', () => {
-    const { getByLabelText } = render(
+  it('should not announce when not visible', () => {
+    render(
       <ScanFeedback
-        visible={true}
+        visible={false}
         type="error"
         title="Scan Failed"
-        message="Item not found"
       />
     );
 
-    const feedbackElement = getByLabelText('Scan Failed, Item not found');
-    expect(feedbackElement.props.accessibilityLiveRegion).toBe('assertive');
+    expect(mockAnnounceForAccessibility).not.toHaveBeenCalled();
   });
 });

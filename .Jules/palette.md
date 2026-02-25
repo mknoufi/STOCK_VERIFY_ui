@@ -5,3 +5,7 @@
 ## 2024-05-22 - Custom Switch Accessibility
 **Learning:** Custom UI components like `Switch` often miss default accessibility behaviors found in native components (role, state, label).
 **Action:** Always verify custom interactive components expose `accessibilityRole`, `accessibilityState`, `accessibilityLabel`, and `accessibilityHint` props.
+
+## 2024-05-24 - Speed Dial Accessibility
+**Learning:** Floating Action Buttons (FAB) with expandable menus (Speed Dials) are complex for screen readers. The main trigger needs `accessibilityState={{ expanded: boolean }}` and the backdrop overlay must be accessible to close the menu.
+**Action:** When implementing Speed Dials, ensure the main button announces its state, individual actions are labeled, and the backdrop is actionable for dismissal.

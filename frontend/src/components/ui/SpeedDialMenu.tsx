@@ -37,6 +37,8 @@ export interface SpeedDialAction {
   onPress: () => void;
   color?: string;
   badge?: number;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 interface SpeedDialMenuProps {
@@ -44,6 +46,8 @@ interface SpeedDialMenuProps {
   mainIcon?: keyof typeof Ionicons.glyphMap;
   mainColor?: readonly [string, string, ...string[]];
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -87,6 +91,9 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
       style={[styles.actionButton, actionStyle]}
       onPress={() => onPress(action)}
       activeOpacity={0.9}
+      accessibilityRole="button"
+      accessibilityLabel={action.accessibilityLabel || action.label}
+      accessibilityHint={action.accessibilityHint}
     >
       <View style={styles.actionContent}>
         {/* Label */}
@@ -141,6 +148,8 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
   mainIcon = "menu",
   mainColor = auroraTheme.colors.aurora.primary,
   position = "bottom-right",
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const animationProgress = useSharedValue(0);
@@ -222,6 +231,10 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={StyleSheet.absoluteFill}
           onPress={toggleMenu}
           activeOpacity={1}
+          accessibilityRole="button"
+          accessibilityLabel="Close menu"
+          accessibilityHint="Double tap to close the menu"
+          accessible={isOpen}
         />
       </AnimatedBlurView>
 
@@ -243,6 +256,10 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={styles.mainButton}
           onPress={toggleMenu}
           activeOpacity={0.9}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel || "Speed Dial Menu"}
+          accessibilityHint={accessibilityHint || "Double tap to expand menu"}
+          accessibilityState={{ expanded: isOpen }}
         >
           <LinearGradient
             colors={mainColor}

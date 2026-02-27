@@ -56,6 +56,7 @@ interface PremiumInputProps {
   maxLength?: number;
   required?: boolean;
   onBlur?: () => void;
+  allowClear?: boolean;
 }
 
 export const PremiumInput: React.FC<PremiumInputProps> = ({
@@ -82,6 +83,7 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
   maxLength,
   required = false,
   onBlur,
+  allowClear = false,
 }) => {
   const themeContext = useThemeContextSafe();
   const theme = themeContext?.theme;
@@ -172,6 +174,9 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
 
   const isPasswordField = secureTextEntry;
   const effectiveSecure = isPasswordField && !showPassword;
+
+  // Show clear button logic
+  const showClearButton = allowClear && value.length > 0 && !isPasswordField && !rightIcon && editable && !disabled;
 
   // Memoized dynamic styles
   const dynamicStyles = useMemo(() => {
@@ -290,13 +295,30 @@ export const PremiumInput: React.FC<PremiumInputProps> = ({
           style={[
             dynamicStyles.input,
             leftIcon && dynamicStyles.inputWithLeftIcon,
-            (rightIcon || isPasswordField) && dynamicStyles.inputWithRightIcon,
+            (rightIcon || isPasswordField || showClearButton) && dynamicStyles.inputWithRightIcon,
             inputStyle,
           ]}
         />
 
+        {/* Clear Button */}
+        {showClearButton && (
+           <TouchableOpacity
+            style={dynamicStyles.iconContainer}
+            onPress={() => onChangeText && onChangeText("")}
+            accessibilityRole="button"
+            accessibilityLabel="Clear text"
+            accessibilityHint="Clears the input field"
+           >
+             <Ionicons
+               name="close-circle"
+               size={20}
+               color={colors.textTertiary}
+             />
+           </TouchableOpacity>
+        )}
+
         {/* Right Icon / Password Toggle */}
-        {(rightIcon || isPasswordField) && (
+        {(rightIcon || isPasswordField) && !showClearButton && (
           <TouchableOpacity
             style={dynamicStyles.iconContainer}
             onPress={

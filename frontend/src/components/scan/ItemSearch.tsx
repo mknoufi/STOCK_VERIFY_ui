@@ -117,6 +117,8 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
       <TouchableOpacity
         style={styles.loadMoreButton}
         onPress={onLoadMore}
+        accessibilityRole="button"
+        accessibilityLabel="Load more search results"
       >
         <Text style={styles.loadMoreText}>Load More Results</Text>
         <Ionicons name="chevron-down" size={16} color="#3B82F6" />
@@ -136,7 +138,12 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
       <View style={styles.headerRow}>
         <Text style={styles.manualEntryTitle}>Scan or Search Item</Text>
         {onBulkEntry && (
-          <TouchableOpacity onPress={onBulkEntry} style={styles.bulkButton}>
+          <TouchableOpacity
+            onPress={onBulkEntry}
+            style={styles.bulkButton}
+            accessibilityRole="button"
+            accessibilityLabel="Enter multiple items at once"
+          >
             <Ionicons name="list-outline" size={20} color="#3B82F6" />
             <Text style={styles.bulkButtonText}>Bulk Entry</Text>
           </TouchableOpacity>
@@ -167,7 +174,12 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             onSubmitEditing={onBarcodeSubmit}
           />
           {onScan && (
-            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
+            <TouchableOpacity
+              style={styles.scanButton}
+              onPress={onScan}
+              accessibilityRole="button"
+              accessibilityLabel="Scan barcode with camera"
+            >
               <Ionicons name="scan-outline" size={20} color="#fff" />
             </TouchableOpacity>
           )}
@@ -181,6 +193,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
               onBarcodeSubmit();
             }}
             disabled={!manualBarcode}
+            accessibilityRole="button"
+            accessibilityLabel="Submit barcode"
+            accessibilityState={{ disabled: !manualBarcode }}
           >
             <Ionicons name="arrow-forward" size={20} color="#fff" />
           </TouchableOpacity>
@@ -196,6 +211,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
             <TouchableOpacity
               style={styles.voiceButton}
               onPress={onVoiceSearch}
+              accessibilityRole="button"
+              accessibilityLabel={isListening ? "Stop voice search" : "Start voice search"}
+              accessibilityState={{ checked: isListening }}
             >
               <Ionicons
                 name={isListening ? "mic" : "mic-outline"}
@@ -231,6 +249,9 @@ export const ItemSearch: React.FC<ItemSearchProps> = ({
               onItemNameSubmit();
             }}
             disabled={!manualItemName}
+            accessibilityRole="button"
+            accessibilityLabel="Search by item name"
+            accessibilityState={{ disabled: !manualItemName }}
           >
             <Ionicons name="search" size={20} color="#fff" />
           </TouchableOpacity>

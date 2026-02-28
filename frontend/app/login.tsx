@@ -549,6 +549,7 @@ export default function LoginScreen() {
                           autoCapitalize="none"
                           leftIcon="person-outline"
                           editable={!loading}
+                          allowClear={true}
                         />
 
                         <PremiumInput

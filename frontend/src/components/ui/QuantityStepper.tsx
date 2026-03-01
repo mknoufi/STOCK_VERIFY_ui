@@ -34,12 +34,16 @@ export function QuantityStepper({ value, onChange, min = 0, max, disabled, testI
         onPress={() => handleChange(-1)}
         disabled={disabled || value <= min}
         style={[styles.button, (disabled || value <= min) && styles.buttonDisabled]}
-        accessibilityLabel="decrement"
+        accessibilityRole="button"
+        accessibilityLabel="Decrease quantity"
+        accessibilityHint="Double tap to decrease value"
+        accessibilityState={{ disabled: disabled || value <= min }}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
         <Ionicons name="remove" size={20} color={auroraTheme.colors.text.primary} />
       </TouchableOpacity>
 
-      <View style={styles.valueBox}>
+      <View style={styles.valueBox} accessible={true} accessibilityLiveRegion="polite">
         <Text style={styles.valueText}>{value}</Text>
       </View>
 
@@ -47,7 +51,11 @@ export function QuantityStepper({ value, onChange, min = 0, max, disabled, testI
         onPress={() => handleChange(1)}
         disabled={disabled || (typeof max === "number" && value >= max)}
         style={[styles.button, (disabled || (typeof max === "number" && value >= max)) && styles.buttonDisabled]}
-        accessibilityLabel="increment"
+        accessibilityRole="button"
+        accessibilityLabel="Increase quantity"
+        accessibilityHint="Double tap to increase value"
+        accessibilityState={{ disabled: disabled || (typeof max === "number" && value >= max) }}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
         <Ionicons name="add" size={20} color={auroraTheme.colors.text.primary} />
       </TouchableOpacity>

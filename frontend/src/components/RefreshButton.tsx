@@ -7,6 +7,8 @@ interface RefreshButtonProps {
   loading?: boolean;
   size?: number;
   color?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const RefreshButton: React.FC<RefreshButtonProps> = ({
@@ -14,6 +16,8 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
   loading = false,
   size = 24,
   color = "#4CAF50",
+  accessibilityLabel = "Refresh",
+  accessibilityHint = "Refreshes the current data",
 }) => {
   return (
     <TouchableOpacity
@@ -21,6 +25,10 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
       onPress={onRefresh}
       disabled={loading}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: loading, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator size="small" color={color} />

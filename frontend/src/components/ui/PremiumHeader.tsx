@@ -48,6 +48,7 @@ interface PremiumHeaderProps {
     icon: keyof typeof Ionicons.glyphMap;
     onPress: () => void;
     color?: string;
+    accessibilityLabel?: string;
   };
   style?: ViewStyle;
 }
@@ -119,6 +120,8 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
           ]}
           onPress={rightAction.onPress}
           activeOpacity={0.7}
+          accessibilityLabel={rightAction.accessibilityLabel || "Header action"}
+          accessibilityRole="button"
         >
           <Ionicons
             name={rightAction.icon}
@@ -135,6 +138,8 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
           style={[styles.actionButton, styles.logoutButton]}
           onPress={onLogout}
           activeOpacity={0.7}
+          accessibilityLabel="Log out"
+          accessibilityRole="button"
         >
           <Ionicons
             name="log-out-outline"
@@ -151,6 +156,8 @@ export const PremiumHeader: React.FC<PremiumHeaderProps> = ({
           style={styles.actionButton}
           onPress={onMenuPress}
           activeOpacity={0.7}
+          accessibilityLabel="Menu"
+          accessibilityRole="button"
         >
           <Ionicons
             name="menu-outline"

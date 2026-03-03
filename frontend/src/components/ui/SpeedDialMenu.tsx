@@ -87,6 +87,9 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
       style={[styles.actionButton, actionStyle]}
       onPress={() => onPress(action)}
       activeOpacity={0.9}
+      accessibilityRole="button"
+      accessibilityLabel={action.label}
+      accessibilityHint={`Performs the ${action.label} action`}
     >
       <View style={styles.actionContent}>
         {/* Label */}
@@ -222,6 +225,10 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={StyleSheet.absoluteFill}
           onPress={toggleMenu}
           activeOpacity={1}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Close menu"
+          accessibilityHint="Closes the speed dial menu"
         />
       </AnimatedBlurView>
 
@@ -243,6 +250,10 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={styles.mainButton}
           onPress={toggleMenu}
           activeOpacity={0.9}
+          accessibilityRole="button"
+          accessibilityLabel={isOpen ? "Close menu" : "Open menu"}
+          accessibilityHint="Toggles the speed dial actions menu"
+          accessibilityState={{ expanded: isOpen }}
         >
           <LinearGradient
             colors={mainColor}

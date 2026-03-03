@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-03-03 - [Accessibility attributes on dynamic interactive components]
+**Learning:** Complex animated, interactive components (like Speed Dials) inherently lack semantic context for screen readers. Using `accessibilityRole="button"`, explicit dynamic `accessibilityLabel` (e.g. "Open menu" / "Close menu"), and `accessibilityState={{ expanded: isOpen }}` is critical to convey both identity and state.
+**Action:** Always ensure that composite floating components, menus, and custom touchable areas include explicit ARIA-equivalent props and state descriptions in React Native to remain accessible.

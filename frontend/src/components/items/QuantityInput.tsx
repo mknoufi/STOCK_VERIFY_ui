@@ -139,6 +139,9 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
           onLongPress={() => handleDecrement(longPressStep)}
           delayLongPress={250}
           disabled={disabled || value <= min}
+          accessibilityRole="button"
+          accessibilityLabel={label ? `Decrease ${label}` : "Decrease quantity"}
+          accessibilityState={{ disabled: disabled || value <= min }}
         >
           <Text
             style={[
@@ -172,6 +175,7 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
             keyboardType={Platform.OS === "ios" ? "number-pad" : "numeric"}
             editable={!disabled}
             selectTextOnFocus
+            accessibilityLabel={label ? `Current ${label}` : "Current quantity"}
           />
           {showUOM && uomName && (
             <Text style={styles.uomText}>{uomName}</Text>
@@ -193,6 +197,9 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
           onLongPress={() => handleIncrement(longPressStep)}
           delayLongPress={250}
           disabled={disabled || (max !== undefined && value >= max)}
+          accessibilityRole="button"
+          accessibilityLabel={label ? `Increase ${label}` : "Increase quantity"}
+          accessibilityState={{ disabled: disabled || (max !== undefined && value >= max) }}
         >
           <Text
             style={[
@@ -213,6 +220,9 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
             style={styles.quickButton}
             onPress={() => handleIncrement(amount)}
             disabled={disabled}
+            accessibilityRole="button"
+            accessibilityLabel={label ? `Increase ${label} by ${amount}` : `Increase quantity by ${amount}`}
+            accessibilityState={{ disabled }}
           >
             <Text style={styles.quickButtonText}>+{amount}</Text>
           </TouchableOpacity>

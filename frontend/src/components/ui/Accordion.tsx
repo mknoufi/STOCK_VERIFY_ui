@@ -129,6 +129,10 @@ const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
         style={styles.header}
         onPress={onToggle}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: isExpanded }}
+        accessibilityLabel={item.title}
+        accessibilityHint={isExpanded ? "Double tap to collapse" : "Double tap to expand"}
       >
         {item.icon && (
           <Ionicons

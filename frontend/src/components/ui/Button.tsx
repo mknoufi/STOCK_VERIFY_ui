@@ -22,6 +22,8 @@ interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   testID?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const sizeMap = {
@@ -50,6 +52,8 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   testID,
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const isDisabled = disabled || loading;
   const sizeStyles = sizeMap[size];
@@ -82,6 +86,10 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={isDisabled}
       testID={testID}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+      accessibilityLabel={accessibilityLabel || title}
+      accessibilityHint={accessibilityHint}
     >
       {loading ? (
         <ActivityIndicator color={colors.text} size="small" />

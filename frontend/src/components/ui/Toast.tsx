@@ -106,7 +106,11 @@ export const Toast: React.FC<ToastProps> = ({
   }));
 
   return (
-    <Animated.View style={[styles.container, animatedStyle]}>
+    <Animated.View
+      style={[styles.container, animatedStyle]}
+      accessibilityRole="alert"
+      accessibilityLiveRegion={type === "error" ? "assertive" : "polite"}
+    >
       <View
         style={[
           styles.toast,
@@ -139,6 +143,9 @@ export const Toast: React.FC<ToastProps> = ({
               handleDismiss();
             }}
             style={styles.actionButton}
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+            accessibilityHint="Performs action and dismisses notification"
           >
             <Text
               style={[
@@ -158,6 +165,9 @@ export const Toast: React.FC<ToastProps> = ({
         <TouchableOpacity
           onPress={handleDismiss}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss notification"
+          accessibilityHint="Closes this notification message"
         >
           <Ionicons name="close" size={20} color={config.color} />
         </TouchableOpacity>

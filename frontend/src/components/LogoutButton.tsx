@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../store/authStore";
 import { useRouter } from "expo-router";
@@ -14,12 +8,16 @@ interface LogoutButtonProps {
   showText?: boolean;
   size?: "small" | "medium" | "large";
   variant?: "icon" | "text" | "both";
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const LogoutButton: React.FC<LogoutButtonProps> = ({
   showText = true,
   size = "medium",
   variant = "both",
+  accessibilityLabel = "Log out",
+  accessibilityHint = "Double tap to log out of your account",
 }) => {
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const { logout, user } = useAuthStore();
@@ -50,7 +48,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
             }
           },
         },
-      ],
+      ]
     );
   };
 
@@ -59,7 +57,13 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
 
   if (isLoggingOut) {
     return (
-      <TouchableOpacity style={styles.button} disabled>
+      <TouchableOpacity
+        style={styles.button}
+        disabled
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ busy: true, disabled: true }}
+      >
         <ActivityIndicator size="small" color="#FF5252" />
       </TouchableOpacity>
     );
@@ -71,6 +75,10 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
       onPress={handleLogout}
       activeOpacity={0.7}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ busy: false, disabled: false }}
     >
       {(variant === "icon" || variant === "both") && (
         <Ionicons name="log-out-outline" size={iconSize} color="#FF5252" />

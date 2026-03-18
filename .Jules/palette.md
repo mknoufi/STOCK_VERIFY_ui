@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-03-18 - Missing Accessibility Props on Reusable Action Buttons
+**Learning:** Reusable icon-based action buttons like Logout and Refresh are often missing crucial accessibility properties because they focus purely on visual rendering of an icon. This makes them invisible or unhelpful to screen readers.
+**Action:** Always verify `accessibilityRole="button"`, `accessibilityLabel`, and `accessibilityState={{ busy, disabled }}` are passed to the interactive root element (like `TouchableOpacity`) for custom buttons.

@@ -2,7 +2,6 @@
 // Root Layout for Stock Verify App
 // ==========================================
 
-import "../src/utils/consolePatch";
 import React from "react";
 
 import { Platform, View, Text, ActivityIndicator } from "react-native";

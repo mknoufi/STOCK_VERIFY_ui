@@ -58,6 +58,8 @@ interface RippleButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   hapticFeedback?: "light" | "medium" | "heavy" | "none";
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const variantStyles = {
@@ -82,10 +84,7 @@ const variantStyles = {
     rippleColor: "rgba(255, 255, 255, 0.3)",
   },
   error: {
-    gradient: [
-      auroraTheme.colors.error[500],
-      auroraTheme.colors.error[700],
-    ] as const,
+    gradient: [auroraTheme.colors.error[500], auroraTheme.colors.error[700]] as const,
     textColor: auroraTheme.colors.text.primary,
     rippleColor: "rgba(255, 255, 255, 0.3)",
   },
@@ -146,6 +145,8 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
   style,
   textStyle,
   hapticFeedback = "medium",
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const [buttonLayout, setButtonLayout] = useState({ width: 0, height: 0 });
   const rippleScale = useSharedValue(0);
@@ -169,7 +170,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
     // Calculate max ripple size
     const maxDistance = Math.sqrt(
       Math.pow(Math.max(locationX, buttonLayout.width - locationX), 2) +
-      Math.pow(Math.max(locationY, buttonLayout.height - locationY), 2),
+        Math.pow(Math.max(locationY, buttonLayout.height - locationY), 2)
     );
     const maxScale = (maxDistance * 2) / 10; // 10 is base ripple size
 
@@ -255,11 +256,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
 
       {/* Ripple effect */}
       <Animated.View
-        style={[
-          styles.ripple,
-          { backgroundColor: variantStyle.rippleColor },
-          rippleStyle,
-        ]}
+        style={[styles.ripple, { backgroundColor: variantStyle.rippleColor }, rippleStyle]}
         pointerEvents="none"
       />
     </>
@@ -276,12 +273,20 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
     fullWidth ? styles.fullWidth : {},
     variant === "outline"
       ? {
-        borderWidth: 2,
-        borderColor: auroraTheme.colors.primary[400],
-      }
+          borderWidth: 2,
+          borderColor: auroraTheme.colors.primary[400],
+        }
       : {},
     style ?? {},
   ];
+
+  const a11yProps = {
+    accessibilityRole: "button" as const,
+    accessibilityLabel:
+      accessibilityLabel || label || (typeof children === "string" ? children : undefined),
+    accessibilityHint,
+    accessibilityState: { disabled: disabled || loading, busy: loading },
+  };
 
   if (variant === "ghost" || variant === "outline") {
     return (
@@ -291,6 +296,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
         onLayout={handleLayout}
         disabled={disabled || loading}
         activeOpacity={0.8}
+        {...a11yProps}
       >
         {content}
       </TouchableOpacity>
@@ -304,6 +310,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
       disabled={disabled || loading}
       activeOpacity={0.9}
       style={[fullWidth && styles.fullWidth]}
+      {...a11yProps}
     >
       <LinearGradient
         colors={variantStyle.gradient as readonly [string, string, ...string[]]}

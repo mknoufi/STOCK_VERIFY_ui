@@ -14,11 +14,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, {
-  FadeIn,
-  SlideInDown,
-  SlideOutDown,
-} from "react-native-reanimated";
+import Animated, { FadeIn, SlideInDown, SlideOutDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
@@ -81,7 +77,9 @@ function formatItemAsText(item: ItemShareData, sessionName?: string): string {
     "───────────────────────────",
     item.stock_qty !== undefined ? `System Stock: ${item.stock_qty}` : null,
     item.counted_qty !== undefined ? `Counted Qty: ${item.counted_qty}` : null,
-    item.variance !== undefined ? `Variance: ${item.variance > 0 ? "+" : ""}${item.variance}` : null,
+    item.variance !== undefined
+      ? `Variance: ${item.variance > 0 ? "+" : ""}${item.variance}`
+      : null,
     "",
     "✓ VERIFICATION",
     "───────────────────────────",
@@ -157,6 +155,9 @@ const ShareActionItem: React.FC<ShareActionItemProps> = ({ action, index }) => {
         style={styles.actionItem}
         onPress={handlePress}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={action.label}
+        accessibilityHint={`Double tap to ${action.label.toLowerCase()}`}
       >
         <View style={[styles.actionIcon, { backgroundColor: action.color + "20" }]}>
           <Ionicons name={action.icon as any} size={24} color={action.color} />
@@ -207,7 +208,7 @@ export const ItemShareSheet: React.FC<ItemShareSheetProps> = ({
   const handleExportCSV = async () => {
     try {
       const csv = formatItemAsCSV(item);
-      
+
       if (await Sharing.isAvailableAsync()) {
         // Create a simple text share with CSV content
         await Share.share({
@@ -253,17 +254,8 @@ export const ItemShareSheet: React.FC<ItemShareSheetProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={styles.backdrop}
-        activeOpacity={1}
-        onPress={onClose}
-      >
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
         <Animated.View
           entering={SlideInDown.springify().damping(15)}
           exiting={SlideOutDown}
@@ -281,9 +273,7 @@ export const ItemShareSheet: React.FC<ItemShareSheetProps> = ({
               {/* Header */}
               <View style={styles.header}>
                 <Text style={styles.title}>Share Item</Text>
-                <Text style={styles.subtitle}>
-                  {item.item_name || item.item_code}
-                </Text>
+                <Text style={styles.subtitle}>{item.item_name || item.item_code}</Text>
               </View>
 
               {/* Actions Grid */}
@@ -294,7 +284,13 @@ export const ItemShareSheet: React.FC<ItemShareSheetProps> = ({
               </View>
 
               {/* Cancel Button */}
-              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                accessibilityHint="Closes the share sheet"
+              >
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
             </GlassCard>

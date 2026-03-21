@@ -4,14 +4,7 @@
  * Used across item detail and counting screens
  */
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -122,7 +115,7 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
   const content = (
     <View style={[styles.container, style]}>
       {label && <Text style={styles.label}>{label}</Text>}
-      
+
       <View style={styles.controlsRow}>
         {/* Decrement Button */}
         <TouchableOpacity
@@ -139,15 +132,12 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
           onLongPress={() => handleDecrement(longPressStep)}
           delayLongPress={250}
           disabled={disabled || value <= min}
+          accessibilityRole="button"
+          accessibilityLabel={`Decrease quantity by ${step}`}
+          accessibilityHint={`Long press to decrease by ${longPressStep}`}
+          accessibilityState={{ disabled: disabled || value <= min }}
         >
-          <Text
-            style={[
-              styles.stepButtonText,
-              { fontSize: currentSize.buttonFontSize },
-            ]}
-          >
-            −
-          </Text>
+          <Text style={[styles.stepButtonText, { fontSize: currentSize.buttonFontSize }]}>−</Text>
         </TouchableOpacity>
 
         {/* Input Field */}
@@ -173,9 +163,7 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
             editable={!disabled}
             selectTextOnFocus
           />
-          {showUOM && uomName && (
-            <Text style={styles.uomText}>{uomName}</Text>
-          )}
+          {showUOM && uomName && <Text style={styles.uomText}>{uomName}</Text>}
         </View>
 
         {/* Increment Button */}
@@ -193,15 +181,12 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
           onLongPress={() => handleIncrement(longPressStep)}
           delayLongPress={250}
           disabled={disabled || (max !== undefined && value >= max)}
+          accessibilityRole="button"
+          accessibilityLabel={`Increase quantity by ${step}`}
+          accessibilityHint={`Long press to increase by ${longPressStep}`}
+          accessibilityState={{ disabled: disabled || (max !== undefined && value >= max) }}
         >
-          <Text
-            style={[
-              styles.stepButtonText,
-              { fontSize: currentSize.buttonFontSize },
-            ]}
-          >
-            ＋
-          </Text>
+          <Text style={[styles.stepButtonText, { fontSize: currentSize.buttonFontSize }]}>＋</Text>
         </TouchableOpacity>
       </View>
 
@@ -213,6 +198,9 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
             style={styles.quickButton}
             onPress={() => handleIncrement(amount)}
             disabled={disabled}
+            accessibilityRole="button"
+            accessibilityLabel={`Increase quantity by ${amount}`}
+            accessibilityState={{ disabled }}
           >
             <Text style={styles.quickButtonText}>+{amount}</Text>
           </TouchableOpacity>

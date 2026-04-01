@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-24 - AppHeader Icon-Only Action Buttons Accessibility
+**Learning:** App headers often contain globally relevant icon-only buttons (like Notifications, Settings, Logout) that are skipped or announced poorly by screen readers if accessibility attributes are missing.
+**Action:** Always add `accessibilityRole="button"`, an explicit `accessibilityLabel` (e.g., "Notifications", "Settings"), and a descriptive `accessibilityHint` to `Pressable` and `TouchableOpacity` elements used in navigation headers.

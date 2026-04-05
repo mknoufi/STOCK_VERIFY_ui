@@ -85,6 +85,12 @@ const RadioItem: React.FC<RadioItemProps> = ({
       onPress={onSelect}
       disabled={disabled}
       activeOpacity={0.7}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selected, disabled }}
+      accessibilityLabel={option.label || "Radio button"}
+      accessibilityHint={
+        option.description ? option.description : "Select option"
+      }
     >
       <View
         style={[

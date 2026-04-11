@@ -3,13 +3,7 @@
  */
 
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  StatusBar,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
 
@@ -21,6 +15,8 @@ interface HeaderProps {
   onRightPress?: () => void;
   subtitle?: string;
   showBack?: boolean;
+  leftAccessibilityLabel?: string;
+  rightAccessibilityLabel?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,6 +27,8 @@ export const Header: React.FC<HeaderProps> = ({
   onRightPress,
   subtitle,
   showBack = false,
+  leftAccessibilityLabel = "Go back",
+  rightAccessibilityLabel = "Action",
 }) => {
   const theme = useTheme();
 
@@ -40,21 +38,17 @@ export const Header: React.FC<HeaderProps> = ({
         barStyle={theme.isDark ? "light-content" : "dark-content"}
         backgroundColor={theme.colors.background}
       />
-      <View
-        style={[styles.container, { backgroundColor: theme.colors.primary }]}
-      >
+      <View style={[styles.container, { backgroundColor: theme.colors.primary }]}>
         <View style={styles.leftContainer}>
           {(leftIcon || showBack) && (
             <TouchableOpacity
               style={styles.iconButton}
               onPress={onLeftPress}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={leftAccessibilityLabel}
             >
-              <Ionicons
-                name={leftIcon || "arrow-back"}
-                size={24}
-                color="#FFFFFF"
-              />
+              <Ionicons name={leftIcon || "arrow-back"} size={24} color="#FFFFFF" />
             </TouchableOpacity>
           )}
         </View>
@@ -70,6 +64,8 @@ export const Header: React.FC<HeaderProps> = ({
               style={styles.iconButton}
               onPress={onRightPress}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={rightAccessibilityLabel}
             >
               <Ionicons name={rightIcon} size={24} color="#FFFFFF" />
             </TouchableOpacity>

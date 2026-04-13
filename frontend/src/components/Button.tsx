@@ -10,6 +10,7 @@ import {
   TextStyle,
   Platform,
   TouchableOpacity,
+  AccessibilityRole,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -21,8 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../hooks/useTheme";
 import { flags } from "../constants/flags";
 
-const AnimatedTouchableOpacity =
-  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface ButtonProps {
   title: string;
@@ -36,6 +36,36 @@ interface ButtonProps {
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityRole?:
+    | "button"
+    | "link"
+    | "none"
+    | "search"
+    | "image"
+    | "keyboardkey"
+    | "text"
+    | "adjustable"
+    | "imagebutton"
+    | "header"
+    | "summary"
+    | "alert"
+    | "checkbox"
+    | "combobox"
+    | "menu"
+    | "menubar"
+    | "menuitem"
+    | "progressbar"
+    | "radio"
+    | "radiogroup"
+    | "scrollbar"
+    | "spinbutton"
+    | "switch"
+    | "tab"
+    | "tablist"
+    | "timer"
+    | "toolbar";
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -50,6 +80,9 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   style,
   textStyle,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityRole,
 }) => {
   const theme = useTheme();
 
@@ -220,6 +253,10 @@ export const Button: React.FC<ButtonProps> = ({
       onPressOut={handlePressOut}
       disabled={disabled || loading}
       activeOpacity={flags.enableAnimations ? 1 : 0.7}
+      accessibilityRole={accessibilityRole || "button"}
+      accessibilityLabel={accessibilityLabel || title}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
       // Web-specific props as fallback
       {...(Platform.OS === "web"
         ? {
@@ -253,11 +290,7 @@ export const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={
-            variant === "outline" || variant === "text"
-              ? theme.colors.primary
-              : "#FFFFFF"
-          }
+          color={variant === "outline" || variant === "text" ? theme.colors.primary : "#FFFFFF"}
         />
       ) : (
         <>

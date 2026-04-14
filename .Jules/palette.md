@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-02-28 - Expandable Section Accessibility
+**Learning:** Custom expandable components built with generic containers like `TouchableOpacity` don't announce their state changes to screen readers by default. This makes it impossible for visually impaired users to know if a section is open or closed.
+**Action:** Always verify custom expandable sections explicitly include `accessibilityRole="button"`, an `accessibilityState={{ expanded: boolean }}`, and descriptive `accessibilityLabel` and `accessibilityHint` props.

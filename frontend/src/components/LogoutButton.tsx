@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../store/authStore";
 import { useRouter } from "expo-router";
@@ -50,7 +44,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
             }
           },
         },
-      ],
+      ]
     );
   };
 
@@ -59,7 +53,13 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
 
   if (isLoggingOut) {
     return (
-      <TouchableOpacity style={styles.button} disabled>
+      <TouchableOpacity
+        style={styles.button}
+        disabled
+        accessibilityRole="button"
+        accessibilityLabel="Logging out"
+        accessibilityState={{ disabled: true, busy: true }}
+      >
         <ActivityIndicator size="small" color="#FF5252" />
       </TouchableOpacity>
     );
@@ -71,6 +71,9 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
       onPress={handleLogout}
       activeOpacity={0.7}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      accessibilityRole="button"
+      accessibilityLabel="Logout"
+      accessibilityHint="Logs you out of your account"
     >
       {(variant === "icon" || variant === "both") && (
         <Ionicons name="log-out-outline" size={iconSize} color="#FF5252" />

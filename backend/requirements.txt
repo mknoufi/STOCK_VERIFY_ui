@@ -63,4 +63,4 @@ setuptools>=78.1.1
 pytest-cov==7.0.0
 
 # AI Agent Memory Layer
-memvid-sdk>=2.0.0
+memvid-sdk>=2.0.159

@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-06-12 - Search Component Accessibility
+**Learning:** Text input fields used for searching, and their internal clear buttons, often lack proper accessibility context. Without a specific `accessibilityRole="search"`, users might not quickly identify the input's purpose. Furthermore, icon-only clear buttons inside the search input are completely inaccessible without `accessibilityRole="button"`, an `accessibilityLabel`, and an `accessibilityHint`.
+**Action:** Always add `accessibilityRole="search"` and an `accessibilityLabel` to search `TextInput` components. For internal clear buttons, ensure they have `accessibilityRole="button"`, a clear `accessibilityLabel` (e.g., "Clear search text"), and an `accessibilityHint`.

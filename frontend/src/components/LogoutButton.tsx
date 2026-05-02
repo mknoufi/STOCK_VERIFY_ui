@@ -59,7 +59,14 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
 
   if (isLoggingOut) {
     return (
-      <TouchableOpacity style={styles.button} disabled>
+      <TouchableOpacity
+        style={styles.button}
+        disabled
+        accessibilityRole="button"
+        accessibilityLabel="Logout"
+        accessibilityHint="Logs you out of your account"
+        accessibilityState={{ disabled: true, busy: true }}
+      >
         <ActivityIndicator size="small" color="#FF5252" />
       </TouchableOpacity>
     );
@@ -71,6 +78,10 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
       onPress={handleLogout}
       activeOpacity={0.7}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      accessibilityRole="button"
+      accessibilityLabel="Logout"
+      accessibilityHint="Logs you out of your account"
+      accessibilityState={{ disabled: false, busy: false }}
     >
       {(variant === "icon" || variant === "both") && (
         <Ionicons name="log-out-outline" size={iconSize} color="#FF5252" />

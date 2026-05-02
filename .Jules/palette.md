@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-24 - Action Button and Async Operations Accessibility
+**Learning:** Crucial application action buttons, like Logout or Delete, that support multiple configurations (icon-only, text-only, or both) and async loading states require comprehensive accessibility support. If an icon-only variant omits `accessibilityLabel`, it becomes an anonymous button to screen readers. Furthermore, when these buttons show a loading spinner, replacing their content without managing `accessibilityState={{ busy: true, disabled: true }}` confuses assistive technology.
+**Action:** Consistently enforce that all primary action buttons, regardless of visual configuration (especially icon-only variants), explicitly define `accessibilityRole="button"`, a descriptive `accessibilityLabel`, a helpful `accessibilityHint`, and dynamically bind `accessibilityState` to accurately reflect loading and disabled states.

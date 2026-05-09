@@ -111,11 +111,21 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
           autoFocus={autoFocus}
           returnKeyType="search"
           onSubmitEditing={() => triggerHaptic('impactLight')}
+          accessibilityRole="search"
+          accessibilityLabel={placeholder || 'Search items...'}
+          accessibilityHint="Enter text to search"
         />
         {loading ? (
           <ActivityIndicator size="small" color={colors.accent} style={styles.icon} />
         ) : query.length > 0 ? (
-          <TouchableOpacity onPress={handleClear} style={styles.icon} onPressIn={handlePress}>
+          <TouchableOpacity
+            onPress={handleClear}
+            style={styles.icon}
+            onPressIn={handlePress}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+            accessibilityHint="Clears the search input"
+          >
             <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
               <Ionicons name="close-circle" size={22} color={colors.textSecondary} />
             </Animated.View>

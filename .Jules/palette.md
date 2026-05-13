@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-06-10 - Custom Checkbox and Radio Component Accessibility
+**Learning:** Custom `Checkbox` and `Radio` components built using raw `TouchableOpacity` fail to announce themselves correctly to screen readers, missing their structural role and dynamic state (checked vs unchecked).
+**Action:** Always add `accessibilityRole="checkbox"` (or `"radio"`), `accessibilityState={{ checked, disabled }}`, and ensure an `accessibilityLabel` is provided (using the visual label as a fallback) to ensure screen reader users can interact with custom form controls.

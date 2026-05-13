@@ -7,11 +7,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import {
   colorPalette,
   spacing,
@@ -27,6 +23,8 @@ interface CheckboxProps {
   description?: string;
   disabled?: boolean;
   indeterminate?: boolean;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const Checkbox: React.FC<CheckboxProps> = ({
@@ -36,6 +34,8 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   description,
   disabled = false,
   indeterminate = false,
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const scale = useSharedValue(checked || indeterminate ? 1 : 0);
 
@@ -62,6 +62,10 @@ export const Checkbox: React.FC<CheckboxProps> = ({
       onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.7}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: checked || indeterminate, disabled }}
+      accessibilityLabel={accessibilityLabel || label || "Checkbox"}
+      accessibilityHint={accessibilityHint}
     >
       <View
         style={[
@@ -81,11 +85,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
 
       {(label || description) && (
         <View style={styles.labelContainer}>
-          {label && (
-            <Text style={[styles.label, disabled && styles.labelDisabled]}>
-              {label}
-            </Text>
-          )}
+          {label && <Text style={[styles.label, disabled && styles.labelDisabled]}>{label}</Text>}
 
           {description && <Text style={styles.description}>{description}</Text>}
         </View>

@@ -127,6 +127,13 @@ export const Input = forwardRef<TextInput, InputProps>(
             editable={editable}
             placeholderTextColor={theme.colors.muted}
             {...textInputProps}
+            accessibilityLabel={textInputProps.accessibilityLabel || label}
+            accessibilityState={{
+              disabled: !editable,
+              ...(textInputProps.accessibilityState || {})
+            }}
+            aria-invalid={hasError}
+            aria-errormessage={error}
           />
           {rightIcon}
         </View>

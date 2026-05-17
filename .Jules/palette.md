@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-06-15 - Auto-Mapping Form Accessibility Props
+**Learning:** In reusable form components (like Input), developers often pass visual `label` and `error` props but forget to explicitly pass their corresponding accessibility attributes, leading to unannounced fields or errors for screen reader users.
+**Action:** Automatically map internal visual states (like `label` and `error` text) to their corresponding native accessibility attributes (`accessibilityLabel`, `accessibilityInvalid`, `accessibilityErrorMessage`) within the wrapper component by default to ensure accessibility is guaranteed regardless of the developer's implementation.

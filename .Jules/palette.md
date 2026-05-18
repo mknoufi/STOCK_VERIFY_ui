@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-28 - Icon-Only Button Accessibility in Premium Headers
+**Learning:** Icon-only action buttons in custom header components (like `PremiumHeader`) are inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function (e.g., Logout, Menu, Custom Action).
+**Action:** Always add `accessibilityRole="button"`, `accessibilityLabel`, and `accessibilityHint` to icon-only `TouchableOpacity` elements in headers. Props interfaces should be extended to accept these accessibility props for dynamic actions.

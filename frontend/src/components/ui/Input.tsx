@@ -126,6 +126,9 @@ export const Input = forwardRef<TextInput, InputProps>(
             ]}
             editable={editable}
             placeholderTextColor={theme.colors.muted}
+            accessibilityLabel={label}
+            aria-invalid={hasError}
+            aria-errormessage={error}
             {...textInputProps}
           />
           {rightIcon}

@@ -15,24 +15,11 @@ import {
   UIManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
-import {
-  colorPalette,
-  spacing,
-  typography,
-  borderRadius,
-  shadows,
-} from "@/theme/designTokens";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import { colorPalette, spacing, typography, borderRadius, shadows } from "@/theme/designTokens";
 
 // Enable LayoutAnimation on Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -56,9 +43,7 @@ export const Accordion: React.FC<AccordionProps> = ({
   defaultExpanded = [],
   onItemToggle,
 }) => {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(
-    new Set(defaultExpanded),
-  );
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(defaultExpanded));
 
   const toggleItem = (id: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -129,6 +114,10 @@ const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
         style={styles.header}
         onPress={onToggle}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: isExpanded }}
+        accessibilityLabel={item.title}
+        accessibilityHint="Toggles the section"
       >
         {item.icon && (
           <Ionicons
@@ -142,11 +131,7 @@ const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
         <Text style={styles.title}>{item.title}</Text>
 
         <Animated.View style={iconStyle}>
-          <Ionicons
-            name="chevron-down"
-            size={20}
-            color={colorPalette.neutral[600]}
-          />
+          <Ionicons name="chevron-down" size={20} color={colorPalette.neutral[600]} />
         </Animated.View>
       </TouchableOpacity>
 

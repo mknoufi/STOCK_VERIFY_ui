@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-28 - Config-Driven UI Accessibility
+**Learning:** Config-driven UI components (like header actions, right/left accessories) implemented via TypeScript interfaces often omit accessibility props, making it impossible for consumers to provide context for screen readers.
+**Action:** Always ensure configuration objects for interactive elements (like `rightAction`) include optional `accessibilityLabel`, `accessibilityHint`, and `accessibilityRole` properties to allow consumers to supply vital context.

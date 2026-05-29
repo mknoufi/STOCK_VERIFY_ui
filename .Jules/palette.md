@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-02-28 - Transient Overlay (Toast) Accessibility
+**Learning:** Transient overlays like Toasts are often missed by screen readers unless properly marked as alerts. Furthermore, adding `accessible={true}` to the main Toast container groups all children into a single non-interactive element, hiding any interactive child elements (like "Dismiss" or action buttons) from the screen reader's focus tree.
+**Action:** Use `accessibilityRole="alert"` and `accessibilityLiveRegion` (e.g., "assertive" for errors, "polite" for info) on the main Toast container, but DO NOT use `accessible={true}`. Ensure all nested interactive child elements (buttons) have their own explicit `accessibilityRole="button"`, `accessibilityLabel`, and `accessibilityHint`.

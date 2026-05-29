@@ -14,13 +14,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from "react-native-reanimated";
-import {
-  colorPalette,
-  spacing,
-  typography,
-  borderRadius,
-  shadows,
-} from "@/theme/designTokens";
+import { colorPalette, spacing, typography, borderRadius, shadows } from "@/theme/designTokens";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
@@ -108,6 +102,8 @@ export const Toast: React.FC<ToastProps> = ({
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
       <View
+        accessibilityRole="alert"
+        accessibilityLiveRegion={type === "error" ? "assertive" : "polite"}
         style={[
           styles.toast,
           {
@@ -134,6 +130,7 @@ export const Toast: React.FC<ToastProps> = ({
 
         {action && (
           <TouchableOpacity
+            accessibilityRole="button"
             onPress={() => {
               action.onPress();
               handleDismiss();
@@ -156,6 +153,9 @@ export const Toast: React.FC<ToastProps> = ({
         )}
 
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss message"
+          accessibilityHint="Closes this notification"
           onPress={handleDismiss}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >

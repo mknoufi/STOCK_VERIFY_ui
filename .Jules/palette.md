@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-03-05 - Custom Button Component Accessibility
+**Learning:** Custom base components like `Button` or `RippleButton` built with `TouchableOpacity` do not automatically provide basic button roles or states to screen readers. If these foundation components omit `accessibilityRole="button"` and `accessibilityState`, every instance across the app becomes an unlabeled touch target without state context.
+**Action:** Always ensure foundational UI elements explicitly accept and pass down `accessibilityRole`, `accessibilityLabel`, `accessibilityHint`, and dynamically compute `accessibilityState` (like `disabled` and `busy` for loading states) to the underlying React Native primitives.

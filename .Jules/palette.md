@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-06-11 - Prevent Button Width Collapse on Loading
+**Learning:** In React Native `Button` components using flexbox, conditionally replacing the text content with an `ActivityIndicator` (loading spinner) causes the button's overall width to shrink/collapse because the inner content width changes. This causes an abrupt UI jump.
+**Action:** Always maintain the text element in the DOM (setting `opacity: 0` during loading) and absolutely position the `ActivityIndicator` over it. This ensures the button reserves the exact same layout space while loading as it does when idle.

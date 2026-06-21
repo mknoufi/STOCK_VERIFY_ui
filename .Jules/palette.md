@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-06-25 - Custom Button Layout Shifts & Accessibility
+**Learning:** Replacing button text with an `ActivityIndicator` during a loading state causes the button to collapse its width if not explicitly set. Additionally, custom `TouchableOpacity` buttons like `RippleButton` lose native accessibility features.
+**Action:** Always maintain the text element with `opacity: 0` and absolutely position the loading indicator to reserve layout space. Ensure custom buttons expose and dynamically pass down `accessibilityRole`, `accessibilityLabel`, and `accessibilityState` (including `busy: loading`).

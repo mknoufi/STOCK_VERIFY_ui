@@ -58,6 +58,8 @@ interface RippleButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   hapticFeedback?: "light" | "medium" | "heavy" | "none";
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const variantStyles = {
@@ -82,10 +84,7 @@ const variantStyles = {
     rippleColor: "rgba(255, 255, 255, 0.3)",
   },
   error: {
-    gradient: [
-      auroraTheme.colors.error[500],
-      auroraTheme.colors.error[700],
-    ] as const,
+    gradient: [auroraTheme.colors.error[500], auroraTheme.colors.error[700]] as const,
     textColor: auroraTheme.colors.text.primary,
     rippleColor: "rgba(255, 255, 255, 0.3)",
   },
@@ -146,6 +145,8 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
   style,
   textStyle,
   hapticFeedback = "medium",
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const [buttonLayout, setButtonLayout] = useState({ width: 0, height: 0 });
   const rippleScale = useSharedValue(0);
@@ -169,7 +170,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
     // Calculate max ripple size
     const maxDistance = Math.sqrt(
       Math.pow(Math.max(locationX, buttonLayout.width - locationX), 2) +
-      Math.pow(Math.max(locationY, buttonLayout.height - locationY), 2),
+        Math.pow(Math.max(locationY, buttonLayout.height - locationY), 2)
     );
     const maxScale = (maxDistance * 2) / 10; // 10 is base ripple size
 
@@ -215,51 +216,49 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
 
   const content = (
     <>
-      {loading ? (
-        <ActivityIndicator size="small" color={variantStyle.textColor} />
-      ) : (
-        <View style={styles.contentContainer}>
-          {icon && iconPosition === "left" && (
-            <Ionicons
-              name={icon}
-              size={sizeStyle.iconSize}
-              color={variantStyle.textColor}
-              style={styles.iconLeft}
-            />
-          )}
-          {(label || children) && (
-            <Text
-              style={[
-                styles.label,
-                {
-                  fontSize: sizeStyle.fontSize,
-                  color: variantStyle.textColor,
-                  fontFamily: auroraTheme.typography.fontFamily.label,
-                },
-                textStyle,
-              ]}
-            >
-              {label || children}
-            </Text>
-          )}
-          {icon && iconPosition === "right" && (
-            <Ionicons
-              name={icon}
-              size={sizeStyle.iconSize}
-              color={variantStyle.textColor}
-              style={styles.iconRight}
-            />
-          )}
+      <View style={[styles.contentContainer, loading && { opacity: 0 }]}>
+        {icon && iconPosition === "left" && (
+          <Ionicons
+            name={icon}
+            size={sizeStyle.iconSize}
+            color={variantStyle.textColor}
+            style={styles.iconLeft}
+          />
+        )}
+        {(label || children) && (
+          <Text
+            style={[
+              styles.label,
+              {
+                fontSize: sizeStyle.fontSize,
+                color: variantStyle.textColor,
+                fontFamily: auroraTheme.typography.fontFamily.label,
+              },
+              textStyle,
+            ]}
+          >
+            {label || children}
+          </Text>
+        )}
+        {icon && iconPosition === "right" && (
+          <Ionicons
+            name={icon}
+            size={sizeStyle.iconSize}
+            color={variantStyle.textColor}
+            style={styles.iconRight}
+          />
+        )}
+      </View>
+
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={variantStyle.textColor} />
         </View>
       )}
 
       {/* Ripple effect */}
       <Animated.View
-        style={[
-          styles.ripple,
-          { backgroundColor: variantStyle.rippleColor },
-          rippleStyle,
-        ]}
+        style={[styles.ripple, { backgroundColor: variantStyle.rippleColor }, rippleStyle]}
         pointerEvents="none"
       />
     </>
@@ -276,9 +275,9 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
     fullWidth ? styles.fullWidth : {},
     variant === "outline"
       ? {
-        borderWidth: 2,
-        borderColor: auroraTheme.colors.primary[400],
-      }
+          borderWidth: 2,
+          borderColor: auroraTheme.colors.primary[400],
+        }
       : {},
     style ?? {},
   ];
@@ -291,6 +290,10 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
         onLayout={handleLayout}
         disabled={disabled || loading}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel || label}
+        accessibilityHint={accessibilityHint}
+        accessibilityState={{ disabled: disabled || loading, busy: loading }}
       >
         {content}
       </TouchableOpacity>
@@ -304,6 +307,10 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
       disabled={disabled || loading}
       activeOpacity={0.9}
       style={[fullWidth && styles.fullWidth]}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel || label}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
       <LinearGradient
         colors={variantStyle.gradient as readonly [string, string, ...string[]]}
@@ -343,6 +350,11 @@ const styles = StyleSheet.create({
   },
   iconRight: {
     marginLeft: auroraTheme.spacing.sm,
+  },
+  loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
   },
   ripple: {
     position: "absolute",

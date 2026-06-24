@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-02-28 - Dynamic Button Layout Shifts during Async Tasks
+**Learning:** Conditionally rendering a spinner instead of button content during loading states causes the button to collapse or shift in width, which creates an unpleasant UI jank for the user and makes the interface feel unstable.
+**Action:** When a dynamic button enters a loading state, instead of removing its text/icon content, maintain it in the DOM with `opacity: 0` to reserve its layout space, and overlay the loading spinner using `position: 'absolute'`. This ensures a seamless, jank-free transition.

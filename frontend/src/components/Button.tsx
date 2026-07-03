@@ -5,6 +5,7 @@
 import React, { useRef, useEffect } from "react";
 import {
   Text,
+  View,
   ActivityIndicator,
   ViewStyle,
   TextStyle,
@@ -21,8 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../hooks/useTheme";
 import { flags } from "../constants/flags";
 
-const AnimatedTouchableOpacity =
-  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface ButtonProps {
   title: string;
@@ -36,6 +36,9 @@ interface ButtonProps {
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityRole?: "button";
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -50,6 +53,9 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   style,
   textStyle,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityRole = "button",
 }) => {
   const theme = useTheme();
 
@@ -220,6 +226,10 @@ export const Button: React.FC<ButtonProps> = ({
       onPressOut={handlePressOut}
       disabled={disabled || loading}
       activeOpacity={flags.enableAnimations ? 1 : 0.7}
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={accessibilityLabel || title}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
       // Web-specific props as fallback
       {...(Platform.OS === "web"
         ? {
@@ -250,33 +260,42 @@ export const Button: React.FC<ButtonProps> = ({
           }
         : {})}
     >
-      {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={
-            variant === "outline" || variant === "text"
-              ? theme.colors.primary
-              : "#FFFFFF"
-          }
-        />
-      ) : (
-        <>
-          {icon && iconPosition === "left" && (
-            <Ionicons
-              name={icon}
-              size={size === "small" ? 16 : size === "medium" ? 20 : 24}
-              color={getIconColor()}
-            />
-          )}
-          <Text style={[getTextStyle(), textStyle]}>{title}</Text>
-          {icon && iconPosition === "right" && (
-            <Ionicons
-              name={icon}
-              size={size === "small" ? 16 : size === "medium" ? 20 : 24}
-              color={getIconColor()}
-            />
-          )}
-        </>
+      <View
+        style={{ opacity: loading ? 0 : 1, flexDirection: "row", alignItems: "center", gap: 8 }}
+      >
+        {icon && iconPosition === "left" && (
+          <Ionicons
+            name={icon}
+            size={size === "small" ? 16 : size === "medium" ? 20 : 24}
+            color={getIconColor()}
+          />
+        )}
+        <Text style={[getTextStyle(), textStyle]}>{title}</Text>
+        {icon && iconPosition === "right" && (
+          <Ionicons
+            name={icon}
+            size={size === "small" ? 16 : size === "medium" ? 20 : 24}
+            color={getIconColor()}
+          />
+        )}
+      </View>
+      {loading && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator
+            size="small"
+            color={variant === "outline" || variant === "text" ? theme.colors.primary : "#FFFFFF"}
+          />
+        </View>
       )}
     </AnimatedTouchableOpacity>
   );

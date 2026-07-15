@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { TouchableOpacity, StyleSheet, ActivityIndicator, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface RefreshButtonProps {
@@ -7,6 +7,8 @@ interface RefreshButtonProps {
   loading?: boolean;
   size?: number;
   color?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const RefreshButton: React.FC<RefreshButtonProps> = ({
@@ -14,6 +16,8 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
   loading = false,
   size = 24,
   color = "#4CAF50",
+  accessibilityLabel = "Refresh",
+  accessibilityHint = "Refreshes the current content",
 }) => {
   return (
     <TouchableOpacity
@@ -21,12 +25,22 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
       onPress={onRefresh}
       disabled={loading}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ busy: loading, disabled: loading }}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={color} />
-      ) : (
-        <Ionicons name="refresh-outline" size={size} color={color} />
-      )}
+      <View style={styles.iconContainer}>
+        <Ionicons
+          name="refresh-outline"
+          size={size}
+          color={color}
+          style={{ opacity: loading ? 0 : 1 }}
+        />
+        {loading && (
+          <ActivityIndicator size="small" color={color} style={StyleSheet.absoluteFill} />
+        )}
+      </View>
     </TouchableOpacity>
   );
 };
@@ -35,6 +49,10 @@ const styles = StyleSheet.create({
   button: {
     padding: 8,
     borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconContainer: {
     alignItems: "center",
     justifyContent: "center",
   },

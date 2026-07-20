@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../store/authStore";
 import { useRouter } from "expo-router";
@@ -50,20 +44,12 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
             }
           },
         },
-      ],
+      ]
     );
   };
 
   const iconSize = size === "small" ? 20 : size === "large" ? 28 : 24;
   const fontSize = size === "small" ? 14 : size === "large" ? 18 : 16;
-
-  if (isLoggingOut) {
-    return (
-      <TouchableOpacity style={styles.button} disabled>
-        <ActivityIndicator size="small" color="#FF5252" />
-      </TouchableOpacity>
-    );
-  }
 
   return (
     <TouchableOpacity
@@ -71,12 +57,22 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
       onPress={handleLogout}
       activeOpacity={0.7}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      disabled={isLoggingOut}
+      accessibilityRole="button"
+      accessibilityLabel="Logout"
+      accessibilityHint="Logs you out of your account"
+      accessibilityState={{ disabled: isLoggingOut, busy: isLoggingOut }}
     >
-      {(variant === "icon" || variant === "both") && (
-        <Ionicons name="log-out-outline" size={iconSize} color="#FF5252" />
-      )}
-      {(variant === "text" || variant === "both") && showText && (
-        <Text style={[styles.buttonText, { fontSize }]}>Logout</Text>
+      <View style={[styles.contentContainer, { opacity: isLoggingOut ? 0 : 1 }]}>
+        {(variant === "icon" || variant === "both") && (
+          <Ionicons name="log-out-outline" size={iconSize} color="#FF5252" />
+        )}
+        {(variant === "text" || variant === "both") && showText && (
+          <Text style={[styles.buttonText, { fontSize }]}>Logout</Text>
+        )}
+      </View>
+      {isLoggingOut && (
+        <ActivityIndicator style={styles.loadingIndicator} size="small" color="#FF5252" />
       )}
     </TouchableOpacity>
   );
@@ -84,13 +80,21 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     padding: 12,
     borderRadius: 8,
     minWidth: 44,
     minHeight: 44,
+  },
+  contentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  loadingIndicator: {
+    position: "absolute",
   },
   buttonicon: {
     padding: 10,
@@ -107,7 +111,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     backgroundColor: "#FFEBEE",
-    gap: 8,
   },
   buttonText: {
     color: "#FF5252",

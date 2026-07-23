@@ -21,6 +21,10 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
       onPress={onRefresh}
       disabled={loading}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel="Refresh"
+      accessibilityHint="Refreshes the current content"
+      accessibilityState={{ disabled: loading, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator size="small" color={color} />

@@ -9,3 +9,6 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+## 2024-05-19 - Transient Overlay Accessibility Grouping
+**Learning:** Adding `accessible={true}` to a parent container of a transient overlay (like a Toast or Modal) in React Native forces the screen reader to group all children together into a single, non-interactive blob. This effectively hides internal interactive elements (like Action or Dismiss buttons) from the focus tree, preventing users from interacting with them. Transient overlays must avoid parent grouping and instead rely on `accessibilityRole="alert"` and `accessibilityLiveRegion` to announce themselves natively.
+**Action:** Always avoid `accessible={true}` on outer wrapper views of overlays. Apply `accessibilityRole="alert"` to the main container and ensure inner buttons have explicit `accessibilityRole="button"`, `accessibilityLabel`, and `accessibilityHint`.

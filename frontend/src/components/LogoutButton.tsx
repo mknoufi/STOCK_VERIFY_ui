@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../store/authStore";
 import { useRouter } from "expo-router";
@@ -50,34 +44,43 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
             }
           },
         },
-      ],
+      ]
     );
   };
 
   const iconSize = size === "small" ? 20 : size === "large" ? 28 : 24;
   const fontSize = size === "small" ? 14 : size === "large" ? 18 : 16;
 
-  if (isLoggingOut) {
-    return (
-      <TouchableOpacity style={styles.button} disabled>
-        <ActivityIndicator size="small" color="#FF5252" />
-      </TouchableOpacity>
-    );
-  }
-
   return (
     <TouchableOpacity
       style={[styles.button, styles[`button${variant}`]]}
       onPress={handleLogout}
       activeOpacity={0.7}
+      disabled={isLoggingOut}
+      accessibilityRole="button"
+      accessibilityLabel="Logout"
+      accessibilityHint="Logs you out of your account"
+      accessibilityState={{ disabled: isLoggingOut, busy: isLoggingOut }}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >
-      {(variant === "icon" || variant === "both") && (
-        <Ionicons name="log-out-outline" size={iconSize} color="#FF5252" />
+      {isLoggingOut && (
+        <ActivityIndicator size="small" color="#FF5252" style={StyleSheet.absoluteFill} />
       )}
-      {(variant === "text" || variant === "both") && showText && (
-        <Text style={[styles.buttonText, { fontSize }]}>Logout</Text>
-      )}
+      <React.Fragment>
+        {(variant === "icon" || variant === "both") && (
+          <Ionicons
+            name="log-out-outline"
+            size={iconSize}
+            color="#FF5252"
+            style={{ opacity: isLoggingOut ? 0 : 1 }}
+          />
+        )}
+        {(variant === "text" || variant === "both") && showText && (
+          <Text style={[styles.buttonText, { fontSize, opacity: isLoggingOut ? 0 : 1 }]}>
+            Logout
+          </Text>
+        )}
+      </React.Fragment>
     </TouchableOpacity>
   );
 };

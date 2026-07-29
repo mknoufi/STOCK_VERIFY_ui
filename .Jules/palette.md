@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-29 - Button Loading State Accessibility
+ **Learning:** In React Native, conditionally rendering a loading spinner instead of the button text removes the button from the accessibility tree, which can cause screen readers to lose focus unexpectedly.
+ **Action:** Always maintain the button's internal structure during loading states (e.g., using opacity to hide text while rendering an absolutely positioned spinner) and use accessibilityState={{ busy: true }} to communicate the loading state to screen readers.

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from "react";
 import {
   TouchableOpacity,
   Text,
@@ -7,21 +7,24 @@ import {
   TextStyle,
   GestureResponderEvent,
   ActivityIndicator,
-} from 'react-native';
+  View,
+} from "react-native";
 
 interface ButtonProps {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "primary" | "secondary" | "danger" | "ghost";
+  size?: "small" | "medium" | "large";
   disabled?: boolean;
   loading?: boolean;
   icon?: ReactNode;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   fullWidth?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   testID?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const sizeMap = {
@@ -31,49 +34,53 @@ const sizeMap = {
 } as const;
 
 const variantColors = {
-  primary: { bg: '#007AFF', text: '#FFFFFF' },
-  secondary: { bg: '#E5E5E5', text: '#000000' },
-  danger: { bg: '#FF3B30', text: '#FFFFFF' },
-  ghost: { bg: 'transparent', text: '#007AFF' },
+  primary: { bg: "#007AFF", text: "#FFFFFF" },
+  secondary: { bg: "#E5E5E5", text: "#000000" },
+  danger: { bg: "#FF3B30", text: "#FFFFFF" },
+  ghost: { bg: "transparent", text: "#007AFF" },
 } as const;
 
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'medium',
+  variant = "primary",
+  size = "medium",
   disabled = false,
   loading = false,
   icon,
-  iconPosition = 'left',
+  iconPosition = "left",
   fullWidth = false,
   style,
   textStyle,
   testID,
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const isDisabled = disabled || loading;
   const sizeStyles = sizeMap[size];
   const colors = variantColors[variant];
 
   const buttonStyles: ViewStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.bg,
     paddingVertical: sizeStyles.paddingVertical,
     paddingHorizontal: sizeStyles.paddingHorizontal,
     borderRadius: 8,
     opacity: isDisabled ? 0.5 : 1,
-    ...(fullWidth && { width: '100%' }),
-    ...(variant === 'ghost' && { borderWidth: 1, borderColor: colors.text }),
+    ...(fullWidth && { width: "100%" }),
+    ...(variant === "ghost" && { borderWidth: 1, borderColor: colors.text }),
   };
 
   const textStyles: TextStyle = {
     color: colors.text,
     fontSize: sizeStyles.fontSize,
-    fontWeight: '600',
+    fontWeight: "600",
     marginHorizontal: icon ? 4 : 0,
   };
+
+  const contentOpacity = loading ? 0 : 1;
 
   return (
     <TouchableOpacity
@@ -82,15 +89,20 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={isDisabled}
       testID={testID}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel || title}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
-      {loading ? (
-        <ActivityIndicator color={colors.text} size="small" />
-      ) : (
-        <>
-          {icon && iconPosition === 'left' && icon}
-          <Text style={[textStyles, textStyle]}>{title}</Text>
-          {icon && iconPosition === 'right' && icon}
-        </>
+      <View style={{ flexDirection: "row", alignItems: "center", opacity: contentOpacity }}>
+        {icon && iconPosition === "left" && icon}
+        <Text style={[textStyles, textStyle]}>{title}</Text>
+        {icon && iconPosition === "right" && icon}
+      </View>
+      {loading && (
+        <View style={{ position: "absolute" }}>
+          <ActivityIndicator color={colors.text} size="small" />
+        </View>
       )}
     </TouchableOpacity>
   );

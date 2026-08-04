@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-08-04 - Input Component Accessibility
+**Learning:** When creating reusable form field components in React Native, built-in props like `label` and `error` must be explicitly linked to their corresponding accessibility properties (`accessibilityLabel`, `aria-errormessage`, `aria-invalid`) on the underlying component. In React Native 0.72+, using ARIA aliases (`aria-invalid`, `aria-errormessage`) successfully maps accessibility states while passing TypeScript checks, unlike legacy `accessibilityErrorMessage` which may fail type validation.
+**Action:** Automatically map `label`, `error`, and required states to standard accessibility/ARIA props within the custom `Input` component to ensure all dependent forms are accessible by default.

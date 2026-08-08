@@ -9,3 +9,6 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+## 2024-05-18 - Proper ARIA Error Message Binding in React Native Forms
+**Learning:** When using `aria-errormessage` on a `TextInput` component, the screen reader expects the ID to point to the `nativeID` of the `<Text>` component displaying the error. Dynamically generating this ID during render using `Math.random()` causes unnecessary re-renders and breaks the association if the ID changes between renders.
+**Action:** Always use React's `useId()` hook to generate a stable, unique ID for binding error elements in form components, and ensure the error message `<Text>` element receives the `nativeID` prop matching the `aria-errormessage` on the input.

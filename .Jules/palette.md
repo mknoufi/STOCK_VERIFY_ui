@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2026-02-28 - Transient State Button Focus Preservation
+**Learning:** Replacing an icon with a loading indicator conditionally completely removes the button's icon child node from the DOM, causing screen readers to lose focus, skip context reading, and cause layout jumping during transient states.
+**Action:** Instead of conditional rendering for loading states in buttons, keep the original content mounted but visually hidden (`opacity: 0`), and overlay the `ActivityIndicator` (e.g., using `StyleSheet.absoluteFill`).

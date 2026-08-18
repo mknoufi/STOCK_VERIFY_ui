@@ -56,6 +56,7 @@ export const Input = forwardRef<TextInput, InputProps>(
     const { theme } = useThemeContext();
     const sizeStyles = sizeMap[size];
     const hasError = Boolean(error);
+    const errorId = React.useId();
 
     const getInputContainerStyles = (): ViewStyle => {
       const baseStyles: ViewStyle = {
@@ -126,6 +127,9 @@ export const Input = forwardRef<TextInput, InputProps>(
             ]}
             editable={editable}
             placeholderTextColor={theme.colors.muted}
+            accessibilityLabel={label}
+            aria-invalid={hasError}
+            aria-errormessage={hasError ? errorId : undefined}
             {...textInputProps}
           />
           {rightIcon}
@@ -133,6 +137,7 @@ export const Input = forwardRef<TextInput, InputProps>(
 
         {error && (
           <Text
+            nativeID={errorId}
             style={[
               { fontSize: 12, color: theme.colors.danger, marginTop: 4 },
               errorStyle,

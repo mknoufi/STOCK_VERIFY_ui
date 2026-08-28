@@ -1,4 +1,4 @@
-import React, { ReactNode, forwardRef } from 'react';
+import React, { ReactNode, forwardRef, useId } from "react";
 import {
   TextInput,
   TextInputProps,
@@ -7,10 +7,10 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
-} from 'react-native';
-import { useThemeContext } from '../../theme/ThemeContext';
+} from "react-native";
+import { useThemeContext } from "../../theme/ThemeContext";
 
-interface InputProps extends Omit<TextInputProps, 'style'> {
+interface InputProps extends Omit<TextInputProps, "style"> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -21,8 +21,8 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   labelStyle?: StyleProp<TextStyle>;
   errorStyle?: StyleProp<TextStyle>;
   helperTextStyle?: StyleProp<TextStyle>;
-  variant?: 'outlined' | 'filled' | 'underlined';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "outlined" | "filled" | "underlined";
+  size?: "small" | "medium" | "large";
   required?: boolean;
 }
 
@@ -45,8 +45,8 @@ export const Input = forwardRef<TextInput, InputProps>(
       labelStyle,
       errorStyle,
       helperTextStyle,
-      variant = 'outlined',
-      size = 'medium',
+      variant = "outlined",
+      size = "medium",
       required = false,
       editable = true,
       ...textInputProps
@@ -56,16 +56,17 @@ export const Input = forwardRef<TextInput, InputProps>(
     const { theme } = useThemeContext();
     const sizeStyles = sizeMap[size];
     const hasError = Boolean(error);
+    const errorId = useId();
 
     const getInputContainerStyles = (): ViewStyle => {
       const baseStyles: ViewStyle = {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         ...sizeStyles,
       };
 
       switch (variant) {
-        case 'outlined':
+        case "outlined":
           return {
             ...baseStyles,
             borderWidth: 1,
@@ -77,7 +78,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             borderRadius: 8,
             backgroundColor: editable ? theme.colors.surface : theme.colors.surfaceElevated,
           };
-        case 'filled':
+        case "filled":
           return {
             ...baseStyles,
             backgroundColor: editable ? theme.colors.surfaceElevated : theme.colors.borderLight,
@@ -85,7 +86,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             borderBottomWidth: 2,
             borderBottomColor: hasError ? theme.colors.danger : theme.colors.accent,
           };
-        case 'underlined':
+        case "underlined":
           return {
             ...baseStyles,
             borderBottomWidth: 1,
@@ -115,6 +116,9 @@ export const Input = forwardRef<TextInput, InputProps>(
           {leftIcon}
           <TextInput
             ref={ref}
+            accessibilityLabel={textInputProps.accessibilityLabel || label}
+            aria-invalid={hasError}
+            aria-errormessage={hasError ? errorId : undefined}
             style={[
               {
                 flex: 1,
@@ -133,10 +137,8 @@ export const Input = forwardRef<TextInput, InputProps>(
 
         {error && (
           <Text
-            style={[
-              { fontSize: 12, color: theme.colors.danger, marginTop: 4 },
-              errorStyle,
-            ]}
+            nativeID={errorId}
+            style={[{ fontSize: 12, color: theme.colors.danger, marginTop: 4 }, errorStyle]}
           >
             {error}
           </Text>
@@ -157,4 +159,4 @@ export const Input = forwardRef<TextInput, InputProps>(
   }
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";

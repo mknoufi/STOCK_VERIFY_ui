@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-23 - Stepper & Quick Add Accessibility
+**Learning:** Custom numeric input steppers and quick-add amount buttons built with `TouchableOpacity` are completely invisible to screen readers without proper accessibility props. Because their internal text is just a symbol (`+`, `-`) or number without context (`+5`), users have no idea what the button controls.
+**Action:** Always provide explicit `accessibilityRole="button"`, dynamic `accessibilityState={{ disabled }}`, and a highly descriptive `accessibilityLabel` (e.g., "Decrease quantity", "Increase quantity by 5") to custom numeric input controls.

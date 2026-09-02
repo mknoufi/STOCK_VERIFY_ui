@@ -10,13 +10,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
@@ -37,6 +31,8 @@ export interface SpeedDialAction {
   onPress: () => void;
   color?: string;
   badge?: number;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 interface SpeedDialMenuProps {
@@ -44,6 +40,8 @@ interface SpeedDialMenuProps {
   mainIcon?: keyof typeof Ionicons.glyphMap;
   mainColor?: readonly [string, string, ...string[]];
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -67,13 +65,9 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
     const translateY = interpolate(
       animationProgress.value,
       [0, 1],
-      [0, -(72 + auroraTheme.spacing.md) * (index + 1)],
+      [0, -(72 + auroraTheme.spacing.md) * (index + 1)]
     );
-    const opacity = interpolate(
-      animationProgress.value,
-      [0, 0.5, 1],
-      [0, 0.5, 1],
-    );
+    const opacity = interpolate(animationProgress.value, [0, 0.5, 1], [0, 0.5, 1]);
     const scale = interpolate(animationProgress.value, [0, 1], [0.3, 1]);
 
     return {
@@ -87,6 +81,9 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
       style={[styles.actionButton, actionStyle]}
       onPress={() => onPress(action)}
       activeOpacity={0.9}
+      accessibilityRole="button"
+      accessibilityLabel={action.accessibilityLabel || action.label}
+      accessibilityHint={action.accessibilityHint}
     >
       <View style={styles.actionContent}>
         {/* Label */}
@@ -110,20 +107,13 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
             colors={
               action.color
                 ? [action.color, action.color]
-                : [
-                  auroraTheme.colors.aurora.secondary[0],
-                  auroraTheme.colors.aurora.secondary[1],
-                ]
+                : [auroraTheme.colors.aurora.secondary[0], auroraTheme.colors.aurora.secondary[1]]
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.iconGradient}
           >
-            <Ionicons
-              name={action.icon}
-              size={24}
-              color={auroraTheme.colors.text.primary}
-            />
+            <Ionicons name={action.icon} size={24} color={auroraTheme.colors.text.primary} />
             {action.badge !== undefined && action.badge > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{action.badge}</Text>
@@ -141,6 +131,8 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
   mainIcon = "menu",
   mainColor = auroraTheme.colors.aurora.primary,
   position = "bottom-right",
+  accessibilityLabel,
+  accessibilityHint,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const animationProgress = useSharedValue(0);
@@ -213,15 +205,14 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
   return (
     <>
       {/* Backdrop */}
-      <AnimatedBlurView
-        intensity={20}
-        tint="dark"
-        style={[StyleSheet.absoluteFill, backdropStyle]}
-      >
+      <AnimatedBlurView intensity={20} tint="dark" style={[StyleSheet.absoluteFill, backdropStyle]}>
         <TouchableOpacity
           style={StyleSheet.absoluteFill}
           onPress={toggleMenu}
           activeOpacity={1}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Close speed dial menu"
         />
       </AnimatedBlurView>
 
@@ -243,6 +234,10 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={styles.mainButton}
           onPress={toggleMenu}
           activeOpacity={0.9}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: isOpen }}
+          accessibilityLabel={accessibilityLabel || "Speed dial menu"}
+          accessibilityHint={accessibilityHint || "Toggle speed dial menu"}
         >
           <LinearGradient
             colors={mainColor}
@@ -251,11 +246,7 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
             style={styles.mainGradient}
           >
             <Animated.View style={mainButtonStyle}>
-              <Ionicons
-                name={mainIcon}
-                size={32}
-                color={auroraTheme.colors.text.primary}
-              />
+              <Ionicons name={mainIcon} size={32} color={auroraTheme.colors.text.primary} />
             </Animated.View>
           </LinearGradient>
         </TouchableOpacity>

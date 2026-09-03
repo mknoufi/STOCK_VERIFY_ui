@@ -98,26 +98,25 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
         <SafeAreaView style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Ionicons
-                name="close"
-                size={24}
-                color={modernColors.text.primary}
-              />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={handleClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close camera"
+            >
+              <Ionicons name="close" size={24} color={modernColors.text.primary} />
             </TouchableOpacity>
           </View>
           <View style={styles.permissionContainer}>
-            <Ionicons
-              name="camera-outline"
-              size={64}
-              color={modernColors.text.tertiary}
-            />
+            <Ionicons name="camera-outline" size={64} color={modernColors.text.tertiary} />
             <Text style={styles.permissionText}>
               Camera permission is required to capture photos
             </Text>
             <TouchableOpacity
               style={styles.permissionButton}
               onPress={requestPermission}
+              accessibilityRole="button"
+              accessibilityLabel="Grant camera permission"
             >
               <Text style={styles.permissionButtonText}>Grant Permission</Text>
             </TouchableOpacity>
@@ -139,23 +138,20 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Ionicons
-              name="close"
-              size={24}
-              color={modernColors.text.primary}
-            />
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={handleClose}
+            accessibilityRole="button"
+            accessibilityLabel="Close camera"
+          >
+            <Ionicons name="close" size={24} color={modernColors.text.primary} />
           </TouchableOpacity>
         </View>
 
         {/* Camera or Preview */}
         <View style={styles.cameraContainer}>
           {capturedPhoto ? (
-            <Image
-              source={{ uri: capturedPhoto }}
-              style={styles.preview}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: capturedPhoto }} style={styles.preview} resizeMode="cover" />
           ) : (
             <CameraView ref={cameraRef} style={styles.camera} facing="back">
               {isCapturing && (
@@ -174,6 +170,8 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
               <TouchableOpacity
                 style={[styles.controlButton, styles.retakeButton]}
                 onPress={handleRetake}
+                accessibilityRole="button"
+                accessibilityLabel="Retake photo"
               >
                 <Ionicons name="refresh" size={24} color="#fff" />
                 <Text style={styles.controlButtonText}>Retake</Text>
@@ -181,6 +179,8 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
               <TouchableOpacity
                 style={[styles.controlButton, styles.confirmButton]}
                 onPress={handleConfirm}
+                accessibilityRole="button"
+                accessibilityLabel="Use captured photo"
               >
                 <Ionicons name="checkmark" size={24} color="#fff" />
                 <Text style={styles.controlButtonText}>Use Photo</Text>
@@ -192,6 +192,9 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
               onPress={handleCapture}
               disabled={isCapturing}
               testID={`${testID}-capture`}
+              accessibilityRole="button"
+              accessibilityLabel="Take photo"
+              accessibilityState={{ disabled: isCapturing, busy: isCapturing }}
             >
               <View style={styles.captureButtonInner} />
             </TouchableOpacity>

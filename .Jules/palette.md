@@ -9,3 +9,6 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+## 2024-05-30 - Modal Overlay Elements Accessibility
+**Learning:** Common modal interactive elements like 'close' (icon-only), search inputs, and list options lack proper accessibility context in custom modal components. Screen reader users can't dismiss modals or understand selectable items.
+**Action:** Always add `accessibilityRole="button"` and `accessibilityLabel` to modal close icons, `accessibilityRole="search"` with `accessibilityHint` to modal search inputs, and appropriate roles/labels to all interactive inner elements like list items and clear buttons.

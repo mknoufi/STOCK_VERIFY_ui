@@ -31,12 +31,7 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
   const safeInitialIndex = Math.min(Math.max(initialIndex, 0), Math.max(images.length - 1, 0));
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
           <StatusBar hidden={true} />
@@ -59,7 +54,12 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
             )}
           />
           <SafeAreaView style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={onClose}
+              style={styles.closeButton}
+              accessibilityRole="button"
+              accessibilityLabel="Close image viewer"
+            >
               <Ionicons name="close" size={28} color="white" />
             </TouchableOpacity>
           </SafeAreaView>

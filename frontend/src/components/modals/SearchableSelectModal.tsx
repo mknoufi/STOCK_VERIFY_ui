@@ -74,11 +74,7 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
       testID={`${testID}-option-${item}`}
     >
       <Text style={styles.optionText}>{item}</Text>
-      <Ionicons
-        name="chevron-forward"
-        size={20}
-        color={modernColors.text.tertiary}
-      />
+      <Ionicons name="chevron-forward" size={20} color={modernColors.text.tertiary} />
     </TouchableOpacity>
   );
 
@@ -102,12 +98,11 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
               style={styles.closeButton}
               onPress={handleClose}
               testID={`${testID}-close`}
+              accessibilityRole="button"
+              accessibilityLabel={`Close ${title} modal`}
+              accessibilityHint="Closes the selection modal"
             >
-              <Ionicons
-                name="close"
-                size={24}
-                color={modernColors.text.primary}
-              />
+              <Ionicons name="close" size={24} color={modernColors.text.primary} />
             </TouchableOpacity>
           </View>
 
@@ -128,17 +123,19 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
               autoCapitalize="none"
               autoCorrect={false}
               testID={`${testID}-search`}
+              accessibilityRole="search"
+              accessibilityLabel="Search options"
+              accessibilityHint={`Type to filter ${title} options`}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity
                 onPress={() => setSearchQuery("")}
                 style={styles.clearButton}
+                accessibilityRole="button"
+                accessibilityLabel="Clear search"
+                accessibilityHint="Clears the search input field"
               >
-                <Ionicons
-                  name="close-circle"
-                  size={20}
-                  color={modernColors.text.tertiary}
-                />
+                <Ionicons name="close-circle" size={20} color={modernColors.text.tertiary} />
               </TouchableOpacity>
             )}
           </View>
@@ -153,11 +150,7 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Ionicons
-                  name="search-outline"
-                  size={48}
-                  color={modernColors.text.disabled}
-                />
+                <Ionicons name="search-outline" size={48} color={modernColors.text.disabled} />
                 <Text style={styles.emptyText}>No options found</Text>
               </View>
             }

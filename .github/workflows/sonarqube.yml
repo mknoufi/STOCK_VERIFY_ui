@@ -19,6 +19,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Scan
     runs-on: ubuntu-latest
+    if: false # Disable this job due to billing issue
     # Note: SONAR_TOKEN availability is checked at step level, not job level
 
     services:

@@ -21,12 +21,17 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
       onPress={onRefresh}
       disabled={loading}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel="Refresh"
+      accessibilityState={{ disabled: loading, busy: loading }}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={color} />
-      ) : (
-        <Ionicons name="refresh-outline" size={size} color={color} />
-      )}
+      <Ionicons
+        name="refresh-outline"
+        size={size}
+        color={color}
+        style={{ opacity: loading ? 0 : 1 }}
+      />
+      {loading && <ActivityIndicator size="small" color={color} style={styles.activityIndicator} />}
     </TouchableOpacity>
   );
 };
@@ -37,5 +42,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+  },
+  activityIndicator: {
+    position: "absolute",
   },
 });

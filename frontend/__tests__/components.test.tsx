@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 /**
  * UI Components Tests
  */
@@ -79,7 +80,7 @@ describe("FloatingActionButton Component", () => {
   });
 
   it("should handle press event", () => {
-    const mockOnPress = jest.fn();
+    const mockOnPress = vi.fn();
     expect(mockOnPress).toBeDefined();
   });
 
@@ -111,7 +112,7 @@ describe("EnhancedTextInput Component", () => {
   });
 
   it("should handle text change", () => {
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     expect(mockOnChange).toBeDefined();
   });
 
@@ -127,7 +128,7 @@ describe("EnhancedButton Component", () => {
   });
 
   it("should handle press event", () => {
-    const mockOnPress = jest.fn();
+    const mockOnPress = vi.fn();
     expect(mockOnPress).toBeDefined();
   });
 

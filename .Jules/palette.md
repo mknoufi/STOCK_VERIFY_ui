@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-24 - Transient State Icon Button Accessibility
+**Learning:** Transient state icon buttons (like `RefreshButton`) that perform asynchronous operations are completely silent to screen readers during loading if they lack explicit busy states. Without `busy: true`, a screen reader user doesn't know an action is currently processing.
+**Action:** Always add `accessibilityState={{ disabled: loading, busy: loading }}` alongside `accessibilityRole="button"` and `accessibilityLabel` to buttons that show a loading indicator or perform an async action, ensuring the loading state is conveyed.

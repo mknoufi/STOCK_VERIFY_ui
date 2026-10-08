@@ -13,3 +13,7 @@
 ## 2024-10-08 - Floating Action Menu Accessibility
 **Learning:** Transient custom UI overlays like speed dials and modals that act as dismiss triggers or multi-action menus must include explicit accessibility roles, labels, and states (like `expanded`) for screen readers to interpret their collapsible nature and allow safe dismissal.
 **Action:** Always add `accessible={true}`, `accessibilityRole="button"`, and explicit `accessibilityLabel` to backdrop elements in overlay components, and ensure the main trigger conveys `accessibilityState={{ expanded: boolean }}`.
+
+## 2024-10-08 - Floating Promises in UI Event Handlers
+**Learning:** Calling asynchronous functions like `Haptics.impactAsync` inside synchronous UI event handlers (like `onPress`) can trigger strict linting rules (e.g., SonarCloud floating promises) if the returned Promise is not handled.
+**Action:** Always use the `void` operator (e.g., `void Haptics.impactAsync(...)`) to explicitly mark the unawaited promise when calling haptics or tracking analytics in synchronous click handlers, to satisfy strict linter configurations without unnecessary `async`/`await` wrapping.

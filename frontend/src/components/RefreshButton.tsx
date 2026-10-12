@@ -1,12 +1,15 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useHapticFeedback } from "../hooks/useHapticFeedback";
 
 interface RefreshButtonProps {
   onRefresh: () => void;
   loading?: boolean;
   size?: number;
   color?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export const RefreshButton: React.FC<RefreshButtonProps> = ({
@@ -14,13 +17,26 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
   loading = false,
   size = 24,
   color = "#4CAF50",
+  accessibilityLabel = "Refresh",
+  accessibilityHint,
 }) => {
+  const { triggerHaptic } = useHapticFeedback();
+
+  const handlePress = () => {
+    void triggerHaptic("impactLight");
+    onRefresh();
+  };
+
   return (
     <TouchableOpacity
       style={[styles.button, { opacity: loading ? 0.6 : 1 }]}
-      onPress={onRefresh}
+      onPress={handlePress}
       disabled={loading}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: loading, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator size="small" color={color} />

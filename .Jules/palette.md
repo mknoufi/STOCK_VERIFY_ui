@@ -9,3 +9,7 @@
 ## 2026-02-28 - Icon-Only Button Accessibility in Search
 **Learning:** Icon-only action buttons (like scan barcode, voice search, and submit inputs) are completely inaccessible to screen reader users if missing proper accessibility props, as they provide no context about their function.
 **Action:** Always add `accessibilityRole="button"` and an explicit `accessibilityLabel` (e.g., "Scan barcode with camera") to icon-only `TouchableOpacity` elements, along with `accessibilityState` for dynamic states like disabled or checked.
+
+## 2024-05-18 - Speed Dial Accessibility Pattern
+**Learning:** Transient state custom UI overlays like speed dials completely hide interactive elements from screen readers if they lack structural accessibility properties. The backdrop dismissal area must specifically have `accessible={true}` and `accessibilityRole="button"` to be operable.
+**Action:** Next time, ensure all floating menus provide `accessibilityState={{ expanded: boolean }}` on the trigger, map config-driven actions to accessibility labels, and make backdrops accessible dismiss buttons.

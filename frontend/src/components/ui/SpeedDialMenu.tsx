@@ -37,6 +37,9 @@ export interface SpeedDialAction {
   onPress: () => void;
   color?: string;
   badge?: number;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityRole?: "button" | "link";
 }
 
 interface SpeedDialMenuProps {
@@ -44,6 +47,8 @@ interface SpeedDialMenuProps {
   mainIcon?: keyof typeof Ionicons.glyphMap;
   mainColor?: readonly [string, string, ...string[]];
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -87,6 +92,9 @@ const SpeedDialActionItem: React.FC<SpeedDialActionItemProps> = ({
       style={[styles.actionButton, actionStyle]}
       onPress={() => onPress(action)}
       activeOpacity={0.9}
+      accessibilityRole={action.accessibilityRole || "button"}
+      accessibilityLabel={action.accessibilityLabel || action.label}
+      accessibilityHint={action.accessibilityHint}
     >
       <View style={styles.actionContent}>
         {/* Label */}
@@ -141,6 +149,8 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
   mainIcon = "menu",
   mainColor = auroraTheme.colors.aurora.primary,
   position = "bottom-right",
+  accessibilityLabel = "Speed dial menu",
+  accessibilityHint = "Double tap to toggle speed dial menu",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const animationProgress = useSharedValue(0);
@@ -158,14 +168,14 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
 
   const toggleMenu = () => {
     if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     setIsOpen(!isOpen);
   };
 
   const handleActionPress = (action: SpeedDialAction) => {
     if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     action.onPress();
     setIsOpen(false);
@@ -222,6 +232,9 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={StyleSheet.absoluteFill}
           onPress={toggleMenu}
           activeOpacity={1}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Close speed dial menu"
         />
       </AnimatedBlurView>
 
@@ -243,6 +256,10 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
           style={styles.mainButton}
           onPress={toggleMenu}
           activeOpacity={0.9}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          accessibilityHint={accessibilityHint}
+          accessibilityState={{ expanded: isOpen }}
         >
           <LinearGradient
             colors={mainColor}

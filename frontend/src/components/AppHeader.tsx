@@ -101,17 +101,31 @@ export function AppHeader({
 
           {/* RIGHT: Actions */}
           <View style={styles.actions}>
-            <Pressable onPress={handleNotifications} style={styles.iconButton} hitSlop={10}>
+            <Pressable
+              onPress={handleNotifications}
+              style={styles.iconButton}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Notifications"
+            >
               <Ionicons name="notifications-outline" size={20} color={COLORS.TEXT_SECONDARY} />
               <View style={styles.badgeDot} />
             </Pressable>
-            <Pressable onPress={handleSettings} style={styles.iconButton} hitSlop={10}>
+            <Pressable
+              onPress={handleSettings}
+              style={styles.iconButton}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+            >
               <Ionicons name="settings-outline" size={20} color={COLORS.TEXT_SECONDARY} />
             </Pressable>
             <Pressable
               onPress={handleLogout}
               style={[styles.iconButton, { borderColor: COLORS.ERROR }]}
               hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Logout"
             >
               <Ionicons name="power-outline" size={20} color={COLORS.ERROR} />
             </Pressable>
@@ -124,6 +138,8 @@ export function AppHeader({
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
                 style={styles.backBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
               >
                 <Ionicons name="arrow-back" size={24} color={COLORS.TEXT_PRIMARY} />
                 <Text style={styles.backText}>Back</Text>
@@ -136,7 +152,13 @@ export function AppHeader({
           </View>
           {/* Notifications on sub-screens */}
           <View style={styles.actions}>
-            <Pressable onPress={handleNotifications} style={styles.iconButton} hitSlop={10}>
+            <Pressable
+              onPress={handleNotifications}
+              style={styles.iconButton}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Notifications"
+            >
               <Ionicons name="notifications-outline" size={20} color={COLORS.TEXT_SECONDARY} />
               <View style={styles.badgeDot} />
             </Pressable>

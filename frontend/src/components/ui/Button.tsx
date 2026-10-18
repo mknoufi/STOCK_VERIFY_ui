@@ -7,6 +7,7 @@ import {
   TextStyle,
   GestureResponderEvent,
   ActivityIndicator,
+  View,
 } from 'react-native';
 
 interface ButtonProps {
@@ -82,15 +83,20 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={isDisabled}
       testID={testID}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
-      {loading ? (
-        <ActivityIndicator color={colors.text} size="small" />
-      ) : (
-        <>
-          {icon && iconPosition === 'left' && icon}
-          <Text style={[textStyles, textStyle]}>{title}</Text>
-          {icon && iconPosition === 'right' && icon}
-        </>
+      <View style={{ opacity: loading ? 0 : 1, flexDirection: 'row', alignItems: 'center' }}>
+        {icon && iconPosition === 'left' && icon}
+        <Text style={[textStyles, textStyle]}>{title}</Text>
+        {icon && iconPosition === 'right' && icon}
+      </View>
+      {loading && (
+        <ActivityIndicator
+          color={colors.text}
+          size="small"
+          style={{ position: 'absolute' }}
+        />
       )}
     </TouchableOpacity>
   );

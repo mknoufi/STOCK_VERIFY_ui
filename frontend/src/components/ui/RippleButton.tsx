@@ -58,8 +58,6 @@ interface RippleButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   hapticFeedback?: "light" | "medium" | "heavy" | "none";
-  accessibilityLabel?: string;
-  accessibilityHint?: string;
 }
 
 const variantStyles = {
@@ -148,8 +146,6 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
   style,
   textStyle,
   hapticFeedback = "medium",
-  accessibilityLabel,
-  accessibilityHint,
 }) => {
   const [buttonLayout, setButtonLayout] = useState({ width: 0, height: 0 });
   const rippleScale = useSharedValue(0);
@@ -202,7 +198,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
         medium: Haptics.ImpactFeedbackStyle.Medium,
         heavy: Haptics.ImpactFeedbackStyle.Heavy,
       }[hapticFeedback];
-      void Haptics.impactAsync(hapticType);
+      Haptics.impactAsync(hapticType);
     }
 
     onPress?.();
@@ -219,42 +215,41 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
 
   const content = (
     <>
-      <View style={[styles.contentContainer, { opacity: loading ? 0 : 1 }]}>
-        {icon && iconPosition === "left" && (
-          <Ionicons
-            name={icon}
-            size={sizeStyle.iconSize}
-            color={variantStyle.textColor}
-            style={styles.iconLeft}
-          />
-        )}
-        {(label || children) && (
-          <Text
-            style={[
-              styles.label,
-              {
-                fontSize: sizeStyle.fontSize,
-                color: variantStyle.textColor,
-                fontFamily: auroraTheme.typography.fontFamily.label,
-              },
-              textStyle,
-            ]}
-          >
-            {label || children}
-          </Text>
-        )}
-        {icon && iconPosition === "right" && (
-          <Ionicons
-            name={icon}
-            size={sizeStyle.iconSize}
-            color={variantStyle.textColor}
-            style={styles.iconRight}
-          />
-        )}
-      </View>
-      {loading && (
-        <View style={[StyleSheet.absoluteFillObject, { justifyContent: "center", alignItems: "center" }]} pointerEvents="none">
-          <ActivityIndicator size="small" color={variantStyle.textColor} />
+      {loading ? (
+        <ActivityIndicator size="small" color={variantStyle.textColor} />
+      ) : (
+        <View style={styles.contentContainer}>
+          {icon && iconPosition === "left" && (
+            <Ionicons
+              name={icon}
+              size={sizeStyle.iconSize}
+              color={variantStyle.textColor}
+              style={styles.iconLeft}
+            />
+          )}
+          {(label || children) && (
+            <Text
+              style={[
+                styles.label,
+                {
+                  fontSize: sizeStyle.fontSize,
+                  color: variantStyle.textColor,
+                  fontFamily: auroraTheme.typography.fontFamily.label,
+                },
+                textStyle,
+              ]}
+            >
+              {label || children}
+            </Text>
+          )}
+          {icon && iconPosition === "right" && (
+            <Ionicons
+              name={icon}
+              size={sizeStyle.iconSize}
+              color={variantStyle.textColor}
+              style={styles.iconRight}
+            />
+          )}
         </View>
       )}
 
@@ -296,10 +291,6 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
         onLayout={handleLayout}
         disabled={disabled || loading}
         activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel || label || (typeof children === 'string' ? children : undefined)}
-        accessibilityHint={accessibilityHint}
-        accessibilityState={{ disabled: disabled || loading, busy: loading }}
       >
         {content}
       </TouchableOpacity>
@@ -313,10 +304,6 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
       disabled={disabled || loading}
       activeOpacity={0.9}
       style={[fullWidth && styles.fullWidth]}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel || label || (typeof children === 'string' ? children : undefined)}
-      accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
       <LinearGradient
         colors={variantStyle.gradient as readonly [string, string, ...string[]]}

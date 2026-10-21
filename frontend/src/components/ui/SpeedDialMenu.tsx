@@ -143,14 +143,14 @@ export const SpeedDialMenu: React.FC<SpeedDialMenuProps> = ({
 
   const toggleMenu = () => {
     if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     setIsOpen(!isOpen);
   };
 
   const handleActionPress = (action: SpeedDialAction) => {
     if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     action.onPress();
     setIsOpen(false);

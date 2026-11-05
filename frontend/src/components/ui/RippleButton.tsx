@@ -193,7 +193,7 @@ export const RippleButton: React.FC<RippleButtonProps> = ({
         medium: Haptics.ImpactFeedbackStyle.Medium,
         heavy: Haptics.ImpactFeedbackStyle.Heavy,
       }[hapticFeedback];
-      Haptics.impactAsync(hapticType);
+      void Haptics.impactAsync(hapticType);
     }
 
     onPress?.();
